@@ -2,6 +2,8 @@
 
 The program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk.
 
+Автор приложения [Денис Разумовский](https://github.com/dennisrazumovsky)
+
 ## КРАТКО
 
 **precizer** это CLI приложение предназначенное для рекурсивного исследования директория и составления базы данных файлов и их контрольных сумм. Программа ориентирована на анализ файловых систем гигантских объёмов с последующим быстрым сравнением. С помощью программы можно находить ошибки синхронизации, сравнивая файлы и их контрольные суммы из разных источников. Или с её помощью можно исследовать исторические изменения, сравнивая базы данных из одних и тех же источников за разное время.
