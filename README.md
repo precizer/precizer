@@ -104,6 +104,7 @@ git clone https://github.com/dennisrazumovsky/precizer.git
 ```sh
 cd precizer
 make
+```
 
 4. Copy the resulting executable file to any location specified in the $PATH system variable for quick access.```
 
