@@ -9,7 +9,6 @@
 */
 Return file_list
 (
-	Config *config,
 	bool count_size_of_all_files
 ){
 	/// The status that will be passed to return() before exiting.
@@ -41,7 +40,7 @@ Return file_list
 	size_t count_files = 0, count_dirs = 0, count_symlnks = 0;
 
 	if ((file_systems = fts_open(config->paths, fts_options, NULL)) == NULL) {
-		slog(config,false,"fts_open error");
+		slog(false,"fts_open error");
 		status = FAILURE;
 		return(status);
 	}
@@ -77,7 +76,7 @@ Return file_list
 				char *tmp = (char *)realloc(runtime_path_prefix,(current_file_system->fts_pathlen + 1) * sizeof(char));
 				if(NULL == tmp)
 				{
-					slog(config,false,"Realloc error\n");
+					slog(false,"Realloc error\n");
 					free(runtime_path_prefix);
 					status = FAILURE;
 					break;
@@ -115,7 +114,7 @@ Return file_list
 					DBrow *dbrow = &_dbrow;
 					
 					/* Get all file's metadata from the database */
-					if(SUCCESS != (status = db_read_file_data_from(config,dbrow,relative_path)))
+					if(SUCCESS != (status = db_read_file_data_from(dbrow,relative_path)))
 					{
 						break;
 					}
@@ -168,9 +167,9 @@ Return file_list
 					memset(sha512,0,sizeof(sha512)); // Clean sha512 to prevent reuse;
 
 					// Print out of a file name and its changes
-					show_relative_path(config,relative_path,&metadata_of_scanned_and_saved_files,dbrow,&first_iteration,&show_changes,&rehashig_from_the_beginning);
+					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&first_iteration,&show_changes,&rehashig_from_the_beginning);
 
-					if(SUCCESS != (status = sha512sum(config,p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext)))
+					if(SUCCESS != (status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext)))
 					{
 						break;
 					}
@@ -200,13 +199,13 @@ Return file_list
 					if(update_db == true)
 					{
 						/* Update record in DB */
-						if(SUCCESS != (status = db_update_the_record(config,&(dbrow->ID),&offset,sha512,stat,&mdContext)))
+						if(SUCCESS != (status = db_update_the_record(&(dbrow->ID),&offset,sha512,stat,&mdContext)))
 						{
 							break;
 						}
 					} else {
 						/* Insert to DB */
-						if(SUCCESS != (status = db_insert_the_record(config,relative_path,&offset,sha512,stat,&mdContext)))
+						if(SUCCESS != (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
 						{
 							break;
 						}
@@ -240,7 +239,7 @@ Return file_list
 
 	if(config->progress == true)
 	{
-		slog(config,false,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes), total_items, count_dirs,count_files,count_symlnks);
+		slog(false,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes), total_items, count_dirs,count_files,count_symlnks);
 	}
 
 	return(status);

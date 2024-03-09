@@ -85,7 +85,7 @@ static error_t parse_opt
 			arguments->db_file_name = (char *)calloc(strlen(arg) + 1,sizeof(char));
 			if(arguments->db_file_name == NULL)
 			{
-				printf("ERROR: Memory allocation did not complete successfully!\n");
+				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
 				exit(ARGP_ERR_UNKNOWN);
 			}
 			strcpy(arguments->db_file_name,arg);
@@ -148,7 +148,6 @@ static struct argp argp = { options, parse_opt, args_doc, doc, 0, 0, 0 };
 
 Return parse_arguments
 (
-	Config *config,
 	const int argc,
 	char * argv[]
 ){
@@ -168,7 +167,7 @@ Return parse_arguments
 	if(arguments.verbose == true
 		&& arguments.silent == false)
 	{
-		slog(config,true,"Configuration: ");
+		printf("Configuration: ");
 		printf("paths=");
 		for (int j = 0; arguments.paths[j]; j++)
 		{

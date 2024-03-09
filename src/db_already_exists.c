@@ -5,10 +5,8 @@
  * Check whether the database already exists or not yet
  *
  */
-Return db_already_exists
-(
-	Config *config
-){
+Return db_already_exists(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -29,7 +27,7 @@ Return db_already_exists
 
 	rc = sqlite3_prepare_v2(config->db, sql_db_already_exists, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -43,7 +41,7 @@ Return db_already_exists
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(config,false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);
@@ -53,9 +51,9 @@ Return db_already_exists
 	{
 		if(config->update == true)
 		{
-			slog(config,false,"The database has already been created in the past\n");
+			slog(false,"The database has already been created in the past\n");
 		} else {
-			slog(config,false,"The database %s has been created in the past and already contains" \
+			slog(false,"The database %s has been created in the past and already contains" \
 			                  " data with files and their checksums. Use the \033[1m--update\033[m option if" \
 			                  " there is full confidence that update the content of the database"  \
 			                  " is really need and the information about those files which was changed," \

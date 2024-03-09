@@ -5,10 +5,8 @@
  * Compare two databases
  *
  */
-Return db_compare
-(
-	const Config *config
-){
+Return db_compare(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -17,7 +15,7 @@ Return db_compare
 		return(status);
 	}
 
-	slog(config,false,"Comparison of databases %s and %s is starting...\n",config->filenames[0],config->filenames[1]);
+	slog(false,"Comparison of databases %s and %s is starting...\n",config->filenames[0],config->filenames[1]);
 
 	bool the_databases_are_equal = true;
 
@@ -34,7 +32,7 @@ Return db_compare
 	if(select_sql_1 == NULL)
 	{
 		status = FAILURE;
-		slog(config,false,"ERROR: Memory allocation did not complete successfully!\n");
+		slog(false,"ERROR: Memory allocation did not complete successfully!\n");
 		return(status);
 	}
 
@@ -44,7 +42,7 @@ Return db_compare
 
 	rc = sqlite3_exec(config->db, select_sql_1, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
-		slog(config,false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	free(select_sql_1);
@@ -59,7 +57,7 @@ Return db_compare
 	if(select_sql_2 == NULL)
 	{
 		status = FAILURE;
-		slog(config,false,"ERROR: Memory allocation did not complete successfully!\n");
+		slog(false,"ERROR: Memory allocation did not complete successfully!\n");
 		return(status);
 	}
 	strcat(select_sql_2,attach_sql_2a);
@@ -68,7 +66,7 @@ Return db_compare
 
 	rc = sqlite3_exec(config->db, select_sql_2, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
-		slog(config,false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	free(select_sql_2);
@@ -82,7 +80,7 @@ Return db_compare
 
 	rc = sqlite3_prepare_v2(config->db, compare_A_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -110,13 +108,13 @@ Return db_compare
 		if(relative_path != NULL){
 			printf("%s\n",relative_path);
 		} else {
-			slog(config,false,"General database error!\n");
+			slog(false,"General database error!\n");
 			status = FAILURE;
 			break;
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(config,false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -130,7 +128,7 @@ Return db_compare
 
 	rc = sqlite3_prepare_v2(config->db, compare_B_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -157,13 +155,13 @@ Return db_compare
 		if(relative_path != NULL){
 			printf("%s\n",relative_path);
 		} else {
-			slog(config,false,"General database error!\n");
+			slog(false,"General database error!\n");
 			status = FAILURE;
 			break;
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(config,false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);
@@ -187,7 +185,7 @@ Return db_compare
 
 	rc = sqlite3_prepare_v2(config->db, compare_checksums, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -223,13 +221,13 @@ Return db_compare
 		if(relative_path != NULL){
 			printf("%s\n",relative_path);
 		} else {
-			slog(config,false,"General database error!\n");
+			slog(false,"General database error!\n");
 			status = FAILURE;
 			break;
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(config,false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);

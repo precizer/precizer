@@ -150,12 +150,10 @@ typedef struct {
  */
 
 Return file_list(
-	Config*,
 	bool
 );
 
 Return sha512sum(
-	const Config*,
 	const char*,
 	const short unsigned int*,
 	unsigned char*,
@@ -169,38 +167,33 @@ size_t correction(char*) __attribute__ ((pure));
 
 void notify_quit_handler(int);
 
-Return determine_running_dir(Config*);
+Return determine_running_dir(void);
 
-Return init_config(Config**);
+void init_config(void);
 
-Return init_signals(const Config*);
+Return init_signals(void);
 
-void free_config(Config*);
+void free_config(void);
 
-Return db_delete_missing_files_from(
-	Config*
-);
+Return db_delete_missing_files_from(void);
 
 Return db_delete_the_file_by_id
 (
-	Config*,
 	sqlite_int64*,
 	bool*,
 	const char*
 );
 
-Return db_init(Config*);
+Return db_init(void);
 
-Return db_vacuum(const Config*);
+Return db_vacuum(void);
 
 Return db_read_file_data_from(
-	const Config*,
 	DBrow*,
 	const char*
 );
 
 Return db_update_the_record(
-	const Config*,
 	const sqlite3_int64*,
 	const sqlite3_int64*,
 	const unsigned char*,
@@ -209,7 +202,6 @@ Return db_update_the_record(
 );
 
 Return db_insert_the_record(
-	const Config*,
 	const char*,
 	const sqlite3_int64*,
 	const unsigned char*,
@@ -217,25 +209,15 @@ Return db_insert_the_record(
 	const SHA512_Context*
 );
 
-Return db_file_name(
-	Config*
-);
+Return db_file_name(void);
 
-Return db_save_paths_into(
-	const Config*
-);
+Return db_save_paths_into(void);
 
-Return db_compare(
-	const Config*
-);
+Return db_compare(void);
 
-Return db_check_up_paths(
-	const Config*
-);
+Return db_check_up_paths(void);
 
-Return db_already_exists(
-	Config*
-);
+Return db_already_exists(void);
 
 int compare_file_metadata_equivalence(
 	const struct stat*,
@@ -243,14 +225,12 @@ int compare_file_metadata_equivalence(
 ) __attribute__ ((pure));
 
 Return parse_arguments(
-	Config*,
 	const int,
 	char **
 );
 
 void show_relative_path
 (
-	const Config*,
 	const char*,
 	const int*,
 	const DBrow*,
@@ -259,17 +239,15 @@ void show_relative_path
 	bool*
 );
 
-void changes_status(const Config*);
+void changes_status(void);
 
 int exit_status(
-	const Config*,
 	Return,
 	char**
 );
 
 void logger
 (
-	const Config*,
 	const bool,
 	const char*,
 	size_t,
@@ -278,11 +256,14 @@ void logger
 	...
 );
 
-#define slog(x,y,...) logger(x,y,__FILE__, __LINE__, __func__, __VA_ARGS__ )
+#define slog(x,...) logger(x,__FILE__, __LINE__, __func__, __VA_ARGS__ )
 
 // Declaration of time function
 char *logger_show_time(void);
 
 extern _Atomic bool global_interrupt_flag;
+
+extern Config _config;
+extern Config *config;
 
 #endif /* _PRECIZER_H */

@@ -2,7 +2,6 @@
 
 Return db_update_the_record
 (
-	const Config *config,
 	const sqlite3_int64 *ID,
 	const sqlite3_int64 *offset,
 	const unsigned char *sha512,
@@ -22,7 +21,7 @@ Return db_update_the_record
 	/* Create SQL statement. Prepare to write */
 	rc = sqlite3_prepare_v2(config->db, update_sql, -1, &update_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Can't prepare update statment %s (%i): %s\n", update_sql, rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare update statment %s (%i): %s\n", update_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -32,7 +31,7 @@ Return db_update_the_record
 		rc = sqlite3_bind_int64(update_stmt, 1, *offset);
 	}
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -42,13 +41,13 @@ Return db_update_the_record
 		rc = sqlite3_bind_null(update_stmt, 2);
 	}
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
 	rc = sqlite3_bind_blob(update_stmt, 3, stat, sizeof(struct stat), NULL);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -58,20 +57,20 @@ Return db_update_the_record
 		rc = sqlite3_bind_blob(update_stmt, 4, mdContext, sizeof(SHA512_Context), NULL);
 	}
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
 	rc = sqlite3_bind_int64(update_stmt, 5, *ID);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Error binding value in update (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
 	/* Execute SQL statement */
 	if(sqlite3_step(update_stmt) != SQLITE_DONE)
 	{
-		slog(config,false,"Update statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Update statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

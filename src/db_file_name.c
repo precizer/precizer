@@ -9,10 +9,8 @@
  * will be the hostname and ".db" as the filename extension
  *
  */
-Return db_file_name
-(
-	Config *config
-){
+Return db_file_name(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -26,7 +24,7 @@ Return db_file_name
 			config->db_file_name = (char *)calloc(strlen(inmemory_db_name) + 1,sizeof(char));
 			if(config->db_file_name == NULL)
 			{
-				slog(config,false,"ERROR: Memory allocation did not complete successfully!\n");
+				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
 				status = FAILURE;
 			} else {
 				strcpy(config->db_file_name,inmemory_db_name);
@@ -39,12 +37,12 @@ Return db_file_name
 			config->db_file_name = (char *)calloc(strlen(utsname.nodename) + 4,sizeof(char));
 			if(config->db_file_name == NULL)
 			{
-				slog(config,false,"ERROR: Memory allocation did not complete successfully!\n");
+				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
 				status = FAILURE;
 			} else {
 				strcpy(config->db_file_name,utsname.nodename);
 				strcat(config->db_file_name,".db");
-				slog(config,false,"Database file name: %s\n",config->db_file_name);
+				slog(false,"Database file name: %s\n",config->db_file_name);
 			}
 		}
 	}

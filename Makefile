@@ -73,7 +73,7 @@ WFLAGS += -Wlogical-op
 endif
 
 # Arguments for tests
-ARGS = tests
+ARGS = --update tests
 
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.

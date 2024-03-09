@@ -5,10 +5,8 @@
  * Initialize SQLite database
  *
  */
-Return db_init
-(
-	Config *config
-){
+Return db_init(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -33,18 +31,18 @@ Return db_init
 
 	/* Open database */
 	if(sqlite3_open(config->db_file_name, &config->db)){
-		slog(config,false,"Can't open database: %s\n", sqlite3_errmsg(config->db));
+		slog(false,"Can't open database: %s\n", sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
 	/* Execute SQL statement */
 	rc = sqlite3_exec(config->db, sql, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
-		slog(config,false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	} else if(config->compare != true)
 	{
-		slog(config,true,"The database has been successfully initialized\n");
+		slog(true,"The database has been successfully initialized\n");
 	}
 
 	sqlite3_close(config->db);
@@ -52,11 +50,11 @@ Return db_init
 	/* Open database to insert values */
 	rc = sqlite3_open(config->db_file_name, &config->db);
 	if(rc) {
-		slog(config,false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	} else if(config->compare != true)
 	{
-		slog(config,true,"Opened database successfully\n");
+		slog(true,"Opened database successfully\n");
 	}
 
 	const char *pragma_sql = "PRAGMA page_size = 4096;" \
@@ -67,7 +65,7 @@ Return db_init
 	// Set SQLite pragmas
 	rc = sqlite3_exec(config->db, pragma_sql, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
-		slog(config,false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -77,7 +75,7 @@ Return db_init
 
 	rc = sqlite3_exec(config->db, inmemory_db, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
-		slog(config,false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

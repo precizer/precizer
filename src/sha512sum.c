@@ -7,7 +7,6 @@
  */
 Return sha512sum
 (
-	const Config *config,
 	const char *relative_path,
 	const short unsigned int *relative_path_size,
 	unsigned char *sha512,
@@ -35,7 +34,7 @@ Return sha512sum
 
 		fileptr = fopen(absolute_path, "rb");
 		if(fileptr == NULL){
-			slog(config,false,"Can open the file using neither relative %s nor absolute %s path\n",relative_path,absolute_path);
+			slog(false,"Can open the file using neither relative %s nor absolute %s path\n",relative_path,absolute_path);
 			status = FAILURE;
 			return(status);
 		}
@@ -71,7 +70,7 @@ Return sha512sum
 
 #if 0
 	for(size_t i = 0; i < SHA512_DIGEST_LENGTH; i++) {
-		slog(config,false,"%02x", sha512[i]);
+		slog(false,"%02x", sha512[i]);
 	}
 	putchar('\n');
 #endif
