@@ -1,9 +1,7 @@
 #include "precizer.h"
 
-Return db_vacuum
-(
-	const Config *config
-){
+Return db_vacuum(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -20,7 +18,7 @@ Return db_vacuum
 		return(status);
 	}
 
-	slog(config,false,"Start vacuuming...\n");
+	slog(false,"Start vacuuming...\n");
 
 	int rc;
 
@@ -31,10 +29,10 @@ Return db_vacuum
 	/* Execute SQL statement */
 	rc = sqlite3_exec(config->db, sql, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
-		slog(config,false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	} else {
-		slog(config,false,"The database has been vacuumed\n");
+		slog(false,"The database has been vacuumed\n");
 	}
 
 	return(status);

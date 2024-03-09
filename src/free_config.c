@@ -6,10 +6,8 @@
  * Clean allocated memory
  *
  */
-void free_config
-(
-	Config *config
-){
+void free_config(void)
+{
 	/// Enable key echo in terminal (return back
 	/// default settings)
 	struct termios term;
@@ -23,6 +21,4 @@ void free_config
 	free(config->running_dir);
 
 	free(config->db_file_name);
-
-	free(config);
 }

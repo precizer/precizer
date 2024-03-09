@@ -10,10 +10,7 @@
  * sync data from memory to disk even user interrupts
  * running of the program.
  */
-Return init_signals
-(
-	const Config *config
-)
+Return init_signals(void)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -29,11 +26,11 @@ Return init_signals
 	if ((signal(SIGUSR2,&notify_quit_handler)==SIG_ERR)!=0)
 	{
 		status = FAILURE;
-		slog(config,false,"Failed set signal SIGUSR2\n");
+		slog(false,"Failed set signal SIGUSR2\n");
 	}else{
 		if(config->verbose == true)
 		{
-			slog(config,false,"Set signal SIGUSR2 OK:pid:%i\n",getpid());
+			slog(false,"Set signal SIGUSR2 OK:pid:%i\n",getpid());
 		}
 	}
 
@@ -41,11 +38,11 @@ Return init_signals
 	if ((signal(SIGINT,&notify_quit_handler)==SIG_ERR)!=0)
 	{
 		status = FAILURE;
-		slog(config,false,"Failed set signal SIGINT\n");
+		slog(false,"Failed set signal SIGINT\n");
 	}else{
 		if(config->verbose == true)
 		{
-			slog(config,false,"Set signal SIGINT OK:pid:%i\n",getpid());
+			slog(false,"Set signal SIGINT OK:pid:%i\n",getpid());
 		}
 	}
 
@@ -53,11 +50,11 @@ Return init_signals
 	if ((signal(SIGTERM,&notify_quit_handler)==SIG_ERR)!=0)
 	{
 		status = FAILURE;
-		slog(config,false,"Failed set signal SIGTERM\n");
+		slog(false,"Failed set signal SIGTERM\n");
 	}else{
 		if(config->verbose == true)
 		{
-			slog(config,false,"Set signal SIGTERM OK:pid:%i\n",getpid());
+			slog(false,"Set signal SIGTERM OK:pid:%i\n",getpid());
 		}
 	}
 

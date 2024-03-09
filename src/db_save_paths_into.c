@@ -5,9 +5,8 @@
  * Save the absolute path directory prefix into DB
  *
  */
-Return db_save_paths_into(
-	const Config *config
-){
+Return db_save_paths_into(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -27,14 +26,14 @@ Return db_save_paths_into(
 
 		int rc = sqlite3_prepare_v2(config->db, delete_sql, -1, &delete_stmt, NULL);
 		if(SQLITE_OK != rc) {
-			slog(config,false,"Can't prepare delete statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(false,"Can't prepare delete statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
 		/* Execute SQL statement */
 		if(sqlite3_step(delete_stmt) != SQLITE_DONE)
 		{
-			slog(config,false,"Delete statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(false,"Delete statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 		sqlite3_finalize(delete_stmt);
@@ -53,20 +52,20 @@ Return db_save_paths_into(
 		/* Create SQL statement. Prepare to write */
 		int rc = sqlite3_prepare_v2(config->db, insert_sql, -1, &insert_stmt, NULL);
 		if(SQLITE_OK != rc) {
-			slog(config,false,"Can't prepare insert statment %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
+			slog(false,"Can't prepare insert statment %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
 		rc = sqlite3_bind_text(insert_stmt, 1, config->paths[i], (int)strlen(config->paths[i]), NULL);
 		if(SQLITE_OK != rc) {
-			slog(config,false,"Error binding value in insert (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(false,"Error binding value in insert (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
 		/* Execute SQL statement */
 		if(sqlite3_step(insert_stmt) != SQLITE_DONE)
 		{
-			slog(config,false,"Insert statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(false,"Insert statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 

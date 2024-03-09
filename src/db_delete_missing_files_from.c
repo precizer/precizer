@@ -7,10 +7,8 @@
  * on the file system
  *
  */
-Return db_delete_missing_files_from
-(
-	Config *config
-){
+Return db_delete_missing_files_from(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -28,7 +26,7 @@ Return db_delete_missing_files_from
 
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(config,false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -58,7 +56,7 @@ Return db_delete_missing_files_from
 			absolute_path = (char *)calloc(runtime_path_prefix_size + relative_path_size + 2,sizeof(char)); // One for '/' and second for '\0' at the end of the line
 			if(absolute_path == NULL)
 			{
-				slog(config,false,"ERROR: Memory allocation did not complete successfully!\n");
+				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
 				status = FAILURE;
 				break;
 			}
@@ -73,14 +71,14 @@ Return db_delete_missing_files_from
 
 		if(path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
 		{
-			status = db_delete_the_file_by_id(config,&ID,&first_iteration,relative_path);
+			status = db_delete_the_file_by_id(&ID,&first_iteration,relative_path);
 		}
 		free(absolute_path);
 	}
 	if(SQLITE_DONE != rc) {
 		if(global_interrupt_flag == false)
 		{
-			slog(config,false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 	}

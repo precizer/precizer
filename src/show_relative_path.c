@@ -9,7 +9,6 @@
  */
 void show_relative_path
 (
-	const Config *config,
 	const char *relative_path,
 	const int *metadata_of_scanned_and_saved_files,
 	const DBrow *dbrow,
@@ -26,14 +25,14 @@ void show_relative_path
 		{
 			if(config->update == true)
 			{
-				slog(config,false,"The \033[1m--update\033[m option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
+				slog(false,"The \033[1m--update\033[m option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
 			}
 
-			slog(config,false,"\033[1mThese files have been added or changed and those changes will be reflected against the DB %s:\n\033[m",config->db_file_name);
+			slog(false,"\033[1mThese files have been added or changed and those changes will be reflected against the DB %s:\n\033[m",config->db_file_name);
 
 		} else {
 			*show_changes = false;
-			slog(config,false,"\033[1mThese files will be added against the DB %s:\n\033[m",config->db_file_name);
+			slog(false,"\033[1mThese files will be added against the DB %s:\n\033[m",config->db_file_name);
 		}
 	}
 

@@ -6,9 +6,8 @@
  * and name of the function that generated the message itself
  *
  */
-__attribute__((format(printf, 6, 7))) //Without this we shall get warning: fmt string is not a string literal
+__attribute__((format(printf, 5, 6))) //Without this we shall get warning: fmt string is not a string literal
 void logger(
-	const Config *config,
 	const bool verbose_only,
 	const char * const filename,
 	size_t line,

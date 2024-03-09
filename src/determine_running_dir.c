@@ -6,10 +6,8 @@
  * Remember the runtime directory absolute path in config,
  * fopen() was not able to process relative paths, only absolute ones.
  */
-Return determine_running_dir
-(
-	Config *config
-){
+Return determine_running_dir(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -28,7 +26,7 @@ Return determine_running_dir
 		char *tmp = (char *)realloc(config->running_dir,(size_t)config->running_dir_size);
 		if(NULL == tmp)
 		{
-			slog(config,false,"Realloc error\n");
+			slog(false,"Realloc error\n");
 			free(config->running_dir);
 			status = FAILURE;
 			break;
@@ -39,7 +37,7 @@ Return determine_running_dir
 		ptr = getcwd(config->running_dir,(size_t)config->running_dir_size);
 		if (ptr == NULL && errno != ERANGE)
 		{
-			slog(config,false,"ERANGE error\n");
+			slog(false,"ERANGE error\n");
 			status = FAILURE;
 		}
 	}
@@ -50,7 +48,7 @@ Return determine_running_dir
 	char *tmp = (char *)realloc(config->running_dir,(size_t)config->running_dir_size);
 	if(NULL == tmp)
 	{
-		slog(config,false,"Realloc error\n");
+		slog(false,"Realloc error\n");
 		free(config->running_dir);
 		status = FAILURE;
 	} else {
