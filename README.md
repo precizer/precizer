@@ -106,7 +106,7 @@ cd precizer
 make
 ```
 
-4. Copy the resulting executable file to any location specified in the $PATH system variable for quick access.```
+4. Copy the resulting executable file precizer to any location specified in the $PATH system variable for quick access.```
 
 ## EXAMPLES OF USING
 
