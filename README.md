@@ -104,24 +104,29 @@ git clone https://github.com/dennisrazumovsky/precizer.git
 ```sh
 cd precizer
 make
-```
+
+4. Copy the resulting executable file to any location specified in the $PATH system variable for quick access.```
 
 ## EXAMPLES OF USING
 
 To explore the program's features, you can use test sets from the tests/examples/ directory in the program source code:
 
 ### Example 1
- Add files into two databases and compare them with each other
+Add files into two databases and compare them with each other
+
 TODO!
 
 ### Example 2
 Using the --silent mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
+
 TODO!
 
 ### Example 3
 Additional information in --verbose mode. May be useful for debugging.
+
 TODO!
 
 ### Example 4
 Updating the database
+
 TODO!
