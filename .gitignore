@@ -1,3 +1,5 @@
 doc
 libs/*/*/
-src/*/*/
+src/*/
+*.db
+precizer
