@@ -1,6 +1,9 @@
 # precizer
 The program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk.
 
+## Author
+[Dennis Razumovsky](https://github.com/dennisrazumovsky)
+
 ## TL;DR
 
 precizer is a CLI application designed to traverse directories recursively and build a database of files and their checksums. The program is focused on the traversing of file systems of gigantic size with subsequent quick comparison. Using the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to explore historical changes by comparing databases from the same sources over different times.
@@ -64,7 +67,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 ## QUESTIONS AND BUG REPORTS
 
 * If you have any questions, call help information using --help. The help is made as detailed as possible to help users who do not have specialized technical knowledge.
-* You can contact the author through the github form. You can also publish a bug report there.
+* You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [publish a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
 * If you have questions about using the program, you can ask a question on stackoverflow using the precizer tag. The author is monitoring such questions and will be happy to provide his answer.
 
 ## COMPILE AND INSTALLATION
