@@ -93,8 +93,6 @@ TODO!
 
 ## Ubuntu\Debian
 
-### Build
-
 1. Install build and compile tools on Linux
 
 sudo apt -y install build-essential
