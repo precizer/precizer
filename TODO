@@ -1,6 +1,6 @@
 TODO
 
-* test database by path before open or compare
+* test database by path to the DB file before open or compare
 
 * Progress bar with escape
 	Escape Sequences - A Quick Guide

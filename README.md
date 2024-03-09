@@ -58,7 +58,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * By comparing databases from the same sources over different times, precizer can serve as a security monitoring tool, determining the consequences of an intrusion by identifying unauthorized modified files, whose contents may have been changed but the metadata remains the same.
 * The program never changes, deletes, moves or copies any files or directories being traversed. All it does is shape lists of files and update information about them against the database. All changes occur exclusively within the boundaries of this database.
 * Program performance mainly depends on the performance of the disk subsystem. Each file is read byte by byte and such way a checksum is generated for each file using the SHA512 algorithm.
-* The program works very quick thanks to the SQLite and FTS (man 3 fts) libraries.
+* The program works very quick thanks to the SQLite and FTS ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)) libraries.
 * Parsing of string parameters is implemented through the ARGP library
 * The program is safe for cases with huge numbers of files, directories and subdirectories of any nesting. Thanks to the FTS library, recursion is not used, so there will be no stack overflow.
 * Due to its compactness and portability of the code, the program can be used even on specialized devices such as NAS or any embedded or IoT devices.
@@ -88,7 +88,7 @@ TODO!
 
 ### Self-build
 
-Almost all used libraries are integrated into the program and by default the program is built as a static executable file. That was done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
+Almost all used libraries are integrated into the program and by default the program is built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
 
 #### Ubuntu\Debian
 

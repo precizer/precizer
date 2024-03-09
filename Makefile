@@ -225,7 +225,7 @@ clang: all
 #
 # Sanitize rules
 #
-sanitize: $(STZEXE)
+sanitize: $(SUBDIRS) $(STZEXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
 
 $(STZEXE): $(STZOBJS)
@@ -243,7 +243,7 @@ $(STZDIR)/%.o: $(SRC)/%.c
 #
 # Debug rules
 #
-debug: $(DBGEXE)
+debug: $(SUBDIRS) $(DBGEXE)
 
 $(DBGEXE): $(DBGOBJS)
 	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBPATH) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
@@ -262,7 +262,7 @@ $(DBGDIR)/%.o: $(SRC)/%.c
 #
 # Production rules
 #
-prod: production
+prod: $(SUBDIRS) production
 production: $(PRODEXE)
 
 $(PRODEXE): $(PRODOBJS)
@@ -282,7 +282,7 @@ $(PRODDIR)/%.o: $(SRC)/%.c
 #
 # Release rules
 #
-release: $(RELEXE)
+release: $(SUBDIRS) $(RELEXE)
 
 # Linking problem with "undefined reference to 'dlopen' "
 # https://stackoverflow.com/a/11221504/7104681
@@ -304,7 +304,7 @@ $(RELDIR)/%.o: $(SRC)/%.c
 # Unittesting
 #
 
-unittest: $(UNITEXE)
+unittest: $(SUBDIRS) $(UNITEXE)
 
 $(UNITEXE): $(UNITOBJS)
 	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(UNITCFLAGS) $(UNITLIBPATH) $(UNITDYNLIB) $(WFLAGS) -o $(UNITEXE) $^ $(LDFLAGS)
@@ -383,8 +383,10 @@ cloc:
 	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(PRODDIR),$(RELDIR),$(OMPDIR) ../
 
 # Character | prevent threading with clean
-clean: | clean-preproc clean-asm
+cleanall: clean
 	@$(MAKE) -C $(SUBDIRS) clean
+
+clean: | clean-preproc clean-asm
 	@rm -rf *.out.* doc $(STZDEP) $(DBGDEP) $(PRODDEP) $(RELDEP) \
 		$(DBGEXE) $(STZEXE) $(PRODEXE) $(RELEXE) \
 		$(STZOBJS) $(DBGOBJS) $(PRODOBJS) $(RELOBJS)
