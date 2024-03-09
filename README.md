@@ -88,7 +88,7 @@ TODO!
 
 ### Self-build
 
-Almost all used libraries are integrated into the program and by default the program is built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
+Almost all used libraries are integrated into the program and by default the program is built as a static executable file. That was done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
 
 #### Ubuntu\Debian
 
