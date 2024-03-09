@@ -1,0 +1,37 @@
+TODO
+
+* test database by path before open or compare
+
+* Progress bar with escape
+	Escape Sequences - A Quick Guide
+		https://morningcoffee.io/escape-sequences-a-quick-guide.html
+	ANSI Escape Sequences
+		http://isthe.com/chongo/tech/comp/ansi_escapes.html
+	How to implement progress bars in C like apt-get?
+		https://stackoverflow.com/questions/73468165/how-to-implement-progress-bars-in-c-like-apt-get
+	Here’s How to Enable the Handy Apt Terminal Progress Bar in Ubuntu 14.04
+		https://www.omgubuntu.co.uk/2014/04/how-to-enable-apt-terminal-progress-bar
+	apt source code
+		https://salsa.debian.org/apt-team/apt
+
+* Add DB checks before any changes
+	How should I use Sqlite "PRAGMA integrity_check" in C
+	https://stackoverflow.com/questions/22172186/how-should-i-use-sqlite-pragma-integrity-check-in-c
+
+* --ignore=PATH(or PCRE regexp) and --include=PATH(or PCRE regexp) (Consider the PATH even it is a subfolder of a file under --ignore directory)
+* --maxdepth option (look at fts_level https://man7.org/linux/man-pages/man3/fts.3.html)
+* --no-recursive option
+* Сalculate remaining download time
+	https://stackoverflow.com/questions/798800/whats-the-best-way-to-calculate-remaining-download-time
+	https://stackoverflow.com/questions/933242/smart-progress-bar-eta-computation
+	* Progress bar ncurses based
+		add building file list progress
+* void sqlite3_interrupt(sqlite3*) and int sqlite3_is_interrupted(sqlite3*); for a long vacuuming command.
+* SQLite performance tuning
+	https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
+* completions
+	Great examples:
+		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.bash
+		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.zsh
+* Default file name of the database date_startpath_hostname.db
+* ALL DONE
