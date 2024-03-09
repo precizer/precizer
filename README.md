@@ -1,5 +1,5 @@
 # precizer
-The program is distributed under the CC-BY-SA (Creative Commons Share Alike) license. The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk. https://creativecommons.org/licenses/by/4.0/
+The program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk.
 
 ## TL;DR
 
