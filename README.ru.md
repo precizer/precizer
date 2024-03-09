@@ -81,10 +81,10 @@ precizer --compare host1.db host2.db
 
 Скачать готовое решение
 
-### Flatpak
+#### Flatpak
 TODO!
 
-### AppImage
+#### AppImage
 TODO!
 
 # Самостоятельная сборка
