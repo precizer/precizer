@@ -94,9 +94,9 @@ TODO!
 ### Ubuntu\Debian
 
 1. Install build and compile tools on Linux
-
+```sh
 sudo apt -y install build-essential
-
+```
 2. Get source code
 ```sh
 git clone https://github.com/dennisrazumovsky/precizer.git
