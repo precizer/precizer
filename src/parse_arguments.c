@@ -193,26 +193,6 @@ Return parse_arguments
 	reflected in arguments. */
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-	if(arguments.verbose == true
-		&& arguments.silent == false)
-	{
-		printf("Configuration: ");
-		printf("paths=");
-		for (int j = 0; arguments.paths[j]; j++)
-		{
-			printf(j == 0 ? "%s" : ", %s", arguments.paths[j]);
-		}
-		printf("; ");
-		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s",
-		arguments.verbose ? "yes" : "no",
-		arguments.silent ? "yes" : "no",
-		arguments.force ? "yes" : "no",
-		arguments.update ? "yes" : "no",
-		arguments.progress ? "yes" : "no",
-		arguments.compare ? "yes" : "no");
-		printf("\n");
-	}
-
 	config->paths = arguments.paths;
 
 	if (arguments.compare == true)
@@ -242,6 +222,26 @@ Return parse_arguments
 	config->silent = arguments.silent;
 	if(arguments.db_file_name != NULL){
 		config->db_file_name = arguments.db_file_name;
+	}
+
+	if(arguments.verbose == true
+		&& arguments.silent == false)
+	{
+		slog(false,"Configuration: ");
+		printf("paths=");
+		for (int j = 0; arguments.paths[j]; j++)
+		{
+			printf(j == 0 ? "%s" : ", %s", arguments.paths[j]);
+		}
+		printf("; ");
+		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s",
+		arguments.verbose ? "yes" : "no",
+		arguments.silent ? "yes" : "no",
+		arguments.force ? "yes" : "no",
+		arguments.update ? "yes" : "no",
+		arguments.progress ? "yes" : "no",
+		arguments.compare ? "yes" : "no");
+		printf("\n");
 	}
 
 	return(status);
