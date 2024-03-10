@@ -130,19 +130,19 @@ precizer --progress --database=database2.db tests/examples/diffs/diff2
 
 precizer --compare database1.db database2.db 
 ```
-    Comparison of databases database1.db and database2.db is starting...<br />
-    **These files no longer exist against database1.db but still present against database2.db**<br />
-    path1/AAA/BCB/CCC/a.txt<br />
-    path1/AAA/BCB/CCC/b.txt<br />
-    **These files no longer exist against database2.db but still present against database1.db**<br />
-    path2/AAA/ZAW/D/e/f/b_file.txt<br />
-    **The SHA512 checksums of these files do not match between database1.db and database2.db**<br />
-    1/AAA/BCB/CCC/a.txt<br />
-    2/AAA/BBB/CZC/a.txt<br />
-    3/AAA/BBB/CCC/a.txt<br />
-    4/AAA/BBB/CCC/a.txt<br />
-    path1/AAA/ZAW/D/e/f/b_file.txt<br />
-    path2/AAA/BCB/CCC/a.txt<br />
+   Comparison of databases database1.db and database2.db is starting...<br />
+   **These files no longer exist against database1.db but still present against database2.db**<br />
+   path1/AAA/BCB/CCC/a.txt<br />
+   path1/AAA/BCB/CCC/b.txt<br />
+   **These files no longer exist against database2.db but still present against database1.db**<br />
+   path2/AAA/ZAW/D/e/f/b_file.txt<br />
+   **The SHA512 checksums of these files do not match between database1.db and database2.db**<br />
+   1/AAA/BCB/CCC/a.txt<br />
+   2/AAA/BBB/CZC/a.txt<br />
+   3/AAA/BBB/CCC/a.txt<br />
+   4/AAA/BBB/CCC/a.txt<br />
+   path1/AAA/ZAW/D/e/f/b_file.txt<br />
+   path2/AAA/BCB/CCC/a.txt<br />
 
 ### Example 2
 Using the --silent mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
