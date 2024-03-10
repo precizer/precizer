@@ -69,7 +69,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * The program is safe for cases with huge numbers of files, directories and subdirectories of any nesting. Thanks to the FTS library, recursion is not used, so there will be no stack overflow.
 * Due to its compactness and portability of the code, the program can be used even on specialized devices such as NAS or any embedded or IoT devices.
 
-## QUESTIONS AND BUG REPORTS
+## QUESTIONS AND BUGREPORTS
 
 * If you have any questions, call help information using _--help_ The help is made as detailed as possible to help users who do not have specialized technical knowledge.
 * You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [share a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
