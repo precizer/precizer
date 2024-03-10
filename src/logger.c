@@ -16,8 +16,6 @@ void logger(
 	...
 )
 {
-	va_list args;
-
 	if(config->silent == false)
 	{
 
@@ -38,6 +36,7 @@ void logger(
 		}
 
 		if(verbose_only == false || config->verbose == true){
+			va_list args;
 			va_start(args, fmt);
 			vprintf(fmt, args);
 			va_end(args);

@@ -155,7 +155,7 @@ Return db_check_up_paths(void)
 
 			rc_stmt = sqlite3_prepare_v2(config->db, sql, -1, &stmt, NULL);
 			if(SQLITE_OK != rc_stmt) {
-				slog(false,"Can't prepare select statment %s (%i): %s\n", select_sql, rc_stmt, sqlite3_errmsg(config->db));
+				slog(false,"Can't prepare select statment %s (%i): %s\n", sql, rc_stmt, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 

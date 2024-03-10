@@ -239,7 +239,7 @@ void show_relative_path
 	bool*
 );
 
-void changes_status(void);
+void status_of_changes(void);
 
 int exit_status(
 	Return,
