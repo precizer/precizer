@@ -1,6 +1,7 @@
 doc
 libs/*/*/
 src/*/
+tests/examples/huge/
 *.db
 *.out.*
 precizer

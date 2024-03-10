@@ -21,7 +21,7 @@ Assuming there are two hosts with large disks and identical contents mounted in 
 ```sh
 precizer --progress /mnt1
 ```
-As a result of the program running all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.
+As a result of the program running all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The _--progress_ option visualizes progress and will show the amount of space and the number of files being examined.
 
 3. Run the program on a second machine with a host name, for example host2:
 ```sh
@@ -48,7 +48,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * The rsync algorithm identified them due to the changed size and modification time of the file of File Systen and synchronized them to server B.
 * During synchronization, multiple communication failures occurred between the main data center and Disaster Recovery.
 * To check data integrity (equivalence of stored files on A and B bytes to bytes), the same rsync is usually used only with byte-by-byte comparison enabled. In that case:
-* rsync runs on server A in --checksum mode and during one session tries to calculate checksums sequentially first on A and then on B.
+* rsync runs on server A in _--checksum_ mode and during one session tries to calculate checksums sequentially first on A and then on B.
 * This process takes an incredibly long time for large disk arrays
 * Since rsync does not allow the state of already calculated checksums to be saved between sessions, a number of technical difficulties arise. Namely:
 * If the connection is lost, rsync ends the session and the next time you start, you need to start all over again. Taking into account the huge sizes of volumes, byte-by-byte data consistency checking turns into an impossible.
@@ -60,7 +60,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * The work of this program can be interrupted at any time in any way, and this is safe both for the data being explored and for the database created by the program itself.
 * In the case of a deliberate or accidental interruption of the application do not worry about the results of the failure. The result of the program's work will be completely saved and reused during subsequent runs.
 * To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely  exclude errors  even when analyzing a single petabyte-sized file. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when more simpler hash functions like SHA1 or CRC32 have being using.
-* The algorithms of the **precizer** app are designed in such a way that it is very easy to maintain the relevance of the data contained in the created database with paths to files and their checksums without recalculating everything from scratch. It is enough to run the program with the --update parameter so that new files are added to the database, information about files erased from the disk is deleted, and for those files that have undergone modifications and their creation time or size has changed, the SHA512 checksum will be recalculated and updated in the database.
+* The algorithms of the **precizer** app are designed in such a way that it is very easy to maintain the relevance of the data contained in the created database with paths to files and their checksums without recalculating everything from scratch. It is enough to run the program with the _--update_ parameter so that new files are added to the database, information about files erased from the disk is deleted, and for those files that have undergone modifications and their creation time or size has changed, the SHA512 checksum will be recalculated and updated in the database.
 * By comparing databases from the same sources over different times, **precizer** can serve as a security monitoring tool, determining the consequences of an intrusion by identifying unauthorized modified files, whose contents may have been changed but the metadata remains the same.
 * The program never changes, deletes, moves or copies any files or directories being traversed. All it does is shape lists of files and update information about them against the database. All changes occur exclusively within the boundaries of this database.
 * Program performance mainly depends on the performance of the disk subsystem. Each file is read byte by byte and such way a checksum is generated for each file using the SHA512 algorithm.
@@ -71,7 +71,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 
 ## QUESTIONS AND BUG REPORTS
 
-* If you have any questions, call help information using --help. The help is made as detailed as possible to help users who do not have specialized technical knowledge.
+* If you have any questions, call help information using _--help_ The help is made as detailed as possible to help users who do not have specialized technical knowledge.
 * You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [publish a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
 * If you have questions about using the program, you can ask a question on stackoverflow using the **precizer** tag. The author is monitoring such questions and will be happy to provide his answer.
 
@@ -146,12 +146,12 @@ path2/AAA/BCB/CCC/a.txt
 </sub>
 
 ### Example 2
-Using the --silent mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
+Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
 
 TODO!
 
 ### Example 3
-Additional information in --verbose mode. May be useful for debugging.
+Additional information in _--verbose_ mode. May be useful for debugging.
 
 TODO!
 
