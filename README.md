@@ -11,13 +11,13 @@ The program is focused on the traversing of file systems of gigantic size with s
 
 ## BASIC EXAMPLE
 
-Let's say there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.
+Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.
 
 1. Run the program on the first machine with host name, for example “host1”:
 ```sh
 precizer --progress /mnt1
 ```
-As a result of the program run all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.
+As a result of the program running all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.
 
 3. Run the program on a second machine with a host name, for example host2:
 ```sh
