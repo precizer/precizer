@@ -130,7 +130,7 @@ precizer --progress --database=database2.db tests/examples/diffs/diff2
 
 precizer --compare database1.db database2.db 
 ```
-<sub><sup>Comparison of databases database1.db and database2.db is starting...  
+<sup>Comparison of databases database1.db and database2.db is starting...  
 **These files no longer exist against database1.db but still present against database2.db**  
 path1/AAA/BCB/CCC/a.txt  
 path1/AAA/BCB/CCC/b.txt  
@@ -143,7 +143,7 @@ path2/AAA/ZAW/D/e/f/b_file.txt
 4/AAA/BBB/CCC/a.txt  
 path1/AAA/ZAW/D/e/f/b_file.txt  
 path2/AAA/BCB/CCC/a.txt  
-</sub></sup>
+</sub>
 
 ### Example 2
 Using the --silent mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
