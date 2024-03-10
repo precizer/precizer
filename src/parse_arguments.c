@@ -12,11 +12,40 @@ const char *argp_program_version = "precizer 1.0";
 
 /* Program documentation. */
 static char doc[] =
-	"Argp example #4 -- a program with somewhat more complicated options\
-	\vThis part of the documentation comes *after* the options;\
-	note that the text is automatically filled, but it's possible\
-	to force a line-break, e.g.\n" \
-	"Glory to Ukraine!";
+"\033[1mprecizer\033[m is a CLI application designed to traverse directories recursively \
+and build a database of files and their checksums.\n\
+\n\
+The program is focused on the traversing of file systems of gigantic size \
+with subsequent quick comparison. Using the program it is possible to find \
+synchronization errors by comparing data with files and their checksums \
+from different sources. Or it can be used to explore historical changes \
+by comparing databases from the same sources over different times.\n" \
+"\vBASIC EXAMPLE\n\
+Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.\n" \
+"Run the program on the first machine with host name, for example “host1”:\n\
+\n\
+precizer --progress /mnt1\n\
+\n\
+As a result of the program running all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n\
+\n\
+Run the program on a second machine with a host name, for example host2:\n\
+\n\
+precizer --progress /mnt2\n\
+\n\
+As a result, the host2.db database will be created in the current directory.\n\
+\n\
+Copy the files with the host1.db and host2.db databases to one of the machines and run the program with the appropriate parameters to compare the databases:\n\
+\n\
+precizer --compare host1.db host2.db\n\
+\n\
+Note that precizer only writes relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as \"abc/def/aaa.txt\" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names \"abc/def/aaa.txt\" with the corresponding checksums.\n\
+\n\
+As a result of the program running, the following information will be displayed on the screen:\n\
+* Which files are missing on host1 but present on host2 and vice versa.\n\
+* For which files, present on both hosts, the checksums do NOT match.\n\
+\n" \
+"All other technical details could be found in README file of the project\n" \
+"Glory to Ukraine!";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "PATH";
