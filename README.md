@@ -34,7 +34,7 @@ As a result, the host2.db database will be created in the current directory.
 precizer --compare host1.db host2.db
 ```
 
-Note that **precizer** only writes relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as "abc/def/aaa.txt" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names "abc/def/aaa.txt" with the corresponding checksums.
+Note that **precizer** writes only relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as "abc/def/aaa.txt" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names "abc/def/aaa.txt" with the corresponding checksums.
 
 As a result of the program running, the following information will be displayed on the screen:
 * Which files are missing on host1 but present on host2 and vice versa.
