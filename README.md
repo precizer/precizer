@@ -205,19 +205,19 @@ Add **--verbose** option to the previous example
 ```sh
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>Configuration: paths=tests/examples/diffs/diff1; verbose=yes; silent=no; force=no; update=yes; progress=yes; compare=no  
-2024-03-09 22:34:59:730 src/init_signals.c:033:init_signals:Set signal SIGUSR2 OK:pid:461211  
-2024-03-09 22:34:59:730 src/init_signals.c:045:init_signals:Set signal SIGINT OK:pid:461211  
-2024-03-09 22:34:59:730 src/init_signals.c:057:init_signals:Set signal SIGTERM OK:pid:461211  
-2024-03-09 22:34:59:730 src/db_init.c:045:db_init:The database has been successfully initialized  
-2024-03-09 22:34:59:730 src/db_init.c:057:db_init:Opened database successfully  
-2024-03-09 22:34:59:730 src/db_already_exists.c:054:db_already_exists:The database has already been created in the past  
-2024-03-09 22:34:59:730 src/db_check_up_paths.c:144:db_check_up_paths:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost  
-2024-03-09 22:34:59:731 src/file_list.c:244:file_list:total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
-2024-03-09 22:34:59:731 src/file_list.c:244:file_list:total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
-2024-03-09 22:34:59:731 src/db_vacuum.c:021:db_vacuum:Start vacuuming...  
-2024-03-09 22:34:59:732 src/db_vacuum.c:035:db_vacuum:The database has been vacuumed  
-2024-03-09 22:34:59:732 src/status_of_changes.c:015:status_of_changes:**Nothing have been changed since the last probe (neither added nor updated or deleted files)**  
-2024-03-09 22:34:59:732 src/exit_status.c:026:exit_status:The precizer completed its execution without any issues.  
-2024-03-09 22:34:59:732 src/exit_status.c:027:exit_status:Enjoy your life!  
+<sub>2024-03-09 22:56:49:748 src/parse_arguments.c:230:parse_arguments:Configuration: paths=tests/examples/diffs/diff1; verbose=yes; silent=no; force=no; update=yes; progress=yes; compare=no  
+2024-03-09 22:56:49:748 src/init_signals.c:033:init_signals:Set signal SIGUSR2 OK:pid:462822  
+2024-03-09 22:56:49:748 src/init_signals.c:045:init_signals:Set signal SIGINT OK:pid:462822  
+2024-03-09 22:56:49:748 src/init_signals.c:057:init_signals:Set signal SIGTERM OK:pid:462822  
+2024-03-09 22:56:49:748 src/db_init.c:045:db_init:The database has been successfully initialized  
+2024-03-09 22:56:49:748 src/db_init.c:057:db_init:Opened database successfully  
+2024-03-09 22:56:49:748 src/db_already_exists.c:054:db_already_exists:The database has already been created in the past  
+2024-03-09 22:56:49:748 src/db_check_up_paths.c:144:db_check_up_paths:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost  
+2024-03-09 22:56:49:749 src/file_list.c:244:file_list:total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+2024-03-09 22:56:49:749 src/file_list.c:244:file_list:total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+2024-03-09 22:56:49:749 src/db_vacuum.c:021:db_vacuum:Start vacuuming...  
+2024-03-09 22:56:49:750 src/db_vacuum.c:035:db_vacuum:The database has been vacuumed  
+2024-03-09 22:56:49:750 src/status_of_changes.c:015:status_of_changes:**Nothing have been changed since the last probe (neither added nor updated or deleted files)**  
+2024-03-09 22:56:49:750 src/exit_status.c:026:exit_status:The precizer completed its execution without any issues.  
+2024-03-09 22:56:49:750 src/exit_status.c:027:exit_status:Enjoy your life!  
 </sub>
