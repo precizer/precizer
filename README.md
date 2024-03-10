@@ -72,7 +72,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 ## QUESTIONS AND BUG REPORTS
 
 * If you have any questions, call help information using _--help_ The help is made as detailed as possible to help users who do not have specialized technical knowledge.
-* You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [publish a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
+* You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [share a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
 * If you have questions about using the program, you can ask a question on stackoverflow using the **precizer** tag. The author is monitoring such questions and will be happy to provide his answer.
 
 ## COMPILE AND INSTALLATION
