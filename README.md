@@ -146,16 +146,45 @@ path2/AAA/BCB/CCC/a.txt
 </sub>
 
 ### Example 2
+Updating the database
+
+Let's try to use previous example once agan. The first try. The warning message.
+
+```sh
+precizer --progress --database=database1.db tests/examples/diffs/diff1
+```
+<sub>The database database1.db has been created in the past and already contains data with files and their checksums. Use the **--update** option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB. The precizer has ended unexpectedly due to an error</sub>
+
+--update option should be added
+```sh
+precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+```
+<sub>The database has already been created in the past  
+total size: 41B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+total size: 41B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+Start vacuuming...  
+The database has been vacuumed  
+**Nothing have been changed since the last probe (neither added nor updated or deleted files)**  
+The precizer completed its execution without any issues.  
+</sub>
+
+Make some changes:
+
+```sh
+echo -n " " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+```
+and run the precizer once again:
+
+```sh
+precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+```
+
+### Example 3
 Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
 
 TODO!
 
-### Example 3
-Additional information in _--verbose_ mode. May be useful for debugging.
-
-TODO!
-
 ### Example 4
-Updating the database
+Additional information in _--verbose_ mode. May be useful for debugging.
 
 TODO!
