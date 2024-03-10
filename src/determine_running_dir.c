@@ -42,6 +42,11 @@ Return determine_running_dir(void)
 		}
 	}
 
+	if(status == FAILURE)
+	{
+		return(status);
+	}
+
 	config->running_dir_size = (long int)strlen(config->running_dir) + 1;
 
 	// Reduce running_dir size to the real one

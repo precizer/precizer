@@ -3,10 +3,10 @@
 /**
  *
  * Show global change status against database
- * @arg @c config Main configuration structure
+ * @arg @c config Main global configuration structure
  *
  */
-void changes_status(void)
+void status_of_changes(void)
 {
 
 	if(config->compare != true

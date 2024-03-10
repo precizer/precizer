@@ -40,8 +40,9 @@ Return file_list
 	size_t count_files = 0, count_dirs = 0, count_symlnks = 0;
 
 	if ((file_systems = fts_open(config->paths, fts_options, NULL)) == NULL) {
-		slog(false,"fts_open error");
+		slog(false,"fts_open error\n");
 		status = FAILURE;
+		fts_close(file_systems);
 		return(status);
 	}
 
@@ -49,6 +50,7 @@ Return file_list
 	child = fts_children(file_systems, 0);
 	if (child == NULL) {
 		 /* no files to traverse */
+		fts_close(file_systems);
 		return(status);
 	}
 
@@ -77,7 +79,6 @@ Return file_list
 				if(NULL == tmp)
 				{
 					slog(false,"Realloc error\n");
-					free(runtime_path_prefix);
 					status = FAILURE;
 					break;
 				} else {
@@ -104,7 +105,8 @@ Return file_list
 				if (count_size_of_all_files == true){
 					config->total_size_in_bytes += (size_t)p->fts_statp->st_size;
 					count_files++;
-				} else {
+				} else if(runtime_path_prefix != NULL)
+				{
 					const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
 					struct stat *stat = p->fts_statp;
 					count_files++;

@@ -116,17 +116,14 @@ int main(int argc,char **argv){
 
 	if(SUCCESS == status)
 	{
-		// Print out whether there have been changes to
-		// the file system and accordingly against the database
-		// since the last research
-		changes_status();
-	}
-
-	if(SUCCESS == status)
-	{
 		// Optimizing the space occupied by a database file.
 		status = db_vacuum();
 	}
+
+	// Print out whether there have been changes to
+	// the file system and accordingly against the database
+	// since the last research
+	status_of_changes();
 
 	free_config();
 
