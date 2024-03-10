@@ -5,7 +5,9 @@ Author of the application [Dennis Razumovsky](https://github.com/dennisrazumovsk
 
 ## TL;DR
 
-precizer is a CLI application designed to traverse directories recursively and build a database of files and their checksums. The program is focused on the traversing of file systems of gigantic size with subsequent quick comparison. Using the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to explore historical changes by comparing databases from the same sources over different times.
+**precizer** is a CLI application designed to traverse directories recursively and build a database of files and their checksums.
+
+The program is focused on the traversing of file systems of gigantic size with subsequent quick comparison. Using the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to explore historical changes by comparing databases from the same sources over different times.
 
 ## BASIC EXAMPLE
 
