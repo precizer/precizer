@@ -120,10 +120,13 @@ int main(int argc,char **argv){
 		status = db_vacuum();
 	}
 
-	// Print out whether there have been changes to
-	// the file system and accordingly against the database
-	// since the last research
-	status_of_changes();
+	if(SUCCESS == status)
+	{
+		// Print out whether there have been changes to
+		// the file system and accordingly against the database
+		// since the last research
+		status_of_changes();
+	}
 
 	free_config();
 
