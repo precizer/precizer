@@ -192,9 +192,17 @@ The precizer completed its execution without any issues.
 ### Example 3
 Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
 
-TODO!
+Add **--silent** option to the previous example
+```sh
+precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
+```
+As a result, nothing will be displayed on the screen
 
 ### Example 4
 Additional information in _--verbose_ mode. May be useful for debugging.
 
-TODO!
+Add **--verbose** option to the previous example
+```sh
+precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
+```
+
