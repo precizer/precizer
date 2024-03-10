@@ -30,7 +30,7 @@ As a result, the host2.db database will be created in the current directory.
 precizer --compare host1.db host2.db
 ```
 
-Note that precizer only writes relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as "abc/def/aaa.txt" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names "abc/def/aaa.txt" with the corresponding checksums.
+Note that **precizer** only writes relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as "abc/def/aaa.txt" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names "abc/def/aaa.txt" with the corresponding checksums.
 
 As a result of the program running, the following information will be displayed on the screen:
 * Which files are missing on host1 but present on host2 and vice versa.
@@ -49,15 +49,15 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * Since rsync does not allow the state of already calculated checksums to be saved between sessions, a number of technical difficulties arise. Namely:
 * If the connection is lost, rsync ends the session and the next time you start, you need to start all over again. Taking into account the huge sizes of volumes, byte-by-byte data consistency checking turns into an impossible.
 * Over time, errors accumulate and there is a threat of getting an inconsistent copy of system A on system B, which negates all efforts and costs to maintain Disaster Recovery. At the same time, standard utilities do not have checking features and technical personnel will not even know about the accumulated problems with unequal content of disk arrays at the Disaster Recovery center.
-* To  address the above-described weaknesses, the precizer CLI applications was created. The program allows to identify which files differ between A and B in order to resynchronize and eliminate the differences. The program works as quickly as possible (almost on the verge of hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
-* The program name “precizer” comes from the word “precision” and means something that increases precision.
+* To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between A and B in order to resynchronize and eliminate the differences. The program works as quickly as possible (almost on the verge of hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
+* The program name “**precizer**” comes from the word “precision” and means something that increases precision.
 * The program traverse the contents of directories and subdirectories with high accuracy and calculates checksums for each file encountered, while storing the data in an SQLite database (a regular binary file).
-* precizer is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning next run but will continue exactly from the point which has been already saved against the database. This  saves resources and time.
+* **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning next run but will continue exactly from the point which has been already saved against the database. This  saves resources and time.
 * The work of this program can be interrupted at any time in any way, and this is safe both for the data being explored and for the database created by the program itself.
 * In the case of a deliberate or accidental interruption of the application do not worry about the results of the failure. The result of the program's work will be completely saved and reused during subsequent runs.
 * To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely  exclude errors  even when analyzing a single petabyte-sized file. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when more simpler hash functions like SHA1 or CRC32 have being using.
-* The algorithms of the precizer app are designed in such a way that it is very easy to maintain the relevance of the data contained in the created database with paths to files and their checksums without recalculating everything from scratch. It is enough to run the program with the --update parameter so that new files are added to the database, information about files erased from the disk is deleted, and for those files that have undergone modifications and their creation time or size has changed, the SHA512 checksum will be recalculated and updated in the database.
-* By comparing databases from the same sources over different times, precizer can serve as a security monitoring tool, determining the consequences of an intrusion by identifying unauthorized modified files, whose contents may have been changed but the metadata remains the same.
+* The algorithms of the **precizer** app are designed in such a way that it is very easy to maintain the relevance of the data contained in the created database with paths to files and their checksums without recalculating everything from scratch. It is enough to run the program with the --update parameter so that new files are added to the database, information about files erased from the disk is deleted, and for those files that have undergone modifications and their creation time or size has changed, the SHA512 checksum will be recalculated and updated in the database.
+* By comparing databases from the same sources over different times, **precizer** can serve as a security monitoring tool, determining the consequences of an intrusion by identifying unauthorized modified files, whose contents may have been changed but the metadata remains the same.
 * The program never changes, deletes, moves or copies any files or directories being traversed. All it does is shape lists of files and update information about them against the database. All changes occur exclusively within the boundaries of this database.
 * Program performance mainly depends on the performance of the disk subsystem. Each file is read byte by byte and such way a checksum is generated for each file using the SHA512 algorithm.
 * The program works very quick thanks to the SQLite and FTS ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)) libraries.
@@ -69,14 +69,14 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 
 * If you have any questions, call help information using --help. The help is made as detailed as possible to help users who do not have specialized technical knowledge.
 * You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [publish a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
-* If you have questions about using the program, you can ask a question on stackoverflow using the precizer tag. The author is monitoring such questions and will be happy to provide his answer.
+* If you have questions about using the program, you can ask a question on stackoverflow using the **precizer** tag. The author is monitoring such questions and will be happy to provide his answer.
 
 ## COMPILE AND INSTALLATION
 
 ### Distributives Packaging
 
 * The author was happy to prepare and will continue to support the compiled binary packages for Flatpak and AppImage.
-* The author is NOT ready to independently prepare and support in the future packaging of the precizer app for all existing OS distributions.
+* The author is NOT ready to independently prepare and support in the future packaging of the **precizer** app for all existing OS distributions.
 * If you are eager to create a package for any OS distribution and are faced with insurmountable difficulties in adapting the program code, then in this case the author will be very happy to provide all the necessary assistance in supporting the initiative and optimizing the program code for the specific distribution or package manager. How to contact the author is described in the "Questions and bug reports" section.
 
 ### Portable
@@ -110,7 +110,7 @@ cd precizer
 make
 ```
 
-4. Copy the resulting executable file precizer to any location specified in the $PATH system variable for quick access.
+4. Copy the resulting executable file **precizer** to any location specified in the $PATH system variable for quick access.
 
 ## EXAMPLES OF USING
 
