@@ -173,11 +173,22 @@ Make some changes:
 ```sh
 echo -n " " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
 ```
-and run the precizer once again:
+and run the **precizer** once again:
 
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
+<sub>
+The database has already been created in the past  
+total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+The **--update** option has been used, so the information about files will be updated against the database database1.db  
+**These files have been added or changed and those changes will be reflected against the DB database1.db:**  
+1/AAA/BCB/CCC/a.txt changed size & ctime & mtime  
+total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+Start vacuuming...  
+The database has been vacuumed  
+The precizer completed its execution without any issues.  
+</sub>
 
 ### Example 3
 Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
