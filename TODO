@@ -18,9 +18,9 @@ TODO
 	How should I use Sqlite "PRAGMA integrity_check" in C
 	https://stackoverflow.com/questions/22172186/how-should-i-use-sqlite-pragma-integrity-check-in-c
 
-* --ignore=PATH(or PCRE regexp) and --include=PATH(or PCRE regexp) (Consider the PATH even it is a subfolder of a file under --ignore directory)
-* --maxdepth option (look at fts_level https://man7.org/linux/man-pages/man3/fts.3.html)
-* --no-recursive option
+* --ignore=PATH(PCRE regexp) and --include=PATH(PCRE regexp)
+	Consider the PATH even it is a subfolder of a file under --ignore directory
+
 * Сalculate remaining download time
 	https://stackoverflow.com/questions/798800/whats-the-best-way-to-calculate-remaining-download-time
 	https://stackoverflow.com/questions/933242/smart-progress-bar-eta-computation
