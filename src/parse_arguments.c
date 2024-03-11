@@ -53,6 +53,12 @@ static char args_doc[] = "PATH";
 /* The options we understand. */
 static struct argp_option options[] = {
 	{ 0, 0, 0, 0, "Build database options:", 2},
+	{"maxdepth", 'm', "NUMBER", 0, "Recursion depth limit. " \
+	                        "The depth of the traversal, numbered from 0 to N, " \
+	                        "where a file could be found. Representing the maximum " \
+	                        "of the starting point (from root) of the traversal. " \
+	                        "The root itself is numbered 0\n" \
+	                        "\033[1m--maxdepth=0\033[0m completely disable recursion", 0 },
 	{"force",    'f', 0, 0, "Use this option only in case when the PATHs that were written into " \
 	                        "the database as a result of the last scaning really need to be " \
 	                        "renewed. Warning! If this option will be used in incorrect way, " \
@@ -88,12 +94,13 @@ struct arguments
 	char **paths;                 /* [path…] */
 	char **filenames;             /* part of path */
 	char *db_file_name;           /* ‘-d’ */
-	int silent;                   /* ‘-s’ */
-	int verbose;                  /* ‘-v’ */
-	int update;                   /* ‘-u’ */
-	int force;                    /* ‘-f’ */
-	int progress;                 /* '-p' */
-	int compare;                  /* '-c' */
+	bool silent;                  /* ‘-s’ */
+	bool verbose;                 /* ‘-v’ */
+	bool update;                  /* ‘-u’ */
+	bool force;                   /* ‘-f’ */
+	bool progress;                /* '-p' */
+	bool compare;                 /* '-c' */
+	short maxdepth;               /* '-m' */
 };
 
 /* Parse a single option. */
@@ -107,6 +114,8 @@ static error_t parse_opt
 	/* Get the input argument from argp_parse, which we
 	know is a pointer to our arguments structure. */
 	struct arguments *arguments = state->input;
+	char *ptr = NULL;
+	long int argument_value = -1;
 
 	switch (key)
 	{
@@ -114,13 +123,24 @@ static error_t parse_opt
 			arguments->db_file_name = (char *)calloc(strlen(arg) + 1,sizeof(char));
 			if(arguments->db_file_name == NULL)
 			{
-				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
+				argp_failure(state, 1, 0, "ERROR: Memory allocation did not complete successfully!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
 			strcpy(arguments->db_file_name,arg);
 			break;
 		case 'c':
 			arguments->compare = true;
+			break;
+		case 'm':
+			argument_value = strtol(arg, &ptr, 10);
+			// Check up if lont int could be casted to short int
+			// and the argument contains a digit only
+			if(argument_value >= 0 && argument_value <= 32767 && *ptr == '\0')
+			{
+				arguments->maxdepth = (short int)argument_value;
+			} else {
+				argp_failure(state, 1, 0, "ERROR: Wrong --maxdepth (-m) value. Should be an integer from 0 to 32767. See --help for more information");
+			}
 			break;
 		case 'p':
 			arguments->progress = true;
@@ -131,7 +151,7 @@ static error_t parse_opt
 		case 'f':
 			arguments->force = true;
 			break;
-		case 'q': case 's':
+		case 's':
 			arguments->silent = true;
 			break;
 		case 'v':
@@ -150,18 +170,15 @@ static error_t parse_opt
 			{
 				if(state->arg_num < 2)
 				{
-					argp_failure(state, 1, 0, "Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
-					exit(ARGP_ERR_UNKNOWN);
+					argp_failure(state, 1, 0, "ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
 				} else if (state->arg_num > 2)
 				{
-					argp_failure(state, 1, 0, "Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
-					exit(ARGP_ERR_UNKNOWN);
+					argp_failure(state, 1, 0, "ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
 				}
 			} else {
 				if(state->arg_num > 1)
 				{
-					argp_failure(state, 1, 0, "Too many arguments\nOnly one PATH argument can be used for traversing file hierarchy. See --help for more information");
-					exit(ARGP_ERR_UNKNOWN);
+					argp_failure(state, 1, 0, "ERROR: Too many arguments\nOnly one PATH argument can be used for traversing file hierarchy. See --help for more information");
 				}
 			}
 			break;
@@ -188,6 +205,9 @@ Return parse_arguments
 
 	/* Default values to 0. */
 	memset(&arguments,0,sizeof(struct arguments));
+
+	// Default values except zeroes
+	arguments.maxdepth = -1;
 
 	/* Parse our arguments; every option seen by parse_opt will be
 	reflected in arguments. */
@@ -220,6 +240,7 @@ Return parse_arguments
 	config->compare = arguments.compare;
 	config->update = arguments.update;
 	config->silent = arguments.silent;
+	config->maxdepth = arguments.maxdepth;
 	if(arguments.db_file_name != NULL){
 		config->db_file_name = arguments.db_file_name;
 	}

@@ -62,6 +62,12 @@ Return file_list
 	char *runtime_path_prefix = NULL;
 	FTSENT *current_file_system = child;
 
+	// Limit recursion to the depth determined in config->maxdepth
+	if(config->maxdepth > -1)
+	{
+		slog(false,"Recursion depth limited to: %d\n", config->maxdepth);
+	}
+
 	while((p = fts_read(file_systems)) != NULL)
 	{
 		/* Interrupt the loop smoothly */
@@ -102,6 +108,12 @@ Return file_list
 			break;
 		case FTS_F:
 			{
+				// Limit recursion to the depth determined in config->maxdepth
+				if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
+				{
+					break;
+				}
+
 				if (count_size_of_all_files == true){
 					config->total_size_in_bytes += (size_t)p->fts_statp->st_size;
 					count_files++;

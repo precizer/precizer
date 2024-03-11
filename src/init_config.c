@@ -61,4 +61,10 @@ void init_config(void)
 
 	//// Don't produce any output
 	config->silent = false;
+
+	/// The depth of the traversal, numbered from 0 to N,
+	/// where a file could be found. Representing the maximum
+	/// of the starting point (from root) of the traversal.
+	/// The root itself is numbered 0
+	config->maxdepth = -1;
 }

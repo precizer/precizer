@@ -221,3 +221,32 @@ precizer --verbose --update --progress --database=database1.db tests/examples/di
 2024-03-09 22:56:49:750 src/exit_status.c:026:exit_status:The precizer completed its execution without any issues.  
 2024-03-09 22:56:49:750 src/exit_status.c:027:exit_status:Enjoy your life!  
 </sub>
+
+### Example 5
+Disable recursion
+
+```sh
+tree tests/examples/4
+tests/examples/4
+├── AAA
+│   ├── BBB
+│   │   ├── CCC
+│   │   │   └── a.txt
+│   │   └── uuu.txt
+│   └── tttt.txt
+└── sss.txt
+
+3 directories, 4 files
+```
+
+```sh
+precizer --update --maxdepth=0 tests/examples/4
+```
+<sub>Database file name: ljlasdhf.db
+Recursion depth limited to: 0
+**These files will be added against the DB ljlasdhf.db:**
+sss.txt
+Start vacuuming...
+The database has been vacuumed
+The precizer completed its execution without any issues.
+</sub>

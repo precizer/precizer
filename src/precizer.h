@@ -141,6 +141,9 @@ typedef struct {
 	/// Don't produce any output
 	bool silent;
 
+	/// Recursion depth limit
+	short maxdepth;
+
 } Config;
 
 /*
