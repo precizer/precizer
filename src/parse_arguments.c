@@ -12,14 +12,9 @@ const char *argp_program_version = "precizer 1.0";
 
 /* Program documentation. */
 static char doc[] =
-"\033[1mprecizer\033[m is a CLI application designed to traverse directories recursively \
-and build a database of files and their checksums.\n\
+"\033[1mprecizer\033[m is a CLI application designed to check the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.\n\
 \n\
-The program is focused on the traversing of file systems of gigantic size \
-with subsequent quick comparison. Using the program it is possible to find \
-synchronization errors by comparing data with files and their checksums \
-from different sources. Or it can be used to explore historical changes \
-by comparing databases from the same sources over different times.\n" \
+\033[1mprecizer\033[m is focused on work with gigantic file systems. With the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.\n" \
 "\vBASIC EXAMPLE\n\
 Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.\n" \
 "Run the program on the first machine with host name, for example “host1”:\n\
