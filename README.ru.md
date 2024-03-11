@@ -224,7 +224,7 @@ precizer --verbose --update --progress --database=database1.db tests/examples/di
 </sub>
 
 ### Пример 5
-Исследование без рекурсии
+Исследование без рекурсии с помощью параметра _--maxdepth_
 
 ```sh
 tree tests/examples/4
@@ -241,7 +241,7 @@ tests/examples/4
 ```
 
 ```sh
-precizer --update --maxdepth=0 tests/examples/4
+precizer --maxdepth=0 tests/examples/4
 ```
 <sub>Database file name: ljlasdhf.db  
 Recursion depth limited to: 0  
