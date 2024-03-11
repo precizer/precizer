@@ -242,11 +242,11 @@ tests/examples/4
 ```sh
 precizer --update --maxdepth=0 tests/examples/4
 ```
-<sub>Database file name: ljlasdhf.db
-Recursion depth limited to: 0
-**These files will be added against the DB ljlasdhf.db:**
-sss.txt
-Start vacuuming...
-The database has been vacuumed
-The precizer completed its execution without any issues.
+<sub>Database file name: ljlasdhf.db  
+Recursion depth limited to: 0  
+**These files will be added against the DB ljlasdhf.db:**  
+sss.txt  
+Start vacuuming...  
+The database has been vacuumed  
+The precizer completed its execution without any issues.  
 </sub>
