@@ -9,11 +9,11 @@ Author of the application [Dennis Razumovsky](https://github.com/dennisrazumovsk
 
 ## TL;DR
 
-**precizer** is a CLI application designed to check the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.
+**precizer** is a CLI application designed to check up the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.
 
 **precizer** is focused on work with gigantic file systems. With the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.
 
-## BASIC EXAMPLE
+## SIMPLE EXAMPLE
 
 Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.
 
