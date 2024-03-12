@@ -62,6 +62,15 @@ Return file_list
 	char *runtime_path_prefix = NULL;
 	FTSENT *current_file_system = child;
 
+#if 0 // Old multiPATH solution
+	/**
+	 * Index of the path prefix
+	 * All full runtime paths are stored in the table "paths".
+	 * A real path can be retrieved due to its index ID
+	 */
+	sqlite3_int64 path_prefix_index = -1;
+#endif
+
 	// Limit recursion to the depth determined in config->maxdepth
 	if(config->maxdepth > -1)
 	{
@@ -99,6 +108,16 @@ Return file_list
 
 				// The next
 				current_file_system = current_file_system->fts_link;
+
+#if 0 // Old multiPATH solution
+				// If several paths were passed as arguments,
+				// then the counting of the path prefix index
+				// will start from zero
+				if(SUCCESS != (status = db_get_path_prefix_index(config,runtime_path_prefix,&path_prefix_index)))
+				{
+					break;
+				}
+#endif
 			}
 		}
 
@@ -128,6 +147,9 @@ Return file_list
 					DBrow *dbrow = &_dbrow;
 					
 					/* Get all file's metadata from the database */
+#if 0 // Old multiPATH solution
+					if(SUCCESS != (status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path)))
+#endif
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,relative_path)))
 					{
 						break;
@@ -219,6 +241,9 @@ Return file_list
 						}
 					} else {
 						/* Insert to DB */
+#if 0 // Old multiPATH solution
+						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,stat,&mdContext)))
+#endif
 						if(SUCCESS != (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
 						{
 							break;

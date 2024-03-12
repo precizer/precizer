@@ -2,7 +2,9 @@
 
 /**
  *
- * Compare two databases
+ * @brief Compare two databases
+ * @details The paths to both databases were passed as arguments
+ * and stored in the Config structure
  *
  */
 Return db_compare(void)
@@ -17,12 +19,17 @@ Return db_compare(void)
 
 	slog(false,"Comparison of databases %s and %s is starting...\n",config->filenames[0],config->filenames[1]);
 
-	// Check up the integrity of database files
+	/*
+	 * Check up the integrity of database files
+	 */
+
+	// First database
 	if(SUCCESS != (status = db_test(config->filenames[0])))
 	{
 		return(status);
 	}
 
+	// Second database
 	if(SUCCESS != (status = db_test(config->filenames[1])))
 	{
 		return(status);
@@ -177,10 +184,13 @@ Return db_compare(void)
 	}
 	sqlite3_finalize(select_stmt);
 
-#if 0 // Old solutions
-#if 0
-	const char *compare_checksums = "select a.relative_path from db2.files a inner join db1.files b on b.relative_path = a.relative_path and b.sha512 != a.sha512 order by a.relative_path asc;";
+#if 0 // Old multiPATH solutions
+	const char *compare_checksums = "select a.relative_path from db2.files a inner join db1.files b" \
+	                                " on b.relative_path = a.relative_path " \
+	                                " and b.sha512 != a.sha512" \
+	                                " order by a.relative_path asc;";
 #endif
+#if 0
 	const char *compare_checksums = "SELECT p.path,f1.relative_path " \
 	                                "FROM db1.files AS f1 " \
 	                                "JOIN db1.paths AS p ON f1.path_prefix_index = p.ID " \
@@ -189,6 +199,7 @@ Return db_compare(void)
 	                                "WHERE f1.sha512 <> f2.sha512 AND p.path = p2.path " \
 	                                "ORDER BY p.path,f1.relative_path ASC;";
 #endif
+	// One PATH solution
 	const char *compare_checksums = "SELECT a.relative_path " \
 	                                "FROM db2.files AS a " \
 	                                "INNER JOIN db1.files b on b.relative_path = a.relative_path and b.sha512 != a.sha512 " \

@@ -2,9 +2,12 @@
 
 /**
  *
- * This function helps calculate a relative path
+ * @brief This function helps calculate a relative path
  * from the data provided by the FTSENT structure
- * TODO! Explain what exactly this function does
+ * @details This function searches from left to right for the first
+ * occurrence of the directory character '/' in the string passed
+ * as an argument (that is the path) and returns the number of bytes
+ * from the beginning of the string to that character.
  *
 */
 size_t correction

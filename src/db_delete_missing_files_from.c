@@ -22,6 +22,9 @@ Return db_delete_missing_files_from(void)
 	sqlite3_stmt *select_stmt = NULL;
 	int rc = 0;
 
+#if 0 // Old multiPATH solutions
+	const char *select_sql = "SELECT files.ID,paths.prefix,files.relative_path FROM files LEFT JOIN paths ON files.path_prefix_index = paths.ID;";
+#endif
 	const char *select_sql = "SELECT files.ID,paths.prefix,files.relative_path FROM files,paths;";
 
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);

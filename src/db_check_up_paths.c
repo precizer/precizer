@@ -198,5 +198,6 @@ Return db_check_up_paths(void)
 			status = WARNING;
 		}
 	}
+
 	return(status);
 }

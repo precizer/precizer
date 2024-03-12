@@ -1,0 +1,50 @@
+#include "precizer.h"
+
+Return db_get_path_prefix_index
+(
+	const char *runtime_path_prefix,
+	sqlite3_int64 *path_prefix_index
+){
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	*path_prefix_index = -1;
+
+	/* Read from SQL */
+	sqlite3_stmt *select_stmt = NULL;
+	int rc;
+
+	/* Create SQL statement */
+	const char *select_sql = "SELECT ID FROM paths WHERE path = ?1;";
+	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
+	if(SQLITE_OK != rc) {
+		fprintf(stderr, "Can't prepare select statment %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
+		status = FAILURE;
+	}
+
+	/* Prepare to read */
+	rc = sqlite3_bind_text(select_stmt, 1, runtime_path_prefix, (int)strlen(runtime_path_prefix), NULL);
+	if(SQLITE_OK != rc) {
+		printf("Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		status = FAILURE;
+	}
+
+	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
+	{
+		*path_prefix_index = sqlite3_column_int64(select_stmt,0);
+	}
+	if(SQLITE_DONE != rc) {
+		fprintf(stderr, "Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		status = FAILURE;
+	}
+	sqlite3_finalize(select_stmt);
+
+	// Final check. It is impossible for a SELECT query
+	// to return no records. This clearly indicates a serious failure.
+	if(*path_prefix_index == -1){
+		status = FAILURE;
+	}
+
+	return(status);
+}
