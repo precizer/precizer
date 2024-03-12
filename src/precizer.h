@@ -222,6 +222,10 @@ Return db_check_up_paths(void);
 
 Return db_already_exists(void);
 
+Return db_test(
+	const char*
+);
+
 int compare_file_metadata_equivalence(
 	const struct stat*,
 	const struct stat*

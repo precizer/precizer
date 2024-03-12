@@ -17,6 +17,17 @@ Return db_compare(void)
 
 	slog(false,"Comparison of databases %s and %s is starting...\n",config->filenames[0],config->filenames[1]);
 
+	// Check up the integrity of database files
+	if(SUCCESS != (status = db_test(config->filenames[0])))
+	{
+		return(status);
+	}
+
+	if(SUCCESS != (status = db_test(config->filenames[1])))
+	{
+		return(status);
+	}
+
 	bool the_databases_are_equal = true;
 
 	sqlite3_stmt *select_stmt = NULL;
@@ -52,7 +63,7 @@ Return db_compare(void)
 	const char *attach_sql_2b = "' as db2;";
 	char *select_sql_2 = (char *)calloc(strlen(attach_sql_2a) +
 	                                  strlen(attach_sql_2b) +
-	                                  strlen(config->databases_to_compare[0]) + 1,
+	                                  strlen(config->databases_to_compare[1]) + 1,
 	                                  sizeof(char));
 	if(select_sql_2 == NULL)
 	{

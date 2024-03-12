@@ -42,9 +42,14 @@ Return db_file_name(void)
 			} else {
 				strcpy(config->db_file_name,utsname.nodename);
 				strcat(config->db_file_name,".db");
-				slog(false,"Database file name: %s\n",config->db_file_name);
 			}
 		}
+	}
+
+	// If the database file name has been determined and the database has not in-memory type
+	if(config->db_file_name != NULL && (strcmp(config->db_file_name,":memory:") != 0))
+	{
+		slog(false,"Database file name: %s\n",config->db_file_name);
 	}
 
 	return(status);
