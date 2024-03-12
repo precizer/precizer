@@ -26,20 +26,20 @@ Return db_test
 	// Default value
 	bool database_is_ok = false;
 
-	slog(true,"Starting of database file %s integrity check...\n",db_file_path);
+	slog(false,"Starting of database file %s integrity check...\n",db_file_path);
 
 	/* Open database */
 	if(sqlite3_open(db_file_path, &db))
 	{
-		slog(false,"Can't open database: %s\n", sqlite3_errmsg(config->db));
+		slog(false,"Can't open database: %s\n", sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 
 	const char *sql = "PRAGMA integrity_check";
 
-	rc = sqlite3_prepare_v2(config->db, sql, -1, &select_stmt, NULL);
+	rc = sqlite3_prepare_v2(db, sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 
@@ -52,16 +52,16 @@ Return db_test
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);
 
 	if(database_is_ok == true)
 	{
-		slog(true,"The database %s is in good condition\n",db_file_path);
+		slog(false,"The database %s is in good condition\n",db_file_path);
 	} else {
-		slog(false,"ERROR! The database %s is in poor condition!\n",db_file_path);
+		slog(false,"ERROR! The database %s is in poor condition\n",db_file_path);
 		status = FAILURE;
 	}
 
