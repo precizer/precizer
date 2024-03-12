@@ -82,6 +82,12 @@ int main(int argc,char **argv){
 
 	if(SUCCESS == status)
 	{
+		// Check up the integrity of database file
+		status = db_test(config->db_file_name);
+	}
+
+	if(SUCCESS == status)
+	{
 		// Check up if the paths that passed as arguments
 		// exactly the same as saved against the database
 		status = db_check_up_paths();
