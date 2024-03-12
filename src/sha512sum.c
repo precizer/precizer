@@ -70,7 +70,7 @@ Return sha512sum
 
 #if 0
 	for(size_t i = 0; i < SHA512_DIGEST_LENGTH; i++) {
-		slog(false,"%02x", sha512[i]);
+		printf("%02x", sha512[i]);
 	}
 	putchar('\n');
 #endif

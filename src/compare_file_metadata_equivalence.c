@@ -2,7 +2,7 @@
 
 /**
  * The function check up if size, creation and modification time of a file did
- * not change since last scanning.
+ * not change since last crawling.
  * It takes data from FTS library traversing of the file and compare with the
  * structure "stat" stored against SQLite after previous probe
  */

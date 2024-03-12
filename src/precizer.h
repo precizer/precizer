@@ -226,6 +226,14 @@ Return db_test(
 	const char*
 );
 
+#if 0 // Old multiPATH solution
+Return db_get_path_prefix_index
+(
+	const char*,
+	sqlite3_int64*
+);
+#endif
+
 int compare_file_metadata_equivalence(
 	const struct stat*,
 	const struct stat*

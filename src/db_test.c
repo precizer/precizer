@@ -61,7 +61,7 @@ Return db_test
 	{
 		slog(false,"The database %s is in good condition\n",db_file_path);
 	} else {
-		slog(false,"ERROR! The database %s is in poor condition\n",db_file_path);
+		slog(false,"ERROR: The database %s is in poor condition!\n",db_file_path);
 		status = FAILURE;
 	}
 

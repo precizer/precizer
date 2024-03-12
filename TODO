@@ -14,10 +14,6 @@ TODO
 	apt source code
 		https://salsa.debian.org/apt-team/apt
 
-* Add DB checks before any changes
-	How should I use Sqlite "PRAGMA integrity_check" in C
-	https://stackoverflow.com/questions/22172186/how-should-i-use-sqlite-pragma-integrity-check-in-c
-
 * --ignore=PATH(PCRE regexp) and --include=PATH(PCRE regexp)
 	Consider the PATH even it is a subfolder of a file under --ignore directory
 

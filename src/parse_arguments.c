@@ -124,7 +124,7 @@ static error_t parse_opt
 			strcpy(arguments->db_file_name,arg);
 			break;
 		case 'c':
-			arguments->compare = true;
+			config->compare = true;
 			break;
 		case 'm':
 			argument_value = strtol(arg, &ptr, 10);
@@ -132,25 +132,25 @@ static error_t parse_opt
 			// and the argument contains a digit only
 			if(argument_value >= 0 && argument_value <= 32767 && *ptr == '\0')
 			{
-				arguments->maxdepth = (short int)argument_value;
+				config->maxdepth = (short int)argument_value;
 			} else {
 				argp_failure(state, 1, 0, "ERROR: Wrong --maxdepth (-m) value. Should be an integer from 0 to 32767. See --help for more information");
 			}
 			break;
 		case 'p':
-			arguments->progress = true;
+			config->progress = true;
 			break;
 		case 'u':
-			arguments->update = true;
+			config->update = true;
 			break;
 		case 'f':
-			arguments->force = true;
+			config->force = true;
 			break;
 		case 's':
-			arguments->silent = true;
+			config->silent = true;
 			break;
 		case 'v':
-			arguments->verbose = true;
+			config->verbose = true;
 			break;
 		case ARGP_KEY_NO_ARGS:
 			argp_usage(state);
@@ -229,13 +229,7 @@ Return parse_arguments
 	}
 
 	config->filenames = arguments.filenames;
-	config->progress = arguments.progress;
-	config->force = arguments.force;
-	config->verbose = arguments.verbose;
-	config->compare = arguments.compare;
-	config->update = arguments.update;
-	config->silent = arguments.silent;
-	config->maxdepth = arguments.maxdepth;
+
 	if(arguments.db_file_name != NULL){
 		config->db_file_name = arguments.db_file_name;
 	}
@@ -251,12 +245,12 @@ Return parse_arguments
 		}
 		printf("; ");
 		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s",
-		arguments.verbose ? "yes" : "no",
-		arguments.silent ? "yes" : "no",
-		arguments.force ? "yes" : "no",
-		arguments.update ? "yes" : "no",
-		arguments.progress ? "yes" : "no",
-		arguments.compare ? "yes" : "no");
+		config->verbose ? "yes" : "no",
+		config->silent ? "yes" : "no",
+		config->force ? "yes" : "no",
+		config->update ? "yes" : "no",
+		config->progress ? "yes" : "no",
+		config->compare ? "yes" : "no");
 		printf("\n");
 	}
 

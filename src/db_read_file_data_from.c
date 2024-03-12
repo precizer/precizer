@@ -3,6 +3,9 @@
 Return db_read_file_data_from
 (
 	DBrow *dbrow,
+#if 0 // Old multiPATH solution
+	const sqlite3_int64 *path_prefix_index,
+#endif
 	const char *relative_path
 ){
 	/// The status that will be passed to return() before exiting.
@@ -17,6 +20,9 @@ Return db_read_file_data_from
 	int rc;
 
 	/* Create SQL statement */
+#if 0 // Old multiPATH solution
+	const char *select_sql = "SELECT ID,offset,stat,mdContext FROM files WHERE path_prefix_index = ?1 and relative_path = ?2;";
+#endif
 	const char *select_sql = "SELECT ID,offset,stat,mdContext FROM files WHERE relative_path = ?1;";
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
@@ -24,6 +30,13 @@ Return db_read_file_data_from
 		status = FAILURE;
 	}
 
+#if 0 // Old multiPATH solution
+	rc = sqlite3_bind_int64(select_stmt, 1, *path_prefix_index);
+	if(SQLITE_OK != rc) {
+		printf("Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		status = FAILURE;
+	}
+#endif
 	rc = sqlite3_bind_text(select_stmt, 1, relative_path, (int)strlen(relative_path), NULL);
 	if(SQLITE_OK != rc) {
 		slog(false,"Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
