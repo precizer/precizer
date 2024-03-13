@@ -210,7 +210,7 @@ Return parse_arguments
 
 	config->paths = arguments.paths;
 
-	if (arguments.compare == true)
+	if(arguments.compare == true)
 	{
 		// The array with database names
 		config->databases_to_compare = arguments.paths;

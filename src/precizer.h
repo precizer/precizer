@@ -256,6 +256,10 @@ void show_relative_path
 
 void status_of_changes(void);
 
+Return detect_a_path(const char*);
+
+Return detect_paths(void);
+
 int exit_status(
 	Return,
 	char**

@@ -46,6 +46,13 @@ int main(int argc,char **argv){
 
 	if(SUCCESS == status)
 	{
+		// Check all paths passed as arguments.
+		// Are they directories and do they exist?
+		status = detect_paths();
+	}
+
+	if(SUCCESS == status)
+	{
 		// Initialize signals interseption like Ctrl+C
 		status = init_signals();
 	}
