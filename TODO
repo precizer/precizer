@@ -1,8 +1,7 @@
 TODO
 
-* test database by path to the DB file before open or compare
-
-* Progress bar with escape
+* Progress bar with escape sequences
+	"ansi escape sequences progress in c"
 	Escape Sequences - A Quick Guide
 		https://morningcoffee.io/escape-sequences-a-quick-guide.html
 	ANSI Escape Sequences
@@ -14,20 +13,28 @@ TODO
 	apt source code
 		https://salsa.debian.org/apt-team/apt
 
-* --ignore=PATH(PCRE regexp) and --include=PATH(PCRE regexp)
-	Consider the PATH even it is a subfolder of a file under --ignore directory
+* --ignore=PATH(or PCRE regexp) and --include=PATH(or PCRE regexp) (Consider the PATH even it is a subfolder of a file under --ignore directory)
 
 * Сalculate remaining download time
 	https://stackoverflow.com/questions/798800/whats-the-best-way-to-calculate-remaining-download-time
 	https://stackoverflow.com/questions/933242/smart-progress-bar-eta-computation
 	* Progress bar ncurses based
 		add building file list progress
+
 * void sqlite3_interrupt(sqlite3*) and int sqlite3_is_interrupted(sqlite3*); for a long vacuuming command.
+
 * SQLite performance tuning
 	https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
-* completions
+
+* Shell completions
 	Great examples:
 		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.bash
 		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.zsh
+
 * Default file name of the database date_startpath_hostname.db
+
+* How to make installation package for many Linux distributions
+	"how to create a package for many distros"
+		https://unix.stackexchange.com/questions/136387/how-to-make-installation-package-for-many-linux-distributions
+
 * ALL DONE

@@ -37,7 +37,7 @@ Return determine_running_dir(void)
 		ptr = getcwd(config->running_dir,(size_t)config->running_dir_size);
 		if (ptr == NULL && errno != ERANGE)
 		{
-			slog(false,"ERANGE error\n");
+			slog(false,"ERROR in ERANGE\n");
 			status = FAILURE;
 		}
 	}
