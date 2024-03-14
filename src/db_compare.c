@@ -20,6 +20,22 @@ Return db_compare(void)
 	slog(false,"Comparison of databases %s and %s is starting...\n",config->filenames[0],config->filenames[1]);
 
 	/*
+	 * Check up the path availability
+	 */
+
+	// First database
+	if(SUCCESS != (status = detect_a_path(config->filenames[0])))
+	{
+		return(status);
+	}
+
+	// Second database
+	if(SUCCESS != (status = detect_a_path(config->filenames[1])))
+	{
+		return(status);
+	}
+
+	/*
 	 * Check up the integrity of database files
 	 */
 
