@@ -80,22 +80,13 @@ static struct argp_option options[] = {
 	                        "to predict execution time. It is strongly recommended not to specify this option " \
 	                        "if the program is called from a script. This will reduce execution time " \
 	                        "(sometimes significantly) and reduce screen output.", 0 },
-	{ 0 }
+	{0}
 };
 
 /* Used to communicate with parse_opt. */
 struct arguments
 {
-	char **paths;                 /* [path…] */
-	char **filenames;             /* part of path */
-	char *db_file_name;           /* ‘-d’ */
-	bool silent;                  /* ‘-s’ */
-	bool verbose;                 /* ‘-v’ */
-	bool update;                  /* ‘-u’ */
-	bool force;                   /* ‘-f’ */
-	bool progress;                /* '-p' */
-	bool compare;                 /* '-c' */
-	short maxdepth;               /* '-m' */
+	char **filenames;    /* part of path */
 };
 
 /* Parse a single option. */
@@ -115,13 +106,13 @@ static error_t parse_opt
 	switch (key)
 	{
 		case 'd':
-			arguments->db_file_name = (char *)calloc(strlen(arg) + 1,sizeof(char));
-			if(arguments->db_file_name == NULL)
+			config->db_file_name = (char *)calloc(strlen(arg) + 1,sizeof(char));
+			if(config->db_file_name == NULL)
 			{
 				argp_failure(state, 1, 0, "ERROR: Memory allocation did not complete successfully!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
-			strcpy(arguments->db_file_name,arg);
+			strcpy(config->db_file_name,arg);
 			break;
 		case 'c':
 			config->compare = true;
@@ -156,12 +147,12 @@ static error_t parse_opt
 			argp_usage(state);
 			break;
 		case ARGP_KEY_ARG:
-			arguments->paths = &state->argv[state->next - 1];
-			arguments->filenames = arguments->paths;
+			config->paths = &state->argv[state->next - 1];
+			arguments->filenames = config->paths;
 			state->next = state->argc;
 			break;
 		case ARGP_KEY_END:
-			if(arguments->compare == true)
+			if(config->compare == true)
 			{
 				if(state->arg_num < 2)
 				{
@@ -201,47 +192,38 @@ Return parse_arguments
 	/* Default values to 0. */
 	memset(&arguments,0,sizeof(struct arguments));
 
-	// Default values except zeroes
-	arguments.maxdepth = -1;
-
 	/* Parse our arguments; every option seen by parse_opt will be
 	reflected in arguments. */
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
-	config->paths = arguments.paths;
-
-	if(arguments.compare == true)
+	if(config->compare == true)
 	{
 		// The array with database names
-		config->databases_to_compare = arguments.paths;
-		for (int j = 0; arguments.paths[j]; j++)
+		config->databases_to_compare = config->paths;
+		for (int j = 0; config->paths[j]; j++)
 		{
 			// Extract file name from a path
 			arguments.filenames[j] = basename(config->databases_to_compare[j]);
 		}
 
 	} else {
-		for (int j = 0; arguments.paths[j]; j++)
+		for (int j = 0; config->paths[j]; j++)
 		{
 			// Remove unnecessary trailing slash at the end of the directory path
-			remove_trailing_slash(arguments.paths[j]);
+			remove_trailing_slash(config->paths[j]);
 		}
 	}
 
 	config->filenames = arguments.filenames;
 
-	if(arguments.db_file_name != NULL){
-		config->db_file_name = arguments.db_file_name;
-	}
-
-	if(arguments.verbose == true
-		&& arguments.silent == false)
+	if(config->verbose == true
+		&& config->silent == false)
 	{
 		slog(false,"Configuration: ");
 		printf("paths=");
-		for (int j = 0; arguments.paths[j]; j++)
+		for (int j = 0; config->paths[j]; j++)
 		{
-			printf(j == 0 ? "%s" : ", %s", arguments.paths[j]);
+			printf(j == 0 ? "%s" : ", %s", config->paths[j]);
 		}
 		printf("; ");
 		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s",
