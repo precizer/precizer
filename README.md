@@ -348,7 +348,7 @@ The database has been vacuumed
 
 Continuation of previous example number 6.
 
-Multiple regular expressions for ignore could be specifyed using --ignore many times at once:
+Multiple regular expressions for ignore could be specifyed using _--ignore_ many times at once:
 
 ```sh
 precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
