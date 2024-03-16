@@ -70,9 +70,9 @@ static struct argp_option options[] = {
 	                                     "tests/examples/diffs\033[0m\n", 0 },
 	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
 	                                     "The option \033[1m--db-clean-ignored\033[0m must be specifyed additionally " \
-	                                     "in order to remove mention of files from the database that " \
+	                                     "in order to remove from the database mention of files that " \
 	                                     "matches the regular expression passed through the " \
-	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option", 0},
+	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option(s)", 0},
 	{"maxdepth", 'm', "NUMBER", 0, "Recursion depth limit. " \
 	                        "The depth of the traversal, numbered from 0 to N, " \
 	                        "where a file could be found. Representing the maximum " \
