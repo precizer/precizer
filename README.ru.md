@@ -380,7 +380,7 @@ precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 
 Продолжение предыдущего примера [Пример 6](#пример-6).
 
-_--db-clean-ignored_ option must be specifyed additionally in order to remove from the database mention of files that matches the regular expression passed through the ignore option(s)
+_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the ignore option(s)
 
 ```sh
 precizer --update --db-clean-ignored --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
