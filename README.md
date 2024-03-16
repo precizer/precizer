@@ -259,9 +259,9 @@ tests/examples/4
 ```sh
 precizer --maxdepth=0 tests/examples/4
 ```
-<sub>Database file name: ljlasdhf.db  
+<sub>Database file name: myhost.db  
 Recursion depth limited to: 0  
-**These files will be added against the DB ljlasdhf.db:**  
+**These files will be added against the DB myhost.db:**  
 sss.txt  
 Start vacuuming...  
 The database has been vacuumed  
@@ -312,10 +312,10 @@ precizer --ignore="diff2/1/*" tests/examples/diffs
 
 In this example the starting path for the traverses is ./tests/examples/diffs and the path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
 
-<sub>Database file name: ljlasdhf.db  
-Starting of database file ljlasdhf.db integrity check...  
-The database ljlasdhf.db is in good condition  
-**These files will be added against the DB ljlasdhf.db:**  
+<sub>Database file name: myhost.db  
+Starting of database file myhost.db integrity check...  
+The database myhost.db is in good condition  
+**These files will be added against the DB myhost.db:**  
 diff1/3/AAA/BBB/CCC/a.txt  
 diff1/path2/AAA/BCB/CCC/a.txt  
 diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
@@ -349,12 +349,12 @@ Let's repeat the same example but without _--ignore_ option to add three previou
 precizer --update tests/examples/diffs
 ```
 
-<sub>Database file name: ljlasdhf.db  
+<sub>Database file name: myhost.db  
 The database has already been created in the past  
-Starting of database file ljlasdhf.db integrity check...  
-The database ljlasdhf.db is in good condition  
-The **--update** option has been used, so the information about files will be updated against the database ljlasdhf.db  
-**These files have been added or changed and those changes will be reflected against the DB ljlasdhf.db:**  
+Starting of database file myhost.db integrity check...  
+The database myhost.db is in good condition  
+The **--update** option has been used, so the information about files will be updated against the database myhost.db  
+**These files have been added or changed and those changes will be reflected against the DB myhost.db:**  
 diff2/1/AAA/BCB/CCC/a.txt adding  
 diff2/1/AAA/ZAW/A/b/c/a_file.txt adding  
 diff2/1/AAA/ZAW/D/e/f/b_file.txt adding  
@@ -384,11 +384,11 @@ The database will be cleared of files mentions that match the regular expression
 precizer --update --db-clean-ignored --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 ```
 
-<sub>Database file name: ljlasdhf.db  
+<sub>Database file name: myhost.db  
 The database has already been created in the past  
-Starting of database file ljlasdhf.db integrity check...  
-The database ljlasdhf.db is in good condition  
-**These files no longer exist and will be deleted against the DB ljlasdhf.db:**  
+Starting of database file myhost.db integrity check...  
+The database myhost.db is in good condition  
+**These files no longer exist and will be deleted against the DB myhost.db:**  
 delete ignored diff2/1/AAA/BCB/CCC/a.txt  
 delete ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
 delete ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
