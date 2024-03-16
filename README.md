@@ -119,7 +119,7 @@ make
 
 1. Install build and compile tools on Linux
 ```sh
-sudo apt -y install build-essential
+sudo apt -y install build-essential cmake git unzip
 ```
 
 2. Get source code
