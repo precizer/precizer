@@ -48,11 +48,6 @@ static char args_doc[] = "PATH";
 /* The options we understand. */
 static struct argp_option options[] = {
 	{ 0, 0, 0, 0, "Build database options:", 2},
-	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
-	                                     "The option --db-clean-ignored must be specifyed additionally " \
-	                                     "in order to remove mention of files from the database that " \
-	                                     "matches the regular expression passed through the " \
-	                                     "--ignore=PCRE2_REGEXP option", 0},
 	{"ignore",   'i', "PCRE2_REGEXP", 0, "Relative path to ignore. PCRE2 regular expressions " \
 	                                     "could be used to specify a pattern to ignore files " \
 	                                     "or directories. Attention! All paths for the regular " \
@@ -73,6 +68,11 @@ static struct argp_option options[] = {
 	                                     "\n" \
 	                                     "\033[1mprecizer --ignore=\"diff2/1/*\" --ignore=\"diff2/2/*\" " \
 	                                     "tests/examples/diffs\033[0m\n", 0 },
+	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
+	                                     "The option \033[1m--db-clean-ignored\033[0m must be specifyed additionally " \
+	                                     "in order to remove mention of files from the database that " \
+	                                     "matches the regular expression passed through the " \
+	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option", 0},
 	{"maxdepth", 'm', "NUMBER", 0, "Recursion depth limit. " \
 	                        "The depth of the traversal, numbered from 0 to N, " \
 	                        "where a file could be found. Representing the maximum " \
