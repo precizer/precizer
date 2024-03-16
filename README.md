@@ -164,7 +164,6 @@ total size: 41B, total items: 55, dirs: 44, files: 11, symlnks: 0
 Start vacuuming...  
 The database has been vacuumed  
 **Nothing have been changed since the last probe (neither added nor updated or deleted files)**  
-The precizer completed its execution without any issues.  
 </sub>
 
 Make some changes:
@@ -185,7 +184,6 @@ The **--update** option has been used, so the information about files will be up
 total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
 Start vacuuming...  
 The database has been vacuumed  
-The precizer completed its execution without any issues.  
 </sub>
 
 ### Example 3
@@ -247,12 +245,11 @@ Recursion depth limited to: 0
 sss.txt  
 Start vacuuming...  
 The database has been vacuumed  
-The precizer completed its execution without any issues.  
 </sub>
 
 ### Example 6
 
-Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths for the regular expression must be  specified as relative.
+Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths for the regular expression must be  specified as **relative**.
 
 To understand what a relative path looks like, just run traverses without the _--ignore_ option and look up how the terminal will display relative paths that are written to the database:
 
@@ -292,6 +289,58 @@ tests/examples/diffs
 ```sh
 precizer --ignore="diff2/1/*" tests/examples/diffs
 ```
+
+<sub>% precizer --ignore="diff2/1/*" tests/examples/diffs  
+Database file name: ljlasdhf.db  
+Starting of database file ljlasdhf.db integrity check...  
+The database ljlasdhf.db is in good condition  
+These files will be added against the DB ljlasdhf.db:  
+diff1/3/AAA/BBB/CCC/a.txt  
+diff1/path2/AAA/BCB/CCC/a.txt  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+diff1/1/AAA/BCB/CCC/a.txt  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt  
+diff1/4/AAA/BBB/CCC/a.txt  
+diff1/2/AAA/BBB/CZC/a.txt  
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/3/AAA/BBB/CCC/a.txt  
+diff2/path2/AAA/BCB/CCC/a.txt  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
+**ignored** diff2/1/AAA/BCB/CCC/a.txt  
+**ignored** diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+**ignored** diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/4/AAA/BBB/CCC/a.txt  
+diff2/2/AAA/BBB/CZC/a.txt  
+diff2/path1/AAA/BCB/CCC/b.txt  
+diff2/path1/AAA/BCB/CCC/a.txt  
+diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
+
+Let's repeat the same example but without _--ignore_ option to add three previously ignored files:
+
+```sh
+precizer --update tests/examples/diffs
+```
+
+<sub>% precizer --update tests/examples/diffs  
+Database file name: ljlasdhf.db  
+The database has already been created in the past  
+Starting of database file ljlasdhf.db integrity check...  
+The database ljlasdhf.db is in good condition  
+The **--update** option has been used, so the information about files will be updated against the database ljlasdhf.db  
+**These files have been added or changed and those changes will be reflected against the DB ljlasdhf.db:**  
+diff2/1/AAA/BCB/CCC/a.txt adding  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt adding  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt adding  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
 
 ### Example 7
 
