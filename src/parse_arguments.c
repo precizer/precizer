@@ -145,6 +145,9 @@ static error_t parse_opt
 		case 'c':
 			config->compare = true;
 			break;
+		case 'C':
+			config->db_clean_ignored = true;
+			break;
 		case 'm':
 			argument_value = strtol(arg, &ptr, 10);
 			// Check up if lont int could be casted to short int
@@ -260,13 +263,14 @@ Return parse_arguments
 			printf(i == 0 ? "%s" : ", %s", config->ignore[i]);
 		}
 		printf("; ");
-		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s",
+		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s",
 		config->verbose ? "yes" : "no",
 		config->silent ? "yes" : "no",
 		config->force ? "yes" : "no",
 		config->update ? "yes" : "no",
 		config->progress ? "yes" : "no",
-		config->compare ? "yes" : "no");
+		config->compare ? "yes" : "no",
+		config->db_clean_ignored ? "yes" : "no");
 		printf("\n");
 	}
 

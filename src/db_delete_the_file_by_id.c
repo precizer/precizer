@@ -4,6 +4,7 @@ Return db_delete_the_file_by_id
 (
 	sqlite_int64 *ID,
 	bool *first_iteration,
+	bool *clear_ignored,
 	const char *relative_path
 ){
 	/// The status that will be passed to return() before exiting.
@@ -36,7 +37,12 @@ Return db_delete_the_file_by_id
 
 			slog(false,"\033[1mThese files no longer exist and will be deleted against the DB %s:\n\033[m",config->db_file_name);
 		}
-		slog(false,"%s\n",relative_path);
+		if(*clear_ignored == true)
+		{
+			slog(false,"cleared ignored %s\n",relative_path);
+		} else {
+			slog(false,"%s\n",relative_path);
+		}
 	} else {
 		slog(false,"Delete statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;

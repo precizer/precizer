@@ -51,8 +51,40 @@ Return db_delete_missing_files_from(void)
 		char *absolute_path = NULL;
 
 		bool path_was_removed_from_db = false;
+		bool clear_ignored = false;
 
 		if(runtime_path_prefix != NULL && relative_path != NULL){
+
+			/*
+			 * Remove from the database mention of
+			 * files that matches the regular expression
+			 * passed through the ignore option(s)
+			 *
+			 */
+			if(config->db_clean_ignored)
+			{
+				/*
+				 *
+				 * PCRE2 regexp to ignore the file
+				 *
+				 */
+
+				bool showed_once = true;
+
+				// Default value
+				Ignore result = ignore(relative_path,&showed_once);
+
+				if(IGNORE == result)
+				{
+					clear_ignored = true;
+
+				} else if (REGEXP_FAIL == result)
+				{
+					status = FAILURE;
+					break;
+				}
+			}
+
 			// The variable in the stack is extremely fast
 			size_t runtime_path_prefix_size = strlen(runtime_path_prefix);
 			size_t relative_path_size = strlen(relative_path);
@@ -72,9 +104,9 @@ Return db_delete_missing_files_from(void)
 			path_was_removed_from_db = true;
 		}
 
-		if(path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
+		if(clear_ignored == true || path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
 		{
-			status = db_delete_the_file_by_id(&ID,&first_iteration,relative_path);
+			status = db_delete_the_file_by_id(&ID,&first_iteration,&clear_ignored,relative_path);
 		}
 		free(absolute_path);
 	}

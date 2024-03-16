@@ -167,6 +167,12 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **ignore;
 
+	/// Must be specifyed additionally in order
+	/// to remove from the database mention of
+	/// files that matches the regular expression
+	/// passed through the ignore option(s)
+	bool db_clean_ignored;
+
 } Config;
 
 /*
@@ -211,6 +217,7 @@ Return db_delete_missing_files_from(void);
 Return db_delete_the_file_by_id
 (
 	sqlite_int64*,
+	bool*,
 	bool*,
 	const char*
 );

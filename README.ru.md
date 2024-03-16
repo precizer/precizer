@@ -375,3 +375,28 @@ The database has been vacuumed
 ```sh
 precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 ```
+
+### Example 8
+
+Продолжение предыдущего примера [Пример 6](#пример-6).
+
+_--db-clean-ignored_ option must be specifyed additionally in order to remove from the database mention of files that matches the regular expression passed through the ignore option(s)
+
+```sh
+precizer --update --db-clean-ignored --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
+```
+
+The database will be cleared of files mentions that match the regular expressions from the arguments --ignore: "diff2/1/*" and "diff2/2/*"
+
+<sub>Database file name: ljlasdhf.db  
+The database has already been created in the past  
+Starting of database file ljlasdhf.db integrity check...  
+The database ljlasdhf.db is in good condition  
+These files no longer exist and will be deleted against the DB ljlasdhf.db:  
+delete ignored diff2/1/AAA/BCB/CCC/a.txt  
+delete ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+delete ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+delete ignored diff2/2/AAA/BBB/CZC/a.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
