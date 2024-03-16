@@ -348,7 +348,7 @@ The database has been vacuumed
 
 Continuation of previous example [Example 6](#example-6).
 
-Несколько регулярных выражений для игнорирования можно указать с помощью опции _--ignore_ одновременно:
+Multiple regular expressions for ignore could be specified using _--ignore_ option many times at once:
 
 ```sh
 precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
