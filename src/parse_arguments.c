@@ -57,16 +57,16 @@ static struct argp_option options[] = {
 	                                     "and look how the terminal will display relative paths " \
 	                                     "that are written to the database.\n" \
 	                                     "\nExamples:\n" \
-	                                     "\n\033[1mprecizer --ignore=\"diff2/1/*\" tests/examples/diffs\033[0m\n" \
+	                                     "\n\033[1m--ignore=\"diff2/1/*\" tests/examples/diffs\033[0m\n" \
 	                                     "\n" \
 	                                     "In this example, the starting path for the traversing " \
 	                                     "is ./tests/examples/diffs and the relative path to ignore will " \
 	                                     "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/*).\n" \
 	                                     "\n" \
-	                                     "Multiple regular expressions for ignore could be specifyed using " \
-	                                     "--ignore many times at once:\n"
+	                                     "Multiple regular expressions for ignore could be specified using " \
+	                                     "many \033[1m--ignore\033[0m options at once:\n" \
 	                                     "\n" \
-	                                     "\033[1mprecizer --ignore=\"diff2/1/*\" --ignore=\"diff2/2/*\" " \
+	                                     "\033[1m--ignore=\"diff2/1/*\" --ignore=\"diff2/2/*\" " \
 	                                     "tests/examples/diffs\033[0m\n", 0 },
 	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
 	                                     "The option \033[1m--db-clean-ignored\033[0m must be specifyed additionally " \
