@@ -249,9 +249,9 @@ The database has been vacuumed
 
 ### Example 6
 
-Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths for the regular expression must be  specified as **relative**.
+Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths in the regular expression must be specified as **relative**.
 
-To understand what a relative path looks like, just run traverses without the _--ignore_ option and look up how the terminal will display relative paths that are written to the database:
+To understand what a relative path looks like, just run directory traverses without the _--ignore_ option and look up how the terminal will display relative paths that are writing to the database:
 
 ```sh
 % tree -L 3 tests/examples/diffs
@@ -290,7 +290,7 @@ tests/examples/diffs
 precizer --ignore="diff2/1/*" tests/examples/diffs
 ```
 
-In this example the starting path for the traverses is ./tests/examples/diffs and the absolute path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
+In this example the starting path for the traverses is ./tests/examples/diffs and the path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
 
 <sub>% precizer --ignore="diff2/1/*" tests/examples/diffs  
 Database file name: ljlasdhf.db  
