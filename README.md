@@ -292,8 +292,7 @@ precizer --ignore="diff2/1/*" tests/examples/diffs
 
 In this example the starting path for the traverses is ./tests/examples/diffs and the path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
 
-<sub>% precizer --ignore="diff2/1/*" tests/examples/diffs  
-Database file name: ljlasdhf.db  
+<sub>Database file name: ljlasdhf.db  
 Starting of database file ljlasdhf.db integrity check...  
 The database ljlasdhf.db is in good condition  
 **These files will be added against the DB ljlasdhf.db:**  
@@ -330,8 +329,7 @@ Let's repeat the same example but without _--ignore_ option to add three previou
 precizer --update tests/examples/diffs
 ```
 
-<sub>% precizer --update tests/examples/diffs  
-Database file name: ljlasdhf.db  
+<sub>Database file name: ljlasdhf.db  
 The database has already been created in the past  
 Starting of database file ljlasdhf.db integrity check...  
 The database ljlasdhf.db is in good condition  

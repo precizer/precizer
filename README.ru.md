@@ -296,8 +296,7 @@ precizer --ignore="diff2/1/*" tests/examples/diffs
 
 В этом примере начальный путь сканирования — ./tests/examples/diffs, а сформированный путь для игнорирования — ./tests/examples/diffs/diff2/1/ со всеми подкаталогами (/*).
 
-<sub>% precizer --ignore="diff2/1/*" tests/examples/diffs  
-Database file name: ljlasdhf.db  
+<sub>Database file name: ljlasdhf.db  
 Starting of database file ljlasdhf.db integrity check...  
 The database ljlasdhf.db is in good condition  
 **These files will be added against the DB ljlasdhf.db:**  
@@ -334,8 +333,7 @@ The database has been vacuumed
 precizer --update tests/examples/diffs
 ```
 
-<sub>% precizer --update tests/examples/diffs  
-Database file name: ljlasdhf.db  
+<sub>Database file name: ljlasdhf.db  
 The database has already been created in the past  
 Starting of database file ljlasdhf.db integrity check...  
 The database ljlasdhf.db is in good condition  
