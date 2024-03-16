@@ -101,12 +101,12 @@ Ignore ignore
 	{
 		REGEXP result = regexp_match(config->ignore[i],relative_path,showed_once);
 
-		if(result == MATCH)
+		if(MATCH == result)
 		{
 			// Ignore that file
 			return(IGNORE);
 
-		} else if(result == REGEXP_ERROR){
+		} else if(REGEXP_ERROR == result){
 
 			return(REGEXP_FAIL);
 
