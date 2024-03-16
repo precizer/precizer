@@ -388,7 +388,7 @@ The database will be cleared of files mentions that match the regular expression
 The database has already been created in the past  
 Starting of database file ljlasdhf.db integrity check...  
 The database ljlasdhf.db is in good condition  
-These files no longer exist and will be deleted against the DB ljlasdhf.db:  
+**These files no longer exist and will be deleted against the DB ljlasdhf.db:**  
 delete ignored diff2/1/AAA/BCB/CCC/a.txt  
 delete ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
 delete ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
