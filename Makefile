@@ -215,7 +215,7 @@ endif
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug prep release remake clang openmp one test sanitize $(SUBDIRS)
+.PHONY: all clean debug prep release remake clang openmp one test sanitize banner $(SUBDIRS)
 
 # Default build
 all: $(SUBDIRS) release
@@ -248,7 +248,7 @@ $(STZDIR)/%.o: $(SRC)/%.c
 #
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE)
+debug: $(SUBDIRS) $(DBGEXE) banner
 
 $(DBGEXE): $(DBGOBJS)
 	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBPATH) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
@@ -267,7 +267,7 @@ $(DBGDIR)/%.o: $(SRC)/%.c
 #
 # Production rules
 #
-prod: $(SUBDIRS) production
+prod: $(SUBDIRS) production banner
 production: $(PRODEXE)
 
 $(PRODEXE): $(PRODOBJS)
@@ -287,7 +287,7 @@ $(PRODDIR)/%.o: $(SRC)/%.c
 #
 # Release rules
 #
-release: $(SUBDIRS) $(RELEXE)
+release: $(SUBDIRS) $(RELEXE) banner
 
 # Linking problem with "undefined reference to 'dlopen' "
 # https://stackoverflow.com/a/11221504/7104681
@@ -407,3 +407,9 @@ clean-preproc:
 
 clean-asm:
 	@rm -rf $(ASM)
+
+banner:
+	@echo Now some tests coud be runned:
+	@echo 1. ./precizer --progress --database=database1.db tests/examples/diffs/diff1
+	@echo 2. ./precizer --progress --database=database2.db tests/examples/diffs/diff2
+	@echo 3. ./precizer --compare database1.db database2.db

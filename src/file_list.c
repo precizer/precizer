@@ -205,12 +205,12 @@ Return file_list
 						// Default value
 						Ignore result = ignore(relative_path,&showed_once);
 
-						if(result == IGNORE)
+						if(IGNORE == result)
 						{
 							slog(false,"\033[1mignored\033[0m %s\n",relative_path);
 							break;
 
-						} else if (result == REGEXP_FAIL)
+						} else if (REGEXP_FAIL == result)
 						{
 							status = FAILURE;
 							break;
