@@ -366,7 +366,7 @@ Start vacuuming...
 The database has been vacuumed  
 </sub>
 
-### Example 7
+### Пример 7
 
 Продолжение предыдущего примера [Пример 6](#пример-6).
 
@@ -376,11 +376,11 @@ The database has been vacuumed
 precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 ```
 
-### Example 8
+### Пример 8
 
 Продолжение предыдущего примера [Пример 6](#пример-6).
 
-_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the ignore option(s)
+Параметр _--db-clean-ignored_ должен быть указан дополнительно, чтобы удалить из базы данных упоминание файлов, соответствующих регулярным выражениям, переданным через опции _--ignore_.
 
 ```sh
 precizer --update --db-clean-ignored --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
