@@ -294,7 +294,7 @@ precizer --ignore="diff2/1/*" tests/examples/diffs
 Database file name: ljlasdhf.db  
 Starting of database file ljlasdhf.db integrity check...  
 The database ljlasdhf.db is in good condition  
-These files will be added against the DB ljlasdhf.db:  
+**These files will be added against the DB ljlasdhf.db:**  
 diff1/3/AAA/BBB/CCC/a.txt  
 diff1/path2/AAA/BCB/CCC/a.txt  
 diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
