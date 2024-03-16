@@ -1,5 +1,5 @@
 <p width="100%" height="100%">
-<img width="20%" height="20%" src="micrometer.svg">
+<img width="20%" height="20%" src="icon/micrometer.svg">
 </p>
 
 # Precizer
