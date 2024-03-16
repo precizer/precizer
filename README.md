@@ -256,75 +256,36 @@ Relative path to ignore. PCRE2 regular expressions could be used to specify a pa
 To understand what a relative path looks like, just run traverses without the _--ignore_ option and look how the terminal will display relative paths that are written to the database. Two subexamples:
 
 ```sh
-% tree -L 5 tests/examples/diffs
+% tree -L 3 tests/examples/diffs
 tests/examples/diffs
 ├── diff1
 │   ├── 1
 │   │   └── AAA
-│   │       ├── BCB
-│   │       │   └── CCC
-│   │       └── ZAW
-│   │           ├── A
-│   │           └── D
 │   ├── 2
 │   │   └── AAA
-│   │       └── BBB
-│   │           └── CZC
 │   ├── 3
 │   │   └── AAA
-│   │       └── BBB
-│   │           └── CCC
 │   ├── 4
 │   │   └── AAA
-│   │       └── BBB
-│   │           └── CCC
 │   ├── path1
 │   │   └── AAA
-│   │       └── ZAW
-│   │           ├── A
-│   │           └── D
 │   └── path2
 │       └── AAA
-│           ├── BCB
-│           │   └── CCC
-│           └── ZAW
-│               ├── A
-│               └── D
 └── diff2
     ├── 1
     │   └── AAA
-    │       ├── BCB
-    │       │   └── CCC
-    │       └── ZAW
-    │           ├── A
-    │           └── D
     ├── 2
     │   └── AAA
-    │       └── BBB
-    │           └── CZC
     ├── 3
     │   └── AAA
-    │       └── BBB
-    │           └── CCC
     ├── 4
     │   └── AAA
-    │       └── BBB
-    │           └── CCC
     ├── path1
     │   └── AAA
-    │       ├── BCB
-    │       │   └── CCC
-    │       └── ZAW
-    │           ├── A
-    │           └── D
     └── path2
         └── AAA
-            ├── BCB
-            │   └── CCC
-            └── ZAW
-                └── A
 
-65 directories, 0 files
+26 directories, 0 files
 ```
 
 ```sh
