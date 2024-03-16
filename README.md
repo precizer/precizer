@@ -346,7 +346,7 @@ The database has been vacuumed
 
 ### Example 7
 
-Continuation of previous example number 6.
+Continuation of previous [Example 6](#example-6).
 
 Multiple regular expressions for ignore could be specifyed using _--ignore_ many times at once:
 
