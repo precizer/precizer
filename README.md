@@ -376,13 +376,13 @@ precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 
 Continuation of previous example [Example 6](#example-6).
 
-_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the ignore option(s)
+_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s)
+
+The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/\*" and "diff2/2/\*"
 
 ```sh
 precizer --update --db-clean-ignored --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 ```
-
-The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/\*" and "diff2/2/\*"
 
 <sub>Database file name: ljlasdhf.db  
 The database has already been created in the past  
