@@ -253,9 +253,9 @@ The precizer completed its execution without any issues.
 
 ### Пример 6
 
-Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths for the regular expression must be  specified as **relative**.
+Относительный путь, который следует игнорировать. Регулярные выражения PCRE2 можно использовать для указания шаблона игнорирования файлов или каталогов. Внимание! Все пути в регулярном выражении должны быть указаны как **относительные**.
 
-To understand what a relative path looks like, just run traverses without the _--ignore_ option and look up how the terminal will display relative paths that are written to the database:
+Чтобы понять как выглядит относительный путь достаточно запустить сканирование директорий без опции _--ignore_ и посмотреть, как терминал будет отображать относительные пути, записываемые в базу данных:
 
 ```sh
 % tree -L 3 tests/examples/diffs
@@ -294,7 +294,7 @@ tests/examples/diffs
 precizer --ignore="diff2/1/*" tests/examples/diffs
 ```
 
-In this example the starting path for the traverses is ./tests/examples/diffs and the absolute path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
+В этом примере начальный путь сканирования — ./tests/examples/diffs, а сформированный путь для игнорирования — ./tests/examples/diffs/diff2/1/ со всеми подкаталогами (/*).
 
 <sub>% precizer --ignore="diff2/1/*" tests/examples/diffs  
 Database file name: ljlasdhf.db  
@@ -328,7 +328,7 @@ Start vacuuming...
 The database has been vacuumed  
 </sub>
 
-Let's repeat the same example but without _--ignore_ option to add three previously ignored files:
+Давайте повторим тот же пример, но без опции _--ignore_, чтобы добавить три ранее проигнорированных файла:
 
 ```sh
 precizer --update tests/examples/diffs
