@@ -344,7 +344,7 @@ The database has been vacuumed
 
 ### Example 7
 
-Continuation of previous example number 6. Relative path to ignore.
+Continuation of previous example number 6.
 
 In this example, the starting path for the traverses is ./tests/examples/diffs and the relative path to ignore will be ./tests/examples/diffs/diff2/1/ and all subdirectories (/*). Multiple regular expressions for ignore could be specifyed using --ignore many times at once:
 
