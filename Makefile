@@ -409,7 +409,7 @@ clean-asm:
 	@rm -rf $(ASM)
 
 banner:
-	@echo Now some tests coud be runned:
-	@echo 1. ./precizer --progress --database=database1.db tests/examples/diffs/diff1
-	@echo 2. ./precizer --progress --database=database2.db tests/examples/diffs/diff2
-	@echo 3. ./precizer --compare database1.db database2.db
+	@printf "Now some tests could be running:\n"
+	@printf "\033[1mStage 1:\033[0m\n./precizer --progress --database=database1.db tests/examples/diffs/diff1\n"
+	@printf "\033[1mStage 2:\033[0m\n ./precizer --progress --database=database2.db tests/examples/diffs/diff2\n"
+	@printf "\033[1mFinal stage:\033[0m\n ./precizer --compare database1.db database2.db\n"
