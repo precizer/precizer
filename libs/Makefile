@@ -3,9 +3,9 @@
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
-SUBDIRS  = ./sqlite ./rational ./sha512
+SUBDIRS  = sqlite rational sha512 pcre
 
-TOPTARGETS := all clean release debug prod production sanitize
+TOPTARGETS := all clean release debug prod production sanitize test
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):

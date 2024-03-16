@@ -49,6 +49,25 @@ typedef enum
 
 } Return;
 
+// PCRE2 return codes
+typedef enum
+{
+	NOT_MATCH,   // The actual value is 0
+	MATCH,       // The actual value is 1
+	REGEXP_ERROR // The actual value is 2
+
+} REGEXP;
+
+// Return codes for Ignore function
+typedef enum
+{
+	DO_NOT_IGNORE,  // The actual value is 0
+	IGNORE,         // The actual value is 1
+	REGEXP_FAIL     // The actual value is 2
+
+} Ignore;
+
+
 /*
  * Modification bits
  *
@@ -144,6 +163,10 @@ typedef struct {
 	/// Recursion depth limit
 	short maxdepth;
 
+	/// Ignore those relative paths
+	/// The string array of PCRE2 regular expressions
+	char **ignore;
+
 } Config;
 
 /*
@@ -162,6 +185,11 @@ Return sha512sum(
 	unsigned char*,
 	sqlite3_int64*,
 	SHA512_Context*
+);
+
+void add_string_to_array(
+	char ***,
+	char *
 );
 
 void remove_trailing_slash(char*);
@@ -259,6 +287,11 @@ void status_of_changes(void);
 Return detect_a_path(const char*);
 
 Return detect_paths(void);
+
+Ignore ignore(
+	const char*,
+	bool*
+);
 
 int exit_status(
 	Return,

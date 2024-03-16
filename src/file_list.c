@@ -30,6 +30,7 @@ Return file_list
 	// since the last research
 	bool first_iteration = true;
 	bool show_changes = true;
+	bool showed_once = false;
 
 	FTS *file_systems = NULL;
 	FTSENT *p = NULL;
@@ -145,11 +146,11 @@ Return file_list
 					/* Write all columns from DB row to the structure DBrow */
 					DBrow _dbrow;
 					DBrow *dbrow = &_dbrow;
-					
-					/* Get all file's metadata from the database */
+
 #if 0 // Old multiPATH solution
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path)))
 #endif
+					/* Get all file's metadata from the database */
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,relative_path)))
 					{
 						break;
@@ -196,6 +197,23 @@ Return file_list
 						} else {
 							// The SHA512 hashing of the file had not been finished previously and the file has been changed
 							rehashig_from_the_beginning = true;
+						}
+					}
+
+					/* PCRE2 regexp to ignore the file */
+					{
+						// Default value
+						Ignore result = ignore(relative_path,&showed_once);
+
+						if(result == IGNORE)
+						{
+							slog(false,"\033[1mignored\033[0m %s\n",relative_path);
+							break;
+
+						} else if (result == REGEXP_FAIL)
+						{
+							status = FAILURE;
+							break;
 						}
 					}
 
