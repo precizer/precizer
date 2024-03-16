@@ -67,4 +67,8 @@ void init_config(void)
 	/// of the starting point (from root) of the traversal.
 	/// The root itself is numbered 0
 	config->maxdepth = -1;
+
+	/// Ignore those relative paths
+	/// The string array of PCRE2 regular expressions
+	config->ignore = NULL;
 }

@@ -21,4 +21,13 @@ void free_config(void)
 	free(config->running_dir);
 
 	free(config->db_file_name);
+
+	// Free memory of string array
+	if(config->ignore != NULL)
+	{
+		for (int i = 0; config->ignore[i] != NULL; ++i) {
+			free(config->ignore[i]);
+		}
+		free(config->ignore);
+	}
 }

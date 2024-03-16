@@ -1,5 +1,6 @@
 doc
-libs/*/*/
+libs/*/debug/
+libs/*/release/
 src/*/
 tests/examples/huge/
 *.db

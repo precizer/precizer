@@ -41,7 +41,7 @@ CFLAGS += -fbuiltin
 CFLAGS += $(DEFINES)
 
 # libc lib for static
-LDFLAGS += -lrational -lsqlite -lsha512
+LDFLAGS += -lrational -lsqlite -lsha512 -lpcre
 
 EXE = precizer
 
@@ -73,7 +73,7 @@ WFLAGS += -Wlogical-op
 endif
 
 # Arguments for tests
-ARGS = --update tests
+ARGS = --update tests/examples/diffs
 
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
@@ -83,7 +83,7 @@ CONFIG += ordered
 # Build of dependent static library
 SUBDIRS = libs
 
-LIBPATH = libs/sqlite libs/rational libs/sha512
+LIBPATH = libs/sqlite libs/rational libs/sha512 libs/pcre
 
 # Additional include headers of external libraries
 INCPATH=$(foreach d,$(LIBPATH),-I$d)
@@ -122,6 +122,7 @@ STZOBJS = $(addprefix $(STZDIR)/, $(notdir $(OBJS)))
 STZDEP = $(STZOBJS:.o=.d)
 STZLIBDIR = $(subst $(SRC)/,,$(STZDIR))
 STZLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
+STZINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
 STZDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
 STZCFLAGS += -fsanitize=address -g -O0 -DDEBUG
 
@@ -142,6 +143,7 @@ UNITPATH = $(addprefix $(UNITDIR)/, $(UNITOBJS))
 UNITDEP = $(UNITPATH:.o=.d)
 UNITLIBDIR = $(subst $(SRC)/,,$(UNITDIR))
 UNITLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(UNITLIBDIR))
+UNITINCPATH = $(foreach d,$(INCPATH),$d/$(UNITLIBDIR))
 UNITDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
 UNITCFLAGS += -DUNITTEST -g -O0 -DDEBUG
 ifdef STATIC
@@ -157,6 +159,7 @@ DBGOBJS = $(addprefix $(DBGDIR)/, $(notdir $(OBJS)))
 DBGDEP = $(DBGOBJS:.o=.d)
 DBGLIBDIR = $(subst $(SRC)/,,$(DBGDIR))
 DBGLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
+DBGINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
 DBGDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 # Activation of the Gprof profiler.
@@ -174,6 +177,7 @@ PRODOBJS = $(addprefix $(PRODDIR)/, $(notdir $(OBJS)))
 PRODDEP = $(PRODOBJS:.o=.d)
 PRODLIBDIR = $(subst $(SRC)/,,$(PRODDIR))
 PRODLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
+PRODINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
 PRODDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
 PRODCFLAGS = -O3 -funroll-loops -DNDEBUG -D$(PRODUCTION)
 PRODCFLAGS += -march=native
@@ -194,6 +198,7 @@ RELOBJS = $(addprefix $(RELDIR)/, $(notdir $(OBJS)))
 RELDEP = $(RELOBJS:.o=.d)
 RELLIBDIR = $(subst $(SRC)/,,$(RELDIR))
 RELLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
+RELINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
 RELDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
 RELCFLAGS = -O3 -funroll-loops -DNDEBUG
 RELCFLAGS += -march=native
@@ -216,7 +221,7 @@ TOPTARGETS := all
 all: $(SUBDIRS) release
 
 $(SUBDIRS):
-	@$(MAKE) -C $@
+	@$(MAKE) -C $@ $(MAKECMDGOALS)
 
 # Clang
 clang: CC = clang
@@ -236,8 +241,8 @@ $(STZEXE): $(STZOBJS)
 
 $(STZDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(STZDIR)
-	@$(CC) -MM $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(STZDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(STZDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
@@ -255,8 +260,8 @@ $(DBGEXE): $(DBGOBJS)
 
 $(DBGDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(DBGDIR)
-	@$(CC) -MM $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
@@ -275,8 +280,8 @@ $(PRODEXE): $(PRODOBJS)
 
 $(PRODDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(PRODDIR)
-	@$(CC) -MM $(INCPATH) $(CFLAGS) $(PRODCFLAGS) $< | sed '1s/^/$$\(PRODDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(PRODCFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(PRODINCPATH) $(CFLAGS) $(PRODCFLAGS) $< | sed '1s/^/$$\(PRODDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(PRODINCPATH) $(CFLAGS) $(PRODCFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
@@ -296,8 +301,8 @@ $(RELEXE): $(RELOBJS)
 
 $(RELDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(RELDIR)
-	@$(CC) -MM $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $< | sed '1s/^/$$\(RELDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $< | sed '1s/^/$$\(RELDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
@@ -314,13 +319,13 @@ $(UNITEXE): $(UNITOBJS)
 
 $(UNITDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(UNITDIR)
-	@$(CC) -MM $(INCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(UNITDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(UNITDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 # Optional preprocessor files
 %.i:%.c clean-preproc
-	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
+	@$(CC) -E -C -o $@ $(INCPATH) $(RELINCPATH) $(CFLAGS) $<
 # C-C++ Beautifier
 #	@bcpp -na $@ > $@.h
 	@bcpp -na -s -i 4 $@ > $@.h
@@ -329,7 +334,7 @@ $(UNITDIR)/%.o: $(SRC)/%.c
 
 # Optional Assembler files
 %.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
+	@$(CC) -S -C $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
 
 #
 # Other rules

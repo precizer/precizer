@@ -14,7 +14,8 @@ const char *argp_program_version = "precizer 1.0";
 static char doc[] =
 "\033[1mprecizer\033[m is a CLI application designed to check the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.\n\
 \n\
-\033[1mprecizer\033[m is focused on work with gigantic file systems. With the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.\n" \
+\033[1mprecizer\033[m is focused on work with gigantic file systems. With the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.\n\
+\nGlory to Ukraine!\n" \
 "\vBASIC EXAMPLE\n\
 Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.\n" \
 "Run the program on the first machine with host name, for example “host1”:\n\
@@ -39,8 +40,7 @@ As a result of the program running, the following information will be displayed 
 * Which files are missing on host1 but present on host2 and vice versa.\n\
 * For which files, present on both hosts, the checksums do NOT match.\n\
 \n" \
-"All other technical details could be found in README file of the project\n" \
-"Glory to Ukraine!";
+"All other technical details could be found in README file of the project";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "PATH";
@@ -48,12 +48,37 @@ static char args_doc[] = "PATH";
 /* The options we understand. */
 static struct argp_option options[] = {
 	{ 0, 0, 0, 0, "Build database options:", 2},
+	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
+	                                     "The option --db-clean-ignored must be specifyed additionally " \
+	                                     "in order to remove mention of files from the database that " \
+	                                     "matches the regular expression passed through the " \
+	                                     "--ignore=PCRE2_REGEXP option", 0},
+	{"ignore",   'i', "PCRE2_REGEXP", 0, "Relative path to ignore. PCRE2 regular expressions " \
+	                                     "could be used to specify a pattern to ignore files " \
+	                                     "or directories. Attention! All paths for the regular " \
+	                                     "expression must be  specified as relative. To " \
+	                                     "understand what a relative path looks like, just " \
+	                                     "run traverses without the \033[1m--ignore\033[0m option " \
+	                                     "and look how the terminal will display relative paths " \
+	                                     "that are written to the database.\n" \
+	                                     "\nExamples:\n" \
+	                                     "\n\033[1mprecizer --ignore=\"diff2/1/*\" tests/examples/diffs\033[0m\n" \
+	                                     "\n" \
+	                                     "In this example, the starting path for the traversing " \
+	                                     "is ./tests/examples/diffs and the relative path to ignore will " \
+	                                     "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/*).\n" \
+	                                     "\n" \
+	                                     "Multiple regular expressions for ignore could be specifyed using " \
+	                                     "--ignore many times at once:\n"
+	                                     "\n" \
+	                                     "\033[1mprecizer --ignore=\"diff2/1/*\" --ignore=\"diff2/2/*\" " \
+	                                     "tests/examples/diffs\033[0m\n", 0 },
 	{"maxdepth", 'm', "NUMBER", 0, "Recursion depth limit. " \
 	                        "The depth of the traversal, numbered from 0 to N, " \
 	                        "where a file could be found. Representing the maximum " \
 	                        "of the starting point (from root) of the traversal. " \
 	                        "The root itself is numbered 0\n" \
-	                        "\033[1m--maxdepth=0\033[0m completely disable recursion", 0 },
+	                        "\033[1m--maxdepth=0\033[0m completely disable recursion\n", 0 },
 	{"force",    'f', 0, 0, "Use this option only in case when the PATHs that were written into " \
 	                        "the database as a result of the last scaning really need to be " \
 	                        "renewed. Warning! If this option will be used in incorrect way, " \
@@ -113,6 +138,9 @@ static error_t parse_opt
 				exit(ARGP_ERR_UNKNOWN);
 			}
 			strcpy(config->db_file_name,arg);
+			break;
+		case 'i':
+			add_string_to_array(&config->ignore,arg);
 			break;
 		case 'c':
 			config->compare = true;
@@ -224,6 +252,12 @@ Return parse_arguments
 		for (int j = 0; config->paths[j]; j++)
 		{
 			printf(j == 0 ? "%s" : ", %s", config->paths[j]);
+		}
+		printf("; ");
+		printf("ignore=");
+		// Print the contents of the string array
+		for(int i = 0; config->ignore[i] != NULL; ++i) {
+			printf(i == 0 ? "%s" : ", %s", config->ignore[i]);
 		}
 		printf("; ");
 		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s",
