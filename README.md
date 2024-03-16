@@ -290,6 +290,8 @@ tests/examples/diffs
 precizer --ignore="diff2/1/*" tests/examples/diffs
 ```
 
+In this example the starting path for the traverses is ./tests/examples/diffs and the absolute path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
+
 <sub>% precizer --ignore="diff2/1/*" tests/examples/diffs  
 Database file name: ljlasdhf.db  
 Starting of database file ljlasdhf.db integrity check...  
@@ -346,7 +348,7 @@ The database has been vacuumed
 
 Continuation of previous example number 6.
 
-In this example, the starting path for the traverses is ./tests/examples/diffs and the relative path to ignore will be ./tests/examples/diffs/diff2/1/ and all subdirectories (/*). Multiple regular expressions for ignore could be specifyed using --ignore many times at once:
+Multiple regular expressions for ignore could be specifyed using --ignore many times at once:
 
 ```sh
 precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
