@@ -1,6 +1,7 @@
 doc
 libs/*/debug/
 libs/*/release/
+libs/*/pcre*/
 src/*/
 tests/examples/huge/
 *.db

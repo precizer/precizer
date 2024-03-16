@@ -14,11 +14,27 @@ STATLIB = $(LIBNAME).a
 
 .PHONY: $(TOPTARGETS) unzip
 
-all: release debug
+# Default build
+all: debug release
+	@true
+
+prod: release
+	@true
+
+production: prod
+	@true
+
+test: debug
+	@true
+
+memtest: debug
+	@true
+
+sanitize: debug
 	@true
 
 unzip:
-	unzip pcre2-pcre2-10.43.zip
+	@unzip -nqq pcre2-pcre2-10.43.zip
 
 #
 # Debug build settings
