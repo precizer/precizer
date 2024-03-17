@@ -259,6 +259,8 @@ tests/examples/4
 3 directories, 4 files
 ```
 
+Параметр _--maxdepth_ со значением _=0_ полностью отключает рекурсию.
+
 ```sh
 precizer --maxdepth=0 tests/examples/4
 ```
