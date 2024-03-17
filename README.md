@@ -256,6 +256,8 @@ tests/examples/4
 3 directories, 4 files
 ```
 
+The _--maxdepth_ option with a value of _=0_ disables recursion completely.
+
 ```sh
 precizer --maxdepth=0 tests/examples/4
 ```
