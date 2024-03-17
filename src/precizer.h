@@ -167,6 +167,11 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **ignore;
 
+	/// Include those relative paths even if
+	/// they were excluded via the --ignore option
+	/// The string array of PCRE2 regular expressions
+	char **include;
+
 	/// Must be specifyed additionally in order
 	/// to remove from the database mention of
 	/// files that matches the regular expression

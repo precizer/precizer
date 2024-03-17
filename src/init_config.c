@@ -72,6 +72,11 @@ void init_config(void)
 	/// The string array of PCRE2 regular expressions
 	config->ignore = NULL;
 
+	/// Include those relative paths even if
+	/// they were excluded via the --ignore option
+	/// The string array of PCRE2 regular expressions
+	config->include = NULL;
+
 	/// Must be specifyed additionally in order
 	/// to remove from the database mention of
 	/// files that matches the regular expression
