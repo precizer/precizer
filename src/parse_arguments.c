@@ -48,7 +48,7 @@ static char args_doc[] = "PATH";
 /* The options we understand. */
 static struct argp_option options[] = {
 	{ 0, 0, 0, 0, "Build database options:", 2},
-	{"ignore",   'i', "PCRE2_REGEXP", 0, "Relative path to ignore. PCRE2 regular expressions " \
+	{"ignore",   'e', "PCRE2_REGEXP", 0, "Relative path to ignore. PCRE2 regular expressions " \
 	                                     "could be used to specify a pattern to ignore files " \
 	                                     "or directories. Attention! All paths for the regular " \
 	                                     "expression must be  specified as relative. To " \
@@ -68,6 +68,10 @@ static struct argp_option options[] = {
 	                                     "\n" \
 	                                     "\033[1m--ignore=\"diff2/1/*\" --ignore=\"diff2/2/*\" " \
 	                                     "tests/examples/diffs\033[0m\n", 0 },
+	{"include",   'i', "PCRE2_REGEXP", 0, "Relative path to be included. PCRE2 regular expressions. " \
+	                                     "Include these relative paths even if they were excluded " \
+	                                     "via the \033[1m--ignore\033[0m option. Multiple regular " \
+	                                     "expressions with \033[1m--include\033[0m could be specified\n", 0 },
 	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
 	                                     "The option \033[1m--db-clean-ignored\033[0m must be specifyed additionally " \
 	                                     "in order to remove from the database mention of files that " \
@@ -139,8 +143,11 @@ static error_t parse_opt
 			}
 			strcpy(config->db_file_name,arg);
 			break;
-		case 'i':
+		case 'e':
 			add_string_to_array(&config->ignore,arg);
+			break;
+		case 'i':
+			add_string_to_array(&config->include,arg);
 			break;
 		case 'c':
 			config->compare = true;
@@ -261,6 +268,12 @@ Return parse_arguments
 		// Print the contents of the string array
 		for(int i = 0; config->ignore[i] != NULL; ++i) {
 			printf(i == 0 ? "%s" : ", %s", config->ignore[i]);
+		}
+		printf("; ");
+		printf("include=");
+		// Print the contents of the string array
+		for(int i = 0; config->include[i] != NULL; ++i) {
+			printf(i == 0 ? "%s" : ", %s", config->include[i]);
 		}
 		printf("; ");
 		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s",
