@@ -14,7 +14,8 @@ void show_relative_path
 	const DBrow *dbrow,
 	bool *first_iteration,
 	bool *show_changes,
-	bool *rehashig_from_the_beginning
+	bool *rehashig_from_the_beginning,
+	bool *ignored
 ){
 
 	if(*first_iteration == true)
@@ -38,54 +39,62 @@ void show_relative_path
 
 	if(config->silent == false)
 	{
+		if(*ignored == true)
+		{
+			printf("\033[1mignored\033[0m ");
+		}
 
 		printf("%s",relative_path);
 
-		if(*rehashig_from_the_beginning)
+		if(*ignored == false)
 		{
-			printf(" the SHA512 hashing of the file had not been finished previously, the file has been changed and will be rehashed from the begining\n");
-		} else {
-			if(*show_changes == true)
+			if(*rehashig_from_the_beginning)
 			{
-				if(*metadata_of_scanned_and_saved_files != IDENTICAL
-					&& dbrow->relative_path_already_in_db == true)
+				printf(" the SHA512 hashing of the file had not been finished previously, the file has been changed and will be rehashed from the begining\n");
+			} else {
+				if(*show_changes == true)
 				{
-					printf(" changed ");
-
-					switch(*metadata_of_scanned_and_saved_files) {
-						case 1:
-							printf("size");
-							break;
-						case 2:
-							printf("ctime");
-							break;
-						case 3:
-							printf("size & ctime");
-							break;
-						case 4:
-							printf("mtime");
-							break;
-						case 5:
-							printf("size & mtime");
-							break;
-						case 6:
-							printf("ctime & mtime");
-							break;
-						case 7:
-							printf("size & ctime & mtime");
-							break;
-						default:
-							break;
-					}
-				} else {
-					if (dbrow->relative_path_already_in_db == true)
+					if(*metadata_of_scanned_and_saved_files != IDENTICAL
+						&& dbrow->relative_path_already_in_db == true)
 					{
-						printf(" updating");
+						printf(" changed ");
+						switch(*metadata_of_scanned_and_saved_files) {
+							case 1:
+								printf("size");
+								break;
+							case 2:
+								printf("ctime");
+								break;
+							case 3:
+								printf("size & ctime");
+								break;
+							case 4:
+								printf("mtime");
+								break;
+							case 5:
+								printf("size & mtime");
+								break;
+							case 6:
+								printf("ctime & mtime");
+								break;
+							case 7:
+								printf("size & ctime & mtime");
+								break;
+							default:
+								break;
+						}
 					} else {
-						printf(" adding");
+						if (dbrow->relative_path_already_in_db == true)
+						{
+							printf(" updating");
+						} else {
+							printf(" adding");
+						}
 					}
 				}
+				printf("\n");
 			}
+		} else {
 			printf("\n");
 		}
 	}

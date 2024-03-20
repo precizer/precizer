@@ -16,7 +16,7 @@ static char doc[] =
 \n\
 \033[1mprecizer\033[m is focused on work with gigantic file systems. With the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.\n\
 \nGlory to Ukraine!\n" \
-"\vBASIC EXAMPLE\n\
+"\vSIMPLE EXAMPLE\n\
 Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.\n" \
 "Run the program on the first machine with host name, for example “host1”:\n\
 \n\
@@ -71,12 +71,12 @@ static struct argp_option options[] = {
 	{"include",   'i', "PCRE2_REGEXP", 0, "Relative path to be included. PCRE2 regular expressions. " \
 	                                     "Include these relative paths even if they were excluded " \
 	                                     "via the \033[1m--ignore\033[0m option. Multiple regular " \
-	                                     "expressions with \033[1m--include\033[0m could be specified\n", 0 },
+	                                     "expressions could be specified\n", 0 },
 	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
 	                                     "The option \033[1m--db-clean-ignored\033[0m must be specifyed additionally " \
 	                                     "in order to remove from the database mention of files that " \
 	                                     "matches the regular expression passed through the " \
-	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option(s)", 0},
+	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option(s)\n", 0},
 	{"maxdepth", 'm', "NUMBER", 0, "Recursion depth limit. " \
 	                        "The depth of the traversal, numbered from 0 to N, " \
 	                        "where a file could be found. Representing the maximum " \
@@ -87,7 +87,7 @@ static struct argp_option options[] = {
 	                        "the database as a result of the last scaning really need to be " \
 	                        "renewed. Warning! If this option will be used in incorrect way, " \
 	                        "information about files and their checksums against the database would " \
-	                        "be lost.", 0 },
+	                        "be lost.\n", 0 },
 	{"update",   'u', 0, 0, "Force update of the database with new, changed and deleted files. "\
 	                        "This option would greatly affects the security of the database. " \
 	                        "Please use it only in exceptional cases and not add thoughtlessly " \
@@ -97,12 +97,12 @@ static struct argp_option options[] = {
 	                         "PATH source (starting directory) that has been specified when the database " \
 	                         "had been created. Otherwise, updating the data makes no sense — the " \
 	                         "old data will be deleted from the database and completely " \
-	                         "overwritten by new ones.", 0 },
-	{"database", 'd', "FILE", 0, "Database file name. By default name of the local host will be used: ${HOST}.db", 0 },
+	                         "overwritten by new ones.\n", 0 },
+	{"database", 'd', "FILE", 0, "Database file name. By default name of the local host will be used: ${HOST}.db\n", 0 },
 	{ 0, 0, 0, 0, "Compare databases options:", 1},
 	{"compare",  'c', 0, 0, "Compare two databases from different sourses. Two extra arguments should be " \
-	                        "specified as paths to the databases files to compare. For example: \033[1m--compare database1.db database2.db\033[0m", 0 },
-	{ 0, 0, 0, 0, "Visualizations options:", -1},
+	                        "specified as paths to the databases files to compare. For example: \033[1m--compare database1.db database2.db\033[0m\n", 0 },
+	{ 0, 0, 0, 0, "Visualizations options:\n", -1},
 	{"silent",   's', 0, 0, "Don't produce any output. Option cannot be used with \033[1m--compare\033[0m", 0 },
 	{"verbose",  'v', 0, 0, "Produce verbose output.", 0 },
 	{"progress", 'p', 0, 0, "Show progress bar. This assume a preliminary count of files and the space they occupy " \

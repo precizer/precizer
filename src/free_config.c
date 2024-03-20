@@ -30,4 +30,13 @@ void free_config(void)
 		}
 		free(config->ignore);
 	}
+
+	// Free memory of string array
+	if(config->include != NULL)
+	{
+		for (int i = 0; config->include[i] != NULL; ++i) {
+			free(config->include[i]);
+		}
+		free(config->include);
+	}
 }

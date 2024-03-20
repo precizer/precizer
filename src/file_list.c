@@ -30,7 +30,8 @@ Return file_list
 	// since the last research
 	bool first_iteration = true;
 	bool show_changes = true;
-	bool showed_once = false;
+	bool ignore_showed_once = false;
+	bool include_showed_once = false;
 
 	FTS *file_systems = NULL;
 	FTSENT *p = NULL;
@@ -146,6 +147,8 @@ Return file_list
 					/* Write all columns from DB row to the structure DBrow */
 					DBrow _dbrow;
 					DBrow *dbrow = &_dbrow;
+					// Clean the structure to prevent reuse;
+					memset(dbrow,0,sizeof(DBrow));
 
 #if 0 // Old multiPATH solution
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path)))
@@ -184,6 +187,9 @@ Return file_list
 					// For a file which had been changed before creation of its checksum has been already finished.
 					bool rehashig_from_the_beginning = false;
 
+					// Ignored with --ignore= or admit with --include=
+					bool ignored = false;
+
 					// Reflect changes in global
 					config->something_has_been_changed = true;
 
@@ -200,17 +206,27 @@ Return file_list
 						}
 					}
 
-					/* PCRE2 regexp to ignore the file */
+					/* PCRE2 regexp to include the file */
 					{
-						// Default value
-						Ignore result = ignore(relative_path,&showed_once);
+						Include response = include(relative_path,&include_showed_once);
 
-						if(IGNORE == result)
+						if(DO_NOT_INCLUDE == response)
 						{
-							slog(false,"\033[1mignored\033[0m %s\n",relative_path);
-							break;
+							/* PCRE2 regexp to ignore the file */
 
-						} else if (REGEXP_FAIL == result)
+							Ignore result = ignore(relative_path,&ignore_showed_once);
+
+							if(IGNORE == result)
+							{
+								ignored = true;
+
+							} else if (FAIL_REGEXP_IGNORE == result)
+							{
+								status = FAILURE;
+								break;
+							}
+
+						} else if (FAIL_REGEXP_INCLUDE == response)
 						{
 							status = FAILURE;
 							break;
@@ -221,7 +237,12 @@ Return file_list
 					memset(sha512,0,sizeof(sha512)); // Clean sha512 to prevent reuse;
 
 					// Print out of a file name and its changes
-					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&first_iteration,&show_changes,&rehashig_from_the_beginning);
+					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored);
+
+					if(ignored == true)
+					{
+						break;
+					}
 
 					if(SUCCESS != (status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext)))
 					{

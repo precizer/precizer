@@ -61,11 +61,20 @@ typedef enum
 // Return codes for Ignore function
 typedef enum
 {
-	DO_NOT_IGNORE,  // The actual value is 0
-	IGNORE,         // The actual value is 1
-	REGEXP_FAIL     // The actual value is 2
+	DO_NOT_IGNORE,     // The actual value is 0
+	IGNORE,            // The actual value is 1
+	FAIL_REGEXP_IGNORE // The actual value is 2
 
 } Ignore;
+
+// Return codes for Include function
+typedef enum
+{
+	DO_NOT_INCLUDE,     // The actual value is 0
+	INCLUDE,            // The actual value is 1
+	FAIL_REGEXP_INCLUDE // The actual value is 2
+
+} Include;
 
 
 /*
@@ -291,6 +300,7 @@ void show_relative_path
 	const DBrow*,
 	bool*,
 	bool*,
+	bool*,
 	bool*
 );
 
@@ -301,6 +311,18 @@ Return detect_a_path(const char*);
 Return detect_paths(void);
 
 Ignore ignore(
+	const char*,
+	bool*
+);
+
+Include include(
+	const char*,
+	bool*
+);
+
+REGEXP regexp_match
+(
+	const char*,
 	const char*,
 	bool*
 );
