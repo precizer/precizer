@@ -39,7 +39,7 @@ Return db_delete_the_file_by_id
 		}
 		if(*clear_ignored == true)
 		{
-			slog(false,"cleared ignored %s\n",relative_path);
+			slog(false,"clean ignored %s\n",relative_path);
 		} else {
 			slog(false,"%s\n",relative_path);
 		}

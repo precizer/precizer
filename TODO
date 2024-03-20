@@ -6,14 +6,20 @@ TODO
 		https://morningcoffee.io/escape-sequences-a-quick-guide.html
 	ANSI Escape Sequences
 		http://isthe.com/chongo/tech/comp/ansi_escapes.html
+		https://eskerda.com/minimal-bash-progress-bar-ansi-escape-sequences/
 	How to implement progress bars in C like apt-get?
 		https://stackoverflow.com/questions/73468165/how-to-implement-progress-bars-in-c-like-apt-get
 	Here’s How to Enable the Handy Apt Terminal Progress Bar in Ubuntu 14.04
 		https://www.omgubuntu.co.uk/2014/04/how-to-enable-apt-terminal-progress-bar
 	apt source code
 		https://salsa.debian.org/apt-team/apt
-
-* --ignore=PATH(or PCRE regexp) and --include=PATH(or PCRE regexp) (Consider the PATH even it is a subfolder of a file under --ignore directory)
+	Others
+		https://www.geeksforgeeks.org/escape-sequence-in-c/
+		https://gist.github.com/ConnerWill/d4b6c776b509add763e17f9f113fd25b
+		https://unstop.com/blog/escape-sequence-in-c
+	Examples
+		pacman
+		apt
 
 * Сalculate remaining download time
 	https://stackoverflow.com/questions/798800/whats-the-best-way-to-calculate-remaining-download-time
@@ -36,5 +42,13 @@ TODO
 * How to make installation package for many Linux distributions
 	"how to create a package for many distros"
 		https://unix.stackexchange.com/questions/136387/how-to-make-installation-package-for-many-linux-distributions
+* Smoke tests
+* Unit tests
+	GoogleTest
+		https://github.com/google/googletest
+	GoogleTest GUI gtest-runner
+		https://github.com/nholthaus/gtest-runner
+	Unit testing in STM32CubeIDE with GoogleTest
+		https://kleinembedded.com/unit-testing-in-stm32cubeide-with-googletest/
 
-* ALL DONE
+* ALL DONE!

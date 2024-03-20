@@ -395,10 +395,10 @@ The database has already been created in the past
 Starting of database file myhost.db integrity check...  
 The database myhost.db is in good condition  
 These files no longer exist and will be deleted against the DB myhost.db:  
-delete ignored diff2/1/AAA/BCB/CCC/a.txt  
-delete ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
-delete ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
-delete ignored diff2/2/AAA/BBB/CZC/a.txt  
+clean ignored diff2/1/AAA/BCB/CCC/a.txt  
+clean ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+clean ignored diff2/2/AAA/BBB/CZC/a.txt  
 Start vacuuming...  
 The database has been vacuumed  
 </sub>

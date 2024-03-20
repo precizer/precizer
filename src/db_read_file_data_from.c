@@ -12,9 +12,6 @@ Return db_read_file_data_from
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// Clean the structure to prevent reuse;
-	memset(dbrow,0,sizeof(DBrow));
-
 	/* Read from SQL */
 	sqlite3_stmt *select_stmt = NULL;
 	int rc;

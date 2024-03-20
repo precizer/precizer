@@ -61,24 +61,39 @@ Return db_delete_missing_files_from(void)
 			 * passed through the ignore option(s)
 			 *
 			 */
-			if(config->db_clean_ignored)
+			if(config->db_clean_ignored == true)
 			{
 				/*
 				 *
-				 * PCRE2 regexp to ignore the file
+				 * PCRE2 regexp to include the file
 				 *
 				 */
 
+				// Don't show extra messages
 				bool showed_once = true;
 
-				// Default value
-				Ignore result = ignore(relative_path,&showed_once);
+				Include response = include(relative_path,&showed_once);
 
-				if(IGNORE == result)
+				if(DO_NOT_INCLUDE == response)
 				{
-					clear_ignored = true;
+					/*
+					 *
+					 * PCRE2 regexp to ignore the file
+					 *
+					 */
 
-				} else if (REGEXP_FAIL == result)
+					Ignore result = ignore(relative_path,&showed_once);
+
+					if(IGNORE == result)
+					{
+						clear_ignored = true;
+
+					} else if (FAIL_REGEXP_IGNORE == result)
+					{
+						status = FAILURE;
+					}
+
+				} else if (FAIL_REGEXP_INCLUDE == response)
 				{
 					status = FAILURE;
 					break;
