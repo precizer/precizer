@@ -1,5 +1,11 @@
 #include "precizer.h"
 
+/**
+ *
+ * The VACUUM command rebuilds the database file,
+ * repacking it into a minimal amount of disk space.
+ *
+ */
 Return db_vacuum(void)
 {
 	/// The status that will be passed to return() before exiting.

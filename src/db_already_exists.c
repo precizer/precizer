@@ -51,7 +51,7 @@ Return db_already_exists(void)
 	{
 		if(config->update == true)
 		{
-			slog(false,"The database has already been created in the past\n");
+			slog(true,"The database has already been created in the past\n");
 		} else {
 			slog(false,"The database %s has been created in the past and already contains" \
 			                  " data with files and their checksums. Use the \033[1m--update\033[m option if" \

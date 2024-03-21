@@ -1,5 +1,12 @@
 #include "precizer.h"
 
+/**
+ *
+ * @brief Update the record against db.
+ * @details Update information about the file, its
+ * metadata and checksum against the database
+ *
+ */
 Return db_update_the_record
 (
 	const sqlite3_int64 *ID,

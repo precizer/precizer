@@ -5,8 +5,8 @@
 /**
  *
  * Function to check whether a directory exists or not.
- * It returns SUCCESS if given path is directory and exists 
- * otherwise returns FAILURE.
+ * @returns Returns SUCCESS if given path is directory and exists
+ *                  FAILURE otherwise
  *
  */
 Return detect_a_path(

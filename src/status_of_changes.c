@@ -2,7 +2,7 @@
 
 /**
  *
- * Show global change status against database
+ * Reflect global change status against database
  * @arg @c config Main global configuration structure
  *
  */

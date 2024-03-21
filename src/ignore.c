@@ -1,5 +1,12 @@
 #include "precizer.h"
 
+/**
+ *
+ * Decide whether or not to ignore the relative
+ * path to the file by comparing it with PCRE2 regular
+ * expressions passed as arguments with --ignore=
+ *
+ */
 Ignore ignore
 (
 	const char *relative_path,

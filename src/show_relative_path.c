@@ -5,6 +5,8 @@
  * Print out the relative path of the file
  * with additional explanations of what
  * exactly will happen to this file
+ * @arg @c relative_path Relative path by itself
+ * @arg @c metadata_of_scanned_and_saved_files Code of changes in file metadata
  *
  */
 void show_relative_path
@@ -15,9 +17,8 @@ void show_relative_path
 	bool *first_iteration,
 	bool *show_changes,
 	bool *rehashig_from_the_beginning,
-	bool *ignored
+	const bool *ignored
 ){
-
 	if(*first_iteration == true)
 	{
 		*first_iteration = false;

@@ -1,5 +1,12 @@
 #include "precizer.h"
 
+/**
+ *
+ * Decide whether or not to include previously ignored relative
+ * path to the file by comparing it with PCRE2 regular
+ * expressions passed as arguments with --include=
+ *
+ */
 Include include
 (
 	const char *relative_path,

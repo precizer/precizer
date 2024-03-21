@@ -1,10 +1,13 @@
 doc
 libs/*/debug/
 libs/*/release/
+libs/*/cunit/
 libs/*/pcre*/
 src/*/
 tests/examples/huge/
+tests/unit_tests
+precizer
 *.db
 *.out.*
 *.old
-precizer
+*~

@@ -376,25 +376,150 @@ precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 
 ### Example 8
 
-Continuation of previous example [Example 6](#example-6).
-
-_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s)
-
 The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/\*" and "diff2/2/\*"
 
+_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s). This is special protection against accidental deletion of information from the database.
+
+
 ```sh
-precizer --update --db-clean-ignored --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
+# Let's delete the old database and create a new one, fill it with data:
+
+rm "${HOST}.db"
+
+precizer tests/examples/diffs
 ```
 
+<sub>Database file name: myhost.db  
+Starting of database file myhost.db integrity check...  
+The database myhost.db is in good condition  
+**These files will be added against the DB myhost.db:**  
+diff1/3/AAA/BBB/CCC/a.txt  
+diff1/path2/AAA/BCB/CCC/a.txt  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+diff1/1/AAA/BCB/CCC/a.txt  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt  
+diff1/4/AAA/BBB/CCC/a.txt  
+diff1/2/AAA/BBB/CZC/a.txt  
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/3/AAA/BBB/CCC/a.txt  
+diff2/path2/AAA/BCB/CCC/a.txt  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/BCB/CCC/a.txt  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/4/AAA/BBB/CCC/a.txt  
+diff2/2/AAA/BBB/CZC/a.txt  
+diff2/path1/AAA/BCB/CCC/b.txt  
+diff2/path1/AAA/BCB/CCC/a.txt  
+diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
+
+```sh
+
+# Update the database by deleting information about those files which have been specified as ignored
+
+precizer --update --db-clean-ignored \
+	--ignore="diff2/1/*" \
+	--ignore="diff2/2/*" \
+	tests/examples/diffs
+```
 <sub>Database file name: myhost.db  
 The database has already been created in the past  
 Starting of database file myhost.db integrity check...  
 The database myhost.db is in good condition  
-**These files no longer exist and will be deleted against the DB myhost.db:**  
+**These files are ignored or no longer exist and will be deleted against the DB myhost.db:**  
 clean ignored diff2/1/AAA/BCB/CCC/a.txt  
 clean ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
 clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
 clean ignored diff2/2/AAA/BBB/CZC/a.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
+
+### Example 9
+
+Using the _--ignore_ option(s) together with _--include_
+
+```sh
+# Let's delete the old database and create a new one, fill it with data:
+
+rm "${HOST}.db"
+
+precizer tests/examples/diffs
+```
+
+<sub>Database file name: myhost.db  
+Starting of database file myhost.db integrity check...  
+The database myhost.db is in good condition  
+**These files will be added against the DB myhost.db:**  
+diff1/3/AAA/BBB/CCC/a.txt  
+diff1/path2/AAA/BCB/CCC/a.txt  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+diff1/1/AAA/BCB/CCC/a.txt  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt  
+diff1/4/AAA/BBB/CCC/a.txt  
+diff1/2/AAA/BBB/CZC/a.txt  
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/3/AAA/BBB/CCC/a.txt  
+diff2/path2/AAA/BCB/CCC/a.txt  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/BCB/CCC/a.txt  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/4/AAA/BBB/CCC/a.txt  
+diff2/2/AAA/BBB/CZC/a.txt  
+diff2/path1/AAA/BCB/CCC/b.txt  
+diff2/path1/AAA/BCB/CCC/a.txt  
+diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
+
+PCRE2 regular expressions of relative paths to be included. Include specified relative paths even if they were excluded via the --ignore option(s). Multiple regular expressions could be specified with --include
+
+The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/\*" and "diff2/2/\*" but paths matching the patterns from _--include_ will remain in the database
+
+_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s). This is special protection against accidental deletion of information from the database.
+
+```sh
+
+# Update the database by deleting information about those files which have been specified as ignored
+
+precizer --update --db-clean-ignored \
+	--ignore="path2/*" \
+	--ignore="diff2/*" \
+	--include="diff2/1/AAA/ZAW/A/b/c/*" \
+	--include="diff2/path1/AAA/ZAW/*" \
+	tests/examples/diffs
+```
+
+<sub>Database file name: myhost.db  
+Starting of database file myhost.db integrity check...  
+The database myhost.db has been verified and is in good condition  
+The **--update** option has been used, so the information about files will be updated against the database myhost.db  
+**These files are ignored or no longer exist and will be deleted against the DB myhost.db:**  
+clean ignored diff1/path2/AAA/BCB/CCC/a.txt  
+clean ignored diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+clean ignored diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+clean ignored diff2/1/AAA/BCB/CCC/a.txt  
+clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+clean ignored diff2/2/AAA/BBB/CZC/a.txt  
+clean ignored diff2/3/AAA/BBB/CCC/a.txt  
+clean ignored diff2/4/AAA/BBB/CCC/a.txt  
+clean ignored diff2/path1/AAA/BCB/CCC/a.txt  
+clean ignored diff2/path1/AAA/BCB/CCC/b.txt  
+clean ignored diff2/path2/AAA/BCB/CCC/a.txt  
+clean ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
 Start vacuuming...  
 The database has been vacuumed  
 </sub>

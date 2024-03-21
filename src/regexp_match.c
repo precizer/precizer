@@ -3,6 +3,11 @@
 #include "precizer.h"
 #include "pcre2.h"
 
+/**
+ *
+ * Checks whether PCRE2 regular expression matches a comparison string or not
+ *
+ */
 REGEXP regexp_match
 (
 	const char *regexp,

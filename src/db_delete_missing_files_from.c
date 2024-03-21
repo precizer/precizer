@@ -4,7 +4,7 @@
 /**
  *
  * Remove information from the database about files that had been deleted
- * on the file system
+ * on the file system or have been ignored
  *
  */
 Return db_delete_missing_files_from(void)
@@ -17,6 +17,17 @@ Return db_delete_missing_files_from(void)
 	if(config->compare == true)
 	{
 		return(status);
+	}
+
+	if(config->update == true && config->ignore != NULL)
+	{
+		if(config->db_clean_ignored == false)
+		{
+			slog(false,"If the information about ignored files should be removed from the database the \033[1m--db-clean-ignored\033[0m option must be specified. This is special protection against accidental deletion of information from the database.\n");
+		} else {
+			slog(true,"The \033[1m--db-clean-ignored\033[0m option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
+
+		}
 	}
 
 	sqlite3_stmt *select_stmt = NULL;
@@ -51,7 +62,7 @@ Return db_delete_missing_files_from(void)
 		char *absolute_path = NULL;
 
 		bool path_was_removed_from_db = false;
-		bool clear_ignored = false;
+		bool clean_ignored = false;
 
 		if(runtime_path_prefix != NULL && relative_path != NULL){
 
@@ -86,7 +97,7 @@ Return db_delete_missing_files_from(void)
 
 					if(IGNORE == result)
 					{
-						clear_ignored = true;
+						clean_ignored = true;
 
 					} else if (FAIL_REGEXP_IGNORE == result)
 					{
@@ -119,9 +130,9 @@ Return db_delete_missing_files_from(void)
 			path_was_removed_from_db = true;
 		}
 
-		if(clear_ignored == true || path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
+		if(clean_ignored == true || path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
 		{
-			status = db_delete_the_file_by_id(&ID,&first_iteration,&clear_ignored,relative_path);
+			status = db_delete_the_file_by_id(&ID,&first_iteration,&clean_ignored,relative_path);
 		}
 		free(absolute_path);
 	}

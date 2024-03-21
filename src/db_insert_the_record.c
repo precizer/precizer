@@ -1,5 +1,12 @@
 #include "precizer.h"
 
+/**
+ *
+ * @brief Insert the record into db.
+ * @details Insert information about the file, its
+ * metadata and checksum into the database
+ *
+ */
 Return db_insert_the_record
 (
 #if 0 // Old multiPATH solution

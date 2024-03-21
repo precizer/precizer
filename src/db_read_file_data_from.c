@@ -1,5 +1,10 @@
 #include "precizer.h"
 
+/**
+ *
+ * @brief Read data about the file from DB
+ *
+ */
 Return db_read_file_data_from
 (
 	DBrow *dbrow,
