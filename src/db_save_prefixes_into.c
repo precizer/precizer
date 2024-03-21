@@ -2,10 +2,10 @@
 
 /**
  *
- * Save the absolute path directory prefix into DB
+ * Save the directory prefix path into DB
  *
  */
-Return db_save_paths_into(void)
+Return db_save_prefixes_into(void)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -46,7 +46,7 @@ Return db_save_paths_into(void)
 	for (int i = 0; config->paths[i]; i++)
 	{
 
-		// Remove unnecessary trailing slash at the end of the directory path
+		// Remove unnecessary trailing slash at the end of the directory prefix
 		remove_trailing_slash(config->paths[i]);
 
 		/* Create SQL statement. Prepare to write */

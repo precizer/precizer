@@ -1,10 +1,16 @@
 #include "precizer.h"
 
+/**
+ *
+ * This function remove information about a specific
+ * file from the database by its unique db ID
+ *
+ */
 Return db_delete_the_file_by_id
 (
 	sqlite_int64 *ID,
 	bool *first_iteration,
-	bool *clear_ignored,
+	const bool *clean_ignored,
 	const char *relative_path
 ){
 	/// The status that will be passed to return() before exiting.
@@ -35,9 +41,14 @@ Return db_delete_the_file_by_id
 			// Reflect changes in global
 			config->something_has_been_changed = true;
 
-			slog(false,"\033[1mThese files no longer exist and will be deleted against the DB %s:\n\033[m",config->db_file_name);
+			if(config->update == true)
+			{
+				slog(false,"The \033[1m--update\033[m option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
+			}
+
+			slog(false,"\033[1mThese files are ignored or no longer exist and will be deleted against the DB %s:\n\033[m",config->db_file_name);
 		}
-		if(*clear_ignored == true)
+		if(*clean_ignored == true)
 		{
 			slog(false,"clean ignored %s\n",relative_path);
 		} else {

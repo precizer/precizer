@@ -119,6 +119,7 @@ typedef struct {
 
 // The main Configuration
 typedef struct {
+
 	/// Max available size of a path
 	long int running_dir_size;
 
@@ -138,16 +139,19 @@ typedef struct {
 	/// Forse update of the database
 	bool force;
 
-	/// Extra output
+	/// Additional output for debugging
 	bool verbose;
 
-	/// Force update of the database with new, changed or deleted files
+	/// Force update of the database with new,
+	/// changed or deleted files. This is special
+	/// protection against accidental deletion of
+	/// information from the database.
 	bool update;
 
 	/// Parameter to compare database
 	bool compare;
 
-	/// An array of paths to scan
+	/// An array of paths to traverse
 	char **paths;
 
 	/// Name of DB file
@@ -169,7 +173,11 @@ typedef struct {
 	/// Don't produce any output
 	bool silent;
 
-	/// Recursion depth limit
+	/// Recursion depth limit. The depth of the traversal,
+	/// numbered from 0 to N, where a file could be found.
+	/// Representing the maximum of the starting
+	/// point (from root) of the traversal.
+	/// The root itself is numbered 0
 	short maxdepth;
 
 	/// Ignore those relative paths
@@ -185,6 +193,8 @@ typedef struct {
 	/// to remove from the database mention of
 	/// files that matches the regular expression
 	/// passed through the ignore option(s)
+	/// This is special protection against accidental
+	/// deletion of information from the database.
 	bool db_clean_ignored;
 
 } Config;
@@ -232,7 +242,7 @@ Return db_delete_the_file_by_id
 (
 	sqlite_int64*,
 	bool*,
-	bool*,
+	const bool*,
 	const char*
 );
 
@@ -263,7 +273,7 @@ Return db_insert_the_record(
 
 Return db_file_name(void);
 
-Return db_save_paths_into(void);
+Return db_save_prefixes_into(void);
 
 Return db_compare(void);
 
@@ -301,7 +311,7 @@ void show_relative_path
 	bool*,
 	bool*,
 	bool*,
-	bool*
+	const bool*
 );
 
 void status_of_changes(void);
@@ -351,5 +361,8 @@ extern _Atomic bool global_interrupt_flag;
 
 extern Config _config;
 extern Config *config;
+
+// Application name and current code version
+#include "version.h"
 
 #endif /* _PRECIZER_H */

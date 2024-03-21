@@ -1,9 +1,11 @@
 #include "precizer.h"
 
 /**
+ *
  * @brief Print out current date and time in ISO format
  * @return A pointer to a char array that could be used
  * like this, for example: printf("Start at %s\n",logger_show_time());
+ *
  */
 char *logger_show_time(void)
 {

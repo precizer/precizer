@@ -3,8 +3,11 @@
 #include <termios.h>
 
 /**
- * Interrupt the loop smoothly
- * Interrupt when Ctrl+C
+ *
+ * Interrupt loops smoothly
+ * Interrupt when Ctrl+C (SIGTERM) or
+ * kill -15 (SIGINT)
+ *
  */
 void notify_quit_handler
 (

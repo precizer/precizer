@@ -3,7 +3,7 @@
 #include <errno.h>
 
 /**
- * Remember the runtime directory absolute path in config,
+ * Save the runtime directory absolute path into global config structure,
  * fopen() was not able to process relative paths, only absolute ones.
  */
 Return determine_running_dir(void)

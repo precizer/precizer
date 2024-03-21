@@ -1,13 +1,13 @@
 /**
  *
  * @file precizer.c
- * @brief Main header file
+ * @brief Main file
  *
  */
 #include "precizer.h"
 
 /**
- * Global definition
+ * Global definitions
  *
  */
 
@@ -102,9 +102,9 @@ int main(int argc,char **argv){
 
 	if(SUCCESS == status)
 	{
-		// Save new paths that has been passed as
+		// Save new prefixes that has been passed as
 		// arguments
-		status = db_save_paths_into();
+		status = db_save_prefixes_into();
 	}
 
 	if(SUCCESS == status)

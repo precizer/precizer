@@ -380,25 +380,150 @@ precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
 
 ### Пример 8
 
-Продолжение предыдущего примера [Пример 6](#пример-6).
+База данных будет очищена от упоминаний файлов, соответствующих регулярным выражениям из аргументов --ignore: "diff2/1/\*" и "diff2/2/\*"
 
 Параметр _--db-clean-ignored_ должен быть указан дополнительно чтобы удалить из базы данных упоминание файлов, соответствующих регулярным выражениям, переданным через опции _--ignore_.
 
-База данных будет очищена от упоминаний файлов, соответствующих регулярным выражениям из аргументов --ignore: "diff2/1/\*" и "diff2/2/\*"
 
 ```sh
-precizer --update --db-clean-ignored --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
+# Удалим старую базу данных и создадим новую, наполним ее данными:
+
+rm "${HOST}.db"
+
+precizer tests/examples/diffs
 ```
 
 <sub>Database file name: myhost.db  
-The database has already been created in the past  
 Starting of database file myhost.db integrity check...  
 The database myhost.db is in good condition  
-These files no longer exist and will be deleted against the DB myhost.db:  
+**These files will be added against the DB myhost.db:**  
+diff1/3/AAA/BBB/CCC/a.txt  
+diff1/path2/AAA/BCB/CCC/a.txt  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+diff1/1/AAA/BCB/CCC/a.txt  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt  
+diff1/4/AAA/BBB/CCC/a.txt  
+diff1/2/AAA/BBB/CZC/a.txt  
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/3/AAA/BBB/CCC/a.txt  
+diff2/path2/AAA/BCB/CCC/a.txt  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/BCB/CCC/a.txt  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/4/AAA/BBB/CCC/a.txt  
+diff2/2/AAA/BBB/CZC/a.txt  
+diff2/path1/AAA/BCB/CCC/b.txt  
+diff2/path1/AAA/BCB/CCC/a.txt  
+diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
+
+```sh
+
+# Обновить базу данных, удалив информацию о тех файлах, которые были указаны как игнорируемые:
+
+precizer --update --db-clean-ignored \
+	--ignore="diff2/1/*" \
+	--ignore="diff2/2/*" \
+	tests/examples/diffs
+```
+<sub>Database file name: myhost.db  
+The database has already been created in the past  
+Starting of database file ljlasdhf.db integrity check...  
+The database ljlasdhf.db is in good condition  
+**These files are ignored or no longer exist and will be deleted against the DB ljlasdhf.db:**  
 clean ignored diff2/1/AAA/BCB/CCC/a.txt  
 clean ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
 clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
 clean ignored diff2/2/AAA/BBB/CZC/a.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
+
+### Example 9
+
+Использование параметров _--ignore_ вместе с _--include_
+
+```sh
+# Удалим старую базу данных и создадим новую, наполним ее данными:
+
+rm "${HOST}.db"
+
+precizer tests/examples/diffs
+```
+
+<sub>Database file name: myhost.db  
+Starting of database file myhost.db integrity check...  
+The database myhost.db is in good condition  
+**These files will be added against the DB ljlasdhf.db:**  
+diff1/3/AAA/BBB/CCC/a.txt  
+diff1/path2/AAA/BCB/CCC/a.txt  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+diff1/1/AAA/BCB/CCC/a.txt  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt  
+diff1/4/AAA/BBB/CCC/a.txt  
+diff1/2/AAA/BBB/CZC/a.txt  
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/3/AAA/BBB/CCC/a.txt  
+diff2/path2/AAA/BCB/CCC/a.txt  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/BCB/CCC/a.txt  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/4/AAA/BBB/CCC/a.txt  
+diff2/2/AAA/BBB/CZC/a.txt  
+diff2/path1/AAA/BCB/CCC/b.txt  
+diff2/path1/AAA/BCB/CCC/a.txt  
+diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
+Start vacuuming...  
+The database has been vacuumed  
+</sub>
+
+Регулярные выражения PCRE2 для относительных путей, которые необходимо включить. Включите указанные относительные пути, даже если они были исключены с помощью опции(ов) --ignore. Несколько регулярных выражений могут быть указаны с помощью --include
+
+База данных будет очищена от упоминаний файлов, соответствующих регулярным выражениям из аргументов --ignore: "diff2/1/\*" и "diff2/2/\*" но пути, соответствующие шаблонам из _--include_ останутся в базе данных.
+
+Параметр _--db-clean-ignored_ должен быть указан дополнительно чтобы удалить из базы данных упоминание файлов, соответствующих регулярным выражениям, переданным через опции _--ignore_.
+
+```sh
+
+# Обновить базу данных, удалив информацию о тех файлах, которые были указаны как игнорируемые за исключением шаблонов путей из _--include_
+
+precizer --update --db-clean-ignored \
+    --ignore="path2/*" \
+    --ignore="diff2/*" \
+    --include="diff2/1/AAA/ZAW/A/b/c/*" \
+    --include="diff2/path1/AAA/ZAW/*" \
+    tests/examples/diffs
+```
+
+<sub>Database file name: myhost.db  
+Starting of database file myhost.db integrity check...  
+The database myhost.db has been verified and is in good condition  
+The **--update** option has been used, so the information about files will be updated against the database myhost.db  
+**These files are ignored or no longer exist and will be deleted against the DB myhost.db:**  
+clean ignored diff1/path2/AAA/BCB/CCC/a.txt  
+clean ignored diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+clean ignored diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+clean ignored diff2/1/AAA/BCB/CCC/a.txt  
+clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+clean ignored diff2/2/AAA/BBB/CZC/a.txt  
+clean ignored diff2/3/AAA/BBB/CCC/a.txt  
+clean ignored diff2/4/AAA/BBB/CCC/a.txt  
+clean ignored diff2/path1/AAA/BCB/CCC/a.txt  
+clean ignored diff2/path1/AAA/BCB/CCC/b.txt  
+clean ignored diff2/path2/AAA/BCB/CCC/a.txt  
+clean ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
 Start vacuuming...  
 The database has been vacuumed  
 </sub>

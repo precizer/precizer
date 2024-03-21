@@ -37,18 +37,14 @@ TODO
 		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.bash
 		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.zsh
 
-* Default file name of the database date_startpath_hostname.db
-
 * How to make installation package for many Linux distributions
 	"how to create a package for many distros"
 		https://unix.stackexchange.com/questions/136387/how-to-make-installation-package-for-many-linux-distributions
 * Smoke tests
+	Run with --silent option and without it
+	Run under sanitizer
+
 * Unit tests
-	GoogleTest
-		https://github.com/google/googletest
-	GoogleTest GUI gtest-runner
-		https://github.com/nholthaus/gtest-runner
-	Unit testing in STM32CubeIDE with GoogleTest
-		https://kleinembedded.com/unit-testing-in-stm32cubeide-with-googletest/
+	CUnit
 
 * ALL DONE!

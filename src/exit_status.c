@@ -2,7 +2,7 @@
 
 /**
  *
- * Print out exit status
+ * Print out an exit status
  *
 */
 int exit_status(

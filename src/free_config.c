@@ -3,7 +3,7 @@
 
 /**
  *
- * Clean allocated memory
+ * Clean up allocated memory
  *
  */
 void free_config(void)

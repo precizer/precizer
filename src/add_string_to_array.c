@@ -1,5 +1,15 @@
 #include "precizer.h"
 
+/**
+ *
+ * The function adds additional strings to a dynamic
+ * array of strings. The last line contains NULL. This
+ * way safely loop could be used until NULL is
+ * encountered. Freeing the memory from the string
+ * array occurs in the free_config() function
+ * before the app exits.
+ *
+ */
 void add_string_to_array(
 	char ***array_ptr,
 	char *new_string

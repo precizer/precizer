@@ -3,12 +3,11 @@
 
 /**
  *
- * @file parse_arguments.c
- * @brief Parse arguments
+ * @brief Parse arguments with argp lib
  *
 */
 
-const char *argp_program_version = "precizer 1.0";
+const char *argp_program_version = APP_NAME " " APP_VERSION;
 
 /* Program documentation. */
 static char doc[] =

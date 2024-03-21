@@ -1,6 +1,8 @@
 # Name of library
 LIBNAME=libpcre2-8
 
+ZIP=pcre2-pcre2-10.43
+
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
 MAKEFLAGS += --no-print-directory
@@ -12,7 +14,7 @@ TOPTARGETS := all clean release debug prod production sanitize test
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
 
-.PHONY: $(TOPTARGETS) unzip
+.PHONY: $(TOPTARGETS)
 
 # Default build
 all: debug release
@@ -33,8 +35,8 @@ memtest: debug
 sanitize: debug
 	@true
 
-unzip:
-	@unzip -nqq pcre2-pcre2-10.43.zip
+$(ZIP):
+	@unzip -nqq $(ZIP).zip
 
 #
 # Debug build settings
@@ -53,33 +55,33 @@ RELSTAT = $(RELDIR)/$(STATLIB)
 #
 # Debug rules
 #
-debug: unzip $(DBGSO) $(DBGSTAT)
+debug: $(ZIP) $(DBGSO) $(DBGSTAT)
 	@true
 
 $(DBGSO): $(DBGSTAT)
 	@true
 
 $(DBGSTAT):
-	@mkdir -p debug; cd debug; cmake ../pcre2-pcre2-10.43 -DPCRE2_DEBUG=ON -DBUILD_SHARED_LIBS=ON $(CMAKE_FLAGS); $(MAKE)
+	@mkdir -p debug; cd debug; cmake ../$(ZIP) -DPCRE2_DEBUG=ON -DBUILD_SHARED_LIBS=ON $(CMAKE_FLAGS); $(MAKE)
 	@ln -f -s $(STATLIB) debug/libpcre.a
 	@echo "$@ prepared to be the library for debug."
 
 #
 # Release rules
 #
-release: unzip $(RELSO) $(RELSTAT)
+release: $(ZIP) $(RELSO) $(RELSTAT)
 	@true
 
 $(RELSO): $(RELSTAT)
 	@true
 
 $(RELSTAT):
-	@mkdir -p release; cd release; cmake ../pcre2-pcre2-10.43 -DBUILD_SHARED_LIBS=OFF $(CMAKE_FLAGS); $(MAKE)
+	@mkdir -p release; cd release; cmake ../$(ZIP) -DBUILD_SHARED_LIBS=OFF $(CMAKE_FLAGS); $(MAKE)
 	@ln -f -s $(STATLIB) release/libpcre.a
 	@echo "$@ prepared to be the library for release."
 
 clean:
-	@rm -rf pcre2-pcre2-10.43
+	@test -d $(ZIP) && rm -rf $(ZIP) || true
 	@test -d $(DBGDIR) && rm -rf $(DBGDIR) || true
 	@test -d $(RELDIR) && rm -rf $(RELDIR) || true
 	@echo $(LIBNAME) cleared.

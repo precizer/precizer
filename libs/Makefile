@@ -3,7 +3,7 @@
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
-SUBDIRS  = sqlite rational sha512 pcre
+SUBDIRS  = sqlite rational sha512 pcre tests
 
 TOPTARGETS := all clean release debug prod production sanitize test
 
