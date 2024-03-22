@@ -206,6 +206,14 @@ Start vacuuming...
 The database has been vacuumed  
 </sub>
 
+In every run of **precizer**, it traverses the file system and then verifies whether there is an entry about certain file in the database. In other words, the state of the file system on the disk takes priority for the program.
+
+**precizer** works very similarly to directory traversal with rsync because it employs a similar algorithm.
+
+Please note that **precizer** will not recalculate SHA512 checksums for files that have already been written to the database and for which the file metadata (such as creation time, modification time, and size) remains the same.
+
+Any new files, deleted files, or files that have changed between runs of the application will be processed, and all changes will be reflected in the database if the _--update_ option is specified. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
+
 ### Example 3
 Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
 
