@@ -1,4 +1,4 @@
-# Name of library
+# Name of the library
 LIBNAME=libsha512
 
 #

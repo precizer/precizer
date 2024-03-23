@@ -1,4 +1,4 @@
-# Name of library
+# Name of the library
 LIBNAME=libcunit
 
 ZIP=cunit
@@ -11,7 +11,7 @@ CONFIG += ordered
 TOPTARGETS := all clean release debug prod production sanitize test
 
 STATLIB = $(LIBNAME).a
-LIBSTAT = $(ZIP)/.build/CUnit/$(LIBNAME).a
+LIBSTAT = debug/CUnit/$(LIBNAME).a
 
 .PHONY: $(TOPTARGETS)
 
@@ -44,9 +44,10 @@ $(ZIP):
 	@unzip -nqq $(ZIP).zip
 
 $(LIBSTAT): $(ZIP)
-	mkdir -p $(ZIP)/.build; cd $(ZIP)/.build; cmake .. -DCUNIT_DISABLE_TESTS=ON -DCUNIT_DISABLE_EXAMPLES=ON; cd CUnit; make
+	@mkdir -p debug; cd debug; cmake ../$(ZIP) -DCUNIT_DISABLE_TESTS=ON -DCUNIT_DISABLE_EXAMPLES=ON; cd CUnit; make
 	@echo "$(LIBNAME) library prepared."
 
 clean:
 	@test -d $(ZIP) && rm -rf $(ZIP) || true
+	@test -d debug && rm -rf debug || true
 	@echo $(LIBNAME) cleared.

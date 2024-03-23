@@ -1,7 +1,8 @@
-# Name of library
+# Name of the library
 LIBNAME=libpcre2-8
 
-ZIP=pcre2-pcre2-10.43
+ZIP=pcre2
+VERSION=pcre2-10.43
 
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
@@ -37,6 +38,11 @@ sanitize: debug
 
 $(ZIP):
 	@unzip -nqq $(ZIP).zip
+
+switch_version: $(ZIP)
+	cd $(ZIP); git checkout tags/$(VERSION)
+	mv $(ZIP).zip $(ZIP).old.zip
+	zip -rqq $(ZIP).zip $(ZIP)
 
 #
 # Debug build settings
