@@ -173,7 +173,8 @@ precizer --progress --database=database1.db tests/examples/diffs/diff1
 ```
 
 <sub>Database file name: database1.db  
-The database database1.db has been created in the past and already contains data with files and their checksums. Use the --update option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB. The precizer has ended unexpectedly due to an error
+The database database1.db has been created in the past and already contains data with files and their checksums. Use the --update option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB.  
+The precizer has ended unexpectedly due to an error  
 </sub>
 
 _--update_ option should be added. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
