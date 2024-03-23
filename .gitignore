@@ -3,6 +3,7 @@ libs/*/debug/
 libs/*/release/
 libs/*/cunit/
 libs/*/pcre*/
+libs/argp/
 src/*/
 tests/examples/huge/
 tests/unit_tests
