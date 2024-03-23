@@ -199,7 +199,7 @@ Make some changes:
 # Modify a file
 echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
 
-# Add new file
+# Add a new file
 touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt
 
 # Remove a file
