@@ -123,6 +123,7 @@ make
 ```sh
 sudo apt -y install build-essential cmake git unzip
 ```
+
 2. Get source code
 ```sh
 git clone https://github.com/dennisrazumovsky/precizer.git
@@ -172,40 +173,60 @@ path2/AAA/BCB/CCC/a.txt
 ```sh
 precizer --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>The database database1.db has been created in the past and already contains data with files and their checksums. Use the **--update** option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB. The precizer has ended unexpectedly due to an error</sub>
 
-Должен быть добавлен параметр **--update**
+<sub>Database file name: database1.db  
+The database database1.db has been created in the past and already contains data with files and their checksums. Use the --update option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB. The precizer has ended unexpectedly due to an error
+</sub>
+
+Должен быть добавлен параметр **--update** _--update_ необходим для защиты базы данных от потери информации из-за случайного запуска.
+
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>The database has already been created in the past  
-total size: 41B, total items: 55, dirs: 44, files: 11, symlnks: 0  
-total size: 41B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+
+<sub>Database file name: database1.db  
+Starting of database file database1.db integrity check...  
+The database database1.db has been verified and is in good condition  
+total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0  
 Start vacuuming...  
 The database has been vacuumed  
 **Nothing have been changed since the last probe (neither added nor updated or deleted files)**  
-The precizer completed its execution without any issues.  
 </sub>
 
 Внесём некоторые изменения:
 
 ```sh
-echo -n " " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+# Modify a file
+echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+
+# Add new file
+touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt
+
+# Remove a file
+rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+
 ```
+
 и запустим **precizer** ещё раз:
 
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>The database has already been created in the past  
-total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+
+<sub>Database file name: database1.db  
+Starting of database file database1.db integrity check...  
+The database database1.db has been verified and is in good condition  
+total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
 The **--update** option has been used, so the information about files will be updated against the database database1.db  
 **These files have been added or changed and those changes will be reflected against the DB database1.db:**  
 1/AAA/BCB/CCC/a.txt changed size & ctime & mtime  
-total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+1/AAA/BCB/CCC/c.txt adding  
+total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+These files are ignored or no longer exist and will be deleted against the DB database1.db:  
+path2/AAA/ZAW/D/e/f/b_file.txt  
 Start vacuuming...  
 The database has been vacuumed  
-The precizer completed its execution without any issues.  
 </sub>
 
 При каждом запуске **precizer** обходит файловую систему после этого проверяя, есть ли запись об определенном файле в базе данных или нет. Другими словами, приоритет для программы имеет состояние файловой системы на диске.
@@ -214,7 +235,7 @@ The precizer completed its execution without any issues.
 
 Стоит обратить внимание, что **precizer** не будет пересчитывать контрольные суммы SHA512 для файлов, которые уже были записаны в базу данных и для которых метаданные файла (такие как время создания, время модификации и размер) остаются прежними.
 
-Любые новые файлы, удаленные файлы или файлы, которые изменились между запусками приложения, будут обработаны, и все изменения будут отражены в базе данных, если указан параметр _--update_. Параметр _--update_ необходим для защиты базы данных от потери информации из-за случайного запуска.
+Любые новые файлы, удаленные файлы или файлы, которые изменились между запусками приложения, будут обработаны, и все изменения будут отражены в базе данных, если указан параметр _--update_.
 
 ### Пример 3
 Использование режима _--silent_ При включении этого режима программа ничего не выводит на экран. Это имеет смысл при использовании программы внутри скриптов.
