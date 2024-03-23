@@ -222,7 +222,7 @@ The **--update** option has been used, so the information about files will be up
 1/AAA/BCB/CCC/a.txt changed size & ctime & mtime  
 1/AAA/BCB/CCC/c.txt adding  
 total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
-These files are ignored or no longer exist and will be deleted against the DB database1.db:  
+**These files are ignored or no longer exist and will be deleted against the DB database1.db:**  
 path2/AAA/ZAW/D/e/f/b_file.txt  
 Start vacuuming...  
 The database has been vacuumed  

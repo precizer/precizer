@@ -224,7 +224,7 @@ The **--update** option has been used, so the information about files will be up
 1/AAA/BCB/CCC/a.txt changed size & ctime & mtime  
 1/AAA/BCB/CCC/c.txt adding  
 total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
-These files are ignored or no longer exist and will be deleted against the DB database1.db:  
+**These files are ignored or no longer exist and will be deleted against the DB database1.db:**  
 path2/AAA/ZAW/D/e/f/b_file.txt  
 Start vacuuming...  
 The database has been vacuumed  
@@ -465,9 +465,9 @@ precizer --update --db-clean-ignored \
 ```
 <sub>Database file name: myhost.db  
 The database has already been created in the past  
-Starting of database file ljlasdhf.db integrity check...  
-The database ljlasdhf.db is in good condition  
-**These files are ignored or no longer exist and will be deleted against the DB ljlasdhf.db:**  
+Starting of database file myhost.db integrity check...  
+The database myhost.db is in good condition  
+**These files are ignored or no longer exist and will be deleted against the DB myhost.db:**  
 clean ignored diff2/1/AAA/BCB/CCC/a.txt  
 clean ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt  
 clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
@@ -491,7 +491,7 @@ precizer tests/examples/diffs
 <sub>Database file name: myhost.db  
 Starting of database file myhost.db integrity check...  
 The database myhost.db is in good condition  
-**These files will be added against the DB ljlasdhf.db:**  
+**These files will be added against the DB myhost.db:**  
 diff1/3/AAA/BBB/CCC/a.txt  
 diff1/path2/AAA/BCB/CCC/a.txt  
 diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
