@@ -136,7 +136,6 @@ make
 4. Copy the resulting executable file **precizer** to any location specified in the $PATH system variable for quick access.
 
 ## EXAMPLES OF USING
-
 To explore the program's features, you can use test sets from the tests/examples/ directory in the program source code:
 
 ### Example 1
@@ -172,15 +171,22 @@ Let's try to reuse previous example once agan. The first try. The warning messag
 ```sh
 precizer --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>The database database1.db has been created in the past and already contains data with files and their checksums. Use the **--update** option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB. The precizer has ended unexpectedly due to an error</sub>
 
---update option should be added
+<sub>Database file name: database1.db  
+The database database1.db has been created in the past and already contains data with files and their checksums. Use the --update option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB. The precizer has ended unexpectedly due to an error
+</sub>
+
+_--update_ option should be added. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
+
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>The database has already been created in the past  
-total size: 41B, total items: 55, dirs: 44, files: 11, symlnks: 0  
-total size: 41B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+
+<sub>Database file name: database1.db  
+Starting of database file database1.db integrity check...  
+The database database1.db has been verified and is in good condition  
+total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0  
 Start vacuuming...  
 The database has been vacuumed  
 **Nothing have been changed since the last probe (neither added nor updated or deleted files)**  
@@ -189,19 +195,34 @@ The database has been vacuumed
 Make some changes:
 
 ```sh
-echo -n " " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+# Modify a file
+echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+
+# Add new file
+touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt
+
+# Remove a file
+rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+
 ```
+
 and run the **precizer** once again:
 
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>The database has already been created in the past  
-total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+
+<sub>Database file name: database1.db  
+Starting of database file database1.db integrity check...  
+The database database1.db has been verified and is in good condition  
+total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
 The **--update** option has been used, so the information about files will be updated against the database database1.db  
 **These files have been added or changed and those changes will be reflected against the DB database1.db:**  
 1/AAA/BCB/CCC/a.txt changed size & ctime & mtime  
-total size: 43B, total items: 55, dirs: 44, files: 11, symlnks: 0  
+1/AAA/BCB/CCC/c.txt adding  
+total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+These files are ignored or no longer exist and will be deleted against the DB database1.db:  
+path2/AAA/ZAW/D/e/f/b_file.txt  
 Start vacuuming...  
 The database has been vacuumed  
 </sub>
@@ -212,7 +233,7 @@ In every run of **precizer**, it traverses the file system and then verifies whe
 
 Please note that **precizer** will not recalculate SHA512 checksums for files that have already been written to the database and for which the file metadata (such as creation time, modification time, and size) remains the same.
 
-Any new files, deleted files, or files that have changed between runs of the application will be processed, and all changes will be reflected in the database if the _--update_ option is specified. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
+Any new files, deleted files, or files that have changed between runs of the application will be processed, and all changes will be reflected in the database if the _--update_ option is specified.
 
 ### Example 3
 Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
