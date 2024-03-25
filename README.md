@@ -23,13 +23,13 @@ precizer --progress /mnt1
 ```
 As a result of the program running all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The _--progress_ option visualizes progress and will show the amount of space and the number of files being examined.
 
-3. Run the program on a second machine with a host name, for example host2:
+2. Run the program on a second machine with a host name, for example host2:
 ```sh
 precizer --progress /mnt2
 ```
 As a result, the host2.db database will be created in the current directory.
 
-4. Copy the files with the host1.db and host2.db databases to one of the machines and run the program with the appropriate parameters to compare the databases:
+3. Copy the files with the host1.db and host2.db databases to one of the machines and run the program with the appropriate parameters to compare the databases:
 ```sh
 precizer --compare host1.db host2.db
 ```
