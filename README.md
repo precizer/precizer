@@ -418,7 +418,7 @@ _--db-clean-ignored_ option must be specified additionally in order to remove fr
 
 
 ```sh
-# Let's delete the old database and create a new one, fill it with data:
+# Let's delete the old database and create a new one, fill it out with data:
 
 rm "${HOST}.db"
 
@@ -483,7 +483,7 @@ The database has been vacuumed
 Using the _--ignore_ option(s) together with _--include_
 
 ```sh
-# Let's delete the old database and create a new one, fill it with data:
+# Let's delete the old database and create a new one, fill it out with data:
 
 rm "${HOST}.db"
 
