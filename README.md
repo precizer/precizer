@@ -525,7 +525,7 @@ PCRE2 regular expressions of relative paths to be included. Include specified re
 
 To check up and test your PCRE2 regular expressions you can use https://regex101.com/
 
-The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/.\*" and "diff2/2/.\*" but paths matching the patterns from _--include_ will remain in the database
+The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "^.\*/path2/.\*" and "diff2/.\*" but paths matching the patterns from _--include_ will remain in the database
 
 _--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s). This is special protection against accidental deletion of information from the database.
 
