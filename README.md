@@ -303,6 +303,8 @@ The database has been vacuumed
 
 Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths in the regular expression must be specified as **relative**.
 
+To check up and test your PCRE2 regular expressions you can use https://regex101.com/
+
 To understand what a relative path looks like, just run directory traverses without the _--ignore_ option and look up how the terminal will display relative paths that are writing to the database:
 
 ```sh
@@ -516,6 +518,8 @@ The database has been vacuumed
 </sub>
 
 PCRE2 regular expressions of relative paths to be included. Include specified relative paths even if they were excluded via the --ignore option(s). Multiple regular expressions could be specified with --include
+
+To check up and test your PCRE2 regular expressions you can use https://regex101.com/
 
 The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/\*" and "diff2/2/\*" but paths matching the patterns from _--include_ will remain in the database
 
