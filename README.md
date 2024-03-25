@@ -34,7 +34,7 @@ As a result, the host2.db database will be created in the current directory.
 precizer --compare host1.db host2.db
 ```
 The following information will be displayed on the screen:
-* Which files are missing on host1 but present on host2 and vice versa.
+* Which files are missing on “host1” but present on “host2” and vice versa.
 * For which files, present on both hosts, the checksums do NOT match.
 
 Note that **precizer** writes only relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as "abc/def/aaa.txt" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names "abc/def/aaa.txt" with the corresponding checksums.
@@ -42,17 +42,17 @@ Note that **precizer** writes only relative paths to the database. The example f
 ## TECHNICAL DETAILS
 
 Let's imagine a case where there is a main disk storage and a copy of it. For example, this could be a data center storage and its Disaster Recovery copy. Synchronization occurs periodically from the main storage to the DR storage, but due to the huge volumes of data, most likely, synchronization does not occur on a byte-by-byte basis, but by calculating changes among the metadata of files on the file system. In such cases, the file size and modification time are taken into account, but the changed contents are not examined byte by byte. This makes sense because there are usually good communication channels between the primary data center and the backup Disaster Recovery center, but full byte-by-byte synchronization can take an inappropriate amount of time. Tools such as rsync allow you to synchronize using both methods: File System changes and byte-by-byte comparition, but they have one serious drawback - the state is not saved between sessions. Let's look at what this means in the scenario:
-* Given servers A and B (main data center and backup Disaster Recovery)
-* Some files have changed on server A.
-* The rsync algorithm identified them due to the changed size and modification time of the file of File Systen and synchronized them to server B.
+* Given servers “A” and “B” (main data center and backup Disaster Recovery)
+* Some files have changed on server “A”.
+* The rsync algorithm identified them due to the changed size and modification time of the file of File Systen and synchronized them to server “B”.
 * During synchronization, multiple communication failures occurred between the main data center and Disaster Recovery.
-* To check data integrity (equivalence of stored files on A and B bytes to bytes), the same rsync is usually used only with byte-by-byte comparison enabled. In that case:
-* rsync runs on server A in _--checksum_ mode and during one session tries to calculate checksums sequentially first on A and then on B.
+* To check data integrity (equivalence of stored files on “A” and “B” bytes to bytes), the same rsync is usually used only with byte-by-byte comparison enabled. In that case:
+* rsync runs on server “A” in _--checksum_ mode and during one session tries to calculate checksums sequentially first on “A” and then on “B”.
 * This process takes an incredibly long time for large disk arrays
 * Since rsync does not allow the state of already calculated checksums to be saved between sessions, a number of technical difficulties arise. Namely:
 * If the connection is lost, rsync ends the session and the next time you start, you need to start all over again. Taking into account the huge sizes of volumes, byte-by-byte data consistency checking turns into an impossible.
-* Over time, errors accumulate and there is a threat of getting an inconsistent copy of system A on system B, which negates all efforts and costs to maintain Disaster Recovery. At the same time, standard utilities do not have checking features and technical personnel will not even know about the accumulated problems with unequal content of disk arrays at the Disaster Recovery center.
-* To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between A and B in order to resynchronize and eliminate the differences. The program works as quickly as possible (almost on the verge of hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
+* Over time, errors accumulate and there is a threat of getting an inconsistent copy of system “A” on system “B”, which negates all efforts and costs to maintain Disaster Recovery. At the same time, standard utilities do not have checking features and technical personnel will not even know about the accumulated problems with unequal content of disk arrays at the Disaster Recovery center.
+* To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between “A” and “B” in order to resynchronize and eliminate the differences. The program works as quickly as possible (almost on the verge of hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
 * The program name “**precizer**” comes from the word “precision” and means something that increases precision.
 * The program traverse the contents of directories and subdirectories with high accuracy and calculates checksums for each file encountered, while storing the data in an SQLite database (a regular binary file).
 * **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning next run but will continue exactly from the point which has been already saved against the database. This  saves resources and time.
@@ -240,15 +240,18 @@ Any new files, deleted files, or files that have changed between runs of the app
 Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
 
 Let's add **--silent** option to the previous example
+
 ```sh
 precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
+
 As a result, nothing will be displayed on the screen
 
 ### Example 4
 Additional information in _--verbose_ mode. May be useful for debugging.
 
 Let's add **--verbose** option to the previous example
+
 ```sh
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
@@ -297,6 +300,7 @@ Recursion depth limited to: 0
 sss.txt  
 Start vacuuming...  
 The database has been vacuumed  
+The precizer completed its execution without any issues.  
 </sub>
 
 ### Example 6
@@ -341,7 +345,7 @@ tests/examples/diffs
 ```
 
 ```sh
-precizer --ignore="diff2/1/*" tests/examples/diffs
+precizer --ignore="diff2/1/.*" tests/examples/diffs
 ```
 
 In this example the starting path for the traverses is ./tests/examples/diffs and the path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
@@ -403,7 +407,7 @@ Continuation of previous example [Example 6](#example-6).
 Multiple regular expressions for ignore could be specified using many _--ignore_ options at once:
 
 ```sh
-precizer --ignore="diff2/1/*" --ignore="diff2/2/*" tests/examples/diffs
+precizer --ignore="diff2/1/.*" --ignore="diff2/2/.*" tests/examples/diffs
 ```
 
 ### Example 8
@@ -457,8 +461,8 @@ The database has been vacuumed
 # Update the database by deleting information about those files which have been specified as ignored
 
 precizer --update --db-clean-ignored \
-	--ignore="diff2/1/*" \
-	--ignore="diff2/2/*" \
+	--ignore="diff2/1/.*" \
+	--ignore="diff2/2/.*" \
 	tests/examples/diffs
 ```
 <sub>Database file name: myhost.db  
@@ -530,10 +534,10 @@ _--db-clean-ignored_ option must be specified additionally in order to remove fr
 # Update the database by deleting information about those files which have been specified as ignored
 
 precizer --update --db-clean-ignored \
-	--ignore="path2/*" \
-	--ignore="diff2/*" \
-	--include="diff2/1/AAA/ZAW/A/b/c/*" \
-	--include="diff2/path1/AAA/ZAW/*" \
+	--ignore="^.*/path2/.*" \
+	--ignore="diff2/.*" \
+	--include="diff2/1/AAA/ZAW/A/b/c/.*" \
+	--include="diff2/path1/AAA/ZAW/.*" \
 	tests/examples/diffs
 ```
 
