@@ -1,5 +1,6 @@
 #include "precizer.h"
 #include <termios.h>
+#include <unistd.h>
 
 /**
  *
@@ -39,4 +40,7 @@ void free_config(void)
 		}
 		free(config->include);
 	}
+
+	// DB File sync to disk
+	sync();
 }

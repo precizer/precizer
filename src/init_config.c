@@ -46,7 +46,7 @@ void init_config(void)
 	/// An array of paths to traverse
 	config->paths = NULL;
 
-	/// Name of DB file
+	/// The name of DB file
 	config->db_file_name = NULL;
 
 	/// The flag meens that the DB already exists
