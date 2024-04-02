@@ -154,7 +154,7 @@ typedef struct {
 	/// An array of paths to traverse
 	char **paths;
 
-	/// Name of DB file
+	/// The name of DB file
 	char *db_file_name;
 
 	/// The flag meens that the DB already exists

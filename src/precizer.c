@@ -140,6 +140,7 @@ int main(int argc,char **argv){
 		status_of_changes();
 	}
 
+	// Free allocated memory
 	free_config();
 
 	return(exit_status(status,argv));
