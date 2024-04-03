@@ -3,7 +3,7 @@
 </p>
 
 # Precizer
-This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk.
+This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
 
 Application Author: [Dennis Razumovsky](https://github.com/dennisrazumovsky)
 
@@ -15,7 +15,7 @@ Application Author: [Dennis Razumovsky](https://github.com/dennisrazumovsky)
 
 ## SIMPLE EXAMPLE
 
-Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.
+Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the contents are identical or if there are any differences.
 
 1. Run the program on the first machine with host name, for example “host1”:
 
@@ -26,9 +26,11 @@ precizer --progress /mnt1
 The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The _--progress_ option visualizes progress and will show the amount of space and the number of files being examined.
 
 2. Run the program on a second machine with a host name, for example host2:
+
 ```sh
 precizer --progress /mnt2
 ```
+
 As a result, the host2.db database will be created in the current directory.
 
 3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:
@@ -53,16 +55,16 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * To check data integrity (equivalence of stored files on “A” and “B” bytes to bytes), the same rsync is usually used only with byte-by-byte comparison enabled. In that case:
 * rsync runs on server “A” in _--checksum_ mode and during one session tries to calculate checksums sequentially first on “A” and then on “B”.
 * This process takes an incredibly long time for large disk arrays
-* Since rsync does not allow the state of already calculated checksums to be saved between sessions, a number of technical difficulties arise. Namely:
+* Since rsync does not allow saving the state of previously calculated checksums between sessions, a number of technical difficulties arise. Namely:
 * If the connection is lost, rsync ends the session and the next time you start, you need to start all over again. Taking into account the huge sizes of volumes, byte-by-byte data consistency checking turns into an impossible.
 * Over time, errors accumulate and there is a threat of getting an inconsistent copy of system “A” on system “B”, which negates all efforts and costs to maintain Disaster Recovery. At the same time, standard utilities do not have checking features and technical personnel will not even know about the accumulated problems with unequal content of disk arrays at the Disaster Recovery center.
-* To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between “A” and “B” in order to resynchronize and eliminate the differences. The program works as quickly as possible (almost on the verge of hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
+* To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between “A” and “B” in order to resynchronize and reconcile any differences. The program works as quickly as possible (optimized to operate close to the hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
 * The program name “**precizer**” comes from the word “precision” and means something that increases precision.
 * The program traverse the contents of directories and subdirectories with high accuracy and calculates checksums for each file encountered, while storing the data in an SQLite database (a regular binary file).
-* **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning next run but will continue exactly from the point which has been already saved against the database. This saves resources and time.
+* **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning in the next run but will continue exactly from the point which has been already saved against the database. This saves resources and time.
 * The work of this program can be interrupted at any time in any way, and this is safe both for the data being explored and for the database created by the program itself.
 * In the case of a deliberate or accidental interruption of the application do not worry about the results of the failure. The result of the program's work will be completely saved and reused during subsequent runs.
-* To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely excludes errors even when analyzing a single petabyte-sized file. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when more simpler hash functions like SHA1 or CRC32 have been using.
+* To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely excludes errors even when analyzing a single petabyte-sized file's contents. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when simpler hash functions like SHA1 or CRC32 have been used.
 * The algorithms of the **precizer** app are designed in such a way that it is very easy to maintain the relevance of the data contained in the created database with paths to files and their checksums without recalculating everything from scratch. It is enough to run the program with the _--update_ parameter so that new files are added to the database, information about files erased from the disk is deleted, and for those files that have undergone modifications and their creation time or size has changed, the SHA512 checksum will be recalculated and updated in the database.
 * By comparing databases from the same sources over different times, **precizer** can serve as a security monitoring tool, determining the consequences of an intrusion by identifying unauthorized modified files, whose contents may have been changed but the metadata remains the same.
 * The program never changes, deletes, moves or copies any files or directories being traversed. All it does is shape lists of files and update information about them against the database. All changes occur exclusively within the boundaries of this database.
@@ -90,7 +92,7 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 
 Download binary-precompiled solution
 
-#### Flatpack
+#### Flatpak
 TODO!
 
 #### AppImage
@@ -182,7 +184,7 @@ The database database1.db has been created in the past and already contains data
 The precizer unexpectedly ended due to an error.  
 </sub>
 
-_--update_ option should be added. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
+**--update** option should be added. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
 
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
@@ -233,7 +235,7 @@ Start vacuuming...
 The database has been vacuumed  
 </sub>
 
-In every run of **precizer**, it traverses the file system and then verifies whether there is an entry about certain file in the database. In other words, the state of the file system on the disk takes priority for the program.
+In every run of **precizer**, it traverses the file system to verify whether there is an entry about certain file in the database. In other words, the state of the file system on the disk takes priority for the program.
 
 **precizer** works very similarly to directory traversal with rsync because it employs a similar algorithm.
 
@@ -386,7 +388,7 @@ Start vacuuming...
 The database has been vacuumed  
 </sub>
 
-Let's repeat the same example but without _--ignore_ option to add three previously ignored files:
+Let's repeat the same example but without the _--ignore_ option to add three previously ignored files:
 
 ```sh
 precizer --update tests/examples/diffs
@@ -419,7 +421,7 @@ precizer --ignore="diff2/1/.*" --ignore="diff2/2/.*" tests/examples/diffs
 
 The database will be cleared of file mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/.\*" and "diff2/2/.\*"
 
-_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s). This is special protection against accidental deletion of information from the database.
+_--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s). This serves as protection against accidental deletion of information from the database.
 
 
 ```sh
@@ -526,11 +528,11 @@ Start vacuuming...
 The database has been vacuumed  
 </sub>
 
-PCRE2 regular expressions of relative paths to be included. Include specified relative paths even if they were excluded via the --ignore option(s). Multiple regular expressions could be specified with --include
+PCRE2 regular expressions of relative paths to be included. Include specified relative paths even if they were previously excluded via the _--ignore_ option(s). Multiple regular expressions could be specified with --include
 
 To check up and test your PCRE2 regular expressions you can use https://regex101.com/
 
-The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "^.\*/path2/.\*" and "diff2/.\*" but paths matching the patterns from _--include_ will remain in the database
+The database will be cleared of file mentions that match the regular expressions from the arguments _--ignore:_ "^.\*/path2/.\*" and "diff2/.\*" but paths matching the patterns from _--include_ will remain in the database
 
 _--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s). This is special protection against accidental deletion of information from the database.
 

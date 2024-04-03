@@ -3,7 +3,7 @@
 </p>
 
 # Precizer
-The program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk.
+This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
 
 Автор приложения [Денис Разумовский](https://github.com/dennisrazumovsky)
 
@@ -11,28 +11,33 @@ The program is distributed under the [CC0 (Creative Commons Share Alike) license
 
 **precizer** — это консольное приложение предназначенное для проверки целостности файлов после синхронизации. Программа рекурсивно обходит каталоги и создает базу данных файлов и их контрольных сумм с последующим быстрым сравнением.
 
-**recizer** ориентирован на работу с файловыми системами гигантского размера. С помощью программы можно найти ошибки синхронизации, сравнивая данные с файлами и их контрольными суммами из разных источников. Или **precizer** можно использовать для исследования исторических изменений путем сравнения баз данных из одних и тех же источников за разное время.
+**precizer** ориентирован на работу с файловыми системами гигантского размера. С помощью программы можно найти ошибки синхронизации, сравнивая данные с файлами и их контрольными суммами из разных источников. Или **precizer** можно использовать для исследования исторических изменений путем сравнения баз данных из одних и тех же источников за разное время.
 
 ## ПРОСТОЙ ПРИМЕР
 
 Допустим, есть две машины у которых в /mnt1 и в /mnt2 соответственно, примонтированы диски большого объёма с идентичным содержимым. Стои́т задача проверить действительно ли содержимое абсолютно идентично или есть различия.
 
 1. Запустить программу на первой машине с host name, например «host1»:
+
 ```sh
 precizer --progress /mnt1
 ```
 В результате работы программы будут рекурсивно исследованы все директории начиная с /mnt1 и создана база данных host1.db в текущей директории. Параметр _--progress_ визуализирует прогресс и покажет объем пространства и количество исследуемых файлов.
 
 2. Запустить программу на второй машине с host name, например «host2»:
+
 ```sh
 precizer --progress /mnt2
 ```
+
 В результате будет создана база данных host2.db в текущей директории.
 
 3. Cкопировать файлы с базами данных host1.db и host2.db на одну из машин и запустить программу с соответствующими параметрами для сравнения баз данных:
+
 ```sh
 precizer --compare host1.db host2.db
 ```
+
 На экран будет выведена следующая информация:
 * Какие файлы отсутствуют на «host1» но при этом присутствуют на «host2» и наоборот.
 * Для каких файлов, присутствующих и на обеих хостах, контрольные суммы НЕ совпадают.
@@ -175,7 +180,7 @@ precizer --progress --database=database1.db tests/examples/diffs/diff1
 
 <sub>Database file name: database1.db  
 The database database1.db has been created in the past and already contains data with files and their checksums. Use the --update option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB.  
-The precizer has ended unexpectedly due to an error  
+The precizer unexpectedly ended due to an error.  
 </sub>
 
 Должен быть добавлен параметр **--update** _--update_ необходим для защиты базы данных от потери информации из-за случайного запуска.
@@ -382,7 +387,7 @@ Start vacuuming...
 The database has been vacuumed  
 </sub>
 
-Давайте повторим тот же пример, но без опции _--ignore_, чтобы добавить три ранее проигнорированных файла:
+Повторим тот же пример, но без опции _--ignore_, чтобы добавить три ранее проигнорированных файла:
 
 ```sh
 precizer --update tests/examples/diffs
