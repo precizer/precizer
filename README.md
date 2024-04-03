@@ -3,25 +3,27 @@
 </p>
 
 # Precizer
-The program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk.
+This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk.
 
-Author of the application [Dennis Razumovsky](https://github.com/dennisrazumovsky)
+Application Author: [Dennis Razumovsky](https://github.com/dennisrazumovsky)
 
 ## TL;DR
 
-**precizer** is a CLI application designed to check up the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.
+**precizer** is a CLI application designed to verify the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.
 
-**precizer** is focused on work with gigantic file systems. With the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.
+**precizer** specializes in managing vast file systems. The program identifies synchronization errors by cross-referencing data and checksums from various sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.
 
 ## SIMPLE EXAMPLE
 
 Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.
 
 1. Run the program on the first machine with host name, for example “host1”:
+
 ```sh
 precizer --progress /mnt1
 ```
-As a result of the program running all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The _--progress_ option visualizes progress and will show the amount of space and the number of files being examined.
+
+The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The _--progress_ option visualizes progress and will show the amount of space and the number of files being examined.
 
 2. Run the program on a second machine with a host name, for example host2:
 ```sh
@@ -29,10 +31,12 @@ precizer --progress /mnt2
 ```
 As a result, the host2.db database will be created in the current directory.
 
-3. Copy the files with the host1.db and host2.db databases to one of the machines and run the program with the appropriate parameters to compare the databases:
+3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:
+
 ```sh
 precizer --compare host1.db host2.db
 ```
+
 The following information will be displayed on the screen:
 * Which files are missing on “host1” but present on “host2” and vice versa.
 * For which files, present on both hosts, the checksums do NOT match.
@@ -41,7 +45,7 @@ Note that **precizer** writes only relative paths to the database. The example f
 
 ## TECHNICAL DETAILS
 
-Let's imagine a case where there is a main disk storage and a copy of it. For example, this could be a data center storage and its Disaster Recovery copy. Synchronization occurs periodically from the main storage to the DR storage, but due to the huge volumes of data, most likely, synchronization does not occur on a byte-by-byte basis, but by calculating changes among the metadata of files on the file system. In such cases, the file size and modification time are taken into account, but the changed contents are not examined byte by byte. This makes sense because there are usually good communication channels between the primary data center and the backup Disaster Recovery center, but full byte-by-byte synchronization can take an inappropriate amount of time. Tools such as rsync allow you to synchronize using both methods: File System changes and byte-by-byte comparition, but they have one serious drawback - the state is not saved between sessions. Let's look at what this means in the scenario:
+Let's imagine a case where there is a main disk storage and a copy of it. For example, this could be a data center storage and its Disaster Recovery copy. Periodic synchronization transpires from the main storage to the DR storage, but due to the huge volumes of data, most likely, synchronization does not occur on a byte-by-byte basis, but by calculating changes among the metadata of files on the file system. In such cases, the file size and modification time are taken into account, but the changed contents are not examined byte by byte. This makes sense because there are usually good communication channels between the primary data center and the backup Disaster Recovery center, but full byte-by-byte synchronization can take an inappropriate amount of time. Tools such as rsync allow you to synchronize using both methods: File System changes and byte-by-byte comparition, but they have one serious drawback - the state is not saved between sessions. Let's look at what this means in the scenario:
 * Given servers “A” and “B” (main data center and backup Disaster Recovery)
 * Some files have changed on server “A”.
 * The rsync algorithm identified them due to the changed size and modification time of the file of File Systen and synchronized them to server “B”.
@@ -66,34 +70,35 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * The program works very quick thanks to the SQLite and FTS ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)) libraries.
 * Parsing of string parameters is implemented through the ARGP library
 * The program is safe for cases with huge numbers of files, directories and subdirectories of any nesting. Thanks to the FTS library, recursion is not used, so there will be no stack overflow.
-* Due to its compactness and portability of the code, the program can be used even on specialized devices such as NAS or any embedded or IoT devices.
+* Due to its compactness and portability of the codebase, the program can be used even on specialized devices such as NAS or any embedded or IoT devices.
 
 ## QUESTIONS AND BUGREPORTS
 
-* If you have any questions, call help information using _--help_ The help is made as detailed as possible to help users who do not have specialized technical knowledge.
+* For inquiries, access help information using _--help_ The help is made as detailed as possible to help users who do not have specialized technical knowledge.
 * You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [share a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
 * If you have questions about using the program, you can ask a question on stackoverflow using the **precizer** tag. The author is monitoring such questions and will be happy to provide his answer.
 
 ## COMPILE AND INSTALLATION
 
-### Distributives Packaging
+### Distribution Packaging
 
 * The author was happy to prepare and will continue to support the compiled binary packages for Flatpak and AppImage.
-* The author is NOT ready to independently prepare and support in the future packaging of the **precizer** app for all existing OS distributions.
+* The author is NOT prepared to independently make and support future packaging of the **precizer** app for all existing OS distributions.
 * If you are eager to create a package for any OS distribution and are faced with insurmountable difficulties in adapting the program code, then in this case the author will be very happy to provide all the necessary assistance in supporting the initiative and optimizing the program code for the specific distribution or package manager. How to contact the author is described in the "Questions and bug reports" section.
 
 ### Portable
 
 Download binary-precompiled solution
-### Flatpack
+
+#### Flatpack
 TODO!
 
-### AppImage
+#### AppImage
 TODO!
 
 ### Self-build
 
-Almost all used libraries are integrated into the program and by default the program is built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
+Nearly all utilized libraries are integrated into the program, and by default, it's built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
 
 #### Arch
 
@@ -404,7 +409,7 @@ The database has been vacuumed
 
 Continuation of previous example [Example 6](#example-6).
 
-Multiple regular expressions for ignore could be specified using many _--ignore_ options at once:
+Multiple regular expressions for ignoring can be specified using many _--ignore_ options simultaneously:
 
 ```sh
 precizer --ignore="diff2/1/.*" --ignore="diff2/2/.*" tests/examples/diffs
@@ -412,7 +417,7 @@ precizer --ignore="diff2/1/.*" --ignore="diff2/2/.*" tests/examples/diffs
 
 ### Example 8
 
-The database will be cleared of files mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/.\*" and "diff2/2/.\*"
+The database will be cleared of file mentions that match the regular expressions from the arguments _--ignore:_ "diff2/1/.\*" and "diff2/2/.\*"
 
 _--db-clean-ignored_ option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the _--ignore_ option(s). This is special protection against accidental deletion of information from the database.
 
