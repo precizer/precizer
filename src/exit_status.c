@@ -27,7 +27,7 @@ int exit_status(
 			slog(false,"Enjoy your life!\n");
 			return(EXIT_SUCCESS);
 		}else{
-			slog(false,"The %s has ended unexpectedly due to an error\n",application_file_name);
+			slog(false,"The %s unexpectedly ended due to an error.\n",application_file_name);
 			return(EXIT_FAILURE);
 		}
 	}
