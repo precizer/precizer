@@ -3,7 +3,7 @@
 </p>
 
 # Precizer
-This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or program uses it at their own risk.
+This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk.
 
 Application Author: [Dennis Razumovsky](https://github.com/dennisrazumovsky)
 
@@ -45,10 +45,10 @@ Note that **precizer** writes only relative paths to the database. The example f
 
 ## TECHNICAL DETAILS
 
-Let's imagine a case where there is a main disk storage and a copy of it. For example, this could be a data center storage and its Disaster Recovery copy. Periodic synchronization transpires from the main storage to the DR storage, but due to the huge volumes of data, most likely, synchronization does not occur on a byte-by-byte basis, but by calculating changes among the metadata of files on the file system. In such cases, the file size and modification time are taken into account, but the changed contents are not examined byte by byte. This makes sense because there are usually good communication channels between the primary data center and the backup Disaster Recovery center, but full byte-by-byte synchronization can take an inappropriate amount of time. Tools such as rsync allow you to synchronize using both methods: File System changes and byte-by-byte comparition, but they have one serious drawback - the state is not saved between sessions. Let's look at what this means in the scenario:
+Let's imagine a case where there is a main disk storage and a copy of it. For example, this could be a data center storage and its Disaster Recovery copy. Periodic synchronization transpires from the main storage to the DR storage, but due to the huge volumes of data, most likely, synchronization does not occur on a byte-by-byte basis, but by calculating changes among the metadata of files on the file system. In such cases, the file size and modification time are taken into account, but the changed contents are not examined byte by byte. This makes sense because there are usually good communication channels between the primary data center and the backup Disaster Recovery center, but full byte-by-byte synchronization can take an inappropriate amount of time. Tools such as rsync allow you to synchronize using both methods: File System changes and byte-by-byte comparison, but they have one serious drawback - the state is not saved between sessions. Let's look at what this means in the scenario:
 * Given servers “A” and “B” (main data center and backup Disaster Recovery)
 * Some files have changed on server “A”.
-* The rsync algorithm identified them due to the changed size and modification time of the file of File Systen and synchronized them to server “B”.
+* The rsync algorithm identified them due to the changed size and modification time of the file of File System and synchronized them to server “B”.
 * During synchronization, multiple communication failures occurred between the main data center and Disaster Recovery.
 * To check data integrity (equivalence of stored files on “A” and “B” bytes to bytes), the same rsync is usually used only with byte-by-byte comparison enabled. In that case:
 * rsync runs on server “A” in _--checksum_ mode and during one session tries to calculate checksums sequentially first on “A” and then on “B”.
@@ -59,14 +59,14 @@ Let's imagine a case where there is a main disk storage and a copy of it. For ex
 * To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between “A” and “B” in order to resynchronize and eliminate the differences. The program works as quickly as possible (almost on the verge of hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
 * The program name “**precizer**” comes from the word “precision” and means something that increases precision.
 * The program traverse the contents of directories and subdirectories with high accuracy and calculates checksums for each file encountered, while storing the data in an SQLite database (a regular binary file).
-* **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning next run but will continue exactly from the point which has been already saved against the database. This  saves resources and time.
+* **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning next run but will continue exactly from the point which has been already saved against the database. This saves resources and time.
 * The work of this program can be interrupted at any time in any way, and this is safe both for the data being explored and for the database created by the program itself.
 * In the case of a deliberate or accidental interruption of the application do not worry about the results of the failure. The result of the program's work will be completely saved and reused during subsequent runs.
-* To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely  exclude errors  even when analyzing a single petabyte-sized file. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when more simpler hash functions like SHA1 or CRC32 have being using.
+* To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely excludes errors even when analyzing a single petabyte-sized file. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when more simpler hash functions like SHA1 or CRC32 have been using.
 * The algorithms of the **precizer** app are designed in such a way that it is very easy to maintain the relevance of the data contained in the created database with paths to files and their checksums without recalculating everything from scratch. It is enough to run the program with the _--update_ parameter so that new files are added to the database, information about files erased from the disk is deleted, and for those files that have undergone modifications and their creation time or size has changed, the SHA512 checksum will be recalculated and updated in the database.
 * By comparing databases from the same sources over different times, **precizer** can serve as a security monitoring tool, determining the consequences of an intrusion by identifying unauthorized modified files, whose contents may have been changed but the metadata remains the same.
 * The program never changes, deletes, moves or copies any files or directories being traversed. All it does is shape lists of files and update information about them against the database. All changes occur exclusively within the boundaries of this database.
-* Program performance mainly depends on the performance of the disk subsystem. Each file is read byte by byte and such way a checksum is generated for each file using the SHA512 algorithm.
+* **precizer** performance mainly depends on the performance of the disk subsystem. Each file is read byte by byte and such way a checksum is generated for each file using the SHA512 algorithm.
 * The program works very quick thanks to the SQLite and FTS ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)) libraries.
 * Parsing of string parameters is implemented through the ARGP library
 * The program is safe for cases with huge numbers of files, directories and subdirectories of any nesting. Thanks to the FTS library, recursion is not used, so there will be no stack overflow.
@@ -179,7 +179,7 @@ precizer --progress --database=database1.db tests/examples/diffs/diff1
 
 <sub>Database file name: database1.db  
 The database database1.db has been created in the past and already contains data with files and their checksums. Use the --update option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB.  
-The precizer has ended unexpectedly due to an error  
+The precizer unexpectedly ended due to an error.  
 </sub>
 
 _--update_ option should be added. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
@@ -244,7 +244,7 @@ Any new files, deleted files, or files that have changed between runs of the app
 ### Example 3
 Using the _--silent_ mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
 
-Let's add **--silent** option to the previous example
+Let's add the **--silent** option to the previous example:
 
 ```sh
 precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
@@ -255,7 +255,7 @@ As a result, nothing will be displayed on the screen
 ### Example 4
 Additional information in _--verbose_ mode. May be useful for debugging.
 
-Let's add **--verbose** option to the previous example
+Let's add the **--verbose** option to the previous example
 
 ```sh
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
