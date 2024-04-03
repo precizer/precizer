@@ -1,5 +1,8 @@
 TODO
 
+* flatpak
+	https://docs.flatpak.org/en/latest/first-build.html
+
 * Progress bar with escape sequences
 	"ansi escape sequences progress in c"
 	Escape Sequences - A Quick Guide
@@ -40,11 +43,15 @@ TODO
 * How to make installation package for many Linux distributions
 	"how to create a package for many distros"
 		https://unix.stackexchange.com/questions/136387/how-to-make-installation-package-for-many-linux-distributions
+
 * Smoke tests
 	Run with --silent option and without it
 	Run under sanitizer
 
 * Unit tests
 	CUnit
+
+* Sqlite Compression?
+	https://github.com/techrah/sqlite3-compression-encryption-vfs
 
 * ALL DONE!
