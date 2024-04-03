@@ -11,7 +11,7 @@ Application Author: [Dennis Razumovsky](https://github.com/dennisrazumovsky)
 
 **precizer** is a CLI application designed to verify the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.
 
-**precizer** specializes in managing vast file systems. The program identifies synchronization errors by cross-referencing data and checksums from various sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.
+**precizer** specializes in managing vast file systems. The program identifies synchronization errors by cross-referencing data and checksums from various sources. Alternatively, it can be used to crawl historical changes by comparing databases from the same sources over different times.
 
 ## SIMPLE EXAMPLE
 
@@ -47,17 +47,18 @@ Note that **precizer** writes only relative paths to the database. The example f
 
 ## TECHNICAL DETAILS
 
-Let's imagine a case where there is a main disk storage and a copy of it. For example, this could be a data center storage and its Disaster Recovery copy. Periodic synchronization transpires from the main storage to the DR storage, but due to the huge volumes of data, most likely, synchronization does not occur on a byte-by-byte basis, but by calculating changes among the metadata of files on the file system. In such cases, the file size and modification time are taken into account, but the changed contents are not examined byte by byte. This makes sense because there are usually good communication channels between the primary data center and the backup Disaster Recovery center, but full byte-by-byte synchronization can take an inappropriate amount of time. Tools such as rsync allow you to synchronize using both methods: File System changes and byte-by-byte comparison, but they have one serious drawback - the state is not saved between sessions. Let's look at what this means in the scenario:
+Consider a scenario where there is a primary disk storage and a backup copy. For example, this could be a data center storage and its Disaster Recovery copy. Periodic synchronization transpires from the main storage to the DR storage, but due to the huge volumes of data, most likely, it's likely that synchronization does not occur on a byte-by-byte basis, but by calculating changes among the metadata of files on the file system. In such cases, the file size and modification time are taken into account, but the changed contents are not examined byte by byte. This makes sense because there are usually good communication channels between the primary data center and the backup Disaster Recovery center, but full byte-by-byte synchronization can be impractical due to the time it takes. Tools such as rsync allows to synchronize using both methods: File System changes and byte-by-byte comparison, but they have one serious drawback: the state is not saved between sessions. Let's look at what this means in the scenario:
+
 * Given servers “A” and “B” (main data center and backup Disaster Recovery)
 * Some files have changed on server “A”.
 * The rsync algorithm identified them due to the changed size and modification time of the file of File System and synchronized them to server “B”.
 * During synchronization, multiple communication failures occurred between the main data center and Disaster Recovery.
-* To check data integrity (equivalence of stored files on “A” and “B” bytes to bytes), the same rsync is usually used only with byte-by-byte comparison enabled. In that case:
+* To check data integrity (equivalence of stored files on “A” and “B” bytes to bytes), rsync is typically used again with byte-by-byte comparison enabled. In that case:
 * rsync runs on server “A” in _--checksum_ mode and during one session tries to calculate checksums sequentially first on “A” and then on “B”.
 * This process takes an incredibly long time for large disk arrays
 * Since rsync does not allow saving the state of previously calculated checksums between sessions, a number of technical difficulties arise. Namely:
-* If the connection is lost, rsync ends the session and the next time you start, you need to start all over again. Taking into account the huge sizes of volumes, byte-by-byte data consistency checking turns into an impossible.
-* Over time, errors accumulate and there is a threat of getting an inconsistent copy of system “A” on system “B”, which negates all efforts and costs to maintain Disaster Recovery. At the same time, standard utilities do not have checking features and technical personnel will not even know about the accumulated problems with unequal content of disk arrays at the Disaster Recovery center.
+* If the connection is lost, rsync ends the session and the next time you start, you need to start all over again. Taking into account the huge sizes of volumes, byte-by-byte data consistency checking becomes impossible.
+* Over time, errors accumulate and there is a threat of getting an inconsistent copy of system “A” on system “B”, which negates all efforts and costs associated with maintaining Disaster Recovery. At the same time, standard utilities do not have checking features and technical personnel will not even know about the accumulated problems with unequal content of disk arrays at the Disaster Recovery center.
 * To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between “A” and “B” in order to resynchronize and reconcile any differences. The program works as quickly as possible (optimized to operate close to the hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
 * The program name “**precizer**” comes from the word “precision” and means something that increases precision.
 * The program traverse the contents of directories and subdirectories with high accuracy and calculates checksums for each file encountered, while storing the data in an SQLite database (a regular binary file).
