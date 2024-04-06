@@ -277,7 +277,7 @@ Return db_insert_the_record(
 	const SHA512_Context*
 );
 
-Return db_file_name(void);
+Return db_create_name(void);
 
 Return db_save_prefixes_into(void);
 

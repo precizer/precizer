@@ -119,7 +119,7 @@ Return db_compare(void)
 
 	rc = sqlite3_prepare_v2(config->db, compare_A_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -167,7 +167,7 @@ Return db_compare(void)
 
 	rc = sqlite3_prepare_v2(config->db, compare_B_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -228,7 +228,7 @@ Return db_compare(void)
 
 	rc = sqlite3_prepare_v2(config->db, compare_checksums, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

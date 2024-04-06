@@ -9,7 +9,7 @@
  * will be the hostname and ".db" as the filename extension
  *
  */
-Return db_file_name(void)
+Return db_create_name(void)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.

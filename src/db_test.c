@@ -46,7 +46,7 @@ Return db_test
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(db));
+		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 

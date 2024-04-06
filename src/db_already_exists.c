@@ -27,7 +27,7 @@ Return db_already_exists(void)
 
 	rc = sqlite3_prepare_v2(config->db, sql_db_already_exists, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -54,7 +54,7 @@ Return db_already_exists(void)
 			slog(true,"The database has already been created in the past\n");
 		} else {
 			slog(false,"The database %s has been created in the past and already contains" \
-			           " data with files and their checksums. Use the \033[1m--update\033[m option if" \
+			           " data with files and their checksums. Use the \033[1m--update\033[0m option if" \
 			           " there is full confidence that update the content of the database"  \
 			           " is really need and the information about those files which was changed," \
 			           " removed or added should be deleted or updated against DB.\n",config->db_file_name);

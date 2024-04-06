@@ -62,7 +62,7 @@ int main(int argc,char **argv){
 	if(SUCCESS == status)
 	{
 		// Generate DB file name if not passed as an argument
-		status = db_file_name();
+		status = db_create_name();
 	}
 
 	if(SUCCESS == status)

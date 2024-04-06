@@ -28,7 +28,7 @@ Return db_read_file_data_from
 	const char *select_sql = "SELECT ID,offset,stat,mdContext FROM files WHERE relative_path = ?1;";
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

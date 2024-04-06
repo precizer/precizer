@@ -26,7 +26,7 @@ Return db_save_prefixes_into(void)
 
 		int rc = sqlite3_prepare_v2(config->db, delete_sql, -1, &delete_stmt, NULL);
 		if(SQLITE_OK != rc) {
-			slog(false,"Can't prepare delete statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(false,"Can't prepare delete statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
@@ -52,7 +52,7 @@ Return db_save_prefixes_into(void)
 		/* Create SQL statement. Prepare to write */
 		int rc = sqlite3_prepare_v2(config->db, insert_sql, -1, &insert_stmt, NULL);
 		if(SQLITE_OK != rc) {
-			slog(false,"Can't prepare insert statment %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
+			slog(false,"Can't prepare insert statement %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
