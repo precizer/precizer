@@ -44,20 +44,23 @@ Return determine_running_dir(void)
 
 	if(status == FAILURE)
 	{
+
 		return(status);
-	}
 
-	config->running_dir_size = (long int)strlen(config->running_dir) + 1;
-
-	// Reduce running_dir size to the real one
-	char *tmp = (char *)realloc(config->running_dir,(size_t)config->running_dir_size);
-	if(NULL == tmp)
-	{
-		slog(false,"Realloc error\n");
-		free(config->running_dir);
-		status = FAILURE;
 	} else {
-		config->running_dir = tmp;
+
+		config->running_dir_size = (long int)strlen(config->running_dir) + 1;
+
+		// Reduce running_dir size to the real one
+		char *tmp = (char *)realloc(config->running_dir,(size_t)config->running_dir_size);
+		if(NULL == tmp)
+		{
+			slog(false,"Realloc error\n");
+			free(config->running_dir);
+			status = FAILURE;
+		} else {
+			config->running_dir = tmp;
+		}
 	}
 
 	return(status);
