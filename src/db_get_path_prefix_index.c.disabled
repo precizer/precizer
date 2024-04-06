@@ -19,7 +19,7 @@ Return db_get_path_prefix_index
 	const char *select_sql = "SELECT ID FROM paths WHERE path = ?1;";
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		fprintf(stderr, "Can't prepare select statment %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
+		fprintf(stderr, "Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

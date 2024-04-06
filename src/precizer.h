@@ -16,7 +16,7 @@
 
 /*
  *
- * A common set of shared libraties for all components
+ * A common set of shared libraries for all components
  * of the project
  *
  */
@@ -136,7 +136,7 @@ typedef struct {
 	/// Show progress bar
 	bool progress;
 
-	/// Forse update of the database
+	/// Force update of the database
 	bool force;
 
 	/// Additional output for debugging
@@ -160,7 +160,7 @@ typedef struct {
 	/// The name of DB file
 	char *db_file_name;
 
-	/// The flag meens that the DB already exists
+	/// The flag means that the DB already exists
 	bool db_already_exists;
 
 	/// Flag that reflects the presence of any changes
@@ -192,7 +192,7 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **include;
 
-	/// Must be specifyed additionally in order
+	/// Must be specified additionally in order
 	/// to remove from the database mention of
 	/// files that matches the regular expression
 	/// passed through the ignore option(s)

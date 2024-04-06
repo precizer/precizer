@@ -16,7 +16,7 @@
  */
 
 // Need for strdup(), clock_gettime()
-// Have to be at the begining of the file
+// Have to be at the beginning of the file
 #define _GNU_SOURCE
 
 // Need for pathconf()
@@ -44,7 +44,7 @@
 // Mathematical formulas
 #include <math.h>
 
-// Standart functions
+// Standard functions
 #include <stdlib.h>
 
 // String functions

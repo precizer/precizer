@@ -6,9 +6,9 @@
 
 /**
  *
- * Initialize signals interseption like Ctrl+C
+ * Initialize signals interception like Ctrl+C
  * The application controls signals like Ctrl+C to
- * prevend database corruption.
+ * prevent database corruption.
  * It always try to complete work in correct way and
  * sync data from memory to disk even user interrupts
  * running of the program.

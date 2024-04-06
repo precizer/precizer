@@ -28,7 +28,7 @@ void init_config(void)
 	// Show progress bar
 	config->progress = false;
 
-	// Forse update of the database
+	// Force update of the database
 	config->force = false;
 
 	// Additional output for debugging
@@ -52,7 +52,7 @@ void init_config(void)
 	// The name of DB file
 	config->db_file_name = NULL;
 
-	// The flag meens that the DB already exists
+	// The flag means that the DB already exists
 	config->db_already_exists = false;
 
 	// Flag that reflects the presence of any changes
@@ -84,7 +84,7 @@ void init_config(void)
 	// The string array of PCRE2 regular expressions
 	config->include = NULL;
 
-	// Must be specifyed additionally in order
+	// Must be specified additionally in order
 	// to remove from the database mention of
 	// files that matches the regular expression
 	// passed through the ignore option(s)

@@ -54,7 +54,7 @@ void show_relative_path
 		{
 			if(*rehashig_from_the_beginning)
 			{
-				printf(" the SHA512 hashing of the file had not been finished previously, the file has been changed and will be rehashed from the begining\n");
+				printf(" the SHA512 hashing of the file had not been finished previously, the file has been changed and will be rehashed from the beginning\n");
 			} else {
 				if(*show_changes == true)
 				{

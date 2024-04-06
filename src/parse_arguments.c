@@ -76,7 +76,7 @@ static struct argp_option options[] = {
 	                                     "via the \033[1m--ignore\033[0m option. Multiple regular " \
 	                                     "expressions could be specified\n", 0 },
 	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
-	                                     "The option \033[1m--db-clean-ignored\033[0m must be specifyed additionally " \
+	                                     "The option \033[1m--db-clean-ignored\033[0m must be specified additionally " \
 	                                     "in order to remove from the database mention of files that " \
 	                                     "matches the regular expression passed through the " \
 	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option(s)\n", 0},
@@ -88,7 +88,7 @@ static struct argp_option options[] = {
 	                        "The root itself is numbered 0\n" \
 	                        "\033[1m--maxdepth=0\033[0m completely disable recursion\n", 0 },
 	{"force",    'f', 0, 0, "Use this option only in case when the PATHs that were written into " \
-	                        "the database as a result of the last scaning really need to be " \
+	                        "the database as a result of the last scanning really need to be " \
 	                        "renewed. Warning! If this option will be used in incorrect way, " \
 	                        "information about files and their checksums against the database would " \
 	                        "be lost.\n", 0 },

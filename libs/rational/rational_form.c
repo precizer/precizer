@@ -7,7 +7,7 @@
  * @brief Locale-aware format 1234567.89 -> 1,234,567.89
  * @details va_arg format got from https://stackoverflow.com/a/23647983/7104681
  * and https://stackoverflow.com/questions/1449805/how-to-format-a-number-using-comma-as-thousands-separator-in-c
- * @param val - Any lond double digit
+ * @param val - Any long double digit
  * @return Pointer to a string
  *
  */
@@ -71,7 +71,7 @@ const char *form(
 	printf("ptr: %p, ptr addr: %zu\n",(void*)ptr,(void*)ptr);
 	#endif
 	if(ptr!=NULL){
-		// Either val is real or interger
+		// Either val is real or integer
 		bool val_is_real = false;
 		for(pt = ptr+1; pt < (result + sizeof(result)) && *pt != '\0'; pt++){
 			if(*pt != '0'){

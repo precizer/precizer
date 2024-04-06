@@ -43,7 +43,7 @@ Return sha512sum
 	// It moves the file pointer "offset" bytes from the beginning of the file
 	fseek(fileptr, *offset, SEEK_SET);
 
-	bool loop_was_interupted = false;
+	bool loop_was_interrupted = false;
 
 	if(*offset == 0){
 		sha512_init(mdContext);
@@ -54,7 +54,7 @@ Return sha512sum
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */
 		if(global_interrupt_flag == true){
-			loop_was_interupted = true;
+			loop_was_interrupted = true;
 			break;
 		}
 		sha512_update(mdContext, buffer, len);
@@ -63,7 +63,7 @@ Return sha512sum
 
 	fclose(fileptr); // Close the file
 
-	if(loop_was_interupted == false){
+	if(loop_was_interrupted == false){
 		*offset = 0;
 		sha512_final(mdContext,sha512);
 	}
