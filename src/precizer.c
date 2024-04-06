@@ -21,14 +21,16 @@ Config *config = &_config;
 
 /**
  * @mainpage
- * @brief precizer is a CLI application designed to check the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.
+ * @brief precizer is a CLI application designed to verify the integrity of files after synchronization.
+ * The program recursively traverses directories and creates a database
+ * of files and their checksums, followed by a quick comparison.
  *
  * @author Dennis Razumovsky
- * @details precizer is focused on work with gigantic file systems.
- * With the program it is possible to find synchronization errors
- * by comparing data with files and their checksums from different sources.
- * Or it can be used to crawling historical changes by comparing databases
- * from the same sources over different times.
+ * @details precizer specializes in managing vast file systems.
+ * The program identifies synchronization errors by cross-referencing
+ * data and checksums from various sources. Alternatively, it can be
+ * used to crawl historical changes by comparing databases from the
+ * same sources over different times.
  *
  */
 int main(int argc,char **argv){
@@ -90,7 +92,7 @@ int main(int argc,char **argv){
 	if(SUCCESS == status)
 	{
 		// Check up the integrity of database file
-		status = db_test(config->db_file_name);
+		status = db_test(config->db_file_path);
 	}
 
 	if(SUCCESS == status)
@@ -141,6 +143,7 @@ int main(int argc,char **argv){
 	}
 
 	// Free allocated memory
+	// for arrays and variables
 	free_config();
 
 	return(exit_status(status,argv));

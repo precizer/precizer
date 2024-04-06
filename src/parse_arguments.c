@@ -11,34 +11,38 @@ const char *argp_program_version = APP_NAME " " APP_VERSION;
 
 /* Program documentation. */
 static char doc[] =
-"\033[1mprecizer\033[m is a CLI application designed to check the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.\n\
-\n\
-\033[1mprecizer\033[m is focused on work with gigantic file systems. With the program it is possible to find synchronization errors by comparing data with files and their checksums from different sources. Or it can be used to crawling historical changes by comparing databases from the same sources over different times.\n\
-\nGlory to Ukraine!\n" \
-"\vSIMPLE EXAMPLE\n\
-Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the content is absolutely identical or whether there are differences.\n" \
-"Run the program on the first machine with host name, for example “host1”:\n\
-\n\
-precizer --progress /mnt1\n\
-\n\
-As a result of the program running all directories starting from /mnt1 will be recursively traversed and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n\
-\n\
-Run the program on a second machine with a host name, for example host2:\n\
-\n\
-precizer --progress /mnt2\n\
-\n\
-As a result, the host2.db database will be created in the current directory.\n\
-\n\
-Copy the files with the host1.db and host2.db databases to one of the machines and run the program with the appropriate parameters to compare the databases:\n\
-\n\
-precizer --compare host1.db host2.db\n\
-\n\
-Note that precizer only writes relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as \"abc/def/aaa.txt\" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names \"abc/def/aaa.txt\" with the corresponding checksums.\n\
-\n\
-As a result of the program running, the following information will be displayed on the screen:\n\
-* Which files are missing on host1 but present on host2 and vice versa.\n\
-* For which files, present on both hosts, the checksums do NOT match.\n\
-\n" \
+"\033[1mprecizer\033[0m is a CLI application designed to verify the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.\n" \
+"\n" \
+"\033[1mprecizer\033[0m specializes in managing vast file systems. The program identifies synchronization errors by cross-referencing data and checksums from various sources. Alternatively, it can be used to crawl historical changes by comparing databases from the same sources over different times.\n" \
+"\n" \
+"Glory to Ukraine!\n" \
+"\vSIMPLE EXAMPLE\n" \
+"\n" \
+"Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the contents are identical or if there are any differences.\n" \
+"\n" \
+"1. Run the program on the first machine with host name, for example “host1”:\n" \
+"\n" \
+"precizer --progress /mnt1\n" \
+"\n" \
+"The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n" \
+"\n" \
+"2. Run the program on a second machine with a host name, for example host2:\n" \
+"\n" \
+"precizer --progress /mnt2\n" \
+"\n" \
+"As a result, the host2.db database will be created in the current directory.\n" \
+"\n" \
+"3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:\n" \
+"\n" \
+"precizer --compare host1.db host2.db\n" \
+"\n" \
+"The following information will be displayed on the screen:\n" \
+"\n" \
+"* Which files are missing on “host1” but present on “host2” and vice versa.\n" \
+"* For which files, present on both hosts, the checksums do NOT match.\n" \
+"\n" \
+"Note that precizer writes only relative paths to the database. The example file “/mnt1/abc/def/aaa.txt” will be written to the database as “abc/def/aaa.txt” without /mnt1. The same thing will happen with the file “/mnt2/abc/def/aaa.txt”. Despite different mount points and different sources the files can be compared with each other under the same names “abc/def/aaa.txt” with the corresponding checksums.\n" \
+"\n" \
 "All other technical details could be found in README file of the project";
 
 /* A description of the arguments we accept. */
@@ -76,6 +80,7 @@ static struct argp_option options[] = {
 	                                     "in order to remove from the database mention of files that " \
 	                                     "matches the regular expression passed through the " \
 	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option(s)\n", 0},
+	{"dry-run",  'n', 0, 0,  "Perform a trial run with no changes made. The option will not affect \033[1m--compare\033[0m\n", 0},
 	{"maxdepth", 'm', "NUMBER", 0, "Recursion depth limit. " \
 	                        "The depth of the traversal, numbered from 0 to N, " \
 	                        "where a file could be found. Representing the maximum " \
@@ -102,19 +107,13 @@ static struct argp_option options[] = {
 	{"compare",  'c', 0, 0, "Compare two databases from different sourses. Two extra arguments should be " \
 	                        "specified as paths to the databases files to compare. For example: \033[1m--compare database1.db database2.db\033[0m\n", 0 },
 	{ 0, 0, 0, 0, "Visualizations options:\n", -1},
-	{"silent",   's', 0, 0, "Don't produce any output. Option cannot be used with \033[1m--compare\033[0m", 0 },
+	{"silent",   's', 0, 0, "Don't produce any output. The option will not affect \033[1m--compare\033[0m", 0 },
 	{"verbose",  'v', 0, 0, "Produce verbose output.", 0 },
 	{"progress", 'p', 0, 0, "Show progress bar. This assume a preliminary count of files and the space they occupy " \
 	                        "to predict execution time. It is strongly recommended not to specify this option " \
 	                        "if the program is called from a script. This will reduce execution time " \
 	                        "(sometimes significantly) and reduce screen output.", 0 },
 	{0}
-};
-
-/* Used to communicate with parse_opt. */
-struct arguments
-{
-	char **filenames;    /* part of path */
 };
 
 /* Parse a single option. */
@@ -127,23 +126,36 @@ static error_t parse_opt
 {
 	/* Get the input argument from argp_parse, which we
 	know is a pointer to our arguments structure. */
-	struct arguments *arguments = state->input;
+	//struct arguments *arguments = state->input;
 	char *ptr = NULL;
 	long int argument_value = -1;
 
 	switch (key)
 	{
 		case 'd':
+			// Full path to DB file
+			config->db_file_path = (char *)calloc(strlen(arg) + 1,sizeof(char));
+			if(config->db_file_path == NULL)
+			{
+				argp_failure(state, 1, 0, "ERROR: Memory allocation did not complete successfully!");
+				exit(ARGP_ERR_UNKNOWN);
+			}
+			strcpy(config->db_file_path,arg);
+
+			// Name of DB file only
 			config->db_file_name = (char *)calloc(strlen(arg) + 1,sizeof(char));
 			if(config->db_file_name == NULL)
 			{
 				argp_failure(state, 1, 0, "ERROR: Memory allocation did not complete successfully!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
-			strcpy(config->db_file_name,arg);
+			strcpy(config->db_file_name,basename(arg));
 			break;
 		case 'e':
 			add_string_to_array(&config->ignore,arg);
+			break;
+		case 'n':
+			config->dry_run = true;
 			break;
 		case 'i':
 			add_string_to_array(&config->include,arg);
@@ -185,7 +197,6 @@ static error_t parse_opt
 			break;
 		case ARGP_KEY_ARG:
 			config->paths = &state->argv[state->next - 1];
-			arguments->filenames = config->paths;
 			state->next = state->argc;
 			break;
 		case ARGP_KEY_END:
@@ -224,26 +235,12 @@ Return parse_arguments
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	struct arguments arguments;
-
-	/* Default values to 0. */
-	memset(&arguments,0,sizeof(struct arguments));
-
 	/* Parse our arguments; every option seen by parse_opt will be
 	reflected in arguments. */
-	argp_parse(&argp, argc, argv, 0, 0, &arguments);
+	argp_parse(&argp, argc, argv, 0, 0, 0);
 
-	if(config->compare == true)
+	if(config->paths != NULL)
 	{
-		// The array with database names
-		config->databases_to_compare = config->paths;
-		for (int j = 0; config->paths[j]; j++)
-		{
-			// Extract file name from a path
-			arguments.filenames[j] = basename(config->databases_to_compare[j]);
-		}
-
-	} else {
 		for (int j = 0; config->paths[j]; j++)
 		{
 			// Remove unnecessary trailing slash at the end of the directory path
@@ -251,38 +248,83 @@ Return parse_arguments
 		}
 	}
 
-	config->filenames = arguments.filenames;
+	if(config->compare == true)
+	{
+		if(config->paths != NULL)
+		{
+			// The array with database names
+			config->db_file_paths = config->paths;
+
+			for (int j = 0; config->db_file_paths[j]; j++)
+			{
+				// Extract file name from a path
+				char *tmp = (char *)calloc(strlen(config->db_file_paths[j]) + 1,sizeof(char));
+				strcpy(tmp,config->db_file_paths[j]);
+				char *db_file_basename = basename(tmp);
+				add_string_to_array(&config->db_file_names,db_file_basename);
+				free(tmp);
+			}
+		}
+	}
 
 	if(config->verbose == true
 		&& config->silent == false)
 	{
 		slog(false,"Configuration: ");
-		printf("paths=");
-		for (int j = 0; config->paths[j]; j++)
+		if(config->paths != NULL)
 		{
-			printf(j == 0 ? "%s" : ", %s", config->paths[j]);
+			printf("paths=");
+			for (int j = 0; config->paths[j]; j++)
+			{
+				printf(j == 0 ? "%s" : ", %s", config->paths[j]);
+			}
+			printf("; ");
 		}
-		printf("; ");
-		printf("ignore=");
-		// Print the contents of the string array
-		for(int i = 0; config->ignore[i] != NULL; ++i) {
-			printf(i == 0 ? "%s" : ", %s", config->ignore[i]);
+		if(config->db_file_paths != NULL)
+		{
+			printf("db_file_paths=");
+			for (int j = 0; config->db_file_paths[j]; j++)
+			{
+				printf(j == 0 ? "%s" : ", %s", config->db_file_paths[j]);
+			}
+			printf("; ");
 		}
-		printf("; ");
-		printf("include=");
-		// Print the contents of the string array
-		for(int i = 0; config->include[i] != NULL; ++i) {
-			printf(i == 0 ? "%s" : ", %s", config->include[i]);
+		if(config->db_file_names != NULL)
+		{
+			printf("db_file_names=");
+			for (int j = 0; config->db_file_names[j]; j++)
+			{
+				printf(j == 0 ? "%s" : ", %s", config->db_file_names[j]);
+			}
+			printf("; ");
 		}
+		if(config->ignore != NULL)
+		{
+			printf("ignore=");
+			// Print the contents of the string array
+			for(int i = 0; config->ignore[i] != NULL; ++i) {
+				printf(i == 0 ? "%s" : ", %s", config->ignore[i]);
+			}
+			printf("; ");
+		}
+		if(config->include != NULL)
+		{
+			printf("include=");
+			// Print the contents of the string array
+			for(int i = 0; config->include[i] != NULL; ++i) {
+				printf(i == 0 ? "%s" : ", %s", config->include[i]);
+			}
 		printf("; ");
-		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s",
+		}
+		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s",
 		config->verbose ? "yes" : "no",
 		config->silent ? "yes" : "no",
 		config->force ? "yes" : "no",
 		config->update ? "yes" : "no",
 		config->progress ? "yes" : "no",
 		config->compare ? "yes" : "no",
-		config->db_clean_ignored ? "yes" : "no");
+		config->db_clean_ignored ? "yes" : "no",
+		config->dry_run ? "yes" : "no");
 		printf("\n");
 	}
 

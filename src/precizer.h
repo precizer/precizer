@@ -154,6 +154,9 @@ typedef struct {
 	/// An array of paths to traverse
 	char **paths;
 
+	/// The path of DB file
+	char *db_file_path;
+
 	/// The name of DB file
 	char *db_file_name;
 
@@ -165,10 +168,10 @@ typedef struct {
 	bool something_has_been_changed;
 
 	/// Pointers to the array with database paths
-	char **databases_to_compare;
+	char **db_file_paths;
 
 	/// Pointers to the array with database file names
-	char **filenames;
+	char **db_file_names;
 
 	/// Don't produce any output
 	bool silent;
@@ -196,6 +199,9 @@ typedef struct {
 	/// This is special protection against accidental
 	/// deletion of information from the database.
 	bool db_clean_ignored;
+
+	/// Perform a trial run with no changes made
+	bool dry_run;
 
 } Config;
 
@@ -311,7 +317,8 @@ void show_relative_path
 	bool*,
 	bool*,
 	bool*,
-	const bool*
+	const bool*,
+	bool*
 );
 
 void status_of_changes(void);

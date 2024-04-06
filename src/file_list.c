@@ -32,6 +32,7 @@ Return file_list
 	bool show_changes = true;
 	bool ignore_showed_once = false;
 	bool include_showed_once = false;
+	bool at_least_one_file_was_shown = false;
 
 	FTS *file_systems = NULL;
 	FTSENT *p = NULL;
@@ -42,7 +43,7 @@ Return file_list
 	size_t count_files = 0, count_dirs = 0, count_symlnks = 0;
 
 	if ((file_systems = fts_open(config->paths, fts_options, NULL)) == NULL) {
-		slog(false,"fts_open error\n");
+		slog(false,"fts_open() error\n");
 		status = FAILURE;
 		fts_close(file_systems);
 		return(status);
@@ -237,7 +238,7 @@ Return file_list
 					memset(sha512,0,sizeof(sha512)); // Clean sha512 to prevent reuse;
 
 					// Print out of a file name and its changes
-					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored);
+					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown);
 
 					if(ignored == true)
 					{
@@ -317,7 +318,11 @@ Return file_list
 
 	if(config->progress == true)
 	{
-		slog(false,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes), total_items, count_dirs,count_files,count_symlnks);
+		if(count_size_of_all_files == true ||
+			(count_size_of_all_files == false && at_least_one_file_was_shown == true))
+		{
+			slog(false,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes),total_items,count_dirs,count_files,count_symlnks);
+		}
 	}
 
 	return(status);

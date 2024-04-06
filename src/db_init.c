@@ -11,14 +11,25 @@ Return db_init(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	int sqlite_open_flag = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+
 	int rc;
 
+	/* Open database */
+	if(SQLITE_OK != (rc = sqlite3_open_v2(config->db_file_path, &config->db, sqlite_open_flag, NULL)))
+	{
+		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		status = FAILURE;
+	} else if(config->compare != true){
+		slog(true,"Opened database %s successfully\n",config->db_file_name);
+	}
+
 	// Don't do anything with default database in case of compare
-	if(config->compare != true)
+	if(config->compare == false)
 	{
 
 #if 0 // Old multiPATH solution
-const char *sql = "PRAGMA foreign_keys=OFF;" \
+		const char *sql = "PRAGMA foreign_keys=OFF;" \
 		                  "BEGIN TRANSACTION;" \
 		                  "CREATE TABLE IF NOT EXISTS files("  \
 		                  "ID INTEGER PRIMARY KEY NOT NULL," \
@@ -52,12 +63,6 @@ const char *sql = "PRAGMA foreign_keys=OFF;" \
 		                  "prefix TEXT NOT NULL UNIQUE);" \
 		                  "COMMIT;";
 
-		/* Open database */
-		if(sqlite3_open(config->db_file_name, &config->db)){
-			slog(false,"Can't open database: %s\n", sqlite3_errmsg(config->db));
-			status = FAILURE;
-		}
-
 		/* Execute SQL statement */
 		rc = sqlite3_exec(config->db, sql, NULL, NULL, NULL);
 		if(rc!= SQLITE_OK ){
@@ -66,21 +71,9 @@ const char *sql = "PRAGMA foreign_keys=OFF;" \
 		} else {
 			slog(true,"The database has been successfully initialized\n");
 		}
-
-		sqlite3_close(config->db);
-
 	}
 
-	/* Open database to insert values */
-	rc = sqlite3_open(config->db_file_name, &config->db);
-	if(rc) {
-		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
-		status = FAILURE;
-	} else if(config->compare != true)
-	{
-		slog(true,"Opened database successfully\n");
-	}
-
+	// Tune the DB performance
 	const char *pragma_sql = "PRAGMA page_size = 4096;" \
 	                         "PRAGMA cache_size = 524288;" \
 	                         "PRAGMA journal_mode = OFF;" \
