@@ -19,7 +19,7 @@ Return db_save_prefixes_into(void)
 
 	if(config->force == true && config->dry_run == false)
 	{
-		/* Delete prevoius records in the table  */
+		/* Delete previous records in the table  */
 		sqlite3_stmt *delete_stmt = NULL;
 
 		const char *delete_sql="DELETE FROM paths WHERE ID IN (SELECT path_id FROM runtime_paths_id.the_path_id_does_not_exists);";

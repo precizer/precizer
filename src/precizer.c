@@ -55,7 +55,7 @@ int main(int argc,char **argv){
 
 	if(SUCCESS == status)
 	{
-		// Initialize signals interseption like Ctrl+C
+		// Initialize signals interception like Ctrl+C
 		status = init_signals();
 	}
 

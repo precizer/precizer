@@ -191,7 +191,7 @@ Return db_check_up_paths(void)
 				printf("\n");
 			}
 		} else {
-			slog(false,"Use \033[1m--force\033[m option only in case when the PATH that was written into " \
+			slog(false,"Use \033[1m--force\033[0m option only in case when the PATH that was written into " \
 			           "the database really need to be renewed. Warning! If this option will be used in incorrect way, " \
 			           "information about files and their checksums against the database would " \
 			           "be lost.\n");

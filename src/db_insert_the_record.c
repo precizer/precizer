@@ -22,7 +22,7 @@ Return db_insert_the_record
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// Don't do enything in case of --dry_run
+	// Don't do anything in case of --dry_run
 	if(config->dry_run == true)
 	{
 		return(status);

@@ -221,7 +221,7 @@ TOPTARGETS := all
 all: $(SUBDIRS) release
 
 $(SUBDIRS):
-	@$(MAKE) -C $@ $(MAKECMDGOALS)
+	@$(MAKE) -C $@ all
 
 # Clang
 clang: CC = clang
@@ -306,6 +306,14 @@ $(RELDIR)/%.o: $(SRC)/%.c
 	@echo $<" compiled."
 
 #
+# GCC Static Analysis
+#
+gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -Wanalyzer-too-complex
+#gccanalyzer: WFLAGS += -fdump-analyzer -fdump-analyzer-callgraph -fdump-analyzer-exploded-graph -fdump-analyzer-exploded-nodes -fdump-analyzer-exploded-nodes-2 -fdump-analyzer-exploded-nodes-3 -fdump-analyzer-feasibility -fdump-analyzer-json -fdump-analyzer-state-purge -fdump-analyzer-stderr -fdump-analyzer-supergraph
+gccanalyzer: CC = gcc-12
+gccanalyzer: debug
+
+#
 # Unittesting
 #
 
@@ -343,7 +351,7 @@ $(UNITDIR)/%.o: $(SRC)/%.c
 remake: clean all
 
 # Tests
-test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest perf
+test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gccanalyzer perf
 
 cppcheck:
 	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
@@ -369,10 +377,13 @@ clang-analyzer:
 	scan-build -V make debug
 
 splint:
-	splint -I /usr/include/x86_64-linux-gnu +posixlib $(SRCS)
+	splint -I /usr/include/x86_64-linux-gnu +posixlib $(SRCS) $(INCPATH)
 
 doc:
 	@doxygen Doxyfile
+
+spellchecker:
+	@~/.cargo/bin/typos libs/sha512/ libs/rational/
 
 gource:
 	gource --seconds-per-day 0.1 --auto-skip-seconds 1
