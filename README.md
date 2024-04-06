@@ -43,7 +43,7 @@ The following information will be displayed on the screen:
 * Which files are missing on “host1” but present on “host2” and vice versa.
 * For which files, present on both hosts, the checksums do NOT match.
 
-Note that **precizer** writes only relative paths to the database. The example file /mnt1/abc/def/aaa.txt will be written to the database as "abc/def/aaa.txt" without /mnt1. The same thing will happen with the file /mnt2/abc/def/aaa.txt. Despite different mount points and different sources the files can be compared with each other under the same names "abc/def/aaa.txt" with the corresponding checksums.
+Note that **precizer** writes only relative paths to the database. The example file “/mnt1/abc/def/aaa.txt” will be written to the database as “abc/def/aaa.txt” without _/mnt1_. The same thing will happen with the file “/mnt2/abc/def/aaa.txt”. Despite different mount points and different sources the files can be compared with each other under the same names “abc/def/aaa.txt” with the corresponding checksums.
 
 ## TECHNICAL DETAILS
 
