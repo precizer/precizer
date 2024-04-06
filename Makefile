@@ -410,6 +410,6 @@ clean-asm:
 
 banner:
 	@printf "Now some tests could be running:\n"
-	@printf "\033[1mStage 1:\033[0m\n./precizer --progress --database=database1.db tests/examples/diffs/diff1\n"
-	@printf "\033[1mStage 2:\033[0m\n./precizer --progress --database=database2.db tests/examples/diffs/diff2\n"
-	@printf "\033[1mFinal stage:\033[0m\n./precizer --compare database1.db database2.db\n"
+	@printf "\033[1mStage 1. Adding:\033[0m\n./precizer --progress --database=database1.db tests/examples/diffs/diff1\n"
+	@printf "\033[1mStage 2. Adding:\033[0m\n./precizer --progress --database=database2.db tests/examples/diffs/diff2\n"
+	@printf "\033[1mFinal stage. Comparing:\033[0m\n./precizer --compare database1.db database2.db\n"

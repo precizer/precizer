@@ -17,6 +17,12 @@ Return db_delete_the_file_by_id
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	// Don't do enything in case of --dry_run
+	if(config->dry_run == true)
+	{
+		return(status);
+	}
+
 	sqlite3_stmt *delete_stmt = NULL;
 	int rc = 0;
 

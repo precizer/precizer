@@ -17,7 +17,8 @@ void show_relative_path
 	bool *first_iteration,
 	bool *show_changes,
 	bool *rehashig_from_the_beginning,
-	const bool *ignored
+	const bool *ignored,
+	bool *at_least_one_file_was_shown
 ){
 	if(*first_iteration == true)
 	{
@@ -34,7 +35,7 @@ void show_relative_path
 
 		} else {
 			*show_changes = false;
-			slog(false,"\033[1mThese files will be added against the DB %s:\n\033[m",config->db_file_name);
+			slog(false,"\033[1mThese files will be added against the %s database:\n\033[m",config->db_file_name);
 		}
 	}
 
@@ -46,6 +47,8 @@ void show_relative_path
 		}
 
 		printf("%s",relative_path);
+
+		*at_least_one_file_was_shown = true;
 
 		if(*ignored == false)
 		{

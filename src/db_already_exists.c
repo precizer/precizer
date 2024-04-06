@@ -54,10 +54,10 @@ Return db_already_exists(void)
 			slog(true,"The database has already been created in the past\n");
 		} else {
 			slog(false,"The database %s has been created in the past and already contains" \
-			                  " data with files and their checksums. Use the \033[1m--update\033[m option if" \
-			                  " there is full confidence that update the content of the database"  \
-			                  " is really need and the information about those files which was changed," \
-			                  " removed or added should be deleted or updated against DB.\n",config->db_file_name);
+			           " data with files and their checksums. Use the \033[1m--update\033[m option if" \
+			           " there is full confidence that update the content of the database"  \
+			           " is really need and the information about those files which was changed," \
+			           " removed or added should be deleted or updated against DB.\n",config->db_file_name);
 			status = WARNING;
 			return(status);
 		}

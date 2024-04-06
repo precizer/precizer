@@ -17,20 +17,22 @@ Return db_compare(void)
 		return(status);
 	}
 
-	slog(false,"Comparison of databases %s and %s is starting...\n",config->filenames[0],config->filenames[1]);
+	slog(false,"Comparison of databases %s and %s is starting...\n",config->db_file_names[0],config->db_file_names[1]);
 
 	/*
+	 *
 	 * Check up the path availability
+	 *
 	 */
 
 	// First database
-	if(SUCCESS != (status = detect_a_path(config->filenames[0])))
+	if(SUCCESS != (status = detect_a_path(config->db_file_paths[0])))
 	{
 		return(status);
 	}
 
 	// Second database
-	if(SUCCESS != (status = detect_a_path(config->filenames[1])))
+	if(SUCCESS != (status = detect_a_path(config->db_file_paths[1])))
 	{
 		return(status);
 	}
@@ -40,13 +42,13 @@ Return db_compare(void)
 	 */
 
 	// First database
-	if(SUCCESS != (status = db_test(config->filenames[0])))
+	if(SUCCESS != (status = db_test(config->db_file_paths[0])))
 	{
 		return(status);
 	}
 
 	// Second database
-	if(SUCCESS != (status = db_test(config->filenames[1])))
+	if(SUCCESS != (status = db_test(config->db_file_paths[1])))
 	{
 		return(status);
 	}
@@ -57,12 +59,14 @@ Return db_compare(void)
 	int rc = 0;
 
 	// Compose a string with SQL request
-	const char *attach_sql_1a = "attach database '";
-	const char *attach_sql_1b = "' as db1;";
-	char *select_sql_1 = (char *)calloc(strlen(attach_sql_1a) +
-	                                  strlen(attach_sql_1b) +
-	                                  strlen(config->databases_to_compare[0]) + 1,
-	                                  sizeof(char));
+	const char *attach_sql    = "ATTACH DATABASE '";
+	const char *attach_sql_1 = "' as db1;";
+
+	size_t sql_string_len_1 = strlen(attach_sql) +
+	                          strlen(config->db_file_paths[0]) +
+	                          strlen(attach_sql_1) + 1;
+
+	char *select_sql_1 = (char *)calloc(sql_string_len_1,sizeof(char));
 	if(select_sql_1 == NULL)
 	{
 		status = FAILURE;
@@ -70,9 +74,9 @@ Return db_compare(void)
 		return(status);
 	}
 
-	strcat(select_sql_1,attach_sql_1a);
-	strcat(select_sql_1,config->databases_to_compare[0]);
-	strcat(select_sql_1,attach_sql_1b);
+	strcat(select_sql_1,attach_sql);
+	strcat(select_sql_1,config->db_file_paths[0]);
+	strcat(select_sql_1,attach_sql_1);
 
 	rc = sqlite3_exec(config->db, select_sql_1, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
@@ -82,21 +86,22 @@ Return db_compare(void)
 	free(select_sql_1);
 
 	// Compose a string with SQL request
-	const char *attach_sql_2a = "attach database '";
-	const char *attach_sql_2b = "' as db2;";
-	char *select_sql_2 = (char *)calloc(strlen(attach_sql_2a) +
-	                                  strlen(attach_sql_2b) +
-	                                  strlen(config->databases_to_compare[1]) + 1,
-	                                  sizeof(char));
+	const char *attach_sql_2 = "' as db2;";
+
+	size_t sql_string_len_2 = strlen(attach_sql) +
+	                          strlen(config->db_file_paths[1]) +
+	                          strlen(attach_sql_2) + 1;
+
+	char *select_sql_2 = (char *)calloc(sql_string_len_2,sizeof(char));
 	if(select_sql_2 == NULL)
 	{
 		status = FAILURE;
 		slog(false,"ERROR: Memory allocation did not complete successfully!\n");
 		return(status);
 	}
-	strcat(select_sql_2,attach_sql_2a);
-	strcat(select_sql_2,config->databases_to_compare[1]);
-	strcat(select_sql_2,attach_sql_2b);
+	strcat(select_sql_2,attach_sql);
+	strcat(select_sql_2,config->db_file_paths[1]);
+	strcat(select_sql_2,attach_sql_2);
 
 	rc = sqlite3_exec(config->db, select_sql_2, NULL, NULL, NULL);
 	if(rc!= SQLITE_OK ){
@@ -133,7 +138,7 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[m",config->filenames[0],config->filenames[1]);
+			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 		const unsigned char *relative_path = NULL;
@@ -180,7 +185,7 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[m",config->filenames[1],config->filenames[0]);
+			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[m",config->db_file_names[1],config->db_file_names[0]);
 		}
 
 		const unsigned char *relative_path = NULL;
@@ -243,7 +248,7 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThe SHA512 checksums of these files do not match between %s and %s\n\033[m",config->filenames[0],config->filenames[1]);
+			printf("\033[1mThe SHA512 checksums of these files do not match between %s and %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 #if 0
@@ -272,16 +277,16 @@ Return db_compare(void)
 
 	if(files_the_same == true)
 	{
-		printf("\033[1mAll files are identical against %s and %s\n\033[m",config->filenames[0],config->filenames[1]);
+		printf("\033[1mAll files are identical against %s and %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
 	}
 	if(checksums == true)
 	{
-		printf("\033[1mAll SHA512 checksums of files are identical against %s and %s\n\033[m",config->filenames[0],config->filenames[1]);
+		printf("\033[1mAll SHA512 checksums of files are identical against %s and %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
 	}
 
 	if(the_databases_are_equal == true)
 	{
-		printf("\033[1mThe databases %s and %s are absolutely equal\033[m\n",config->filenames[0],config->filenames[1]);
+		printf("\033[1mThe databases %s and %s are absolutely equal\033[m\n",config->db_file_names[0],config->db_file_names[1]);
 	}
 
 	return(status);

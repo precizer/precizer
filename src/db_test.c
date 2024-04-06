@@ -13,7 +13,7 @@ Return db_test
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// If the database has not in-memory type
+	// Do nothing if the database has not in-memory type
 	if(strcmp(db_file_path,":memory:") == 0)
 	{
 		return(status);
@@ -26,10 +26,17 @@ Return db_test
 	// Default value
 	bool database_is_ok = false;
 
-	slog(false,"Starting of database file %s integrity check...\n",db_file_path);
+	// Extract file name from a path
+	char *tmp = (char *)calloc(strlen(db_file_path) + 1,sizeof(char));
+	strcpy(tmp,db_file_path);
+	const char *db_file_name = basename(tmp);
+
+	slog(false,"Starting of database file %s integrity check...\n",db_file_name);
+
+	int sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 	/* Open database */
-	if(sqlite3_open(db_file_path, &db))
+	if(sqlite3_open_v2(db_file_path,&db,sqlite_open_flag,NULL))
 	{
 		slog(false,"Can't open database: %s\n", sqlite3_errmsg(db));
 		status = FAILURE;
@@ -59,13 +66,15 @@ Return db_test
 
 	if(database_is_ok == true)
 	{
-		slog(false,"The database %s has been verified and is in good condition\n",db_file_path);
+		slog(false,"The database %s has been verified and is in good condition\n",db_file_name);
 	} else {
-		slog(false,"ERROR: The database %s is in poor condition!\n",db_file_path);
+		slog(false,"ERROR: The database %s is in poor condition!\n",db_file_name);
 		status = FAILURE;
 	}
 
 	sqlite3_close(db);
+
+	free(tmp);
 
 	return(status);
 }

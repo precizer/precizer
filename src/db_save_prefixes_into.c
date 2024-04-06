@@ -17,7 +17,7 @@ Return db_save_prefixes_into(void)
 		return(status);
 	}
 
-	if(config->force == true)
+	if(config->force == true && config->dry_run == false)
 	{
 		/* Delete prevoius records in the table  */
 		sqlite3_stmt *delete_stmt = NULL;
