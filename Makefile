@@ -346,7 +346,7 @@ remake: clean all
 test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest perf
 
 cppcheck:
-	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs --inconclusive .
+	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)

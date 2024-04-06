@@ -40,7 +40,7 @@ Return db_insert_the_record
 	/* Create SQL statement. Prepare to write */
 	rc = sqlite3_prepare_v2(config->db, insert_sql, -1, &insert_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare insert statment %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare insert statement %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

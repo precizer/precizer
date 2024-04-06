@@ -34,7 +34,7 @@ Return db_update_the_record
 	/* Create SQL statement. Prepare to write */
 	rc = sqlite3_prepare_v2(config->db, update_sql, -1, &update_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare update statment %s (%i): %s\n", update_sql, rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare update statement %s (%i): %s\n", update_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

@@ -91,7 +91,7 @@ Return db_check_up_paths(void)
 
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statment %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -109,7 +109,7 @@ Return db_check_up_paths(void)
 
 			rc = sqlite3_prepare_v2(config->db, insert_sql, -1, &insert_stmt, NULL);
 			if(SQLITE_OK != rc) {
-				slog(false,"Can't prepare insert statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+				slog(false,"Can't prepare insert statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 
@@ -155,7 +155,7 @@ Return db_check_up_paths(void)
 
 			rc_stmt = sqlite3_prepare_v2(config->db, sql, -1, &stmt, NULL);
 			if(SQLITE_OK != rc_stmt) {
-				slog(false,"Can't prepare select statment %s (%i): %s\n", sql, rc_stmt, sqlite3_errmsg(config->db));
+				slog(false,"Can't prepare select statement %s (%i): %s\n", sql, rc_stmt, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 

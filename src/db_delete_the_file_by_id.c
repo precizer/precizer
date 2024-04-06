@@ -28,7 +28,7 @@ Return db_delete_the_file_by_id
 
 	rc = sqlite3_prepare_v2(config->db, "DELETE FROM files WHERE ID=?1;", -1, &delete_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare delete statment (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(false,"Can't prepare delete statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
