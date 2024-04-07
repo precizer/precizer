@@ -28,14 +28,14 @@ void show_relative_path
 		{
 			if(config->update == true)
 			{
-				slog(false,"The \033[1m--update\033[m option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
+				slog(false,"The \033[1m--update\033[0m option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
 			}
 
-			slog(false,"\033[1mThese files have been added or changed and those changes will be reflected against the DB %s:\n\033[m",config->db_file_name);
+			slog(false,"\033[1mThese files have been added or changed and those changes will be reflected against the DB %s:\n\033[0m",config->db_file_name);
 
 		} else {
 			*show_changes = false;
-			slog(false,"\033[1mThese files will be added against the %s database:\n\033[m",config->db_file_name);
+			slog(false,"\033[1mThese files will be added against the %s database:\n\033[0m",config->db_file_name);
 		}
 	}
 
