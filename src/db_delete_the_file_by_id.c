@@ -45,7 +45,7 @@ Return db_delete_the_file_by_id
 
 			if(config->update == true && config->something_has_been_changed == false)
 			{
-				slog(false,"The \033[1m--update\033[m option has been used, so the information about files will be deleted against the database %s\n",config->db_file_name);
+				slog(false,"The \033[1m--update\033[0m option has been used, so the information about files will be deleted against the database %s\n",config->db_file_name);
 			}
 
 			*first_iteration = false;
@@ -53,7 +53,7 @@ Return db_delete_the_file_by_id
 			// Reflect changes in global
 			config->something_has_been_changed = true;
 
-			slog(false,"\033[1mThese files are ignored or no longer exist and will be deleted against the DB %s:\n\033[m",config->db_file_name);
+			slog(false,"\033[1mThese files are ignored or no longer exist and will be deleted against the DB %s:\n\033[0m",config->db_file_name);
 		}
 		if(*clean_ignored == true)
 		{

@@ -138,7 +138,7 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
+			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 		const unsigned char *relative_path = NULL;
@@ -185,7 +185,7 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[m",config->db_file_names[1],config->db_file_names[0]);
+			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[0m",config->db_file_names[1],config->db_file_names[0]);
 		}
 
 		const unsigned char *relative_path = NULL;
@@ -247,7 +247,7 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThe SHA512 checksums of these files do not match between %s and %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
+			printf("\033[1mThe SHA512 checksums of these files do not match between %s and %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 #if 0
@@ -276,16 +276,16 @@ Return db_compare(void)
 
 	if(files_the_same == true)
 	{
-		printf("\033[1mAll files are identical against %s and %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
+		printf("\033[1mAll files are identical against %s and %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
 	}
 	if(checksums == true)
 	{
-		printf("\033[1mAll SHA512 checksums of files are identical against %s and %s\n\033[m",config->db_file_names[0],config->db_file_names[1]);
+		printf("\033[1mAll SHA512 checksums of files are identical against %s and %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
 	}
 
 	if(the_databases_are_equal == true)
 	{
-		printf("\033[1mThe databases %s and %s are absolutely equal\033[m\n",config->db_file_names[0],config->db_file_names[1]);
+		printf("\033[1mThe databases %s and %s are absolutely equal\033[0m\n",config->db_file_names[0],config->db_file_names[1]);
 	}
 
 	return(status);

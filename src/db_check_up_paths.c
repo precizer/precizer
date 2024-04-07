@@ -183,7 +183,7 @@ Return db_check_up_paths(void)
 		if(config->force == true){
 			if(config->silent == false)
 			{
-				printf("The \033[1m--force\033[m option has been used, so the following path will be written to the database %s: ",config->db_file_name);
+				printf("The \033[1m--force\033[0m option has been used, so the following path will be written to the database %s: ",config->db_file_name);
 				for (int i = 0; config->paths[i]; i++)
 				{
 					printf (i == 0 ? "%s" : ", %s", config->paths[i]);
