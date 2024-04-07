@@ -210,8 +210,7 @@ Return db_compare(void)
 	                                " on b.relative_path = a.relative_path " \
 	                                " and b.sha512 != a.sha512" \
 	                                " order by a.relative_path asc;";
-#endif
-#if 0
+
 	const char *compare_checksums = "SELECT p.path,f1.relative_path " \
 	                                "FROM db1.files AS f1 " \
 	                                "JOIN db1.paths AS p ON f1.path_prefix_index = p.ID " \
