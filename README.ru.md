@@ -156,7 +156,7 @@ precizer --progress --database=database1.db tests/examples/diffs/diff1
 
 precizer --progress --database=database2.db tests/examples/diffs/diff2
 
-precizer --compare database1.db database2.db 
+precizer --compare database1.db database2.db
 ```
 <sup>Comparison of databases database1.db and database2.db is starting...  
 **These files no longer exist against database1.db but still present against database2.db**  

@@ -21,6 +21,12 @@ Return db_init(void)
 	if(config->update == false)
 	{
 		sqlite_open_flag = SQLITE_OPEN_READWRITE;
+
+		// DB file doesn't exists. Brand new DB should be created
+		if(SUCCESS != detect_a_path(config->db_file_path,SHOULD_BE_A_FILE))
+		{
+			sqlite_open_flag = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+		}
 	}
 
 	int rc;
