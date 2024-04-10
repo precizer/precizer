@@ -25,16 +25,15 @@ Return db_compare(void)
 	 *
 	 */
 
-	// First database
-	if(SUCCESS != (status = detect_a_path(config->db_file_paths[0])))
+	// Check up the paths passed as arguments and make sure
+	// that they are files and exist
+	for (int i = 0; config->db_file_paths[i]; i++)
 	{
-		return(status);
-	}
-
-	// Second database
-	if(SUCCESS != (status = detect_a_path(config->db_file_paths[1])))
-	{
-		return(status);
+		if(SUCCESS != (status = detect_a_path(config->db_file_paths[i],SHOULD_BE_A_FILE)))
+		{
+			// The path doesn't exist or is not a database
+			return(status);
+		}
 	}
 
 	/*

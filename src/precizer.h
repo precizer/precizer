@@ -87,9 +87,20 @@ typedef enum
     IDENTICAL                 = 0,
     SIZE_CHANGED              = 1,
     CREATION_TIME_CHANGED     = 2,
-    MODIFICATION_TIME_CHANGED = 4,
+    MODIFICATION_TIME_CHANGED = 4
 
 } Changed;
+
+/*
+ * A file or a directory
+ *
+ */
+typedef enum
+{
+    SHOULD_BE_A_FILE      = 1,
+    SHOULD_BE_A_DIRECTORY = 2
+
+} FILEDIR;
 
 /*
  *
@@ -324,7 +335,10 @@ void show_relative_path
 
 void status_of_changes(void);
 
-Return detect_a_path(const char*);
+Return detect_a_path(
+	const char*,
+	const unsigned char
+);
 
 Return detect_paths(void);
 

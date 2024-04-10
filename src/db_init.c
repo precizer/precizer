@@ -18,6 +18,11 @@ Return db_init(void)
 		sqlite_open_flag = SQLITE_OPEN_READWRITE;
 	}
 
+	if(config->update == false)
+	{
+		sqlite_open_flag = SQLITE_OPEN_READWRITE;
+	}
+
 	int rc;
 
 	/* Open database */
@@ -29,8 +34,8 @@ Return db_init(void)
 		slog(true,"Opened database %s successfully\n",config->db_file_name);
 	}
 
-	// Don't do anything with default database in case of compare
-	if(config->compare == false)
+	// Don't do anything with default database in cases:
+	if(config->dry_run == false || config->compare == false || config->update == false)
 	{
 
 #if 0 // Old multiPATH solution

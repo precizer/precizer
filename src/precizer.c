@@ -112,6 +112,13 @@ int main(int argc,char **argv){
 
 	if(SUCCESS == status)
 	{
+		// Check up the paths passed as arguments and make sure
+		// that they are directories and exist
+		status = detect_paths();
+	}
+
+	if(SUCCESS == status)
+	{
 		// Just get a statistic
 		status = file_list(true);
 	}

@@ -239,7 +239,7 @@ TOPTARGETS := all
 all: $(SUBDIRS) release
 
 $(SUBDIRS):
-	@$(MAKE) -C $@ $(MAKECMDGOALS)
+	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
 #	@$(MAKE) -C $@ all
 
 # Clang
