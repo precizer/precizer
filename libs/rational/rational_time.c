@@ -4,7 +4,7 @@
  * @brief Current time in milliseconds
  * @return Returns long long int the number of milliseconds since the UNIX epoch
  */
-long long int time_ms(void)
+long long int cur_time_ms(void)
 {
 	struct timeval t;
 	gettimeofday(&t, NULL);
@@ -17,7 +17,7 @@ long long int time_ms(void)
  * @return long long int number of nanoseconds, count starts at the Unix Epoch on January 1st, 1970 at UTC
  * @details Source: https://stackoverflow.com/questions/39439268/printing-time-since-epoch-in-nanoseconds
  */
-long long int time_ns(void)
+long long int cur_time_ns(void)
 {
 	long long int ns;
 	time_t sec;

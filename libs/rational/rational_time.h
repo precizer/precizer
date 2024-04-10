@@ -24,9 +24,9 @@ typedef struct
 	long long int years;
 } Date;
 
-long long int time_ns(void);
+long long int cur_time_ns(void);
 
-long long int time_ms(void);
+long long int cur_time_ms(void);
 
 char *seconds_to_ISOdate(
 	time_t seconds

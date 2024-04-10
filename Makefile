@@ -91,6 +91,8 @@ INCPATH=$(foreach d,$(LIBPATH),-I$d)
 # Additional rpath
 LIBSEARCHPATH = -Wl,-rpath,\$$ORIGIN
 
+COSMOBIN = $(CURDIR)/libs/cosmocc/cosmocc/bin/
+
 #
 # Print of variables
 #
@@ -125,6 +127,18 @@ STZLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
 STZINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
 STZDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
 STZCFLAGS += -fsanitize=address -g -O0 -DDEBUG
+
+#
+# Cosmopolitan settings
+#
+COSMODIR = $(SRC)/cosmo
+COSMOEXE = $(COSMODIR)/$(EXE)
+COSMOOBJS = $(addprefix $(COSMODIR)/, $(notdir $(OBJS)))
+COSMODEP = $(COSMOOBJS:.o=.d)
+COSMOLIBDIR = $(subst $(SRC)/,,$(COSMODIR))
+COSMOLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
+COSMOINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
+COSMODYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
 
 #
 # Unittest build settings
@@ -180,7 +194,9 @@ PRODLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
 PRODINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
 PRODDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
 PRODCFLAGS = -O3 -funroll-loops -DNDEBUG -D$(PRODUCTION)
+ifneq ($(CC), cosmocc)
 PRODCFLAGS += -march=native
+endif
 # If static build, then add flags
 ifdef STATIC
 PRODLDFLAGS += -lc
@@ -201,7 +217,9 @@ RELLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
 RELINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
 RELDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
 RELCFLAGS = -O3 -funroll-loops -DNDEBUG
+ifneq ($(CC), cosmocc)
 RELCFLAGS += -march=native
+endif
 # If static build, then add flags
 ifdef STATIC
 RELLDFLAGS += -lc
@@ -221,7 +239,8 @@ TOPTARGETS := all
 all: $(SUBDIRS) release
 
 $(SUBDIRS):
-	@$(MAKE) -C $@ all
+	@$(MAKE) -C $@ $(MAKECMDGOALS)
+#	@$(MAKE) -C $@ all
 
 # Clang
 clang: CC = clang
@@ -244,6 +263,25 @@ $(STZDIR)/%.o: $(SRC)/%.c
 	@$(CC) -MM $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(STZDIR\)\//' > $(@D)/$(*F).d
 	@$(CC) -c $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
+
+#
+# Cosmopolitan rules
+#
+#cosmo: $(SUBDIRS) $(COSMOEXE) banner
+cosmo: $(COSMOEXE) banner
+
+$(COSMOEXE): $(COSMOOBJS)
+	$(CC) $(LIBSEARCHPATH) $(COSMOLIBPATH) $(COSMODYNLIB) -o $(COSMOEXE) $^ $(LDFLAGS)
+	@echo "$@ linked."
+
+-include $(COSMODEP)
+
+$(COSMODIR)/%.o: $(SRC)/%.c
+	mkdir -p $(COSMODIR)
+	$(CC) -MM $(INCPATH) $(COSMOINCPATH) $< | sed '1s/^/$$\(COSMODIR\)\//' > $(@D)/$(*F).d
+	$(CC) -c $(INCPATH) $(COSMOINCPATH) -o $@ $<
+	@echo $<" compiled."
+
 
 #
 # Debug rules
@@ -382,8 +420,8 @@ splint:
 doc:
 	@doxygen Doxyfile
 
-spellchecker:
-	@~/.cargo/bin/typos libs/sha512/ libs/rational/
+spellcheck:
+	@~/.cargo/bin/typos libs/sha512/ libs/rational/ src/ README.md README.ru.md TODO
 
 gource:
 	gource --seconds-per-day 0.1 --auto-skip-seconds 1

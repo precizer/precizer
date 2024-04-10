@@ -191,9 +191,6 @@ Return file_list
 					// Ignored with --ignore= or admit with --include=
 					bool ignored = false;
 
-					// Reflect changes in global
-					config->something_has_been_changed = true;
-
 					if(dbrow->saved_offset > 0)
 					{
 						if (metadata_of_scanned_and_saved_files == IDENTICAL)
@@ -238,7 +235,7 @@ Return file_list
 					memset(sha512,0,sizeof(sha512)); // Clean sha512 to prevent reuse;
 
 					// Print out of a file name and its changes
-					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown);
+					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,p->fts_statp,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown);
 
 					if(ignored == true)
 					{
@@ -275,17 +272,24 @@ Return file_list
 					if(update_db == true)
 					{
 						/* Update record in DB */
-						if(SUCCESS != (status = db_update_the_record(&(dbrow->ID),&offset,sha512,stat,&mdContext)))
+						if(SUCCESS == (status = db_update_the_record(&(dbrow->ID),&offset,sha512,stat,&mdContext)))
 						{
+							// Reflect changes in global
+							config->something_has_been_changed = true;
+						} else {
 							break;
 						}
+
 					} else {
 						/* Insert to DB */
 #if 0 // Old multiPATH solution
 						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,stat,&mdContext)))
 #endif
-						if(SUCCESS != (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
+						if(SUCCESS == (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
 						{
+							// Reflect changes in global
+							config->something_has_been_changed = true;
+						} else {
 							break;
 						}
 					}
