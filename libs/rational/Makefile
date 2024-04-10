@@ -6,6 +6,9 @@ LIBNAME=librational
 #
 CC ?= cc
 
+# Cosmopolitan binaries
+COSMOBIN = $(CURDIR)/../cosmocc/cosmocc/bin/
+
 # Stop the build on any errors -Werror
 CFLAGS += -pipe -std=c11 -static -finline-functions
 CFLAGS += -fbuiltin
@@ -48,6 +51,13 @@ DBGOBJS = $(addprefix $(DBGDIR)/, $(OBJS))
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
 #
+# Cosmopolitan build settings
+#
+COSMODIR = cosmo
+COSMOSTAT = $(COSMODIR)/$(STATLIB)
+COSMOOBJS = $(addprefix $(COSMODIR)/, $(OBJS))
+
+#
 # Release build settings
 #
 RELDIR = release
@@ -83,10 +93,31 @@ sanitize: debug
 	@true
 
 #
+# Cosmopolitan rules
+#
+cosmo: cosmostaticlib
+
+cosmostaticlib: $(COSMOSTAT)
+
+$(COSMOSTAT): $(COSMOOBJS)
+	$(COSMOBIN)/cosmoar crs $@ $+
+	ranlib $@
+	echo "$@ prepared to be static library."
+
+$(COSMODIR)/%.o: %.c $(HDRS)
+	mkdir -p $(COSMODIR)
+	$(COSMOBIN)/cosmocc -c -fPIC -o $@ $<
+	echo $<" compiled."
+
+
+#
 # Debug rules
 #
-debug: $(DBGSO) $(DBGSTAT)
-	@true
+debug: dbgdynlib dbgstaticlib
+
+dbgstaticlib: $(DBGSTAT)
+
+dbgdynlib: $(DBGSO)
 
 $(DBGSTAT): $(DBGOBJS)
 	@ar crs $@ $+
@@ -105,8 +136,11 @@ $(DBGDIR)/%.o: %.c $(HDRS)
 #
 # Release rules
 #
-release: $(RELSO) $(RELSTAT)
-	@true
+release: reldynlib relstaticlib
+
+relstaticlib: $(RELSTAT)
+
+reldynlib: $(RELSO)
 
 $(RELSTAT): $(RELOBJS)
 	@ar crs $@ $+

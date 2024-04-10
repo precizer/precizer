@@ -85,8 +85,11 @@ sanitize: debug
 #
 # Debug rules
 #
-debug: $(DBGSO) $(DBGSTAT)
-	@true
+debug: dbgdynlib dbgstaticlib
+
+dbgstaticlib: $(DBGSTAT)
+
+dbgdynlib: $(DBGSO)
 
 $(DBGSTAT): $(DBGOBJS)
 	@ar crs $@ $+
@@ -105,8 +108,11 @@ $(DBGDIR)/%.o: %.c $(HDRS)
 #
 # Release rules
 #
-release: $(RELSO) $(RELSTAT)
-	@true
+release: reldynlib relstaticlib
+
+relstaticlib: $(RELSTAT)
+
+reldynlib: $(RELSO)
 
 $(RELSTAT): $(RELOBJS)
 	@ar crs $@ $+

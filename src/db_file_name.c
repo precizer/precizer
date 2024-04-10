@@ -17,25 +17,29 @@ Return db_create_name(void)
 
 	if(config->compare == true || config->dry_run == true)
 	{
-		// In-memory database
-		const char *inmemory_db_name = ":memory:";
-		config->db_file_path = (char *)calloc(strlen(inmemory_db_name) + 1,sizeof(char));
 		if(config->db_file_path == NULL)
 		{
-			slog(false,"ERROR: Memory allocation did not complete successfully!\n");
-			status = FAILURE;
-		} else {
-			strcpy(config->db_file_path,inmemory_db_name);
-		}
-		config->db_file_name = (char *)calloc(strlen("disposable") + 1,sizeof(char));
-		if(config->db_file_name == NULL)
-		{
-			slog(false,"ERROR: Memory allocation did not complete successfully!\n");
-			status = FAILURE;
-		} else {
-			strcpy(config->db_file_name,"disposable");
+			// In-memory database
+			const char *inmemory_db_name = ":memory:";
+			config->db_file_path = (char *)calloc(strlen(inmemory_db_name) + 1,sizeof(char));
+			if(config->db_file_path == NULL)
+			{
+				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
+				status = FAILURE;
+			} else {
+				strcpy(config->db_file_path,inmemory_db_name);
+			}
+			config->db_file_name = (char *)calloc(strlen("disposable") + 1,sizeof(char));
+			if(config->db_file_name == NULL)
+			{
+				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
+				status = FAILURE;
+			} else {
+				strcpy(config->db_file_name,"disposable");
+			}
 		}
 	} else {
+
 		if(config->db_file_path == NULL)
 		{
 			// File database

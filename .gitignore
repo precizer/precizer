@@ -4,6 +4,7 @@ libs/*/release/
 libs/*/cunit/
 libs/*/pcre*/
 libs/argp/
+libs/cosmocc/
 src/*/
 tests/examples/huge/
 tests/unit_tests

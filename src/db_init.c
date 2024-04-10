@@ -13,6 +13,11 @@ Return db_init(void)
 
 	int sqlite_open_flag = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 
+	if(config->compare == true || config->dry_run == true)
+	{
+		sqlite_open_flag = SQLITE_OPEN_READWRITE;
+	}
+
 	int rc;
 
 	/* Open database */

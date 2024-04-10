@@ -314,6 +314,7 @@ void show_relative_path
 	const char*,
 	const int*,
 	const DBrow*,
+	const struct stat*,
 	bool*,
 	bool*,
 	bool*,

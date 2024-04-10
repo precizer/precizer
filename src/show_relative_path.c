@@ -1,5 +1,39 @@
 #include "precizer.h"
 
+static void print_size(
+	const struct stat *was,
+	const struct stat *now
+){
+	if(config->verbose == true)
+	{
+		printf(" was:%s",bkbmbgbtbpbeb((ui64)was->st_size));
+		printf(", now:%s",bkbmbgbtbpbeb((ui64)now->st_size));
+	}
+}
+
+static void print_ctim(
+	const struct stat *was,
+	const struct stat *now
+){
+	if(config->verbose == true)
+	{
+		printf(" was:%s.%ld",seconds_to_ISOdate(was->st_ctim.tv_sec),was->st_ctim.tv_nsec);
+		printf(", now:%s.%ld",seconds_to_ISOdate(now->st_ctim.tv_sec),now->st_ctim.tv_nsec);
+	}
+}
+
+static void print_mtim(
+	const struct stat *was,
+	const struct stat *now
+){
+	if(config->verbose == true)
+	{
+		printf(" was:%s.%ld",seconds_to_ISOdate(was->st_mtim.tv_sec),was->st_mtim.tv_nsec);
+		printf(", now:%s.%ld",seconds_to_ISOdate(now->st_mtim.tv_sec),now->st_mtim.tv_nsec);
+	}
+}
+
+
 /**
  *
  * Print out the relative path of the file
@@ -14,6 +48,7 @@ void show_relative_path
 	const char *relative_path,
 	const int *metadata_of_scanned_and_saved_files,
 	const DBrow *dbrow,
+	const struct stat *fts_statp,
 	bool *first_iteration,
 	bool *show_changes,
 	bool *rehashig_from_the_beginning,
@@ -54,7 +89,7 @@ void show_relative_path
 		{
 			if(*rehashig_from_the_beginning)
 			{
-				printf(" the SHA512 hashing of the file had not been finished previously, the file has been changed and will be rehashed from the beginning\n");
+				printf(" the SHA512 hashing of the file had not been finished previously, since then the file has been changed and will be rehashed from the beginning\n");
 			} else {
 				if(*show_changes == true)
 				{
@@ -65,24 +100,41 @@ void show_relative_path
 						switch(*metadata_of_scanned_and_saved_files) {
 							case 1:
 								printf("size");
+								print_size(&dbrow->saved_stat,fts_statp);
 								break;
 							case 2:
 								printf("ctime");
+								print_ctim(&dbrow->saved_stat,fts_statp);
 								break;
 							case 3:
-								printf("size & ctime");
+								printf("size");
+								print_size(&dbrow->saved_stat,fts_statp);
+								printf(" & ctime");
+								print_ctim(&dbrow->saved_stat,fts_statp);
 								break;
 							case 4:
 								printf("mtime");
+								print_mtim(&dbrow->saved_stat,fts_statp);
 								break;
 							case 5:
-								printf("size & mtime");
+								printf("size");
+								print_size(&dbrow->saved_stat,fts_statp);
+								printf(" & mtime");
+								print_mtim(&dbrow->saved_stat,fts_statp);
 								break;
 							case 6:
-								printf("ctime & mtime");
+								printf("ctime");
+								print_ctim(&dbrow->saved_stat,fts_statp);
+								printf(" & mtime");
+								print_mtim(&dbrow->saved_stat,fts_statp);
 								break;
 							case 7:
-								printf("size & ctime & mtime");
+								printf("size");
+								print_size(&dbrow->saved_stat,fts_statp);
+								printf(" & ctime");
+								print_ctim(&dbrow->saved_stat,fts_statp);
+								printf(" & mtime");
+								print_mtim(&dbrow->saved_stat,fts_statp);
 								break;
 							default:
 								break;

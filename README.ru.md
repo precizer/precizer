@@ -72,7 +72,7 @@ precizer --compare host1.db host2.db
 * Программа работает очень быстро благодаря библиотекам SQLite и FTS ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).
 * Разбор параметров строки реализован через библиотеку ARGP
 * Программа безопасна для случаев с огромными количествами файлов, директорий и субдиректорий любой вложенности. Благодаря библиотеке FTS рекурсия не используется, поэтому не произойдёт переполнения стека.
-* За счёт своей компактности и переносимости кода программа может использоваться даже на специализированных устройствах типа NAS или любых embeded или IoT устройствах.
+* За счёт своей компактности и переносимости кода программа может использоваться даже на специализированных устройствах типа NAS или любых embedded или IoT устройствах.
 
 ## ВОПРОСЫ И БАГРЕПОРТЫ
 
@@ -105,16 +105,19 @@ TODO!
 #### Arch
 
 1. Install build and compile tools on Linux
+
 ```sh
 sudo pacman -S --noconfirm base-devel cmake git unzip
 ```
 
 2. Get source code
+
 ```sh
 git clone https://github.com/dennisrazumovsky/precizer.git
 ```
 
 3. Build
+
 ```sh
 cd precizer
 make
@@ -122,14 +125,29 @@ make
 
 4. Скопируйте получившийся исполняемый файл **precizer** в любое место, прописанное в системной переменной $PATH для быстрого вызова.
 
+5. Clean everything and update
+
+```sh
+
+# Clean
+make clean
+
+# Update
+git pull
+make
+
+```
+
 #### Debian/Ubuntu
 
 1. Install build and compile tools on Linux
+
 ```sh
 sudo apt -y install build-essential cmake git unzip
 ```
 
 2. Get source code
+
 ```sh
 git clone https://github.com/dennisrazumovsky/precizer.git
 ```
@@ -141,6 +159,19 @@ make
 ```
 
 4. Скопируйте получившийся исполняемый файл **precizer** в любое место, прописанное в системной переменной $PATH для быстрого вызова.
+
+5. Clean everything and update
+
+```sh
+
+# Clean
+make clean
+
+# Update
+git pull
+make
+
+```
 
 ## ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
 Для проверки возможностей программы можно использовать наборы тестов из директории tests/examples/ в исходном коде программы
