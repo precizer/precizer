@@ -103,46 +103,15 @@ TODO!
 
 Nearly all utilized libraries are integrated into the program, and by default, it's built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
 
-#### Arch
 
 1. Install build and compile tools on Linux
+
+#### Arch
 
 ```sh
 sudo pacman -S --noconfirm base-devel cmake git unzip
 ```
-
-2. Get source code
-
-```sh
-git clone https://github.com/dennisrazumovsky/precizer.git
-```
-
-3. Build
-
-```sh
-cd precizer
-make
-```
-
-4. Copy the resulting executable file **precizer** to any location specified in the $PATH system variable for quick access.
-
-5. Clean everything and update
-
-```sh
-
-# Clean
-make clean
-
-# Update
-git pull
-make
-
-# Go to point 4.
-```
-
 #### Debian/Ubuntu
-
-1. Install build and compile tools on Linux
 
 ```sh
 sudo apt -y install build-essential cmake git unzip
