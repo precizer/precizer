@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Build binary with sanitizer
+# All smoke tests will run through sanitized binaries.
+
+export ASAN_OPTIONS=symbolize=1
+export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer
+
+# Chroot dir
+ORIGIN_DIR=$PWD/../..
+cd $ORIGIN_DIR
+make sanitize
+
+# Prepare
+TMPDIR=$(mktemp -d /tmp/precizer.XXXXXXXXXXXXXXXXXX)
+TESTDIRS="$TMPDIR/tests/examples/diffs/"
+mkdir -p ${TESTDIRS}
+cp -r $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS}
+cd ${TMPDIR}
+cp -r $ORIGIN_DIR/libs/*/debug/*.so* ./
+cp $ORIGIN_DIR/src/sanitize/precizer ./
+#ls -laR
+
+# Relative paths
+precizer --verbose --progress --database=database1.db tests/examples/diffs/diff1
+precizer --progress --database=database2.db tests/examples/diffs/diff2
+precizer --compare database1.db database2.db
+
+rm -rf ${TMPDIR}
