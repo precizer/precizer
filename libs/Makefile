@@ -9,7 +9,7 @@ TOPTARGETS := all clean release debug prod production sanitize test cosmo
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
-	@$(MAKE) -C $@ $(MAKECMDGOALS)
+	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS)
 

@@ -137,6 +137,7 @@ make clean
 git pull
 make
 
+# Go to point 4.
 ```
 
 #### Debian/Ubuntu
@@ -173,6 +174,7 @@ make clean
 git pull
 make
 
+# Go to point 4.
 ```
 
 ## EXAMPLES OF USING

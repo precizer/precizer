@@ -136,6 +136,7 @@ make clean
 git pull
 make
 
+# Перейти к пункту 4.
 ```
 
 #### Debian/Ubuntu
@@ -171,6 +172,7 @@ make clean
 git pull
 make
 
+# Перейти к пункту 4.
 ```
 
 ## ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ

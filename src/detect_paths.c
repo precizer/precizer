@@ -10,7 +10,8 @@
  *
  */
 Return detect_a_path(
-	const char *path
+	const char *path,
+	const unsigned char fs_object_type
 ){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -24,7 +25,7 @@ Return detect_a_path(
 	if(stat(path, &stats) == 0)
 	{
 		// Check is it a directory or a file
-		if(config->compare == true)
+		if(fs_object_type == SHOULD_BE_A_FILE)
 		{
 			if(S_ISREG(stats.st_mode))
 			{
@@ -51,9 +52,9 @@ Return detect_a_path(
 
 	if(SUCCESS != status)
 	{
-		if(config->compare == true)
+		if(fs_object_type == SHOULD_BE_A_FILE)
 		{
-			slog(false,"The path %s doesn't exist or it is not a database file\n",path);
+			slog(false,"The path %s doesn't exist or it is not a file\n",path);
 		} else {
 			slog(false,"The path %s doesn't exist or it is not a directory\n",path);
 		}
@@ -83,7 +84,7 @@ Return detect_paths(void)
 
 	for (int i = 0; config->paths[i]; i++)
 	{
-		if(SUCCESS != (status = detect_a_path(config->paths[i])))
+		if(SUCCESS != (status = detect_a_path(config->paths[i],SHOULD_BE_A_DIRECTORY)))
 		{
 			// The path doesn't exist or is not a directory
 			return(status);
