@@ -102,46 +102,15 @@ TODO!
 
 В программу интегрированы почти все используемые библиотеки и по умолчанию программа собирается как статический исполняемый файл. Это сделано для увеличения переносимости и уменьшению зависимостей. Благодаря вышеописанному программу можно легко собрать на большинстве современных платформ выполнив несколько команд:
 
-#### Arch
-
 1. Install build and compile tools on Linux
+
+#### Arch
 
 ```sh
 sudo pacman -S --noconfirm base-devel cmake git unzip
 ```
 
-2. Get source code
-
-```sh
-git clone https://github.com/dennisrazumovsky/precizer.git
-```
-
-3. Build
-
-```sh
-cd precizer
-make
-```
-
-4. Скопируйте получившийся исполняемый файл **precizer** в любое место, прописанное в системной переменной $PATH для быстрого вызова.
-
-5. Clean everything and update
-
-```sh
-
-# Clean
-make clean
-
-# Update
-git pull
-make
-
-# Перейти к пункту 4.
-```
-
 #### Debian/Ubuntu
-
-1. Install build and compile tools on Linux
 
 ```sh
 sudo apt -y install build-essential cmake git unzip
@@ -154,6 +123,7 @@ git clone https://github.com/dennisrazumovsky/precizer.git
 ```
 
 3. Build
+
 ```sh
 cd precizer
 make
