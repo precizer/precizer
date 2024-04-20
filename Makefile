@@ -69,7 +69,7 @@ WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
 # If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
-WFLAGS += -Wlogical-op
+GCCWFLAGS += -Wlogical-op
 endif
 
 # Arguments for tests
@@ -249,6 +249,7 @@ clang: all
 #
 # Sanitize rules
 #
+sanitize: CC = clang
 sanitize: $(SUBDIRS) $(STZEXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
 
@@ -289,7 +290,7 @@ $(COSMODIR)/%.o: $(SRC)/%.c
 debug: $(SUBDIRS) $(DBGEXE) banner
 
 $(DBGEXE): $(DBGOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBPATH) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
+	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBPATH) $(DBGDYNLIB) $(WFLAGS) $(GCCWFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 	@cp $@ ./
 	@echo "$@ moved to current directory"
@@ -298,8 +299,8 @@ $(DBGEXE): $(DBGOBJS)
 
 $(DBGDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(DBGDIR)
-	@$(CC) -MM $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $(GCCWFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $(GCCWFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
@@ -309,7 +310,7 @@ prod: $(SUBDIRS) production banner
 production: $(PRODEXE)
 
 $(PRODEXE): $(PRODOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRODLIBPATH) $(PRODDYNLIB) $(PRODLDFLAGS) -o $(PRODEXE) $^ $(LDFLAGS)
+	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(STATIC) $(STRIP) $(PRODLIBPATH) $(PRODDYNLIB) $(PRODLDFLAGS) -o $(PRODEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 	@cp $@ ./
 	@echo "$@ moved to current directory"
@@ -330,7 +331,7 @@ release: $(SUBDIRS) $(RELEXE) banner
 # Linking problem with "undefined reference to 'dlopen' "
 # https://stackoverflow.com/a/11221504/7104681
 $(RELEXE): $(RELOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(RELLIBPATH) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
+	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(STATIC) $(STRIP) $(RELLIBPATH) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 	@cp $@ ./
 	@echo "$@ moved to current directory"
@@ -339,8 +340,8 @@ $(RELEXE): $(RELOBJS)
 
 $(RELDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(RELDIR)
-	@$(CC) -MM $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $< | sed '1s/^/$$\(RELDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) $< | sed '1s/^/$$\(RELDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
@@ -358,15 +359,15 @@ gccanalyzer: debug
 unittest: $(SUBDIRS) $(UNITEXE)
 
 $(UNITEXE): $(UNITOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(UNITCFLAGS) $(UNITLIBPATH) $(UNITDYNLIB) $(WFLAGS) -o $(UNITEXE) $^ $(LDFLAGS)
+	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(UNITCFLAGS) $(UNITLIBPATH) $(UNITDYNLIB) $(WFLAGS) $(GCCWFLAGS) -o $(UNITEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
 -include $(UNITDEP)
 
 $(UNITDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(UNITDIR)
-	@$(CC) -MM $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(UNITDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -MM $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $(GCCWFLAGS) $< | sed '1s/^/$$\(UNITDIR\)\//' > $(@D)/$(*F).d
+	@$(CC) -c $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $(GCCWFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 # Optional preprocessor files
@@ -380,7 +381,7 @@ $(UNITDIR)/%.o: $(SRC)/%.c
 
 # Optional Assembler files
 %.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
+	@$(CC) -S -C $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
 
 #
 # Other rules
@@ -444,10 +445,10 @@ clean: | clean-preproc clean-asm
 	@rm -rf *.out.* doc $(STZDEP) $(DBGDEP) $(PRODDEP) $(RELDEP) \
 		$(DBGEXE) $(STZEXE) $(PRODEXE) $(RELEXE) \
 		$(STZOBJS) $(DBGOBJS) $(PRODOBJS) $(RELOBJS)
-	@test -d $(STZDIR) && rm -d $(STZDIR) || true
-	@test -d $(DBGDIR) && rm -d $(DBGDIR) || true
-	@test -d $(PRODDIR) && rm -d $(PRODDIR) || true
-	@test -d $(RELDIR) && rm -d $(RELDIR) || true
+	@test -d $(STZDIR) && rm -rf $(STZDIR) || true
+	@test -d $(DBGDIR) && rm -rf $(DBGDIR) || true
+	@test -d $(PRODDIR) && rm -rf $(PRODDIR) || true
+	@test -d $(RELDIR) && rm -rf $(RELDIR) || true
 	@test -f $(EXE) && rm -f $(EXE) || true
 	@echo $(EXE) cleared.
 
