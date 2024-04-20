@@ -104,16 +104,21 @@ TODO!
 
 1. Install build and compile tools on Linux
 
-#### Arch
+#### Arch Linux
 
 ```sh
 sudo pacman -S --noconfirm base-devel cmake git unzip
 ```
-
-#### Debian/Ubuntu
+#### Debian/Ubuntu Linux
 
 ```sh
 sudo apt -y install build-essential cmake git unzip
+```
+
+#### Alpine Linux
+
+```sh
+sudo apk add --update build-base git cmake fts-dev argp-standalone
 ```
 
 2. Get source code
