@@ -1,8 +1,4 @@
 doc
-libs/*/debug/
-libs/*/release/
-libs/*/cunit/
-libs/*/pcre*/
 libs/argp/
 libs/cosmocc/
 src/*/
