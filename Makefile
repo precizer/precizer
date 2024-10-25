@@ -465,6 +465,9 @@ clean-preproc:
 clean-asm:
 	@rm -rf $(ASM)
 
+update:
+	git submodule update --remote
+
 banner:
 	@printf "Now some tests could be running:\n"
 	@printf "\033[1mStage 1. Adding:\033[0m\n./precizer --progress --database=database1.db tests/examples/diffs/diff1\n"

@@ -1,6 +1,9 @@
 doc
 libs/argp/
 libs/cosmocc/
+libs/*/debug/
+libs/*/release/
+libs/*/cunit/
 src/*/
 tests/examples/huge/
 tests/unit_tests
