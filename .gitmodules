@@ -1,3 +1,4 @@
 [submodule "libs/pcre/pcre2"]
 	path = libs/pcre/pcre2
-	url = https://github.com/PCRE2Project/pcre2/tree/pcre2-10.44
+	url = https://github.com/PCRE2Project/pcre2.git
+
