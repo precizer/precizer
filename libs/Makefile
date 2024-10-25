@@ -5,7 +5,7 @@ CONFIG += ordered
 
 SUBDIRS  = sqlite rational sha512 pcre cunit
 
-TOPTARGETS := all clean release debug prod production sanitize test cosmo
+TOPTARGETS := all clean release debug prod production sanitize test cosmo update
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):

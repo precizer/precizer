@@ -37,7 +37,7 @@ sanitize: debug
 	@true
 
 $(ZIP):
-	@unzip -nqq $(ZIP).zip
+	@true
 
 switch_version: $(ZIP)
 	cd $(ZIP); git checkout tags/$(VERSION)
@@ -85,6 +85,9 @@ $(RELSTAT):
 	@mkdir -p release; cd release; cmake ../$(ZIP) -DBUILD_SHARED_LIBS=OFF $(CMAKE_FLAGS); $(MAKE)
 	@ln -f -s $(STATLIB) release/libpcre.a
 	@echo "$@ prepared to be the library for release."
+
+update:
+	git submodule update --remote
 
 clean:
 	@test -d $(ZIP) && rm -rf $(ZIP) || true
