@@ -43,13 +43,6 @@ CFLAGS += $(DEFINES)
 # libc lib for static
 LDFLAGS += -lrational -lsqlite -lsha512 -lpcre
 
-SYS := $(shell gcc -dumpmachine)
-ifneq (, $(findstring alpine, $(SYS)))
-# Alpine uses external libraries
-LDFLAGS += -largp -lfts
-endif
-
-
 EXE = precizer
 
 # If define PRODUCTION is set, then a mode is activated
@@ -464,9 +457,6 @@ clean-preproc:
 
 clean-asm:
 	@rm -rf $(ASM)
-
-update:
-	git submodule update --remote
 
 banner:
 	@printf "Now some tests could be running:\n"
