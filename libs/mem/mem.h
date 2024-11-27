@@ -107,7 +107,7 @@ typedef unsigned long long int ullint_t;
     memset(struct_name, 0, sizeof(struct_type));
 
 /* The same w/o memset to use in .h files*/
-#define HSTRUCT(struct_type, struct_name) \
+#define GSTRUCT(struct_type, struct_name) \
     struct_type _##struct_name; \
     struct_type* struct_name = &_##struct_name; \
 
