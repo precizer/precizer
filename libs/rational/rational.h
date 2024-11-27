@@ -20,7 +20,7 @@
 #define _GNU_SOURCE
 
 // Need for pathconf()
-#define _POSIX_SOURCE
+#define _POSIX_SOURCE 1
 
 // 64bit File Systems
 #define __USE_FILE_OFFSET64 1
@@ -77,3 +77,10 @@
  *
  */
 #include "rational_form.h"
+
+/**
+ *
+ * Prototypes of functions for report an error without relying on dynamic memory
+ *
+ */
+#include "rational_report.h"
