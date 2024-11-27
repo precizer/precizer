@@ -106,7 +106,7 @@ typedef unsigned long long int ullint_t;
     struct_type* struct_name = &_##struct_name; \
     memset(struct_name, 0, sizeof(struct_type));
 
-/* The same w/o memset to use in .h files*/
+/* The same w/o memset to use as global structures */
 #define GSTRUCT(struct_type, struct_name) \
     struct_type _##struct_name; \
     struct_type* struct_name = &_##struct_name; \
