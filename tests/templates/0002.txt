@@ -1,0 +1,58 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs
+TESTING:Arguments parsed
+TESTING:Check directory paths passed as arguments
+TESTING:Verify that the path tests/examples/diffs exists
+TESTING:The path tests/examples/diffs is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Database file name: %DB_NAME%
+TESTING:Database file path: %DB_NAME%
+TESTING:DB name determined
+TESTING:Verify that the path %DB_NAME% exists
+TESTING:The path %DB_NAME% doesn't exist or it is not a file
+TESTING:The main DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:Successfully opened database %DB_NAME%
+TESTING:The main database and tables have been successfully initialized
+TESTING:The main database named %DB_NAME% is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the main database %DB_NAME%
+TESTING:Database initialized
+TESTING:Current directory: .*$
+TESTING:Starting of database file %DB_NAME% integrity check...
+TESTING:The database %DB_NAME% has been verified and is in good condition
+TESTING:Check directory paths passed as arguments
+TESTING:Verify that the path tests/examples/diffs exists
+TESTING:The path tests/examples/diffs is exists and it is a directory
+TESTING:Paths detected
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt
+diff2/path2/AAA/BCB/CCC/a.txt
+diff2/path1/AAA/ZAW/D/e/f/b_file.txt
+diff2/path1/AAA/ZAW/A/b/c/a_file.txt
+diff2/path1/AAA/BCB/CCC/b.txt
+diff2/path1/AAA/BCB/CCC/a.txt
+diff2/4/AAA/BBB/CCC/a.txt
+diff2/3/AAA/BBB/CCC/a.txt
+diff2/2/AAA/BBB/CZC/a.txt
+diff2/1/AAA/ZAW/D/e/f/b_file.txt
+diff2/1/AAA/ZAW/A/b/c/a_file.txt
+diff2/1/AAA/BCB/CCC/a.txt
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt
+diff1/path2/AAA/BCB/CCC/a.txt
+diff1/path1/AAA/BCB/CCC/a.txt
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt
+diff1/4/AAA/BBB/CCC/a.txt
+diff1/3/AAA/BBB/CCC/a.txt
+diff1/2/AAA/BBB/CZC/a.txt
+diff1/1/AAA/ZAW/D/e/f/b_file.txt
+diff1/1/AAA/ZAW/A/b/c/a_file.txt
+diff1/1/AAA/BCB/CCC/a.txt
+TESTING:The precizer completed its execution without any issues\z
