@@ -22,10 +22,10 @@ int main(void)
 	TEST(prepare,"Preparation for tests");
 
 	HEADER("\nTest examples\n");
-	TEST(test0010, "Example test…");
 	TEST(test0004, "Example test…");
 	TEST(test0005, "Example test…");
 	TEST(test0006, "Example test…");
+	TEST(test0010, "Example test…");
 
 	HEADER("\nTesting of Librarys\n");
 	TEST(test0001, "libsha512 hash check with sha512…");
@@ -43,10 +43,9 @@ int main(void)
 
 	TESTFINISH(finish,"Cleaning all results");
 
-	printf(CYAN "\nTelemetry\n" RESET);
+	printf(CYAN "\nTelemetry\n");
 	printf(WHITE);
 	telemetry_show();
-	printf(RESET);
 
 	HEADER("\nFinishing\n");
 	TESTDONE;

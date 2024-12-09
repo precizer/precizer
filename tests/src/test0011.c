@@ -137,8 +137,8 @@ Return test0011(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	TEST(readme_example_1_test,"Example 1 test…");
-	TEST(readme_example_2_test,"Example 2 test…");
+	TEST(readme_example_1_test,"Example 1 test from README…");
+	TEST(readme_example_2_test,"Example 2 test from README…");
 
 	RETURN_STATUS;
 }

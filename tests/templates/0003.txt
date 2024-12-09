@@ -1,8 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=%DB_NAME%, database2.db
-TESTING:argument:db_file_paths=%DB_NAME%, database2.db
-TESTING:argument:db_file_names=%DB_NAME%, database2.db
+TESTING:argument:paths=ljlasdhf.db, database2.db
+TESTING:argument:db_file_paths=ljlasdhf.db, database2.db
+TESTING:argument:db_file_names=ljlasdhf.db, database2.db
 TESTING:argument:compare=yes
 TESTING:Arguments parsed
 TESTING:Comparing databases. No need to verify directory paths
@@ -21,22 +21,22 @@ TESTING:The main database and tables have been successfully initialized
 TESTING:The main database named DisposableDB is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the main database DisposableDB
 TESTING:Database initialized
-TESTING:Verify that the path %DB_NAME% exists
-TESTING:The path %DB_NAME% is exists and it is a file
+TESTING:Verify that the path ljlasdhf.db exists
+TESTING:The path ljlasdhf.db is exists and it is a file
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
-TESTING:Compare mode is enabled. Verification is not required for %DB_NAME%
+TESTING:Compare mode is enabled. Verification is not required for ljlasdhf.db
 TESTING:Compare mode is enabled. Verification is not required for database2.db
-\x1B\[1mThese files no longer exist against %DB_NAME% but still present against database2.db
-\x1B\[0mpath1/AAA/BCB/CCC/b.txt
-\x1B\[1mThese files no longer exist against database2.db but still present against %DB_NAME%
-\x1B\[0mpath2/AAA/ZAW/D/e/f/b_file.txt
-\x1B\[1mThe SHA512 checksums of these files do not match between %DB_NAME% and database2.db
-\x1B\[0m2/AAA/BBB/CZC/a.txt
-3/AAA/BBB/CCC/a.txt
-4/AAA/BBB/CCC/a.txt
-path1/AAA/ZAW/D/e/f/b_file.txt
-path2/AAA/BCB/CCC/a.txt
+TESTING:\x1B\[1mThese files no longer exist against ljlasdhf.db but still present against database2.db\x1B\[0m
+TESTING:path1/AAA/BCB/CCC/b.txt
+TESTING:\x1B\[1mThese files no longer exist against database2.db but still present against ljlasdhf.db\x1B\[0m
+TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:\x1B\[1mThe SHA512 checksums of these files do not match between ljlasdhf.db and database2.db\x1B\[0m
+TESTING:2/AAA/BBB/CZC/a.txt
+TESTING:3/AAA/BBB/CCC/a.txt
+TESTING:4/AAA/BBB/CCC/a.txt
+TESTING:path1/AAA/ZAW/D/e/f/b_file.txt
+TESTING:path2/AAA/BCB/CCC/a.txt
 TESTING:Current directory: .*$
 TESTING:Compare mode is enabled. Verification is not required for :memory:
 TESTING:Comparing databases. No need to verify directory paths
