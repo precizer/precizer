@@ -7,16 +7,6 @@
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	/**
-	 * @brief Validate input pointers
-	 * @details Checks if both destination and source pointers are non-null
-	 * @warning Sets status to FAILURE if either pointer is NULL
-	 */
-	if (!source || !source->mem)
-	{
-		status = FAILURE; // Add null pointer check
-	}
-
 	size_t destination_prev_size = destination->length;
 	size_t new_length = destination->length + source->length;
 

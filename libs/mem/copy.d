@@ -12,17 +12,22 @@
 	/**
 	 * @brief Validate input pointers
 	 * @details Checks if both destination and source pointers are non-null
-	 * @warning Sets status to FAILURE if either pointer is NULL
+	 * @warning If either pointer is NULL don't interrupt but nothing to copy
 	 */
 	if (!source || !source->mem)
 	{
-		status = FAILURE; // Add null pointer check
+		return(SUCCESS); // Nothing to copy
 	}
 
 	if(SUCCESS == status)
 	{
 
-		status = REALLOC_TYPE(destination,source->length);
+		if(source->length > 0)
+		{
+			status = REALLOC_TYPE(destination,source->length);
+		} else {
+			return(SUCCESS); // Do nothing
+		}
 	}
 
 	if(SUCCESS == status)

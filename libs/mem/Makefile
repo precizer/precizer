@@ -1,8 +1,3 @@
-#
-# “The Winner Test It All”
-#                  © ABBA
-#
-
 # Name of the library
 LIBNAME=libmem
 
@@ -22,13 +17,17 @@ STATLIB = $(LIBNAME).a
 STRIP = -s
 
 # Additional check flags. Must have!
-WFLAGS += -Wall -Wpedantic
-WFLAGS += -Wextra -Wshadow
+WFLAGS += -Wall -Werror
+WFLAGS += -Wpedantic
+WFLAGS += -Wshadow
+WFLAGS += -Wextra
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
 WFLAGS += -Wfloat-equal -Wundef
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
+WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
+WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
 # If not clang, then these options are for gcc
@@ -45,7 +44,7 @@ TMPLTS = $(wildcard *.d)
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
 
-LIBS = rational mem
+LIBS = rational
 
 # Additional include headers of external libraries
 INCPATH += $(foreach d,$(LIBS),-I../$d)
@@ -111,18 +110,19 @@ memtest: debug
 debug: $(DBGSO) $(DBGSTAT)
 
 $(DBGSTAT): $(DBGOBJS)
-	@ar crs $@ $+
-	@ranlib $@
+	@ar rcs $@ $+
 	@echo "$@ prepared to be static library."
 
 $(DBGSO): $(DBGOBJS)
 	@$(CC) -shared $(INCPATH) -o $(DBGSO) $^
 	@echo "$@ prepared to be shared library."
 
-$(DBGLIBDIR)/%.o: %.c $(TMPLTS) $(HDRS)
-	@mkdir -p $(DBGLIBDIR)
+$(DBGLIBDIR)/%.o: %.c $(HDRS) $(TMPLTS) | $(DBGLIBDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
+
+$(DBGLIBDIR):
+	@mkdir -p "$(DBGLIBDIR)"
 
 #
 # Sanitize rules
@@ -130,19 +130,19 @@ $(DBGLIBDIR)/%.o: %.c $(TMPLTS) $(HDRS)
 sanitize: $(STZSO) $(STZSTAT)
 
 $(STZSTAT): $(STZOBJS)
-	@ar crs $@ $+
-	@ranlib $@
+	@ar rcs $@ $+
 	@echo "$@ prepared to be static library."
 
 $(STZSO): $(STZOBJS)
 	@$(CC) -shared $(INCPATH) -o $(STZSO) $^
 	@echo "$@ prepared to be shared library."
 
-$(STZLIBDIR)/%.o: %.c $(TMPLTS) $(HDRS)
-	@mkdir -p $(STZLIBDIR)
+$(STZLIBDIR)/%.o: %.c $(HDRS) $(TMPLTS) | $(STZLIBDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
+$(STZLIBDIR):
+	@mkdir -p "$(STZLIBDIR)"
 
 #
 # Release rules
@@ -150,18 +150,19 @@ $(STZLIBDIR)/%.o: %.c $(TMPLTS) $(HDRS)
 release: $(RELSO) $(RELSTAT)
 
 $(RELSTAT): $(RELOBJS)
-	@ar crs $@ $+
-	@ranlib $@
+	@ar rcs $@ $+
 	@echo "$@ prepared to be the static library."
 
 $(RELSO): $(RELOBJS)
 	@$(CC) -shared $(STRIP) $(INCPATH) -o $(RELSO) $^
 	@echo "$@ prepared to be the shared library."
 
-$(RELLIBDIR)/%.o: %.c $(TMPLTS) $(HDRS)
-	@mkdir -p $(RELLIBDIR)
+$(RELLIBDIR)/%.o: %.c $(HDRS) $(TMPLTS) | $(RELLIBDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
 	@echo $<" compiled."
+
+$(RELLIBDIR):
+	@mkdir -p "$(RELLIBDIR)"
 
 clean:
 	@rm -rf $(RELSO) $(RELSTAT) $(RELOBJS)
@@ -179,3 +180,17 @@ clean:
 
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 	@echo $(LIBNAME) cleared.
+
+#
+# GCC Static Analysis
+#
+gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -Wanalyzer-too-complex
+gccanalyzer: CC = gcc
+gccanalyzer: debug
+
+cppcheck:
+	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
+
+clang-analyzer:
+	# Run clang static analyzer and view analysis results in a web browser when the build command completes
+	scan-build -V make debug

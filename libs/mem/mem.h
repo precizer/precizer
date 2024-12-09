@@ -102,14 +102,14 @@ typedef unsigned long long int ullint_t;
  * @see memset
  */
 #define MSTRUCT(struct_type, struct_name) \
-    struct_type _##struct_name; \
-    struct_type* struct_name = &_##struct_name; \
-    memset(struct_name, 0, sizeof(struct_type));
+	struct_type _##struct_name; \
+	struct_type* struct_name = &_##struct_name; \
+	memset(struct_name, 0, sizeof(struct_type));
 
 /* The same w/o memset to use as global structures */
 #define GSTRUCT(struct_type, struct_name) \
-    struct_type _##struct_name; \
-    struct_type* struct_name = &_##struct_name; \
+	struct_type _##struct_name; \
+	struct_type* struct_name = &_##struct_name; \
 
 // Macros to define default value of third аrgument
 // https://stackoverflow.com/questions/1472138/c-default-arguments
@@ -127,18 +127,18 @@ typedef unsigned long long int ullint_t;
  * @brief Structure for char array management
  */
 typedef struct {
-    size_t length;    ///< Current array length
-    size_t allocated; ///< Actually allocated memory in bytes
-    char   *mem;      ///< Pointer to dynamic array
+	size_t length;    ///< Current array length
+	size_t allocated; ///< Actually allocated memory in bytes
+	char   *mem;      ///< Pointer to dynamic array
 } mem_char;
 
 /**
  * @brief Structure for int array management
  */
 typedef struct {
-    size_t length;    ///< Current array length
-    size_t allocated; ///< Actually allocated memory in bytes
-    int    *mem;      ///< Pointer to dynamic array
+	size_t length;    ///< Current array length
+	size_t allocated; ///< Actually allocated memory in bytes
+	int    *mem;      ///< Pointer to dynamic array
 } mem_int;
 
 /**
