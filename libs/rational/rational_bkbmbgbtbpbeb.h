@@ -8,16 +8,16 @@
 /// Structure to record the number of bytes.
 typedef struct
 {
-	ui64 bytes;
-	ui64 kilobytes;
-	ui64 megabytes;
-	ui64 gigabytes;
-	ui64 terabytes;
-	ui64 petabytes;
-	ui64 exabytes;
+	size_t bytes;
+	size_t kilobytes;
+	size_t megabytes;
+	size_t gigabytes;
+	size_t terabytes;
+	size_t petabytes;
+	size_t exabytes;
 
 } Byte;
 
 char *bkbmbgbtbpbeb(
-	const ui64
+	const size_t
 );
