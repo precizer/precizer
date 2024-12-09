@@ -194,7 +194,7 @@ Return external_call(
 			int rt = asprintf( \
 				&str, \
 				YELLOW "Warning! STDERR buffer is not empty:\n" \
-				YELLOW ">>" RESET "%s" YELLOW "<<\n" RESET,
+				YELLOW ">>" RESET "%s" YELLOW "<<\n",
 				COPY_STDERR->mem);
 
 			if (rt > -1) {
@@ -234,7 +234,7 @@ Return external_call(
 			int rt = asprintf( \
 				&str, \
 				YELLOW "Warning! STDOUT buffer is not empty:\n" \
-				YELLOW ">>" RESET "%s" YELLOW "<<\n" RESET,
+				YELLOW ">>" RESET "%s" YELLOW "<<\n",
 				COPY_STDOUT->mem);
 
 			if (rt > -1) {
@@ -264,7 +264,7 @@ Return external_call(
 			YELLOW "Exited with code %d but expected %d\n" \
 			"Process terminated signal %d\n" \
 			"Command stderr output:\n"
-			YELLOW ">>" RESET "%s" YELLOW "<<\n" RESET,
+			YELLOW ">>" RESET "%s" YELLOW "<<\n",
 			command,
 			exit_code,
 			expected_return_code,
