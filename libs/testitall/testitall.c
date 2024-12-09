@@ -70,7 +70,7 @@ Return testitall(
 	/* Display captured stderr output in yellow */
 	if(STDERR->length > 0)
 	{
-		fprintf(stdout, YELLOW "%s", STDERR->mem);
+		fprintf(stdout, YELLOW "%s" RESET, STDERR->mem);
 	}
 
 	/* Display captured stdout output */
