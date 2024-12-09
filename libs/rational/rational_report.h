@@ -5,8 +5,15 @@
  *
  */
 
-// Convenience macro to automatically include source file, function, and line information
-#define report(...) REPORT(__FILE__, __func__, __LINE__, __VA_ARGS__)
+// Safe ERror Print
+void SERP(
+	const char*,
+	const char*,
+	const char*
+);
+
+/* Macro wrapper for convenient usage */
+#define serp(prefix) SERP(prefix, __FILE__, __func__)
 
 void REPORT(
 	const char *,
@@ -15,3 +22,6 @@ void REPORT(
 	const char *,
 	...
 );
+
+// Convenience macro to automatically include source file, function, and line information
+#define report(...) REPORT(__FILE__, __func__, __LINE__, __VA_ARGS__)

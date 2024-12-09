@@ -84,3 +84,26 @@
  *
  */
 #include "rational_report.h"
+
+
+/**
+ *
+ * Common usage structures and enumerations
+ *
+ */
+#include "rational_strenum.h"
+
+/**
+ *
+ * Prototypes of functions and macros for logging
+ *
+ */
+#include "rational_logger.h"
+
+/**
+ *
+ * Prototypes of the function to convert an integer
+ * to a string representation
+ *
+ */
+#include "rational_itoa.h"

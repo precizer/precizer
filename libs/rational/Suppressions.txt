@@ -1,0 +1,11 @@
+unusedFunction:rational_report.c:14
+unusedFunction:rational_report.c:44
+unusedFunction:rational_bkbmbgbtbpbeb.c:108
+unusedFunction:rational_time.c:7
+unusedFunction:rational_time.c:20
+unusedFunction:rational_form.c:14
+unusedFunction:rational_time.c:177
+unusedFunction:rational_time.c:39
+unusedFunction:rational_itoa.c:30
+unusedFunction:rational_logger.c:117
+unusedFunction:rational_logger.c:27
