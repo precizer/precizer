@@ -29,25 +29,6 @@
 // libmem
 #include "mem.h"
 
-#define SHORTTAB "\033[?5W"     /* 2 bytes tab */
-#define RESET   "\033[0m"
-#define BLACK   "\033[30m"      /* Black */
-#define RED     "\033[31m"      /* Red */
-#define GREEN   "\033[32m"      /* Green */
-#define YELLOW  "\033[33m"      /* Yellow */
-#define BLUE    "\033[34m"      /* Blue */
-#define MAGENTA "\033[35m"      /* Magenta */
-#define CYAN    "\033[36m"      /* Cyan */
-#define WHITE   "\033[37m"      /* White */
-#define BOLDBLACK   "\033[1m\033[30m"      /* Bold Black */
-#define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
-#define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
-#define BOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
-#define BOLDBLUE    "\033[1m\033[34m"      /* Bold Blue */
-#define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
-#define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
-#define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
-
 // Default buffer memory size
 #define BUFFER_LENGTH 1024
 
@@ -66,7 +47,7 @@
  */
 #define HEADER(msg) \
 	if(SUCCESS == status) { \
-		printf(CYAN msg RESET); \
+		printf(CYAN msg); \
 	}
 
 #define ASSERT(condition) \
@@ -81,9 +62,9 @@
 #define RETURN_STATUS \
 	if(SUCCESS == status) \
 	{ \
-		echo(EXTEND, BOLDGREEN "✓" BOLDWHITE " passed " RESET); \
+		echo(EXTEND, BOLDGREEN "✓" BOLDWHITE " passed "); \
 	} else { \
-		echo(EXTEND, BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
+		echo(EXTEND, BOLDRED "𐄂" BOLDWHITE " failed"); \
 	} \
 	return(status); \
 
@@ -169,6 +150,10 @@ Return replace_placeholder(
 	const char *
 );
 
+Return write_to_temp_file(
+	const char *
+);
+
 /**
  * @brief Test execution macro
  * @param func Function to test
@@ -196,12 +181,12 @@ Return replace_placeholder(
 #define TESTDONE \
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
-	printf(RESET WHITE "Total execution time: %lldns (%s)\n" RESET, _time_spent, form_date(_time_spent)); \
+	printf(RESET WHITE "Total execution time: %lldns (%s)\n", _time_spent, form_date(_time_spent)); \
 	if(SUCCESS == status) \
 	{ \
-		printf(RESET WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
+		printf(RESET WHITE "Completed " BOLDGREEN "successfully\n"); \
 	} else { \
-		printf(RESET WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
+		printf(RESET WHITE "Ended " BOLDRED "unsuccessfully\n"); \
 	} \
 	return(status);
 

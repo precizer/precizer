@@ -107,3 +107,11 @@
  *
  */
 #include "rational_itoa.h"
+
+/**
+ *
+ * Terminal decoration
+ *
+ *
+ */
+#include "rational_decoration.h"
