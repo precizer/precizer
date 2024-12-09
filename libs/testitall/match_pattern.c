@@ -93,7 +93,7 @@ Return match_pattern(
 						"ERROR: Pattern not match at position: %zu\n"
 						"Character at mismatch: '%c' (ASCII: %d)\n"
 						"Context around mismatch:\n"
-						YELLOW ">>" RESET "%.*s" RED "%c" RESET "%.*s" YELLOW "<<\n" RESET,
+						YELLOW ">>" RESET "%.*s" RED "%c" RESET "%.*s" YELLOW "<<\n",
 						pos,
 						mismatch_char, (int)mismatch_char,
 						(int)(pos - start), text + start,
@@ -102,7 +102,7 @@ Return match_pattern(
 
 					echo(STDERR,
 						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" YELLOW \
-						"Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" RESET,
+						"Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
 						text, pattern);
 
 					status = FAILURE;
@@ -113,7 +113,7 @@ Return match_pattern(
 #else
 				echo(STDERR, "ERROR: The pattern not match!\n" \
 					"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
-					YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" RESET,
+					YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
 					text, pattern);
 				status = FAILURE;
 				break;

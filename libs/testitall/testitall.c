@@ -70,22 +70,19 @@ Return testitall(
 	/* Display captured stderr output in yellow */
 	if(STDERR->length > 0)
 	{
-		fprintf(stdout, YELLOW "%s" RESET, STDERR->mem);
+		fprintf(stdout, YELLOW "%s", STDERR->mem);
 	}
 
 	/* Display captured stdout output */
 	if(STDOUT->length > 0)
 	{
-		fprintf(stdout, RESET "%s" RESET, STDOUT->mem);
+		fprintf(stdout, RESET "%s", STDOUT->mem);
 	}
 
 	/* Cleanup: free dynamically allocated buffers */
 	del_char(&STDOUT);
 	del_char(&STDERR);
 	del_char(&EXTEND);
-
-	/* Reset terminal color before returning */
-	fprintf(stdout, RESET);
 
 	return(status);
 }
