@@ -306,7 +306,7 @@ void test
 }
 
 int main(void){
-    unsigned char out[64];
+    unsigned char out[SHA512_DIGEST_LENGTH];
     const unsigned char message[] = "Hello World";
     test(message,sizeof(message),out);
 

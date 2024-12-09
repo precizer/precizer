@@ -53,6 +53,8 @@
     #endif
 #endif
 
+#define SHA512_DIGEST_LENGTH 64
+
 /* state */
 typedef struct sha512_context_ {
     uint64_t  length, state[8];
@@ -64,4 +66,4 @@ int sha512_init(SHA512_Context*);
 int sha512_final(SHA512_Context*,unsigned char*);
 int sha512_update(SHA512_Context*,const unsigned char*,size_t);
 
-#endif
+#endif // SHA512_H
