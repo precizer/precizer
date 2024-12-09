@@ -5,7 +5,7 @@
  */
 {
 	if (!structure || !(*structure) || !(*structure)->mem) {
-		return(FAILURE); // Add null pointer check
+		return(SUCCESS); // Do nothing
 	}
 
 	// Free array memory inside structure
@@ -15,10 +15,10 @@
 	(*structure)->mem = NULL;
 
 	// Update telemetry
-	telemetry_heap_reduce((*structure)->allocated);
+	telemetry_reduce((*structure)->allocated);
 	telemetry_effective_reduce(sizeof(TYPE) * (*structure)->length);
-	telemetry_heap_free_bytes((*structure)->allocated);
-	telemetry_heap_free_counter();
+	telemetry_free_total_bytes((*structure)->allocated);
+	telemetry_free_counter();
 
 	// Reset array metadata
 	(*structure)->length = 0;
