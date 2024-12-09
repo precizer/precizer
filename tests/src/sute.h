@@ -1,0 +1,27 @@
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "testitall.h"
+#include "mem.h"
+#include "rational.h"
+#include "precizer.h"
+#include <stdatomic.h>
+
+Return test0001(void);
+Return test0002(void);
+Return test0003(void);
+Return test0004(void);
+Return test0005(void);
+Return test0006(void);
+Return test0007(void);
+Return test0008(void);
+Return test0009(void);
+Return test0010(void);
+Return test0011(void);
+Return test0012(void);
+Return test0013(void);
+Return test0014(void);
+
+Return prepare(void);
+Return finish(void);
