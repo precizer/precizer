@@ -5,21 +5,17 @@
  * reallocations and maintains telemetry data
  */
 {
-	if (!structure) {
-		return(FAILURE); // Add null pointer check
-	}
-
 	// Skip if no change in length
-	if(length == structure->length)
+	if(newlength == structure->length)
 	{
-		telemetry_how_many_times_realloc_do_nothing();
+		telemetry_realloc_noop_counter();
 		// Do nothing
 		return(SUCCESS);
 	}
 
 	const size_t oldlength = structure->length;
 
-	const size_t newbytes = length * sizeof(TYPE);
+	const size_t newbytes = newlength * sizeof(TYPE);
 
 	const size_t oldbytes = oldlength * sizeof(TYPE);
 
@@ -65,56 +61,53 @@
 		TYPE *temp = (TYPE*)realloc(structure->mem, new_aligned_bytes);
 		if(temp == NULL){
 			free(structure->mem);
-
-			fprintf(stderr, "ERROR: Memory reallocation failed for %s bytes: %s (errno: %d)\n",
-				bkbmbgbtbpbeb(new_aligned_bytes), strerror(errno), errno);
-
+			report("Memory reallocation failed with bytes: %zu", new_aligned_bytes);
 			return(FAILURE);
 		}
 		structure->mem = temp;
 
 		// Update telemetry
-		telemetry_heap_true_reallocations_counter();
+		telemetry_actual_reallocations_counter();
 		if(decrease_memory == true)
 		{
-			telemetry_heap_reduce(old_aligned_bytes - new_aligned_bytes);
+			telemetry_reduce(old_aligned_bytes - new_aligned_bytes);
 
 		} else if(growth_memory == true)
 		{
-			telemetry_heap_add(new_aligned_bytes - old_aligned_bytes);
+			telemetry_add(new_aligned_bytes - old_aligned_bytes);
 
 		}
 
 		if(oldlength == 0)
 		{
-			telemetry_heap_allocations_counter();
+			telemetry_allocations_counter();
 		}
 	} else {
 		// Update telemetry
-		telemetry_heap_trick_reallocations_counter();
+		telemetry_realloc_optimized_counter();
 	}
 
 	// Initialize new memory for calloc operations
 	#ifdef CALLOC
 	// Filling a new array with zeros
-	if(oldlength == 0 && length > 0)
+	if(oldlength == 0 && newlength > 0)
 	{
-		memset(structure->mem, CALLOC, length * sizeof(TYPE));
+		memset(structure->mem, CALLOC, newlength * sizeof(TYPE));
 	}
 	#endif
 
 	// Update telemetry for effective memory usage
-	if(structure->length > length)
+	if(structure->length > newlength)
 	{
 		telemetry_effective_reduce(oldbytes - newbytes);
 
-	} else if (length > structure->length)
+	} else if (newlength > structure->length)
 	{
 		telemetry_effective_add(newbytes - oldbytes);
 	}
 
 	// Update structure metadata
-	structure->length = length;
+	structure->length = newlength;
 	structure->allocated = new_aligned_bytes;
 
 	return(SUCCESS);
