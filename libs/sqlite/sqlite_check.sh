@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER=3450100
+VER=3470200
 
 echo Creating temp dir...
 TMPDIR=$(mktemp -d)
