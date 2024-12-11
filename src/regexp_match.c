@@ -45,7 +45,7 @@ REGEXP regexp_match
 		{
 			*showed_once = true;
 			pcre2_get_error_message(errcode, buffer, 127);
-			slog(false,"PCRE2 regular expression %s has an error:%d %s\n",pattern,errcode,buffer);
+			slog(ERROR,"PCRE2 regular expression %s has an error:%d %s\n",pattern,errcode,buffer);
 		}
 		return(REGEXP_ERROR);
 	}
@@ -58,7 +58,7 @@ REGEXP regexp_match
 		{
 			*showed_once = true;
 			pcre2_get_error_message(errcode, buffer, 127);
-			slog(false,"PCRE2 regular expression %s has an error: %d \"offset vector too small\"\n",pattern,rc);
+			slog(ERROR,"PCRE2 regular expression %s has an error: %d \"offset vector too small\"\n",pattern,rc);
 		}
 		return(REGEXP_ERROR);
 	}

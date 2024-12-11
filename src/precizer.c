@@ -45,108 +45,70 @@ int main(int argc,char **argv){
 
 	// Fill Config structure
 	// parsing command line arguments
-	status = parse_arguments(argc,argv);
+	run(parse_arguments(argc,argv));
 
+	// Check all paths passed as arguments.
+	// Are they directories and do they exist?
+	run(detect_paths());
+
+	// Initialize signals interception like Ctrl+C
+	run(init_signals());
+
+	// Generate DB file name if
+	// not passed as an argument
+	run(db_determine_name());
+
+	// Validate database file existence and update existence flag
+	run(db_file_validate_existence());
+
+	// Define the database operation mode
+	run(db_determine_mode());
+
+	// Initialize SQLite database
+	run(db_init());
+
+	// Compare databases
+	run(db_compare());
+
+	// The current directory where app being executed
+	run(determine_running_dir());
+
+	// Check whether the database already exists or not yet
+	run(db_contains_data());
+
+	// Check up the integrity of database file
+	run(db_test(config->db_file_path));
+
+	// Check up if the paths that passed as arguments
+	// exactly the same as saved against the database
+	run(db_check_up_paths());
+
+	// Save new prefixes that has been passed as
+	// arguments
+	run(db_save_prefixes_into());
+
+	// Check up the paths passed as arguments and make sure
+	// that they are directories and exist
+	run(detect_paths());
+
+	// Just get a statistic
+	run(file_list(true));
+
+	// Get file list and their CRC
+	run(file_list(false));
+
+	// Update the database. Remove files that
+	// no longer exist.
+	run(db_delete_missing_files_from());
+
+	// Optimizing the space occupied by a database file.
+	run(db_vacuum());
+
+	// Print out whether there have been changes to
+	// the file system and accordingly against the database
+	// since the last research
 	if(SUCCESS == status)
 	{
-		// Check all paths passed as arguments.
-		// Are they directories and do they exist?
-		status = detect_paths();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Initialize signals interception like Ctrl+C
-		status = init_signals();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Generate DB file name if not passed as an argument
-		status = db_create_name();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Initialize SQLite database
-		status = db_init();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Compare databases
-		status = db_compare();
-	}
-
-	if(SUCCESS == status)
-	{
-		// The current directory where app being executed
-		status = determine_running_dir();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Check whether the database already exists or not yet
-		status = db_already_exists();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Check up the integrity of database file
-		status = db_test(config->db_file_path);
-	}
-
-	if(SUCCESS == status)
-	{
-		// Check up if the paths that passed as arguments
-		// exactly the same as saved against the database
-		status = db_check_up_paths();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Save new prefixes that has been passed as
-		// arguments
-		status = db_save_prefixes_into();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Check up the paths passed as arguments and make sure
-		// that they are directories and exist
-		status = detect_paths();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Just get a statistic
-		status = file_list(true);
-	}
-
-	if(SUCCESS == status)
-	{
-		// Get file list and their CRC
-		status = file_list(false);
-	}
-
-	if(SUCCESS == status)
-	{
-		// Update the database. Remove files that
-		// no longer exist.
-		status = db_delete_missing_files_from();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Optimizing the space occupied by a database file.
-		status = db_vacuum();
-	}
-
-	if(SUCCESS == status)
-	{
-		// Print out whether there have been changes to
-		// the file system and accordingly against the database
-		// since the last research
 		status_of_changes();
 	}
 

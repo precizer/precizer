@@ -11,14 +11,14 @@ const char *argp_program_version = APP_NAME " " APP_VERSION;
 
 /* Program documentation. */
 static char doc[] =
-"\033[1mprecizer\033[0m is a CLI application designed to verify the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.\n" \
+BOLD "precizer" RESET " is a CLI application for verifying file integrity after synchronization. The program recursively traverses directories, creates a database of files with their checksums, and performs comparisons.\n" \
 "\n" \
-"\033[1mprecizer\033[0m specializes in managing vast file systems. The program identifies synchronization errors by cross-referencing data and checksums from various sources. Alternatively, it can be used to crawl historical changes by comparing databases from the same sources over different times.\n" \
+BOLD "precizer" RESET " is optimized for large-scale file systems. It detects synchronization errors by cross-referencing data and checksums from different sources. It can also track historical changes by comparing databases from the same sources across different time periods.\n" \
 "\n" \
 "Glory to Ukraine!\n" \
 "\vSIMPLE EXAMPLE\n" \
 "\n" \
-"Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the contents are identical or if there are any differences.\n" \
+"Consider two hosts with large disks containing identical content mounted at /mnt1 and /mnt2 respectively. The task is to verify content identity and identify any differences.\n" \
 "\n" \
 "1. Run the program on the first machine with host name, for example “host1”:\n" \
 "\n" \
@@ -56,37 +56,37 @@ static struct argp_option options[] = {
 	                                     "or directories. Attention! All paths for the regular " \
 	                                     "expression must be  specified as relative. To " \
 	                                     "understand what a relative path looks like, just " \
-	                                     "run traverses without the \033[1m--ignore\033[0m option " \
+	                                     "run traverses without the " BOLD "--ignore" RESET " option " \
 	                                     "and look how the terminal will display relative paths " \
 	                                     "that are written to the database.\n" \
 	                                     "\nExamples:\n" \
-	                                     "\n\033[1m--ignore=\"diff2/1/*\" tests/examples/diffs\033[0m\n" \
+	                                     "\n" BOLD "--ignore=\"diff2/1/*\" tests/examples/diffs" RESET "\n" \
 	                                     "\n" \
 	                                     "In this example, the starting path for the traversing " \
 	                                     "is ./tests/examples/diffs and the relative path to ignore will " \
 	                                     "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/*).\n" \
 	                                     "\n" \
 	                                     "Multiple regular expressions for ignore could be specified using " \
-	                                     "many \033[1m--ignore\033[0m options at once:\n" \
+	                                     "many " BOLD "--ignore" RESET " options at once:\n" \
 	                                     "\n" \
-	                                     "\033[1m--ignore=\"diff2/1/*\" --ignore=\"diff2/2/*\" " \
-	                                     "tests/examples/diffs\033[0m\n", 0 },
+	                                     BOLD "--ignore=\"diff2/1/*\" --ignore=\"diff2/2/*\" " \
+	                                     "tests/examples/diffs" RESET "\n", 0 },
 	{"include",   'i', "PCRE2_REGEXP", 0, "Relative path to be included. PCRE2 regular expressions. " \
 	                                     "Include these relative paths even if they were excluded " \
-	                                     "via the \033[1m--ignore\033[0m option. Multiple regular " \
+	                                     "via the " BOLD "--ignore" RESET " option. Multiple regular " \
 	                                     "expressions could be specified\n", 0 },
 	{"db-clean-ignored",   'C', 0, 0,    "The database is protected from accidental changes by default. " \
-	                                     "The option \033[1m--db-clean-ignored\033[0m must be specified additionally " \
+	                                     "The option " BOLD "--db-clean-ignored" RESET " must be specified additionally " \
 	                                     "in order to remove from the database mention of files that " \
 	                                     "matches the regular expression passed through the " \
-	                                     "\033[1m--ignore=PCRE2_REGEXP\033[0m option(s)\n", 0},
-	{"dry-run",  'n', 0, 0,  "Perform a trial run with no changes made. The option will not affect \033[1m--compare\033[0m\n", 0},
+	                                     BOLD "--ignore=PCRE2_REGEXP" RESET " option(s)\n", 0},
+	{"dry-run",  'n', 0, 0,  "Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET "\n", 0},
 	{"maxdepth", 'm', "NUMBER", 0, "Recursion depth limit. " \
 	                        "The depth of the traversal, numbered from 0 to N, " \
 	                        "where a file could be found. Representing the maximum " \
 	                        "of the starting point (from root) of the traversal. " \
 	                        "The root itself is numbered 0\n" \
-	                        "\033[1m--maxdepth=0\033[0m completely disable recursion\n", 0 },
+	                        BOLD "--maxdepth=0" RESET " completely disable recursion\n", 0 },
 	{"force",    'f', 0, 0, "Use this option only in case when the PATHs that were written into " \
 	                        "the database as a result of the last scanning really need to be " \
 	                        "renewed. Warning! If this option will be used in incorrect way, " \
@@ -102,12 +102,12 @@ static struct argp_option options[] = {
 	                         "had been created. Otherwise, updating the data makes no sense — the " \
 	                         "old data will be deleted from the database and completely " \
 	                         "overwritten by new ones.\n", 0 },
-	{"database", 'd', "FILE", 0, "Database file name. By default name of the local host will be used: ${HOST}.db\n", 0 },
+	{"database", 'd', "FILE", 0, "Database filename. Defaults to ${HOST}.db, where HOST is the local hostname\n", 0 },
 	{ 0, 0, 0, 0, "Compare databases options:", 1},
-	{"compare",  'c', 0, 0, "Compare two databases from different sourses. Two extra arguments should be " \
-	                        "specified as paths to the databases files to compare. For example: \033[1m--compare database1.db database2.db\033[0m\n", 0 },
+	{"compare",  'c', 0, 0, "Compare two databases from different sources. Requires two additional arguments " \
+	                        "specifying paths to database files, e.g.:\n" BOLD " --compare database1.db database2.db" RESET "\n", 0 },
 	{ 0, 0, 0, 0, "Visualizations options:\n", -1},
-	{"silent",   's', 0, 0, "Don't produce any output. The option will not affect \033[1m--compare\033[0m", 0 },
+	{"silent",   's', 0, 0, "Don't produce any output. The option will not affect " BOLD "--compare" RESET, 0 },
 	{"verbose",  'v', 0, 0, "Produce verbose output.", 0 },
 	{"progress", 'p', 0, 0, "Show progress bar. This assume a preliminary count of files and the space they occupy " \
 	                        "to predict execution time. It is strongly recommended not to specify this option " \
@@ -122,8 +122,7 @@ static error_t parse_opt
 	int key,
 	char *arg,
 	struct argp_state *state
-)
-{
+){
 	/* Get the input argument from argp_parse, which we
 	know is a pointer to our arguments structure. */
 	//struct arguments *arguments = state->input;
@@ -137,7 +136,7 @@ static error_t parse_opt
 			config->db_file_path = (char *)calloc(strlen(arg) + 1,sizeof(char));
 			if(config->db_file_path == NULL)
 			{
-				argp_failure(state, 1, 0, "ERROR: Memory allocation did not complete successfully!");
+				argp_failure(state, 1, 0, "ERROR: Memory callocation did not complete successfully!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
 			strcpy(config->db_file_path,arg);
@@ -146,19 +145,19 @@ static error_t parse_opt
 			config->db_file_name = (char *)calloc(strlen(arg) + 1,sizeof(char));
 			if(config->db_file_name == NULL)
 			{
-				argp_failure(state, 1, 0, "ERROR: Memory allocation did not complete successfully!");
+				argp_failure(state, 1, 0, "ERROR: Memory callocation did not complete successfully!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
 			strcpy(config->db_file_name,basename(arg));
 			break;
 		case 'e':
-			add_string_to_array(&config->ignore,arg);
+			(void)add_string_to_array(&config->ignore,arg);
 			break;
 		case 'n':
 			config->dry_run = true;
 			break;
 		case 'i':
-			add_string_to_array(&config->include,arg);
+			(void)add_string_to_array(&config->include,arg);
 			break;
 		case 'c':
 			config->compare = true;
@@ -187,9 +186,12 @@ static error_t parse_opt
 			config->force = true;
 			break;
 		case 's':
-			config->silent = true;
+			// Global variable
+			rational_logger_mode = SILENT;
 			break;
 		case 'v':
+			// Global variable
+			rational_logger_mode = VERBOSE;
 			config->verbose = true;
 			break;
 		case ARGP_KEY_NO_ARGS:
@@ -202,7 +204,10 @@ static error_t parse_opt
 		case ARGP_KEY_END:
 			if(config->compare == true)
 			{
-				if(state->arg_num < 2)
+				if(config->update == true) {
+					argp_failure(state, 1, 0, "ERROR: Using arguments --compare and --update together makes no sense");
+
+				} else if(state->arg_num < 2)
 				{
 					argp_failure(state, 1, 0, "ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
 				} else if (state->arg_num > 2)
@@ -259,74 +264,168 @@ Return parse_arguments
 			{
 				// Extract file name from a path
 				char *tmp = (char *)calloc(strlen(config->db_file_paths[j]) + 1,sizeof(char));
-				strcpy(tmp,config->db_file_paths[j]);
-				char *db_file_basename = basename(tmp);
-				add_string_to_array(&config->db_file_names,db_file_basename);
-				free(tmp);
+				if(tmp != NULL)
+				{
+					strcpy(tmp,config->db_file_paths[j]);
+					char *db_file_basename = basename(tmp);
+					status = add_string_to_array(&config->db_file_names,db_file_basename);
+					free(tmp);
+					if(status != SUCCESS)
+					{
+						return(status);
+					}
+				} else {
+					report("Memory allocation failed, requested size: %zu bytes", strlen(config->db_file_paths[j]) + 1 * sizeof(char));
+					status = FAILURE;
+					return(status);
+				}
 			}
 		}
 	}
 
-	if(config->verbose == true
-		&& config->silent == false)
+	if(rational_logger_mode & TESTING)
 	{
-		slog(false,"Configuration: ");
+		slog(TESTING,"rational_logger_mode=%s\n", rational_reconvert(rational_logger_mode));
 		if(config->paths != NULL)
 		{
-			printf("paths=");
+			slog(TESTING,"argument:paths=");
 			for (int j = 0; config->paths[j]; j++)
 			{
 				printf(j == 0 ? "%s" : ", %s", config->paths[j]);
 			}
-			printf("; ");
+			printf("\n");
 		}
 		if(config->db_file_paths != NULL)
 		{
-			printf("db_file_paths=");
+			slog(TESTING,"argument:db_file_paths=");
 			for (int j = 0; config->db_file_paths[j]; j++)
 			{
 				printf(j == 0 ? "%s" : ", %s", config->db_file_paths[j]);
 			}
-			printf("; ");
+			printf("\n");
 		}
 		if(config->db_file_names != NULL)
 		{
-			printf("db_file_names=");
+			slog(TESTING,"argument:db_file_names=");
 			for (int j = 0; config->db_file_names[j]; j++)
 			{
 				printf(j == 0 ? "%s" : ", %s", config->db_file_names[j]);
 			}
-			printf("; ");
+			printf("\n");
 		}
 		if(config->ignore != NULL)
 		{
-			printf("ignore=");
+			slog(TESTING,"argument:ignore=");
 			// Print the contents of the string array
 			for(int i = 0; config->ignore[i] != NULL; ++i) {
 				printf(i == 0 ? "%s" : ", %s", config->ignore[i]);
 			}
-			printf("; ");
+			printf("\n");
 		}
 		if(config->include != NULL)
 		{
-			printf("include=");
+			slog(TESTING,"argument:include=");
 			// Print the contents of the string array
 			for(int i = 0; config->include[i] != NULL; ++i) {
 				printf(i == 0 ? "%s" : ", %s", config->include[i]);
 			}
-		printf("; ");
+			printf("\n");
 		}
-		printf("verbose=%s; silent=%s; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s",
-		config->verbose ? "yes" : "no",
-		config->silent ? "yes" : "no",
-		config->force ? "yes" : "no",
-		config->update ? "yes" : "no",
-		config->progress ? "yes" : "no",
-		config->compare ? "yes" : "no",
-		config->db_clean_ignored ? "yes" : "no",
-		config->dry_run ? "yes" : "no");
-		printf("\n");
+		if(config->verbose)
+		{
+			slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
+		};
+		if(config->force)
+		{
+			slog(TESTING,"argument:force=%s\n",config->force ? "yes" : "no");
+		};
+		if(config->update)
+		{
+			slog(TESTING,"argument:update=%s\n",config->update ? "yes" : "no");
+		};
+		if(config->progress)
+		{
+			slog(TESTING,"argument:progress=%s\n",config->progress ? "yes" : "no");
+		};
+		if(config->compare)
+		{
+			slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
+		};
+		if(config->db_clean_ignored)
+		{
+			slog(TESTING,"argument:db_clean_ignored=%s\n",config->db_clean_ignored ? "yes" : "no");
+		};
+		if(config->dry_run)
+		{
+			slog(TESTING,"argument:dry-run=%s\n",config->dry_run ? "yes" : "no");
+		};
+
+	} else {
+
+		// Verbose but NOT silent
+		if ((rational_logger_mode & VERBOSE) && !(rational_logger_mode & SILENT))
+		{
+			slog(VERBOSE,"Configuration: ");
+			printf("rational_logger_mode=%s\n", rational_reconvert(rational_logger_mode));
+			if(config->paths != NULL)
+			{
+				printf("paths=");
+				for (int j = 0; config->paths[j]; j++)
+				{
+					printf(j == 0 ? "%s" : ", %s", config->paths[j]);
+				}
+				printf("; ");
+			}
+			if(config->db_file_paths != NULL)
+			{
+				printf("db_file_paths=");
+				for (int j = 0; config->db_file_paths[j]; j++)
+				{
+					printf(j == 0 ? "%s" : ", %s", config->db_file_paths[j]);
+				}
+				printf("; ");
+			}
+			if(config->db_file_names != NULL)
+			{
+				printf("db_file_names=");
+				for (int j = 0; config->db_file_names[j]; j++)
+				{
+					printf(j == 0 ? "%s" : ", %s", config->db_file_names[j]);
+				}
+				printf("; ");
+			}
+			if(config->ignore != NULL)
+			{
+				printf("ignore=");
+				// Print the contents of the string array
+				for(int i = 0; config->ignore[i] != NULL; ++i) {
+					printf(i == 0 ? "%s" : ", %s", config->ignore[i]);
+				}
+				printf("; ");
+			}
+			if(config->include != NULL)
+			{
+				printf("include=");
+				// Print the contents of the string array
+				for(int i = 0; config->include[i] != NULL; ++i) {
+					printf(i == 0 ? "%s" : ", %s", config->include[i]);
+				}
+				printf("; ");
+			}
+			printf("verbose=%s; silent=no; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, rational_logger_mode=%s",
+			config->verbose ? "yes" : "no",
+			config->force ? "yes" : "no",
+			config->update ? "yes" : "no",
+			config->progress ? "yes" : "no",
+			config->compare ? "yes" : "no",
+			config->db_clean_ignored ? "yes" : "no",
+			config->dry_run ? "yes" : "no",
+			rational_reconvert(rational_logger_mode));
+			printf("\n");
+		}
 	}
+
+	slog(TRACE,"Arguments parsed\n");
 
 	return(status);
 }

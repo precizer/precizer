@@ -1,6 +1,28 @@
 #include "precizer.h"
 
 /**
+ * @brief Composes SQL ATTACH DATABASE query string
+ * @param[out] sql Pointer to string that will hold the SQL query
+ * @param[in] db_path Path to database file
+ * @param[in] db_num Database number (1 or 2)
+ * @return Return structure containing operation status
+ */
+static Return compose_sql(char **sql, const char* db_path, int db_num)
+{
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	if(asprintf(sql, "ATTACH DATABASE '%s' as db%d;", db_path, db_num) == -1)
+	{
+		status = FAILURE;
+		report("Memory allocation failed for SQL query string");
+	}
+
+	return status;
+}
+
+/**
  *
  * @brief Compare two databases
  * @details The paths to both databases were passed as arguments
@@ -14,10 +36,11 @@ Return db_compare(void)
 	Return status = SUCCESS;
 
 	if(config->compare != true){
+		slog(TRACE,"Database comparison mode is not enabled. Skipping comparison\n");
 		return(status);
 	}
 
-	slog(false,"Comparison of databases %s and %s is starting...\n",config->db_file_names[0],config->db_file_names[1]);
+	slog(EVERY,"Comparison of databases %s and %s is starting...\n",config->db_file_names[0],config->db_file_names[1]);
 
 	/*
 	 *
@@ -58,57 +81,31 @@ Return db_compare(void)
 	int rc = 0;
 
 	// Compose a string with SQL request
-	const char *attach_sql    = "ATTACH DATABASE '";
-	const char *attach_sql_1 = "' as db1;";
+	char *select_sql_1 = NULL;
+	status = compose_sql(&select_sql_1, config->db_file_paths[0], 1);
 
-	size_t sql_string_len_1 = strlen(attach_sql) +
-	                          strlen(config->db_file_paths[0]) +
-	                          strlen(attach_sql_1) + 1;
-
-	char *select_sql_1 = (char *)calloc(sql_string_len_1,sizeof(char));
-	if(select_sql_1 == NULL)
+	if(SUCCESS == status)
 	{
-		status = FAILURE;
-		slog(false,"ERROR: Memory allocation did not complete successfully!\n");
-		return(status);
-	}
-
-	strcat(select_sql_1,attach_sql);
-	strcat(select_sql_1,config->db_file_paths[0]);
-	strcat(select_sql_1,attach_sql_1);
-
-	rc = sqlite3_exec(config->db, select_sql_1, NULL, NULL, NULL);
-	if(rc!= SQLITE_OK ){
-		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
-		status = FAILURE;
+		rc = sqlite3_exec(config->db, select_sql_1, NULL, NULL, NULL);
+		if(rc!= SQLITE_OK ){
+			slog(ERROR,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			status = FAILURE;
+		}
 	}
 	free(select_sql_1);
 
 	// Compose a string with SQL request
-	const char *attach_sql_2 = "' as db2;";
-
-	size_t sql_string_len_2 = strlen(attach_sql) +
-	                          strlen(config->db_file_paths[1]) +
-	                          strlen(attach_sql_2) + 1;
-
-	char *select_sql_2 = (char *)calloc(sql_string_len_2,sizeof(char));
-	if(select_sql_2 == NULL)
+	char *select_sql_2 = NULL;
+	status = compose_sql(&select_sql_2, config->db_file_paths[1], 2);
+	if(SUCCESS == status)
 	{
-		status = FAILURE;
-		slog(false,"ERROR: Memory allocation did not complete successfully!\n");
-		return(status);
-	}
-	strcat(select_sql_2,attach_sql);
-	strcat(select_sql_2,config->db_file_paths[1]);
-	strcat(select_sql_2,attach_sql_2);
-
-	rc = sqlite3_exec(config->db, select_sql_2, NULL, NULL, NULL);
-	if(rc!= SQLITE_OK ){
-		slog(false,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
-		status = FAILURE;
+		rc = sqlite3_exec(config->db, select_sql_2, NULL, NULL, NULL);
+		if(rc!= SQLITE_OK ){
+			slog(ERROR,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			status = FAILURE;
+		}
 	}
 	free(select_sql_2);
-
 
 	const char *compare_A_sql = "SELECT a.relative_path " \
 	                            "FROM db2.files AS a " \
@@ -118,7 +115,7 @@ Return db_compare(void)
 
 	rc = sqlite3_prepare_v2(config->db, compare_A_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -137,22 +134,22 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
+			slog(EVERY, BOLD "These files no longer exist against %s but still present against %s" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 		const unsigned char *relative_path = NULL;
 		relative_path = sqlite3_column_text(select_stmt,0);
 
 		if(relative_path != NULL){
-			printf("%s\n",relative_path);
+			slog(EVERY,"%s\n",relative_path);
 		} else {
-			slog(false,"General database error!\n");
+			slog(ERROR,"General database error!\n");
 			status = FAILURE;
 			break;
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -166,7 +163,7 @@ Return db_compare(void)
 
 	rc = sqlite3_prepare_v2(config->db, compare_B_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -184,22 +181,22 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThese files no longer exist against %s but still present against %s\n\033[0m",config->db_file_names[1],config->db_file_names[0]);
+			slog(EVERY, BOLD "These files no longer exist against %s but still present against %s" RESET "\n",config->db_file_names[1],config->db_file_names[0]);
 		}
 
 		const unsigned char *relative_path = NULL;
 		relative_path = sqlite3_column_text(select_stmt,0);
 
 		if(relative_path != NULL){
-			printf("%s\n",relative_path);
+			slog(EVERY,"%s\n",relative_path);
 		} else {
-			slog(false,"General database error!\n");
+			slog(ERROR,"General database error!\n");
 			status = FAILURE;
 			break;
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);
@@ -226,7 +223,7 @@ Return db_compare(void)
 
 	rc = sqlite3_prepare_v2(config->db, compare_checksums, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -246,7 +243,7 @@ Return db_compare(void)
 		}
 		if (first_iteration == true){
 			first_iteration = false;
-			printf("\033[1mThe SHA512 checksums of these files do not match between %s and %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
+			slog(EVERY, BOLD "The SHA512 checksums of these files do not match between %s and %s" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 #if 0
@@ -260,31 +257,31 @@ Return db_compare(void)
 		relative_path = sqlite3_column_text(select_stmt,0);
 
 		if(relative_path != NULL){
-			printf("%s\n",relative_path);
+			slog(EVERY,"%s\n",relative_path);
 		} else {
-			slog(false,"General database error!\n");
+			slog(ERROR,"General database error!\n");
 			status = FAILURE;
 			break;
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);
 
 	if(files_the_same == true)
 	{
-		printf("\033[1mAll files are identical against %s and %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
+		slog(EVERY, BOLD "All files are identical against %s and %s" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
 	}
 	if(checksums == true)
 	{
-		printf("\033[1mAll SHA512 checksums of files are identical against %s and %s\n\033[0m",config->db_file_names[0],config->db_file_names[1]);
+		slog(EVERY, BOLD "All SHA512 checksums of files are identical against %s and %s" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
 	}
 
 	if(the_databases_are_equal == true)
 	{
-		printf("\033[1mThe databases %s and %s are absolutely equal\033[0m\n",config->db_file_names[0],config->db_file_names[1]);
+		slog(EVERY, BOLD "The databases %s and %s are absolutely equal" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
 	}
 
 	return(status);

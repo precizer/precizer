@@ -35,7 +35,7 @@ Return db_check_up_paths(void)
 		select_sql = (char *)calloc(size,sizeof(char));
 		if(select_sql == NULL)
 		{
-			slog(false,"ERROR: Memory allocation did not complete successfully!\n");
+			report("Memory allocation failed, requested size: %zu bytes", size * sizeof(char));
 			status = FAILURE;
 			return(status);
 		}
@@ -54,7 +54,7 @@ Return db_check_up_paths(void)
 			char *tmp = (char *)realloc(select_sql,size);
 			if(NULL == tmp)
 			{
-				slog(false,"Realloc error\n");
+				report("Memory allocation failed, requested size: %zu bytes", size);
 				free(select_sql);
 				status = FAILURE;
 				return(status);
@@ -79,7 +79,7 @@ Return db_check_up_paths(void)
 		char *tmp = (char *)realloc(select_sql,size);
 		if(NULL == tmp)
 		{
-			slog(false,"Realloc error\n");
+			report("Memory allocation failed, requested size: %zu bytes", size);
 			free(select_sql);
 			status = FAILURE;
 			return(status);
@@ -91,7 +91,7 @@ Return db_check_up_paths(void)
 
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -109,27 +109,27 @@ Return db_check_up_paths(void)
 
 			rc = sqlite3_prepare_v2(config->db, insert_sql, -1, &insert_stmt, NULL);
 			if(SQLITE_OK != rc) {
-				slog(false,"Can't prepare insert statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+				slog(ERROR,"Can't prepare insert statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 
 			rc = sqlite3_bind_int64(insert_stmt,1,path_ID);
 			if(SQLITE_OK != rc) {
-				slog(false,"Error binding value in insert (%i): %s\n", rc, sqlite3_errmsg(config->db));
+				slog(ERROR,"Error binding value in insert (%i): %s\n", rc, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 
 			/* Execute SQL statement */
 			if(sqlite3_step(insert_stmt) != SQLITE_DONE)
 			{
-				slog(false,"Insert statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+				slog(ERROR,"Insert statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 			sqlite3_finalize(insert_stmt);
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -141,13 +141,13 @@ Return db_check_up_paths(void)
 	{
 		if(config->verbose == true)
 		{
-			slog(false,"The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost\n");
+			slog(EVERY,"The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost\n");
 		}
 	} else {
-		slog(false,"The paths passed as arguments are different with the saved against the database. Information about files and their checksums may be lost!\n");
-		if(config->silent == false)
+		slog(EVERY,"The paths passed as arguments differ from those saved in the database. File paths and checksum information may be lost!\n");
+		if (!(rational_logger_mode & SILENT))
 		{
-			slog(false,"The paths saved against the database: ");
+			slog(EVERY,"Paths saved in the database: ");
 
 			sqlite3_stmt * stmt;
 			int rc_stmt = 0;
@@ -155,7 +155,7 @@ Return db_check_up_paths(void)
 
 			rc_stmt = sqlite3_prepare_v2(config->db, sql, -1, &stmt, NULL);
 			if(SQLITE_OK != rc_stmt) {
-				slog(false,"Can't prepare select statement %s (%i): %s\n", sql, rc_stmt, sqlite3_errmsg(config->db));
+				slog(ERROR,"Can't prepare select statement %s (%i): %s\n", sql, rc_stmt, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 
@@ -171,19 +171,22 @@ Return db_check_up_paths(void)
 					printf(", %s",prefix);
 				}
 			}
+
+			printf("\n");
+
 			if(SQLITE_DONE != rc_stmt) {
-				slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc_stmt, sqlite3_errmsg(config->db));
+				slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc_stmt, sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
-			printf("\n");
 
 			sqlite3_finalize(stmt);
 		}
 
-		if(config->force == true){
-			if(config->silent == false)
+		if(config->force == true)
+		{
+			if (!(rational_logger_mode & SILENT))
 			{
-				printf("The \033[1m--force\033[0m option has been used, so the following path will be written to the database %s: ",config->db_file_name);
+				printf("The " BOLD "--force" RESET " option has been used, so the following path will be written to the database %s: ",config->db_file_name);
 				for (int i = 0; config->paths[i]; i++)
 				{
 					printf (i == 0 ? "%s" : ", %s", config->paths[i]);
@@ -191,11 +194,10 @@ Return db_check_up_paths(void)
 				printf("\n");
 			}
 		} else {
-			slog(false,"Use \033[1m--force\033[0m option only in case when the PATH that was written into " \
-			           "the database really need to be renewed. Warning! If this option will be used in incorrect way, " \
-			           "information about files and their checksums against the database would " \
-			           "be lost.\n");
-			status = WARNING;
+			slog(EVERY, "Use the" BOLD " --force" RESET " option only when the PATHS stored in the database need" \
+			                     " to be updated. Warning: If this option is used incorrectly, file and checksum information" \
+			                     " in the database may be lost or completely replaced with different values.\n");
+			status = FAILURE;
 		}
 	}
 

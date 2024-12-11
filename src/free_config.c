@@ -22,8 +22,10 @@ void free_config(void)
 	free(config->running_dir);
 
 	free(config->db_file_path);
+	config->db_file_path = NULL;
 
 	free(config->db_file_name);
+	config->db_file_name = NULL;
 
 	// Free memory of string array
 	if(config->db_file_names != NULL)
