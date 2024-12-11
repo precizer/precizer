@@ -17,7 +17,7 @@
 #
 # make release # or
 # make debug # or
-# make prod[uction]
+# make # release by default
 #
 # Perf tool:
 # sudo apt-get install linux-tools-common linux-tools-generic linux-tools-`uname -r`
@@ -26,8 +26,8 @@
 #
 
 # Define our suffix list for quick compilation
-.SUFFIXES:              # Delete the default suffixes
-.SUFFIXES: .c .o .h .d  # Define our suffix list
+.SUFFIXES:          # Delete the default suffixes
+.SUFFIXES: .c .o .h # Define our suffix list
 
 #
 # Compiler flags
@@ -40,27 +40,14 @@ CFLAGS += -fbuiltin
 # make DEFINES=-DWRITE_CSV=false memtest
 CFLAGS += $(DEFINES)
 
-# libc lib for static
-LDFLAGS += -lrational -lsqlite -lsha512 -lpcre
 
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
-# Alpine uses external libraries
+# Alpine Linux uses external libraries
 LDFLAGS += -largp -lfts
 endif
 
-
 EXE = precizer
-
-# If define PRODUCTION is set, then a mode is activated
-# in which some functions that exist only for additional
-# research will not be run. By default, the mode is activated
-# only for the production build.
-#
-# To activate in debug modes, excluding checks and disabling
-# counters, just specify PRODUCTION= as a variable for make.
-# For example:
-PRODUCTION ?= PRODUCTION
 
 STATIC = -static
 SRC = src
@@ -72,11 +59,13 @@ WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
 WFLAGS += -Wfloat-equal -Wundef -Wshadow
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
+WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
+WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
 # If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
-GCCWFLAGS += -Wlogical-op
+WFLAGS += -Wlogical-op
 endif
 
 # Arguments for tests
@@ -90,31 +79,20 @@ CONFIG += ordered
 # Build of dependent static library
 SUBDIRS = libs
 
-LIBPATH = libs/sqlite libs/rational libs/sha512 libs/pcre
+LIBS = sqlite sha512 pcre2 mem rational
+
+# libc lib for static
+LDFLAGS += $(foreach d,$(LIBS),-l$d)
 
 # Additional include headers of external libraries
-INCPATH=$(foreach d,$(LIBPATH),-I$d)
-
-# Additional rpath
-LIBSEARCHPATH = -Wl,-rpath,\$$ORIGIN
-
-COSMOBIN = $(CURDIR)/libs/cosmocc/cosmocc/bin/
-
-#
-# Print of variables
-#
-# If you want to find out the value of a makefile variable, just:
-#make print-VARIABLE
-# and it will return:
-#VARIABLE = the_value_of_the_variable
-#
-print-% : ; @echo $* = $($*)
+INCPATH += $(foreach d,$(LIBS),-Ilibs/$d)
 
 #
 # Project files
 #
 SRCS = $(wildcard $(SRC)/*.c)
 HDRS = $(wildcard $(SRC)/*.h)
+BUILDS = .builds
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
 PREPROC = $(SRCS:.c=.i) # Preproc files http://www.viva64.com/en/t/0076/
@@ -125,64 +103,30 @@ ASM = $(SRCS:.c=.asm)
 #
 # Sanitize build settings
 #
-STZDIR = $(SRC)/sanitize
+STZDIR = $(BUILDS)/sanitize
 STZEXE = $(STZDIR)/$(EXE)
-STZOBJS = $(addprefix $(STZDIR)/, $(notdir $(OBJS)))
-STZDEP = $(STZOBJS:.o=.d)
-STZLIBDIR = $(subst $(SRC)/,,$(STZDIR))
-STZLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
-STZINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
-STZDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-STZCFLAGS += -fsanitize=address -g -O0 -DDEBUG
-
-#
-# Cosmopolitan settings
-#
-COSMODIR = $(SRC)/cosmo
-COSMOEXE = $(COSMODIR)/$(EXE)
-COSMOOBJS = $(addprefix $(COSMODIR)/, $(notdir $(OBJS)))
-COSMODEP = $(COSMOOBJS:.o=.d)
-COSMOLIBDIR = $(subst $(SRC)/,,$(COSMODIR))
-COSMOLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
-COSMOINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
-COSMODYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-
-#
-# Unittest build settings
-#
-
-#
-# Project files
-#
-UNITSRCS = basic.c
-# Exclude a file
-UNITOBJS = $(UNITSRCS:.c=.o)
-
-UNITDIR = $(SRC)/unittests
-UNITEXE = $(UNITDIR)/$(EXE)
-UNITPATH = $(addprefix $(UNITDIR)/, $(UNITOBJS))
-UNITDEP = $(UNITPATH:.o=.d)
-UNITLIBDIR = $(subst $(SRC)/,,$(UNITDIR))
-UNITLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(UNITLIBDIR))
-UNITINCPATH = $(foreach d,$(INCPATH),$d/$(UNITLIBDIR))
-UNITDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-UNITCFLAGS += -DUNITTEST -g -O0 -DDEBUG
-ifdef STATIC
-UNITCFLAGS += -static-libasan
-endif
+STZOBJDIR = $(STZDIR)/obj
+STZOBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(OBJS)))
+STZLIBDIR = $(DBGLIBDIR)
+STZLIBS = $(DBGLIBS)
+STZINCPATH = $(DBGINCPATH)
+STZDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+STZCFLAGS += $(DBGFLAGS)
+STZCFLAGS += -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 
 #
 # Debug build settings
 #
-DBGDIR = $(SRC)/debug
+DBGDIR = $(BUILDS)/debug
 DBGEXE = $(DBGDIR)/$(EXE)
-DBGOBJS = $(addprefix $(DBGDIR)/, $(notdir $(OBJS)))
-DBGDEP = $(DBGOBJS:.o=.d)
-DBGLIBDIR = $(subst $(SRC)/,,$(DBGDIR))
-DBGLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
-DBGINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
-DBGDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
+DBGOBJDIR = $(DBGDIR)/obj
+DBGOBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(OBJS)))
+DBGLIBDIR = $(DBGDIR)/libs
+DBGLIBS = -L$(DBGLIBDIR)
+DBGINCPATH = -I$(DBGDIR)/inc
+DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs
+DBGFLAGS = -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
+DBGCFLAGS += $(DBGFLAGS)
 # Activation of the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
@@ -190,63 +134,37 @@ DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 #DBGCFLAGS += -pg
 
 #
-# Production build settings
-#
-PRODDIR = $(SRC)/production
-PRODEXE = $(PRODDIR)/$(EXE)
-PRODOBJS = $(addprefix $(PRODDIR)/, $(notdir $(OBJS)))
-PRODDEP = $(PRODOBJS:.o=.d)
-PRODLIBDIR = $(subst $(SRC)/,,$(PRODDIR))
-PRODLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
-PRODINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
-PRODDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
-PRODCFLAGS = -O3 -funroll-loops -DNDEBUG -D$(PRODUCTION)
-ifneq ($(CC), cosmocc)
-PRODCFLAGS += -march=native
-endif
-# If static build, then add flags
-ifdef STATIC
-PRODLDFLAGS += -lc
-endif
-ifneq ($(CC), clang)
-PRODCFLAGS += -flto
-endif
-
-#
 # Release build settings
 #
-RELDIR = $(SRC)/release
+RELDIR = $(BUILDS)/release
 RELEXE = $(RELDIR)/$(EXE)
-RELOBJS = $(addprefix $(RELDIR)/, $(notdir $(OBJS)))
-RELDEP = $(RELOBJS:.o=.d)
-RELLIBDIR = $(subst $(SRC)/,,$(RELDIR))
-RELLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
-RELINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
-RELDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
+RELOBJDIR = $(RELDIR)/obj
+RELOBJS = $(addprefix $(RELOBJDIR)/, $(notdir $(OBJS)))
+RELLIBDIR = $(RELDIR)/libs
+RELLIBS = -L$(RELLIBDIR)
+RELINCPATH = -I$(RELDIR)/inc
+RELDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(RELLIBDIR),-rpath,\$$ORIGIN/libs
 RELCFLAGS = -O3 -funroll-loops -DNDEBUG
-ifneq ($(CC), cosmocc)
 RELCFLAGS += -march=native
-endif
 # If static build, then add flags
 ifdef STATIC
 RELLDFLAGS += -lc
 endif
 # If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
-RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
 RELCFLAGS += -flto
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug prep release remake clang openmp one test sanitize banner $(SUBDIRS)
+.PHONY: all clean debug prep release remake clang openmp one test sanitize banner run $(SUBDIRS)
 
 # Default build
 all: $(SUBDIRS) release
 
 $(SUBDIRS):
-	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
+#	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
 #	@$(MAKE) -C $@ all
 
 # Clang
@@ -256,78 +174,34 @@ clang: all
 #
 # Sanitize rules
 #
-sanitize: CC = clang
 sanitize: $(SUBDIRS) $(STZEXE)
+
+run:
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
 
 $(STZEXE): $(STZOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(STZCFLAGS) $(STZLIBPATH) $(STZDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(STZCFLAGS) $(STZLIBS) $(STZDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
--include $(STZDEP)
-
-$(STZDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(STZDIR)
-	@$(CC) -MM $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(STZDIR\)\//' > $(@D)/$(*F).d
+$(STZOBJDIR)/%.o: $(SRC)/%.c
+	@mkdir -p $(STZOBJDIR)
 	@$(CC) -c $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
-# Cosmopolitan rules
-#
-#cosmo: $(SUBDIRS) $(COSMOEXE) banner
-cosmo: $(COSMOEXE) banner
-
-$(COSMOEXE): $(COSMOOBJS)
-	$(CC) $(LIBSEARCHPATH) $(COSMOLIBPATH) $(COSMODYNLIB) -o $(COSMOEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-
--include $(COSMODEP)
-
-$(COSMODIR)/%.o: $(SRC)/%.c
-	mkdir -p $(COSMODIR)
-	$(CC) -MM $(INCPATH) $(COSMOINCPATH) $< | sed '1s/^/$$\(COSMODIR\)\//' > $(@D)/$(*F).d
-	$(CC) -c $(INCPATH) $(COSMOINCPATH) -o $@ $<
-	@echo $<" compiled."
-
-
-#
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE) banner
+debug: $(SUBDIRS) $(DBGEXE)
 
 $(DBGEXE): $(DBGOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBPATH) $(DBGDYNLIB) $(WFLAGS) $(GCCWFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 	@cp $@ ./
 	@echo "$@ moved to current directory"
 
--include $(DBGDEP)
-
-$(DBGDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(DBGDIR)
-	@$(CC) -MM $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $(GCCWFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $(GCCWFLAGS) -o $@ $<
-	@echo $<" compiled."
-
-#
-# Production rules
-#
-prod: $(SUBDIRS) production banner
-production: $(PRODEXE)
-
-$(PRODEXE): $(PRODOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(STATIC) $(STRIP) $(PRODLIBPATH) $(PRODDYNLIB) $(PRODLDFLAGS) -o $(PRODEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-	@cp $@ ./
-	@echo "$@ moved to current directory"
-
--include $(PRODDEP)
-
-$(PRODDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(PRODDIR)
-	@$(CC) -MM $(INCPATH) $(PRODINCPATH) $(CFLAGS) $(PRODCFLAGS) $< | sed '1s/^/$$\(PRODDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(PRODINCPATH) $(CFLAGS) $(PRODCFLAGS) -o $@ $<
+$(DBGOBJDIR)/%.o: $(SRC)/%.c
+	@mkdir -p $(DBGOBJDIR)
+	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 #
@@ -337,44 +211,20 @@ release: $(SUBDIRS) $(RELEXE) banner
 
 # Linking problem with "undefined reference to 'dlopen' "
 # https://stackoverflow.com/a/11221504/7104681
+# take in account that this doesn't work:
+# gcc -ldl dlopentest.c
+# But this does:
+# gcc dlopentest.c -ldl
+#
 $(RELEXE): $(RELOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(STATIC) $(STRIP) $(RELLIBPATH) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(RELLIBS) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 	@cp $@ ./
 	@echo "$@ moved to current directory"
 
--include $(RELDEP)
-
-$(RELDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(RELDIR)
-	@$(CC) -MM $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) $< | sed '1s/^/$$\(RELDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
-	@echo $<" compiled."
-
-#
-# GCC Static Analysis
-#
-gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -Wanalyzer-too-complex
-#gccanalyzer: WFLAGS += -fdump-analyzer -fdump-analyzer-callgraph -fdump-analyzer-exploded-graph -fdump-analyzer-exploded-nodes -fdump-analyzer-exploded-nodes-2 -fdump-analyzer-exploded-nodes-3 -fdump-analyzer-feasibility -fdump-analyzer-json -fdump-analyzer-state-purge -fdump-analyzer-stderr -fdump-analyzer-supergraph
-gccanalyzer: CC = gcc-12
-gccanalyzer: debug
-
-#
-# Unittesting
-#
-
-unittest: $(SUBDIRS) $(UNITEXE)
-
-$(UNITEXE): $(UNITOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(UNITCFLAGS) $(UNITLIBPATH) $(UNITDYNLIB) $(WFLAGS) $(GCCWFLAGS) -o $(UNITEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-
--include $(UNITDEP)
-
-$(UNITDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(UNITDIR)
-	@$(CC) -MM $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $(GCCWFLAGS) $< | sed '1s/^/$$\(UNITDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $(GCCWFLAGS) -o $@ $<
+$(RELOBJDIR)/%.o: $(SRC)/%.c
+	@mkdir -p $(RELOBJDIR)
+	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 # Optional preprocessor files
@@ -388,7 +238,7 @@ $(UNITDIR)/%.o: $(SRC)/%.c
 
 # Optional Assembler files
 %.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
+	@$(CC) -S -C $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
 
 #
 # Other rules
@@ -398,6 +248,14 @@ remake: clean all
 
 # Tests
 test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gccanalyzer perf
+
+#
+# GCC Static Analysis
+#
+gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
+# -Wanalyzer-too-complex
+gccanalyzer: CC = gcc
+gccanalyzer: debug
 
 cppcheck:
 	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
@@ -442,21 +300,24 @@ perf:
 # Statistic code info and count of lines
 stat: cloc
 cloc:
-	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(PRODDIR),$(RELDIR),$(OMPDIR) ../
+#	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(RELDIR) ./src
+	@cloc ./src
 
 # Character | prevent threading with clean
 cleanall: clean
 	@$(MAKE) -C $(SUBDIRS) clean
 
 clean: | clean-preproc clean-asm
-	@rm -rf *.out.* doc $(STZDEP) $(DBGDEP) $(PRODDEP) $(RELDEP) \
-		$(DBGEXE) $(STZEXE) $(PRODEXE) $(RELEXE) \
-		$(STZOBJS) $(DBGOBJS) $(PRODOBJS) $(RELOBJS)
-	@test -d $(STZDIR) && rm -rf $(STZDIR) || true
-	@test -d $(DBGDIR) && rm -rf $(DBGDIR) || true
-	@test -d $(PRODDIR) && rm -rf $(PRODDIR) || true
-	@test -d $(RELDIR) && rm -rf $(RELDIR) || true
-	@test -f $(EXE) && rm -f $(EXE) || true
+	@rm -rf *.out.* doc \
+		$(DBGEXE) $(STZEXE) $(RELEXE) \
+		$(STZOBJS) $(DBGOBJS) $(RELOBJS)
+	@test -d $(STZOBJDIR) && rm -d $(STZOBJDIR) 2>/dev/null || true
+	@test -d $(STZDIR) && rm -d $(STZDIR) 2>/dev/null || true
+	@test -d $(DBGOBJDIR) && rm -d $(DBGOBJDIR) 2>/dev/null || true
+	@test -d $(DBGDIR) && rm -d $(DBGDIR) 2>/dev/null || true
+	@test -d $(RELOBJDIR) && rm -d $(RELOBJDIR) 2>/dev/null || true
+	@test -d $(RELDIR) && rm -d $(RELDIR) 2>/dev/null || true
+	@test -f $(EXE) && rm $(EXE) || true
 	@echo $(EXE) cleared.
 
 clean-preproc:
@@ -470,3 +331,13 @@ banner:
 	@printf "\033[1mStage 1. Adding:\033[0m\n./precizer --progress --database=database1.db tests/examples/diffs/diff1\n"
 	@printf "\033[1mStage 2. Adding:\033[0m\n./precizer --progress --database=database2.db tests/examples/diffs/diff2\n"
 	@printf "\033[1mFinal stage. Comparing:\033[0m\n./precizer --compare database1.db database2.db\n"
+
+#
+# Print of variables
+#
+# If you want to find out the value of a makefile variable, just:
+#make print-VARIABLE
+# and it will return:
+#VARIABLE = the_value_of_the_variable
+#
+print-% : ; @echo $* = $($*)
