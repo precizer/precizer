@@ -4,7 +4,7 @@ TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Arguments parsed
-TESTING:Check directory paths passed as arguments
+TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
@@ -25,13 +25,19 @@ TESTING:The main database and tables have been successfully initialized
 TESTING:The main database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the main database database1.db
 TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
+TESTING:The database database1.db has already been created previously
 TESTING:Starting of database file database1.db integrity check...
-TESTING:The database database1.db has been verified and is in good condition
-TESTING:Check directory paths passed as arguments
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
+TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Start vacuuming...
+TESTING:The main database has been vacuumed
+TESTING:\x1B\[1mNothing have been changed against the database since the last probe \(neither added nor updated or deleted information about files\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
@@ -39,7 +45,7 @@ TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Arguments parsed
-TESTING:Check directory paths passed as arguments
+TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
@@ -60,13 +66,24 @@ TESTING:The main database and tables have been successfully initialized
 TESTING:The main database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the main database database1.db
 TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
+TESTING:The database database1.db has already been created previously
 TESTING:Starting of database file database1.db integrity check...
-TESTING:The database database1.db has been verified and is in good condition
-TESTING:Check directory paths passed as arguments
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
+TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
+TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
 1/AAA/BCB/CCC/c.txt adding
 1/AAA/BCB/CCC/a.txt changed size & ctime & mtime
+TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:\x1B\[1mThese files are ignored or no longer exist and will be deleted against the DB database1.db:\x1B\[0m
+TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:Start vacuuming...
+TESTING:The main database has been vacuumed
+TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues\z
