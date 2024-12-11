@@ -25,3 +25,4 @@ Return test0014(void);
 
 Return prepare(void);
 Return finish(void);
+Return clean(void);

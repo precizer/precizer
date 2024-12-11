@@ -41,11 +41,10 @@ int main(void)
 	TEST(test0003, "Comply default DB name to \"hostname.db\" template…");
 	TEST(test0011, "User's Manual and examples from README test set…");
 
-	TESTFINISH(finish,"Cleaning all results");
+	HEADER("\nClean results\n");
+	TEST(clean, "Cleaning all results…");
 
-	printf(CYAN "\nTelemetry\n");
-	printf(WHITE);
-	telemetry_show();
+	TESTFINISH(finish,"Telemetry");
 
 	HEADER("\nFinishing\n");
 	TESTDONE;
