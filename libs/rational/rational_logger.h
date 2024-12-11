@@ -21,10 +21,11 @@ extern char rational_logger_mode;
  */
 typedef enum
 {
-
 	REGULAR = 0x01,  // 00001
 	VERBOSE = 0x02,  // 00010
 	TESTING = 0x04,  // 00100
+	TRACE   = 0x06,  // 00110 = VERBOSE|TESTING
+	EVERY   = 0x07,  // 00111 = REGULAR|VERBOSE|TESTING
 	ERROR   = 0x08,  // 01000
 	SILENT  = 0x10   // 10000
 
