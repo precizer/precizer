@@ -3,7 +3,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:progress=yes
 TESTING:Arguments parsed
-TESTING:Check directory paths passed as arguments
+TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
@@ -24,5 +24,7 @@ TESTING:The main database and tables have been successfully initialized
 TESTING:The main database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the main database database1.db
 TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
-ERROR:The precizer unexpectedly finished due to an error\z
+TESTING:The database database1.db was previously created and already contains data with files and their checksums. Use the \x1B\[1m--update\x1B\[0m option only when you are certain that the database needs to be updated and when file information \(including changes, deletions, and additions\) should be synchronized with the database.
+ERROR:The precizer process terminated unexpectedly due to an error\z
