@@ -62,9 +62,9 @@
 #define RETURN_STATUS \
 	if(SUCCESS == status) \
 	{ \
-		echo(EXTEND, BOLDGREEN "✓" BOLDWHITE " passed "); \
+		echo(EXTEND, BOLDGREEN "✓" BOLDWHITE " passed " RESET); \
 	} else { \
-		echo(EXTEND, BOLDRED "𐄂" BOLDWHITE " failed"); \
+		echo(EXTEND, BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
 	} \
 	return(status); \
 
