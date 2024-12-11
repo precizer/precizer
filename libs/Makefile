@@ -3,7 +3,7 @@
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
-SUBDIRS  = sqlite rational sha512 pcre cunit
+SUBDIRS  = sqlite rational sha512 pcre2 testitall mem
 
 TOPTARGETS := all clean release debug prod production sanitize test cosmo
 
@@ -12,5 +12,8 @@ $(SUBDIRS):
 	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS)
+
+gccanalyzer:
+	@true
 
 all: $(SUBDIRS)

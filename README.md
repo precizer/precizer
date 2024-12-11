@@ -1,21 +1,28 @@
 <p width="100%" height="100%">
-<img width="20%" height="20%" src="icon/micrometer.svg">
+<img width="20%" height="20%" src="img/micrometer.svg">
 </p>
 
 # Precizer
 This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
 
-Application Author: [Dennis Razumovsky](https://github.com/dennisrazumovsky)
+Software author: [Dennis Razumovsky](https://github.com/dennisrazumovsky)
 
 ## TL;DR
 
-**precizer** is a CLI application designed to verify the integrity of files after synchronization. The program recursively traverses directories and creates a database of files and their checksums, followed by a quick comparison.
+**precizer** is a lightweight, high-performance CLI application designed to verify
+file integrity after synchronization. The program recursively traverses directories,
+creates a database of files with their checksums, and performs comparisons.
 
-**precizer** specializes in managing vast file systems. The program identifies synchronization errors by cross-referencing data and checksums from various sources. Alternatively, it can be used to crawl historical changes by comparing databases from the same sources over different times.
+Written entirely in C, **precizer** is optimized for large-scale file systems.
+It detects synchronization errors by cross-referencing data and checksums from
+different sources. The tool can also track historical changes by comparing databases
+from the same sources across different time periods.
 
 ## SIMPLE EXAMPLE
 
-Assuming there are two hosts with large disks and identical contents mounted in /mnt1 and /mnt2 accordingly. The general task is to check whether the contents are identical or if there are any differences.
+Consider two hosts with large disks containing identical content mounted at
+/mnt1 and /mnt2 respectively. The task is to verify content identity and
+identify any differences.
 
 1. Run the program on the first machine with host name, for example “host1”:
 
@@ -62,10 +69,10 @@ Consider a scenario where there is a primary disk storage and a backup copy. For
 * To address the above-described weaknesses, the **precizer** CLI applications was created. The program allows to identify which files differ between “A” and “B” in order to resynchronize and reconcile any differences. The program works as quickly as possible (optimized to operate close to the hardware capabilities) due to the fact that it is written in pure C and uses modern algorithms optimized for high performance. The program is designed to work with both small files and data volumes measured in petabytes and is not limited to these figures.
 * The program name “**precizer**” comes from the word “precision” and means something that increases precision.
 * The program traverse the contents of directories and subdirectories with high accuracy and calculates checksums for each file encountered, while storing the data in an SQLite database (a regular binary file).
-* **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning in the next run but will continue exactly from the point which has been already saved against the database. This saves resources and time.
+* **precizer** is fault-tolerant and can continue working from the moment where it was interrupted. For example, if the program had been stopped by pressing Ctrl+C while digging a petabyte-sized file, it will NOT explore it from the beginning in the next round but will continue exactly from the point which has been already saved against the database. This saves resources and time.
 * The work of this program can be interrupted at any time in any way, and this is safe both for the data being explored and for the database created by the program itself.
 * In the case of a deliberate or accidental interruption of the application do not worry about the results of the failure. The result of the program's work will be completely saved and reused during subsequent runs.
-* To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely excludes errors even when analyzing a single petabyte-sized file's contents. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when simpler hash functions like SHA1 or CRC32 have been used.
+* To calculate checksums, the reliable and fast SHA512 algorithm is used, which completely excludes errors even when analyzing a single petabyte-sized file's contents. If there are two thoroughly identical files of huge size, differing only by one byte, then the SHA512 algorithm will reflect this and the checksums will differ. Such result cannot be guaranteed when simpler hash functions like SHA1 or CRC32 have been used for huge files.
 * The algorithms of the **precizer** app are designed in such a way that it is very easy to maintain the relevance of the data contained in the created database with paths to files and their checksums without recalculating everything from scratch. It is enough to run the program with the _--update_ parameter so that new files are added to the database, information about files erased from the disk is deleted, and for those files that have undergone modifications and their creation time or size has changed, the SHA512 checksum will be recalculated and updated in the database.
 * By comparing databases from the same sources over different times, **precizer** can serve as a security monitoring tool, determining the consequences of an intrusion by identifying unauthorized modified files, whose contents may have been changed but the metadata remains the same.
 * The program never changes, deletes, moves or copies any files or directories being traversed. All it does is shape lists of files and update information about them against the database. All changes occur exclusively within the boundaries of this database.
@@ -101,8 +108,11 @@ TODO!
 
 ### Self-build
 
-Nearly all utilized libraries are integrated into the program, and by default, it's built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
+The result of the build will be a statically linked binary executable file without any dynamic dependencies. This file is the entire program and can be run on almost any modern Linux distribution.
 
+Dependencies such as `cmake`, `git` and `unzip` are needed to build libraries included in the program source code.
+
+Nearly all utilized libraries are integrated into the program, and by default, it's built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
 
 1. Install build and compile tools on Linux
 
@@ -144,6 +154,9 @@ make
 
 # Clean
 make clean
+
+# Clean with building libraries
+make cleanall
 
 # Update
 git pull
@@ -191,7 +204,7 @@ precizer --progress --database=database1.db tests/examples/diffs/diff1
 
 <sub>Database file name: database1.db  
 The database database1.db has been created in the past and already contains data with files and their checksums. Use the --update option if there is full confidence that update the content of the database is really need and the information about those files which was changed, removed or added should be deleted or updated against DB.  
-The precizer unexpectedly ended due to an error.  
+The precizer unexpectedly finished due to an error.  
 </sub>
 
 **--update** option should be added. The _--update_ parameter is necessary to protect the database against the loss of information due to accidental executions.
@@ -210,7 +223,7 @@ The database has been vacuumed
 **Nothing have been changed since the last probe (neither added nor updated or deleted files)**  
 </sub>
 
-Make some changes:
+Now let's make some changes:
 
 ```sh
 # Modify a file
