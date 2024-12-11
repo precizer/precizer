@@ -1,5 +1,4 @@
 #include "precizer.h"
-#include <unistd.h>
 
 /**
  *
@@ -23,10 +22,9 @@ Return db_delete_missing_files_from(void)
 	{
 		if(config->db_clean_ignored == false)
 		{
-			slog(false,"If the information about ignored files should be removed from the database the \033[1m--db-clean-ignored\033[0m option must be specified. This is special protection against accidental deletion of information from the database.\n");
+			slog(EVERY,"If the information about ignored files should be removed from the database the " BOLD "--db-clean-ignored" RESET " option must be specified. This is special protection against accidental deletion of information from the database\n");
 		} else {
-			slog(true,"The \033[1m--db-clean-ignored\033[0m option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
-
+			slog(TRACE,"The " BOLD "--db-clean-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
 		}
 	}
 
@@ -40,7 +38,7 @@ Return db_delete_missing_files_from(void)
 
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -117,7 +115,7 @@ Return db_delete_missing_files_from(void)
 			absolute_path = (char *)calloc(runtime_path_prefix_size + relative_path_size + 2,sizeof(char)); // One for '/' and second for '\0' at the end of the line
 			if(absolute_path == NULL)
 			{
-				slog(false,"ERROR: Memory allocation did not complete successfully!\n");
+				report("Memory allocation failed, requested size: %zu bytes", runtime_path_prefix_size + relative_path_size + 2,sizeof(char));
 				status = FAILURE;
 				break;
 			}
@@ -136,10 +134,11 @@ Return db_delete_missing_files_from(void)
 		}
 		free(absolute_path);
 	}
+
 	if(SQLITE_DONE != rc) {
 		if(global_interrupt_flag == false)
 		{
-			slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 	}

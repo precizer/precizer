@@ -6,8 +6,8 @@ static void print_size(
 ){
 	if(config->verbose == true)
 	{
-		printf(" was:%s",bkbmbgbtbpbeb((ui64)was->st_size));
-		printf(", now:%s",bkbmbgbtbpbeb((ui64)now->st_size));
+		printf(" was:%s",bkbmbgbtbpbeb((size_t)was->st_size));
+		printf(", now:%s",bkbmbgbtbpbeb((size_t)now->st_size));
 	}
 }
 
@@ -59,26 +59,27 @@ void show_relative_path
 	{
 		*first_iteration = false;
 
-		if(config->db_already_exists == true)
+		if(config->db_contains_data == true)
 		{
 			if(config->update == true)
 			{
-				slog(false,"The \033[1m--update\033[0m option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
+				slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
 			}
 
-			slog(false,"\033[1mThese files have been added or changed and those changes will be reflected against the DB %s:\n\033[0m",config->db_file_name);
+			slog(EVERY, BOLD "These files have been added or changed and those changes will be reflected against the DB %s:" RESET "\n",config->db_file_name);
 
 		} else {
 			*show_changes = false;
-			slog(false,"\033[1mThese files will be added against the %s database:\n\033[0m",config->db_file_name);
+			slog(EVERY, BOLD "These files will be added against the %s database:" RESET "\n",config->db_file_name);
 		}
 	}
 
-	if(config->silent == false)
+	// If NOT silent
+	if(!(rational_logger_mode & SILENT))
 	{
 		if(*ignored == true)
 		{
-			printf("\033[1mignored\033[0m ");
+			printf(BOLD "ignored " RESET);
 		}
 
 		printf("%s",relative_path);

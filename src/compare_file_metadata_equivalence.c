@@ -1,18 +1,33 @@
 #include "precizer.h"
 
 /**
+ * @brief Checks if the file's size, creation time, and modification time have
+ *        not changed since the last crawl.
  *
- * The function check up if size, creation and modification time of a file did
- * not change since last crawling.
- * It takes data from FTS library traversing of the file and compare with the
- * structure "stat" stored against SQLite after previous probe
+ * Compares data from the FTS library file traversal with the stat
+ * structure stored in SQLite from the previous probe.
  *
+ * @param source		Source file stat structure
+ * @param destination	Destination file stat structure
+ *
+ * @return Return status:
+ *         - IDENTICAL: Files are identical
+ *         - FAILURE: Error in comparison or invalid parameters
+ *         - SIZE_CHANGED
+ *         - MODIFICATION_TIME_CHANGED
+ *         - CREATION_TIME_CHANGED
  */
 int compare_file_metadata_equivalence
 (
 	const struct stat *source,
 	const struct stat *destination
 ){
+	/* Validate input parameters */
+	if(NULL == source || NULL == destination)
+	{
+		return(FAILURE);
+	}
+
 	int result = IDENTICAL;
 
 	/* Size of file, in bytes.  */

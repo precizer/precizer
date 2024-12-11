@@ -19,15 +19,15 @@ int exit_status(
 
 	if(global_interrupt_flag == true)
 	{
-		slog(false,"The %s has been interrupted smoothly. All data remain in integrity condition.\n",application_file_name);
+		slog(EVERY,"The %s has been interrupted smoothly. All data remain in integrity condition\n",application_file_name);
 		return(EXIT_SUCCESS);
 	} else {
-		if(status == SUCCESS){
-			slog(false,"The %s completed its execution without any issues.\n",application_file_name);
-			slog(false,"Enjoy your life!\n");
+		if(SUCCESS == status){
+			slog(EVERY,"The %s completed its execution without any issues\n",application_file_name);
+			slog(REGULAR,"Enjoy your life!\n");
 			return(EXIT_SUCCESS);
 		}else{
-			slog(false,"The %s unexpectedly ended due to an error.\n",application_file_name);
+			slog(ERROR,"The %s process terminated unexpectedly due to an error\n",application_file_name);
 			return(EXIT_FAILURE);
 		}
 	}

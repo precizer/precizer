@@ -13,9 +13,9 @@ void status_of_changes(void)
 	{
 		if(config->something_has_been_changed == false)
 		{
-			slog(false,"\033[1mNothing have been changed against the database since the last probe (neither added nor updated or deleted information about files)\033[0m\n");
+			slog(EVERY, BOLD "Nothing have been changed against the database since the last probe (neither added nor updated or deleted information about files)" RESET "\n");
 		} else {
-			slog(false,"\033[1mThe database has been changed since the last probe (either added, removed, or updated information about files)\033[0m\n");
+			slog(EVERY, BOLD "The database %s has been modified since the last check (files were added, removed, or updated)" RESET "\n",config->db_file_name);
 		}
 	}
 }

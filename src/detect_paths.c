@@ -17,9 +17,15 @@ Return detect_a_path(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	// Do nothing if the path is not a real path but in-memory database
+	if(strcmp(path,":memory:") == 0)
+	{
+		return(status);
+	}
+
 	struct stat stats;
 
-	slog(true,"Check up the path %s availability\n",path);
+	slog(TRACE,"Verify that the path %s exists\n",path);
 
 	// Check for existence
 	if(stat(path, &stats) == 0)
@@ -29,9 +35,9 @@ Return detect_a_path(
 		{
 			if(S_ISREG(stats.st_mode))
 			{
-				slog(true,"The path %s is exists and it is a file\n",path);
-				status = SUCCESS;
+				slog(TRACE,"The path %s is exists and it is a file\n",path);
 
+				status = SUCCESS;
 			} else {
 				status = FAILURE;
 			}
@@ -39,7 +45,8 @@ Return detect_a_path(
 		} else {
 			if(S_ISDIR(stats.st_mode))
 			{
-				slog(true,"The path %s is exists and it is a directory\n",path);
+				slog(TRACE,"The path %s is exists and it is a directory\n",path);
+
 				status = SUCCESS;
 			} else {
 				status = FAILURE;
@@ -54,9 +61,9 @@ Return detect_a_path(
 	{
 		if(fs_object_type == SHOULD_BE_A_FILE)
 		{
-			slog(false,"The path %s doesn't exist or it is not a file\n",path);
+			slog(EVERY,"The path %s doesn't exist or it is not a file\n",path);
 		} else {
-			slog(false,"The path %s doesn't exist or it is not a directory\n",path);
+			slog(EVERY,"The path %s doesn't exist or it is not a directory\n",path);
 		}
 	}
 
@@ -79,7 +86,14 @@ Return detect_paths(void)
 	// Don't do anything
 	if(config->compare == true)
 	{
+		// The option to compare databases has been selected.
+		// There is no need to compare paths
+		slog(TRACE,"Comparing databases. Directory path verification is not required\n");
 		return(status);
+	} else {
+		// Check directory paths passed as arguments, traverse
+		// them for files, and store the file metadata in the database
+		slog(TRACE,"Checking directory paths provided as arguments\n");
 	}
 
 	for (int i = 0; config->paths[i]; i++)
@@ -90,6 +104,8 @@ Return detect_paths(void)
 			return(status);
 		}
 	}
+
+	slog(TRACE,"Paths detected\n");
 
 	return(status);
 }
