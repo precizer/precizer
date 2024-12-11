@@ -26,14 +26,14 @@ Return db_save_prefixes_into(void)
 
 		int rc = sqlite3_prepare_v2(config->db, delete_sql, -1, &delete_stmt, NULL);
 		if(SQLITE_OK != rc) {
-			slog(false,"Can't prepare delete statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Can't prepare delete statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
 		/* Execute SQL statement */
 		if(sqlite3_step(delete_stmt) != SQLITE_DONE)
 		{
-			slog(false,"Delete statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Delete statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 		sqlite3_finalize(delete_stmt);
@@ -52,20 +52,20 @@ Return db_save_prefixes_into(void)
 		/* Create SQL statement. Prepare to write */
 		int rc = sqlite3_prepare_v2(config->db, insert_sql, -1, &insert_stmt, NULL);
 		if(SQLITE_OK != rc) {
-			slog(false,"Can't prepare insert statement %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Can't prepare insert statement %s (%i): %s\n", insert_sql, rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
 		rc = sqlite3_bind_text(insert_stmt, 1, config->paths[i], (int)strlen(config->paths[i]), NULL);
 		if(SQLITE_OK != rc) {
-			slog(false,"Error binding value in insert (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Error binding value in insert (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 
 		/* Execute SQL statement */
 		if(sqlite3_step(insert_stmt) != SQLITE_DONE)
 		{
-			slog(false,"Insert statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Insert statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 

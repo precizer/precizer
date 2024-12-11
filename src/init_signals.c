@@ -27,40 +27,33 @@ Return init_signals(void)
 	tcsetattr(fileno(stdin),TCSANOW, &term);
 
 	// kill -USR2 <pid>
-	if ((signal(SIGUSR2,&notify_quit_handler)==SIG_ERR)!=0)
+	if((signal(SIGUSR2,&notify_quit_handler)==SIG_ERR)!=0)
 	{
 		status = FAILURE;
-		slog(false,"Failed set signal SIGUSR2\n");
+		slog(ERROR,"Failed set signal SIGUSR2\n");
 	}else{
-		if(config->verbose == true)
-		{
-			slog(false,"Set signal SIGUSR2 OK:pid:%i\n",getpid());
-		}
+		slog(TRACE,"Set signal SIGUSR2 OK:pid:%i\n",getpid());
 	}
 
 	// Ctrl-C
-	if ((signal(SIGINT,&notify_quit_handler)==SIG_ERR)!=0)
+	if((signal(SIGINT,&notify_quit_handler)==SIG_ERR)!=0)
 	{
 		status = FAILURE;
-		slog(false,"Failed set signal SIGINT\n");
+		slog(ERROR,"Failed set signal SIGINT\n");
 	}else{
-		if(config->verbose == true)
-		{
-			slog(false,"Set signal SIGINT OK:pid:%i\n",getpid());
-		}
+		slog(TRACE,"Set signal SIGINT OK:pid:%i\n",getpid());
 	}
 
 	// Default kill Termination signal (15)
-	if ((signal(SIGTERM,&notify_quit_handler)==SIG_ERR)!=0)
+	if((signal(SIGTERM,&notify_quit_handler)==SIG_ERR)!=0)
 	{
 		status = FAILURE;
-		slog(false,"Failed set signal SIGTERM\n");
+		slog(ERROR,"Failed set signal SIGTERM\n");
 	}else{
-		if(config->verbose == true)
-		{
-			slog(false,"Set signal SIGTERM OK:pid:%i\n",getpid());
-		}
+		slog(TRACE,"Set signal SIGTERM OK:pid:%i\n",getpid());
 	}
+
+	slog(TRACE,"Signals initialized\n");
 
 	return status;
 }

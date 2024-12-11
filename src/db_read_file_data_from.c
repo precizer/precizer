@@ -28,7 +28,7 @@ Return db_read_file_data_from
 	const char *select_sql = "SELECT ID,offset,stat,mdContext FROM files WHERE relative_path = ?1;";
 	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -41,7 +41,7 @@ Return db_read_file_data_from
 #endif
 	rc = sqlite3_bind_text(select_stmt, 1, relative_path, (int)strlen(relative_path), NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -60,7 +60,7 @@ Return db_read_file_data_from
 		dbrow->relative_path_already_in_db = true;
 	}
 	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);

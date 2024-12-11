@@ -13,9 +13,15 @@ Return db_test
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// Do nothing if the database has not in-memory type
-	if(strcmp(db_file_path,":memory:") == 0)
+	// Don't do anything
+	if(config->compare == true)
 	{
+		slog(TRACE,"Compare mode is enabled. Database verification for %s is skipped\n", db_file_path);
+		return(status);
+
+	} else if (config->dry_run == true && config->db_file_exists == false)
+	{
+		slog(TRACE,"Dry Run mode is enabled. Database verification for %s is skipped\n", db_file_path);
 		return(status);
 	}
 
@@ -28,17 +34,23 @@ Return db_test
 
 	// Extract file name from a path
 	char *tmp = (char *)calloc(strlen(db_file_path) + 1,sizeof(char));
+	if(tmp == NULL)
+	{
+		report("Memory allocation failed, requested size: %zu bytes", strlen(db_file_path) + 1 * sizeof(char));
+		return(FAILURE);
+	}
+
 	strcpy(tmp,db_file_path);
 	const char *db_file_name = basename(tmp);
 
-	slog(false,"Starting of database file %s integrity check...\n",db_file_name);
+	slog(EVERY,"Starting of database file %s integrity check...\n",db_file_name);
 
 	int sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 	/* Open database */
 	if(sqlite3_open_v2(db_file_path,&db,sqlite_open_flag,NULL))
 	{
-		slog(false,"Can't open database: %s\n", sqlite3_errmsg(db));
+		slog(ERROR,"Can't open database: %s\n", sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 
@@ -46,7 +58,7 @@ Return db_test
 
 	rc = sqlite3_prepare_v2(db, sql, -1, &select_stmt, NULL);
 	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(db));
+		slog(ERROR,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 
@@ -59,16 +71,16 @@ Return db_test
 		}
 	}
 	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(db));
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);
 
 	if(database_is_ok == true)
 	{
-		slog(false,"The database %s has been verified and is in good condition\n",db_file_name);
+		slog(EVERY,"Database %s has been verified and is in good condition\n",db_file_name);
 	} else {
-		slog(false,"ERROR: The database %s is in poor condition!\n",db_file_name);
+		slog(ERROR,"The database %s is in poor condition!\n",db_file_name);
 		status = FAILURE;
 	}
 

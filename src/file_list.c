@@ -43,24 +43,24 @@ Return file_list
 	size_t count_files = 0, count_dirs = 0, count_symlnks = 0;
 
 	if ((file_systems = fts_open(config->paths, fts_options, NULL)) == NULL) {
-		slog(false,"fts_open() error\n");
+		report("fts_open() error\n");
 		status = FAILURE;
 		fts_close(file_systems);
 		return(status);
 	}
 
-	/* Initialize file_systems with as many argv[] parts as possible. */
+	// Initialize the file systems using as many argv[] components as possible
 	child = fts_children(file_systems, 0);
 	if (child == NULL) {
-		 /* no files to traverse */
+		 // No files to traverse
 		fts_close(file_systems);
 		return(status);
 	}
 
 	/*
-	 * Determine absolute path prefix
-	 * We are only interested in relative paths in DB
-	 * To get a relative path we need to trim the prefix from the absolute path
+	 * Determine the absolute path prefix.
+	 * We are only interested in relative paths in the database.
+	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
 	char *runtime_path_prefix = NULL;
 	FTSENT *current_file_system = child;
@@ -77,7 +77,7 @@ Return file_list
 	// Limit recursion to the depth determined in config->maxdepth
 	if(config->maxdepth > -1)
 	{
-		slog(false,"Recursion depth limited to: %d\n", config->maxdepth);
+		slog(EVERY,"Recursion depth limited to: %d\n", config->maxdepth);
 	}
 
 	while((p = fts_read(file_systems)) != NULL)
@@ -96,7 +96,7 @@ Return file_list
 				char *tmp = (char *)realloc(runtime_path_prefix,(current_file_system->fts_pathlen + 1) * sizeof(char));
 				if(NULL == tmp)
 				{
-					slog(false,"Realloc error\n");
+					report("Memory allocation failed, requested size: %zu bytes", (current_file_system->fts_pathlen + 1) * sizeof(char));
 					status = FAILURE;
 					break;
 				} else {
@@ -176,7 +176,7 @@ Return file_list
 							// The file saved against the database has been read
 							// from the file system in its entirety
 							if(dbrow->saved_offset == 0){
-								// Relative path already in DB and doesn't need any change
+								// Relative path already in DB and doesn't require any change
 								break;
 							}
 						}
@@ -268,7 +268,7 @@ Return file_list
 						}
 					}
 
-					/* In any other case NO need to update DB record just insert the record */
+					/* In all other scenarios, insert the record directly without updating the existing database entry */
 					if(update_db == true)
 					{
 						/* Update record in DB */
@@ -325,7 +325,7 @@ Return file_list
 		if(count_size_of_all_files == true ||
 			(count_size_of_all_files == false && at_least_one_file_was_shown == true))
 		{
-			slog(false,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes),total_items,count_dirs,count_files,count_symlnks);
+			slog(EVERY,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes),total_items,count_dirs,count_files,count_symlnks);
 		}
 	}
 

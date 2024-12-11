@@ -34,7 +34,7 @@ Return sha512sum
 
 		fileptr = fopen(absolute_path, "rb");
 		if(fileptr == NULL){
-			slog(false,"Can open the file using neither relative %s nor absolute %s path\n",relative_path,absolute_path);
+			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path\n",relative_path,absolute_path);
 			status = FAILURE;
 			return(status);
 		}
