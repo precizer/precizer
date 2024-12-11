@@ -61,7 +61,7 @@ Return match_file_template(
 		status = match_pattern(result->mem, pattern);
 	}
 
-	#if 1
+	#if 0
 	write_to_temp_file(result->mem);
 	#endif
 
