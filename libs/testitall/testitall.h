@@ -154,12 +154,6 @@ Return write_to_temp_file(
 	const char *
 );
 
-Return diff(
-	const char *,
-	const char *,
-	char **
-);
-
 Return check_file_exists(
 	const char *
 );
