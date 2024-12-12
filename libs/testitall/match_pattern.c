@@ -101,9 +101,10 @@ Return match_pattern(
 						(int)(end - pos - 1), text + pos + 1);
 
 					echo(STDERR,
+						"Diff:\n %s\n" \
 						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" YELLOW \
 						"Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						text, pattern);
+						diff(text, pattern),text, pattern);
 
 					status = FAILURE;
 					break;
@@ -111,11 +112,26 @@ Return match_pattern(
 				break;
 			}
 #else
-				echo(STDERR, "ERROR: The pattern not match!\n" \
-					"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
-					YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-					text, pattern);
-				status = FAILURE;
+				{
+					char *comparition_result = NULL;
+					diff(text, pattern, &comparition_result);
+
+					const char *env_var = getenv("DETAILS");
+					if(env_var != NULL && strncmp(env_var, "true", sizeof("true") - 1) == 0)
+					{
+						echo(STDERR, "ERROR: The pattern not match!\n" \
+							"Diff:\n%s" \
+							"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+							YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
+							comparition_result, text, pattern);
+					} else {
+						echo(STDERR, "ERROR: The pattern not match!\n" \
+							"Diff:\n%s", comparition_result);
+					}
+
+					status = FAILURE;
+					free(comparition_result);
+				}
 				break;
 #endif
 			default:

@@ -35,19 +35,19 @@
 /**
  * @brief Prints a formatted header message if status check passes
  * @details Outputs the given message in cyan color if the status equals SUCCESS
- * 
+ *
  * @param msg The message to be printed (should include newline if needed)
- * 
+ *
  * @note Requires a 'status' variable to be in scope
  * @note Assumes SUCCESS is defined elsewhere in the codebase
- * 
+ *
  * @example
  * // Example usage:
  * HEADER("Preparations\n");
  */
 #define HEADER(msg) \
 	if(SUCCESS == status) { \
-		printf(CYAN msg); \
+		printf(CYAN msg RESET); \
 	}
 
 #define ASSERT(condition) \
@@ -151,6 +151,16 @@ Return replace_placeholder(
 );
 
 Return write_to_temp_file(
+	const char *
+);
+
+Return diff(
+	const char *,
+	const char *,
+	char **
+);
+
+Return check_file_exists(
 	const char *
 );
 
