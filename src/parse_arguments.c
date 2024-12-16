@@ -103,6 +103,7 @@ static struct argp_option options[] = {
 	 "old data will be deleted from the database and completely " \
 	 "overwritten by new ones.\n",0 },
 	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname\n",0 },
+	{"check-level",'l',"LEVEL",0,"Select database validation level: 'quick' (default) for basic structure check, 'full' for comprehensive integrity verification\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
 	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments " \
 	 "specifying paths to database files, e.g.:\n" BOLD " --compare database1.db database2.db" RESET "\n",0 },
@@ -187,6 +188,17 @@ static error_t parse_opt(
 		case 'f':
 			config->force = true;
 			break;
+		case 'l':
+			if(0 == strcasecmp(arg, "QUICK"))
+			{
+				config->db_check_level = QUICK;
+			} else if(0 == strcasecmp(arg, "FULL"))
+			{
+				config->db_check_level = FULL;
+			} else {
+				return ARGP_ERR_UNKNOWN;
+			}
+			break;
 		case 's':
 			// Global variable
 			rational_logger_mode = SILENT;
@@ -264,30 +276,41 @@ Return parse_arguments(
 		{
 			// The array with database names
 			config->db_file_paths = config->paths;
-
-			for(int j = 0; config->db_file_paths[j]; j++)
+			for(int j = 0; config->db_file_paths[j] && (SUCCESS == status); j++)
 			{
-				// Extract file name from a path
-				char *tmp = (char *)calloc(strlen(config->db_file_paths[j]) + 1,sizeof(char));
-
-				if(tmp != NULL)
+				// Create a copy of the path string for basename
+				char *tmp = strdup(config->db_file_paths[j]);
+				if(tmp == NULL)
 				{
-					strcpy(tmp,config->db_file_paths[j]);
-					char *db_file_basename = basename(tmp);
-					status = add_string_to_array(&config->db_file_names,db_file_basename);
-					free(tmp);
-
-					if(status != SUCCESS)
-					{
-						return(status);
-					}
-				} else {
-					report("Memory allocation failed, requested size: %zu bytes",strlen(config->db_file_paths[j]) + 1 * sizeof(char));
+					report("Failed to duplicate string: %s", config->db_file_paths[j]);
 					status = FAILURE;
-					return(status);
+					break;
+				}
+
+				// Get basename and handle possible NULL return
+				char *db_file_basename = basename(tmp);
+				if(db_file_basename == NULL)
+				{
+					report("basename failed for path: %s", tmp);
+					free(tmp);
+					status = FAILURE;
+					break;
+				}
+
+				status = add_string_to_array(&config->db_file_names, db_file_basename);
+				free(tmp);
+
+				if(SUCCESS != status)
+				{
+					break;
 				}
 			}
 		}
+	}
+
+	if(SUCCESS != status)
+	{
+		return(status);
 	}
 
 	if(rational_logger_mode & TESTING)
@@ -351,48 +374,45 @@ Return parse_arguments(
 			printf("\n");
 		}
 
+		if(config->db_check_level != QUICK)
+		{
+			slog(TESTING,"argument:db_check_level=%s\n",config->db_check_level == QUICK ? "QUICK" : "FULL");
+		}
+
 		if(config->verbose)
 		{
 			slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
 		}
-		;
 
 		if(config->force)
 		{
 			slog(TESTING,"argument:force=%s\n",config->force ? "yes" : "no");
 		}
-		;
 
 		if(config->update)
 		{
 			slog(TESTING,"argument:update=%s\n",config->update ? "yes" : "no");
 		}
-		;
 
 		if(config->progress)
 		{
 			slog(TESTING,"argument:progress=%s\n",config->progress ? "yes" : "no");
 		}
-		;
 
 		if(config->compare)
 		{
 			slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
 		}
-		;
 
 		if(config->db_clean_ignored)
 		{
 			slog(TESTING,"argument:db_clean_ignored=%s\n",config->db_clean_ignored ? "yes" : "no");
 		}
-		;
 
 		if(config->dry_run)
 		{
 			slog(TESTING,"argument:dry-run=%s\n",config->dry_run ? "yes" : "no");
 		}
-		;
-
 	} else {
 
 		// Verbose but NOT silent
@@ -457,7 +477,7 @@ Return parse_arguments(
 				}
 				printf("; ");
 			}
-			printf("verbose=%s; silent=no; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, rational_logger_mode=%s",
+			printf("verbose=%s; silent=no; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, db_check_level=%s, rational_logger_mode=%s",
 				config->verbose ? "yes" : "no",
 				config->force ? "yes" : "no",
 				config->update ? "yes" : "no",
@@ -465,6 +485,7 @@ Return parse_arguments(
 				config->compare ? "yes" : "no",
 				config->db_clean_ignored ? "yes" : "no",
 				config->dry_run ? "yes" : "no",
+				config->db_check_level == QUICK ? "QUICK" : "FULL",
 				rational_reconvert(rational_logger_mode));
 			printf("\n");
 		}
