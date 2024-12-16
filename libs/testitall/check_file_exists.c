@@ -3,36 +3,35 @@
  * @brief File existence verification functionality
  */
 
-#ifndef FILE_CHECK_H
-#define FILE_CHECK_H
-
 #include "testitall.h"
 
 /**
  * @brief Checks if a file exists
  *
  * @param[in] filename    Path to the file to check
+ * @param[in] file_exists True if the file exists of false if not
  *
  * @return Return status indicating the result of operation:
- *         - SUCCESS if file exists
- *         - FAILURE if file doesn't exist or path is invalid
+ *         - SUCCESS if finished successfully
+ *         - FAILURE if any error
  */
 Return check_file_exists(
+	bool *file_exists,
 	const char* filename
 ){
 	Return status = SUCCESS;
+
+	*file_exists = false;
 
 	if(NULL == filename)
 	{
 		return(FAILURE);
 	}
 
-	if(0 != access(filename, F_OK))
+	if(0 == access(filename, F_OK))
 	{
-		status = FAILURE;
+		*file_exists = true;
 	}
 
 	return(status);
 }
-
-#endif /* FILE_CHECK_H */
