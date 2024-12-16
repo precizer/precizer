@@ -27,6 +27,8 @@ Return db_file_validate_existence(void){
 	// DB file exists or not
 	config->db_file_exists = false;
 
+	// The variable is defined in db_determine_name()
+	// and must not be empty
 	if(config->db_file_path == NULL)
 	{
 		status = FAILURE;
