@@ -40,9 +40,10 @@ int main(void){
 	TEST(test0003,"Comply default DB name to \"hostname.db\" template…");
 	TEST(test0011,"User's Manual and examples from README test set…");
 	TEST(test0013,"Dry Run mode testing…");
+	TEST(test0014,"Short, long, relative and absolute paths…");
 
 	HEADER("\nClean results\n");
-	RUN(clean,"Cleaning all results…");
+	RUN(clean,"Temporary data cleanup…");
 
 	TESTFINISH(finish,"Telemetry");
 
