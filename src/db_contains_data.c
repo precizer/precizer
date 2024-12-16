@@ -53,41 +53,45 @@ Return db_contains_data(void){
 		status = FAILURE;
 	}
 
-	/* Execute the query and process results */
-	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
+	if(SUCCESS == status)
 	{
-		sqlite3_int64 rows = -1;
-		rows = sqlite3_column_int64(select_stmt,0);
-
-		if(rows > 0)
+		/* Execute the query and process results */
+		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
-			config->db_contains_data = true;
+			sqlite3_int64 rows = -1;
+			rows = sqlite3_column_int64(select_stmt,0);
+
+			if(rows > 0)
+			{
+				config->db_contains_data = true;
+			}
+		}
+
+		/* Check for query execution errors */
+		if(SQLITE_DONE != rc)
+		{
+			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			status = FAILURE;
 		}
 	}
-
-	/* Check for query execution errors */
-	if(SQLITE_DONE != rc)
-	{
-		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
-		status = FAILURE;
-	}
-
 	sqlite3_finalize(select_stmt);
 
-	/* Handle existing database case */
-	if(config->db_contains_data == true)
+	if(SUCCESS == status)
 	{
-		if(config->update == true)
+		/* Handle existing database case */
+		if(config->db_contains_data == true)
 		{
-			slog(TRACE,"The database %s has already been created previously\n",config->db_file_name);
-		} else {
-			slog(EVERY,"The database %s was previously created and already contains data with files and their checksums." \
-				" Use the " BOLD "--update" RESET " option only when you are certain" \
-				" that the database needs to be updated and when file information" \
-				" (including changes, deletions, and additions) should be synchronized" \
-				" with the database.\n",config->db_file_name);
-			status = FAILURE;
-			return(status);
+			if(config->update == true)
+			{
+				slog(TRACE,"The database %s has already been created previously\n",config->db_file_name);
+			} else {
+				slog(EVERY,"The database %s was previously created and already contains data with files and their checksums." \
+					" Use the " BOLD "--update" RESET " option only when you are certain" \
+					" that the database needs to be updated and when file information" \
+					" (including changes, deletions, and additions) should be synchronized" \
+					" with the database.\n",config->db_file_name);
+				status = FAILURE;
+			}
 		}
 	}
 
