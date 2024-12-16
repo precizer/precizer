@@ -10,8 +10,7 @@
  * will be the hostname and ".db" as the filename extension
  *
  */
-Return db_determine_name(void)
-{
+Return db_determine_name(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -25,6 +24,7 @@ Return db_determine_name(void)
 			// In-memory database
 			const char *inmemory_db_path = ":memory:";
 			config->db_file_path = strdup(inmemory_db_path);
+
 			if(config->db_file_path == NULL)
 			{
 				report("Memory allocation failed for config->db_file_path");
@@ -34,16 +34,17 @@ Return db_determine_name(void)
 			if(SUCCESS == status)
 			{
 				config->db_file_name = strdup(INMEMORY_DB_NAME);
+
 				if(config->db_file_name == NULL)
 				{
 					report("Memory allocation failed for config->db_file_name");
 					free(config->db_file_path);
 					config->db_file_path = NULL;
-					status = FAILURE;
+					status               = FAILURE;
 				}
 			}
 		} else {
-			slog(ERROR, "General failure. config->db_file_path should be NULL in that case");
+			slog(ERROR,"General failure. config->db_file_path should be NULL in that case");
 			status = FAILURE;
 		}
 
@@ -55,19 +56,19 @@ Return db_determine_name(void)
 			config->db_file_name = NULL;
 
 			struct utsname utsname;
-			memset(&utsname, 0, sizeof(utsname));
+			memset(&utsname,0,sizeof(utsname));
 
 			// Determine local host name
 			if(uname(&utsname) != 0)
 			{
-				slog(ERROR, "Failed to get hostname\n");
+				slog(ERROR,"Failed to get hostname\n");
 				status = FAILURE;
 			}
 
 			if(SUCCESS == status)
 			{
 				// Create temporary string with full path
-				if(asprintf(&config->db_file_path, "%s.db", utsname.nodename) == -1)
+				if(asprintf(&config->db_file_path,"%s.db",utsname.nodename) == -1)
 				{
 					report("Failed to allocate memory for database path");
 					status = FAILURE;
@@ -78,12 +79,13 @@ Return db_determine_name(void)
 			{
 				// Copy the same path to db_file_name
 				config->db_file_name = strdup(config->db_file_path);
+
 				if(config->db_file_name == NULL)
 				{
-					report("Memory allocation failed, requested size: %zu bytes", strlen(config->db_file_path) + 1 * sizeof(char));
+					report("Memory allocation failed, requested size: %zu bytes",strlen(config->db_file_path) + 1 * sizeof(char));
 					free(config->db_file_path);
 					config->db_file_path = NULL;
-					status = FAILURE;
+					status               = FAILURE;
 				}
 			}
 		}

@@ -17,8 +17,7 @@
  *         - MODIFICATION_TIME_CHANGED
  *         - CREATION_TIME_CHANGED
  */
-int compare_file_metadata_equivalence
-(
+int compare_file_metadata_equivalence(
 	const struct stat *source,
 	const struct stat *destination
 ){
@@ -39,7 +38,7 @@ int compare_file_metadata_equivalence
 
 	/* Modified timestamp */
 	if(!(source->st_mtim.tv_sec == destination->st_mtim.tv_sec &&
-			source->st_mtim.tv_nsec == destination->st_mtim.tv_nsec))
+	        source->st_mtim.tv_nsec == destination->st_mtim.tv_nsec))
 	{
 		result += MODIFICATION_TIME_CHANGED;
 
@@ -47,7 +46,7 @@ int compare_file_metadata_equivalence
 
 	/* Time of last status change  */
 	if(!(source->st_ctim.tv_sec == destination->st_ctim.tv_sec &&
-			source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
+	        source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
 	{
 		result += CREATION_TIME_CHANGED;
 

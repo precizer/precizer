@@ -10,7 +10,7 @@
  *
  */
 Return detect_a_path(
-	const char *path,
+	const char          *path,
 	const unsigned char fs_object_type
 ){
 	/// The status that will be passed to return() before exiting.
@@ -28,7 +28,7 @@ Return detect_a_path(
 	slog(TRACE,"Verify that the path %s exists\n",path);
 
 	// Check for existence
-	if(stat(path, &stats) == 0)
+	if(stat(path,&stats) == 0)
 	{
 		// Check is it a directory or a file
 		if(fs_object_type == SHOULD_BE_A_FILE)
@@ -77,8 +77,7 @@ Return detect_a_path(
  *
  */
 
-Return detect_paths(void)
-{
+Return detect_paths(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -96,7 +95,7 @@ Return detect_paths(void)
 		slog(TRACE,"Checking directory paths provided as arguments\n");
 	}
 
-	for (int i = 0; config->paths[i]; i++)
+	for(int i = 0; config->paths[i]; i++)
 	{
 		if(SUCCESS != (status = detect_a_path(config->paths[i],SHOULD_BE_A_DIRECTORY)))
 		{

@@ -6,8 +6,7 @@
  * Initialization the structure elements by zerro.
  *
  */
-void init_config(void)
-{
+void init_config(void){
 
 	// Fill out with zerroes
 	memset(config,0,sizeof(Config));
@@ -117,7 +116,7 @@ void init_config(void)
 	const char *env_var = getenv("TESTING");
 
 	// Check if it exists and compare it to "true"
-	if(env_var != NULL && strncmp(env_var, compare_string, sizeof(compare_string) - 1) == 0)
+	if(env_var != NULL && strncmp(env_var,compare_string,sizeof(compare_string) - 1) == 0)
 	{
 		// Global variable
 		rational_logger_mode = TESTING;
