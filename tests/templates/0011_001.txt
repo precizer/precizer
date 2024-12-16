@@ -150,5 +150,6 @@ TESTING:Current directory: .*$
 TESTING:Comparison mode is enabled. Main database verification is not required
 TESTING:Compare mode is enabled. Database verification for :memory: is skipped
 TESTING:Comparing databases. Directory path verification is not required
+TESTING:Comparison mode is enabled. The main database does not require cleanup
 TESTING:Compare mode is enabled. Vacuuming is not required for the main database
 TESTING:The precizer completed its execution without any issues\z
