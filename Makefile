@@ -158,7 +158,12 @@ endif
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug prep release remake clang openmp one test sanitize banner run $(SUBDIRS)
+#
+# Code formatting settings
+#
+UNCRUSTIFY_CFG = Uncrustify.cfg
+
+.PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format $(SUBDIRS)
 
 # Default build
 all: $(SUBDIRS) release
@@ -227,6 +232,17 @@ $(RELOBJDIR)/%.o: $(SRC)/%.c
 	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
 	@echo $<" compiled."
 
+#
+# Format rules
+#
+format:
+	@echo "Formatting source files..."
+	@for file in $(SRCS) $(HDRS); do \
+		echo "Formatting $$file"; \
+		uncrustify -c $(UNCRUSTIFY_CFG) --replace --no-backup $$file; \
+	done
+	@echo "All files formatted."
+
 # Optional preprocessor files
 %.i:%.c clean-preproc
 	@$(CC) -E -C -o $@ $(INCPATH) $(RELINCPATH) $(CFLAGS) $<
@@ -275,6 +291,11 @@ helgrind: debug
 massif: debug
 	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)
 	ms_print ./massif.out.*
+
+SPARSE=sparse
+SPARSE_FLAGS=-Wsparse-all -nostdinc
+sparse-analyzer:
+	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(WFLAGS) $(src);)
 
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
