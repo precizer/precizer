@@ -8,11 +8,10 @@
  * Checks whether PCRE2 regular expression matches a comparison string or not
  *
  */
-REGEXP regexp_match
-(
+REGEXP regexp_match(
 	const char *regexp,
 	const char *relative_path,
-	bool *showed_once
+	bool       *showed_once
 ){
 	bool match = false;
 
@@ -25,44 +24,45 @@ REGEXP regexp_match
 	/* for pcre2_match */
 	int rc;
 #if 0
-	PCRE2_SIZE* ovector;
+	PCRE2_SIZE *ovector;
 #endif
 
-	const unsigned char *pattern = (const unsigned char*)regexp;
-	size_t pattern_size = strlen(regexp);
+	const unsigned char *pattern = (const unsigned char *)regexp;
+	size_t pattern_size          = strlen(regexp);
 
-	const unsigned char *subject = (const unsigned char*)relative_path;
-	size_t subject_size = strlen(relative_path);
-	uint32_t options = 0;
+	const unsigned char *subject = (const unsigned char *)relative_path;
+	size_t subject_size          = strlen(relative_path);
+	uint32_t options             = 0;
 
 	pcre2_match_data *match_data;
 	uint32_t ovecsize = 128;
 
-	re = pcre2_compile(pattern, pattern_size, options, &errcode, &erroffset, NULL);
-	if (re == NULL)
+	re = pcre2_compile(pattern,pattern_size,options,&errcode,&erroffset,NULL);
+
+	if(re == NULL)
 	{
 		if(*showed_once == false)
 		{
 			*showed_once = true;
-			pcre2_get_error_message(errcode, buffer, 127);
+			pcre2_get_error_message(errcode,buffer,127);
 			slog(ERROR,"PCRE2 regular expression %s has an error:%d %s\n",pattern,errcode,buffer);
 		}
 		return(REGEXP_ERROR);
 	}
 
-	match_data = pcre2_match_data_create(ovecsize, NULL);
-	rc = pcre2_match(re, subject, subject_size, 0, options, match_data, NULL);
+	match_data = pcre2_match_data_create(ovecsize,NULL);
+	rc         = pcre2_match(re,subject,subject_size,0,options,match_data,NULL);
+
 	if(rc == 0)
 	{
 		if(*showed_once == false)
 		{
 			*showed_once = true;
-			pcre2_get_error_message(errcode, buffer, 127);
+			pcre2_get_error_message(errcode,buffer,127);
 			slog(ERROR,"PCRE2 regular expression %s has an error: %d \"offset vector too small\"\n",pattern,rc);
 		}
 		return(REGEXP_ERROR);
-	}
-	else if(rc > 0)
+	} else if(rc > 0)
 	{
 #if 0
 		ovector = pcre2_get_ovector_pointer(match_data);
@@ -72,14 +72,14 @@ REGEXP regexp_match
 		{
 #if 0
 			PCRE2_SPTR start = subject + ovector[2*i];
-			PCRE2_SIZE slen = ovector[2*i+1] - ovector[2*i];
-			printf( "%2ld: %.*s\n", i, (int)slen, (const char *)start );
+			PCRE2_SIZE slen  = ovector[2*i+1] - ovector[2*i];
+			printf( "%2ld: %.*s\n",i,(int)slen,(const char *)start );
 #endif
 			match = true;
 		}
 	}
 #if 0
-	else if (rc < 0)
+	else if(rc < 0)
 	{
 		printf("No match\n");
 	}

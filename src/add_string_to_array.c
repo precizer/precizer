@@ -19,7 +19,7 @@
  *
  */
 Return add_string_to_array(
-	char ***array_ptr,
+	char       ***array_ptr,
 	const char *new_string
 ){
 	/// The status that will be passed to return() before exiting.
@@ -27,21 +27,26 @@ Return add_string_to_array(
 	Return status = SUCCESS;
 
 	// Calculate the size of the current string array
-	size_t size = 0;
+	size_t size  = 0;
 	char **array = *array_ptr;
-	if (array != NULL) {
-		while (array[size] != NULL) {
+
+	if(array != NULL)
+	{
+		while(array[size] != NULL)
+		{
 			size++;
 		}
 	}
 
 	// Increase the size of the array by 1 and copy existing strings into it
 	// Use a temporary variable to realloc the array
-	char **tmp = (char **)realloc(array, (size + 2) * sizeof(char *));
+	char **tmp = (char **)realloc(array,(size + 2) * sizeof(char *));
+
 	if(tmp == NULL)
 	{
 		// Reallocation failed, free the original array
-		report("Memory allocation failed, requested size: %zu bytes", (size + 2) * sizeof(char *));
+		report("Memory allocation failed, requested size: %zu bytes",(size + 2) * sizeof(char *));
+
 		for(size_t i = 0; i < size; i++)
 		{
 			free(array[i]);
@@ -55,8 +60,10 @@ Return add_string_to_array(
 	// Allocate memory for the new string and copy the new string into it
 	array[size] = (char *)malloc((strlen(new_string) + 1) * sizeof(char));
 
-	if (array[size] == NULL) {
-		report("Memory allocation failed, requested size: %zu bytes", (strlen(new_string) + 1) * sizeof(char));
+	if(array[size] == NULL)
+	{
+		report("Memory allocation failed, requested size: %zu bytes",(strlen(new_string) + 1) * sizeof(char));
+
 		// Reallocation failed, free the original array
 		for(size_t i = 0; i < size; i++)
 		{
@@ -66,7 +73,7 @@ Return add_string_to_array(
 		return(FAILURE);
 	}
 
-	strcpy(array[size], new_string);
+	strcpy(array[size],new_string);
 
 	// Set the last element to NULL
 	array[size + 1] = NULL;

@@ -34,7 +34,10 @@ Config *config = &_config;
  * same sources over different times.
  *
  */
-int main(int argc,char **argv){
+int main(
+	int  argc,
+	char **argv
+){
 
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -79,16 +82,16 @@ int main(int argc,char **argv){
 	// Check up the integrity of database file
 	run(db_test(config->db_file_path));
 
-	// Check up if the paths that passed as arguments
-	// exactly the same as saved against the database
-	run(db_check_up_paths());
+	// Verify that the provided path arguments match
+	// the paths stored in the database
+	run(db_validate_paths());
 
 	// Save new prefixes that has been passed as
 	// arguments
-	run(db_save_prefixes_into());
+	run(db_save_prefixes());
 
-	// Check up the paths passed as arguments and make sure
-	// that they are directories and exist
+	// Verify that the provided paths exist and
+	// are directories
 	run(detect_paths());
 
 	// Just get a statistic
@@ -99,7 +102,7 @@ int main(int argc,char **argv){
 
 	// Update the database. Remove files that
 	// no longer exist.
-	run(db_delete_missing_files_from());
+	run(db_delete_missing_metadata());
 
 	// Optimizing the space occupied by a database file.
 	run(db_vacuum());

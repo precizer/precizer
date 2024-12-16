@@ -43,17 +43,16 @@ static void print_mtim(
  * @arg @c metadata_of_scanned_and_saved_files Code of changes in file metadata
  *
  */
-void show_relative_path
-(
-	const char *relative_path,
-	const int *metadata_of_scanned_and_saved_files,
-	const DBrow *dbrow,
+void show_relative_path(
+	const char        *relative_path,
+	const int         *metadata_of_scanned_and_saved_files,
+	const DBrow       *dbrow,
 	const struct stat *fts_statp,
-	bool *first_iteration,
-	bool *show_changes,
-	bool *rehashig_from_the_beginning,
-	const bool *ignored,
-	bool *at_least_one_file_was_shown
+	bool              *first_iteration,
+	bool              *show_changes,
+	bool              *rehashig_from_the_beginning,
+	const bool        *ignored,
+	bool              *at_least_one_file_was_shown
 ){
 	if(*first_iteration == true)
 	{
@@ -66,11 +65,11 @@ void show_relative_path
 				slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
 			}
 
-			slog(EVERY, BOLD "These files have been added or changed and those changes will be reflected against the DB %s:" RESET "\n",config->db_file_name);
+			slog(EVERY,BOLD "These files have been added or changed and those changes will be reflected against the DB %s:" RESET "\n",config->db_file_name);
 
 		} else {
 			*show_changes = false;
-			slog(EVERY, BOLD "These files will be added against the %s database:" RESET "\n",config->db_file_name);
+			slog(EVERY,BOLD "These files will be added against the %s database:" RESET "\n",config->db_file_name);
 		}
 	}
 
@@ -95,10 +94,11 @@ void show_relative_path
 				if(*show_changes == true)
 				{
 					if(*metadata_of_scanned_and_saved_files != IDENTICAL
-						&& dbrow->relative_path_already_in_db == true)
+					        && dbrow->relative_path_already_in_db == true)
 					{
 						printf(" changed ");
-						switch(*metadata_of_scanned_and_saved_files) {
+
+						switch(*metadata_of_scanned_and_saved_files){
 							case 1:
 								printf("size");
 								print_size(&dbrow->saved_stat,fts_statp);
@@ -141,7 +141,7 @@ void show_relative_path
 								break;
 						}
 					} else {
-						if (dbrow->relative_path_already_in_db == true)
+						if(dbrow->relative_path_already_in_db == true)
 						{
 							printf(" updating");
 						} else {

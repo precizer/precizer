@@ -4,8 +4,7 @@
  * @brief Gets corresponding string based on provided code
  * @return Pointer to selected string constant
  */
-static const char* get_flag_string_by_code(void)
-{
+static const char *get_flag_string_by_code(void){
 	switch(config->sqlite_open_flag)
 	{
 		case SQLITE_OPEN_READONLY:
@@ -33,8 +32,7 @@ static const char* get_flag_string_by_code(void)
  * @brief Gets corresponding string based on provided code
  * @return Pointer to selected string constant
  */
-static const char* get_initialize_string_by_code(void)
-{
+static const char *get_initialize_string_by_code(void){
 	if(config->db_initialize_tables == true)
 	{
 		return "true";
@@ -54,8 +52,7 @@ static const char* get_initialize_string_by_code(void)
  * @brief Define the database operation mode
  *
  */
-Return db_determine_mode(void)
-{
+Return db_determine_mode(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -145,8 +142,8 @@ Return db_determine_mode(void)
 		}
 	}
 
-	slog(TRACE,"Final value for config->sqlite_open_flag: %s\n", get_flag_string_by_code());
-	slog(TRACE,"Final value for config->db_initialize_tables: %s\n", get_initialize_string_by_code());
+	slog(TRACE,"Final value for config->sqlite_open_flag: %s\n",get_flag_string_by_code());
+	slog(TRACE,"Final value for config->db_initialize_tables: %s\n",get_initialize_string_by_code());
 
 	slog(TRACE,"DB mode determined\n");
 

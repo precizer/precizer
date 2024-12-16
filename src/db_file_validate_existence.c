@@ -17,8 +17,7 @@
  * @see config->db_file_exists
  * @see config->db_file_path
  */
-Return db_file_validate_existence(void)
-{
+Return db_file_validate_existence(void){
 	/** @var Return status
 	 *  @brief The status that will be passed to return() before exiting
 	 *  @details By default, the function worked without errors

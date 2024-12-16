@@ -7,10 +7,9 @@
  * expressions passed as arguments with --include=
  *
  */
-Include include
-(
+Include include(
 	const char *relative_path,
-	bool *include_showed_once
+	bool       *include_showed_once
 ){
 	if(config->include == NULL)
 	{
@@ -27,7 +26,8 @@ Include include
 			// Include that file
 			return(INCLUDE);
 
-		} else if(REGEXP_ERROR == result){
+		} else if(REGEXP_ERROR == result)
+		{
 
 			return(FAIL_REGEXP_INCLUDE);
 
