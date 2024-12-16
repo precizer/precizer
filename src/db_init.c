@@ -6,8 +6,7 @@
  * Initialize SQLite database
  *
  */
-Return db_init(void)
-{
+Return db_init(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -21,16 +20,17 @@ Return db_init(void)
 
 	if(config->sqlite_open_flag == SQL_DRY_RUN_MODE)
 	{
-		db_file_path = ":memory:";
+		db_file_path             = ":memory:";
 		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 		slog(TRACE,"Dry Run mode was activated. In-memory database will be used to simulate activity.\n");
 	}
 
-	if(SQLITE_OK == (rc = sqlite3_open_v2(db_file_path, &config->db, config->sqlite_open_flag, NULL)))
+	if(SQLITE_OK == (rc = sqlite3_open_v2(db_file_path,&config->db,config->sqlite_open_flag,NULL)))
 	{
 		slog(TRACE,"Successfully opened database %s\n",config->db_file_name);
-	} else if(config->compare != true){
-		slog(ERROR,"Can't open database %s (%i): %s\n", config->db_file_path, rc, sqlite3_errmsg(config->db));
+	} else if(config->compare != true)
+	{
+		slog(ERROR,"Can't open database %s (%i): %s\n",config->db_file_path,rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -66,47 +66,49 @@ Return db_init(void)
 
 #if 0 // Frozen multiPATH feature
 		const char *sql = "PRAGMA foreign_keys=OFF;" \
-		                  "BEGIN TRANSACTION;" \
-		                  "CREATE TABLE IF NOT EXISTS files("  \
-		                  "ID INTEGER PRIMARY KEY NOT NULL," \
-		                  "offset INTEGER DEFAULT NULL," \
-		                  "path_prefix_index INTEGER NOT NULL," \
-		                  "relative_path TEXT NOT NULL," \
-		                  "sha512 BLOB DEFAULT NULL," \
-		                  "stat BLOB DEFAULT NULL," \
-		                  "mdContext BLOB DEFAULT NULL," \
-		                  "CONSTRAINT full_path UNIQUE (path_prefix_index, relative_path) ON CONFLICT FAIL);" \
-		                  "CREATE INDEX IF NOT EXISTS full_path_ASC ON files (path_prefix_index, relative_path ASC);" \
-		                  "CREATE TABLE IF NOT EXISTS paths (" \
-		                  "ID INTEGER PRIMARY KEY UNIQUE NOT NULL," \
-		                  "prefix TEXT NOT NULL UNIQUE);" \
-		                  "COMMIT;";
+		        "BEGIN TRANSACTION;" \
+		        "CREATE TABLE IF NOT EXISTS files("  \
+		        "ID INTEGER PRIMARY KEY NOT NULL," \
+		        "offset INTEGER DEFAULT NULL," \
+		        "path_prefix_index INTEGER NOT NULL," \
+		        "relative_path TEXT NOT NULL," \
+		        "sha512 BLOB DEFAULT NULL," \
+		        "stat BLOB DEFAULT NULL," \
+		        "mdContext BLOB DEFAULT NULL," \
+		        "CONSTRAINT full_path UNIQUE (path_prefix_index, relative_path) ON CONFLICT FAIL);" \
+		        "CREATE INDEX IF NOT EXISTS full_path_ASC ON files (path_prefix_index, relative_path ASC);" \
+		        "CREATE TABLE IF NOT EXISTS paths (" \
+		        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL," \
+		        "prefix TEXT NOT NULL UNIQUE);" \
+		        "COMMIT;";
 #endif
 
 		/* Full runtime path is stored in the table 'paths' */
 		const char *sql = "PRAGMA foreign_keys=OFF;" \
-		                  "BEGIN TRANSACTION;" \
-		                  "CREATE TABLE IF NOT EXISTS files("  \
-		                  "ID INTEGER PRIMARY KEY NOT NULL," \
-		                  "offset INTEGER DEFAULT NULL," \
-		                  "relative_path TEXT UNIQUE NOT NULL," \
-		                  "sha512 BLOB DEFAULT NULL," \
-		                  "stat BLOB DEFAULT NULL," \
-		                  "mdContext BLOB DEFAULT NULL);" \
-		                  "CREATE UNIQUE INDEX IF NOT EXISTS 'TEXT_ASC' ON 'files' ('relative_path' ASC);" \
-		                  "CREATE TABLE IF NOT EXISTS paths (" \
-		                  "ID INTEGER PRIMARY KEY UNIQUE NOT NULL," \
-		                  "prefix TEXT NOT NULL UNIQUE);" \
-		                  "COMMIT;";
+		        "BEGIN TRANSACTION;" \
+		        "CREATE TABLE IF NOT EXISTS files("  \
+		        "ID INTEGER PRIMARY KEY NOT NULL," \
+		        "offset INTEGER DEFAULT NULL," \
+		        "relative_path TEXT UNIQUE NOT NULL," \
+		        "sha512 BLOB DEFAULT NULL," \
+		        "stat BLOB DEFAULT NULL," \
+		        "mdContext BLOB DEFAULT NULL);" \
+		        "CREATE UNIQUE INDEX IF NOT EXISTS 'TEXT_ASC' ON 'files' ('relative_path' ASC);" \
+		        "CREATE TABLE IF NOT EXISTS paths (" \
+		        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL," \
+		        "prefix TEXT NOT NULL UNIQUE);" \
+		        "COMMIT;";
 
 		if(SUCCESS == status)
 		{
 			/* Execute SQL statement */
-			rc = sqlite3_exec(config->db, sql, NULL, NULL, NULL);
-			if(rc == SQLITE_OK ){
+			rc = sqlite3_exec(config->db,sql,NULL,NULL,NULL);
+
+			if(rc == SQLITE_OK)
+			{
 				slog(TRACE,"The main database and tables have been successfully initialized\n");
 			} else {
-				slog(ERROR,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+				slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 		}
@@ -114,33 +116,37 @@ Return db_init(void)
 
 	// Tune the DB performance
 	const char *pragma_sql = "PRAGMA page_size = 4096;" \
-	                         "PRAGMA cache_size = 524288;" \
-	                         "PRAGMA journal_mode = OFF;" \
-	                         "PRAGMA synchronous = OFF;";
+	        "PRAGMA cache_size = 524288;" \
+	        "PRAGMA journal_mode = OFF;" \
+	        "PRAGMA synchronous = OFF;";
 
 	if(SUCCESS == status)
 	{
 		// Set SQLite pragmas
-		rc = sqlite3_exec(config->db, pragma_sql, NULL, NULL, NULL);
-		if(rc == SQLITE_OK ){
+		rc = sqlite3_exec(config->db,pragma_sql,NULL,NULL,NULL);
+
+		if(rc == SQLITE_OK)
+		{
 			slog(TRACE,"The main database named %s is ready for operations\n",config->db_file_name);
 		} else {
-			slog(ERROR,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 	}
 
 	const char *db_runtime_paths = "ATTACH DATABASE ':memory:' AS " DB_RUNTIME_PATHS_ID ";" \
-	                          "CREATE TABLE if not exists runtime_paths_id.the_path_id_does_not_exists" \
-	                          "(path_id INTEGER UNIQUE NOT NULL);";
+	        "CREATE TABLE if not exists runtime_paths_id.the_path_id_does_not_exists" \
+	        "(path_id INTEGER UNIQUE NOT NULL);";
 
 	if(SUCCESS == status)
 	{
-		rc = sqlite3_exec(config->db, db_runtime_paths, NULL, NULL, NULL);
-		if(rc == SQLITE_OK ){
-			slog(TRACE,"The in-memory %s database successfully attached to the main database %s\n", DB_RUNTIME_PATHS_ID, config->db_file_name);
+		rc = sqlite3_exec(config->db,db_runtime_paths,NULL,NULL,NULL);
+
+		if(rc == SQLITE_OK)
+		{
+			slog(TRACE,"The in-memory %s database successfully attached to the main database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
 		} else {
-			slog(ERROR,"Can't execute (%i): %s\n", rc, sqlite3_errmsg(config->db));
+			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 	}

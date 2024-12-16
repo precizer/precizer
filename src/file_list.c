@@ -6,11 +6,8 @@
  * Traverses a directory recursively and returns
  * a struct for each file it encounters
  *
-*/
-Return file_list
-(
-	bool count_size_of_all_files
-){
+ */
+Return file_list(bool count_size_of_all_files){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -21,28 +18,30 @@ Return file_list
 		return(status);
 	}
 
-	if(config->progress == false && count_size_of_all_files == true){
+	if(config->progress == false && count_size_of_all_files == true)
+	{
 		// Don't do anything
 		return(status);
 	}
 
 	// Flags that reflect the presence of any changes
 	// since the last research
-	bool first_iteration = true;
-	bool show_changes = true;
-	bool ignore_showed_once = false;
-	bool include_showed_once = false;
+	bool first_iteration             = true;
+	bool show_changes                = true;
+	bool ignore_showed_once          = false;
+	bool include_showed_once         = false;
 	bool at_least_one_file_was_shown = false;
 
 	FTS *file_systems = NULL;
-	FTSENT *p = NULL;
-	FTSENT *child = NULL;
+	FTSENT *p         = NULL;
+	FTSENT *child     = NULL;
 
 	int fts_options = FTS_PHYSICAL | FTS_XDEV;
 
-	size_t count_files = 0, count_dirs = 0, count_symlnks = 0;
+	size_t count_files = 0,count_dirs = 0,count_symlnks = 0;
 
-	if ((file_systems = fts_open(config->paths, fts_options, NULL)) == NULL) {
+	if((file_systems = fts_open(config->paths,fts_options,NULL)) == NULL)
+	{
 		report("fts_open() error\n");
 		status = FAILURE;
 		fts_close(file_systems);
@@ -50,9 +49,11 @@ Return file_list
 	}
 
 	// Initialize the file systems using as many argv[] components as possible
-	child = fts_children(file_systems, 0);
-	if (child == NULL) {
-		 // No files to traverse
+	child = fts_children(file_systems,0);
+
+	if(child == NULL)
+	{
+		// No files to traverse
 		fts_close(file_systems);
 		return(status);
 	}
@@ -62,7 +63,7 @@ Return file_list
 	 * We are only interested in relative paths in the database.
 	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
-	char *runtime_path_prefix = NULL;
+	char *runtime_path_prefix   = NULL;
 	FTSENT *current_file_system = child;
 
 #if 0 // Old multiPATH solution
@@ -77,26 +78,29 @@ Return file_list
 	// Limit recursion to the depth determined in config->maxdepth
 	if(config->maxdepth > -1)
 	{
-		slog(EVERY,"Recursion depth limited to: %d\n", config->maxdepth);
+		slog(EVERY,"Recursion depth limited to: %d\n",config->maxdepth);
 	}
 
 	while((p = fts_read(file_systems)) != NULL)
 	{
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */
-		if(global_interrupt_flag == true){
+		if(global_interrupt_flag == true)
+		{
 			break;
 		}
 
-		if (count_size_of_all_files == false)
+		if(count_size_of_all_files == false)
 		{
 			/* Get absolute path prefix from FTSENT structure and current runtime path */
-			if (p == current_file_system){
+			if(p == current_file_system)
+			{
 				// All below run once per new path prefix
 				char *tmp = (char *)realloc(runtime_path_prefix,(current_file_system->fts_pathlen + 1) * sizeof(char));
+
 				if(NULL == tmp)
 				{
-					report("Memory allocation failed, requested size: %zu bytes", (current_file_system->fts_pathlen + 1) * sizeof(char));
+					report("Memory allocation failed, requested size: %zu bytes",(current_file_system->fts_pathlen + 1) * sizeof(char));
 					status = FAILURE;
 					break;
 				} else {
@@ -113,6 +117,7 @@ Return file_list
 				current_file_system = current_file_system->fts_link;
 
 #if 0 // Old multiPATH solution
+
 				// If several paths were passed as arguments,
 				// then the counting of the path prefix index
 				// will start from zero
@@ -124,11 +129,11 @@ Return file_list
 			}
 		}
 
-		switch (p->fts_info) {
-		case FTS_D:
-			count_dirs++;
-			break;
-		case FTS_F:
+		switch(p->fts_info){
+			case FTS_D:
+				count_dirs++;
+				break;
+			case FTS_F:
 			{
 				// Limit recursion to the depth determined in config->maxdepth
 				if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
@@ -136,13 +141,14 @@ Return file_list
 					break;
 				}
 
-				if (count_size_of_all_files == true){
+				if(count_size_of_all_files == true)
+				{
 					config->total_size_in_bytes += (size_t)p->fts_statp->st_size;
 					count_files++;
 				} else if(runtime_path_prefix != NULL)
 				{
 					const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
-					struct stat *stat = p->fts_statp;
+					struct stat *stat         = p->fts_statp;
 					count_files++;
 
 					/* Write all columns from DB row to the structure DBrow */
@@ -152,8 +158,10 @@ Return file_list
 					memset(dbrow,0,sizeof(DBrow));
 
 #if 0 // Old multiPATH solution
+
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path)))
 #endif
+
 					/* Get all file's metadata from the database */
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,relative_path)))
 					{
@@ -175,14 +183,15 @@ Return file_list
 						{
 							// The file saved against the database has been read
 							// from the file system in its entirety
-							if(dbrow->saved_offset == 0){
+							if(dbrow->saved_offset == 0)
+							{
 								// Relative path already in DB and doesn't require any change
 								break;
 							}
 						}
 					}
 
-					sqlite3_int64 offset = 0; // Offset bytes
+					sqlite3_int64 offset = 0;  // Offset bytes
 					SHA512_Context mdContext;
 
 					// For a file which had been changed before creation of its checksum has been already finished.
@@ -193,7 +202,7 @@ Return file_list
 
 					if(dbrow->saved_offset > 0)
 					{
-						if (metadata_of_scanned_and_saved_files == IDENTICAL)
+						if(metadata_of_scanned_and_saved_files == IDENTICAL)
 						{
 							// Contunue hashing
 							offset = dbrow->saved_offset;
@@ -218,13 +227,13 @@ Return file_list
 							{
 								ignored = true;
 
-							} else if (FAIL_REGEXP_IGNORE == result)
+							} else if(FAIL_REGEXP_IGNORE == result)
 							{
 								status = FAILURE;
 								break;
 							}
 
-						} else if (FAIL_REGEXP_INCLUDE == response)
+						} else if(FAIL_REGEXP_INCLUDE == response)
 						{
 							status = FAILURE;
 							break;
@@ -232,7 +241,7 @@ Return file_list
 					}
 
 					unsigned char sha512[SHA512_DIGEST_LENGTH];
-					memset(sha512,0,sizeof(sha512)); // Clean sha512 to prevent reuse;
+					memset(sha512,0,sizeof(sha512));   // Clean sha512 to prevent reuse;
 
 					// Print out of a file name and its changes
 					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,p->fts_statp,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown);
@@ -249,7 +258,7 @@ Return file_list
 
 					bool update_db = false;
 
-					if (dbrow->relative_path_already_in_db == true)
+					if(dbrow->relative_path_already_in_db == true)
 					{
 						if(offset > dbrow->saved_offset)
 						{
@@ -283,8 +292,10 @@ Return file_list
 					} else {
 						/* Insert to DB */
 #if 0 // Old multiPATH solution
+
 						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,stat,&mdContext)))
 #endif
+
 						if(SUCCESS == (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
 						{
 							// Reflect changes in global
@@ -299,18 +310,19 @@ Return file_list
 					 * Interrupt when Ctrl+C
 					 * Don't write a result because sha512sum() function
 					 * has been interrupted and the sha512 contains wrong data
-					*/
-					if(global_interrupt_flag == true){
+					 */
+					if(global_interrupt_flag == true)
+					{
 						break;
 					}
 				}
 			}
 			break;
-		case FTS_SL:
-			count_symlnks++;
-			break;
-		default:
-			break;
+			case FTS_SL:
+				count_symlnks++;
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -323,7 +335,7 @@ Return file_list
 	if(config->progress == true)
 	{
 		if(count_size_of_all_files == true ||
-			(count_size_of_all_files == false && at_least_one_file_was_shown == true))
+		        (count_size_of_all_files == false && at_least_one_file_was_shown == true))
 		{
 			slog(EVERY,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes),total_items,count_dirs,count_files,count_symlnks);
 		}

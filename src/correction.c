@@ -9,16 +9,15 @@
  * as an argument (that is the path) and returns the number of bytes
  * from the beginning of the string to that character.
  *
-*/
-size_t correction
-(
-	char* path
-){
+ */
+size_t correction(char *path){
 
 	size_t drift = 0;
 
-	for(size_t i = 0; i < strlen(path);i++){
-		if(path[i] == '/'){
+	for(size_t i = 0; i < strlen(path); i++)
+	{
+		if(path[i] == '/')
+		{
 			drift++;
 		} else {
 			break;

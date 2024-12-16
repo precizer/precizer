@@ -14,24 +14,23 @@
  * running of the program.
  *
  */
-Return init_signals(void)
-{
+Return init_signals(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
 	/// Disable key echo in terminal
 	struct termios term;
-	tcgetattr(fileno(stdin), &term);
+	tcgetattr(fileno(stdin),&term);
 	term.c_lflag &= (unsigned int)~(ICANON|ECHO); // knock down keybuffer
-	tcsetattr(fileno(stdin),TCSANOW, &term);
+	tcsetattr(fileno(stdin),TCSANOW,&term);
 
 	// kill -USR2 <pid>
 	if((signal(SIGUSR2,&notify_quit_handler)==SIG_ERR)!=0)
 	{
 		status = FAILURE;
 		slog(ERROR,"Failed set signal SIGUSR2\n");
-	}else{
+	} else {
 		slog(TRACE,"Set signal SIGUSR2 OK:pid:%i\n",getpid());
 	}
 
@@ -40,7 +39,7 @@ Return init_signals(void)
 	{
 		status = FAILURE;
 		slog(ERROR,"Failed set signal SIGINT\n");
-	}else{
+	} else {
 		slog(TRACE,"Set signal SIGINT OK:pid:%i\n",getpid());
 	}
 
@@ -49,7 +48,7 @@ Return init_signals(void)
 	{
 		status = FAILURE;
 		slog(ERROR,"Failed set signal SIGTERM\n");
-	}else{
+	} else {
 		slog(TRACE,"Set signal SIGTERM OK:pid:%i\n",getpid());
 	}
 

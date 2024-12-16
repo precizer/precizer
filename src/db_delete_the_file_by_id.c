@@ -6,12 +6,11 @@
  * file from the database by its unique db ID
  *
  */
-Return db_delete_the_file_by_id
-(
+Return db_delete_the_file_by_id(
 	sqlite_int64 *ID,
-	bool *first_iteration,
-	const bool *clean_ignored,
-	const char *relative_path
+	bool         *first_iteration,
+	const bool   *clean_ignored,
+	const char   *relative_path
 ){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -24,24 +23,29 @@ Return db_delete_the_file_by_id
 	}
 
 	sqlite3_stmt *delete_stmt = NULL;
-	int rc = 0;
+	int rc                    = 0;
 
-	rc = sqlite3_prepare_v2(config->db, "DELETE FROM files WHERE ID=?1;", -1, &delete_stmt, NULL);
-	if(SQLITE_OK != rc) {
-		slog(ERROR,"Can't prepare delete statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+	rc = sqlite3_prepare_v2(config->db,"DELETE FROM files WHERE ID=?1;",-1,&delete_stmt,NULL);
+
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Can't prepare delete statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
 	rc = sqlite3_bind_int64(delete_stmt,1,*ID);
-	if(SQLITE_OK != rc) {
-		slog(ERROR,"Error binding value in delete (%i): %s\n", rc, sqlite3_errmsg(config->db));
+
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Error binding value in delete (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
 	/* Execute SQL statement */
 	if(sqlite3_step(delete_stmt) == SQLITE_DONE)
 	{
-		if (*first_iteration == true){
+		if(*first_iteration == true)
+		{
 
 			if(config->update == true && config->something_has_been_changed == false)
 			{
@@ -53,8 +57,9 @@ Return db_delete_the_file_by_id
 			// Reflect changes in global
 			config->something_has_been_changed = true;
 
-			slog(EVERY, BOLD "These files are ignored or no longer exist and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
+			slog(EVERY,BOLD "These files are ignored or no longer exist and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
 		}
+
 		if(*clean_ignored == true)
 		{
 			slog(EVERY,"clean ignored %s\n",relative_path);
@@ -62,7 +67,7 @@ Return db_delete_the_file_by_id
 			slog(EVERY,"%s\n",relative_path);
 		}
 	} else {
-		slog(ERROR,"Delete statement didn't return DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+		slog(ERROR,"Delete statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 

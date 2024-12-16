@@ -16,8 +16,7 @@
  *         - SUCCESS: Check completed successfully
  *         - FAILURE: Error occurred during check
  */
-Return db_contains_data(void)
-{
+Return db_contains_data(void){
 	/** @var Return status
 	 *  @brief The status that will be passed to return() before exiting
 	 *  @details By default, the function worked without errors
@@ -35,7 +34,7 @@ Return db_contains_data(void)
 	 *  @brief SQLite prepared statement for counting paths
 	 */
 	sqlite3_stmt *select_stmt = NULL;
-	int rc = 0;
+	int rc                    = 0;
 
 	/* Initialize existence flag */
 	config->db_contains_data = false;
@@ -46,9 +45,11 @@ Return db_contains_data(void)
 	const char *sql_db_contains_data = "SELECT COUNT(*) FROM paths";
 
 	/* Prepare the SQL statement */
-	rc = sqlite3_prepare_v2(config->db, sql_db_contains_data, -1, &select_stmt, NULL);
-	if(SQLITE_OK != rc) {
-		slog(ERROR,"Can't prepare select statement (%i): %s\n", rc, sqlite3_errmsg(config->db));
+	rc = sqlite3_prepare_v2(config->db,sql_db_contains_data,-1,&select_stmt,NULL);
+
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -57,6 +58,7 @@ Return db_contains_data(void)
 	{
 		sqlite3_int64 rows = -1;
 		rows = sqlite3_column_int64(select_stmt,0);
+
 		if(rows > 0)
 		{
 			config->db_contains_data = true;
@@ -64,8 +66,9 @@ Return db_contains_data(void)
 	}
 
 	/* Check for query execution errors */
-	if(SQLITE_DONE != rc) {
-		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+	if(SQLITE_DONE != rc)
+	{
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -76,13 +79,13 @@ Return db_contains_data(void)
 	{
 		if(config->update == true)
 		{
-			slog(TRACE, "The database %s has already been created previously\n", config->db_file_name);
+			slog(TRACE,"The database %s has already been created previously\n",config->db_file_name);
 		} else {
 			slog(EVERY,"The database %s was previously created and already contains data with files and their checksums." \
-			             " Use the " BOLD "--update" RESET " option only when you are certain" \
-			             " that the database needs to be updated and when file information" \
-			             " (including changes, deletions, and additions) should be synchronized" \
-			             " with the database.\n",config->db_file_name);
+				" Use the " BOLD "--update" RESET " option only when you are certain" \
+				" that the database needs to be updated and when file information" \
+				" (including changes, deletions, and additions) should be synchronized" \
+				" with the database.\n",config->db_file_name);
 			status = FAILURE;
 			return(status);
 		}

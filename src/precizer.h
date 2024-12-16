@@ -60,10 +60,10 @@ typedef enum
  */
 typedef enum
 {
-	NOT_EQUAL                 = -1,
-	IDENTICAL                 = 0,
-	SIZE_CHANGED              = 1,
-	CREATION_TIME_CHANGED     = 2,
+	NOT_EQUAL = -1,
+	IDENTICAL = 0,
+	SIZE_CHANGED = 1,
+	CREATION_TIME_CHANGED = 2,
 	MODIFICATION_TIME_CHANGED = 4
 
 } Changed;
@@ -74,7 +74,7 @@ typedef enum
  */
 typedef enum
 {
-	SHOULD_BE_A_FILE      = 1,
+	SHOULD_BE_A_FILE = 1,
 	SHOULD_BE_A_DIRECTORY = 2
 
 } FILEDIR;
@@ -239,16 +239,14 @@ typedef struct {
  *
  */
 
-Return file_list(
-	bool
-);
+Return file_list(bool);
 
 Return sha512sum(
-	const char*,
-	const short unsigned int*,
-	unsigned char*,
-	sqlite3_int64*,
-	SHA512_Context*
+	const char *,
+	const short unsigned int *,
+	unsigned char *,
+	sqlite3_int64 *,
+	SHA512_Context *
 );
 
 Return add_string_to_array(
@@ -256,9 +254,9 @@ Return add_string_to_array(
 	const char *
 );
 
-void remove_trailing_slash(char*);
+void remove_trailing_slash(char *);
 
-size_t correction(char*) __attribute__ ((pure));
+size_t correction(char *) __attribute__ ((pure));
 
 void notify_quit_handler(int);
 
@@ -270,14 +268,13 @@ Return init_signals(void);
 
 void free_config(void);
 
-Return db_delete_missing_files_from(void);
+Return db_delete_missing_metadata(void);
 
-Return db_delete_the_file_by_id
-(
-	sqlite_int64*,
-	bool*,
-	const bool*,
-	const char*
+Return db_delete_the_file_by_id(
+	sqlite_int64 *,
+	bool *,
+	const bool *,
+	const char *
 );
 
 Return db_init(void);
@@ -285,55 +282,52 @@ Return db_init(void);
 Return db_vacuum(void);
 
 Return db_read_file_data_from(
-	DBrow*,
-	const char*
+	DBrow *,
+	const char *
 );
 
 Return db_update_the_record(
-	const sqlite3_int64*,
-	const sqlite3_int64*,
-	const unsigned char*,
-	const struct stat*,
-	const SHA512_Context*
+	const sqlite3_int64 *,
+	const sqlite3_int64 *,
+	const unsigned char *,
+	const struct stat *,
+	const SHA512_Context *
 );
 
 Return db_insert_the_record(
-	const char*,
-	const sqlite3_int64*,
-	const unsigned char*,
-	const struct stat*,
-	const SHA512_Context*
+	const char *,
+	const sqlite3_int64 *,
+	const unsigned char *,
+	const struct stat *,
+	const SHA512_Context *
 );
 
 Return db_determine_name(void);
 
 Return db_determine_mode(void);
 
-Return db_save_prefixes_into(void);
+Return db_save_prefixes(void);
 
 Return db_compare(void);
 
-Return db_check_up_paths(void);
+Return db_validate_paths(void);
 
 Return db_contains_data(void);
 
 Return db_file_validate_existence(void);
 
-Return db_test(
-	const char*
-);
+Return db_test(const char *);
 
 #if 0 // Old multiPATH solution
-Return db_get_path_prefix_index
-(
-	const char*,
-	sqlite3_int64*
+Return db_get_path_prefix_index(
+	const char *,
+	sqlite3_int64 *
 );
 #endif
 
 int compare_file_metadata_equivalence(
-	const struct stat*,
-	const struct stat*
+	const struct stat *,
+	const struct stat *
 ) __attribute__ ((pure));
 
 Return parse_arguments(
@@ -341,54 +335,54 @@ Return parse_arguments(
 	char **
 );
 
-void show_relative_path
-(
-	const char*,
-	const int*,
-	const DBrow*,
-	const struct stat*,
-	bool*,
-	bool*,
-	bool*,
-	const bool*,
-	bool*
+void show_relative_path(
+	const char *,
+	const int *,
+	const DBrow *,
+	const struct stat *,
+	bool *,
+	bool *,
+	bool *,
+	const bool *,
+	bool *
 );
 
 void status_of_changes(void);
 
 Return detect_a_path(
-	const char*,
+	const char *,
 	const unsigned char
 );
 
 Return detect_paths(void);
 
 Ignore ignore(
-	const char*,
-	bool*
+	const char *,
+	bool *
 );
 
 Include include(
-	const char*,
-	bool*
+	const char *,
+	bool *
 );
 
 REGEXP regexp_match
 (
-	const char*,
-	const char*,
-	bool*
+	const char *,
+	const char *,
+	bool *
 );
 
 int exit_status(
 	Return,
-	char**
+	char **
 );
 
 // Macro to call a function only if the current status is SUCCESS.
 // If the status is SUCCESS, the function's return value will be assigned to status.
 #define run(func) \
-	if (SUCCESS == status) { \
+	if(SUCCESS == status) \
+	{ \
 		status = (func); \
 	}
 
