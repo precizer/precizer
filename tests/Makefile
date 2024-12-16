@@ -49,7 +49,8 @@ EXCLUDE = $(PRZRSRC)/precizer.c
 #
 SRCS = $(wildcard $(SRC)/*.c)
 HDRS = $(wildcard $(SRC)/*.h)
-HDRS += $(wildcard $(PRZRSRC)/*.h)
+PRZRHDRS = $(wildcard $(PRZRSRC)/*.h)
+ALLHDRS = $(HDRS) $(PRZRHDRS)
 OBJS = $(SRCS:.c=.o)
 
 PRZRSRCS = $(filter-out $(EXCLUDE),$(wildcard $(PRZRSRC)/*.c))
@@ -96,7 +97,12 @@ DBGLIBS = -L$(DBGLIBDIR)
 DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$(DBGLIBDIR)
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
-.PHONY: all clean debug release prod production sanitize coverage run coverage-report coverage-html
+#
+# Code formatting settings
+#
+UNCRUSTIFY_CFG = ../Uncrustify.cfg
+
+.PHONY: all clean debug release prod production sanitize coverage run coverage-report coverage-html format
 
 # Default build
 all: sanitize
@@ -111,11 +117,11 @@ $(COVEXE): $(COVOBJS) $(COVPRZROBJS)
 	@$(CC) $(CFLAGS) $(COVCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(COVEXE) $^ $(LDFLAGS) $(COVLDFLAGS)
 	@echo "$@ linked."
 
-$(COVOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COVOBJDIR)
+$(COVOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) | $(COVOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(COVCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
-$(COVOBJDIR)/%.o: $(PRZRSRC)/%.c $(HDRS) | $(COVOBJDIR)
+$(COVOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) | $(COVOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(COVCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
@@ -149,11 +155,11 @@ $(STZEXE): $(STZOBJS) $(STZPRZROBJS)
 	@$(CC) $(CFLAGS) $(STZCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(STZOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(STZOBJDIR)
+$(STZOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) | $(STZOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
-$(STZOBJDIR)/%.o: $(PRZRSRC)/%.c $(HDRS) | $(STZOBJDIR)
+$(STZOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) | $(STZOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
@@ -169,16 +175,27 @@ $(DBGEXE): $(DBGOBJS) $(DBGPRZROBJS)
 	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) $(STATIC) -o $(DBGEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(DBGOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBGOBJDIR)
+$(DBGOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) | $(DBGOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
-$(DBGOBJDIR)/%.o: $(PRZRSRC)/%.c $(HDRS) | $(DBGOBJDIR)
+$(DBGOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) | $(DBGOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
 $(DBGOBJDIR):
 	@mkdir -p "$(DBGOBJDIR)"
+
+#
+# Format rules
+#
+format:
+	@echo "Formatting source files..."
+	@for file in $(SRCS) $(HDRS); do \
+		echo "Formatting $$file"; \
+		uncrustify -c $(UNCRUSTIFY_CFG) --replace --no-backup $$file; \
+	done
+	@echo "All files formatted."
 
 clean:
 	@rm -f $(STZMAIN) $(STZEXE) $(DBGEXE) $(COVEXE)
