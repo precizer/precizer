@@ -23,7 +23,7 @@ Return external_call(
 	// Create pipes for capturing stdout and stderr
 	int stdout_pipe[2], stderr_pipe[2];
 	if (pipe(stdout_pipe) == -1 || pipe(stderr_pipe) == -1) {
-		report("pipe error");
+		serp("pipe error");
 		return(FAILURE);
 	}
 
@@ -59,7 +59,7 @@ Return external_call(
 	// Execute command while inheriting current environment variables
 	if (posix_spawnp(&pid, (char *)(uintptr_t)"sh", &actions, NULL, arguments, environ) != 0)
 	{
-		report("posix_spawnp error"); // Handle command execution error
+		serp("posix_spawnp error"); // Handle command execution error
 		posix_spawn_file_actions_destroy(&actions);
 		return(FAILURE);
 	}
@@ -81,7 +81,7 @@ Return external_call(
 	while((count = read(stdout_pipe[0], temp_buffer, BUFFER_LENGTH)) > 0)
 	{
 		if (count == -1) {
-			report("read error"); // Handle command execution error
+			serp("read error"); // Handle command execution error
 			free(tmp_stdout_buffer);
 			return(FAILURE);
 		}
@@ -90,7 +90,7 @@ Return external_call(
 		char *new_buffer = realloc(tmp_stdout_buffer, total_read + (size_t)count + 1); // +1 для нуля в конце
 		if (!new_buffer)
 		{
-			report("Memory reallocation failed with bytes: %zu", total_read + (size_t)count + 1);
+			report("Memory allocation failed, requested size: %zu bytes", total_read + (size_t)count + 1);
 			free(tmp_stdout_buffer);
 			return(FAILURE);
 		}
@@ -128,7 +128,7 @@ Return external_call(
 	{
 		if (count == -1)
 		{
-			report("read error"); // Handle command execution error
+			serp("read error"); // Handle command execution error
 			free(tmp_stderr_buffer);
 			return(FAILURE);
 		}
@@ -137,7 +137,7 @@ Return external_call(
 		char *new_buffer = realloc(tmp_stderr_buffer, total_read + (size_t)count + 1); // +1 для нуля в конце
 		if (!new_buffer)
 		{
-			report("Memory reallocation failed with bytes: %zu", total_read + (size_t)count + 1);
+			report("Memory allocation failed, requested size: %zu bytes", total_read + (size_t)count + 1);
 			free(tmp_stderr_buffer);
 			return(FAILURE);
 		}
@@ -166,7 +166,7 @@ Return external_call(
 	int return_code;
 	if(waitpid(pid, &return_code, 0) == -1)
 	{
-		report("waitpid error");
+		serp("waitpid error");
 		return(FAILURE);
 	}
 	int exit_code = WEXITSTATUS(return_code);
@@ -205,7 +205,7 @@ Return external_call(
 				}
 
 			} else {
-				report("Memory allocation failed with bytes: %zu", (size_t)rt + 1);
+				report("Memory allocation failed, requested size: %zu bytes", (size_t)rt + 1);
 			}
 
 			free(str);
@@ -245,7 +245,7 @@ Return external_call(
 				}
 
 			} else {
-				report("Memory allocation failed with bytes: %zu", (size_t)rt + 1);
+				report("Memory allocation failed, requested size: %zu bytes", (size_t)rt + 1);
 			}
 
 			free(str);
@@ -279,7 +279,7 @@ Return external_call(
 			}
 
 		} else {
-			report("Memory allocation failed with bytes: %zu", (size_t)rt + 1);
+			report("Memory allocation failed, requested size: %zu bytes", (size_t)rt + 1);
 		}
 
 		free(str);

@@ -40,7 +40,7 @@ void echo(
 		}
 		strcat(new_format, format);
 	} else {
-		report("Memory allocation failed with bytes: %zu",size * sizeof(char));
+		report("Memory allocation failed, requested size: %zu bytes",size * sizeof(char));
 		return;
 	}
 
@@ -59,7 +59,7 @@ void echo(
 		}
 
 	} else {
-		report("Memory allocation failed with bytes: %zu", bytes + 1);
+		report("Memory allocation failed, requested size: %zu bytes", bytes + 1);
 	}
 
 	free(str);
