@@ -1,7 +1,6 @@
 #include "sute.h"
 
-Return finish(void)
-{
+Return finish(void){
 
 	printf(CYAN "\nTelemetry\n");
 	printf(WHITE);
