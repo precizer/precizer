@@ -53,7 +53,6 @@ typedef enum
 
 } Include;
 
-
 /*
  * Modification bits
  *
@@ -78,6 +77,18 @@ typedef enum
 	SHOULD_BE_A_DIRECTORY = 2
 
 } FILEDIR;
+
+/*
+ * A database validation level
+ *
+ */
+typedef enum
+{
+	QUICK = 1,
+	FULL = 2
+
+} DB_CHECK_LEVEL;
+
 
 /*
  *
@@ -198,6 +209,11 @@ typedef struct {
 	/// This is special protection against accidental
 	/// deletion of information from the database.
 	bool db_clean_ignored;
+
+	/// Select database validation level: 'quick' (default)
+	/// for basic structure check, 'full' for comprehensive
+	/// integrity verification
+	char db_check_level;
 
 	/// Flag that reflects the presence of any changes
 	/// since the last research
