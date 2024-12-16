@@ -83,6 +83,11 @@ void init_config(void){
 	// deletion of information from the database.
 	config->db_clean_ignored = false;
 
+	/// Select database validation level: 'quick' (default)
+	/// for basic structure check, 'full' for comprehensive
+	/// integrity verification
+	config->db_check_level = QUICK;
+
 	// Flag that reflects the presence of any changes
 	// since the last research
 	config->something_has_been_changed = false;
