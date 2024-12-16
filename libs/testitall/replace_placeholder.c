@@ -56,7 +56,7 @@ Return replace_placeholder(
 	if (!output) {
 		pcre2_code_free(re);
 		pcre2_match_data_free(match_data);
-		report("Memory allocation failed with bytes %zu", out_len);
+		report("Memory allocation failed, requested size: %zu bytes", out_len);
 		return(FAILURE); // Memory allocation failure
 	}
 

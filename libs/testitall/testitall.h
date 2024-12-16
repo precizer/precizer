@@ -46,13 +46,16 @@
  * HEADER("Preparations\n");
  */
 #define HEADER(msg) \
-	if(SUCCESS == status) { \
+	if(SUCCESS == status) \
+	{ \
 		printf(CYAN msg RESET); \
 	}
 
 #define ASSERT(condition) \
-	if (SUCCESS == status) { \
-		if (condition) { \
+	if(SUCCESS == status) \
+	{ \
+		if(condition) \
+		{ \
 			status = SUCCESS; \
 		} else { \
 			status = FAILURE; \
@@ -155,6 +158,7 @@ Return write_to_temp_file(
 );
 
 Return check_file_exists(
+	bool *,
 	const char *
 );
 
@@ -168,6 +172,9 @@ Return check_file_exists(
 	{ \
 		status = testitall(func, #func, desc); \
 	}
+
+#define RUN(func, desc) \
+	status = testitall(func, #func, desc);
 
 // Execute a function without checking the status first.
 // For example, to clear temporary data
