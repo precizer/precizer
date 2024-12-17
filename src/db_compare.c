@@ -51,31 +51,24 @@ Return db_compare(void){
 	 *
 	 */
 
-	// Check up the paths passed as arguments and make sure
+	// Validate the paths passed as arguments and make sure
 	// that they are files and exist
 	for(int i = 0; config->db_file_paths[i]; i++)
 	{
-		if(SUCCESS != (status = detect_a_path(config->db_file_paths[i],SHOULD_BE_A_FILE)))
+		if(NOT_FOUND == file_availability(config->db_file_paths[i],SHOULD_BE_A_FILE))
 		{
 			// The path doesn't exist or is not a database
+			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",config->db_file_paths[i]);
+			return(FAILURE);
+		}
+
+		/*
+		 * Validate the integrity of database files
+		 */
+		if(SUCCESS != (status = db_test(config->db_file_paths[i])))
+		{
 			return(status);
 		}
-	}
-
-	/*
-	 * Check up the integrity of database files
-	 */
-
-	// First database
-	if(SUCCESS != (status = db_test(config->db_file_paths[0])))
-	{
-		return(status);
-	}
-
-	// Second database
-	if(SUCCESS != (status = db_test(config->db_file_paths[1])))
-	{
-		return(status);
 	}
 
 	bool the_databases_are_equal = true;
