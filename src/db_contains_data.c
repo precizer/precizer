@@ -26,7 +26,7 @@ Return db_contains_data(void){
 	/* Skip check if in comparison mode */
 	if(config->compare == true)
 	{
-		slog(TRACE,"Comparison mode is enabled. Main database verification is not required\n");
+		slog(TRACE,"Comparison mode is enabled. The primary database verification is not required\n");
 		return(status);
 	}
 

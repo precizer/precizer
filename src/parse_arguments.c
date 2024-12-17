@@ -189,10 +189,11 @@ static error_t parse_opt(
 			config->force = true;
 			break;
 		case 'l':
-			if(0 == strcasecmp(arg, "QUICK"))
+
+			if(0 == strcasecmp(arg,"QUICK"))
 			{
 				config->db_check_level = QUICK;
-			} else if(0 == strcasecmp(arg, "FULL"))
+			} else if(0 == strcasecmp(arg,"FULL"))
 			{
 				config->db_check_level = FULL;
 			} else {
@@ -276,28 +277,31 @@ Return parse_arguments(
 		{
 			// The array with database names
 			config->db_file_paths = config->paths;
+
 			for(int j = 0; config->db_file_paths[j] && (SUCCESS == status); j++)
 			{
 				// Create a copy of the path string for basename
 				char *tmp = strdup(config->db_file_paths[j]);
+
 				if(tmp == NULL)
 				{
-					report("Failed to duplicate string: %s", config->db_file_paths[j]);
+					report("Failed to duplicate string: %s",config->db_file_paths[j]);
 					status = FAILURE;
 					break;
 				}
 
 				// Get basename and handle possible NULL return
 				char *db_file_basename = basename(tmp);
+
 				if(db_file_basename == NULL)
 				{
-					report("basename failed for path: %s", tmp);
+					report("basename failed for path: %s",tmp);
 					free(tmp);
 					status = FAILURE;
 					break;
 				}
 
-				status = add_string_to_array(&config->db_file_names, db_file_basename);
+				status = add_string_to_array(&config->db_file_names,db_file_basename);
 				free(tmp);
 
 				if(SUCCESS != status)

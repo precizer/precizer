@@ -1,9 +1,50 @@
-  #include "precizer.h"
+/**
+ * @file precizer.h
+ * @brief Database operations for directory prefix paths
+ */
+
+#include "precizer.h"
 
 /**
+ * @brief Saves directory prefix paths into the database
  *
- * Save the directory prefix path into DB
+ * @details This function handles the storage of directory prefix paths in the database
+ * according to several operational modes:
  *
+ * Operational Modes:
+ * - Compare Mode: Function returns immediately with SUCCESS
+ * - Force Mode: Previous records are deleted before insertion
+ * - Dry Run Mode: Data insertion occurs in memory only
+ *
+ * Data Insertion Rules:
+ * - Data is inserted only if:
+ *   - Database file is not physical, OR
+ *   - Dry Run mode is not activated
+ * - In Dry Run mode with physical database:
+ *   - Writing occurs to in-memory database only
+ *
+ * Processing Steps:
+ * 1. Checks operational mode
+ * 2. Handles record deletion if in Force mode
+ * 3. Processes path insertions according to insertion rules
+ * 4. Removes trailing slashes from paths before insertion
+ *
+ * Error Handling:
+ * - SQLite preparation errors
+ * - SQLite binding errors
+ * - SQLite execution errors
+ * All errors are logged using slog() function
+ *
+ * @pre config structure must be properly initialized with:
+ *      - compare flag
+ *      - force flag
+ *      - dry_run flag
+ *      - db connection
+ *      - paths array
+ *
+ * @return Return enum value:
+ *      - SUCCESS (0): Paths saved successfully
+ *      - FAILURE (1): Operation failed due to database errors
  */
 Return db_save_prefixes(void){
 	/// The status that will be passed to return() before exiting.
