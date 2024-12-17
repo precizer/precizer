@@ -34,7 +34,7 @@ Return db_contains_data(void){
 	 *  @brief SQLite prepared statement for counting paths
 	 */
 	sqlite3_stmt *select_stmt = NULL;
-	int rc                    = 0;
+	int rc = 0;
 
 	/* Initialize existence flag */
 	config->db_contains_data = false;

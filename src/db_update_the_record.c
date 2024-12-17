@@ -28,7 +28,7 @@ Return db_update_the_record(
 	int rc = 0;
 
 	sqlite3_stmt *update_stmt = NULL;
-	const char *update_sql    = "UPDATE files SET offset = ?1, sha512 = ?2, stat = ?3, mdContext = ?4 WHERE ID = ?5;";
+	const char *update_sql = "UPDATE files SET offset = ?1, sha512 = ?2, stat = ?3, mdContext = ?4 WHERE ID = ?5;";
 
 	/* Create SQL statement. Prepare to write */
 	rc = sqlite3_prepare_v2(config->db,update_sql,-1,&update_stmt,NULL);

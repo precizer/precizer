@@ -126,7 +126,7 @@ static error_t parse_opt(
 	/* Get the input argument from argp_parse, which we
 	   know is a pointer to our arguments structure. */
 	//struct arguments *arguments = state->input;
-	char *ptr               = NULL;
+	char *ptr = NULL;
 	long int argument_value = -1;
 
 	switch(key)
@@ -207,14 +207,14 @@ static error_t parse_opt(
 		case 'v':
 			// Global variable
 			rational_logger_mode = VERBOSE;
-			config->verbose      = true;
+			config->verbose = true;
 			break;
 		case ARGP_KEY_NO_ARGS:
 			argp_usage(state);
 			break;
 		case ARGP_KEY_ARG:
 			config->paths = &state->argv[state->next - 1];
-			state->next   = state->argc;
+			state->next = state->argc;
 			break;
 		case ARGP_KEY_END:
 
