@@ -14,8 +14,11 @@ Return db_delete_missing_metadata(void){
 	/* Skip in comparison mode */
 	if(config->compare == true)
 	{
-		slog(TRACE,"Comparison mode is enabled. The main database does not require cleanup\n");
+		slog(TRACE,"Comparison mode is enabled. The primary database does not require cleanup\n");
 		return(status);
+	} else if(config->dry_run == true && config->db_file_exists == true)
+	{
+		slog(TRACE,"Dry Run mode is enabled. The primary database must not be modified\n");
 	}
 
 	if(config->update == true && config->ignore != NULL)
@@ -135,7 +138,11 @@ Return db_delete_missing_metadata(void){
 
 		if(clean_ignored == true || path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
 		{
-			status = db_delete_the_file_by_id(&ID,&first_iteration,&clean_ignored,relative_path);
+			// If Dry Run mode enabled the primary database must not be modified
+			if(!(config->dry_run == true && config->db_file_exists == true))
+			{
+				status = db_delete_the_file_by_id(&ID,&first_iteration,&clean_ignored,relative_path);
+			}
 		}
 		free(absolute_path);
 	}

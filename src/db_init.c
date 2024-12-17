@@ -106,7 +106,7 @@ Return db_init(void){
 
 			if(rc == SQLITE_OK)
 			{
-				slog(TRACE,"The main database and tables have been successfully initialized\n");
+				slog(TRACE,"The primary database and tables have been successfully initialized\n");
 			} else {
 				slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
 				status = FAILURE;
@@ -127,7 +127,7 @@ Return db_init(void){
 
 		if(rc == SQLITE_OK)
 		{
-			slog(TRACE,"The main database named %s is ready for operations\n",config->db_file_name);
+			slog(TRACE,"The primary database named %s is ready for operations\n",config->db_file_name);
 		} else {
 			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
 			status = FAILURE;
@@ -144,7 +144,7 @@ Return db_init(void){
 
 		if(rc == SQLITE_OK)
 		{
-			slog(TRACE,"The in-memory %s database successfully attached to the main database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
+			slog(TRACE,"The in-memory %s database successfully attached to the primary database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
 		} else {
 			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
 			status = FAILURE;

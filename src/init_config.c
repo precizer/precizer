@@ -42,7 +42,7 @@ void init_config(void){
 	// An array of paths to traverse
 	config->paths = NULL;
 
-	// The pointer to the main database
+	// The pointer to the primary database
 	config->db = NULL;
 
 	/// The flags parameter to sqlite3_open_v2()

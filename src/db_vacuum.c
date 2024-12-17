@@ -14,12 +14,12 @@ Return db_vacuum(void){
 	// Don't do anything
 	if(config->compare == true)
 	{
-		slog(TRACE,"Compare mode is enabled. Vacuuming is not required for the main database\n");
+		slog(TRACE,"Compare mode is enabled. Vacuuming is not required for the primary database\n");
 		return(status);
 
 	} else if(config->dry_run == true)
 	{
-		slog(TRACE,"Dry Run mode is enabled. Vacuuming is not required for the main database\n");
+		slog(TRACE,"Dry Run mode is enabled. Vacuuming is not required for the primary database\n");
 		return(status);
 	}
 
@@ -46,7 +46,7 @@ Return db_vacuum(void){
 		slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	} else {
-		slog(EVERY,"The main database has been vacuumed\n");
+		slog(EVERY,"The primary database has been vacuumed\n");
 	}
 
 	return(status);

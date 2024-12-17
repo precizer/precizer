@@ -1,13 +1,13 @@
 #include "precizer.h"
 
 /**
- * @brief Validates path consistency between database records and provided arguments
+ * @brief Validates path consistency between database records and provided config variables
  *
  * @details This function performs validation of paths by comparing paths stored
- * in the database against paths provided as program arguments. The validation
+ * in the database against paths provided as config variables. The validation
  * process involves:
  *
- * 1. Checking if paths stored in database match paths passed as arguments
+ * 1. Checking if paths stored in database match paths passed as config variables
  * 2. Warning user about potential data loss if paths mismatch
  * 3. Handling forced path updates when --force flag is used
  *
