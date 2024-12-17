@@ -74,9 +74,6 @@ void init_config(void){
 	/// Flag indicating whether the database file exists
 	config->db_file_exists = false;
 
-	/// The flag indicates that the primary database is stored in memory
-	config->db_in_memory = false;
-
 	// The flag means that the DB already exists
 	// and not empty
 	config->db_contains_data = false;
