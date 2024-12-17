@@ -43,7 +43,7 @@ int main(void){
 	TEST(test0014,"Short, long, relative and absolute paths…");
 
 	HEADER("\nClean results\n");
-	RUN(clean,"Temporary data cleanup…");
+	EXEC(clean,"Temporary data cleanup…");
 
 	TESTFINISH(finish,"Telemetry");
 
