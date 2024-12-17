@@ -265,7 +265,15 @@ static Return dry_run_mode_2_test(void){
 
 	ASSERT(SUCCESS == execute_command(command,result,0));
 
+	#if 1
+	echo(STDOUT,"%s\n",result->mem);
+	#endif
+
+	del_char(&result);
+
 	ASSERT(SUCCESS == check_file(path,&stat2));
+
+	free(path);
 
 	if(SUCCESS == status)
 	{
@@ -276,10 +284,6 @@ static Return dry_run_mode_2_test(void){
 			status = FAILURE;
 		}
 	}
-
-	del_char(&result);
-
-	free(path);
 
 	RETURN_STATUS;
 }
