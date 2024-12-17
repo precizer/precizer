@@ -150,7 +150,7 @@ typedef struct {
 	/// An array of paths to traverse
 	char **paths;
 
-	/// The pointer to the main database
+	/// The pointer to the primary database
 	sqlite3 *db;
 
 	/// The path of DB file

@@ -34,7 +34,7 @@ Return db_test(const char *db_file_path){
 
 		if(db_file_name == NULL)
 		{
-			report("basename failed for path: %s", db_file_name);
+			report("basename failed for path: %s",db_file_name);
 			status = FAILURE;
 		}
 	}
@@ -80,6 +80,7 @@ Return db_test(const char *db_file_path){
 	if(SUCCESS == status)
 	{
 		const char *sql = "PRAGMA quick_check";
+
 		if(config->db_check_level == FULL)
 		{
 			sql = "PRAGMA integrity_check";

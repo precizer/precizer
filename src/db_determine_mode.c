@@ -101,7 +101,7 @@ Return db_determine_mode(void){
 			config->sqlite_open_flag = SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE;
 
 			// The database file does NOT exists
-			slog(EVERY,"The main DB file not yet exists. Brand new database will be created\n");
+			slog(EVERY,"The primary DB file not yet exists. Brand new database will be created\n");
 		}
 	}
 

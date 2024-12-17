@@ -79,7 +79,7 @@ int main(
 	// Check whether the database already exists or not yet
 	run(db_contains_data());
 
-	// Check up the integrity of database file
+	// Database file integrity check
 	run(db_test(config->db_file_path));
 
 	// Verify that the provided path arguments match
