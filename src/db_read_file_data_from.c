@@ -52,7 +52,7 @@ Return db_read_file_data_from(
 
 	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 	{
-		dbrow->ID           = sqlite3_column_int64(select_stmt,0);
+		dbrow->ID = sqlite3_column_int64(select_stmt,0);
 		dbrow->saved_offset = sqlite3_column_int64(select_stmt,1);
 		const struct stat *get_stat = sqlite3_column_blob(select_stmt,2);
 

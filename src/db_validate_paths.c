@@ -50,16 +50,16 @@ Return db_validate_paths(void){
 
 	sqlite3_stmt *select_stmt = NULL;
 	sqlite3_stmt *insert_stmt = NULL;
-	int rc                    = 0;
+	int rc = 0;
 
-	char *select_sql     = NULL;
+	char *select_sql = NULL;
 	bool paths_are_equal = true;
 
 	// Create the SQL request
 	if(config->paths[0] != NULL)
 	{
 		char const *sql_1 = "SELECT ID FROM paths WHERE prefix NOT IN (";
-		size_t size       = strlen(sql_1) + 1;
+		size_t size = strlen(sql_1) + 1;
 		select_sql = (char *)calloc(size,sizeof(char));
 
 		if(select_sql == NULL)
@@ -79,7 +79,7 @@ Return db_validate_paths(void){
 				size += 1;
 			}
 			char *prefix = config->paths[i];
-			size += strlen(prefix) + 2; // Length of the line and two chars like '
+			size += strlen(prefix) + 2;  // Length of the line and two chars like '
 			char *tmp = (char *)realloc(select_sql,size);
 
 			if(NULL == tmp)
@@ -190,7 +190,7 @@ Return db_validate_paths(void){
 			slog(EVERY,"Paths saved in the database: ");
 
 			sqlite3_stmt *stmt;
-			int rc_stmt     = 0;
+			int rc_stmt = 0;
 			char const *sql = "SELECT prefix FROM paths;";
 
 			rc_stmt = sqlite3_prepare_v2(config->db,sql,-1,&stmt,NULL);

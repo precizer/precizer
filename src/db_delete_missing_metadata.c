@@ -32,7 +32,7 @@ Return db_delete_missing_metadata(void){
 	}
 
 	sqlite3_stmt *select_stmt = NULL;
-	int rc                    = 0;
+	int rc = 0;
 
 #if 0 // Old multiPATH solutions
 	const char *select_sql = "SELECT files.ID,paths.prefix,files.relative_path FROM files LEFT JOIN paths ON files.path_prefix_index = paths.ID;";
@@ -58,7 +58,7 @@ Return db_delete_missing_metadata(void){
 			break;
 		}
 
-		sqlite_int64 ID                 = sqlite3_column_int64(select_stmt,0);
+		sqlite_int64 ID = sqlite3_column_int64(select_stmt,0);
 		const char *runtime_path_prefix = NULL;
 		runtime_path_prefix = (const char *)sqlite3_column_text(select_stmt,1);
 		const char *relative_path = NULL;
@@ -66,7 +66,7 @@ Return db_delete_missing_metadata(void){
 		char *absolute_path = NULL;
 
 		bool path_was_removed_from_db = false;
-		bool clean_ignored            = false;
+		bool clean_ignored = false;
 
 		if(runtime_path_prefix != NULL && relative_path != NULL)
 		{
@@ -118,8 +118,8 @@ Return db_delete_missing_metadata(void){
 
 			// The variable in the stack is extremely fast
 			size_t runtime_path_prefix_size = strlen(runtime_path_prefix);
-			size_t relative_path_size       = strlen(relative_path);
-			absolute_path = (char *)calloc(runtime_path_prefix_size + relative_path_size + 2,sizeof(char));   // One for '/' and second for '\0' at the end of the line
+			size_t relative_path_size = strlen(relative_path);
+			absolute_path = (char *)calloc(runtime_path_prefix_size + relative_path_size + 2,sizeof(char));    // One for '/' and second for '\0' at the end of the line
 
 			if(absolute_path == NULL)
 			{
@@ -128,7 +128,7 @@ Return db_delete_missing_metadata(void){
 				break;
 			}
 			strcpy(absolute_path,runtime_path_prefix);
-			absolute_path[runtime_path_prefix_size]     = '/';
+			absolute_path[runtime_path_prefix_size] = '/';
 			absolute_path[runtime_path_prefix_size + 1] = '\0';
 			strcat(absolute_path,relative_path);
 			absolute_path[runtime_path_prefix_size + relative_path_size + 1] = '\0';

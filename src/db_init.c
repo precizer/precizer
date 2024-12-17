@@ -20,7 +20,7 @@ Return db_init(void){
 
 	if(config->sqlite_open_flag == SQL_DRY_RUN_MODE)
 	{
-		db_file_path             = ":memory:";
+		db_file_path = ":memory:";
 		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 		slog(TRACE,"Dry Run mode was activated. In-memory database will be used to simulate activity.\n");
 	}

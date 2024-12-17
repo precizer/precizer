@@ -22,7 +22,7 @@ Return init_signals(void){
 	/// Disable key echo in terminal
 	struct termios term;
 	tcgetattr(fileno(stdin),&term);
-	term.c_lflag &= (unsigned int)~(ICANON|ECHO); // knock down keybuffer
+	term.c_lflag &= (unsigned int)~(ICANON|ECHO);  // knock down keybuffer
 	tcsetattr(fileno(stdin),TCSANOW,&term);
 
 	// kill -USR2 <pid>

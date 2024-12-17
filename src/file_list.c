@@ -26,15 +26,15 @@ Return file_list(bool count_size_of_all_files){
 
 	// Flags that reflect the presence of any changes
 	// since the last research
-	bool first_iteration             = true;
-	bool show_changes                = true;
-	bool ignore_showed_once          = false;
-	bool include_showed_once         = false;
+	bool first_iteration = true;
+	bool show_changes = true;
+	bool ignore_showed_once = false;
+	bool include_showed_once = false;
 	bool at_least_one_file_was_shown = false;
 
 	FTS *file_systems = NULL;
-	FTSENT *p         = NULL;
-	FTSENT *child     = NULL;
+	FTSENT *p = NULL;
+	FTSENT *child = NULL;
 
 	int fts_options = FTS_PHYSICAL | FTS_XDEV;
 
@@ -63,7 +63,7 @@ Return file_list(bool count_size_of_all_files){
 	 * We are only interested in relative paths in the database.
 	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
-	char *runtime_path_prefix   = NULL;
+	char *runtime_path_prefix = NULL;
 	FTSENT *current_file_system = child;
 
 #if 0 // Old multiPATH solution
@@ -148,7 +148,7 @@ Return file_list(bool count_size_of_all_files){
 				} else if(runtime_path_prefix != NULL)
 				{
 					const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
-					struct stat *stat         = p->fts_statp;
+					struct stat *stat = p->fts_statp;
 					count_files++;
 
 					/* Write all columns from DB row to the structure DBrow */
@@ -191,7 +191,7 @@ Return file_list(bool count_size_of_all_files){
 						}
 					}
 
-					sqlite3_int64 offset = 0;  // Offset bytes
+					sqlite3_int64 offset = 0;   // Offset bytes
 					SHA512_Context mdContext;
 
 					// For a file which had been changed before creation of its checksum has been already finished.

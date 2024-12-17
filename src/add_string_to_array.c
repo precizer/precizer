@@ -27,7 +27,7 @@ Return add_string_to_array(
 	Return status = SUCCESS;
 
 	// Calculate the size of the current string array
-	size_t size  = 0;
+	size_t size = 0;
 	char **array = *array_ptr;
 
 	if(array != NULL)

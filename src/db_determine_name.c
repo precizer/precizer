@@ -40,7 +40,7 @@ Return db_determine_name(void){
 					report("Memory allocation failed for config->db_file_name");
 					free(config->db_file_path);
 					config->db_file_path = NULL;
-					status               = FAILURE;
+					status = FAILURE;
 				}
 			}
 		} else {
@@ -85,7 +85,7 @@ Return db_determine_name(void){
 					report("Memory allocation failed, requested size: %zu bytes",strlen(config->db_file_path) + 1 * sizeof(char));
 					free(config->db_file_path);
 					config->db_file_path = NULL;
-					status               = FAILURE;
+					status = FAILURE;
 				}
 			}
 		}
