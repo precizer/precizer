@@ -24,7 +24,6 @@ Return db_determine_name(void){
 			// In-memory database
 			const char *in_memory_db_path = ":memory:";
 			config->db_file_path = strdup(in_memory_db_path);
-			config->db_in_memory = true;
 
 			if(config->db_file_path == NULL)
 			{
@@ -97,7 +96,6 @@ Return db_determine_name(void){
 	{
 		slog(EVERY,"Database file name: %s\n",config->db_file_name);
 		slog(TRACE,"Database file path: %s\n",config->db_file_path);
-		slog(TRACE,"In-memory database: %s\n",config->db_in_memory ? "yes" : "no");
 	}
 
 	slog(TRACE,"DB name determined\n");

@@ -188,9 +188,6 @@ typedef struct {
 	/// to compare within status_of_changes();
 	struct stat db_file_stat;
 
-	/// The flag indicates that the primary database is stored in memory
-	bool db_in_memory;
-
 	/**
 	 * @brief Flag indicating if the database contains data from previous runs
 	 * @details This flag is set to true if the database file exists and contains
