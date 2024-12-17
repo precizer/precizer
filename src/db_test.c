@@ -11,8 +11,8 @@ Return db_test(const char *db_file_path){
 	Return status = SUCCESS;
 
 	sqlite3_stmt *select_stmt = NULL;
-	sqlite3 *db               = NULL;
-	int rc                    = 0;
+	sqlite3 *db = NULL;
+	int rc = 0;
 
 	// Default value
 	bool database_is_ok = false;

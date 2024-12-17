@@ -28,11 +28,11 @@ REGEXP regexp_match(
 #endif
 
 	const unsigned char *pattern = (const unsigned char *)regexp;
-	size_t pattern_size          = strlen(regexp);
+	size_t pattern_size = strlen(regexp);
 
 	const unsigned char *subject = (const unsigned char *)relative_path;
-	size_t subject_size          = strlen(relative_path);
-	uint32_t options             = 0;
+	size_t subject_size = strlen(relative_path);
+	uint32_t options = 0;
 
 	pcre2_match_data *match_data;
 	uint32_t ovecsize = 128;
@@ -51,7 +51,7 @@ REGEXP regexp_match(
 	}
 
 	match_data = pcre2_match_data_create(ovecsize,NULL);
-	rc         = pcre2_match(re,subject,subject_size,0,options,match_data,NULL);
+	rc = pcre2_match(re,subject,subject_size,0,options,match_data,NULL);
 
 	if(rc == 0)
 	{
@@ -72,7 +72,7 @@ REGEXP regexp_match(
 		{
 #if 0
 			PCRE2_SPTR start = subject + ovector[2*i];
-			PCRE2_SIZE slen  = ovector[2*i+1] - ovector[2*i];
+			PCRE2_SIZE slen = ovector[2*i+1] - ovector[2*i];
 			printf( "%2ld: %.*s\n",i,(int)slen,(const char *)start );
 #endif
 			match = true;

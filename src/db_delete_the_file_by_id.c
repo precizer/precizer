@@ -23,7 +23,7 @@ Return db_delete_the_file_by_id(
 	}
 
 	sqlite3_stmt *delete_stmt = NULL;
-	int rc                    = 0;
+	int rc = 0;
 
 	rc = sqlite3_prepare_v2(config->db,"DELETE FROM files WHERE ID=?1;",-1,&delete_stmt,NULL);
 

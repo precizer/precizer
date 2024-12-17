@@ -81,7 +81,7 @@ Return db_compare(void){
 	bool the_databases_are_equal = true;
 
 	sqlite3_stmt *select_stmt = NULL;
-	int rc                    = 0;
+	int rc = 0;
 
 	// Compose a string with SQL request
 	char *select_sql_1 = NULL;
@@ -130,12 +130,12 @@ Return db_compare(void){
 	}
 
 	bool first_iteration = true;
-	bool files_the_same  = true;
+	bool files_the_same = true;
 
 	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 	{
 		the_databases_are_equal = false;
-		files_the_same          = false;
+		files_the_same = false;
 
 		// Interrupt the loop smoothly
 		// Interrupt when Ctrl+C
@@ -190,7 +190,7 @@ Return db_compare(void){
 	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 	{
 		the_databases_are_equal = false;
-		files_the_same          = false;
+		files_the_same = false;
 
 		// Interrupt the loop smoothly
 		// Interrupt when Ctrl+C
@@ -260,7 +260,7 @@ Return db_compare(void){
 	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 	{
 		the_databases_are_equal = false;
-		checksums               = false;
+		checksums = false;
 
 		// Interrupt the loop smoothly
 		// Interrupt when Ctrl+C
@@ -277,8 +277,8 @@ Return db_compare(void){
 
 #if 0
 		const unsigned char *relative_path = NULL;
-		const unsigned char *path_prefix   = NULL;
-		path_prefix   = sqlite3_column_text(select_stmt,0);
+		const unsigned char *path_prefix = NULL;
+		path_prefix = sqlite3_column_text(select_stmt,0);
 		relative_path = sqlite3_column_text(select_stmt,1);
 #endif
 

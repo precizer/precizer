@@ -16,10 +16,10 @@ Return sha512sum(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	const size_t buffer_size = 1024*1024;  // 1MB buffer. Is it too big for embedded and IoT?
+	const size_t buffer_size = 1024*1024;   // 1MB buffer. Is it too big for embedded and IoT?
 	unsigned char buffer[buffer_size];
 	FILE *fileptr = NULL;
-	size_t len    = 0;
+	size_t len = 0;
 
 	fileptr = fopen(relative_path,"rb");
 
@@ -29,7 +29,7 @@ Return sha512sum(
 		char absolute_path[config->running_dir_size + *relative_path_size + 1];
 
 		strcpy(absolute_path,config->running_dir);
-		absolute_path[strlen(config->running_dir)]     = '/';
+		absolute_path[strlen(config->running_dir)] = '/';
 		absolute_path[strlen(config->running_dir) + 1] = '\0';
 		strcat(absolute_path,relative_path);
 
@@ -53,7 +53,7 @@ Return sha512sum(
 		sha512_init(mdContext);
 	}
 
-	while((len = fread(buffer,1,buffer_size,fileptr)) != 0)     // read from infile
+	while((len = fread(buffer,1,buffer_size,fileptr)) != 0)      // read from infile
 	{
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */

@@ -13,7 +13,7 @@ Return determine_running_dir(void){
 
 	if(cwd != NULL)
 	{
-		config->running_dir      = cwd;
+		config->running_dir = cwd;
 		config->running_dir_size = (long int)strlen(config->running_dir) + 1;
 		slog(TRACE,"Current directory: %s\n",config->running_dir);
 		return(SUCCESS);

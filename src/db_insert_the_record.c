@@ -33,7 +33,7 @@ Return db_insert_the_record(
 #if 0 // Old multiPATH solution
 	const char *insert_sql = "INSERT INTO files (offset,path_prefix_index,relative_path,sha512,stat,mdContext) VALUES (?1, ?2, ?3, ?4, ?5, ?6);";
 #endif
-	const char *insert_sql    = "INSERT INTO files (offset,relative_path,sha512,stat,mdContext) VALUES (?1, ?2, ?3, ?4, ?5);";
+	const char *insert_sql = "INSERT INTO files (offset,relative_path,sha512,stat,mdContext) VALUES (?1, ?2, ?3, ?4, ?5);";
 	sqlite3_stmt *insert_stmt = NULL;
 
 	/* Create SQL statement. Prepare to write */
