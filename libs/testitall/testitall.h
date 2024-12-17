@@ -173,7 +173,7 @@ Return check_file_exists(
 		status = testitall(func, #func, desc); \
 	}
 
-#define RUN(func, desc) \
+#define EXEC(func, desc) \
 	status = testitall(func, #func, desc);
 
 // Execute a function without checking the status first.
