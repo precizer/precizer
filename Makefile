@@ -40,7 +40,6 @@ CFLAGS += -fbuiltin
 # make DEFINES=-DWRITE_CSV=false memtest
 CFLAGS += $(DEFINES)
 
-
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
 # Alpine Linux uses external libraries
