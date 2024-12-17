@@ -78,8 +78,8 @@ typedef enum
 
 } FILEDIR;
 
-/*
- * A database validation level
+/**
+ * Database validation level
  *
  */
 typedef enum
@@ -89,6 +89,16 @@ typedef enum
 
 } DB_CHECK_LEVEL;
 
+/**
+ * Whether the file exists or not
+ *
+ */
+typedef enum
+{
+	NOT_FOUND,
+	EXISTS
+
+} FileAvailability;
 
 /*
  *
@@ -173,6 +183,13 @@ typedef struct {
 	/// This flag is set to true if the database FILE exists and is accessible,
 	/// false otherwise. The value is updated by db_file_validate_existence()
 	bool db_file_exists;
+
+	/// The structure contains all database file metadata
+	/// to compare within status_of_changes();
+	struct stat db_file_stat;
+
+	/// The flag indicates that the primary database is stored in memory
+	bool db_in_memory;
 
 	/**
 	 * @brief Flag indicating if the database contains data from previous runs
@@ -365,7 +382,7 @@ void show_relative_path(
 
 void status_of_changes(void);
 
-Return detect_a_path(
+FileAvailability file_availability(
 	const char *,
 	const unsigned char
 );

@@ -36,9 +36,23 @@ Return db_file_validate_existence(void){
 
 	if(SUCCESS == status)
 	{
-		if(SUCCESS == detect_a_path(config->db_file_path,SHOULD_BE_A_FILE))
+		if(EXISTS == file_availability(config->db_file_path,SHOULD_BE_A_FILE))
 		{
 			config->db_file_exists = true;
+
+			// Do nothing if the path is not a real path but in-memory database
+			if((strcmp(config->db_file_path,":memory:") != 0) || config->db_in_memory != true)
+			{
+				int rc = stat(config->db_file_path,&(config->db_file_stat));
+
+				if(rc < 0)
+				{
+					report("Stat of %s failed with error code: %d",config->db_file_path,rc);
+					status = FAILURE;
+				}
+			}
+		} else {
+			config->db_file_exists = false;
 		}
 	}
 
