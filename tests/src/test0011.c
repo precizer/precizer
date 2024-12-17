@@ -73,7 +73,6 @@ static Return readme_example_2_test(void){
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
 		"cp -r tests/examples/ tests/examples_backup;",0));
 
-	// Main test run
 	const char *command = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
