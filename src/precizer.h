@@ -377,7 +377,7 @@ void show_relative_path(
 	bool *
 );
 
-void status_of_changes(void);
+Return status_of_changes(void);
 
 FileAvailability file_availability(
 	const char *,
