@@ -115,6 +115,8 @@ Return match_pattern(
 						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
 						YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
 						text, pattern);
+
+					status = FAILURE;
 				break;
 #endif
 			default:
