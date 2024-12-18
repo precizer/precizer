@@ -2,6 +2,20 @@
 #include <fts.h>
 
 /**
+ * @brief Compare two FTS entries by filename
+ * @param first Pointer to first FTSENT structure
+ * @param second Pointer to second FTSENT structure
+ * @return Integer less than, equal to, or greater than zero if first is found,
+ *         respectively, to be less than, to match, or be greater than second
+ */
+static int compare_by_name(
+	const FTSENT **first,
+	const FTSENT **second
+){
+	return strcmp((*first)->fts_name, (*second)->fts_name);
+}
+
+/**
  *
  * Traverses a directory recursively and returns
  * a struct for each file it encounters
@@ -40,7 +54,7 @@ Return file_list(bool count_size_of_all_files){
 
 	size_t count_files = 0,count_dirs = 0,count_symlnks = 0;
 
-	if((file_systems = fts_open(config->paths,fts_options,NULL)) == NULL)
+	if((file_systems = fts_open(config->paths,fts_options,compare_by_name)) == NULL)
 	{
 		report("fts_open() error\n");
 		status = FAILURE;
