@@ -149,9 +149,9 @@ Return construct_path(
 	const char *filename,
 	char       **full_path
 ){
-	Return status       = SUCCESS;
+	Return status = SUCCESS;
 	const char *tmp_dir = NULL;
-	size_t path_len     = 0;
+	size_t path_len = 0;
 
 	if(SUCCESS == status)
 	{
@@ -173,7 +173,7 @@ Return construct_path(
 
 	if(SUCCESS == status)
 	{
-		path_len   = strlen(tmp_dir) + strlen(filename) + 2; // +2 for '/' and '\0'
+		path_len = strlen(tmp_dir) + strlen(filename) + 2;   // +2 for '/' and '\0'
 		*full_path = (char *)malloc(path_len);
 
 		if(NULL == *full_path)
@@ -190,7 +190,7 @@ Return construct_path(
 		{
 			free(*full_path);
 			*full_path = NULL;
-			status     = FAILURE;
+			status = FAILURE;
 		}
 	}
 
@@ -218,8 +218,8 @@ static Return dry_run_mode_1_test(void){
 
 	// Does file exists or not
 	const char *filename = "database1.db";
-	char *path           = NULL;
-	bool file_exists     = false;
+	char *path = NULL;
+	bool file_exists = false;
 
 	ASSERT(SUCCESS == construct_path(filename,&path));
 
@@ -245,7 +245,7 @@ static Return dry_run_mode_2_test(void){
 	char *path = NULL;
 	char *pattern = NULL;
 	const char *filename = "database1.db";
-	const char *command  = "export TESTING=true;cd ${TMPDIR};" \
+	const char *command = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == construct_path(filename,&path));

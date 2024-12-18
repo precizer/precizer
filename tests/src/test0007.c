@@ -35,8 +35,8 @@ static Return libmem_test_1(void){
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
 
-	size_t array_length      = 1792;
-	size_t array_size        = array_length * sizeof(int);
+	size_t array_length = 1792;
+	size_t array_size = array_length * sizeof(int);
 	unsigned char *int_array = (unsigned char *)calloc(array_length,sizeof(int));
 
 	if(int_array == NULL)
@@ -109,8 +109,8 @@ static Return libmem_test_2(void){
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
 
-	size_t array_length       = 512;
-	size_t array_size         = array_length * sizeof(char);
+	size_t array_length = 512;
+	size_t array_size = array_length * sizeof(char);
 	unsigned char *char_array = (unsigned char *)calloc(array_length,sizeof(char));
 
 	// Seed random number generator
@@ -179,8 +179,8 @@ static Return libmem_test_3_4_5(void){
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
 
 	// TEST 3
-	size_t array_length         = 4096;
-	size_t array_size           = array_length * sizeof(unsigned long long int);
+	size_t array_length = 4096;
+	size_t array_size = array_length * sizeof(unsigned long long int);
 	unsigned char *ullint_array = (unsigned char *)calloc(array_length,sizeof(unsigned long long int));
 
 	// Seed random number generator
@@ -234,7 +234,7 @@ static Return libmem_test_3_4_5(void){
 
 	// TEST 4
 	array_length = 256;
-	array_size   = array_length * sizeof(unsigned long long int);
+	array_size = array_length * sizeof(unsigned long long int);
 	ullint_array = (unsigned char *)realloc(ullint_array,array_size);
 
 	// Seed random number generator
@@ -284,7 +284,7 @@ static Return libmem_test_3_4_5(void){
 
 	// TEST 5
 	array_length = 128;
-	array_size   = array_length * sizeof(unsigned long long int);
+	array_size = array_length * sizeof(unsigned long long int);
 	ullint_array = (unsigned char *)realloc(ullint_array,array_size);
 
 	// Seed random number generator

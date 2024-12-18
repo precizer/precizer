@@ -41,6 +41,7 @@ Return db_file_validate_existence(void){
 			config->db_file_exists = true;
 
 			int rc = stat(config->db_file_path,&(config->db_file_stat));
+
 			if(rc < 0)
 			{
 				report("Stat of %s failed with error code: %d",config->db_file_path,rc);
