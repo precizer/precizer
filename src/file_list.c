@@ -12,7 +12,7 @@ static int compare_by_name(
 	const FTSENT **first,
 	const FTSENT **second
 ){
-	return strcmp((*first)->fts_name, (*second)->fts_name);
+	return strcmp((*first)->fts_name,(*second)->fts_name);
 }
 
 /**

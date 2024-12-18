@@ -27,11 +27,13 @@ Return status_of_changes(void){
 			struct stat db_current_stat = {0};
 
 			int rc = stat(config->db_file_path,&db_current_stat);
+
 			if(rc < 0)
 			{
 				report("Stat of %s failed with error code: %d",config->db_file_path,rc);
 				status = FAILURE;
 			}
+
 			if(memcmp(&db_current_stat,&(config->db_file_stat),sizeof(struct stat)) != 0)
 			{
 				slog(EVERY,BOLD "The database file %s has been modified since the program was launched" RESET "\n",config->db_file_name);

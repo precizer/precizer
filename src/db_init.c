@@ -112,7 +112,7 @@ Return db_init(void){
 				status = FAILURE;
 			}
 		}
-	} else{
+	} else {
 		slog(TRACE,"The primary database and tables have NOT been initialized\n");
 	}
 

@@ -42,7 +42,7 @@ static Return verify_array_contents(
 static Return test_add_string_to_empty_array(void){
 	Return status = SUCCESS;
 
-	char **array            = NULL;
+	char **array = NULL;
 	const char *test_string = "Hello World";
 
 	ASSERT(SUCCESS == add_string_to_array(&array,test_string));
@@ -59,7 +59,7 @@ static Return test_add_string_to_empty_array(void){
 static Return test_add_multiple_strings(void){
 	Return status = SUCCESS;
 
-	char **array          = NULL;
+	char **array = NULL;
 	const char *strings[] = {
 		"First","Second","Third"
 	};
@@ -80,7 +80,7 @@ static Return test_add_multiple_strings(void){
 static Return test_add_empty_string(void){
 	Return status = SUCCESS;
 
-	char **array             = NULL;
+	char **array = NULL;
 	const char *empty_string = "";
 
 	ASSERT(SUCCESS == add_string_to_array(&array,empty_string));
