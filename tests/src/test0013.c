@@ -242,18 +242,22 @@ static Return dry_run_mode_2_test(void){
 	MSTRUCT(mem_char,result);
 	struct stat stat1;
 	struct stat stat2;
-	char *path           = NULL;
+	char *path = NULL;
+	char *pattern = NULL;
 	const char *filename = "database1.db";
 	const char *command  = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,0));
-
 	ASSERT(SUCCESS == construct_path(filename,&path));
+
+	ASSERT(SUCCESS == execute_command(command,result,0));
 
 	#if 0
 	echo(STDOUT,"Path: %s\n",path);
+	echo(STDOUT,"%s\n",result->mem);
 	#endif
+
+	del_char(&result);
 
 	ASSERT(SUCCESS == check_file(path,&stat1));
 
@@ -265,15 +269,13 @@ static Return dry_run_mode_2_test(void){
 
 	ASSERT(SUCCESS == execute_command(command,result,0));
 
-	#if 1
+	#if 0
 	echo(STDOUT,"%s\n",result->mem);
 	#endif
 
 	del_char(&result);
 
 	ASSERT(SUCCESS == check_file(path,&stat2));
-
-	free(path);
 
 	if(SUCCESS == status)
 	{
@@ -285,9 +287,75 @@ static Return dry_run_mode_2_test(void){
 		}
 	}
 
+	// Compare against the sample. A message should be displayed indicating
+	// that the --db-clean-ignored option must be specified for permanent
+	// removal of ignored files from the database
+	command = "export TESTING=true;cd ${TMPDIR};" \
+	        "./precizer --dry-run --ignore=\"tests/examples/diffs/diff1/1/AAA/ZAW/*\"" \
+	        " --update --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == execute_command(command,result,0));
+
+	#if 0
+	echo(STDOUT,"%s\n",result->mem);
+	#endif
+
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_1.txt",&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+
+	free(pattern);
+	pattern = NULL;
+
+	del_char(&result);
+
+	ASSERT(SUCCESS == check_file(path,&stat2));
+
+	if(SUCCESS == status)
+	{
+		if(memcmp(&stat1,&stat2,sizeof(struct stat)) != 0)
+		{
+			print_stat(&stat1);
+			print_stat(&stat2);
+			status = FAILURE;
+		}
+	}
+
+	// Permanent deletion Dry Run mode of all ignored file
+	// references from the database
+	command = "export TESTING=true;cd ${TMPDIR};" \
+	        "./precizer --db-clean-ignored --ignore=\"tests/examples/diffs/diff1/1/AAA/ZAW/*\"" \
+	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == execute_command(command,result,0));
+
+	#if 0
+	echo(STDOUT,"%s\n",result->mem);
+	#endif
+
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_3.txt",&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+
+	free(pattern);
+	pattern = NULL;
+
+	del_char(&result);
+
+	ASSERT(SUCCESS == check_file(path,&stat2));
+
+	if(SUCCESS == status)
+	{
+		if(memcmp(&stat1,&stat2,sizeof(struct stat)) != 0)
+		{
+			print_stat(&stat1);
+			print_stat(&stat2);
+			status = FAILURE;
+		}
+	}
+
+	free(path);
+
 	RETURN_STATUS;
 }
-
 
 // Main test runner
 Return test0013(void){

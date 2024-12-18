@@ -410,7 +410,7 @@ Return parse_arguments(
 
 		if(config->db_clean_ignored)
 		{
-			slog(TESTING,"argument:db_clean_ignored=%s\n",config->db_clean_ignored ? "yes" : "no");
+			slog(TESTING,"argument:db-clean-ignored=%s\n",config->db_clean_ignored ? "yes" : "no");
 		}
 
 		if(config->dry_run)
@@ -481,7 +481,7 @@ Return parse_arguments(
 				}
 				printf("; ");
 			}
-			printf("verbose=%s; silent=no; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, db_check_level=%s, rational_logger_mode=%s",
+			printf("verbose=%s; silent=no; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, db-check-level=%s, rational_logger_mode=%s",
 				config->verbose ? "yes" : "no",
 				config->force ? "yes" : "no",
 				config->update ? "yes" : "no",

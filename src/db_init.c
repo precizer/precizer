@@ -112,6 +112,8 @@ Return db_init(void){
 				status = FAILURE;
 			}
 		}
+	} else{
+		slog(TRACE,"The primary database and tables have NOT been initialized\n");
 	}
 
 	// Tune the DB performance

@@ -15,49 +15,50 @@ TESTING:Database file path: %DB_NAME%
 TESTING:DB name determined
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% doesn't exist or it is not a file
-TESTING:The main DB file not yet exists. Brand new database will be created
+TESTING:The primary DB file not yet exists. Brand new database will be created
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
 TESTING:Successfully opened database %DB_NAME%
-TESTING:The main database and tables have been successfully initialized
-TESTING:The main database named %DB_NAME% is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the main database %DB_NAME%
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named %DB_NAME% is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database %DB_NAME%
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
 TESTING:Starting of database file %DB_NAME% integrity check...
+TESTING:The database verification level has been set to QUICK
 TESTING:Database %DB_NAME% has been verified and is in good condition
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs exists
 TESTING:The path tests/examples/diffs is exists and it is a directory
 TESTING:Paths detected
 TESTING:\x1B\[1mThese files will be added against the %DB_NAME% database:\x1B\[0m
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt
-diff2/path2/AAA/BCB/CCC/a.txt
 diff2/path1/AAA/ZAW/D/e/f/b_file.txt
 diff2/path1/AAA/ZAW/A/b/c/a_file.txt
-diff2/path1/AAA/BCB/CCC/b.txt
 diff2/path1/AAA/BCB/CCC/a.txt
-diff2/4/AAA/BBB/CCC/a.txt
-diff2/3/AAA/BBB/CCC/a.txt
+diff2/path1/AAA/BCB/CCC/b.txt
 diff2/2/AAA/BBB/CZC/a.txt
+diff2/4/AAA/BBB/CCC/a.txt
 diff2/1/AAA/ZAW/D/e/f/b_file.txt
 diff2/1/AAA/ZAW/A/b/c/a_file.txt
 diff2/1/AAA/BCB/CCC/a.txt
-diff1/path2/AAA/ZAW/D/e/f/b_file.txt
-diff1/path2/AAA/ZAW/A/b/c/a_file.txt
-diff1/path2/AAA/BCB/CCC/a.txt
-diff1/path1/AAA/BCB/CCC/a.txt
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt
+diff2/path2/AAA/BCB/CCC/a.txt
+diff2/3/AAA/BBB/CCC/a.txt
 diff1/path1/AAA/ZAW/D/e/f/b_file.txt
 diff1/path1/AAA/ZAW/A/b/c/a_file.txt
-diff1/4/AAA/BBB/CCC/a.txt
-diff1/3/AAA/BBB/CCC/a.txt
+diff1/path1/AAA/BCB/CCC/a.txt
 diff1/2/AAA/BBB/CZC/a.txt
+diff1/4/AAA/BBB/CCC/a.txt
 diff1/1/AAA/ZAW/D/e/f/b_file.txt
 diff1/1/AAA/ZAW/A/b/c/a_file.txt
 diff1/1/AAA/BCB/CCC/a.txt
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt
+diff1/path2/AAA/BCB/CCC/a.txt
+diff1/3/AAA/BBB/CCC/a.txt
 TESTING:Start vacuuming...
-TESTING:The main database has been vacuumed
+TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database %DB_NAME% has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues\z

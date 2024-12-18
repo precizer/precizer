@@ -16,16 +16,18 @@ Return db_delete_the_file_by_id(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// Don't do anything in case of --dry-run
-	if(config->dry_run == true)
-	{
-		return(status);
-	}
-
 	sqlite3_stmt *delete_stmt = NULL;
 	int rc = 0;
 
-	rc = sqlite3_prepare_v2(config->db,"DELETE FROM files WHERE ID=?1;",-1,&delete_stmt,NULL);
+	const char *sql = "DELETE FROM files WHERE ID=?1;";
+
+	// Don't do anything in case of --dry-run
+	if(config->dry_run == true)
+	{
+		sql = "SELECT ID FROM files WHERE ID=?1;";
+	}
+
+	rc = sqlite3_prepare_v2(config->db,sql,-1,&delete_stmt,NULL);
 
 	if(SQLITE_OK != rc)
 	{
@@ -41,8 +43,16 @@ Return db_delete_the_file_by_id(
 		status = FAILURE;
 	}
 
+	int sql_return = SQLITE_DONE;
+
+	// Select instead Delete in Dry Run mode
+	if(config->dry_run == true)
+	{
+		sql_return = SQLITE_ROW;
+	}
+
 	/* Execute SQL statement */
-	if(sqlite3_step(delete_stmt) == SQLITE_DONE)
+	if(sqlite3_step(delete_stmt) == sql_return)
 	{
 		if(*first_iteration == true)
 		{
@@ -57,7 +67,7 @@ Return db_delete_the_file_by_id(
 			// Reflect changes in global
 			config->something_has_been_changed = true;
 
-			slog(EVERY,BOLD "These files are ignored or no longer exist and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
+			slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
 		}
 
 		if(*clean_ignored == true)
@@ -67,7 +77,7 @@ Return db_delete_the_file_by_id(
 			slog(EVERY,"%s\n",relative_path);
 		}
 	} else {
-		slog(ERROR,"Delete statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		slog(ERROR,"Delete statement didn't return right code %d (%i): %s\n",sql_return,rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
