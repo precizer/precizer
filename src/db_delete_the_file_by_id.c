@@ -72,7 +72,7 @@ Return db_delete_the_file_by_id(
 
 		if(*clean_ignored == true)
 		{
-			slog(EVERY,"clean ignored %s\n",relative_path);
+			slog(EVERY,"%s clean ignored\n",relative_path);
 		} else {
 			slog(EVERY,"%s\n",relative_path);
 		}
