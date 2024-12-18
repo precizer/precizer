@@ -110,10 +110,7 @@ int main(
 	// Print out whether there have been changes to
 	// the file system and accordingly against the database
 	// since the last research
-	if(SUCCESS == status)
-	{
-		status_of_changes();
-	}
+	run(status_of_changes());
 
 	// Free allocated memory
 	// for arrays and variables

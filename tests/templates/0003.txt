@@ -17,16 +17,16 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
 TESTING:Successfully opened database DisposableDB
-TESTING:The main database and tables have been successfully initialized
-TESTING:The main database named DisposableDB is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the main database DisposableDB
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named DisposableDB is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
 TESTING:Database initialized
 TESTING:Comparison of databases ljlasdhf.db and database2.db is starting...
 TESTING:Verify that the path ljlasdhf.db exists
 TESTING:The path ljlasdhf.db is exists and it is a file
+TESTING:Compare mode is enabled. Database verification for ljlasdhf.db is skipped
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
-TESTING:Compare mode is enabled. Database verification for ljlasdhf.db is skipped
 TESTING:Compare mode is enabled. Database verification for database2.db is skipped
 TESTING:\x1B\[1mThese files no longer exist against ljlasdhf.db but still present against database2.db\x1B\[0m
 TESTING:path1/AAA/BCB/CCC/b.txt
@@ -39,9 +39,9 @@ TESTING:4/AAA/BBB/CCC/a.txt
 TESTING:path1/AAA/ZAW/D/e/f/b_file.txt
 TESTING:path2/AAA/BCB/CCC/a.txt
 TESTING:Current directory: .*$
-TESTING:Comparison mode is enabled. Main database verification is not required
+TESTING:Comparison mode is enabled. The primary database verification is not required
 TESTING:Compare mode is enabled. Database verification for :memory: is skipped
 TESTING:Comparing databases. Directory path verification is not required
-TESTING:Comparison mode is enabled. The main database does not require cleanup
-TESTING:Compare mode is enabled. Vacuuming is not required for the main database
+TESTING:Comparison mode is enabled. The primary database does not require cleanup
+TESTING:Compare mode is enabled. Vacuuming is not required for the primary database
 TESTING:The precizer completed its execution without any issues\z
