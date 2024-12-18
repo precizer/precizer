@@ -320,7 +320,7 @@ static Return dry_run_mode_2_test(void){
 		}
 	}
 
-	// Permanent deletion Dry Run mode of all ignored file
+	// Dry Run mode permanent deletion of all ignored file
 	// references from the database
 	command = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --db-clean-ignored --ignore=\"tests/examples/diffs/diff1/1/AAA/ZAW/*\"" \
@@ -333,6 +333,36 @@ static Return dry_run_mode_2_test(void){
 	#endif
 
 	ASSERT(SUCCESS == get_file_content("templates/0013_002_3.txt",&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+
+	free(pattern);
+	pattern = NULL;
+
+	del_char(&result);
+
+	ASSERT(SUCCESS == check_file(path,&stat2));
+
+	if(SUCCESS == status)
+	{
+		if(memcmp(&stat1,&stat2,sizeof(struct stat)) != 0)
+		{
+			print_stat(&stat1);
+			print_stat(&stat2);
+			status = FAILURE;
+		}
+	}
+
+	command = "export TESTING=true;cd ${TMPDIR};" \
+	        "./precizer --db-clean-ignored --ignore=\"path2/AAA/ZAW/*\"" \
+	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == execute_command(command,result,0));
+
+	#if 0
+	echo(STDOUT,"%s\n",result->mem);
+	#endif
+
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_4.txt",&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
 
 	free(pattern);
