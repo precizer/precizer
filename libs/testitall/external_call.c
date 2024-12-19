@@ -77,8 +77,8 @@ Return external_call(
 	ssize_t count = 0;              // Количество прочитанных байт за итерацию
 
 	// Чтение данных из пайпа
-	char temp_buffer[BUFFER_LENGTH];
-	while((count = read(stdout_pipe[0], temp_buffer, BUFFER_LENGTH)) > 0)
+	char temp_buffer[PAGE_BYTES];
+	while((count = read(stdout_pipe[0], temp_buffer, PAGE_BYTES)) > 0)
 	{
 		if (count == -1) {
 			serp("read error"); // Handle command execution error
@@ -122,9 +122,9 @@ Return external_call(
 	// Чтение данных из пайпа
 
 	// Очистка временного буфера
-	memset(temp_buffer,0,BUFFER_LENGTH);
+	memset(temp_buffer,0,PAGE_BYTES);
 
-	while ((count = read(stderr_pipe[0], temp_buffer, BUFFER_LENGTH)) > 0)
+	while ((count = read(stderr_pipe[0], temp_buffer, PAGE_BYTES)) > 0)
 	{
 		if (count == -1)
 		{
