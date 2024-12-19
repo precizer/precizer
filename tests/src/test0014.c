@@ -26,10 +26,10 @@ Return test0014(void){
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	TEST(short_relative_path_test,"Short relative path");
-	TEST(short_absolute_path_test,"Short absolute path");
-	TEST(long_relative_path_test,"Long relative path");
-	TEST(long_absolute_path_test,"Long absolute path");
+	TEST(short_relative_path_test,"Short relative path…");
+	TEST(short_absolute_path_test,"Short absolute path…");
+	TEST(long_relative_path_test,"Long relative path…");
+	TEST(long_absolute_path_test,"Long absolute path…");
 
 	RETURN_STATUS;
 }
