@@ -268,6 +268,11 @@ typedef struct {
 	/// rescanned and its checksum updated in the database.
 	bool watch_timestamps;
 
+	/// This option prevents directory traversal from descending into
+	/// directories that have a different device number than the file
+	/// from  which the descent began
+	bool start_device_only;
+
 } Config;
 
 /*

@@ -51,6 +51,9 @@ static char args_doc[] = "PATH";
 /* The options we understand. */
 static struct argp_option options[] = {
 	{ 0,0,0,0,"Build database options:",2},
+	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories " \
+		"that have a different device number than the file from  " \
+		"which the descent began\n",0 },
 	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions " \
 	 "could be used to specify a pattern to ignore files " \
 	 "or directories. Attention! All paths for the regular " \
@@ -166,6 +169,9 @@ static error_t parse_opt(
 			break;
 		case 'c':
 			config->compare = true;
+			break;
+		case 'o':
+			config->start_device_only = true;
 			break;
 		case 'C':
 			config->db_clean_ignored = true;
