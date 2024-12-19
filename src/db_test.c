@@ -2,7 +2,7 @@
 
 /**
  *
- * Check up the integrity of database file
+ * Validate the integrity of database file
  *
  */
 Return db_test(const char *db_file_path){
