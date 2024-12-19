@@ -14,10 +14,10 @@
 typedef struct {
 	size_t current_bytes; ///< Current heap memory usage in bytes
 	size_t current_effective_bytes; ///< Current effective memory usage
-	size_t new_allocations_counter; ///< Number of new memory allocations
+	size_t new_allocations_counter; ///< How many times was new hash memory allocated (grew from zero to the specified size)
 	size_t total_allocated_bytes; ///< Total heap memory allocated
 	size_t total_effective_allocated_bytes; ///< Total effective memory allocated
-	size_t actual_reallocations_counter; ///< Count of actual reallocations
+	size_t aligned_reallocations_counter; ///< Count of aligned reallocations
 	size_t realloc_optimized_counter; ///< Count of optimized reallocations
 	size_t free_counter; ///< Number of memory deallocations
 	size_t free_total_bytes; ///< Total bytes freed
@@ -29,7 +29,7 @@ extern Telemetry telemetry;
 
 /**
  * @brief Tracks heap trick reallocation events
- * @details Atomically increments the counter for optimized reallocations that avoid actual memory operations
+ * @details Atomically increments the counter for optimized reallocations that avoid aligned memory operations
  */
 void telemetry_realloc_optimized_counter(void);
 
@@ -40,10 +40,10 @@ void telemetry_realloc_optimized_counter(void);
 void telemetry_allocations_counter(void);
 
 /**
- * @brief Tracks actual memory reallocation events
+ * @brief Tracks aligned memory reallocation events
  * @details Atomically increments the counter for true memory reallocations that modify system memory
  */
-void telemetry_actual_reallocations_counter(void);
+void telemetry_aligned_reallocations_counter(void);
 
 /**
  * @brief Tracks no-op reallocation events
