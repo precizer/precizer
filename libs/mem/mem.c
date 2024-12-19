@@ -15,16 +15,14 @@ Telemetry telemetry = {0}; // Initialize with zeros
  * @return Aligned size in bytes
  * @details Calculates the next multiple of PAGE_BYTES for memory allocation
  */
-__attribute__((always_inline)) static inline size_t get_aligned_bytes(
-	const size_t size
-){
+__attribute__((always_inline)) static inline size_t get_aligned_bytes(const size_t size){
 	// Reallocate size to the next multiple of PAGE_BYTES
 	// (size + (PAGE_BYTES - 1)) rounds up the size
 	// & ~(PAGE_BYTES - 1) creates a mask to truncate to nearest multiple
 	size_t allocated_size = (size + (PAGE_BYTES - 1)) & ~(PAGE_BYTES - 1);
 
 	#if SHOW
-	printf("requested size=%zu, aligned size=%zu\n", size, allocated_size);
+	printf("requested size=%zu, aligned size=%zu\n",size,allocated_size);
 	#endif
 
 	return allocated_size;
@@ -41,9 +39,9 @@ __attribute__((always_inline)) static inline size_t get_aligned_bytes(
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return realloc_char(
-	mem_char *structure,
+	mem_char     *structure,
 	const size_t newlength,
-	bool true_reduce
+	bool         true_reduce
 ){
 	#define TYPE char
 	#include "realloc.cc"
@@ -100,9 +98,9 @@ Return append_char(
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return calloc_char(
-	mem_char *structure,
+	mem_char     *structure,
 	const size_t newlength,
-	bool true_reduce
+	bool         true_reduce
 ){
 	#define CALLOC 0
 	#define TYPE char
@@ -116,8 +114,7 @@ Return calloc_char(
  * @brief Deallocates memory for char array
  * @param structure Pointer to pointer to mem_char structure
  */
-Return del_char(mem_char **structure)
-{
+Return del_char(mem_char **structure){
 	#define TYPE char
 	#include "del.cc"
 	#undef TYPE
@@ -134,9 +131,9 @@ Return del_char(mem_char **structure)
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return realloc_int(
-	mem_int *structure,
+	mem_int      *structure,
 	const size_t newlength,
-	bool true_reduce
+	bool         true_reduce
 ){
 	#define TYPE int
 	#include "realloc.cc"
@@ -150,9 +147,9 @@ Return realloc_int(
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return calloc_int(
-	mem_int *structure,
+	mem_int      *structure,
 	const size_t newlength,
-	bool true_reduce
+	bool         true_reduce
 ){
 	#define CALLOC 0
 	#define TYPE int
@@ -165,8 +162,7 @@ Return calloc_int(
  * @brief Deallocates memory for int array
  * @param structure Pointer to pointer to mem_int structure
  */
-Return del_int(mem_int **structure)
-{
+Return del_int(mem_int **structure){
 	#define TYPE int
 	#include "del.cc"
 	#undef TYPE
@@ -183,9 +179,9 @@ Return del_int(mem_int **structure)
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return realloc_ullint(
-	mem_ullint *structure,
+	mem_ullint   *structure,
 	const size_t newlength,
-	bool true_reduce
+	bool         true_reduce
 ){
 	#define TYPE ullint
 	#include "realloc.cc"
@@ -199,9 +195,9 @@ Return realloc_ullint(
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return calloc_ullint(
-	mem_ullint *structure,
+	mem_ullint   *structure,
 	const size_t newlength,
-	bool true_reduce
+	bool         true_reduce
 ){
 	#define CALLOC 0
 	#define TYPE ullint
@@ -214,8 +210,7 @@ Return calloc_ullint(
  * @brief Deallocates memory for unsigned long long int array
  * @param structure Pointer to pointer to mem_ullint structure
  */
-Return del_ullint(mem_ullint **structure)
-{
+Return del_ullint(mem_ullint **structure){
 	#define TYPE ullint
 	#include "del.cc"
 	#undef TYPE
