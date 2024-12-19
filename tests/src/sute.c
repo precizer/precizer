@@ -1,18 +1,5 @@
 #include "sute.h"
 
-/**
- * Global definitions for Unit Tests
- *
- */
-
-// Global variable controls signals to interrupt execution
-// Atomic variable is very fast and will be called very often
-_Atomic bool global_interrupt_flag = false;
-
-// The global structure Config where all runtime settings will be stored
-Config _config;
-Config *config = &_config;
-
 int main(void){
 	// Test function name and its short description
 	TESTSTART;

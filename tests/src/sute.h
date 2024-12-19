@@ -4,7 +4,6 @@
 #include <string.h>
 #include "testitall.h"
 #include "mem.h"
-#include "rational.h"
 #include "precizer.h"
 #include <stdatomic.h>
 

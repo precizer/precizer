@@ -20,6 +20,7 @@ _Atomic bool global_interrupt_flag = false;
 Config _config;
 Config *config = &_config;
 
+#ifndef TESTITALL
 /**
  * @mainpage
  * @brief precizer is a CLI application designed to verify the integrity of files after synchronization.
@@ -118,3 +119,4 @@ int main(
 
 	return(exit_status(status,argv));
 }
+#endif // TESTITALL
