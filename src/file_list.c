@@ -182,13 +182,13 @@ Return file_list(bool count_size_of_all_files){
 						break;
 					}
 
-					// Check up if size, creation and modification time of a
+					// Validate if size, creation and modification time of a
 					// file has not changed since last scanning.
 					int metadata_of_scanned_and_saved_files = NOT_EQUAL;
 
 					if(dbrow->relative_path_already_in_db == true)
 					{
-						// Check up if size, creation and modification time of a
+						// Validate if size, creation and modification time of a
 						// file has not changed since last scanning.
 						metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),p->fts_statp);
 

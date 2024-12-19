@@ -47,7 +47,7 @@ Return db_compare(void){
 
 	/*
 	 *
-	 * Check up the path availability
+	 * Validate the path availability
 	 *
 	 */
 

@@ -173,7 +173,7 @@ static error_t parse_opt(
 		case 'm':
 			argument_value = strtol(arg,&ptr,10);
 
-			// Check up if lont int could be casted to short int
+			// Validate if lont int could be casted to short int
 			// and the argument contains a digit only
 			if(argument_value >= 0 && argument_value <= 32767 && *ptr == '\0')
 			{

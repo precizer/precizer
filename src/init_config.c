@@ -118,7 +118,7 @@ void init_config(void){
 	const char *compare_string = "true";
 
 	// Retrieve the value of the "TESTING" environment variable,
-	// Check up if the environment variable TESTING exists
+	// Validate if the environment variable TESTING exists
 	// and if it match to "true" display ONLY testing
 	// messages for System Testing purposes.
 	const char *env_var = getenv("TESTING");
