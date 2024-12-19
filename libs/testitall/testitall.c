@@ -44,25 +44,25 @@ Return testitall(
 	/* Format and display test results with color coding */
 	if(SUCCESS == status) {
 		/* Green OK for passed tests */
-		fprintf(stdout, RESET WHITE "[  " BOLDGREEN "OK" RESET WHITE  "  ]" );
-		fprintf(stdout, " %lldns %s %s", elapsed_time, function_name, test_description);
+		fprintf(stdout, WHITE "[  " BOLDGREEN "OK" RESET WHITE  "  ]" RESET );
+		fprintf(stdout, WHITE " %lldns %s %s" RESET, elapsed_time, function_name, test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		if(EXTEND->length > 0)
 		{
-			fprintf(stdout, " %s", EXTEND->mem);
+			fprintf(stdout, WHITE " %s" RESET, EXTEND->mem);
 		}
 		fprintf(stdout, "\n");
 
 	} else {
 		/* Red FAIL for failed tests */
-		fprintf(stdout, RESET WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" );
-		fprintf(stdout, " %lldns %s %s", elapsed_time, function_name, test_description);
+		fprintf(stdout, WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" RESET );
+		fprintf(stdout, WHITE " %lldns %s %s" RESET, elapsed_time, function_name, test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		if(EXTEND->length > 0)
 		{
-			fprintf(stdout, " %s", EXTEND->mem);
+			fprintf(stdout, WHITE " %s" RESET, EXTEND->mem);
 		}
 		fprintf(stdout, "\n");
 	}

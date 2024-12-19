@@ -1,5 +1,12 @@
 #pragma once
 
+// The definition used to disable specific
+// functions in the tested application,
+// for example, the main() function.
+#ifndef TESTITALL
+#define TESTITALL
+#endif
+
 // Need for strdup(), clock_gettime()
 // Have to be at the beginning of the file
 #define _GNU_SOURCE
@@ -99,6 +106,12 @@ Return external_call(
 );
 
 void echo(
+	mem_char *,
+	const char *,
+	...
+) __attribute__((format(gnu_printf, 2, 3)));
+
+void myecho(
 	mem_char *,
 	const char *,
 	...
