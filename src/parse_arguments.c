@@ -81,6 +81,11 @@ static struct argp_option options[] = {
 	 "matches the regular expression passed through the " \
 	 BOLD "--ignore=PCRE2_REGEXP" RESET " option(s)\n",0},
 	{"dry-run",'n',0,0,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET "\n",0},
+	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) " \
+                   "in addition to file size when detecting changes. By default, only " \
+                   "file size changes trigger rescanning. When this option is enabled, " \
+                   "any changes to file timestamps or size will cause the file to be " \
+                   "rescanned and its checksum updated in the primary database\n",0},
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. " \
 	 "The depth of the traversal, numbered from 0 to N, " \
 	 "where a file could be found. Representing the maximum " \
@@ -92,16 +97,14 @@ static struct argp_option options[] = {
 	 "renewed. Warning! If this option will be used in incorrect way, " \
 	 "information about files and their checksums against the database would " \
 	 "be lost.\n",0 },
-	{"update",'u',0,0,"Force update of the database with new, changed and deleted files. " \
-	 "This option would greatly affects the security of the database. " \
-	 "Please use it only in exceptional cases and not add thoughtlessly " \
-	 "to a script. If use this parameter in incorrect way information against " \
-	 "the database containing file names and their checksums may be lost. " \
-	 "When this argument is specified, it is important to specify the same " \
-	 "PATH source (starting directory) that has been specified when the database " \
-	 "had been created. Otherwise, updating the data makes no sense — the " \
-	 "old data will be deleted from the database and completely " \
-	 "overwritten by new ones.\n",0 },
+	{"update",'u',0,0,"Updates the database to reflect file system changes (new, " \
+                  "modified and deleted files). Must be used with the same " \
+                  "initial PATH that was used when creating the database, as " \
+                  "existing records will be replaced with data from the " \
+                  "specified location.\n" \
+                  "This option modifies database consistency. Use with caution, " \
+                  "especially in automated scripts, as incorrect usage may lead " \
+                  "to loss of file checksums and metadata.\n",0 },
 	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname\n",0 },
 	{"check-level",'l',"LEVEL",0,"Select database validation level: 'quick' (default) for basic structure check, 'full' for comprehensive integrity verification\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
@@ -181,6 +184,9 @@ static error_t parse_opt(
 			break;
 		case 'p':
 			config->progress = true;
+			break;
+		case 'T':
+			config->watch_timestamps = true;
 			break;
 		case 'u':
 			config->update = true;
@@ -388,6 +394,11 @@ Return parse_arguments(
 			slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
 		}
 
+		if(config->watch_timestamps)
+		{
+			slog(TESTING,"argument:watch-timestamps=%s\n",config->watch_timestamps ? "yes" : "no");
+		}
+
 		if(config->force)
 		{
 			slog(TESTING,"argument:force=%s\n",config->force ? "yes" : "no");
@@ -481,10 +492,11 @@ Return parse_arguments(
 				}
 				printf("; ");
 			}
-			printf("verbose=%s; silent=no; force=%s; update=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, db-check-level=%s, rational_logger_mode=%s",
+			printf("verbose=%s; silent=no; force=%s; update=%s; watch-timestamps=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, db-check-level=%s, rational_logger_mode=%s",
 				config->verbose ? "yes" : "no",
 				config->force ? "yes" : "no",
 				config->update ? "yes" : "no",
+				config->watch_timestamps ? "yes" : "no",
 				config->progress ? "yes" : "no",
 				config->compare ? "yes" : "no",
 				config->db_clean_ignored ? "yes" : "no",

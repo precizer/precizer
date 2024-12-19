@@ -261,6 +261,13 @@ typedef struct {
 	/// data integrity remains untouched.
 	bool dry_run;
 
+	/// Consider file metadata changes (creation and modification timestamps)
+	/// in addition to file size when detecting changes. By default, only
+	/// file size changes trigger rescanning. When this option is enabled,
+	/// any changes to file timestamps or size will cause the file to be
+	/// rescanned and its checksum updated in the database.
+	bool watch_timestamps;
+
 } Config;
 
 /*
