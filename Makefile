@@ -187,10 +187,12 @@ $(STZEXE): $(STZOBJS)
 	@$(CC) $(CFLAGS) $(STZCFLAGS) $(STZLIBS) $(STZDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(STZOBJDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(STZOBJDIR)
+$(STZOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(STZOBJDIR)
 	@$(CC) -c $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
+
+$(STZOBJDIR):
+	@mkdir -p $(STZOBJDIR)
 
 #
 # Debug rules
@@ -203,10 +205,12 @@ $(DBGEXE): $(DBGOBJS)
 	@cp $@ ./
 	@echo "$@ moved to current directory"
 
-$(DBGOBJDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(DBGOBJDIR)
+$(DBGOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBGOBJDIR)
 	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
+
+$(DBGOBJDIR):
+	@mkdir -p $(DBGOBJDIR)
 
 #
 # Release rules
@@ -226,10 +230,12 @@ $(RELEXE): $(RELOBJS)
 	@cp $@ ./
 	@echo "$@ moved to current directory"
 
-$(RELOBJDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(RELOBJDIR)
+$(RELOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(RELOBJDIR)
 	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
 	@echo $<" compiled."
+
+$(RELOBJDIR):
+	@mkdir -p $(RELOBJDIR)
 
 #
 # Format rules
