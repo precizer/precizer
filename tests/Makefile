@@ -8,6 +8,9 @@ EXE=testitall
 # Stop the build on any errors -Werror
 CFLAGS += -pipe -std=c11 -finline-functions
 CFLAGS += -fbuiltin
+# The definition used to disable the main() function
+# of the tested application
+CFLAGS += -DTESTITALL
 
 STRIP = -s
 STATIC = -static
@@ -41,9 +44,6 @@ ifneq ($(CC), clang)
 WFLAGS += -Wlogical-op
 endif
 
-# Exclude a file
-EXCLUDE = $(PRZRSRC)/precizer.c
-
 #
 # Project files
 #
@@ -53,7 +53,7 @@ PRZRHDRS = $(wildcard $(PRZRSRC)/*.h)
 ALLHDRS = $(HDRS) $(PRZRHDRS)
 OBJS = $(SRCS:.c=.o)
 
-PRZRSRCS = $(filter-out $(EXCLUDE),$(wildcard $(PRZRSRC)/*.c))
+PRZRSRCS = $(wildcard $(PRZRSRC)/*.c)
 PRZROBJS = $(PRZRSRCS:.c=.o)
 
 #

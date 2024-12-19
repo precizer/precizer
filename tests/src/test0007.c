@@ -6,11 +6,9 @@
 #include <time.h>
 #include "sha512.h"
 
-#if 0
-#define SHOW
-#endif
+#define SHOW 0 /* Change to 1 to print out debug details */
 
-#ifdef SHOW
+#if SHOW
 
 /**
  * @param
@@ -25,6 +23,26 @@ static void print_hash(unsigned char *hash){
 	echo(STDERR,"\n");
 }
 #endif
+
+// TEST 0
+static Return libmem_test_0(void){
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	// Allocate memory for the structure int
+	MSTRUCT(mem_ullint,test0_0);
+	MSTRUCT(mem_ullint,test0_1);
+
+	// Create an int memory
+	realloc_ullint(test0_0,0);
+	copy_ullint(test0_1,test0_0);
+
+	del_ullint(&test0_0);
+	del_ullint(&test0_1);
+
+	RETURN_STATUS;
+}
 
 // TEST 1
 static Return libmem_test_1(void){
@@ -60,7 +78,7 @@ static Return libmem_test_1(void){
 	sha512_update(&ctx,int_array,array_size);
 	sha512_final(&ctx,hash_1);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 1 array size: %zu bytes, array_length=%zu, sizeof(int)=%zu bytes\n",array_size,array_length,sizeof(int));
 	echo(STDERR,"Test 1 SHA-512 hash: ");
@@ -80,7 +98,7 @@ static Return libmem_test_1(void){
 	sha512_update(&ctx,(const unsigned char *)test1->mem,test1->length * sizeof(test1->mem[0]));
 	sha512_final(&ctx,hash_2);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 1 Array size: %zu bytes\n",test1->length * sizeof(test1->mem[0]));
 	echo(STDERR,"Test 1 SHA-512 hash: ");
@@ -128,7 +146,7 @@ static Return libmem_test_2(void){
 	sha512_update(&ctx,char_array,array_size);
 	sha512_final(&ctx,hash_1);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 2 array size: %zu bytes, array_length=%zu, sizeof(char)=%zu bytes\n",array_size,array_length,sizeof(char));
 	echo(STDERR,"Test 2 SHA-512 hash: ");
@@ -149,7 +167,7 @@ static Return libmem_test_2(void){
 	sha512_update(&ctx,(const unsigned char *)test2->mem,test2->length * sizeof(test2->mem[0]));
 	sha512_final(&ctx,hash_2);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 2 array size: %zu bytes\n",test2->length * sizeof(test2->mem[0]));
 	echo(STDERR,"Test 2 SHA-512 hash: ");
@@ -198,15 +216,15 @@ static Return libmem_test_3_4_5(void){
 	sha512_update(&ctx,ullint_array,array_size);
 	sha512_final(&ctx,hash_1);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 3 array size: %zu bytes, array_length=%zu, sizeof(unsigned long long int)=%zu bytes\n",array_size,array_length,sizeof(unsigned long long int));
 	echo(STDERR,"Test 3 SHA-512 hash: ");
 	print_hash(hash_1);
 	#endif
 
-	// Allocate memory for the structure char
-	MSTRUCT(mem_ullint_t,test);
+	// Allocate memory for the structure unsigned long long int
+	MSTRUCT(mem_ullint,test);
 
 	// Create an unsigned long long int memory
 	realloc_ullint(test,array_length);
@@ -219,7 +237,7 @@ static Return libmem_test_3_4_5(void){
 	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
 	sha512_final(&ctx,hash_2);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 3 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
 	echo(STDERR,"Test 3 SHA-512 hash: ");
@@ -251,7 +269,7 @@ static Return libmem_test_3_4_5(void){
 	sha512_update(&ctx,ullint_array,array_size);
 	sha512_final(&ctx,hash_1);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 4 array size: %zu bytes, array_length=%zu, sizeof(unsigned long long int)=%zu bytes\n",array_size,array_length,sizeof(unsigned long long int));
 	echo(STDERR,"Test 4 SHA-512 hash: ");
@@ -269,7 +287,7 @@ static Return libmem_test_3_4_5(void){
 	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
 	sha512_final(&ctx,hash_2);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 4 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
 	echo(STDERR,"Test 4 SHA-512 hash: ");
@@ -301,7 +319,7 @@ static Return libmem_test_3_4_5(void){
 	sha512_update(&ctx,ullint_array,array_size);
 	sha512_final(&ctx,hash_1);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 5 array size: %zu bytes, array_length=%zu, sizeof(unsigned long long int)=%zu bytes\n",array_size,array_length,sizeof(unsigned long long int));
 	echo(STDERR,"Test 5 SHA-512 hash: ");
@@ -319,7 +337,7 @@ static Return libmem_test_3_4_5(void){
 	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
 	sha512_final(&ctx,hash_2);
 
-	#ifdef SHOW
+	#if SHOW
 	// Print array summary and hash
 	echo(STDERR,"Test 5 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
 	echo(STDERR,"Test 5 SHA-512 hash: ");
@@ -336,10 +354,9 @@ static Return libmem_test_3_4_5(void){
 	del_ullint(&test);
 	free(ullint_array);
 
-	#ifdef SHOW
+	#if SHOW
 	telemetry_show();
 	#endif
-
 	return(status);
 }
 
@@ -349,6 +366,7 @@ Return test0007(void){
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	TEST(libmem_test_0,"Copy an array of 0 size…");
 	TEST(libmem_test_1,"libmem Memory allocator test 1…");
 	TEST(libmem_test_2,"libmem Memory allocator test 2…");
 	TEST(libmem_test_3_4_5,"libmem Memory allocator test 3,4,5…");
