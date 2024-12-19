@@ -1,56 +1,61 @@
-TODO
+TODO:
 
-* Makefile doesn't rebuiding when .h file changed
+* Add option to check not only modified file sizes but also creation and modification timestamps
 
-* Progress bar with escape sequences
-	"ansi escape sequences progress in c"
-	Escape Sequences - A Quick Guide
-		https://morningcoffee.io/escape-sequences-a-quick-guide.html
-	ANSI Escape Sequences
-		http://isthe.com/chongo/tech/comp/ansi_escapes.html
-		https://eskerda.com/minimal-bash-progress-bar-ansi-escape-sequences/
-	How to implement progress bars in C like apt-get?
-		https://stackoverflow.com/questions/73468165/how-to-implement-progress-bars-in-c-like-apt-get
-	Here’s How to Enable the Handy Apt Terminal Progress Bar in Ubuntu 14.04
-		https://www.omgubuntu.co.uk/2014/04/how-to-enable-apt-terminal-progress-bar
-	apt source code
-		https://salsa.debian.org/apt-team/apt
-	Others
-		https://www.geeksforgeeks.org/escape-sequence-in-c/
-		https://gist.github.com/ConnerWill/d4b6c776b509add763e17f9f113fd25b
-		https://unstop.com/blog/escape-sequence-in-c
-	Examples
-		pacman
-		apt
+* Connect xdiff library to tests
 
-* Сalculate remaining download time
-	https://stackoverflow.com/questions/798800/whats-the-best-way-to-calculate-remaining-download-time
-	https://stackoverflow.com/questions/933242/smart-progress-bar-eta-computation
-	* Progress bar ncurses based
-		add building file list progress
+* test0014.c and test0015.c
 
-* void sqlite3_interrupt(sqlite3*) and int sqlite3_is_interrupted(sqlite3*); for a long vacuuming command.
+* Create tests combining ignore and dry-run flags, don't forget about --include
+  It would be good to repeat all tests from README with dry-run and ignore options
 
-* SQLite performance tuning
-	https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
+* Testing: Verify that --silent suppresses all output regardless of other options
 
-* Shell completions
-	Great examples:
-		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.bash
-		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.zsh
+* Review dry_run implementation throughout the codebase
 
-* flatpak
-	https://docs.flatpak.org/en/latest/first-build.html
+* Add deep database verification test
 
-* How to make installation package for many Linux distributions
-	"how to create a package for many distros"
-		https://unix.stackexchange.com/questions/136387/how-to-make-installation-package-for-many-linux-distributions
+* Review English language correctness in all message strings
 
-* Smoke tests
-	Run with --silent option and without it
-	Run under sanitizer
+* db_check_up_paths.c
+    * Consider printing paths line by line instead of inline
+    * Try removing if (!(rational_logger_mode & SILENT)) check and replace printf
+      with slog(REGULAR|VERBOSE|TESTING,
+    * Split file into blocks with status checks via if(SUCCESS == status)
 
-* Sqlite Compression?
-	https://github.com/techrah/sqlite3-compression-encryption-vfs
+    * Add completion messages at the end of each significant code block
+      Like in detect_paths.c ending: slog(VERBOSE|TESTING,"Paths detected\n");
 
-* ALL DONE!
+* Implement fuzzing tests
+
+* Work on code coverage
+
+* Design system tests to exercise all conditional report messages
+
+* Add usage hints for --db-clean-ignored option when used with --ignore and --update
+
+* Review entire README and place it in static char doc[] /* Program documentation. */
+
+* Add verification that specified options work only with --compare
+
+* Add --onlyAnotB option
+* Add --onlyBnotA option
+* Add --onlySHAdiffs option
+
+* Unit tests - initial implementation:
+	* Create tests using both relative and absolute paths
+
+* Document all code
+
+* Create man documentation
+
+* Create flatpak and AppImage packages, note that author will assist with package creation for any OS if developers encounter difficulties
+	https://unix.stackexchange.com/questions/740712/does-flatpak-support-command-line-applications
+
+* Static build via GitHub
+
+* Post program information on opennet
+
+* Subscribe to precizer tag on Stack Overflow, create tag if needed and follow it
+
+* ALL DONE
