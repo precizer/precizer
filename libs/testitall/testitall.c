@@ -76,7 +76,7 @@ Return testitall(
 	/* Display captured stdout output */
 	if(STDOUT->length > 0)
 	{
-		fprintf(stdout, RESET "%s", STDOUT->mem);
+		fprintf(stdout, "%s", STDOUT->mem);
 	}
 
 	/* Cleanup: free dynamically allocated buffers */
