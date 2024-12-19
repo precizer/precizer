@@ -17,7 +17,7 @@ STATIC = -static
 SRC = src
 PRZRSRC = ../src
 BUILDS = ../.builds/$(EXE)
-LIBS = pcre2 testitall mem sha512 rational sqlite
+LIBS = pcre2 testitall mem sha512 rational sqlite xdiff
 
 # libc lib for static
 LDFLAGS += $(foreach d,$(LIBS),-l$d)
