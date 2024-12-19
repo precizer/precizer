@@ -23,8 +23,8 @@ __attribute__((always_inline)) static inline size_t get_aligned_bytes(
 	// & ~(PAGE_BYTES - 1) creates a mask to truncate to nearest multiple
 	size_t allocated_size = (size + (PAGE_BYTES - 1)) & ~(PAGE_BYTES - 1);
 
-	#if 0
-	printf("size=%zu,allocated_size=%zu\n", size, allocated_size);
+	#if SHOW
+	printf("requested size=%zu, aligned size=%zu\n", size, allocated_size);
 	#endif
 
 	return allocated_size;
@@ -46,7 +46,7 @@ Return realloc_char(
 	bool true_reduce
 ){
 	#define TYPE char
-	#include "realloc.d"
+	#include "realloc.cc"
 	#undef TYPE
 }
 
@@ -60,7 +60,7 @@ Return copy_char(
 	mem_char *source
 ){
 	#define TYPE char
-	#include "copy.d"
+	#include "copy.cc"
 	#undef TYPE
 }
 
@@ -89,7 +89,7 @@ Return append_char(
 	mem_char *source
 ){
 	#define TYPE char
-	#include "append.d"
+	#include "append.cc"
 	#undef TYPE
 }
 
@@ -106,7 +106,7 @@ Return calloc_char(
 ){
 	#define CALLOC 0
 	#define TYPE char
-	#include "realloc.d"
+	#include "realloc.cc"
 	#undef TYPE
 	#undef CALLOC
 }
@@ -119,7 +119,7 @@ Return calloc_char(
 Return del_char(mem_char **structure)
 {
 	#define TYPE char
-	#include "del.d"
+	#include "del.cc"
 	#undef TYPE
 }
 
@@ -139,7 +139,7 @@ Return realloc_int(
 	bool true_reduce
 ){
 	#define TYPE int
-	#include "realloc.d"
+	#include "realloc.cc"
 	#undef TYPE
 }
 
@@ -156,7 +156,7 @@ Return calloc_int(
 ){
 	#define CALLOC 0
 	#define TYPE int
-	#include "realloc.d"
+	#include "realloc.cc"
 	#undef TYPE
 	#undef CALLOC
 }
@@ -168,7 +168,7 @@ Return calloc_int(
 Return del_int(mem_int **structure)
 {
 	#define TYPE int
-	#include "del.d"
+	#include "del.cc"
 	#undef TYPE
 }
 
@@ -178,45 +178,59 @@ Return del_int(mem_int **structure)
 
 /**
  * @brief Reallocates memory for unsigned long long int array
- * @param structure Pointer to mem_ullint_t structure
+ * @param structure Pointer to mem_ullint structure
  * @param length New desired length of the array
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return realloc_ullint(
-	mem_ullint_t *structure,
+	mem_ullint *structure,
 	const size_t newlength,
 	bool true_reduce
 ){
-	#define TYPE ullint_t
-	#include "realloc.d"
+	#define TYPE ullint
+	#include "realloc.cc"
 	#undef TYPE
 }
 
 /**
  * @brief Allocates and zeros memory for unsigned long long int array
- * @param structure Pointer to mem_ullint_t structure
+ * @param structure Pointer to mem_ullint structure
  * @param length Desired length of the array
  * @param true_reduce If true, actually reduce allocated memory when shrinking
  */
 Return calloc_ullint(
-	mem_ullint_t *structure,
+	mem_ullint *structure,
 	const size_t newlength,
 	bool true_reduce
 ){
 	#define CALLOC 0
-	#define TYPE ullint_t
-	#include "realloc.d"
+	#define TYPE ullint
+	#include "realloc.cc"
 	#undef TYPE
 	#undef CALLOC
 }
 
 /**
  * @brief Deallocates memory for unsigned long long int array
- * @param structure Pointer to pointer to mem_ullint_t structure
+ * @param structure Pointer to pointer to mem_ullint structure
  */
-Return del_ullint(mem_ullint_t **structure)
+Return del_ullint(mem_ullint **structure)
 {
-	#define TYPE ullint_t
-	#include "del.d"
+	#define TYPE ullint
+	#include "del.cc"
+	#undef TYPE
+}
+
+/**
+ * @brief Reallocate destination and make a copy from source to destination
+ * @param destination Pointer to mem_ullint structure
+ * @param source Pointer to mem_ullint structure
+ */
+Return copy_ullint(
+	mem_ullint *destination,
+	mem_ullint *source
+){
+	#define TYPE ullint
+	#include "copy.cc"
 	#undef TYPE
 }

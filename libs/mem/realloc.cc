@@ -13,13 +13,13 @@
 		return(SUCCESS);
 	}
 
-	const size_t oldlength = structure->length;
+	const size_t old_length = structure->length;
 
-	const size_t newbytes = newlength * sizeof(TYPE);
+	const size_t new_bytes = newlength * sizeof(TYPE);
 
-	const size_t oldbytes = oldlength * sizeof(TYPE);
+	const size_t old_used_bytes = old_length * sizeof(TYPE);
 
-	size_t new_aligned_bytes = get_aligned_bytes(newbytes);
+	size_t new_aligned_bytes = get_aligned_bytes(new_bytes);
 
 	size_t old_aligned_bytes = structure->allocated;
 
@@ -37,7 +37,7 @@
 		growth_memory = true;
 	}
 
-	#if 0
+	#if SHOW
 	printf("new_aligned_bytes=%ld,old_aligned_bytes=%ld\n",new_aligned_bytes,old_aligned_bytes);
 	#endif
 
@@ -48,7 +48,7 @@
 		{
 			decrease_memory = true;
 		}
-		#if 0
+		#if SHOW
 		else {
 			printf("do not reduce memory\n");
 		}
@@ -65,9 +65,21 @@
 			return(FAILURE);
 		}
 		structure->mem = temp;
+		#if SHOW
+		printf("aligned realloc() to bytes=%ld\n",new_aligned_bytes);
+		#endif
+
+		// Update structure metadata
+		structure->allocated = new_aligned_bytes;
 
 		// Update telemetry
-		telemetry_actual_reallocations_counter();
+		if(old_length == 0)
+		{
+			telemetry_allocations_counter();
+		} else {
+			telemetry_aligned_reallocations_counter();
+		}
+
 		if(decrease_memory == true)
 		{
 			telemetry_reduce(old_aligned_bytes - new_aligned_bytes);
@@ -75,13 +87,8 @@
 		} else if(growth_memory == true)
 		{
 			telemetry_add(new_aligned_bytes - old_aligned_bytes);
-
 		}
 
-		if(oldlength == 0)
-		{
-			telemetry_allocations_counter();
-		}
 	} else {
 		// Update telemetry
 		telemetry_realloc_optimized_counter();
@@ -90,25 +97,28 @@
 	// Initialize new memory for calloc operations
 	#ifdef CALLOC
 	// Filling a new array with zeros
-	if(oldlength == 0 && newlength > 0)
+	if(old_length == 0 && newlength > 0)
 	{
-		memset(structure->mem, CALLOC, newlength * sizeof(TYPE));
+		memset(structure->mem, CALLOC, structure->allocated);
 	}
 	#endif
 
 	// Update telemetry for effective memory usage
 	if(structure->length > newlength)
 	{
-		telemetry_effective_reduce(oldbytes - newbytes);
+		telemetry_effective_reduce(old_used_bytes - new_bytes);
 
 	} else if (newlength > structure->length)
 	{
-		telemetry_effective_add(newbytes - oldbytes);
+		telemetry_effective_add(new_bytes - old_used_bytes);
 	}
 
 	// Update structure metadata
 	structure->length = newlength;
-	structure->allocated = new_aligned_bytes;
+
+	#if SHOW
+	printf("new length=%ld,new aligned bytes=%ld\n",newlength,new_aligned_bytes);
+	#endif
 
 	return(SUCCESS);
 }
