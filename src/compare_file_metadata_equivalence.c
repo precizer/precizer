@@ -32,7 +32,7 @@ int compare_file_metadata_equivalence(
 	/* Size of file, in bytes.  */
 	if(source->st_size != destination->st_size)
 	{
-		result += SIZE_CHANGED;
+		result |= SIZE_CHANGED;
 
 	}
 
@@ -40,7 +40,7 @@ int compare_file_metadata_equivalence(
 	if(!(source->st_mtim.tv_sec == destination->st_mtim.tv_sec &&
 	        source->st_mtim.tv_nsec == destination->st_mtim.tv_nsec))
 	{
-		result += MODIFICATION_TIME_CHANGED;
+		result |= MODIFICATION_TIME_CHANGED;
 
 	}
 
@@ -48,7 +48,7 @@ int compare_file_metadata_equivalence(
 	if(!(source->st_ctim.tv_sec == destination->st_ctim.tv_sec &&
 	        source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
 	{
-		result += CREATION_TIME_CHANGED;
+		result |= CREATION_TIME_CHANGED;
 
 	}
 

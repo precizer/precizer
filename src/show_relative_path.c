@@ -1,38 +1,72 @@
-#include "precizer.h"
+ #include "precizer.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-static void print_size(
+static void print_metadata(
+	int flag,
 	const struct stat *was,
 	const struct stat *now
 ){
-	if(config->verbose == true)
+	if(rational_logger_mode & (VERBOSE|TESTING))
 	{
-		printf(" was:%s",bkbmbgbtbpbeb((size_t)was->st_size));
-		printf(", now:%s",bkbmbgbtbpbeb((size_t)now->st_size));
+		switch(flag)
+		{
+			case 0:
+					printf(" was:%s",bkbmbgbtbpbeb((size_t)was->st_size));
+					printf(", now:%s",bkbmbgbtbpbeb((size_t)now->st_size));
+				break;
+			case 1:
+					printf(" was:%s.%ld",seconds_to_ISOdate(was->st_ctim.tv_sec),was->st_ctim.tv_nsec);
+					printf(", now:%s.%ld",seconds_to_ISOdate(now->st_ctim.tv_sec),now->st_ctim.tv_nsec);
+				break;
+			case 2:
+					printf(" was:%s.%ld",seconds_to_ISOdate(was->st_mtim.tv_sec),was->st_mtim.tv_nsec);
+					printf(", now:%s.%ld",seconds_to_ISOdate(now->st_mtim.tv_sec),now->st_mtim.tv_nsec);
+				break;
+			default:
+					return;
+				break;
+		}
 	}
 }
 
-static void print_ctim(
-	const struct stat *was,
-	const struct stat *now
+/**
+ * @brief Prints combinations of flags based on bit values
+ * @param[in] mega Integer containing combined flag values
+ */
+static void print_flag_combinations(
+	int mega,
+	const DBrow *dbrow,
+	const struct stat *fts_statp
 ){
-	if(config->verbose == true)
+	const char *flags[] = {"size", "ctime", "mtime"};
+	const int flag_values[] = {SIZE_CHANGED, CREATION_TIME_CHANGED, MODIFICATION_TIME_CHANGED};
+	const int flag_count = 3;
+	int flags_found = 0;
+
+	if(mega == 0)
 	{
-		printf(" was:%s.%ld",seconds_to_ISOdate(was->st_ctim.tv_sec),was->st_ctim.tv_nsec);
-		printf(", now:%s.%ld",seconds_to_ISOdate(now->st_ctim.tv_sec),now->st_ctim.tv_nsec);
+		printf("No flags set\n");
+		return;
+	}
+
+	/* Check each flag */
+	for(int i = 0; i < flag_count; i++)
+	{
+		if(mega & flag_values[i])
+		{
+			/* Add separator if not the first flag */
+			if(flags_found > 0)
+			{
+				printf(" & ");
+			}
+			printf("%s",flags[i]);
+			print_metadata(i,&dbrow->saved_stat,fts_statp);
+			flags_found++;
+		}
 	}
 }
-
-static void print_mtim(
-	const struct stat *was,
-	const struct stat *now
-){
-	if(config->verbose == true)
-	{
-		printf(" was:%s.%ld",seconds_to_ISOdate(was->st_mtim.tv_sec),was->st_mtim.tv_nsec);
-		printf(", now:%s.%ld",seconds_to_ISOdate(now->st_mtim.tv_sec),now->st_mtim.tv_nsec);
-	}
-}
-
 
 /**
  *
@@ -97,49 +131,7 @@ void show_relative_path(
 					        && dbrow->relative_path_already_in_db == true)
 					{
 						printf(" changed ");
-
-						switch(*metadata_of_scanned_and_saved_files){
-							case 1:
-								printf("size");
-								print_size(&dbrow->saved_stat,fts_statp);
-								break;
-							case 2:
-								printf("ctime");
-								print_ctim(&dbrow->saved_stat,fts_statp);
-								break;
-							case 3:
-								printf("size");
-								print_size(&dbrow->saved_stat,fts_statp);
-								printf(" & ctime");
-								print_ctim(&dbrow->saved_stat,fts_statp);
-								break;
-							case 4:
-								printf("mtime");
-								print_mtim(&dbrow->saved_stat,fts_statp);
-								break;
-							case 5:
-								printf("size");
-								print_size(&dbrow->saved_stat,fts_statp);
-								printf(" & mtime");
-								print_mtim(&dbrow->saved_stat,fts_statp);
-								break;
-							case 6:
-								printf("ctime");
-								print_ctim(&dbrow->saved_stat,fts_statp);
-								printf(" & mtime");
-								print_mtim(&dbrow->saved_stat,fts_statp);
-								break;
-							case 7:
-								printf("size");
-								print_size(&dbrow->saved_stat,fts_statp);
-								printf(" & ctime");
-								print_ctim(&dbrow->saved_stat,fts_statp);
-								printf(" & mtime");
-								print_mtim(&dbrow->saved_stat,fts_statp);
-								break;
-							default:
-								break;
-						}
+						print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 					} else {
 						if(dbrow->relative_path_already_in_db == true)
 						{
