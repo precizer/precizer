@@ -130,5 +130,10 @@ void init_config(void){
 		rational_logger_mode = TESTING;
 	}
 
+	/// This option prevents directory traversal from descending into
+	/// directories that have a different device number than the file
+	/// from  which the descent began
+	config->start_device_only = false;
+
 	slog(TRACE,"Configuration initialized\n");
 }

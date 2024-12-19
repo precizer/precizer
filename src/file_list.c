@@ -50,7 +50,12 @@ Return file_list(bool count_size_of_all_files){
 	FTSENT *p = NULL;
 	FTSENT *child = NULL;
 
-	int fts_options = FTS_PHYSICAL | FTS_XDEV;
+	int fts_options = FTS_PHYSICAL;
+
+	if(config->start_device_only == true)
+	{
+		fts_options |= FTS_XDEV;
+	}
 
 	size_t count_files = 0,count_dirs = 0,count_symlnks = 0;
 
