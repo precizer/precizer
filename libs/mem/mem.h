@@ -7,6 +7,8 @@
 
 #pragma once
 
+#define SHOW 0  /* Change to 1 to print out debug details */
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -18,7 +20,7 @@
 
 // Package complex types containing spaces into single tokens
 // for macro usage (CONCAT and MEM_TYPE)
-typedef unsigned long long int ullint_t;
+typedef unsigned long long int ullint;
 
 /**
  * @brief Memory alignment for allocation (4KB pages)
@@ -68,6 +70,7 @@ typedef unsigned long long int ullint_t;
  */
 #define MEM_TYPE CONCAT(mem_, TYPE)
 #define REALLOC_TYPE CONCAT(realloc_, TYPE)
+#define DEL_TYPE CONCAT(del_, TYPE)
 
 /**
  * @brief Creates and initializes a structure variable with its pointer
@@ -148,7 +151,7 @@ typedef struct {
 	size_t length;    ///< Current array length
 	size_t allocated; ///< Actually allocated memory in bytes
 	unsigned long long int *mem; ///< Pointer to dynamic array
-} mem_ullint_t;
+} mem_ullint;
 
 /**
  *
@@ -178,14 +181,17 @@ Return realloc_char(
 	const size_t,
 	bool
 );
+
 Return copy_char(
 	mem_char *,
 	mem_char *
 );
+
 Return append_char(
 	mem_char *,
 	mem_char *
 );
+
 Return del_char(mem_char**);
 
 Return realloc_int(
@@ -193,11 +199,18 @@ Return realloc_int(
 	const size_t,
 	bool
 );
+
 Return del_int(mem_int**);
 
 Return realloc_ullint(
-	mem_ullint_t *,
+	mem_ullint *,
 	const size_t,
 	bool
 );
-Return del_ullint(mem_ullint_t**);
+
+Return del_ullint(mem_ullint**);
+
+Return copy_ullint(
+	mem_ullint *,
+	mem_ullint *
+);

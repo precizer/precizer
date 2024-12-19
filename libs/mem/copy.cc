@@ -26,7 +26,8 @@
 		{
 			status = REALLOC_TYPE(destination,source->length);
 		} else {
-			return(SUCCESS); // Do nothing
+			// Zero length and cleared memory
+			status = DEL_TYPE(&destination);
 		}
 	}
 
