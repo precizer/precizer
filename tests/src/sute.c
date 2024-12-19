@@ -13,11 +13,12 @@ int main(void){
 	TEST(test0006,"Example test…");
 	TEST(test0010,"Example test…");
 
-	HEADER("\nTesting of Librarys\n");
+	HEADER("\nTesting of built-in libraries\n");
 	TEST(test0001,"libsha512 hash check with sha512…");
 	TEST(test0007,"libmem Memory allocator test set");
 	TEST(test0008,"librational test report messaging…");
 	TEST(test0009,"librational test slog messaging…");
+	TEST(test0015,"libxdiff compare texts…");
 
 	HEADER("\nUnit Testing of precizer\n");
 	TEST(test0012,"add_string_to_array() test set…");
