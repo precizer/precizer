@@ -178,7 +178,7 @@ Return db_validate_paths(void){
 
 	if(paths_are_equal == true)
 	{
-		if(config->verbose == true)
+		if(rational_logger_mode & (VERBOSE|TESTING))
 		{
 			slog(EVERY,"The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost\n");
 		}

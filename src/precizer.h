@@ -59,11 +59,11 @@ typedef enum
  */
 typedef enum
 {
-	NOT_EQUAL = -1,
-	IDENTICAL = 0,
-	SIZE_CHANGED = 1,
-	CREATION_TIME_CHANGED = 2,
-	MODIFICATION_TIME_CHANGED = 4
+	IDENTICAL                 = 0x00, // 0000
+	NOT_EQUAL                 = 0x01, // 0001
+	SIZE_CHANGED              = 0x02, // 010
+	CREATION_TIME_CHANGED     = 0x04, // 0100
+	MODIFICATION_TIME_CHANGED = 0x08  // 1000
 
 } Changed;
 
