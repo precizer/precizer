@@ -36,9 +36,6 @@
 // libmem
 #include "mem.h"
 
-// Default buffer memory size
-#define BUFFER_LENGTH 1024
-
 /**
  * @brief Prints a formatted header message if status check passes
  * @details Outputs the given message in cyan color if the status equals SUCCESS
@@ -110,12 +107,6 @@ void echo(
 	const char *,
 	...
 ) __attribute__((format(gnu_printf, 2, 3)));
-
-void myecho(
-	mem_char *,
-	const char *,
-	...
-);
 
 Return execute_command(
 	const char *,
@@ -205,12 +196,12 @@ Return check_file_exists(
 #define TESTDONE \
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
-	printf(RESET WHITE "Total execution time: %lldns (%s)\n", _time_spent, form_date(_time_spent)); \
+	printf(WHITE "Total execution time: %lldns (%s)\n" RESET, _time_spent, form_date(_time_spent)); \
 	if(SUCCESS == status) \
 	{ \
-		printf(RESET WHITE "Completed " BOLDGREEN "successfully\n"); \
+		printf(WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
 	} else { \
-		printf(RESET WHITE "Ended " BOLDRED "unsuccessfully\n"); \
+		printf(WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
 	} \
 	return(status);
 

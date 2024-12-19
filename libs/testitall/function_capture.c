@@ -32,7 +32,7 @@ Return function_capture(
 	char stderr_template[] = "/tmp/testitall_stderr_XXXXXX";
 	char stdout_template[] = "/tmp/testitall_stdout_XXXXXX";
 	ssize_t bytes_read = 0;
-	char read_buffer[BUFFER_LENGTH];
+	char read_buffer[PAGE_BYTES];
 
 	/* Validate input parameters */
 	if(stderr_buffer == NULL || stdout_buffer == NULL)
@@ -116,7 +116,7 @@ Return function_capture(
 	{
 		while(true)
 		{
-			bytes_read = read(stderr_fd, read_buffer, BUFFER_LENGTH);
+			bytes_read = read(stderr_fd, read_buffer, PAGE_BYTES);
 
 			if(bytes_read == -1)
 			{
@@ -174,7 +174,7 @@ Return function_capture(
 	{
 		while(true)
 		{
-			bytes_read = read(stdout_fd, read_buffer, BUFFER_LENGTH);
+			bytes_read = read(stdout_fd, read_buffer, PAGE_BYTES);
 
 			if(bytes_read == -1)
 			{
