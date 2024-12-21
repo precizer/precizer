@@ -135,5 +135,11 @@ void init_config(void){
 	/// from  which the descent began
 	config->start_device_only = false;
 
+	/// Track both file metadata (created/modified dates) and size changes
+	/// for change detection. Out of the box, only size changes trigger
+	/// a rescan. When enabled, any update to timestamps or file size
+	/// will force a rescan and update the checksum in the database.
+	config->watch_timestamps = false;
+
 	slog(TRACE,"Configuration initialized\n");
 }
