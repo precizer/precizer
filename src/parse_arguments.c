@@ -52,8 +52,8 @@ static char args_doc[] = "PATH";
 static struct argp_option options[] = {
 	{ 0,0,0,0,"Build database options:",2},
 	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories " \
-		"that have a different device number than the file from  " \
-		"which the descent began\n",0 },
+	 "that have a different device number than the file from  " \
+	 "which the descent began\n",0 },
 	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions " \
 	 "could be used to specify a pattern to ignore files " \
 	 "or directories. Attention! All paths for the regular " \
@@ -85,10 +85,10 @@ static struct argp_option options[] = {
 	 BOLD "--ignore=PCRE2_REGEXP" RESET " option(s)\n",0},
 	{"dry-run",'n',0,0,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET "\n",0},
 	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) " \
-                   "in addition to file size when detecting changes. By default, only " \
-                   "file size changes trigger rescanning. When this option is enabled, " \
-                   "any changes to file timestamps or size will cause the file to be " \
-                   "rescanned and its checksum updated in the primary database\n",0},
+	 "in addition to file size when detecting changes. By default, only " \
+	 "file size changes trigger rescanning. When this option is enabled, " \
+	 "any changes to file timestamps or size will cause the file to be " \
+	 "rescanned and its checksum updated in the primary database\n",0},
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. " \
 	 "The depth of the traversal, numbered from 0 to N, " \
 	 "where a file could be found. Representing the maximum " \
@@ -101,13 +101,13 @@ static struct argp_option options[] = {
 	 "information about files and their checksums against the database would " \
 	 "be lost.\n",0 },
 	{"update",'u',0,0,"Updates the database to reflect file system changes (new, " \
-                  "modified and deleted files). Must be used with the same " \
-                  "initial PATH that was used when creating the database, as " \
-                  "existing records will be replaced with data from the " \
-                  "specified location.\n" \
-                  "This option modifies database consistency. Use with caution, " \
-                  "especially in automated scripts, as incorrect usage may lead " \
-                  "to loss of file checksums and metadata.\n",0 },
+	 "modified and deleted files). Must be used with the same " \
+	 "initial PATH that was used when creating the database, as " \
+	 "existing records will be replaced with data from the " \
+	 "specified location.\n" \
+	 "This option modifies database consistency. Use with caution, " \
+	 "especially in automated scripts, as incorrect usage may lead " \
+	 "to loss of file checksums and metadata.\n",0 },
 	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname\n",0 },
 	{"check-level",'l',"LEVEL",0,"Select database validation level: 'quick' (default) for basic structure check, 'full' for comprehensive integrity verification\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
