@@ -189,7 +189,12 @@ Return file_list(bool count_size_of_all_files){
 
 					// Validate if size, creation and modification time of a
 					// file has not changed since last scanning.
+					// Default value
 					int metadata_of_scanned_and_saved_files = NOT_EQUAL;
+
+					// Decision whether to rehash the file contents using
+					// the SHA512 algorithm. Defaults to Yes, rehash"
+					bool rehash = true;
 
 					if(dbrow->relative_path_already_in_db == true)
 					{
@@ -206,6 +211,21 @@ Return file_list(bool count_size_of_all_files){
 							{
 								// Relative path already in DB and doesn't require any change
 								break;
+							}
+						} else {
+
+							if(config->watch_timestamps != true)
+							{
+								if(!(metadata_of_scanned_and_saved_files & SIZE_CHANGED))
+								{
+									// The file saved against the database has been read
+									// from the file system in its entirety
+									if(dbrow->saved_offset == 0)
+									{
+										// Relative path already in DB and doesn't require any change
+										break;
+									}
+								}
 							}
 						}
 					}
@@ -289,10 +309,19 @@ Return file_list(bool count_size_of_all_files){
 							// Update DB record
 							update_db = true;
 
-						} else if(metadata_of_scanned_and_saved_files != IDENTICAL)
+						} else if(config->watch_timestamps == true)
 						{
-							// Update DB record
-							update_db = true;
+							if(metadata_of_scanned_and_saved_files != IDENTICAL)
+							{
+								// Update DB record
+								update_db = true;
+							}
+						} else {
+							if(metadata_of_scanned_and_saved_files & SIZE_CHANGED)
+							{
+								// Update DB record
+								update_db = true;
+							}
 						}
 					}
 

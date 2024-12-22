@@ -91,11 +91,14 @@ Return db_determine_name(void){
 		}
 	}
 
-	// Log message if the database file name has been determined and
+	// Log message when database file is specified and confirmed as persistent storage (non-memory database)
 	if(SUCCESS == status && config->db_file_path != NULL && config->db_file_path != NULL)
 	{
-		slog(EVERY,"Database file name: %s\n",config->db_file_name);
-		slog(TRACE,"Database file path: %s\n",config->db_file_path);
+		if(!(strcmp(config->db_file_path,":memory:") == 0 && rational_logger_mode & REGULAR))
+		{
+				slog(EVERY,"Primary database file name: %s\n",config->db_file_name);
+		}
+		slog(TRACE,"Primary database file path: %s\n",config->db_file_path);
 	}
 
 	slog(TRACE,"DB name determined\n");

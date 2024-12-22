@@ -22,7 +22,102 @@ static Return compose_sql(
 		report("Memory allocation failed for SQL query string");
 	}
 
-	return status;
+	return(status);
+}
+
+static Return db_attach(
+	int db_A,
+	int db_B
+){
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	char *select_sql = NULL;
+	int rc = 0;
+
+	run(compose_sql(&select_sql,config->db_file_paths[db_A],db_B));
+
+	if(SUCCESS == status)
+	{
+		rc = sqlite3_exec(config->db,select_sql,NULL,NULL,NULL);
+
+		if(rc!= SQLITE_OK)
+		{
+			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			status = FAILURE;
+		}
+	}
+
+	free(select_sql);
+
+	return(status);
+}
+
+
+static Return db_changes(
+	const char *compare_sql,
+	bool *files_the_same,
+	bool *the_databases_are_equal,
+	int db_A,
+	int db_B
+){
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	bool first_iteration = true;
+
+	sqlite3_stmt *select_stmt = NULL;
+
+	int rc = sqlite3_prepare_v2(config->db,compare_sql,-1,&select_stmt,NULL);
+
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		status = FAILURE;
+	}
+
+	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
+	{
+		*the_databases_are_equal = false;
+		*files_the_same = false;
+
+		// Interrupt the loop smoothly
+		// Interrupt when Ctrl+C
+		if(global_interrupt_flag == true)
+		{
+			break;
+		}
+
+		if(first_iteration == true)
+		{
+			first_iteration = false;
+			slog(EVERY,BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",config->db_file_names[db_A],config->db_file_names[db_B]);
+		}
+
+		const unsigned char *relative_path = NULL;
+		relative_path = sqlite3_column_text(select_stmt,0);
+
+		if(relative_path != NULL)
+		{
+			slog(EVERY,"%s\n",relative_path);
+		} else {
+			slog(ERROR,"General database error!\n");
+			status = FAILURE;
+			break;
+		}
+	}
+
+	if(SQLITE_DONE != rc)
+	{
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		status = FAILURE;
+	}
+
+	sqlite3_finalize(select_stmt);
+
+	return(status);
 }
 
 /**
@@ -43,7 +138,7 @@ Return db_compare(void){
 		return(status);
 	}
 
-	slog(EVERY,"Comparison of databases %s and %s is starting...\n",config->db_file_names[0],config->db_file_names[1]);
+	slog(EVERY,"The comparison of %s and %s databases is starting...\n",config->db_file_names[0],config->db_file_names[1]);
 
 	/*
 	 *
@@ -71,42 +166,11 @@ Return db_compare(void){
 		}
 	}
 
-	bool the_databases_are_equal = true;
+	// Attache the database 1
+	run(db_attach(0,1));
 
-	sqlite3_stmt *select_stmt = NULL;
-	int rc = 0;
-
-	// Compose a string with SQL request
-	char *select_sql_1 = NULL;
-	status = compose_sql(&select_sql_1,config->db_file_paths[0],1);
-
-	if(SUCCESS == status)
-	{
-		rc = sqlite3_exec(config->db,select_sql_1,NULL,NULL,NULL);
-
-		if(rc!= SQLITE_OK)
-		{
-			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
-			status = FAILURE;
-		}
-	}
-	free(select_sql_1);
-
-	// Compose a string with SQL request
-	char *select_sql_2 = NULL;
-	status = compose_sql(&select_sql_2,config->db_file_paths[1],2);
-
-	if(SUCCESS == status)
-	{
-		rc = sqlite3_exec(config->db,select_sql_2,NULL,NULL,NULL);
-
-		if(rc!= SQLITE_OK)
-		{
-			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
-			status = FAILURE;
-		}
-	}
-	free(select_sql_2);
+	// Attache the database 2
+	run(db_attach(1,2));
 
 	const char *compare_A_sql = "SELECT a.relative_path " \
 	        "FROM db2.files AS a " \
@@ -114,109 +178,17 @@ Return db_compare(void){
 	        "WHERE b.relative_path IS NULL " \
 	        "ORDER BY a.relative_path ASC;";
 
-	rc = sqlite3_prepare_v2(config->db,compare_A_sql,-1,&select_stmt,NULL);
-
-	if(SQLITE_OK != rc)
-	{
-		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
-		status = FAILURE;
-	}
-
-	bool first_iteration = true;
-	bool files_the_same = true;
-
-	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
-	{
-		the_databases_are_equal = false;
-		files_the_same = false;
-
-		// Interrupt the loop smoothly
-		// Interrupt when Ctrl+C
-		if(global_interrupt_flag == true)
-		{
-			break;
-		}
-
-		if(first_iteration == true)
-		{
-			first_iteration = false;
-			slog(EVERY,BOLD "These files no longer exist against %s but still present against %s" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
-		}
-
-		const unsigned char *relative_path = NULL;
-		relative_path = sqlite3_column_text(select_stmt,0);
-
-		if(relative_path != NULL)
-		{
-			slog(EVERY,"%s\n",relative_path);
-		} else {
-			slog(ERROR,"General database error!\n");
-			status = FAILURE;
-			break;
-		}
-	}
-
-	if(SQLITE_DONE != rc)
-	{
-		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
-		status = FAILURE;
-	}
-
-	sqlite3_finalize(select_stmt);
-
 	const char *compare_B_sql = "SELECT a.relative_path " \
 	        "FROM db1.files AS a " \
 	        "LEFT join db2.files AS b on b.relative_path = a.relative_path " \
 	        "WHERE b.relative_path IS NULL " \
 	        "ORDER BY a.relative_path ASC;";
 
-	rc = sqlite3_prepare_v2(config->db,compare_B_sql,-1,&select_stmt,NULL);
+	bool files_the_same = true;
+	bool the_databases_are_equal = true;
 
-	if(SQLITE_OK != rc)
-	{
-		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
-		status = FAILURE;
-	}
-
-	first_iteration = true;
-
-	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
-	{
-		the_databases_are_equal = false;
-		files_the_same = false;
-
-		// Interrupt the loop smoothly
-		// Interrupt when Ctrl+C
-		if(global_interrupt_flag == true)
-		{
-			break;
-		}
-
-		if(first_iteration == true)
-		{
-			first_iteration = false;
-			slog(EVERY,BOLD "These files no longer exist against %s but still present against %s" RESET "\n",config->db_file_names[1],config->db_file_names[0]);
-		}
-
-		const unsigned char *relative_path = NULL;
-		relative_path = sqlite3_column_text(select_stmt,0);
-
-		if(relative_path != NULL)
-		{
-			slog(EVERY,"%s\n",relative_path);
-		} else {
-			slog(ERROR,"General database error!\n");
-			status = FAILURE;
-			break;
-		}
-	}
-
-	if(SQLITE_DONE != rc)
-	{
-		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
-		status = FAILURE;
-	}
-	sqlite3_finalize(select_stmt);
+	run(db_changes(compare_A_sql,&files_the_same,&the_databases_are_equal,0,1));
+	run(db_changes(compare_B_sql,&files_the_same,&the_databases_are_equal,1,0));
 
 #if 0 // Old multiPATH solutions
 	const char *compare_checksums = "select a.relative_path from db2.files a inner join db1.files b" \
@@ -232,13 +204,16 @@ Return db_compare(void){
 	        "WHERE f1.sha512 <> f2.sha512 AND p.path = p2.path " \
 	        "ORDER BY p.path,f1.relative_path ASC;";
 #endif
+
 	// One PATH solution
 	const char *compare_checksums = "SELECT a.relative_path " \
 	        "FROM db2.files AS a " \
 	        "INNER JOIN db1.files b on b.relative_path = a.relative_path and b.sha512 != a.sha512 " \
 	        "ORDER BY a.relative_path ASC;";
 
-	rc = sqlite3_prepare_v2(config->db,compare_checksums,-1,&select_stmt,NULL);
+	sqlite3_stmt *select_stmt = NULL;
+
+	int rc = sqlite3_prepare_v2(config->db,compare_checksums,-1,&select_stmt,NULL);
 
 	if(SQLITE_OK != rc)
 	{
@@ -246,7 +221,7 @@ Return db_compare(void){
 		status = FAILURE;
 	}
 
-	first_iteration = true;
+	bool first_iteration = true;
 
 	bool checksums = true;
 
@@ -309,6 +284,8 @@ Return db_compare(void){
 	{
 		slog(EVERY,BOLD "The databases %s and %s are absolutely equal" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
 	}
+
+	slog(EVERY,"Comparison of %s and %s databases is complete\n",config->db_file_names[0],config->db_file_names[1]);
 
 	return(status);
 }

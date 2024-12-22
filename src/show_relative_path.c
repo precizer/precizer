@@ -1,10 +1,10 @@
- #include "precizer.h"
+#include "precizer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static void print_metadata(
-	int flag,
+	int               flag,
 	const struct stat *was,
 	const struct stat *now
 ){
@@ -13,19 +13,19 @@ static void print_metadata(
 		switch(flag)
 		{
 			case 0:
-					printf(" was:%s",bkbmbgbtbpbeb((size_t)was->st_size));
-					printf(", now:%s",bkbmbgbtbpbeb((size_t)now->st_size));
+				printf(" was:%s",bkbmbgbtbpbeb((size_t)was->st_size));
+				printf(", now:%s",bkbmbgbtbpbeb((size_t)now->st_size));
 				break;
 			case 1:
-					printf(" was:%s.%ld",seconds_to_ISOdate(was->st_ctim.tv_sec),was->st_ctim.tv_nsec);
-					printf(", now:%s.%ld",seconds_to_ISOdate(now->st_ctim.tv_sec),now->st_ctim.tv_nsec);
+				printf(" was:%s.%ld",seconds_to_ISOdate(was->st_ctim.tv_sec),was->st_ctim.tv_nsec);
+				printf(", now:%s.%ld",seconds_to_ISOdate(now->st_ctim.tv_sec),now->st_ctim.tv_nsec);
 				break;
 			case 2:
-					printf(" was:%s.%ld",seconds_to_ISOdate(was->st_mtim.tv_sec),was->st_mtim.tv_nsec);
-					printf(", now:%s.%ld",seconds_to_ISOdate(now->st_mtim.tv_sec),now->st_mtim.tv_nsec);
+				printf(" was:%s.%ld",seconds_to_ISOdate(was->st_mtim.tv_sec),was->st_mtim.tv_nsec);
+				printf(", now:%s.%ld",seconds_to_ISOdate(now->st_mtim.tv_sec),now->st_mtim.tv_nsec);
 				break;
 			default:
-					return;
+				return;
 				break;
 		}
 	}
@@ -36,12 +36,12 @@ static void print_metadata(
  * @param[in] mega Integer containing combined flag values
  */
 static void print_flag_combinations(
-	int mega,
-	const DBrow *dbrow,
+	int                         mega,
+	const DBrow        *dbrow,
 	const struct stat *fts_statp
 ){
-	const char *flags[] = {"size", "ctime", "mtime"};
-	const int flag_values[] = {SIZE_CHANGED, CREATION_TIME_CHANGED, MODIFICATION_TIME_CHANGED};
+	const char *flags[] = {"size","ctime","mtime"};
+	const int flag_values[] = {SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED};
 	const int flag_count = 3;
 	int flags_found = 0;
 
@@ -65,6 +65,29 @@ static void print_flag_combinations(
 			print_metadata(i,&dbrow->saved_stat,fts_statp);
 			flags_found++;
 		}
+	}
+}
+
+static void print_updating_or_adding(
+	const DBrow        *dbrow
+){
+	if(dbrow->relative_path_already_in_db == true)
+	{
+		printf(" updating");
+	} else {
+		printf(" adding");
+	}
+}
+
+static void print_changed(
+	const int         *metadata_of_scanned_and_saved_files,
+	const DBrow        *dbrow,
+	const struct stat *fts_statp
+){
+	if(dbrow->relative_path_already_in_db == true)
+	{
+		printf(" changed ");
+		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 	}
 }
 
@@ -107,7 +130,7 @@ void show_relative_path(
 		}
 	}
 
-	// If NOT silent
+	// Print if NOT silent
 	if(!(rational_logger_mode & SILENT))
 	{
 		if(*ignored == true)
@@ -127,17 +150,21 @@ void show_relative_path(
 			} else {
 				if(*show_changes == true)
 				{
-					if(*metadata_of_scanned_and_saved_files != IDENTICAL
-					        && dbrow->relative_path_already_in_db == true)
+					if(config->watch_timestamps == true)
 					{
-						printf(" changed ");
-						print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
-					} else {
-						if(dbrow->relative_path_already_in_db == true)
+						if(*metadata_of_scanned_and_saved_files != IDENTICAL)
 						{
-							printf(" updating");
+							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 						} else {
-							printf(" adding");
+							print_updating_or_adding(dbrow);
+						}
+					} else {
+
+						if(*metadata_of_scanned_and_saved_files & SIZE_CHANGED)
+						{
+							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
+						} else {
+							print_updating_or_adding(dbrow);
 						}
 					}
 				}
