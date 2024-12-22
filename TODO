@@ -1,5 +1,15 @@
 TODO:
 
+* In `--watch-timestamps` mode, the database isn't being updated when a file's
+   metadata (ctime and mtime) changes. Need to add an update mechanism and
+   include a debug-mode message that reads: "size the same, ctime & mtime updated"
+
+* Currently, the database stores the complete metadata structure for each file,
+  but only a few fields are actually being used. This results in storing many unnecessary
+  null values. We need to create a custom structure that only includes the fields that are
+   actively used. This will significantly reduce storage space consumption.
+
+This translation preserves the technical meaning while making it sound natural in an office communication context. Would you like me to explain any specific technical terms I used in the translation?
 * Add option to check not only modified file sizes but also creation and modification timestamps
 
 * Connect xdiff library to tests
