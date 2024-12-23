@@ -11,8 +11,8 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Database file name: database1.db
-TESTING:Database file path: database1.db
+TESTING:Primary database file name: database1.db
+TESTING:Primary database file path: database1.db
 TESTING:DB name determined
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db doesn't exist or it is not a file

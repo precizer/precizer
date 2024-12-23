@@ -96,7 +96,7 @@ Return db_determine_name(void){
 	{
 		if(!(strcmp(config->db_file_path,":memory:") == 0 && rational_logger_mode & REGULAR))
 		{
-				slog(EVERY,"Primary database file name: %s\n",config->db_file_name);
+			slog(EVERY,"Primary database file name: %s\n",config->db_file_name);
 		}
 		slog(TRACE,"Primary database file path: %s\n",config->db_file_path);
 	}

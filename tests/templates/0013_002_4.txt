@@ -14,8 +14,8 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Database file name: database1.db
-TESTING:Database file path: database1.db
+TESTING:Primary database file name: database1.db
+TESTING:Primary database file path: database1.db
 TESTING:DB name determined
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
@@ -41,7 +41,7 @@ TESTING:Paths detected
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
 1/AAA/ZAW/D/e/f/b_file.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+)
-2/AAA/BBB/CZC/b.txt adding
+2/AAA/BBB/CZC/b.txt added
 TESTING:Dry Run mode is enabled. The primary database must not be modified
 TESTING:The \x1B\[1m--db-clean-ignored\x1B\[0m option has been used, so the information about ignored files will be removed against the database database1.db
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
