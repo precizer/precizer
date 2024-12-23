@@ -36,8 +36,8 @@ static void print_metadata(
  * @param[in] mega Integer containing combined flag values
  */
 static void print_flag_combinations(
-	int                         mega,
-	const DBrow        *dbrow,
+	int               mega,
+	const DBrow       *dbrow,
 	const struct stat *fts_statp
 ){
 	const char *flags[] = {"size","ctime","mtime"};
@@ -68,20 +68,23 @@ static void print_flag_combinations(
 	}
 }
 
-static void print_updating_or_adding(
-	const DBrow        *dbrow
+static void print_updated_or_added(
+	const int         *metadata_of_scanned_and_saved_files,
+	const DBrow       *dbrow,
+	const struct stat *fts_statp
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
-		printf(" updating");
+		printf(" updated ");
+		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 	} else {
-		printf(" adding");
+		printf(" added");
 	}
 }
 
 static void print_changed(
 	const int         *metadata_of_scanned_and_saved_files,
-	const DBrow        *dbrow,
+	const DBrow       *dbrow,
 	const struct stat *fts_statp
 ){
 	if(dbrow->relative_path_already_in_db == true)
@@ -156,7 +159,7 @@ void show_relative_path(
 						{
 							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 						} else {
-							print_updating_or_adding(dbrow);
+							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 						}
 					} else {
 
@@ -164,7 +167,7 @@ void show_relative_path(
 						{
 							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 						} else {
-							print_updating_or_adding(dbrow);
+							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 						}
 					}
 				}

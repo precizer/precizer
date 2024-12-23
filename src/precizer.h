@@ -124,6 +124,9 @@ typedef struct {
 	/* SHA512 metadata */
 	SHA512_Context saved_mdContext;
 
+	/* SHA512 summ */
+	unsigned char sha512[SHA512_DIGEST_LENGTH];
+
 } DBrow;
 
 // The main Configuration

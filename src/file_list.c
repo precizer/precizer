@@ -148,7 +148,8 @@ Return file_list(bool count_size_of_all_files){
 			}
 		}
 
-		switch(p->fts_info){
+		switch(p->fts_info)
+		{
 			case FTS_D:
 				count_dirs++;
 				break;
@@ -176,10 +177,10 @@ Return file_list(bool count_size_of_all_files){
 					// Clean the structure to prevent reuse;
 					memset(dbrow,0,sizeof(DBrow));
 
-#if 0 // Old multiPATH solution
+	#if 0 // Old multiPATH solution
 
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path)))
-#endif
+	#endif
 
 					/* Get all file's metadata from the database */
 					if(SUCCESS != (status = db_read_file_data_from(dbrow,relative_path)))
@@ -189,7 +190,7 @@ Return file_list(bool count_size_of_all_files){
 
 					// Validate if size, creation and modification time of a
 					// file has not changed since last scanning.
-					// Default value
+					// Default value is:
 					int metadata_of_scanned_and_saved_files = NOT_EQUAL;
 
 					// Decision whether to rehash the file contents using
@@ -214,7 +215,7 @@ Return file_list(bool count_size_of_all_files){
 							}
 						} else {
 
-							if(config->watch_timestamps != true)
+							if(config->watch_timestamps == false)
 							{
 								if(!(metadata_of_scanned_and_saved_files & SIZE_CHANGED))
 								{
@@ -222,15 +223,18 @@ Return file_list(bool count_size_of_all_files){
 									// from the file system in its entirety
 									if(dbrow->saved_offset == 0)
 									{
-										// Relative path already in DB and doesn't require any change
-										break;
+										// The relative path is already in the database, but
+										// since the ctime and mtime have changed, a database
+										// update is required. However, rehashing the file content
+										// is unnecessary as the file size remains unchanged.
+										rehash = false;
 									}
 								}
 							}
 						}
 					}
 
-					sqlite3_int64 offset = 0;   // Offset bytes
+					sqlite3_int64 offset = 0;           // Offset bytes
 					SHA512_Context mdContext;
 
 					// For a file which had been changed before creation of its checksum has been already finished.
@@ -280,7 +284,8 @@ Return file_list(bool count_size_of_all_files){
 					}
 
 					unsigned char sha512[SHA512_DIGEST_LENGTH];
-					memset(sha512,0,sizeof(sha512));   // Clean sha512 to prevent reuse;
+					// Clean sha512 to prevent reuse;
+					memset(sha512,0,sizeof(sha512));
 
 					// Print out of a file name and its changes
 					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,p->fts_statp,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown);
@@ -290,9 +295,14 @@ Return file_list(bool count_size_of_all_files){
 						break;
 					}
 
-					if(SUCCESS != (status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext)))
+					if(rehash == true)
 					{
-						break;
+						if(SUCCESS != (status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext)))
+						{
+							break;
+						}
+					} else {
+						memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
 					}
 
 					bool update_db = false;
@@ -309,19 +319,10 @@ Return file_list(bool count_size_of_all_files){
 							// Update DB record
 							update_db = true;
 
-						} else if(config->watch_timestamps == true)
+						} else if(metadata_of_scanned_and_saved_files != IDENTICAL)
 						{
-							if(metadata_of_scanned_and_saved_files != IDENTICAL)
-							{
-								// Update DB record
-								update_db = true;
-							}
-						} else {
-							if(metadata_of_scanned_and_saved_files & SIZE_CHANGED)
-							{
-								// Update DB record
-								update_db = true;
-							}
+							// Update DB record
+							update_db = true;
 						}
 					}
 
@@ -339,10 +340,10 @@ Return file_list(bool count_size_of_all_files){
 
 					} else {
 						/* Insert to DB */
-#if 0 // Old multiPATH solution
+	#if 0 // Old multiPATH solution
 
 						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,stat,&mdContext)))
-#endif
+	#endif
 
 						if(SUCCESS == (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
 						{
