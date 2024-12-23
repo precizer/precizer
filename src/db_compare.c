@@ -57,10 +57,10 @@ static Return db_attach(
 
 static Return db_changes(
 	const char *compare_sql,
-	bool *files_the_same,
-	bool *the_databases_are_equal,
-	int db_A,
-	int db_B
+	bool       *files_the_same,
+	bool       *the_databases_are_equal,
+	int        db_A,
+	int        db_B
 ){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
