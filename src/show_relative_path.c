@@ -44,18 +44,19 @@ static void print_flag_combinations(
 	const int flag_values[] = {SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED};
 	const int flag_count = 3;
 	int flags_found = 0;
-
-	if(mega == 0)
-	{
-		printf("No flags set\n");
-		return;
-	}
+	bool first_word = true;
 
 	/* Check each flag */
 	for(int i = 0; i < flag_count; i++)
 	{
 		if(mega & flag_values[i])
 		{
+			if(first_word == true)
+			{
+				printf(" ");
+				first_word = false;
+			}
+
 			/* Add separator if not the first flag */
 			if(flags_found > 0)
 			{
@@ -75,7 +76,7 @@ static void print_updated_or_added(
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
-		printf(" updated ");
+		printf(" updated");
 		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 	} else {
 		printf(" added");
@@ -89,7 +90,7 @@ static void print_changed(
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
-		printf(" changed ");
+		printf(" changed");
 		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
 	}
 }

@@ -30,7 +30,7 @@ Return db_vacuum(void){
 		return(status);
 	}
 
-	slog(EVERY,"Start vacuuming...\n");
+	slog(EVERY,"Start vacuuming…\n");
 
 	int rc;
 

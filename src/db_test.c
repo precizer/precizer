@@ -65,7 +65,7 @@ Return db_test(const char *db_file_path){
 	if(SUCCESS == status)
 	{
 
-		slog(EVERY,"Starting of database file %s integrity check...\n",db_file_name);
+		slog(EVERY,"Starting of database file %s integrity check…\n",db_file_name);
 
 		int sqlite_open_flag = SQLITE_OPEN_READONLY;
 

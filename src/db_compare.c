@@ -138,7 +138,7 @@ Return db_compare(void){
 		return(status);
 	}
 
-	slog(EVERY,"The comparison of %s and %s databases is starting...\n",config->db_file_names[0],config->db_file_names[1]);
+	slog(EVERY,"The comparison of %s and %s databases is starting…\n",config->db_file_names[0],config->db_file_names[1]);
 
 	/*
 	 *

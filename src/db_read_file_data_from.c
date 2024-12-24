@@ -68,6 +68,7 @@ Return db_read_file_data_from(
 		}
 
 		const unsigned char *get_sha512 = sqlite3_column_blob(select_stmt,4);
+
 		if(get_sha512 != NULL)
 		{
 			memcpy(&dbrow->sha512,get_sha512,SHA512_DIGEST_LENGTH);
