@@ -15,12 +15,12 @@ void notify_quit_handler(int sig){
 
 	if(sig==SIGTERM)
 	{
-		printf("Terminating the application. Please wait while the database will be closed smoothly...\n");
+		printf("Terminating the application. Please wait while the database will be closed smoothly…\n");
 	}
 
 	if(sig==SIGINT)
 	{
-		printf("Interrupting the application. Please wait while the database will be closed smoothly...\n");
+		printf("Interrupting the application. Please wait while the database will be closed smoothly…\n");
 	}
 
 	/// Enable key echo in terminal
