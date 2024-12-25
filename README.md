@@ -178,19 +178,18 @@ precizer --progress --database=database2.db tests/examples/diffs/diff2
 
 precizer --compare database1.db database2.db
 ```
-<sup>Comparison of databases database1.db and database2.db is starting...  
-**These files no longer exist against database1.db but still present against database2.db**  
-path1/AAA/BCB/CCC/a.txt  
+<sup>The comparison of database1.db and database2.db databases is starting…  
+**These files are no longer in the database1.db but still exist in the database2.db**  
 path1/AAA/BCB/CCC/b.txt  
-**These files no longer exist against database2.db but still present against database1.db**  
+**These files are no longer in the database2.db but still exist in the database1.db**  
 path2/AAA/ZAW/D/e/f/b_file.txt  
 **The SHA512 checksums of these files do not match between database1.db and database2.db**  
-1/AAA/BCB/CCC/a.txt  
 2/AAA/BBB/CZC/a.txt  
 3/AAA/BBB/CCC/a.txt  
 4/AAA/BBB/CCC/a.txt  
 path1/AAA/ZAW/D/e/f/b_file.txt  
 path2/AAA/BCB/CCC/a.txt  
+Comparison of database1.db and database2.db databases is complete  
 </sub>
 
 ### Example 2
