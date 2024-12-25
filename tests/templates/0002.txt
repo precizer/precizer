@@ -27,7 +27,7 @@ TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
 TESTING:Starting of database file %DB_NAME% integrity check...
-TESTING:The database verification level has been set to QUICK
+TESTING:The database verification level has been set to FULL
 TESTING:Database %DB_NAME% has been verified and is in good condition
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
