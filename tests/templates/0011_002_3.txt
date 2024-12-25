@@ -28,8 +28,8 @@ TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
 TESTING:The database database1.db has already been created previously
-TESTING:Starting of database file database1.db integrity check...
-TESTING:The database verification level has been set to QUICK
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
@@ -37,7 +37,7 @@ TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
 TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-TESTING:Start vacuuming...
+TESTING:Start vacuuming…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mNothing have been changed against the database since the last probe \(neither added nor updated or deleted information about files\)\x1B\[0m
 TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
@@ -72,8 +72,8 @@ TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
 TESTING:The database database1.db has already been created previously
-TESTING:Starting of database file database1.db integrity check...
-TESTING:The database verification level has been set to QUICK
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
@@ -83,12 +83,12 @@ TESTING:Paths detected
 TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+)
+1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehashed
 1/AAA/BCB/CCC/c.txt added
 TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
-TESTING:Start vacuuming...
+TESTING:Start vacuuming…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
