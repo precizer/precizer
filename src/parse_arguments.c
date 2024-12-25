@@ -201,11 +201,10 @@ static error_t parse_opt(
 			config->force = true;
 			break;
 		case 'l':
-
-			if(0 == strcasecmp(arg,"QUICK"))
+			if(0 == strncasecmp(arg, "QUICK", sizeof("QUICK")))
 			{
 				config->db_check_level = QUICK;
-			} else if(0 == strcasecmp(arg,"FULL"))
+			} else if(0 == strncasecmp(arg, "FULL", sizeof("FULL")))
 			{
 				config->db_check_level = FULL;
 			} else {
