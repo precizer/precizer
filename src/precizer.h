@@ -227,8 +227,8 @@ typedef struct {
 	/// deletion of information from the database.
 	bool db_clean_ignored;
 
-	/// Select database validation level: 'quick' (default)
-	/// for basic structure check, 'full' for comprehensive
+	/// Select database validation level: 'quick' for basic
+	/// structure check, 'full' for comprehensive
 	/// integrity verification
 	char db_check_level;
 
@@ -389,6 +389,7 @@ void show_relative_path(
 	bool *,
 	bool *,
 	const bool *,
+	bool *,
 	bool *
 );
 

@@ -79,14 +79,14 @@ Return db_test(const char *db_file_path){
 
 	if(SUCCESS == status)
 	{
-		const char *sql = "PRAGMA quick_check";
+		const char *sql = "PRAGMA integrity_check";
 
-		if(config->db_check_level == FULL)
+		if(config->db_check_level == QUICK)
 		{
-			sql = "PRAGMA integrity_check";
-			slog(TRACE,"The database verification level has been set to FULL\n");
-		} else {
+			sql = "PRAGMA quick_check";
 			slog(TRACE,"The database verification level has been set to QUICK\n");
+		} else {
+			slog(TRACE,"The database verification level has been set to FULL\n");
 		}
 
 		rc = sqlite3_prepare_v2(db,sql,-1,&select_stmt,NULL);
