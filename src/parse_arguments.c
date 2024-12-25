@@ -109,7 +109,7 @@ static struct argp_option options[] = {
 	 "especially in automated scripts, as incorrect usage may lead " \
 	 "to loss of file checksums and metadata.\n",0 },
 	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname\n",0 },
-	{"check-level",'l',"LEVEL",0,"Select database validation level: 'quick' (default) for basic structure check, 'full' for comprehensive integrity verification\n",0 },
+	{"check-level",'l',"LEVEL",0,"Select database validation level: 'quick' for basic structure check, 'full' (default) for comprehensive integrity verification\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
 	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments " \
 	 "specifying paths to database files, e.g.:\n" BOLD " --compare database1.db database2.db" RESET "\n",0 },
@@ -390,9 +390,9 @@ Return parse_arguments(
 			printf("\n");
 		}
 
-		if(config->db_check_level != QUICK)
+		if(config->db_check_level != FULL)
 		{
-			slog(TESTING,"argument:db_check_level=%s\n",config->db_check_level == QUICK ? "QUICK" : "FULL");
+			slog(TESTING,"argument:check-level=%s\n",config->db_check_level == QUICK ? "QUICK" : "FULL");
 		}
 
 		if(config->verbose)
@@ -498,7 +498,7 @@ Return parse_arguments(
 				}
 				printf("; ");
 			}
-			printf("verbose=%s; silent=no; force=%s; update=%s; watch-timestamps=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, db-check-level=%s, rational_logger_mode=%s",
+			printf("verbose=%s; silent=no; force=%s; update=%s; watch-timestamps=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, check-level=%s, rational_logger_mode=%s",
 				config->verbose ? "yes" : "no",
 				config->force ? "yes" : "no",
 				config->update ? "yes" : "no",

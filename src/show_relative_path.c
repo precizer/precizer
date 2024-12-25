@@ -38,7 +38,8 @@ static void print_metadata(
 static void print_flag_combinations(
 	int               mega,
 	const DBrow       *dbrow,
-	const struct stat *fts_statp
+	const struct stat *fts_statp,
+	bool              *rehash
 ){
 	const char *flags[] = {"size","ctime","mtime"};
 	const int flag_values[] = {SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED};
@@ -67,17 +68,25 @@ static void print_flag_combinations(
 			flags_found++;
 		}
 	}
+
+	if(*rehash == true)
+	{
+		printf(" rehashed");
+	} else {
+		printf(" not rehash");
+	}
 }
 
 static void print_updated_or_added(
 	const int         *metadata_of_scanned_and_saved_files,
 	const DBrow       *dbrow,
-	const struct stat *fts_statp
+	const struct stat *fts_statp,
+	bool              *rehash
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
 		printf(" updated");
-		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
+		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
 	} else {
 		printf(" added");
 	}
@@ -86,12 +95,13 @@ static void print_updated_or_added(
 static void print_changed(
 	const int         *metadata_of_scanned_and_saved_files,
 	const DBrow       *dbrow,
-	const struct stat *fts_statp
+	const struct stat *fts_statp,
+	bool              *rehash
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
 		printf(" changed");
-		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp);
+		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
 	}
 }
 
@@ -113,7 +123,8 @@ void show_relative_path(
 	bool              *show_changes,
 	bool              *rehashig_from_the_beginning,
 	const bool        *ignored,
-	bool              *at_least_one_file_was_shown
+	bool              *at_least_one_file_was_shown,
+	bool              *rehash
 ){
 	if(*first_iteration == true)
 	{
@@ -158,17 +169,17 @@ void show_relative_path(
 					{
 						if(*metadata_of_scanned_and_saved_files != IDENTICAL)
 						{
-							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
+							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
 						} else {
-							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
+							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
 						}
 					} else {
 
 						if(*metadata_of_scanned_and_saved_files & SIZE_CHANGED)
 						{
-							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
+							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
 						} else {
-							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp);
+							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
 						}
 					}
 				}

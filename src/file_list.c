@@ -288,7 +288,7 @@ Return file_list(bool count_size_of_all_files){
 					memset(sha512,0,sizeof(sha512));
 
 					// Print out of a file name and its changes
-					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,p->fts_statp,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown);
+					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,p->fts_statp,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown,&rehash);
 
 					if(ignored == true)
 					{
