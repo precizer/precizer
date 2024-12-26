@@ -1,0 +1,234 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Primary database file name: database1.db
+TESTING:Primary database file path: database1.db
+TESTING:DB name determined
+TESTING:Verify that the path database1.db exists
+TESTING:The path database1.db doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:Successfully opened database database1.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named database1.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:Current directory: .*$
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
+1/AAA/BCB/CCC/a.txt
+1/AAA/ZAW/A/b/c/a_file.txt
+1/AAA/ZAW/D/e/f/b_file.txt
+2/AAA/BBB/CZC/a.txt
+3/AAA/BBB/CCC/a.txt
+4/AAA/BBB/CCC/a.txt
+path1/AAA/BCB/CCC/a.txt
+path1/AAA/ZAW/A/b/c/a_file.txt
+path1/AAA/ZAW/D/e/f/b_file.txt
+path2/AAA/BCB/CCC/a.txt
+path2/AAA/ZAW/A/b/c/a_file.txt
+path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:Start vacuuming…
+TESTING:The primary database has been vacuumed
+TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
+TESTING:The precizer completed its execution without any issues
+TESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:update=yes
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Primary database file name: database1.db
+TESTING:Primary database file path: database1.db
+TESTING:DB name determined
+TESTING:Verify that the path database1.db exists
+TESTING:The path database1.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:Successfully opened database database1.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named database1.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:Current directory: .*$
+TESTING:The database database1.db has already been created previously
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
+TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
+1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehashed
+2/AAA/BBB/CZC/a.txt updated ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) no rehash
+TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
+TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:Start vacuuming…
+TESTING:The primary database has been vacuumed
+TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
+TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
+TESTING:The precizer completed its execution without any issues
+TESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=database1.db, database2.db
+TESTING:argument:db_file_paths=database1.db, database2.db
+TESTING:argument:db_file_names=database1.db, database2.db
+TESTING:argument:compare=yes
+TESTING:Arguments parsed
+TESTING:Comparing databases. Directory path verification is not required
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Primary database file name: DisposableDB
+TESTING:Primary database file path: :memory:
+TESTING:DB name determined
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:Successfully opened database DisposableDB
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named DisposableDB is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
+TESTING:Database initialized
+TESTING:The comparison of database1.db and database2.db databases is starting…
+TESTING:Verify that the path database1.db exists
+TESTING:The path database1.db is exists and it is a file
+TESTING:Compare mode is enabled. Database verification for database1.db is skipped
+TESTING:Verify that the path database2.db exists
+TESTING:The path database2.db is exists and it is a file
+TESTING:Compare mode is enabled. Database verification for database2.db is skipped
+TESTING:\x1B\[1mThese files are no longer in the database1.db but still exist in the database2.db\x1B\[0m
+TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:\x1B\[1mThe SHA512 checksums of these files do not match between database1.db and database2.db\x1B\[0m
+TESTING:1/AAA/BCB/CCC/a.txt
+TESTING:Comparison of database1.db and database2.db databases is complete
+TESTING:Current directory: .*$
+TESTING:Comparison mode is enabled. The primary database verification is not required
+TESTING:Compare mode is enabled. Database verification for :memory: is skipped
+TESTING:Comparing databases. Directory path verification is not required
+TESTING:Comparison mode is enabled. The primary database does not require cleanup
+TESTING:Compare mode is enabled. Vacuuming is not required for the primary database
+TESTING:The precizer completed its execution without any issues
+TESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:watch-timestamps=yes
+TESTING:argument:update=yes
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Primary database file name: database1.db
+TESTING:Primary database file path: database1.db
+TESTING:DB name determined
+TESTING:Verify that the path database1.db exists
+TESTING:The path database1.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:Successfully opened database database1.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named database1.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:Current directory: .*$
+TESTING:The database database1.db has already been created previously
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
+TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
+1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehashed
+2/AAA/BBB/CZC/a.txt changed ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehashed
+TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
+TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:Start vacuuming…
+TESTING:The primary database has been vacuumed
+TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
+TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
+TESTING:The precizer completed its execution without any issues
+TESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=database1.db, database2.db
+TESTING:argument:db_file_paths=database1.db, database2.db
+TESTING:argument:db_file_names=database1.db, database2.db
+TESTING:argument:compare=yes
+TESTING:Arguments parsed
+TESTING:Comparing databases. Directory path verification is not required
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Primary database file name: DisposableDB
+TESTING:Primary database file path: :memory:
+TESTING:DB name determined
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:Successfully opened database DisposableDB
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named DisposableDB is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
+TESTING:Database initialized
+TESTING:The comparison of database1.db and database2.db databases is starting…
+TESTING:Verify that the path database1.db exists
+TESTING:The path database1.db is exists and it is a file
+TESTING:Compare mode is enabled. Database verification for database1.db is skipped
+TESTING:Verify that the path database2.db exists
+TESTING:The path database2.db is exists and it is a file
+TESTING:Compare mode is enabled. Database verification for database2.db is skipped
+TESTING:\x1B\[1mThese files are no longer in the database1.db but still exist in the database2.db\x1B\[0m
+TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:\x1B\[1mThe SHA512 checksums of these files do not match between database1.db and database2.db\x1B\[0m
+TESTING:1/AAA/BCB/CCC/a.txt
+TESTING:Comparison of database1.db and database2.db databases is complete
+TESTING:Current directory: .*$
+TESTING:Comparison mode is enabled. The primary database verification is not required
+TESTING:Compare mode is enabled. Database verification for :memory: is skipped
+TESTING:Comparing databases. Directory path verification is not required
+TESTING:Comparison mode is enabled. The primary database does not require cleanup
+TESTING:Compare mode is enabled. Vacuuming is not required for the primary database
+TESTING:The precizer completed its execution without any issues\z
