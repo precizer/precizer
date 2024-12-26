@@ -200,6 +200,10 @@ static Return libmem_test_3_4_5(void){
 	size_t array_length = 4096;
 	size_t array_size = array_length * sizeof(unsigned long long int);
 	unsigned char *ullint_array = (unsigned char *)calloc(array_length,sizeof(unsigned long long int));
+	if(ullint_array == NULL)
+	{
+		return(FAILURE);
+	}
 
 	// Seed random number generator
 	srand((unsigned int)time(NULL));

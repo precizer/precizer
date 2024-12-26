@@ -29,7 +29,7 @@ TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
 TESTING:The database database1.db has already been created previously
-TESTING:Starting of database file database1.db integrity check...
+TESTING:Starting of database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
