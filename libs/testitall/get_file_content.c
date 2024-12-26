@@ -26,7 +26,7 @@ Return get_file_content(
 	// Open file for reading
 	FILE *file = fopen(filename, "r");
 	if (!file) {
-		echo(STDERR,"ERROR: Failed to open pattern file\n");
+		echo(STDERR,"ERROR: Failed to open pattern file %s\n",filename);
 		return(FAILURE);
 	}
 
