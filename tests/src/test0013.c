@@ -248,16 +248,17 @@ static Return dry_run_mode_2_test(void){
 	const char *command = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --database=database1.db tests/examples/diffs/diff1";
 
+	// Preparation for tests
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
+		"cp -r tests/examples/ tests/examples_backup;",0));
+
 	ASSERT(SUCCESS == construct_path(filename,&path));
 
-	ASSERT(SUCCESS == execute_command(command,result,0));
+	ASSERT(SUCCESS == external_call(command,0));
 
 	#if 0
 	echo(STDOUT,"Path: %s\n",path);
-	echo(STDOUT,"%s\n",result->mem);
 	#endif
-
-	del_char(&result);
 
 	ASSERT(SUCCESS == check_file(path,&stat1));
 
@@ -383,6 +384,12 @@ static Return dry_run_mode_2_test(void){
 	}
 
 	free(path);
+
+	// Clean up test results
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
+		"rm database1.db;" \
+		"rm -rf tests/examples/;" \
+		"mv tests/examples_backup/ tests/examples/",0));
 
 	RETURN_STATUS;
 }

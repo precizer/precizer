@@ -73,7 +73,7 @@ static void print_flag_combinations(
 	{
 		printf(" rehashed");
 	} else {
-		printf(" not rehash");
+		printf(" no rehash");
 	}
 }
 

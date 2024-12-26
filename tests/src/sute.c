@@ -29,6 +29,7 @@ int main(void){
 	TEST(test0011,"User's Manual and examples from README test set…");
 	TEST(test0013,"Dry Run mode testing…");
 	TEST(test0014,"Short, long, relative and absolute paths…");
+	TEST(test0016,"--watch-timestamps argument testing…");
 
 	HEADER("\nClean results\n");
 	EXEC(clean,"Temporary data cleanup…");
