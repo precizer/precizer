@@ -27,10 +27,11 @@ static void reverse(
  * @note The buffer should be large enough to hold the result
  * @note Supports negative numbers only in base 10
  */
-char* itoa(int num, char* str, int base)
+char* itoa(int num, char* str, unsigned int base)
 {
 	size_t i = 0;
 	bool isNegative = false;
+	unsigned int unum; // Use unsigned int for calculations
 
 	/* Handle 0 explicitly, otherwise empty string is
 	* printed for 0 */
@@ -40,22 +41,22 @@ char* itoa(int num, char* str, int base)
 		return str;
 	}
 
-	// In standard itoa(), negative numbers are handled
-	// only with base 10. Otherwise numbers are
-	// considered unsigned.
+	/* Handle negative numbers */
 	if (num < 0 && base == 10) {
 		isNegative = true;
-		num = -num;
+		unum = (unsigned int)(-num); // Convert to unsigned after negation
+	} else {
+		unum = (unsigned int)num;
 	}
 
-	// Process individual digits
-	while (num != 0) {
-		int rem = num % base;
-		str[i++] = (char)((rem > 9) ? (rem - 10) + 'A' : rem + '0');
-		num = num / base;
+	/* Process individual digits */
+	while (unum != 0) {
+		int rem = (int)(unum % base);
+		str[i++] = (rem > 9) ? (char)(rem - 10 + 'A') : (char)(rem + '0');
+		unum = unum / base;
 	}
 
-	// If number is negative, append '-'
+	/* If number is negative, append '-' */
 	if (isNegative)
 		str[i++] = '-';
 
@@ -156,7 +157,6 @@ int main(void)
 		itoa(1567, str, 8));
 	printf("Base: %d\tConverted String: %s\n", 16,
 		itoa(1567, str, 16));
-
 
 	return 0; // Success
 }
