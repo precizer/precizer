@@ -8,5 +8,5 @@
 char* itoa(
 	int value,
 	char* str,
-	int
+	unsigned int
 );
