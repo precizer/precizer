@@ -44,7 +44,7 @@ static void print_flag_combinations(
 	const char *flags[] = {"size","ctime","mtime"};
 	const int flag_values[] = {SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED};
 	const int flag_count = 3;
-	int flags_found = 0;
+	unsigned int flags_found = 0;
 	bool first_word = true;
 
 	/* Check each flag */
