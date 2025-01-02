@@ -115,11 +115,11 @@ Return file_list(bool count_size_of_all_files){
 			if(p == current_file_system)
 			{
 				// All below run once per new path prefix
-				char *tmp = (char *)realloc(runtime_path_prefix,(current_file_system->fts_pathlen + 1) * sizeof(char));
+				char *tmp = (char *)realloc(runtime_path_prefix,(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
 
 				if(NULL == tmp)
 				{
-					report("Memory allocation failed, requested size: %zu bytes",(current_file_system->fts_pathlen + 1) * sizeof(char));
+					report("Memory allocation failed, requested size: %zu bytes",(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
 					status = FAILURE;
 					break;
 				} else {
