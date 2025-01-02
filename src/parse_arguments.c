@@ -7,7 +7,7 @@
  *
  */
 
-const char *argp_program_version = APP_NAME " " APP_VERSION;
+const char *argp_program_version = APP_NAME " " APP_VERSION_STR;
 
 /* Program documentation. */
 static char doc[] =
