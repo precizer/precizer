@@ -10,9 +10,6 @@ static const char *get_flag_string_by_code(void){
 		case SQLITE_OPEN_READONLY:
 			return "SQLITE_OPEN_READONLY";
 			break;
-		case SQLITE_OPEN_MEMORY:
-			return "SQLITE_OPEN_MEMORY";
-			break;
 		case SQLITE_OPEN_READWRITE:
 			return "SQLITE_OPEN_READWRITE";
 			break;
@@ -67,7 +64,7 @@ Return db_determine_mode(void){
 	///   - SQLITE_OPEN_READONLY
 	///   - SQLITE_OPEN_READWRITE
 	///   - SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE
-	///   - SQLITE_OPEN_MEMORY
+	///   - SQL_DRY_RUN_MODE
 	/// Default value: RO
 	config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 
