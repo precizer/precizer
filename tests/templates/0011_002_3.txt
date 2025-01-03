@@ -37,10 +37,9 @@ TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
 TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-TESTING:Start vacuuming…
-TESTING:The primary database has been vacuumed
+TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mNothing have been changed against the database since the last probe \(neither added nor updated or deleted information about files\)\x1B\[0m
-TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
+TESTING:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING

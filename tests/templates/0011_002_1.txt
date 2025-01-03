@@ -27,9 +27,7 @@ TESTING:The in-memory runtime_paths_id database successfully attached to the pri
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
-TESTING:Starting of database file database1.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
+TESTING:The primary database file was just created and doesn't require verification
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
