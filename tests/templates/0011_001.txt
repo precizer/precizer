@@ -27,9 +27,7 @@ TESTING:The in-memory runtime_paths_id database successfully attached to the pri
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
-TESTING:Starting of database file database1.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
+TESTING:The primary database file was just created and doesn't require verification
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -83,9 +81,7 @@ TESTING:The in-memory runtime_paths_id database successfully attached to the pri
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:Current directory: .*$
-TESTING:Starting of database file database2.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database database2.db has been verified and is in good condition
+TESTING:The primary database file was just created and doesn't require verification
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff2 exists
@@ -153,8 +149,7 @@ TESTING:path2/AAA/BCB/CCC/a.txt
 TESTING:Comparison of database1.db and database2.db databases is complete
 TESTING:Current directory: .*$
 TESTING:Comparison mode is enabled. The primary database verification is not required
-TESTING:Compare mode is enabled. Database verification for :memory: is skipped
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
-TESTING:Compare mode is enabled. Vacuuming is not required for the primary database
+TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
 TESTING:The precizer completed its execution without any issues\z
