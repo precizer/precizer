@@ -41,8 +41,7 @@ TESTING:path2/AAA/BCB/CCC/a.txt
 TESTING:Comparison of %DB_NAME% and database2.db databases is complete
 TESTING:Current directory: .*$
 TESTING:Comparison mode is enabled. The primary database verification is not required
-TESTING:Compare mode is enabled. Database verification for :memory: is skipped
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
-TESTING:Compare mode is enabled. Vacuuming is not required for the primary database
+TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
 TESTING:The precizer completed its execution without any issues\z

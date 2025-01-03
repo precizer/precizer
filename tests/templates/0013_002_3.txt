@@ -46,7 +46,7 @@ TESTING:Dry Run mode is enabled. The primary database must not be modified
 TESTING:The \x1B\[1m--db-clean-ignored\x1B\[0m option has been used, so the information about ignored files will be removed against the database database1.db
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 TESTING:2/AAA/BBB/CZC/a.txt
-TESTING:Dry Run mode is enabled. Vacuuming is not required for the primary database
+TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues\z
