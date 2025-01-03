@@ -139,24 +139,22 @@ static error_t parse_opt(
 	{
 		case 'd':
 			// Full path to DB file
-			config->db_file_path = (char *)calloc(strlen(arg) + 1,sizeof(char));
+			config->db_file_path = strdup(arg);
 
 			if(config->db_file_path == NULL)
 			{
-				argp_failure(state,1,0,"ERROR: Memory callocation did not complete successfully!");
+				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_path failed!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
-			strcpy(config->db_file_path,arg);
 
 			// Name of DB file only
-			config->db_file_name = (char *)calloc(strlen(arg) + 1,sizeof(char));
+			config->db_file_name = strdup(basename(arg));
 
 			if(config->db_file_name == NULL)
 			{
-				argp_failure(state,1,0,"ERROR: Memory callocation did not complete successfully!");
+				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_name failed!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
-			strcpy(config->db_file_name,basename(arg));
 			break;
 		case 'e':
 			(void)add_string_to_array(&config->ignore,arg);
