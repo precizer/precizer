@@ -80,8 +80,8 @@ int main(
 	// Check whether the database already exists or not yet
 	run(db_contains_data());
 
-	// Database file integrity check
-	run(db_test(config->db_file_path));
+	// Primary database file integrity check
+	run(primary_db_file_test());
 
 	// Verify that the provided path arguments match
 	// the paths stored in the database
