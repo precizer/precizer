@@ -14,7 +14,7 @@ Return db_vacuum(void){
 	// Don't do anything
 	if(config->compare == true)
 	{
-		slog(TRACE,"Compare mode is enabled. The primary database doesn't require vacuuming\n");
+		slog(TRACE,"Comparison mode is enabled. The primary database doesn't require vacuuming\n");
 		return(status);
 
 	} else if(config->dry_run == true)
