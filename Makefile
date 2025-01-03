@@ -143,7 +143,7 @@ RELLIBDIR = $(RELDIR)/libs
 RELLIBS = -L$(RELLIBDIR)
 RELINCPATH = -I$(RELDIR)/inc
 RELDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(RELLIBDIR),-rpath,\$$ORIGIN/libs
-RELCFLAGS = -O3 -funroll-loops -DNDEBUG
+RELCFLAGS = -O2 -funroll-loops -DNDEBUG
 RELCFLAGS += -march=native
 # If static build, then add flags
 ifdef STATIC
