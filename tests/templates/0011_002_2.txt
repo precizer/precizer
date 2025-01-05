@@ -11,6 +11,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
@@ -19,12 +20,17 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The database1.db database file is version 1
+TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables have been successfully initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:Current directory: .*$
 TESTING:The database database1.db was previously created and already contains data with files and their checksums. Use the \x1B\[1m--update\x1B\[0m option only when you are certain that the database needs to be updated and when file information \(including changes, deletions, and additions\) should be synchronized with the database.
 ERROR:The precizer process terminated unexpectedly due to an error\z

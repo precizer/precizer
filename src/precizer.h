@@ -106,6 +106,46 @@ typedef enum
  *
  */
 
+/**
+ * @brief Compact file metadata structure
+ *
+ * Contains essential file metadata including size and timestamps.
+ * Provides high precision timing using separate second and nanosecond fields.
+ */
+typedef struct {
+
+	/** File size in bytes */
+	off_t st_size;
+
+	/**
+	 * Last file content modification time - seconds portion
+	 * Updated when file contents are modified (write, truncate, etc.)
+	 */
+	time_t mtim_tv_sec;
+
+	/**
+	 * Last file content modification time - nanoseconds portion
+	 * Provides nanosecond precision for modification timestamp
+	 * Valid range: 0 to 999999999
+	 */
+	long mtim_tv_nsec;
+
+	/**
+	 * Last status change time - seconds portion
+	 * Updated when file metadata changes (permissions, ownership)
+	 * or when contents are modified
+	 */
+	time_t ctim_tv_sec;
+
+	/**
+	 * Last status change time - nanoseconds portion
+	 * Provides nanosecond precision for status change timestamp
+	 * Valid range: 0 to 999999999
+	 */
+	long ctim_tv_nsec;
+
+} CmpctStat; // Compact 'stat' structure
+
 /* DB row content */
 typedef struct {
 
@@ -119,7 +159,7 @@ typedef struct {
 	sqlite3_int64 ID;
 
 	/* Metadata of a file (man 2 stat) */
-	struct stat saved_stat;
+	CmpctStat saved_stat;
 
 	/* SHA512 metadata */
 	SHA512_Context saved_mdContext;
@@ -214,9 +254,7 @@ typedef struct {
 	///   - SQLITE_OPEN_READONLY
 	///   - SQLITE_OPEN_READWRITE
 	///   - SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
-	///   - SQLITE_OPEN_MEMORY
 	///   - SQL_DRY_RUN_MODE
-	/// https://www.sqlite.org/c3ref/open.html
 	int sqlite_open_flag;
 
 	/// Must be specified additionally in order
@@ -335,7 +373,7 @@ Return db_update_the_record(
 	const sqlite3_int64 *,
 	const sqlite3_int64 *,
 	const unsigned char *,
-	const struct stat *,
+	const CmpctStat *,
 	const SHA512_Context *
 );
 
@@ -343,7 +381,7 @@ Return db_insert_the_record(
 	const char *,
 	const sqlite3_int64 *,
 	const unsigned char *,
-	const struct stat *,
+	const CmpctStat *,
 	const SHA512_Context *
 );
 
@@ -363,6 +401,30 @@ Return db_file_validate_existence(void);
 
 Return db_test(const char *);
 
+Return db_get_version(
+	int *,
+	const char *
+);
+
+Return db_check_version(
+	const char *,
+	const char *
+);
+
+Return db_upgrade(
+	const int *,
+	const char *,
+	const char *
+);
+
+Return migrate_from_0_to_1(const char *);
+
+Return db_specify_version(const char *);
+
+Return db_consider_version_update(void);
+
+Return primary_db_file_test(void);
+
 #if 0 // Old multiPATH solution
 Return db_get_path_prefix_index(
 	const char *,
@@ -370,9 +432,14 @@ Return db_get_path_prefix_index(
 );
 #endif
 
-int compare_file_metadata_equivalence(
+Return stat_copy(
 	const struct stat *,
-	const struct stat *
+	CmpctStat *
+);
+
+int compare_file_metadata_equivalence(
+	const CmpctStat *,
+	const CmpctStat *
 ) __attribute__ ((pure));
 
 Return parse_arguments(
@@ -384,7 +451,7 @@ void show_relative_path(
 	const char *,
 	const int *,
 	const DBrow *,
-	const struct stat *,
+	const CmpctStat *,
 	bool *,
 	bool *,
 	bool *,

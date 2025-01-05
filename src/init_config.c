@@ -51,7 +51,6 @@ void init_config(void){
 	///   - SQLITE_OPEN_READONLY
 	///   - SQLITE_OPEN_READWRITE
 	///   - SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
-	///   - SQLITE_OPEN_MEMORY
 	/// Default value: RO
 	config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 

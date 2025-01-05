@@ -5,8 +5,8 @@
 
 static void print_metadata(
 	int               flag,
-	const struct stat *was,
-	const struct stat *now
+	const CmpctStat *was,
+	const CmpctStat *now
 ){
 	if(rational_logger_mode & (VERBOSE|TESTING))
 	{
@@ -17,12 +17,12 @@ static void print_metadata(
 				printf(", now:%s",bkbmbgbtbpbeb((size_t)now->st_size));
 				break;
 			case 1:
-				printf(" was:%s.%ld",seconds_to_ISOdate(was->st_ctim.tv_sec),was->st_ctim.tv_nsec);
-				printf(", now:%s.%ld",seconds_to_ISOdate(now->st_ctim.tv_sec),now->st_ctim.tv_nsec);
+				printf(" was:%s.%ld",seconds_to_ISOdate(was->ctim_tv_sec),was->ctim_tv_nsec);
+				printf(", now:%s.%ld",seconds_to_ISOdate(now->ctim_tv_sec),now->ctim_tv_nsec);
 				break;
 			case 2:
-				printf(" was:%s.%ld",seconds_to_ISOdate(was->st_mtim.tv_sec),was->st_mtim.tv_nsec);
-				printf(", now:%s.%ld",seconds_to_ISOdate(now->st_mtim.tv_sec),now->st_mtim.tv_nsec);
+				printf(" was:%s.%ld",seconds_to_ISOdate(was->mtim_tv_sec),was->mtim_tv_nsec);
+				printf(", now:%s.%ld",seconds_to_ISOdate(now->mtim_tv_sec),now->mtim_tv_nsec);
 				break;
 			default:
 				return;
@@ -38,7 +38,7 @@ static void print_metadata(
 static void print_flag_combinations(
 	int               mega,
 	const DBrow       *dbrow,
-	const struct stat *fts_statp,
+	const CmpctStat *stat,
 	bool              *rehash
 ){
 	const char *flags[] = {"size","ctime","mtime"};
@@ -64,7 +64,7 @@ static void print_flag_combinations(
 				printf(" & ");
 			}
 			printf("%s",flags[i]);
-			print_metadata(i,&dbrow->saved_stat,fts_statp);
+			print_metadata(i,&dbrow->saved_stat,stat);
 			flags_found++;
 		}
 	}
@@ -80,13 +80,13 @@ static void print_flag_combinations(
 static void print_updated_or_added(
 	const int         *metadata_of_scanned_and_saved_files,
 	const DBrow       *dbrow,
-	const struct stat *fts_statp,
+	const CmpctStat *stat,
 	bool              *rehash
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
 		printf(" updated");
-		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
+		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 	} else {
 		printf(" added");
 	}
@@ -95,13 +95,13 @@ static void print_updated_or_added(
 static void print_changed(
 	const int         *metadata_of_scanned_and_saved_files,
 	const DBrow       *dbrow,
-	const struct stat *fts_statp,
+	const CmpctStat *stat,
 	bool              *rehash
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
 		printf(" changed");
-		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
+		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 	}
 }
 
@@ -118,7 +118,7 @@ void show_relative_path(
 	const char        *relative_path,
 	const int         *metadata_of_scanned_and_saved_files,
 	const DBrow       *dbrow,
-	const struct stat *fts_statp,
+	const CmpctStat *stat,
 	bool              *first_iteration,
 	bool              *show_changes,
 	bool              *rehashig_from_the_beginning,
@@ -169,17 +169,17 @@ void show_relative_path(
 					{
 						if(*metadata_of_scanned_and_saved_files != IDENTICAL)
 						{
-							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
+							print_changed(metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 						} else {
-							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
+							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 						}
 					} else {
 
 						if(*metadata_of_scanned_and_saved_files & SIZE_CHANGED)
 						{
-							print_changed(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
+							print_changed(metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 						} else {
-							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,fts_statp,rehash);
+							print_updated_or_added(metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 						}
 					}
 				}

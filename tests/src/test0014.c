@@ -30,6 +30,8 @@ Return test0014(void){
 	TEST(short_absolute_path_test,"Short absolute path…");
 	TEST(long_relative_path_test,"Long relative path…");
 	TEST(long_absolute_path_test,"Long absolute path…");
+	TEST(reset_path_variable_relative_path_test,"Reset PATH variable relative path…");
+	TEST(reset_path_variable_absolute_path_test,"Reset PATH variable absolute path…");
 
 	RETURN_STATUS;
 }

@@ -67,6 +67,7 @@ Return db_init(void){
 #if 0 // Frozen multiPATH feature
 		const char *sql = "PRAGMA foreign_keys=OFF;" \
 		        "BEGIN TRANSACTION;" \
+		        "CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE);" \
 		        "CREATE TABLE IF NOT EXISTS files("  \
 		        "ID INTEGER PRIMARY KEY NOT NULL," \
 		        "offset INTEGER DEFAULT NULL," \
@@ -86,6 +87,7 @@ Return db_init(void){
 		/* Full runtime path is stored in the table 'paths' */
 		const char *sql = "PRAGMA foreign_keys=OFF;" \
 		        "BEGIN TRANSACTION;" \
+		        "CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE);" \
 		        "CREATE TABLE IF NOT EXISTS files("  \
 		        "ID INTEGER PRIMARY KEY NOT NULL," \
 		        "offset INTEGER DEFAULT NULL," \
