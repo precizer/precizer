@@ -21,7 +21,7 @@ Return test0003(void){
 	{
 		// Get the output of an external program
 		const char *command = "export TESTING=true;cd ${TMPDIR};" \
-			"precizer --compare ${DBNAME} database2.db";
+		        "precizer --compare ${DBNAME} database2.db";
 
 		const char *filename = "templates/0003.txt";  // File name
 		const char *template = "%DB_NAME%";
