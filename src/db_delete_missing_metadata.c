@@ -16,8 +16,7 @@ Return db_delete_missing_metadata(void){
 	{
 		slog(TRACE,"Comparison mode is enabled. The primary database does not require cleanup\n");
 		return(status);
-	} else if(config->dry_run == true && config->db_file_exists == true)
-	{
+	} else if(config->dry_run == true && config->db_file_exists == true){
 		slog(TRACE,"Dry Run mode is enabled. The primary database must not be modified\n");
 	}
 
@@ -104,13 +103,11 @@ Return db_delete_missing_metadata(void){
 					{
 						clean_ignored = true;
 
-					} else if(FAIL_REGEXP_IGNORE == result)
-					{
+					} else if(FAIL_REGEXP_IGNORE == result){
 						status = FAILURE;
 					}
 
-				} else if(FAIL_REGEXP_INCLUDE == response)
-				{
+				} else if(FAIL_REGEXP_INCLUDE == response){
 					status = FAILURE;
 					break;
 				}

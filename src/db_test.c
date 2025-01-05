@@ -48,8 +48,7 @@ Return db_test(const char *db_file_path){
 			free(dirc);
 			return(SUCCESS);
 
-		} else if(config->dry_run == true && config->db_file_exists == false)
-		{
+		} else if(config->dry_run == true && config->db_file_exists == false){
 			slog(TRACE,"Dry Run mode is enabled. Database verification for %s is skipped\n",db_file_name);
 			free(dirc);
 			return(SUCCESS);

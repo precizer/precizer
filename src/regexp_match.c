@@ -62,8 +62,7 @@ REGEXP regexp_match(
 			slog(ERROR,"PCRE2 regular expression %s has an error: %d \"offset vector too small\"\n",pattern,rc);
 		}
 		return(REGEXP_ERROR);
-	} else if(rc > 0)
-	{
+	} else if(rc > 0){
 #if 0
 		ovector = pcre2_get_ovector_pointer(match_data);
 #endif
@@ -79,8 +78,7 @@ REGEXP regexp_match(
 		}
 	}
 #if 0
-	else if(rc < 0)
-	{
+	else if(rc < 0){
 		printf("No match\n");
 	}
 #endif

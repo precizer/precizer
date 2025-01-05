@@ -91,8 +91,7 @@ Return db_get_version(
 			}
 		}
 
-	} else if(SUCCESS == status)
-	{
+	} else if(SUCCESS == status){
 		slog(TRACE,"Metadata table not found in database\n");
 	}
 

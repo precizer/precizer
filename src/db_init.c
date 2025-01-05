@@ -28,8 +28,7 @@ Return db_init(void){
 	if(SQLITE_OK == (rc = sqlite3_open_v2(db_file_path,&config->db,config->sqlite_open_flag,NULL)))
 	{
 		slog(TRACE,"Successfully opened database %s\n",config->db_file_name);
-	} else if(config->compare != true)
-	{
+	} else if(config->compare != true){
 		slog(ERROR,"Can't open database %s (%i): %s\n",config->db_file_path,rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}

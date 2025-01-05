@@ -26,8 +26,7 @@ Include include(
 			// Include that file
 			return(INCLUDE);
 
-		} else if(REGEXP_ERROR == result)
-		{
+		} else if(REGEXP_ERROR == result){
 
 			return(FAIL_REGEXP_INCLUDE);
 

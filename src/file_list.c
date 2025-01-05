@@ -156,6 +156,7 @@ Return file_list(bool count_size_of_all_files){
 			case FTS_F:
 			{
 				CmpctStat stat = {0};
+
 				(void)stat_copy(p->fts_statp,&stat);
 
 				// Limit recursion to the depth determined in config->maxdepth
@@ -168,8 +169,7 @@ Return file_list(bool count_size_of_all_files){
 				{
 					config->total_size_in_bytes += (size_t)stat.st_size;
 					count_files++;
-				} else if(runtime_path_prefix != NULL)
-				{
+				} else if(runtime_path_prefix != NULL){
 					const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
 					count_files++;
 
@@ -272,14 +272,12 @@ Return file_list(bool count_size_of_all_files){
 							{
 								ignored = true;
 
-							} else if(FAIL_REGEXP_IGNORE == result)
-							{
+							} else if(FAIL_REGEXP_IGNORE == result){
 								status = FAILURE;
 								break;
 							}
 
-						} else if(FAIL_REGEXP_INCLUDE == response)
-						{
+						} else if(FAIL_REGEXP_INCLUDE == response){
 							status = FAILURE;
 							break;
 						}
@@ -316,13 +314,11 @@ Return file_list(bool count_size_of_all_files){
 							// Update DB record
 							update_db = true;
 
-						} else if(dbrow->saved_offset > 0 && offset == 0)
-						{
+						} else if(dbrow->saved_offset > 0 && offset == 0){
 							// Update DB record
 							update_db = true;
 
-						} else if(metadata_of_scanned_and_saved_files != IDENTICAL)
-						{
+						} else if(metadata_of_scanned_and_saved_files != IDENTICAL){
 							// Update DB record
 							update_db = true;
 						}
