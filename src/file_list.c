@@ -155,6 +155,9 @@ Return file_list(bool count_size_of_all_files){
 				break;
 			case FTS_F:
 			{
+				CmpctStat stat = {0};
+				(void)stat_copy(p->fts_statp,&stat);
+
 				// Limit recursion to the depth determined in config->maxdepth
 				if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
 				{
@@ -163,12 +166,11 @@ Return file_list(bool count_size_of_all_files){
 
 				if(count_size_of_all_files == true)
 				{
-					config->total_size_in_bytes += (size_t)p->fts_statp->st_size;
+					config->total_size_in_bytes += (size_t)stat.st_size;
 					count_files++;
 				} else if(runtime_path_prefix != NULL)
 				{
 					const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
-					struct stat *stat = p->fts_statp;
 					count_files++;
 
 					/* Write all columns from DB row to the structure DBrow */
@@ -201,7 +203,7 @@ Return file_list(bool count_size_of_all_files){
 					{
 						// Validate if size, creation and modification time of a
 						// file has not changed since last scanning.
-						metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),p->fts_statp);
+						metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),&stat);
 
 						// The file metadata in DB and on the file system are identical
 						if(metadata_of_scanned_and_saved_files == IDENTICAL)
@@ -288,7 +290,7 @@ Return file_list(bool count_size_of_all_files){
 					memset(sha512,0,sizeof(sha512));
 
 					// Print out of a file name and its changes
-					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,p->fts_statp,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown,&rehash);
+					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&stat,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown,&rehash);
 
 					if(ignored == true)
 					{
@@ -330,7 +332,7 @@ Return file_list(bool count_size_of_all_files){
 					if(update_db == true)
 					{
 						/* Update record in DB */
-						if(SUCCESS == (status = db_update_the_record(&(dbrow->ID),&offset,sha512,stat,&mdContext)))
+						if(SUCCESS == (status = db_update_the_record(&(dbrow->ID),&offset,sha512,&stat,&mdContext)))
 						{
 							// Reflect changes in global
 							config->something_has_been_changed = true;
@@ -342,10 +344,10 @@ Return file_list(bool count_size_of_all_files){
 						/* Insert to DB */
 	#if 0 // Old multiPATH solution
 
-						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,stat,&mdContext)))
+						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext)))
 	#endif
 
-						if(SUCCESS == (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
+						if(SUCCESS == (status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext)))
 						{
 							// Reflect changes in global
 							config->something_has_been_changed = true;

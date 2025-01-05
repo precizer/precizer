@@ -22,9 +22,10 @@ Return db_read_file_data_from(
 
 	/* Create SQL statement */
 #if 0 // Old multiPATH solution
-	const char *select_sql = "SELECT ID,offset,stat,mdContext FROM files WHERE path_prefix_index = ?1 and relative_path = ?2;";
-#endif
+	const char *select_sql = "SELECT ID,offset,stat,mdContext,sha512 FROM files WHERE path_prefix_index = ?1 and relative_path = ?2;";
+#else
 	const char *select_sql = "SELECT ID,offset,stat,mdContext,sha512 FROM files WHERE relative_path = ?1;";
+#endif
 	rc = sqlite3_prepare_v2(config->db,select_sql,-1,&select_stmt,NULL);
 
 	if(SQLITE_OK != rc)
@@ -54,11 +55,11 @@ Return db_read_file_data_from(
 	{
 		dbrow->ID = sqlite3_column_int64(select_stmt,0);
 		dbrow->saved_offset = sqlite3_column_int64(select_stmt,1);
-		const struct stat *get_stat = sqlite3_column_blob(select_stmt,2);
+		const CmpctStat *get_stat = sqlite3_column_blob(select_stmt,2);
 
 		if(get_stat != NULL)
 		{
-			memcpy(&dbrow->saved_stat,get_stat,sizeof(struct stat));
+			memcpy(&dbrow->saved_stat,get_stat,sizeof(CmpctStat));
 		}
 		const SHA512_Context *get_mdContext = sqlite3_column_blob(select_stmt,3);
 

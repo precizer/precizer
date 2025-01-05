@@ -18,8 +18,8 @@
  *         - CREATION_TIME_CHANGED
  */
 int compare_file_metadata_equivalence(
-	const struct stat *source,
-	const struct stat *destination
+	const CmpctStat *source,
+	const CmpctStat *destination
 ){
 	/* Validate input parameters */
 	if(NULL == source || NULL == destination)
@@ -37,16 +37,16 @@ int compare_file_metadata_equivalence(
 	}
 
 	/* Modified timestamp */
-	if(!(source->st_mtim.tv_sec == destination->st_mtim.tv_sec &&
-	        source->st_mtim.tv_nsec == destination->st_mtim.tv_nsec))
+	if(!(source->mtim_tv_sec == destination->mtim_tv_sec &&
+	        source->mtim_tv_nsec == destination->mtim_tv_nsec))
 	{
 		result |= MODIFICATION_TIME_CHANGED;
 
 	}
 
 	/* Time of last status change  */
-	if(!(source->st_ctim.tv_sec == destination->st_ctim.tv_sec &&
-	        source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
+	if(!(source->ctim_tv_sec == destination->ctim_tv_sec &&
+	        source->ctim_tv_nsec == destination->ctim_tv_nsec))
 	{
 		result |= CREATION_TIME_CHANGED;
 

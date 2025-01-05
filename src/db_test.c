@@ -131,6 +131,12 @@ Return db_test(const char *db_file_path){
 
 	sqlite3_close(db);
 
+	if(SUCCESS == status)
+	{
+		/* Check the database version number and upgrade the database if necessary */
+		status = db_check_version(db_file_path,db_file_name);
+	}
+
 	free(dirc);
 
 	return(status);

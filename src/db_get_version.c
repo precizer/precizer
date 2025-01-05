@@ -6,31 +6,52 @@
 #include "precizer.h"
 
 /**
- * @brief Checks if metadata table exists and retrieves database version
+ * @brief Retrieves database version from the metadata table
  *
- * @details This function performs two sequential operations:
- *          1. Checks for the existence of the "metadata" table in the database
- *          2. If the table exists, retrieves the database version number
- *          The database connection is accessed through the global config structure
+ * @details Opens database connection, checks for metadata table existence
+ *          and retrieves version number if available. Handles all necessary
+ *          resource cleanup.
  *
- * @post On SUCCESS: config->db_version will contain either the retrieved version number,
- *       or will be set to 0 if no version is found
+ * @param[in] db_file_path Path to the SQLite database file
+ * @param[out] db_version Pointer to store the retrieved version number
  *
  * @return Return status codes:
- *         - SUCCESS: Table exists and version retrieved successfully
- *         - FAILURE: SQL error occurred or invalid data retrieved
+ *         - SUCCESS: Version retrieved successfully (may be 0 if not found)
+ *         - FAILURE: Database error or invalid parameters
  */
-Return db_get_version(void){
-
+Return db_get_version(
+	int        *db_version,
+	const char *db_file_path
+){
 	Return status = SUCCESS;
+	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
 	bool table_exists = false;
-	const char *check_query = "SELECT name FROM sqlite_master WHERE type='table' AND name='metadata';";
 
-	/* Check if table exists */
-	if(SQLITE_OK != sqlite3_prepare_v2(config->db,check_query,-1,&stmt,NULL))
+	/* Validate input parameters */
+	if(db_file_path == NULL)
 	{
+		slog(ERROR,"Invalid input parameters: db_file_path\n");
+		return(FAILURE);
+	}
+
+	/* Open database connection */
+	if(SQLITE_OK != sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READONLY,NULL))
+	{
+		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
 		status = FAILURE;
+	}
+
+	/* Check if metadata table exists */
+	if(SUCCESS == status)
+	{
+		const char *check_query = "SELECT name FROM sqlite_master WHERE type='table' AND name='metadata';";
+
+		if(SQLITE_OK != sqlite3_prepare_v2(db,check_query,-1,&stmt,NULL))
+		{
+			slog(ERROR,"Failed to prepare table existence check query: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
 	}
 
 	if(SUCCESS == status)
@@ -52,8 +73,9 @@ Return db_get_version(void){
 	{
 		const char *version_query = "SELECT db_version FROM metadata;";
 
-		if(SQLITE_OK != sqlite3_prepare_v2(config->db,version_query,-1,&stmt,NULL))
+		if(SQLITE_OK != sqlite3_prepare_v2(db,version_query,-1,&stmt,NULL))
 		{
+			slog(ERROR,"Failed to prepare version query: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
 		}
 
@@ -61,18 +83,33 @@ Return db_get_version(void){
 		{
 			if(SQLITE_ROW == sqlite3_step(stmt))
 			{
-				config->db_version = sqlite3_column_int(stmt,0);
+				*db_version = sqlite3_column_int(stmt,0);
+				slog(TRACE,"Version number %d found in database\n",*db_version);
+
 			} else {
-				config->db_version = 0;
+				slog(TRACE,"No DB version data found in metadata table\n");
 			}
 		}
+
+	} else if(SUCCESS == status)
+	{
+		slog(TRACE,"Metadata table not found in database\n");
 	}
 
+	/* Cleanup */
 	if(stmt != NULL)
 	{
 		sqlite3_finalize(stmt);
 	}
 
+	if(db != NULL)
+	{
+		if(SQLITE_OK != sqlite3_close(db))
+		{
+			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
+			/* Don't change status as the operation was otherwise successful */
+		}
+	}
+
 	return(status);
 }
-
