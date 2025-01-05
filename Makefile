@@ -48,7 +48,7 @@ endif
 
 EXE = precizer
 
-STATIC = -static
+STATIC = -static -static-libgcc
 SRC = src
 STRIP = -s
 # Flags for additional checks. Must have!
@@ -126,6 +126,7 @@ DBGINCPATH = -I$(DBGDIR)/inc
 DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs
 DBGFLAGS = -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 DBGCFLAGS += $(DBGFLAGS)
+DBGCFLAGS += -Wl,--as-needed
 # Activation of the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
@@ -143,8 +144,9 @@ RELLIBDIR = $(RELDIR)/libs
 RELLIBS = -L$(RELLIBDIR)
 RELINCPATH = -I$(RELDIR)/inc
 RELDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(RELLIBDIR),-rpath,\$$ORIGIN/libs
-RELCFLAGS = -O2 -funroll-loops -DNDEBUG
-RELCFLAGS += -march=native
+RELCFLAGS = -funroll-loops -DNDEBUG
+RELLDFLAGS += -Wl,--as-needed
+
 # If static build, then add flags
 ifdef STATIC
 RELLDFLAGS += -lc
@@ -162,7 +164,7 @@ TOPTARGETS := all
 #
 UNCRUSTIFY_CFG = Uncrustify.cfg
 
-.PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format $(SUBDIRS)
+.PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
 all: $(SUBDIRS) release
@@ -174,6 +176,16 @@ $(SUBDIRS):
 # Clang
 clang: CC = clang
 clang: all
+
+# Portable release
+portable: RELCFLAGS += -O2 -mtune=generic
+portable: RELLDFLAGS += -O2 -mtune=generic -Wl,--hash-style=both
+portable: release
+
+prod: production
+production: RELCFLAGS += -O3 -march=native
+production: RELLDFLAGS += -O3 -march=native -Wl,--hash-style=gnu
+production: release
 
 #
 # Sanitize rules
@@ -273,10 +285,10 @@ test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gccan
 #
 # GCC Static Analysis
 #
-gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
+gcc-analyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -flto
 # -Wanalyzer-too-complex
-gccanalyzer: CC = gcc
-gccanalyzer: debug
+gcc-analyzer: CC = gcc
+gcc-analyzer: debug
 
 cppcheck:
 	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
@@ -313,7 +325,7 @@ doc:
 	@doxygen Doxyfile
 
 spellcheck:
-	@~/.cargo/bin/typos libs/sha512/ libs/rational/ src/ README.md README.ru.md TODO
+	@~/.cargo/bin/typos libs/sha512/ libs/rational/ libs/pcre2/ libs/mem/ src/ README.md README.ru.md TODO
 
 gource:
 	gource --seconds-per-day 0.1 --auto-skip-seconds 1
