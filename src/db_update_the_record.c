@@ -11,7 +11,7 @@ Return db_update_the_record(
 	const sqlite3_int64  *ID,
 	const sqlite3_int64  *offset,
 	const unsigned char  *sha512,
-	const struct stat    *stat,
+	const CmpctStat      *stat,
 	const SHA512_Context *mdContext
 ){
 	/// The status that will be passed to return() before exiting.
@@ -65,12 +65,15 @@ Return db_update_the_record(
 		status = FAILURE;
 	}
 
-	rc = sqlite3_bind_blob(update_stmt,3,stat,sizeof(struct stat),NULL);
-
-	if(SQLITE_OK != rc)
+	if(SUCCESS == status)
 	{
-		slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
-		status = FAILURE;
+		rc = sqlite3_bind_blob(update_stmt,3,stat,sizeof(CmpctStat),NULL);
+
+		if(SQLITE_OK != rc)
+		{
+			slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			status = FAILURE;
+		}
 	}
 
 	if(*offset == 0)

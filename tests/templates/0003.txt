@@ -10,6 +10,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
@@ -39,9 +40,9 @@ TESTING:4/AAA/BBB/CCC/a.txt
 TESTING:path1/AAA/ZAW/D/e/f/b_file.txt
 TESTING:path2/AAA/BCB/CCC/a.txt
 TESTING:Comparison of %DB_NAME% and database2.db databases is complete
-TESTING:Current directory: .*$
 TESTING:Comparison mode is enabled. The primary database verification is not required
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
+TESTING:Comparison mode is enabled. Store the primary database version is not required
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
 TESTING:The precizer completed its execution without any issues\z

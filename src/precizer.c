@@ -20,7 +20,7 @@ _Atomic bool global_interrupt_flag = false;
 Config _config;
 Config *config = &_config;
 
-#ifndef TESTITALL
+#ifndef TESTITALL // Unit testing library
 /**
  * @mainpage
  * @brief precizer is a CLI application designed to verify the integrity of files after synchronization.
@@ -58,6 +58,9 @@ int main(
 	// Initialize signals interception like Ctrl+C
 	run(init_signals());
 
+	// The current directory where app being executed
+	run(determine_running_dir());
+
 	// Generate DB file name if
 	// not passed as an argument
 	run(db_determine_name());
@@ -68,20 +71,17 @@ int main(
 	// Define the database operation mode
 	run(db_determine_mode());
 
+	// Primary database file integrity check
+	run(primary_db_file_test());
+
 	// Initialize SQLite database
 	run(db_init());
 
 	// Compare databases
 	run(db_compare());
 
-	// The current directory where app being executed
-	run(determine_running_dir());
-
 	// Check whether the database already exists or not yet
 	run(db_contains_data());
-
-	// Primary database file integrity check
-	run(primary_db_file_test());
 
 	// Verify that the provided path arguments match
 	// the paths stored in the database
@@ -104,6 +104,10 @@ int main(
 	// Update the database. Remove files that
 	// no longer exist.
 	run(db_delete_missing_metadata());
+
+	// If the database has been modified, then store the current
+	// database version in the metadata table
+	run(db_consider_version_update());
 
 	// Optimizing the space occupied by a database file.
 	run(db_vacuum());

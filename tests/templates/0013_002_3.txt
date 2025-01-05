@@ -14,6 +14,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
@@ -22,17 +23,19 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The database1.db database file is version 1
+TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:Current directory: .*$
 TESTING:The database database1.db has already been created previously
-TESTING:Starting of database file database1.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -46,6 +49,7 @@ TESTING:Dry Run mode is enabled. The primary database must not be modified
 TESTING:The \x1B\[1m--db-clean-ignored\x1B\[0m option has been used, so the information about ignored files will be removed against the database database1.db
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 TESTING:2/AAA/BBB/CZC/a.txt
+TESTING:Version number 1 found in database
 TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m

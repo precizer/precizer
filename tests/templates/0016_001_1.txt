@@ -10,6 +10,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
@@ -19,14 +20,13 @@ TESTING:The primary DB file not yet exists. Brand new database will be created
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
+TESTING:The primary database file was just created and doesn't require verification
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables have been successfully initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:Current directory: .*$
-TESTING:The primary database file was just created and doesn't require verification
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -45,6 +45,8 @@ path1/AAA/ZAW/D/e/f/b_file.txt
 path2/AAA/BCB/CCC/a.txt
 path2/AAA/ZAW/A/b/c/a_file.txt
 path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:No DB version data found in metadata table
+TESTING:The database version 1 has been successfully stored in the DB
 TESTING:Start vacuuming…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
@@ -62,6 +64,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
@@ -70,17 +73,19 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The database1.db database file is version 1
+TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables have been successfully initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:Current directory: .*$
 TESTING:The database database1.db has already been created previously
-TESTING:Starting of database file database1.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -92,6 +97,7 @@ TESTING:\x1B\[1mThese files have been added or changed and those changes will be
 2/AAA/BBB/CZC/a.txt updated ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) no rehash
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:Version number 1 found in database
 TESTING:Start vacuuming…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
@@ -109,6 +115,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
@@ -132,10 +139,10 @@ TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:\x1B\[1mThe SHA512 checksums of these files do not match between database1.db and database2.db\x1B\[0m
 TESTING:1/AAA/BCB/CCC/a.txt
 TESTING:Comparison of database1.db and database2.db databases is complete
-TESTING:Current directory: .*$
 TESTING:Comparison mode is enabled. The primary database verification is not required
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
+TESTING:Comparison mode is enabled. Store the primary database version is not required
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
 TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
@@ -152,6 +159,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
@@ -160,17 +168,19 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The database1.db database file is version 1
+TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables have been successfully initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:Current directory: .*$
 TESTING:The database database1.db has already been created previously
-TESTING:Starting of database file database1.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
 TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -182,6 +192,7 @@ TESTING:\x1B\[1mThese files have been added or changed and those changes will be
 2/AAA/BBB/CZC/a.txt changed ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehashed
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:Version number 1 found in database
 TESTING:Start vacuuming…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
@@ -199,6 +210,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
+TESTING:Current directory: .*$
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
@@ -222,9 +234,9 @@ TESTING:path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:\x1B\[1mThe SHA512 checksums of these files do not match between database1.db and database2.db\x1B\[0m
 TESTING:1/AAA/BCB/CCC/a.txt
 TESTING:Comparison of database1.db and database2.db databases is complete
-TESTING:Current directory: .*$
 TESTING:Comparison mode is enabled. The primary database verification is not required
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
+TESTING:Comparison mode is enabled. Store the primary database version is not required
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
 TESTING:The precizer completed its execution without any issues\z
