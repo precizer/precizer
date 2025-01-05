@@ -4,7 +4,7 @@
 #include <string.h>
 
 static void print_metadata(
-	int               flag,
+	int             flag,
 	const CmpctStat *was,
 	const CmpctStat *now
 ){
@@ -36,13 +36,17 @@ static void print_metadata(
  * @param[in] mega Integer containing combined flag values
  */
 static void print_flag_combinations(
-	int               mega,
-	const DBrow       *dbrow,
+	int             mega,
+	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool              *rehash
+	bool            *rehash
 ){
-	const char *flags[] = {"size","ctime","mtime"};
-	const int flag_values[] = {SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED};
+	const char *flags[] = {
+		"size","ctime","mtime"
+	};
+	const int flag_values[] = {
+		SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED
+	};
 	const int flag_count = 3;
 	unsigned int flags_found = 0;
 	bool first_word = true;
@@ -78,10 +82,10 @@ static void print_flag_combinations(
 }
 
 static void print_updated_or_added(
-	const int         *metadata_of_scanned_and_saved_files,
-	const DBrow       *dbrow,
+	const int       *metadata_of_scanned_and_saved_files,
+	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool              *rehash
+	bool            *rehash
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
@@ -93,10 +97,10 @@ static void print_updated_or_added(
 }
 
 static void print_changed(
-	const int         *metadata_of_scanned_and_saved_files,
-	const DBrow       *dbrow,
+	const int       *metadata_of_scanned_and_saved_files,
+	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool              *rehash
+	bool            *rehash
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
@@ -115,16 +119,16 @@ static void print_changed(
  *
  */
 void show_relative_path(
-	const char        *relative_path,
-	const int         *metadata_of_scanned_and_saved_files,
-	const DBrow       *dbrow,
+	const char      *relative_path,
+	const int       *metadata_of_scanned_and_saved_files,
+	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool              *first_iteration,
-	bool              *show_changes,
-	bool              *rehashig_from_the_beginning,
-	const bool        *ignored,
-	bool              *at_least_one_file_was_shown,
-	bool              *rehash
+	bool            *first_iteration,
+	bool            *show_changes,
+	bool            *rehashig_from_the_beginning,
+	const bool      *ignored,
+	bool            *at_least_one_file_was_shown,
+	bool            *rehash
 ){
 	if(*first_iteration == true)
 	{

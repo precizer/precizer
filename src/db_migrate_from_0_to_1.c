@@ -54,12 +54,10 @@ static Return process_row(sqlite3_stmt *stmt){
 			{
 				slog(ERROR,"Error binding blob parameter\n");
 				status = FAILURE;
-			} else if(SQLITE_OK != sqlite3_bind_int64(update_stmt,2,row_id))
-			{
+			} else if(SQLITE_OK != sqlite3_bind_int64(update_stmt,2,row_id)){
 				slog(ERROR,"Error binding row ID parameter\n");
 				status = FAILURE;
-			} else if(SQLITE_DONE != sqlite3_step(update_stmt))
-			{
+			} else if(SQLITE_DONE != sqlite3_step(update_stmt)){
 				slog(ERROR,"Error executing update statement\n");
 				status = FAILURE;
 			} else {
@@ -204,6 +202,7 @@ Return migrate_from_0_to_1(const char *db_file_path){
 		{
 			/* Attempt rollback */
 			int rc = sqlite3_exec(db,"ROLLBACK",NULL,NULL,NULL);
+
 			if(SQLITE_OK == rc)
 			{
 				slog(TRACE,"The transaction has been rolled back\n");

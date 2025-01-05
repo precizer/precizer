@@ -26,8 +26,7 @@ Ignore ignore(
 			// Ignore that file
 			return(IGNORE);
 
-		} else if(REGEXP_ERROR == result)
-		{
+		} else if(REGEXP_ERROR == result){
 
 			return(FAIL_REGEXP_IGNORE);
 
