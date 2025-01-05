@@ -29,8 +29,7 @@ Return check_file(
 		{
 			report("File not found: %s",path);
 			status = FAILURE;
-		} else if(rc < 0)
-		{
+		} else if(rc < 0){
 			report("Stat of %s failed with error code: %d",path,rc);
 			status = FAILURE;
 		}
