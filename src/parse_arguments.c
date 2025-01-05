@@ -203,8 +203,7 @@ static error_t parse_opt(
 			if(0 == strncasecmp(arg,"QUICK",sizeof("QUICK")))
 			{
 				config->db_check_level = QUICK;
-			} else if(0 == strncasecmp(arg,"FULL",sizeof("FULL")))
-			{
+			} else if(0 == strncasecmp(arg,"FULL",sizeof("FULL"))){
 				config->db_check_level = FULL;
 			} else {
 				return ARGP_ERR_UNKNOWN;
@@ -234,11 +233,9 @@ static error_t parse_opt(
 				{
 					argp_failure(state,1,0,"ERROR: Using arguments --compare and --update together makes no sense");
 
-				} else if(state->arg_num < 2)
-				{
+				} else if(state->arg_num < 2){
 					argp_failure(state,1,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
-				} else if(state->arg_num > 2)
-				{
+				} else if(state->arg_num > 2){
 					argp_failure(state,1,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
 				}
 			} else {

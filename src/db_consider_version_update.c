@@ -39,7 +39,7 @@ Return db_consider_version_update(void){
 				if(SUCCESS == status)
 				{
 					/* Changes have been made to the database. Update
-					  this in the global variable value. */
+					   this in the global variable value. */
 					config->something_has_been_changed = true;
 				}
 			}

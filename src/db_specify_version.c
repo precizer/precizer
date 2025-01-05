@@ -17,9 +17,7 @@
  *         - SUCCESS: Version set successfully
  *         - FAILURE: Database error or invalid parameters
  */
-Return db_specify_version(
-	const char *db_file_path
-){
+Return db_specify_version(const char *db_file_path){
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -44,9 +42,9 @@ Return db_specify_version(
 	}
 
 	/* Open database connection */
-	if(SQLITE_OK != sqlite3_open_v2(db_file_path, &db, SQLITE_OPEN_READWRITE, NULL))
+	if(SQLITE_OK != sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE,NULL))
 	{
-		slog(ERROR,"Failed to open database: %s\n", sqlite3_errmsg(db));
+		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
 		status = FAILURE;
 	}
 
@@ -55,9 +53,9 @@ Return db_specify_version(
 	{
 		const char *insert_query = "REPLACE INTO metadata (db_version) VALUES (?);";
 
-		if(SQLITE_OK != sqlite3_prepare_v2(db, insert_query, -1, &stmt, NULL))
+		if(SQLITE_OK != sqlite3_prepare_v2(db,insert_query,-1,&stmt,NULL))
 		{
-			slog(ERROR,"Failed to prepare insert query: %s\n", sqlite3_errmsg(db));
+			slog(ERROR,"Failed to prepare insert query: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
 		} else {
 			slog(TRACE,"The database version %d has been successfully stored in the DB\n",CURRENT_DB_VERSION);
@@ -66,9 +64,9 @@ Return db_specify_version(
 
 	if(SUCCESS == status)
 	{
-		if(SQLITE_OK != sqlite3_bind_int(stmt, 1, CURRENT_DB_VERSION))
+		if(SQLITE_OK != sqlite3_bind_int(stmt,1,CURRENT_DB_VERSION))
 		{
-			slog(ERROR,"Failed to bind version number: %s\n", sqlite3_errmsg(db));
+			slog(ERROR,"Failed to bind version number: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
 		}
 	}
@@ -77,7 +75,7 @@ Return db_specify_version(
 	{
 		if(SQLITE_DONE != sqlite3_step(stmt))
 		{
-			slog(ERROR,"Failed to execute insert query: %s\n", sqlite3_errmsg(db));
+			slog(ERROR,"Failed to execute insert query: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
 		}
 	}
@@ -92,7 +90,7 @@ Return db_specify_version(
 	{
 		if(SQLITE_OK != sqlite3_close(db))
 		{
-			slog(ERROR,"Warning: failed to close database: %s\n", sqlite3_errmsg(db));
+			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
 			/* Don't change status as the operation was otherwise successful */
 		}
 	}

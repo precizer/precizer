@@ -17,13 +17,11 @@ Return db_vacuum(void){
 		slog(TRACE,"Comparison mode is enabled. The primary database doesn't require vacuuming\n");
 		return(status);
 
-	} else if(config->dry_run == true)
-	{
+	} else if(config->dry_run == true){
 		slog(TRACE,"Dry Run mode is enabled. The primary database doesn't require vacuuming\n");
 		return(status);
 
-	} else if(config->something_has_been_changed == false)
-	{
+	} else if(config->something_has_been_changed == false){
 		slog(TRACE,"No changes were made. The primary database doesn't require vacuuming\n");
 		return(status);
 	}

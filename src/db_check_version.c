@@ -45,8 +45,7 @@ Return db_check_version(
 				status = FAILURE;
 			}
 
-		} else if(db_version > CURRENT_DB_VERSION)
-		{
+		} else if(db_version > CURRENT_DB_VERSION){
 			slog(ERROR,"The database %s is designed to work with a newer version "
 				"of the application and cannot be used with the old one. "
 				"Please update %s to the last version\n",db_file_name,APP_NAME);

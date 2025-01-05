@@ -34,8 +34,7 @@ static const char *get_initialize_string_by_code(void){
 	{
 		return "true";
 
-	} else if(config->db_initialize_tables == false)
-	{
+	} else if(config->db_initialize_tables == false){
 		return "false";
 
 	} else {
@@ -81,8 +80,7 @@ Return db_determine_mode(void){
 			config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 		}
 
-	} else if(config->compare == true)
-	{
+	} else if(config->compare == true){
 		// In-memory database enabled
 		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 

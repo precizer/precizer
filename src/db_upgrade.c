@@ -48,6 +48,7 @@ Return db_upgrade(
 	}
 
 #if 0
+
 	if(SUCCESS == status && *db_version < 2)
 	{
 		slog(TRACE,"Migration from version 1 to version 2 started\n");

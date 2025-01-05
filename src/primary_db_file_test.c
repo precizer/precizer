@@ -15,8 +15,7 @@ Return primary_db_file_test(void){
 	{
 		run(db_test(config->db_file_path));
 
-	} else if(config->sqlite_open_flag & SQLITE_OPEN_CREATE)
-	{
+	} else if(config->sqlite_open_flag & SQLITE_OPEN_CREATE){
 
 		slog(TRACE,"The primary database file was just created and doesn't require verification\n");
 
