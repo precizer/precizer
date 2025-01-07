@@ -182,7 +182,8 @@ Return check_file_exists(
 
 // Execute a function without checking the status first.
 // For example, to clear temporary data
-#define TESTFINISH(func, desc) \
+// TEST No Result
+#define TESTNR(func, desc) \
 	(void)testitall(func, #func, desc);
 
 // Макрос для замера времени на старте
