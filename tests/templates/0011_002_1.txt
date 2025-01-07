@@ -28,7 +28,7 @@ TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
@@ -51,6 +51,6 @@ TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:No DB version data found in metadata table
 TESTING:The database version 1 has been successfully stored in the DB
 TESTING:Start vacuuming…
-TESTING:The primary database has been vacuumed
+TESTING:The database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues\z

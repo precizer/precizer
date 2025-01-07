@@ -69,8 +69,12 @@ Return db_determine_mode(void){
 
 	// Update mode is enabled for the existing database
 	// The new DB file does NOT need to be created
-	if(config->update == true)
+	if(config->compare == true)
 	{
+		// In-memory database enabled
+		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
+
+	} else if(config->update == true){
 		if(config->db_file_exists == false)
 		{
 			// The database file does NOT exists
@@ -79,10 +83,6 @@ Return db_determine_mode(void){
 		} else {
 			config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 		}
-
-	} else if(config->compare == true){
-		// In-memory database enabled
-		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 
 	} else {
 

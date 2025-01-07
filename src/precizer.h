@@ -353,7 +353,7 @@ void free_config(void);
 
 Return db_delete_missing_metadata(void);
 
-Return db_delete_the_file_by_id(
+Return db_delete_the_record_by_id(
 	sqlite_int64 *,
 	bool *,
 	const bool *,
@@ -362,14 +362,16 @@ Return db_delete_the_file_by_id(
 
 Return db_init(void);
 
-Return db_vacuum(void);
+Return db_vacuum(const char *);
+
+Return db_consider_vacuum_primary(void);
 
 Return db_read_file_data_from(
 	DBrow *,
 	const char *
 );
 
-Return db_update_the_record(
+Return db_update_the_record_by_id(
 	const sqlite3_int64 *,
 	const sqlite3_int64 *,
 	const unsigned char *,

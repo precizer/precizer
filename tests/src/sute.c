@@ -33,9 +33,9 @@ int main(void){
 	TEST(test0016,"--watch-timestamps argument testing…");
 
 	HEADER("\nClean results\n");
-	EXEC(clean,"Temporary data cleanup…");
+	TESTNR(clean,"Temporary data cleanup…");
 
-	TESTFINISH(finish,"Telemetry");
+	TESTNR(finish,"Telemetry");
 
 	HEADER("\nFinishing\n");
 	TESTDONE;

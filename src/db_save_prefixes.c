@@ -82,8 +82,13 @@ Return db_save_prefixes(void){
 			}
 		}
 
-		sqlite3_finalize(delete_stmt);
+		if(SUCCESS == status)
+		{
+			/* Reflect changes in global */
+			config->something_has_been_changed = true;
+		}
 
+		sqlite3_finalize(delete_stmt);
 	}
 
 	/**
@@ -94,48 +99,96 @@ Return db_save_prefixes(void){
 	 */
 	if(!(config->dry_run == true && config->db_file_exists == true))
 	{
-		const char *insert_sql = "INSERT OR IGNORE INTO paths(prefix) VALUES(?1);";
-		sqlite3_stmt *insert_stmt = NULL;
-
 		for(int i = 0; config->paths[i]; i++)
 		{
-
 			// Remove unnecessary trailing slash at the end of the directory prefix
 			remove_trailing_slash(config->paths[i]);
 
-			/* Create SQL statement. Prepare to write */
-			int rc = sqlite3_prepare_v2(config->db,insert_sql,-1,&insert_stmt,NULL);
+			const char *select_sql = "SELECT COUNT(*) FROM paths WHERE prefix = ?1;";
+			sqlite3_stmt *select_stmt = NULL;
+
+			/* First check if prefix exists */
+			int rc = sqlite3_prepare_v2(config->db,select_sql,-1,&select_stmt,NULL);
 
 			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Can't prepare insert statement %s (%i): %s\n",insert_sql,rc,sqlite3_errmsg(config->db));
+				slog(ERROR,"Can't prepare select statement %s (%i): %s\n",select_sql,rc,sqlite3_errmsg(config->db));
 				status = FAILURE;
 			}
 
 			if(SUCCESS == status)
 			{
-				rc = sqlite3_bind_text(insert_stmt,1,config->paths[i],(int)strlen(config->paths[i]),NULL);
+				rc = sqlite3_bind_text(select_stmt,1,config->paths[i],(int)strlen(config->paths[i]),NULL);
 
 				if(SQLITE_OK != rc)
 				{
-					slog(ERROR,"Error binding value in insert (%i): %s\n",rc,sqlite3_errmsg(config->db));
+					slog(ERROR,"Error binding value in select (%i): %s\n",rc,sqlite3_errmsg(config->db));
 					status = FAILURE;
 				}
 			}
 
-			/* Execute SQL statement */
+			int count = 0;
+
 			if(SUCCESS == status)
 			{
-				if(sqlite3_step(insert_stmt) != SQLITE_DONE)
+				if(sqlite3_step(select_stmt) == SQLITE_ROW)
 				{
-					slog(ERROR,"Insert statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
-					status = FAILURE;
+					count = sqlite3_column_int(select_stmt,0);
 				}
 			}
+
+			sqlite3_finalize(select_stmt);
+
+			/* Only proceed with insert if prefix doesn't exist */
+			if(count == 0)
+			{
+				const char *insert_sql = "INSERT OR IGNORE INTO paths(prefix) VALUES(?1);";
+				sqlite3_stmt *insert_stmt = NULL;
+
+				/* Create SQL statement. Prepare to write */
+				rc = sqlite3_prepare_v2(config->db,insert_sql,-1,&insert_stmt,NULL);
+
+				if(SQLITE_OK != rc)
+				{
+					slog(ERROR,"Can't prepare insert statement %s (%i): %s\n",insert_sql,rc,sqlite3_errmsg(config->db));
+					status = FAILURE;
+				}
+
+				if(SUCCESS == status)
+				{
+					rc = sqlite3_bind_text(insert_stmt,1,config->paths[i],(int)strlen(config->paths[i]),NULL);
+
+					if(SQLITE_OK != rc)
+					{
+						slog(ERROR,"Error binding value in insert (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						status = FAILURE;
+					}
+				}
+
+				/* Execute SQL statement */
+				if(SUCCESS == status)
+				{
+					if(sqlite3_step(insert_stmt) != SQLITE_DONE)
+					{
+						slog(ERROR,"Insert statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						status = FAILURE;
+					}
+				}
+
+				if(SUCCESS == status)
+				{
+					/* Reflect changes in global */
+					config->something_has_been_changed = true;
+				}
+
+				sqlite3_finalize(insert_stmt);
+			}
+
+			if(SUCCESS != status)
+			{
+				break;
+			}
 		}
-
-		sqlite3_finalize(insert_stmt);
-
 	}
 
 	return(status);
