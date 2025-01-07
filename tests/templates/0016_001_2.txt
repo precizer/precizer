@@ -7,8 +7,8 @@ The \x1B\[1m--update\x1B\[0m option has been used, so the information about file
 2/AAA/BBB/CZC/a.txt updated ctime & mtime no rehash
 \x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 path2/AAA/ZAW/D/e/f/b_file.txt
-Start vacuuming…
-The database has been vacuumed
+Start vacuuming the primary database…
+The primary database has been vacuumed
 \x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 \x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 The precizer completed its execution without any issues
@@ -34,8 +34,8 @@ The \x1B\[1m--update\x1B\[0m option has been used, so the information about file
 2/AAA/BBB/CZC/a.txt changed ctime & mtime rehashed
 \x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 path2/AAA/ZAW/D/e/f/b_file.txt
-Start vacuuming…
-The database has been vacuumed
+Start vacuuming the primary database…
+The primary database has been vacuumed
 \x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 \x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 The precizer completed its execution without any issues

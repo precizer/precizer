@@ -59,7 +59,7 @@ diff2/path2/AAA/BCB/CCC/a.txt
 diff2/path2/AAA/ZAW/A/b/c/a_file.txt
 TESTING:No DB version data found in metadata table
 TESTING:The database version 1 has been successfully stored in the DB
-TESTING:Start vacuuming…
-TESTING:The database has been vacuumed
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database %DB_NAME% has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues\z

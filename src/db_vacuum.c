@@ -13,6 +13,7 @@ Return db_vacuum(const char *db_file_path){
 
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;
+	bool db_is_primary = false;
 
 	/* Validate input parameters */
 	if(db_file_path == NULL)
@@ -25,6 +26,11 @@ Return db_vacuum(const char *db_file_path){
 	{
 		slog(TRACE,"Dry Run mode is enabled. The database doesn't require vacuuming\n");
 		return(status);
+	}
+
+	if(strcmp(config->db_file_path,db_file_path) == 0)
+	{
+		db_is_primary = true;
 	}
 
 	/* Open database in safe mode */
@@ -42,7 +48,12 @@ Return db_vacuum(const char *db_file_path){
 
 	if(SUCCESS == status)
 	{
-		slog(EVERY,"Start vacuuming…\n");
+		if(db_is_primary == true)
+		{
+			slog(EVERY,"Start vacuuming the primary database…\n");
+		} else {
+			slog(EVERY,"Start vacuuming…\n");
+		}
 
 		/* Execute SQL statement */
 		rc = sqlite3_exec(db,sql,NULL,NULL,&err_msg);
@@ -53,7 +64,12 @@ Return db_vacuum(const char *db_file_path){
 			sqlite3_free(err_msg);
 			status = FAILURE;
 		} else {
-			slog(EVERY,"The database has been vacuumed\n");
+			if(db_is_primary == true)
+			{
+				slog(EVERY,"The primary database has been vacuumed\n");
+			} else {
+				slog(EVERY,"The database has been vacuumed\n");
+			}
 		}
 	}
 
