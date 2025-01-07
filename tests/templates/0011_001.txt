@@ -28,7 +28,7 @@ TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
@@ -51,7 +51,7 @@ TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:No DB version data found in metadata table
 TESTING:The database version 1 has been successfully stored in the DB
 TESTING:Start vacuuming…
-TESTING:The primary database has been vacuumed
+TESTING:The database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
@@ -84,7 +84,7 @@ TESTING:The primary database named database2.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database2.db
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff2 exists
 TESTING:The path tests/examples/diffs/diff2 is exists and it is a directory
@@ -107,7 +107,7 @@ TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:No DB version data found in metadata table
 TESTING:The database version 1 has been successfully stored in the DB
 TESTING:Start vacuuming…
-TESTING:The primary database has been vacuumed
+TESTING:The database has been vacuumed
 TESTING:\x1B\[1mThe database database2.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
@@ -137,10 +137,20 @@ TESTING:Database initialized
 TESTING:The comparison of database1.db and database2.db databases is starting…
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
-TESTING:Compare mode is enabled. Database verification for database1.db is skipped
+TESTING:Starting of database file database1.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database1.db has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The database1.db database file is version 1
+TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
-TESTING:Compare mode is enabled. Database verification for database2.db is skipped
+TESTING:Starting of database file database2.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database2.db has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The database2.db database file is version 1
+TESTING:The database database2.db is on version 1 and does not require any upgrades
 TESTING:\x1B\[1mThese files are no longer in the database1.db but still exist in the database2.db\x1B\[0m
 TESTING:path1/AAA/BCB/CCC/b.txt
 TESTING:\x1B\[1mThese files are no longer in the database2.db but still exist in the database1.db\x1B\[0m

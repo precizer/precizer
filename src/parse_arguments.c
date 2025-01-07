@@ -229,11 +229,17 @@ static error_t parse_opt(
 
 			if(config->compare == true)
 			{
+#if 0
+
 				if(config->update == true)
 				{
 					argp_failure(state,1,0,"ERROR: Using arguments --compare and --update together makes no sense");
 
-				} else if(state->arg_num < 2){
+				} else
+#endif
+
+				if(state->arg_num < 2)
+				{
 					argp_failure(state,1,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
 				} else if(state->arg_num > 2){
 					argp_failure(state,1,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");

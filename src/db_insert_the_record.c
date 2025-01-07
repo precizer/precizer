@@ -45,6 +45,7 @@ Return db_insert_the_record(
 	}
 
 	int rc = 0;
+
 	sqlite3_stmt *insert_stmt = NULL;
 
 #if 0 // Old multiPATH solution

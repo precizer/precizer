@@ -6,50 +6,61 @@
  * repacking it into a minimal amount of disk space.
  *
  */
-Return db_vacuum(void){
+Return db_vacuum(const char *db_file_path){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// Don't do anything
-	if(config->compare == true)
+	sqlite3 *db = NULL;
+	char *err_msg = NULL;
+
+	/* Validate input parameters */
+	if(db_file_path == NULL)
 	{
-		slog(TRACE,"Comparison mode is enabled. The primary database doesn't require vacuuming\n");
-		return(status);
+		slog(ERROR,"Invalid input parameters: db_file_path\n");
+		return(FAILURE);
+	}
 
-	} else if(config->dry_run == true){
-		slog(TRACE,"Dry Run mode is enabled. The primary database doesn't require vacuuming\n");
-		return(status);
-
-	} else if(config->something_has_been_changed == false){
-		slog(TRACE,"No changes were made. The primary database doesn't require vacuuming\n");
+	if(config->dry_run == true)
+	{
+		slog(TRACE,"Dry Run mode is enabled. The database doesn't require vacuuming\n");
 		return(status);
 	}
 
-	/* Interrupt the function smoothly */
-	/* Interrupt when Ctrl+C */
-	if(global_interrupt_flag == true)
+	/* Open database in safe mode */
+	int rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE,NULL);
+
+	if(SQLITE_OK != rc)
 	{
-		return(status);
+		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		status = FAILURE;
 	}
-
-	slog(EVERY,"Start vacuuming…\n");
-
-	int rc;
 
 	/* Create SQL statement */
 	const char *sql = "pragma optimize;" \
 	        "VACUUM;";
 
-	/* Execute SQL statement */
-	rc = sqlite3_exec(config->db,sql,NULL,NULL,NULL);
-
-	if(rc!= SQLITE_OK)
+	if(SUCCESS == status)
 	{
-		slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
-		status = FAILURE;
-	} else {
-		slog(EVERY,"The primary database has been vacuumed\n");
+		slog(EVERY,"Start vacuuming…\n");
+
+		/* Execute SQL statement */
+		rc = sqlite3_exec(db,sql,NULL,NULL,&err_msg);
+
+		if(SQLITE_OK != rc)
+		{
+			slog(ERROR,"Can't execute (%i): %s, %s\n",rc,sqlite3_errmsg(db),err_msg);
+			sqlite3_free(err_msg);
+			status = FAILURE;
+		} else {
+			slog(EVERY,"The database has been vacuumed\n");
+		}
+	}
+
+	/* Cleanup */
+	if(db != NULL)
+	{
+		sqlite3_close(db);
 	}
 
 	return(status);

@@ -36,7 +36,7 @@ TESTING:The in-memory runtime_paths_id database successfully attached to the pri
 TESTING:Database initialized
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
-TESTING:The paths written against the database and the paths passed as arguments are completely identical. Nothing will be lost
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory

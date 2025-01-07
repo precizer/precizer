@@ -179,15 +179,19 @@ Return file_list(bool count_size_of_all_files){
 					// Clean the structure to prevent reuse;
 					memset(dbrow,0,sizeof(DBrow));
 
-	#if 0 // Old multiPATH solution
-
-					if(SUCCESS != (status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path)))
-	#endif
-
 					/* Get all file's metadata from the database */
-					if(SUCCESS != (status = db_read_file_data_from(dbrow,relative_path)))
+					if(SUCCESS == status)
 					{
-						break;
+#if 0 // Old multiPATH solution
+						status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path);
+#else
+						status = db_read_file_data_from(dbrow,relative_path);
+#endif
+
+						if(SUCCESS != status)
+						{
+							break;
+						}
 					}
 
 					// Validate if size, creation and modification time of a
@@ -297,9 +301,14 @@ Return file_list(bool count_size_of_all_files){
 
 					if(rehash == true)
 					{
-						if(SUCCESS != (status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext)))
+						if(SUCCESS == status)
 						{
-							break;
+							status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext);
+
+							if(SUCCESS != status)
+							{
+								break;
+							}
 						}
 					} else {
 						memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
@@ -328,27 +337,36 @@ Return file_list(bool count_size_of_all_files){
 					if(update_db == true)
 					{
 						/* Update record in DB */
-						if(SUCCESS == (status = db_update_the_record(&(dbrow->ID),&offset,sha512,&stat,&mdContext)))
+						if(SUCCESS == status)
 						{
-							// Reflect changes in global
-							config->something_has_been_changed = true;
-						} else {
-							break;
+							status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext);
+
+							if(SUCCESS == status)
+							{
+								/* Reflect changes in global */
+								config->something_has_been_changed = true;
+							} else {
+								break;
+							}
 						}
 
 					} else {
 						/* Insert to DB */
-	#if 0 // Old multiPATH solution
-
-						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext)))
-	#endif
-
-						if(SUCCESS == (status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext)))
+						if(SUCCESS == status)
 						{
-							// Reflect changes in global
-							config->something_has_been_changed = true;
-						} else {
-							break;
+#if 0 // Old multiPATH solution
+							status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext);
+#else
+							status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext);
+#endif
+
+							if(SUCCESS == status)
+							{
+								/* Reflect changes in global */
+								config->something_has_been_changed = true;
+							} else {
+								break;
+							}
 						}
 					}
 

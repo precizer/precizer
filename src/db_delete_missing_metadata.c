@@ -135,7 +135,7 @@ Return db_delete_missing_metadata(void){
 
 		if(clean_ignored == true || path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
 		{
-			status = db_delete_the_file_by_id(&ID,&first_iteration,&clean_ignored,relative_path);
+			status = db_delete_the_record_by_id(&ID,&first_iteration,&clean_ignored,relative_path);
 		}
 		free(absolute_path);
 	}

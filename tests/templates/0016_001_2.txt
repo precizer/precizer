@@ -8,12 +8,16 @@ The \x1B\[1m--update\x1B\[0m option has been used, so the information about file
 \x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 path2/AAA/ZAW/D/e/f/b_file.txt
 Start vacuuming…
-The primary database has been vacuumed
+The database has been vacuumed
 \x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 \x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 The precizer completed its execution without any issues
 Enjoy your life!
 The comparison of database1.db and database2.db databases is starting…
+Starting of database file database1.db integrity check…
+Database database1.db has been verified and is in good condition
+Starting of database file database2.db integrity check…
+Database database2.db has been verified and is in good condition
 \x1B\[1mThese files are no longer in the database1.db but still exist in the database2.db\x1B\[0m
 path2/AAA/ZAW/D/e/f/b_file.txt
 \x1B\[1mThe SHA512 checksums of these files do not match between database1.db and database2.db\x1B\[0m
@@ -31,12 +35,16 @@ The \x1B\[1m--update\x1B\[0m option has been used, so the information about file
 \x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 path2/AAA/ZAW/D/e/f/b_file.txt
 Start vacuuming…
-The primary database has been vacuumed
+The database has been vacuumed
 \x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 \x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 The precizer completed its execution without any issues
 Enjoy your life!
 The comparison of database1.db and database2.db databases is starting…
+Starting of database file database1.db integrity check…
+Database database1.db has been verified and is in good condition
+Starting of database file database2.db integrity check…
+Database database2.db has been verified and is in good condition
 \x1B\[1mThese files are no longer in the database1.db but still exist in the database2.db\x1B\[0m
 path2/AAA/ZAW/D/e/f/b_file.txt
 \x1B\[1mThe SHA512 checksums of these files do not match between database1.db and database2.db\x1B\[0m

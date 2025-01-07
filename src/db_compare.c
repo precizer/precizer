@@ -143,29 +143,26 @@ Return db_compare(void){
 		config->db_file_names[1]);
 
 	/* Validate database paths */
-	if(SUCCESS == status)
+	for(int i = 0; config->db_file_paths[i]; i++)
 	{
-		for(int i = 0; config->db_file_paths[i]; i++)
+		if(NOT_FOUND == file_availability(config->db_file_paths[i],SHOULD_BE_A_FILE))
 		{
-			if(NOT_FOUND == file_availability(config->db_file_paths[i],SHOULD_BE_A_FILE))
+			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",
+				config->db_file_paths[i]);
+			status = FAILURE;
+			break;
+		}
+
+		if(SUCCESS == status)
+		{
+			/*
+			 * Validate the integrity of the database file
+			 */
+			status = db_test(config->db_file_paths[i]);
+
+			if(SUCCESS != status)
 			{
-				slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",
-					config->db_file_paths[i]);
-				status = FAILURE;
 				break;
-			}
-
-			if(SUCCESS == status)
-			{
-				/*
-				 * Validate the integrity of the database file
-				 */
-				status = db_test(config->db_file_paths[i]);
-
-				if(SUCCESS != status)
-				{
-					break;
-				}
 			}
 		}
 	}

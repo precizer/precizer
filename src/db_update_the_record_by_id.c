@@ -11,8 +11,13 @@
  * @param[in] stat File metadata structure
  * @param[in] mdContext SHA512 context
  *
+ * @return Return status code:
+ *         - SUCCESS: Record updated successfully
+ *         - FAILURE: Error occurred during update
+ *
+ * @note In dry run mode, the function returns SUCCESS without modifying the database
  */
-Return db_update_the_record(
+Return db_update_the_record_by_id(
 	const sqlite3_int64  *ID,
 	const sqlite3_int64  *offset,
 	const unsigned char  *sha512,
@@ -23,7 +28,7 @@ Return db_update_the_record(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// Don't do anything in case of --dry-run
+	/* Skip database operations in dry run mode --dry-run */
 	if(config->dry_run == true)
 	{
 		return(status);
@@ -40,10 +45,11 @@ Return db_update_the_record(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare update statement %s (%i): %s\n",update_sql,rc,sqlite3_errmsg(config->db));
+		slog(ERROR,"Failed to prepare update statement %s (%i): %s\n",update_sql,rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
+	/* Bind offset value */
 	if(SUCCESS == status)
 	{
 		if(*offset == 0)
@@ -55,11 +61,23 @@ Return db_update_the_record(
 
 		if(SQLITE_OK != rc)
 		{
+			slog(ERROR,"Failed to bind offset value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		rc = sqlite3_bind_int64(update_stmt,5,*ID);
+
+		if(SQLITE_OK != rc)
+		{
 			slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 	}
 
+	/* Bind SHA512 checksum */
 	if(SUCCESS == status)
 	{
 		if(*offset == 0)
@@ -71,11 +89,12 @@ Return db_update_the_record(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			slog(ERROR,"Failed to bind sha512 hash value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 	}
 
+	/* Copy and bind file metadata */
 	if(SUCCESS == status)
 	{
 		rc = sqlite3_bind_blob(update_stmt,3,stat,sizeof(CmpctStat),NULL);
@@ -87,6 +106,7 @@ Return db_update_the_record(
 		}
 	}
 
+	/* Bind SHA512 context */
 	if(SUCCESS == status)
 	{
 		if(*offset == 0)
@@ -103,23 +123,12 @@ Return db_update_the_record(
 		}
 	}
 
-	if(SUCCESS == status)
-	{
-		rc = sqlite3_bind_int64(update_stmt,5,*ID);
-
-		if(SQLITE_OK != rc)
-		{
-			slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
-			status = FAILURE;
-		}
-	}
-
-	/* Execute SQL statement */
+	/* Execute prepared statement */
 	if(SUCCESS == status)
 	{
 		if(sqlite3_step(update_stmt) != SQLITE_DONE)
 		{
-			slog(ERROR,"Update statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			slog(ERROR,"Update statement failed (%i): %s\n",rc,sqlite3_errmsg(config->db));
 			status = FAILURE;
 		}
 	}

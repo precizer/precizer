@@ -110,7 +110,7 @@ int main(
 	run(db_consider_version_update());
 
 	// Optimizing the space occupied by a database file.
-	run(db_vacuum());
+	run(db_consider_vacuum_primary());
 
 	// Print out whether there have been changes to
 	// the file system and accordingly against the database

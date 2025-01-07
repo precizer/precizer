@@ -61,6 +61,11 @@ Return db_upgrade(
 	}
 #endif
 
+	if(SUCCESS == status)
+	{
+		slog(EVERY,"The database has been successfully upgraded\n");
+	}
+
 	return(status);
 }
 
