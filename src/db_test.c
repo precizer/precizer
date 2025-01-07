@@ -41,6 +41,8 @@ Return db_test(const char *db_file_path){
 
 	if(SUCCESS == status)
 	{
+#if 0
+
 		// Don't do anything and interrupt
 		if(config->compare == true)
 		{
@@ -48,7 +50,11 @@ Return db_test(const char *db_file_path){
 			free(dirc);
 			return(SUCCESS);
 
-		} else if(config->dry_run == true && config->db_file_exists == false){
+		} else
+#endif
+
+		if(config->dry_run == true && config->db_file_exists == false)
+		{
 			slog(TRACE,"Dry Run mode is enabled. Database verification for %s is skipped\n",db_file_name);
 			free(dirc);
 			return(SUCCESS);
@@ -115,6 +121,7 @@ Return db_test(const char *db_file_path){
 			status = FAILURE;
 		}
 	}
+
 	sqlite3_finalize(select_stmt);
 
 	if(SUCCESS == status)

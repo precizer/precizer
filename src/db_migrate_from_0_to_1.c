@@ -136,16 +136,13 @@ Return migrate_from_0_to_1(const char *db_file_path){
 		return(status);
 	}
 
-	if(SUCCESS == status)
-	{
-		/* Open database in safe mode */
-		int rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX,NULL);
+	/* Open database in safe mode */
+	int rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX,NULL);
 
-		if(SQLITE_OK != rc)
-		{
-			slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
@@ -161,7 +158,7 @@ Return migrate_from_0_to_1(const char *db_file_path){
 
 		for(const char **pragma = pragmas; *pragma && SUCCESS == status; pragma++)
 		{
-			int rc = sqlite3_exec(db,*pragma,NULL,NULL,&err_msg);
+			rc = sqlite3_exec(db,*pragma,NULL,NULL,&err_msg);
 
 			if(SQLITE_OK != rc)
 			{
@@ -175,7 +172,7 @@ Return migrate_from_0_to_1(const char *db_file_path){
 	if(SUCCESS == status)
 	{
 		/* Begin transaction */
-		int rc = sqlite3_exec(db,"BEGIN TRANSACTION",NULL,NULL,&err_msg);
+		rc = sqlite3_exec(db,"BEGIN TRANSACTION",NULL,NULL,&err_msg);
 
 		if(SQLITE_OK != rc)
 		{
@@ -201,7 +198,7 @@ Return migrate_from_0_to_1(const char *db_file_path){
 		if(global_interrupt_flag == true)
 		{
 			/* Attempt rollback */
-			int rc = sqlite3_exec(db,"ROLLBACK",NULL,NULL,NULL);
+			rc = sqlite3_exec(db,"ROLLBACK",NULL,NULL,NULL);
 
 			if(SQLITE_OK == rc)
 			{
@@ -214,7 +211,7 @@ Return migrate_from_0_to_1(const char *db_file_path){
 
 		} else {
 			/* Commit transaction */
-			int rc = sqlite3_exec(db,"COMMIT",NULL,NULL,&err_msg);
+			rc = sqlite3_exec(db,"COMMIT",NULL,NULL,&err_msg);
 
 			if(SQLITE_OK != rc)
 			{
@@ -236,4 +233,3 @@ Return migrate_from_0_to_1(const char *db_file_path){
 
 	return(status);
 }
-

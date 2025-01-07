@@ -94,7 +94,7 @@ static Return readme_example_2_test(void){
 	command = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,1));
+	ASSERT(SUCCESS == execute_command(command,result,FAILURE));
 	ASSERT(SUCCESS == get_file_content("templates/0011_002_2.txt",&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
 
@@ -103,11 +103,11 @@ static Return readme_example_2_test(void){
 	pattern = NULL;
 	del_char(&result);
 
-	command = "export TESTING=true;cd ${TMPDIR};" \
-	        "./precizer --update --progress --database=database1.db tests/examples/diffs/diff1;" \
-	        "echo -n '  ' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;" \
-	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;" \
-	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt;" \
+	command = "export TESTING=true;cd ${TMPDIR};"
+	        "./precizer --update --progress --database=database1.db tests/examples/diffs/diff1;"
+	        "echo -n '  ' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
+	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
+	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt;"
 	        "./precizer --update --progress --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,0));
@@ -119,9 +119,9 @@ static Return readme_example_2_test(void){
 	del_char(&result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
-		"rm database1.db;" \
-		"rm -rf tests/examples/;" \
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
+		"rm database1.db;"
+		"rm -rf tests/examples/;"
 		"mv tests/examples_backup/ tests/examples/",0));
 
 	RETURN_STATUS;
