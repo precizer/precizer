@@ -16,8 +16,8 @@
  *         - FAILURE if any error
  */
 Return check_file_exists(
-	bool *file_exists,
-	const char* filename
+	bool       *file_exists,
+	const char *filename
 ){
 	Return status = SUCCESS;
 
@@ -28,7 +28,7 @@ Return check_file_exists(
 		return(FAILURE);
 	}
 
-	if(0 == access(filename, F_OK))
+	if(0 == access(filename,F_OK))
 	{
 		*file_exists = true;
 	}

@@ -11,26 +11,26 @@
  * @return Pointer to a string
  *
  */
-const char *form(
-	long double val
-)
-{
+const char *form(long double val){
 	static char result[MAX_NUMBER_CHARACTERS];
 
 	// Compare the argument passed to the parent function
 	// with zero accurate to 10 digits and output zero
-	if(fabsl(val) < 0.0000000001L){
-		result[0]='0';
-		result[1]='\0';
+	if(fabsl(val) < 0.0000000001L)
+	{
+		result[0] = '0';
+		result[1] = '\0';
 		return result;
 	}
 
-	snprintf(result, sizeof(result),"%.9Lf",val);
+	snprintf(result,sizeof(result),"%.9Lf",val);
 	char *pt = NULL;
+
 	// Point pt at "."
-	for (pt = result; *pt && *pt != '.'; pt++){
+	for(pt = result; *pt && *pt != '.'; pt++)
+	{
 		#if PRINT_CHECKOUT
-		printf("pt: %p, pt addr: %zu\n",(void*)pt,(void*)pt);
+		printf("pt: %p, pt addr: %zu\n",(void *)pt,(void *)pt);
 		#endif
 	}
 
@@ -48,16 +48,18 @@ const char *form(
 	// Step backwards, inserting spaces
 	do{
 		pt -= 3; // shift 3 digits
-		if (pt > result && *(pt-1) != '-'){
-		//              ^______ to prevent space between  munus and other digits
-			memmove(pt + 1, pt, n);
+
+		if(pt > result && *(pt-1) != '-')
+		{
+			//              ^______ to prevent space between  munus and other digits
+			memmove(pt + 1,pt,n);
 			#if PRINT_CHECKOUT
-			printf("pt: %p, pt addr: %zu\n",(void*)pt,(void*)pt);
+			printf("pt: %p, pt addr: %zu\n",(void *)pt,(void *)pt);
 			#endif
 			// memmove allows overlap, unlike memcpy
 			*pt = ','; // thousand separator
 			n += 4; // 3 digits + separator
-		}else{
+		} else {
 			break;
 		}
 	}while(true);
@@ -66,37 +68,48 @@ const char *form(
 	printf("n: %zu\n",n);
 	#endif
 
-	char *ptr=strchr(result,'.');
+	char *ptr = strchr(result,'.');
 	#if PRINT_CHECKOUT
-	printf("ptr: %p, ptr addr: %zu\n",(void*)ptr,(void*)ptr);
+	printf("ptr: %p, ptr addr: %zu\n",(void *)ptr,(void *)ptr);
 	#endif
-	if(ptr!=NULL){
+
+	if(ptr!=NULL)
+	{
 		// Either val is real or integer
 		bool val_is_real = false;
-		for(pt = ptr+1; pt < (result + sizeof(result)) && *pt != '\0'; pt++){
-			if(*pt != '0'){
+
+		for(pt = ptr+1; pt < (result + sizeof(result)) && *pt != '\0'; pt++)
+		{
+			if(*pt != '0')
+			{
 				val_is_real = true;
 				break;
 			}
 		}
-		if(val_is_real){
-			*ptr='.';
+
+		if(val_is_real)
+		{
+			*ptr = '.';
+
 			// Remove unnecessary terminated zeroes
-			for(pt = (result + sizeof(result)) - 1;pt >= ptr;--pt){
+			for(pt = (result + sizeof(result)) - 1; pt >= ptr; --pt)
+			{
 				#if PRINT_CHECKOUT
-				printf("pt: %p, pt addr: %zu, ptr: %p, ptr addr: %zu\n",(void*)pt,(void*)pt,(void*)ptr,(void*)ptr);
+				printf("pt: %p, pt addr: %zu, ptr: %p, ptr addr: %zu\n",(void *)pt,(void *)pt,(void *)ptr,(void *)ptr);
 				#endif
-				if(*pt == '\0' || *pt == '0' || *pt == ','){
+
+				if(*pt == '\0' || *pt == '0' || *pt == ',')
+				{
 					*pt = '\0';
-				}else{
+				} else {
 					break;
 				}
 			}
 			#if 0
 			printf("\n");
 			#endif
-		}else{
-			*ptr='\0';
+		} else {
+			*ptr = '\0';
 		}
 	}
 

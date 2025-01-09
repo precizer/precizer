@@ -42,14 +42,14 @@ char *rational_reconvert(int);
 
 // The definition creates a shorthand for logging messages with additional
 // context information, such as the file name, line number, and function name
-#define slog(x,...) rational_logger(x,__FILE__, __LINE__, __func__, __VA_ARGS__ )
+#define slog(x,...) rational_logger(x,__FILE__,__LINE__,__func__,__VA_ARGS__ )
 
 void rational_logger
 (
 	const char,
-	const char*,
+	const char *,
 	size_t,
-	const char*,
-	const char*,
+	const char *,
+	const char *,
 	...
 );

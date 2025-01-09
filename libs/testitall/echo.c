@@ -10,14 +10,14 @@
  *            followed by variable arguments for the format string.
  */
 void echo(
-	mem_char *buffer,
+	mem_char   *buffer,
 	const char *format,
 	...
 ){
-	char* result = NULL;
+	char *result = NULL;
 	va_list args;
-	va_start(args, format);
-	int characters = vasprintf(&result, format, args);
+	va_start(args,format);
+	int characters = vasprintf(&result,format,args);
 	va_end(args);
 
 	if(characters < 0)
@@ -36,7 +36,7 @@ void echo(
 
 		if(new_size > 0)
 		{
-			new_size -=1;
+			new_size -= 1;
 		}
 	}
 
@@ -45,13 +45,13 @@ void echo(
 		if(buffer->length > 0)
 		{
 			// Add new string to the buffer
-			memcpy(buffer->mem + shift, result, (size_t)characters * sizeof(char));
+			memcpy(buffer->mem + shift,result,(size_t)characters * sizeof(char));
 
 			// Null termination of the string
 			buffer->mem[buffer->length - 1] = '\0';
 		}
 	} else {
-		report("Memory allocation failed, requested size: %zu bytes", new_size);
+		report("Memory allocation failed, requested size: %zu bytes",new_size);
 	}
 
 	// Temporary buffer cleanup

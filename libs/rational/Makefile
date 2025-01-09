@@ -81,7 +81,7 @@ ifneq ($(CC), clang)
 RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
 endif
 
-.PHONY: all clean debug release prod production sanitize
+.PHONY: all clean debug release prod production sanitize format
 
 # Default build
 all: debug release
@@ -175,6 +175,17 @@ clean:
 
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 	@echo $(LIBNAME) cleared.
+
+#
+# Format rules
+#
+format:
+	@echo "Formatting source files..."
+	@for file in $(SRCS) $(HDRS); do \
+		echo "Formatting $$file"; \
+		uncrustify -c ../../Uncrustify.cfg --replace --no-backup $$file; \
+	done
+	@echo "All files formatted."
 
 #
 # GCC Static Analysis

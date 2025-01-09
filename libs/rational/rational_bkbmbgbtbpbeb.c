@@ -6,9 +6,7 @@
  *
  */
 static inline Byte tobyte(const size_t) __attribute__((always_inline));
-static inline Byte tobyte(
-	const size_t bytes
-){
+static inline Byte tobyte(const size_t bytes){
 	/// Number of bytes in a kilobyte
 	/// 1024
 	const size_t bytes_in_kilobyte = 1024ULL;
@@ -44,25 +42,25 @@ static inline Byte tobyte(
 	Byte byte;
 	memset(&byte,0,sizeof(Byte));
 
-	byte.exabytes			= bytes/bytes_in_exabyte;
+	byte.exabytes = bytes/bytes_in_exabyte;
 
-	const size_t exabytes		= byte.exabytes*bytes_in_exabyte;
-	byte.petabytes			= (bytes - exabytes)/bytes_in_petabyte;
+	const size_t exabytes = byte.exabytes*bytes_in_exabyte;
+	byte.petabytes = (bytes - exabytes)/bytes_in_petabyte;
 
-	const size_t petabytes	= byte.petabytes*bytes_in_petabyte;
-	byte.terabytes			= (bytes - exabytes - petabytes)/bytes_in_terabyte;
+	const size_t petabytes = byte.petabytes*bytes_in_petabyte;
+	byte.terabytes = (bytes - exabytes - petabytes)/bytes_in_terabyte;
 
-	const size_t terabytes	= byte.terabytes*bytes_in_terabyte;
-	byte.gigabytes			= (bytes - exabytes - petabytes - terabytes)/bytes_in_gigabyte;
+	const size_t terabytes = byte.terabytes*bytes_in_terabyte;
+	byte.gigabytes = (bytes - exabytes - petabytes - terabytes)/bytes_in_gigabyte;
 
-	const size_t gigabytes	= byte.gigabytes*bytes_in_gigabyte;
-	byte.megabytes			= (bytes - exabytes - petabytes - terabytes - gigabytes)/bytes_in_megabyte;
+	const size_t gigabytes = byte.gigabytes*bytes_in_gigabyte;
+	byte.megabytes = (bytes - exabytes - petabytes - terabytes - gigabytes)/bytes_in_megabyte;
 
-	const size_t megabytes	= byte.megabytes*bytes_in_megabyte;
-	byte.kilobytes			= (bytes - exabytes - petabytes - terabytes - gigabytes - megabytes)/bytes_in_kilobyte;
+	const size_t megabytes = byte.megabytes*bytes_in_megabyte;
+	byte.kilobytes = (bytes - exabytes - petabytes - terabytes - gigabytes - megabytes)/bytes_in_kilobyte;
 
-	const size_t kilobytes	= byte.kilobytes*bytes_in_kilobyte;
-	byte.bytes				= (bytes - exabytes - petabytes - terabytes - gigabytes - megabytes - kilobytes);
+	const size_t kilobytes = byte.kilobytes*bytes_in_kilobyte;
+	byte.bytes = (bytes - exabytes - petabytes - terabytes - gigabytes - megabytes - kilobytes);
 
 	return(byte);
 }
@@ -75,12 +73,12 @@ static inline Byte tobyte(
  *
  */
 static void catbyte(
-	char * const result,
-	const size_t bytes,
-	const char * const suffix
-)
-{
-	if(bytes > 0ULL){
+	char *const       result,
+	const size_t      bytes,
+	const char *const suffix
+){
+	if(bytes > 0ULL)
+	{
 		// Temporary array
 		char tmp[MAX_NUMBER_CHARACTERS];
 		// Put a number into the temporary string array
@@ -105,17 +103,15 @@ static void catbyte(
  * eb - Exabyte
  *
  */
-char *bkbmbgbtbpbeb(
-	const size_t bytes
-)
-{
+char *bkbmbgbtbpbeb(const size_t bytes){
 	static char result[MAX_NUMBER_CHARACTERS];
 
 	// Zero out a static memory area with a string array
 	memset(result,0,strlen(result) * sizeof(char));
 
 	// If the number passed is 0 Bytes
-	if(bytes == 0ULL){
+	if(bytes == 0ULL)
+	{
 		// Compiling a string 0b
 		strcat(result,"0B");
 		return(result);
@@ -132,7 +128,7 @@ char *bkbmbgbtbpbeb(
 	catbyte(result,byte.bytes,"B");
 
 	// Remove space at the end of a line
-	result[strlen(result) - 1ULL]='\0';
+	result[strlen(result) - 1ULL] = '\0';
 
 	return(result);
 }

@@ -32,10 +32,10 @@ Return set_environment_variable(
 	{
 		/* Attempt to set environment variable
 		 * Third parameter (1) allows overwriting existing values */
-		if(setenv(variable, value, 1) != 0)
+		if(setenv(variable,value,1) != 0)
 		{
 			/* Log error if setenv fails */
-			echo(STDERR,"Failed to set environment variable %s", variable);
+			echo(STDERR,"Failed to set environment variable %s",variable);
 			status = FAILURE;
 		}
 	}

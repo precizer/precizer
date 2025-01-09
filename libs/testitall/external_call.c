@@ -16,13 +16,15 @@ extern char **environ;  // Environment variable used by posix_spawnp
  */
 Return external_call(
 	const char *command,
-	const int expected_return_code,
-	bool suppress_stderr,
-	bool suppress_stdout
+	const int  expected_return_code,
+	bool       suppress_stderr,
+	bool       suppress_stdout
 ){
 	// Create pipes for capturing stdout and stderr
-	int stdout_pipe[2], stderr_pipe[2];
-	if (pipe(stdout_pipe) == -1 || pipe(stderr_pipe) == -1) {
+	int stdout_pipe[2],stderr_pipe[2];
+
+	if(pipe(stdout_pipe) == -1 || pipe(stderr_pipe) == -1)
+	{
 		serp("pipe error");
 		return(FAILURE);
 	}
@@ -37,19 +39,19 @@ Return external_call(
 	posix_spawn_file_actions_init(&actions);
 
 	// Redirect child process stdout and stderr to the pipes
-	posix_spawn_file_actions_adddup2(&actions, stdout_pipe[1], STDOUT_FILENO);
-	posix_spawn_file_actions_adddup2(&actions, stderr_pipe[1], STDERR_FILENO);
+	posix_spawn_file_actions_adddup2(&actions,stdout_pipe[1],STDOUT_FILENO);
+	posix_spawn_file_actions_adddup2(&actions,stderr_pipe[1],STDERR_FILENO);
 
 	// Close unused ends of pipes in the child process
-	posix_spawn_file_actions_addclose(&actions, stdout_pipe[0]);
-	posix_spawn_file_actions_addclose(&actions, stderr_pipe[0]);
-	posix_spawn_file_actions_addclose(&actions, stdout_pipe[1]);
-	posix_spawn_file_actions_addclose(&actions, stderr_pipe[1]);
+	posix_spawn_file_actions_addclose(&actions,stdout_pipe[0]);
+	posix_spawn_file_actions_addclose(&actions,stderr_pipe[0]);
+	posix_spawn_file_actions_addclose(&actions,stdout_pipe[1]);
+	posix_spawn_file_actions_addclose(&actions,stderr_pipe[1]);
 
 	pid_t pid;
 
 	// Prepare command arguments
-	char * const arguments[] = {
+	char *const arguments[] = {
 		(char *)(uintptr_t)"sh",
 		(char *)(uintptr_t)"-c",
 		(char *)(uintptr_t)command,
@@ -57,7 +59,7 @@ Return external_call(
 	};
 
 	// Execute command while inheriting current environment variables
-	if (posix_spawnp(&pid, (char *)(uintptr_t)"sh", &actions, NULL, arguments, environ) != 0)
+	if(posix_spawnp(&pid,(char *)(uintptr_t)"sh",&actions,NULL,arguments,environ) != 0)
 	{
 		serp("posix_spawnp error"); // Handle command execution error
 		posix_spawn_file_actions_destroy(&actions);
@@ -78,33 +80,36 @@ Return external_call(
 
 	// Чтение данных из пайпа
 	char temp_buffer[PAGE_BYTES];
-	while((count = read(stdout_pipe[0], temp_buffer, PAGE_BYTES)) > 0)
+
+	while((count = read(stdout_pipe[0],temp_buffer,PAGE_BYTES)) > 0)
 	{
-		if (count == -1) {
+		if(count == -1)
+		{
 			serp("read error"); // Handle command execution error
 			free(tmp_stdout_buffer);
 			return(FAILURE);
 		}
 
 		// Перевыделяем память с учетом новых данных
-		char *new_buffer = realloc(tmp_stdout_buffer, total_read + (size_t)count + 1); // +1 для нуля в конце
-		if (!new_buffer)
+		char *new_buffer = realloc(tmp_stdout_buffer,total_read + (size_t)count + 1);  // +1 для нуля в конце
+
+		if(!new_buffer)
 		{
-			report("Memory allocation failed, requested size: %zu bytes", total_read + (size_t)count + 1);
+			report("Memory allocation failed, requested size: %zu bytes",total_read + (size_t)count + 1);
 			free(tmp_stdout_buffer);
 			return(FAILURE);
 		}
 		tmp_stdout_buffer = new_buffer;
 
 		// Копируем прочитанные данные в буфер
-		memcpy(tmp_stdout_buffer + total_read, temp_buffer, (size_t)count);
+		memcpy(tmp_stdout_buffer + total_read,temp_buffer,(size_t)count);
 		total_read += (size_t)count;
 	}
 
 	if(total_read > 0)
 	{
 		realloc_char(STDOUT,total_read + 1);
-		memcpy(STDOUT->mem, tmp_stdout_buffer, STDOUT->length * sizeof(char));
+		memcpy(STDOUT->mem,tmp_stdout_buffer,STDOUT->length * sizeof(char));
 	}
 
 	free(tmp_stdout_buffer); // Освобождаем память
@@ -124,9 +129,9 @@ Return external_call(
 	// Очистка временного буфера
 	memset(temp_buffer,0,PAGE_BYTES);
 
-	while ((count = read(stderr_pipe[0], temp_buffer, PAGE_BYTES)) > 0)
+	while((count = read(stderr_pipe[0],temp_buffer,PAGE_BYTES)) > 0)
 	{
-		if (count == -1)
+		if(count == -1)
 		{
 			serp("read error"); // Handle command execution error
 			free(tmp_stderr_buffer);
@@ -134,24 +139,25 @@ Return external_call(
 		}
 
 		// Перевыделяем память с учетом новых данных
-		char *new_buffer = realloc(tmp_stderr_buffer, total_read + (size_t)count + 1); // +1 для нуля в конце
-		if (!new_buffer)
+		char *new_buffer = realloc(tmp_stderr_buffer,total_read + (size_t)count + 1);  // +1 для нуля в конце
+
+		if(!new_buffer)
 		{
-			report("Memory allocation failed, requested size: %zu bytes", total_read + (size_t)count + 1);
+			report("Memory allocation failed, requested size: %zu bytes",total_read + (size_t)count + 1);
 			free(tmp_stderr_buffer);
 			return(FAILURE);
 		}
 		tmp_stderr_buffer = new_buffer;
 
 		// Копируем прочитанные данные в буфер
-		memcpy(tmp_stderr_buffer + total_read, temp_buffer, (size_t)count);
+		memcpy(tmp_stderr_buffer + total_read,temp_buffer,(size_t)count);
 		total_read += (size_t)count;
 	}
 
 	if(total_read > 0)
 	{
 		realloc_char(STDERR,total_read + 1);
-		memcpy(STDERR->mem, tmp_stderr_buffer, STDERR->length * sizeof(char));
+		memcpy(STDERR->mem,tmp_stderr_buffer,STDERR->length * sizeof(char));
 	}
 
 	free(tmp_stderr_buffer);
@@ -164,7 +170,8 @@ Return external_call(
 
 	// Wait for the child process to complete and capture its exit status
 	int return_code;
-	if(waitpid(pid, &return_code, 0) == -1)
+
+	if(waitpid(pid,&return_code,0) == -1)
 	{
 		serp("waitpid error");
 		return(FAILURE);
@@ -192,15 +199,16 @@ Return external_call(
 				"Stderr output:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
 				command,STDERR->mem);
 
-			if (rt > -1) {
+			if(rt > -1)
+			{
 				// Copy str to STDERR->mem
-				if(SUCCESS == realloc_char(STDERR, (size_t)rt + 1))
+				if(SUCCESS == realloc_char(STDERR,(size_t)rt + 1))
 				{
-					memcpy(STDERR->mem, str, STDERR->length * sizeof(STDERR->mem[0]));
+					memcpy(STDERR->mem,str,STDERR->length * sizeof(STDERR->mem[0]));
 				}
 
 			} else {
-				report("Memory allocation failed, requested size: %zu bytes", (size_t)rt + 1);
+				report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);
 			}
 
 			free(str);
@@ -225,7 +233,7 @@ Return external_call(
 	{
 		// Format stderr output
 		char *str;
-		int rt = asprintf(&str, YELLOW "ERROR: Unexpected exit code!" RESET "\n"
+		int rt = asprintf(&str,YELLOW "ERROR: Unexpected exit code!" RESET "\n"
 			YELLOW "External command call:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
 			YELLOW "Exited with code " RESET "%d " YELLOW "but expected " RESET "%d\n"
 			YELLOW "Process terminated signal " RESET "%d\n"
@@ -238,15 +246,16 @@ Return external_call(
 			STDERR->mem,
 			STDOUT->mem);
 
-		if (rt > -1) {
+		if(rt > -1)
+		{
 			// Copy str to STDERR->mem
 			if(SUCCESS == realloc_char(STDERR,(size_t)rt + 1))
 			{
-				memcpy(STDERR->mem, str, STDERR->length * sizeof(STDERR->mem[0]));
+				memcpy(STDERR->mem,str,STDERR->length * sizeof(STDERR->mem[0]));
 			}
 
 		} else {
-			report("Memory allocation failed, requested size: %zu bytes", (size_t)rt + 1);
+			report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);
 		}
 
 		free(str);

@@ -69,9 +69,9 @@
 #define RETURN_STATUS \
 	if(SUCCESS == status) \
 	{ \
-		echo(EXTEND, BOLDGREEN "✓" BOLDWHITE " passed " RESET); \
+		echo(EXTEND,BOLDGREEN "✓" BOLDWHITE " passed " RESET); \
 	} else { \
-		echo(EXTEND, BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
+		echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
 	} \
 	return(status); \
 
@@ -95,7 +95,7 @@ void echo(
 	mem_char *,
 	const char *,
 	...
-) __attribute__((format(gnu_printf, 2, 3)));
+) __attribute__((format(gnu_printf,2,3)));
 
 Return execute_command(
 	const char *,
@@ -117,7 +117,7 @@ Return set_environment_variable(
 );
 
 Return function_capture(
-	void (*func)(void),
+	void ( *func )(void),
 	mem_char *,
 	mem_char *
 );
@@ -147,9 +147,7 @@ Return replace_placeholder(
 	const char *
 );
 
-Return write_to_temp_file(
-	const char *
-);
+Return write_to_temp_file(const char *);
 
 Return check_file_exists(
 	bool *,
@@ -171,20 +169,20 @@ Return check_file_identity(
  * @param func Function to test
  * @param desc Test description
  */
-#define TEST(func, desc) \
-	if (SUCCESS == status) \
+#define TEST(func,desc) \
+	if(SUCCESS == status) \
 	{ \
-		status = testitall(func, #func, desc); \
+		status = testitall(func, #func,desc); \
 	}
 
-#define EXEC(func, desc) \
-	status = testitall(func, #func, desc);
+#define EXEC(func,desc) \
+	status = testitall(func, #func,desc);
 
 // Execute a function without checking the status first.
 // For example, to clear temporary data
 // TEST No Result
-#define TESTNR(func, desc) \
-	(void)testitall(func, #func, desc);
+#define TESTNR(func,desc) \
+	(void)testitall(func, #func,desc);
 
 // Макрос для замера времени на старте
 #define TESTSTART \
@@ -197,7 +195,7 @@ Return check_file_identity(
 #define TESTDONE \
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
-	printf(WHITE "Total execution time: %lldns (%s)\n" RESET, _time_spent, form_date(_time_spent)); \
+	printf(WHITE "Total execution time: %lldns (%s)\n" RESET,_time_spent,form_date(_time_spent)); \
 	if(SUCCESS == status) \
 	{ \
 		printf(WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
@@ -207,7 +205,7 @@ Return check_file_identity(
 	return(status);
 
 Return testitall(
-	Return (*func)(void),
+	Return ( *func )(void),
 	const char *,
 	const char *
 );

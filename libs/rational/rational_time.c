@@ -4,10 +4,9 @@
  * @brief Current time in milliseconds
  * @return Returns long long int the number of milliseconds since the UNIX epoch
  */
-long long int cur_time_ms(void)
-{
+long long int cur_time_ms(void){
 	struct timeval t;
-	gettimeofday(&t, NULL);
+	gettimeofday(&t,NULL);
 	long long mt = (long long)t.tv_sec * 1000 + t.tv_usec / 1000;
 	return(mt);
 }
@@ -17,12 +16,11 @@ long long int cur_time_ms(void)
  * @return long long int number of nanoseconds, count starts at the Unix Epoch on January 1st, 1970 at UTC
  * @details Source: https://stackoverflow.com/questions/39439268/printing-time-since-epoch-in-nanoseconds
  */
-long long int cur_time_ns(void)
-{
+long long int cur_time_ns(void){
 	long long int ns;
 	time_t sec;
 	struct timespec spec;
-	clock_gettime(CLOCK_REALTIME, &spec);
+	clock_gettime(CLOCK_REALTIME,&spec);
 	sec = spec.tv_sec;
 	ns = spec.tv_nsec;
 	return(((long long int)sec * 1000000000LL) + ns);
@@ -36,12 +34,9 @@ long long int cur_time_ns(void)
  * If 0 is passed, the current time will be printed out in ISO format.
  *
  */
-char *seconds_to_ISOdate(
-	time_t seconds
-)
-{
+char *seconds_to_ISOdate(time_t seconds){
 	struct timeval curTime;
-	gettimeofday(&curTime, NULL);
+	gettimeofday(&curTime,NULL);
 
 	// String to store converted time
 	static char str_t[sizeof "2011-10-18 07:07:09"] = "";
@@ -53,7 +48,7 @@ char *seconds_to_ISOdate(
 	localtime_r(&seconds,&cur_time);
 
 	// Create a string with date and time accurate to seconds
-	strftime(str_t, sizeof(str_t), "%Y-%m-%d %H:%M:%S", &cur_time);
+	strftime(str_t,sizeof(str_t),"%Y-%m-%d %H:%M:%S",&cur_time);
 
 	#if 0
 	printf("current time: %s \n",str_t);
@@ -67,9 +62,7 @@ char *seconds_to_ISOdate(
  * @brief "As a date", Convert nanoseconds to date format
  *
  */
-__attribute__((always_inline)) static inline Date asadate(
-	const long long int nanoseconds
-){
+__attribute__((always_inline)) static inline Date asadate(const long long int nanoseconds){
 	/// Number of nanoseconds in a year
 	/// 365*24*60*60*1000*1000*1000
 	const long long int ns_in_year = 31536000000000000LL;
@@ -110,34 +103,34 @@ __attribute__((always_inline)) static inline Date asadate(
 	Date date;
 	memset(&date,0,sizeof(Date));
 
-	date.years			= nanoseconds/ns_in_year;
+	date.years = nanoseconds/ns_in_year;
 
-	const long long int years_ns	= date.years * ns_in_year;
-	date.months						= (nanoseconds - years_ns)/ns_in_month;
+	const long long int years_ns = date.years * ns_in_year;
+	date.months = (nanoseconds - years_ns)/ns_in_month;
 
-	const long long int months_ns	= date.months * ns_in_month;
-	date.weeks						= (nanoseconds - years_ns - months_ns)/ns_in_week;
+	const long long int months_ns = date.months * ns_in_month;
+	date.weeks = (nanoseconds - years_ns - months_ns)/ns_in_week;
 
-	const long long int weeks_ns	= date.weeks * ns_in_week;
-	date.days						= (nanoseconds - years_ns - months_ns - weeks_ns)/ns_in_day;
+	const long long int weeks_ns = date.weeks * ns_in_week;
+	date.days = (nanoseconds - years_ns - months_ns - weeks_ns)/ns_in_day;
 
-	const long long int days_ns		= date.days * ns_in_day;
-	date.hours						= (nanoseconds - years_ns - months_ns - weeks_ns - days_ns)/ns_in_hour;
+	const long long int days_ns = date.days * ns_in_day;
+	date.hours = (nanoseconds - years_ns - months_ns - weeks_ns - days_ns)/ns_in_hour;
 
-	const long long int hours_ns	= date.hours * ns_in_hour;
-	date.minutes					= (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns)/ns_in_minute;
+	const long long int hours_ns = date.hours * ns_in_hour;
+	date.minutes = (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns)/ns_in_minute;
 
-	const long long int minutes_ns	= date.minutes * ns_in_minute;
-	date.seconds					= (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns)/ns_in_second;
+	const long long int minutes_ns = date.minutes * ns_in_minute;
+	date.seconds = (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns)/ns_in_second;
 
-	const long long int seconds_ns	= date.seconds * ns_in_second;
-	date.milliseconds				= (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns - seconds_ns)/ns_in_millisecond;
+	const long long int seconds_ns = date.seconds * ns_in_second;
+	date.milliseconds = (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns - seconds_ns)/ns_in_millisecond;
 
-	const long long int milliseconds_ns	= date.milliseconds * ns_in_millisecond;
-	date.microseconds				= (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns - seconds_ns - milliseconds_ns)/ns_in_microsecond;
+	const long long int milliseconds_ns = date.milliseconds * ns_in_millisecond;
+	date.microseconds = (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns - seconds_ns - milliseconds_ns)/ns_in_microsecond;
 
-	const long long int microseconds_ns	= date.microseconds * ns_in_microsecond;
-	date.nanoseconds				= (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns - seconds_ns - milliseconds_ns - microseconds_ns);
+	const long long int microseconds_ns = date.microseconds * ns_in_microsecond;
+	date.nanoseconds = (nanoseconds - years_ns - months_ns - weeks_ns - days_ns - hours_ns - minutes_ns - seconds_ns - milliseconds_ns - microseconds_ns);
 
 	return(date);
 }
@@ -150,12 +143,12 @@ __attribute__((always_inline)) static inline Date asadate(
  *
  */
 static void catdate(
-	char * const result,
+	char *const         result,
 	const long long int number,
-	const char * const suffix
-)
-{
-	if(number > 0LL){
+	const char *const   suffix
+){
+	if(number > 0LL)
+	{
 		// Temporary array
 		char tmp[MAX_NUMBER_CHARACTERS];
 		// Put a number into the temporary string array
@@ -174,16 +167,15 @@ static void catdate(
  * Convert nanoseconds to human-readable date as a string
  *
  */
-char *form_date(
-	const long long int nanoseconds
-){
+char *form_date(const long long int nanoseconds){
 	static char result[MAX_NUMBER_CHARACTERS];
 
 	// Zero out a static memory area with a string array
 	memset(result,0,strlen(result) * sizeof(char));
 
 	// If the time passed as argument is less than one nanosecond
-	if(nanoseconds == 0LL){
+	if(nanoseconds == 0LL)
+	{
 		strcat(result,"0ns");
 		return(result);
 	}
@@ -200,18 +192,20 @@ char *form_date(
 	catdate(result,date.milliseconds,"ms");
 
 	#if 0
+
 	// Print out microseconds and nanoseconds only
 	// when larger units of time are not exist.
-	if(nanoseconds < 1000LL*1000LL){
+	if(nanoseconds < 1000LL*1000LL)
+	{
 	#endif
-		catdate(result,date.microseconds,"μs");
-		catdate(result,date.nanoseconds,"ns");
+	catdate(result,date.microseconds,"μs");
+	catdate(result,date.nanoseconds,"ns");
 	#if 0
-	}
+}
 	#endif
 
 	// Remove space at the end of a line
-	result[strlen(result) - 1ULL]='\0';
+	result[strlen(result) - 1ULL] = '\0';
 
 	return(result);
 }
