@@ -345,6 +345,16 @@ Return parse_arguments(
 			printf("\n");
 		}
 
+		if(config->db_file_path != NULL)
+		{
+			slog(TESTING,"argument:database=%s\n",config->db_file_path);
+		}
+
+		if(config->db_file_name != NULL)
+		{
+			slog(TESTING,"argument:db_file_name=%s\n",config->db_file_name);
+		}
+
 		if(config->db_file_paths != NULL)
 		{
 			slog(TESTING,"argument:db_file_paths=");
@@ -452,6 +462,16 @@ Return parse_arguments(
 					printf(j == 0 ? "%s" : ", %s",config->paths[j]);
 				}
 				printf("; ");
+			}
+
+			if(config->db_file_path != NULL)
+			{
+				printf("database=%s; ",config->db_file_path);
+			}
+
+			if(config->db_file_name != NULL)
+			{
+				printf("db_file_name=%s; ",config->db_file_name);
 			}
 
 			if(config->db_file_paths != NULL)
