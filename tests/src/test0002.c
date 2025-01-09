@@ -31,7 +31,7 @@ Return test0002(void){
 	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",0));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",0,false,false));
 
 	RETURN_STATUS;
 }
