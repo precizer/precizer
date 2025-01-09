@@ -41,7 +41,7 @@ endif
 #
 SRCS = $(wildcard *.c)
 HDRS = $(wildcard *.h)
-TMPLTS = $(wildcard *.d)
+TMPLTS = $(wildcard *.cc)
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
 

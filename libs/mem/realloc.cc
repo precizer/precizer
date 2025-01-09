@@ -13,6 +13,11 @@
 		return(SUCCESS);
 	}
 
+	if(!(newlength > 0))
+	{
+		return(FAILURE);
+	}
+
 	const size_t old_length = structure->length;
 
 	const size_t new_bytes = newlength * sizeof(TYPE);
