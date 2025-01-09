@@ -45,27 +45,9 @@ Return execute_command(
 		status = FAILURE; // Invalid arguments
 	}
 
-#if 0
-	// Create temporary storage for original STDOUT content
-	MSTRUCT(mem_char,COPY_STDOUT);
-
-	/* Save current STDOUT content */
-	if(SUCCESS == status)
-	{
-		status = copy_char(COPY_STDOUT,STDOUT);
-	}
-
-	/* Clear STDOUT buffer before command execution */
-	if(SUCCESS == status)
-	{
-		// Clean the STDOUT buffer to prepare for new command output
-		status = realloc_char(STDOUT,0);
-	}
-#else
 	// Clean the STDOUT buffer to prepare for new command output
 	status = del_char(&STDOUT);
 
-#endif
 	/* Execute the command with specified parameters */
 	if(SUCCESS == status)
 	{
@@ -105,17 +87,6 @@ Return execute_command(
 			}
 		}
 	}
-
-#if 0
-	/* Restore original STDOUT content */
-	if(SUCCESS == status)
-	{
-		status = copy_char(STDOUT,COPY_STDOUT);
-	}
-
-	// Clean up temporary storage
-	del_char(&COPY_STDOUT);
-#endif
 
 	return(status);
 }
