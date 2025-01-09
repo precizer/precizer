@@ -44,10 +44,10 @@ Return db_vacuum(const char *db_file_path){
 
 	/* Create SQL statement */
 	const char *sql = "PRAGMA analyze;"
-	                  "PRAGMA optimize;"
-	                  "VACUUM;"
-	                  "PRAGMA analyze;"
-	                  "PRAGMA optimize;";
+	        "PRAGMA optimize;"
+	        "VACUUM;"
+	        "PRAGMA analyze;"
+	        "PRAGMA optimize;";
 
 	if(SUCCESS == status)
 	{

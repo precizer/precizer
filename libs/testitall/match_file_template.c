@@ -23,9 +23,10 @@ Return match_file_template(
 	const char *filename,
 	const char *template,
 	const char *replacement,
-	const int expected_return_code
+	const int  expected_return_code
 ){
-	if (!command || !filename || !template || !replacement) {
+	if(!command || !filename || !template || !replacement)
+	{
 		echo(STDERR,"NULL pointer passed to match_file_template");
 		return FAILURE;
 	}
@@ -38,21 +39,21 @@ Return match_file_template(
 	char *pattern = NULL;
 
 	// Create memory for command output
-	MSTRUCT(mem_char, result);
+	MSTRUCT(mem_char,result);
 
 	// Read template pattern from file
-	status = get_file_content(filename, &pattern);
+	status = get_file_content(filename,&pattern);
 
 	// Replace template placeholder with actual value
 	if(SUCCESS == status)
 	{
-		status = replace_placeholder(&pattern, template, replacement);
+		status = replace_placeholder(&pattern,template,replacement);
 	}
 
 	// Execute command and capture output
 	if(SUCCESS == status)
 	{
-		status = execute_command(command, result, expected_return_code,false,false);
+		status = execute_command(command,result,expected_return_code,false,false);
 	}
 
 	// Compare command output against modified template

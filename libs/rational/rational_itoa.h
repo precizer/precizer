@@ -5,8 +5,8 @@
  * to a string representation
  *
  */
-char* itoa(
-	int value,
-	char* str,
+char *itoa(
+	int  value,
+	char *str,
 	unsigned int
 );

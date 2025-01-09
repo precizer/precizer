@@ -17,7 +17,7 @@
  *   6. Cleans up resources
  */
 Return function_capture(
-	void (*func)(void),
+	void (   *func )(void),
 	mem_char *stdout_buffer,
 	mem_char *stderr_buffer
 ){
@@ -46,6 +46,7 @@ Return function_capture(
 	{
 		original_stderr = dup(STDERR_FILENO);
 		original_stdout = dup(STDOUT_FILENO);
+
 		if(original_stderr == -1 || original_stdout == -1)
 		{
 			serp("Failed to save original descriptors");
@@ -58,6 +59,7 @@ Return function_capture(
 	{
 		stderr_fd = mkstemp(stderr_template);
 		stdout_fd = mkstemp(stdout_template);
+
 		if(stderr_fd == -1 || stdout_fd == -1)
 		{
 			serp("Failed to create temporary files");
@@ -78,8 +80,8 @@ Return function_capture(
 	/* Redirect output streams */
 	if(SUCCESS == status)
 	{
-		if(dup2(stderr_fd, STDERR_FILENO) == -1 ||
-			dup2(stdout_fd, STDOUT_FILENO) == -1)
+		if(dup2(stderr_fd,STDERR_FILENO) == -1 ||
+		        dup2(stdout_fd,STDOUT_FILENO) == -1)
 		{
 			serp("Failed to redirect streams");
 			status = FAILURE;
@@ -92,8 +94,8 @@ Return function_capture(
 		func();
 
 		/* Restore original streams */
-		if(dup2(original_stderr, STDERR_FILENO) == -1 ||
-			dup2(original_stdout, STDOUT_FILENO) == -1)
+		if(dup2(original_stderr,STDERR_FILENO) == -1 ||
+		        dup2(original_stdout,STDOUT_FILENO) == -1)
 		{
 			serp("Failed to restore streams");
 			status = FAILURE;
@@ -104,7 +106,7 @@ Return function_capture(
 	if(SUCCESS == status)
 	{
 		/* Reset file position */
-		if(lseek(stderr_fd, 0, SEEK_SET) == -1)
+		if(lseek(stderr_fd,0,SEEK_SET) == -1)
 		{
 			serp("Failed to seek stderr file");
 			status = FAILURE;
@@ -116,7 +118,7 @@ Return function_capture(
 	{
 		while(true)
 		{
-			bytes_read = read(stderr_fd, read_buffer, PAGE_BYTES);
+			bytes_read = read(stderr_fd,read_buffer,PAGE_BYTES);
 
 			if(bytes_read == -1)
 			{
@@ -136,20 +138,20 @@ Return function_capture(
 			size_t new_length = stderr_buffer->length + (size_t)bytes_read;
 
 			/* Reallocate buffer if needed */
-			if(SUCCESS == (status = realloc_char(stderr_buffer, new_length)))
+			if(SUCCESS == (status = realloc_char(stderr_buffer,new_length)))
 			{
 				/* Copy new data */
-				memcpy(stderr_buffer->mem + old_length, read_buffer, (size_t)bytes_read);
+				memcpy(stderr_buffer->mem + old_length,read_buffer,(size_t)bytes_read);
 			} else {
 				serp("Failed to reallocate stderr buffer");
 				break;
 			}
 		}
 
-		if(stderr_buffer->length > 0 )
+		if(stderr_buffer->length > 0)
 		{
 			// Null-termination
-			if(SUCCESS == (status = realloc_char(stderr_buffer, stderr_buffer->length + 1)))
+			if(SUCCESS == (status = realloc_char(stderr_buffer,stderr_buffer->length + 1)))
 			{
 				stderr_buffer->mem[stderr_buffer->length - 1] = '\0';
 			} else {
@@ -162,7 +164,7 @@ Return function_capture(
 	if(SUCCESS == status)
 	{
 		/* Reset file position */
-		if(lseek(stdout_fd, 0, SEEK_SET) == -1)
+		if(lseek(stdout_fd,0,SEEK_SET) == -1)
 		{
 			serp("Failed to seek stdout file");
 			status = FAILURE;
@@ -174,7 +176,7 @@ Return function_capture(
 	{
 		while(true)
 		{
-			bytes_read = read(stdout_fd, read_buffer, PAGE_BYTES);
+			bytes_read = read(stdout_fd,read_buffer,PAGE_BYTES);
 
 			if(bytes_read == -1)
 			{
@@ -194,20 +196,20 @@ Return function_capture(
 			size_t new_length = stdout_buffer->length + (size_t)bytes_read;
 
 			/* Reallocate buffer if needed */
-			if(SUCCESS == (status = realloc_char(stdout_buffer, new_length)))
+			if(SUCCESS == (status = realloc_char(stdout_buffer,new_length)))
 			{
 				/* Copy new data */
-				memcpy(stdout_buffer->mem + old_length, read_buffer, (size_t)bytes_read);
+				memcpy(stdout_buffer->mem + old_length,read_buffer,(size_t)bytes_read);
 			} else {
 				serp("Failed to reallocate stdout buffer");
 				break;
 			}
 		}
 
-		if(stdout_buffer->length > 0 )
+		if(stdout_buffer->length > 0)
 		{
 			// Null-termination
-			if(SUCCESS == (status = realloc_char(stdout_buffer, stdout_buffer->length + 1)))
+			if(SUCCESS == (status = realloc_char(stdout_buffer,stdout_buffer->length + 1)))
 			{
 				stdout_buffer->mem[stdout_buffer->length - 1] = '\0';
 			} else {
@@ -217,13 +219,22 @@ Return function_capture(
 	}
 
 	/* Cleanup */
-	if(original_stderr != -1) close(original_stderr);
-	if(original_stdout != -1) close(original_stdout);
+	if(original_stderr != -1)
+	{
+		close(original_stderr);
+	}
+
+	if(original_stdout != -1)
+	{
+		close(original_stdout);
+	}
+
 	if(stderr_fd != -1)
 	{
 		close(stderr_fd);
 		unlink(stderr_template);
 	}
+
 	if(stdout_fd != -1)
 	{
 		close(stdout_fd);

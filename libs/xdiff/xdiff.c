@@ -395,8 +395,7 @@ int xdl_recs_cmp(
 		{
 			rchg2[rindex2[off2]] = 1;
 		}
-	} else if(off2 == lim2)
-	{
+	} else if(off2 == lim2){
 		char *rchg1 = dd1->rchg;
 		long *rindex1 = dd1->rindex;
 
@@ -1385,8 +1384,7 @@ static int xdl_clean_mmatch(
 		if(!dis[i - r])
 		{
 			rdis0++;
-		} else if(dis[i - r] == 2)
-		{
+		} else if(dis[i - r] == 2){
 			rpdis0++;
 		} else {
 			break;
@@ -1409,8 +1407,7 @@ static int xdl_clean_mmatch(
 		if(!dis[i + r])
 		{
 			rdis1++;
-		} else if(dis[i + r] == 2)
-		{
+		} else if(dis[i + r] == 2){
 			rpdis1++;
 		} else {
 			break;

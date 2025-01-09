@@ -159,11 +159,6 @@ endif
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-#
-# Code formatting settings
-#
-UNCRUSTIFY_CFG = Uncrustify.cfg
-
 .PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
@@ -256,7 +251,7 @@ format:
 	@echo "Formatting source files..."
 	@for file in $(SRCS) $(HDRS); do \
 		echo "Formatting $$file"; \
-		uncrustify -c $(UNCRUSTIFY_CFG) --replace --no-backup $$file; \
+		uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
 	done
 	@echo "All files formatted."
 

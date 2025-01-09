@@ -6,8 +6,7 @@
  */
 
 /// Structure to record the number of bytes.
-typedef struct
-{
+typedef struct {
 	size_t bytes;
 	size_t kilobytes;
 	size_t megabytes;
@@ -18,6 +17,4 @@ typedef struct
 
 } Byte;
 
-char *bkbmbgbtbpbeb(
-	const size_t
-);
+char *bkbmbgbtbpbeb(const size_t);

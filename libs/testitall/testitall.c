@@ -16,9 +16,9 @@
  *          in a readable way with color coding.
  */
 Return testitall(
-	Return (*func)(void),
-	const char* function_name,
-	const char* test_description
+	Return (   *func )(void),
+	const char *function_name,
+	const char *test_description
 ){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -28,8 +28,8 @@ Return testitall(
 	long long int __start_time = cur_time_ns();
 
 	/* Clear output capture buffers to ensure clean state */
-	memset(STDOUT, 0, sizeof(mem_char));
-	memset(STDERR, 0, sizeof(mem_char));
+	memset(STDOUT,0,sizeof(mem_char));
+	memset(STDERR,0,sizeof(mem_char));
 
 	/* Execute the test function and capture its return status */
 	status = func();
@@ -39,44 +39,45 @@ Return testitall(
 	long long int elapsed_time = __end_time - __start_time;
 
 	/* Reset terminal color to default white */
-	fprintf(stdout, RESET WHITE);
+	fprintf(stdout,RESET WHITE);
 
 	/* Format and display test results with color coding */
-	if(SUCCESS == status) {
+	if(SUCCESS == status)
+	{
 		/* Green OK for passed tests */
-		fprintf(stdout, WHITE "[  " BOLDGREEN "OK" RESET WHITE  "  ]" RESET );
-		fprintf(stdout, WHITE " %lldns %s %s" RESET, elapsed_time, function_name, test_description);
+		fprintf(stdout,WHITE "[  " BOLDGREEN "OK" RESET WHITE  "  ]" RESET );
+		fprintf(stdout,WHITE " %lldns %s %s" RESET,elapsed_time,function_name,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		if(EXTEND->length > 0)
 		{
-			fprintf(stdout, WHITE " %s" RESET, EXTEND->mem);
+			fprintf(stdout,WHITE " %s" RESET,EXTEND->mem);
 		}
-		fprintf(stdout, "\n");
+		fprintf(stdout,"\n");
 
 	} else {
 		/* Red FAIL for failed tests */
-		fprintf(stdout, WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" RESET );
-		fprintf(stdout, WHITE " %lldns %s %s" RESET, elapsed_time, function_name, test_description);
+		fprintf(stdout,WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" RESET );
+		fprintf(stdout,WHITE " %lldns %s %s" RESET,elapsed_time,function_name,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		if(EXTEND->length > 0)
 		{
-			fprintf(stdout, WHITE " %s" RESET, EXTEND->mem);
+			fprintf(stdout,WHITE " %s" RESET,EXTEND->mem);
 		}
-		fprintf(stdout, "\n");
+		fprintf(stdout,"\n");
 	}
 
 	/* Display captured stderr output in yellow */
 	if(STDERR->length > 0)
 	{
-		fprintf(stdout, YELLOW "%s" RESET, STDERR->mem);
+		fprintf(stdout,YELLOW "%s" RESET,STDERR->mem);
 	}
 
 	/* Display captured stdout output */
 	if(STDOUT->length > 0)
 	{
-		fprintf(stdout, "%s", STDOUT->mem);
+		fprintf(stdout,"%s",STDOUT->mem);
 	}
 
 	/* Cleanup: free dynamically allocated buffers */

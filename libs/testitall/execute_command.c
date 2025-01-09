@@ -30,17 +30,17 @@
  */
 Return execute_command(
 	const char *command,
-	mem_char *result,
-	const int expected_return_code,
-	bool suppress_stderr,
-	bool suppress_stdout
+	mem_char   *result,
+	const int  expected_return_code,
+	bool       suppress_stderr,
+	bool       suppress_stdout
 ){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
 	/* Validate input parameters */
-	if (!command)
+	if(!command)
 	{
 		status = FAILURE; // Invalid arguments
 	}
@@ -51,7 +51,7 @@ Return execute_command(
 	/* Execute the command with specified parameters */
 	if(SUCCESS == status)
 	{
-		status = external_call(command, expected_return_code, suppress_stderr, suppress_stdout);
+		status = external_call(command,expected_return_code,suppress_stderr,suppress_stdout);
 	}
 
 	/* Process command output if needed */

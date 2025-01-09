@@ -97,11 +97,6 @@ DBGLIBS = -L$(DBGLIBDIR)
 DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$(DBGLIBDIR)
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
-#
-# Code formatting settings
-#
-UNCRUSTIFY_CFG = ../Uncrustify.cfg
-
 .PHONY: all clean debug release prod production sanitize coverage run coverage-report coverage-html format
 
 # Default build
@@ -193,7 +188,7 @@ format:
 	@echo "Formatting source files..."
 	@for file in $(SRCS) $(HDRS); do \
 		echo "Formatting $$file"; \
-		uncrustify -c $(UNCRUSTIFY_CFG) --replace --no-backup $$file; \
+		uncrustify -c ../Uncrustify.cfg --replace --no-backup $$file; \
 	done
 	@echo "All files formatted."
 

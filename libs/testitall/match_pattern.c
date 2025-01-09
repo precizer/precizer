@@ -15,10 +15,10 @@ Return match_pattern(
 	Return status = SUCCESS;
 
 	va_list args;
-	va_start(args, pattern);
+	va_start(args,pattern);
 
 	/* Try to get third argument if it exists */
-	const char* filename = va_arg(args, const char*);
+	const char *filename = va_arg(args,const char *);
 	va_end(args);
 
 	// Compile the regular expression
@@ -37,17 +37,17 @@ Return match_pattern(
 		NULL
 	);
 
-	if (re == NULL)
+	if(re == NULL)
 	{
 		PCRE2_UCHAR buffer[256];
-		pcre2_get_error_message(errornumber, buffer, sizeof(buffer));
-		echo(STDERR, "ERROR: Regex compilation error at offset %d: %s\n",
-			(int)erroroffset, buffer);
+		pcre2_get_error_message(errornumber,buffer,sizeof(buffer));
+		echo(STDERR,"ERROR: Regex compilation error at offset %d: %s\n",
+			(int)erroroffset,buffer);
 		return(FAILURE);
 	}
 
 	/* Allocate memory for match data */
-	match_data = pcre2_match_data_create_from_pattern(re, NULL);
+	match_data = pcre2_match_data_create_from_pattern(re,NULL);
 
 	/* Attempt to match */
 	int rc = pcre2_match(
@@ -60,7 +60,7 @@ Return match_pattern(
 		NULL
 	);
 
-	if (rc < 0)
+	if(rc < 0)
 	{
 		switch(rc)
 		{
@@ -72,7 +72,7 @@ Return match_pattern(
 				size_t context_size = 50; /* Show this many characters around mismatch */
 				int text_len = strlen(text);
 
-				while (pos < text_len)
+				while(pos < text_len)
 				{
 					/* Try matching from current position */
 					rc = pcre2_match(
@@ -85,7 +85,7 @@ Return match_pattern(
 						NULL
 					);
 
-					if (rc >= 0)
+					if(rc >= 0)
 					{
 						break;
 					}
@@ -103,15 +103,15 @@ Return match_pattern(
 						"Context around mismatch:\n"
 						YELLOW ">>" RESET "%.*s" RED "%c" RESET "%.*s" YELLOW "<<\n",
 						pos,
-						mismatch_char, (int)mismatch_char,
-						(int)(pos - start), text + start,
+						mismatch_char,(int)mismatch_char,
+						(int)(pos - start),text + start,
 						mismatch_char,
-						(int)(end - pos - 1), text + pos + 1);
+						(int)(end - pos - 1),text + pos + 1);
 
 					echo(STDERR,
 						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" YELLOW \
 						"Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						text, pattern);
+						text,pattern);
 
 					status = FAILURE;
 					break;
@@ -120,29 +120,30 @@ Return match_pattern(
 			}
 #else
 #if 1
-					if(NULL != filename)
-					{
-						echo(STDERR, "ERROR: The pattern not match!" \
-							" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
-							YELLOW "Compared to a pattern from the file %s:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-							text,filename,pattern);
-					} else {
-						echo(STDERR, "ERROR: The pattern not match!" \
-							" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
-							YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-							text,pattern);
-					}
-#else
-					echo(STDERR, "ERROR: The pattern not match!\n" \
-						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+
+				if(NULL != filename)
+				{
+					echo(STDERR,"ERROR: The pattern not match!" \
+						" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+						YELLOW "Compared to a pattern from the file %s:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
+						text,filename,pattern);
+				} else {
+					echo(STDERR,"ERROR: The pattern not match!" \
+						" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
 						YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						text, pattern);
+						text,pattern);
+				}
+#else
+				echo(STDERR,"ERROR: The pattern not match!\n" \
+					"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+					YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
+					text,pattern);
 #endif
-					status = FAILURE;
+				status = FAILURE;
 				break;
 #endif
 			default:
-				echo(STDERR, "ERROR: pcre2_match error: %d\n", rc);
+				echo(STDERR,"ERROR: pcre2_match error: %d\n",rc);
 				status = FAILURE;
 				break;
 		}
