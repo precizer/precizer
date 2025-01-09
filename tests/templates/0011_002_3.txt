@@ -1,6 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=database1.db
+TESTING:argument:db_file_name=database1.db
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Arguments parsed
@@ -48,6 +50,8 @@ TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=database1.db
+TESTING:argument:db_file_name=database1.db
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Arguments parsed
