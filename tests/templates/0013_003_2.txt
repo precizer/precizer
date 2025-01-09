@@ -1,9 +1,7 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
-TESTING:argument:database=database1.db
-TESTING:argument:db_file_name=database1.db
-TESTING:argument:ignore=\^1/AAA/ZAW/\*
+TESTING:argument:ignore=tests/examples/diffs/diff1/1/AAA/ZAW/\*
 TESTING:argument:update=yes
 TESTING:argument:db-clean-ignored=yes
 TESTING:argument:dry-run=yes
@@ -45,13 +43,11 @@ TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-1/AAA/ZAW/D/e/f/b_file.txt ignored & not added
+1/AAA/ZAW/D/e/f/b_file.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehashed
 2/AAA/BBB/CZC/b.txt added
 TESTING:Dry Run mode is enabled. The primary database must not be modified
 TESTING:The \x1B\[1m--db-clean-ignored\x1B\[0m option has been used, so the information about ignored files will be removed against the database database1.db
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
-TESTING:1/AAA/ZAW/A/b/c/a_file.txt clean ignored
-TESTING:1/AAA/ZAW/D/e/f/b_file.txt clean ignored
 TESTING:2/AAA/BBB/CZC/a.txt
 TESTING:Version number 1 found in database
 TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
