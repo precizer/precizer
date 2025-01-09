@@ -12,10 +12,10 @@ Return test0003(void){
 	Return status = SUCCESS;
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"precizer --progress tests/examples/diffs/diff1",0));
+		"precizer --progress tests/examples/diffs/diff1",0,false,false));
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"precizer --progress --database=database2.db tests/examples/diffs/diff2",0,false,true));
+		"precizer --progress --database=database2.db tests/examples/diffs/diff2",0,false,false));
 
 	if(SUCCESS == status)
 	{
@@ -38,7 +38,7 @@ Return test0003(void){
 	}
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",0));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",0,false,false));
 
 	RETURN_STATUS;
 }
