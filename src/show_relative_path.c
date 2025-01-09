@@ -152,12 +152,12 @@ void show_relative_path(
 	// Print if NOT silent
 	if(!(rational_logger_mode & SILENT))
 	{
+		printf("%s",relative_path);
+
 		if(*ignored == true)
 		{
-			printf(BOLD "ignored " RESET);
+			printf(" ignored & not added");
 		}
-
-		printf("%s",relative_path);
 
 		*at_least_one_file_was_shown = true;
 
