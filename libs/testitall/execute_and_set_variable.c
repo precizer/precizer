@@ -31,7 +31,7 @@ Return execute_and_set_variable(
 	MSTRUCT(mem_char,result);
 
 	// Execute command and capture output
-	status = execute_command(command, result, expected_return_code);
+	status = execute_command(command, result, expected_return_code,false,false);
 
 	if(SUCCESS == status)
 	{

@@ -9,9 +9,17 @@
  */
 Return match_pattern(
 	const char *text,
-	const char *pattern
+	const char *pattern,
+	...
 ){
 	Return status = SUCCESS;
+
+	va_list args;
+	va_start(args, pattern);
+
+	/* Try to get third argument if it exists */
+	const char* filename = va_arg(args, const char*);
+	va_end(args);
 
 	// Compile the regular expression
 	pcre2_code *re;
@@ -111,11 +119,25 @@ Return match_pattern(
 				break;
 			}
 #else
+#if 1
+					if(NULL != filename)
+					{
+						echo(STDERR, "ERROR: The pattern not match!" \
+							" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+							YELLOW "Compared to a pattern from the file %s:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
+							text,filename,pattern);
+					} else {
+						echo(STDERR, "ERROR: The pattern not match!" \
+							" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+							YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
+							text,pattern);
+					}
+#else
 					echo(STDERR, "ERROR: The pattern not match!\n" \
 						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
 						YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
 						text, pattern);
-
+#endif
 					status = FAILURE;
 				break;
 #endif
