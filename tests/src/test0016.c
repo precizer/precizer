@@ -12,7 +12,7 @@ Return test0016(void){
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
-		"cp -r tests/examples/ tests/examples_backup;",0));
+		"cp -r tests/examples/ tests/examples_backup;",SUCCESS,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --database=database1.db tests/examples/diffs/diff1;" \
@@ -26,16 +26,18 @@ Return test0016(void){
 	        "./precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;" \
 	        "./precizer --compare database1.db database2.db";
 
-	ASSERT(SUCCESS == execute_command(command,result,0));
-	ASSERT(SUCCESS == get_file_content("templates/0016_001_1.txt",&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+	const char *filename = "templates/0016_001_1.txt";
+
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
 	free(pattern);
 	pattern = NULL;
 	del_char(&result);
 
-	command = "cd ${TMPDIR};" \
+	command = "export TESTING=false;cd ${TMPDIR};" \
 	        "cp database2.db database1.db;" \
 	        "./precizer --update --database=database1.db tests/examples/diffs/diff1;" \
 	        "./precizer --compare database1.db database2.db;" \
@@ -43,9 +45,11 @@ Return test0016(void){
 	        "./precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;" \
 	        "./precizer --compare database1.db database2.db";
 
-	ASSERT(SUCCESS == execute_command(command,result,0));
-	ASSERT(SUCCESS == get_file_content("templates/0016_001_2.txt",&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+	filename = "templates/0016_001_2.txt";
+
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
 	free(pattern);
@@ -57,7 +61,7 @@ Return test0016(void){
 		"rm database1.db;" \
 		"rm database2.db;" \
 		"rm -rf tests/examples/;" \
-		"mv tests/examples_backup/ tests/examples/",0));
+		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
 
 	RETURN_STATUS;
 }
