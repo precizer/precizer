@@ -154,7 +154,7 @@ Return external_call(
 		memcpy(STDERR->mem, tmp_stderr_buffer, STDERR->length * sizeof(char));
 	}
 
-	free(tmp_stderr_buffer); // Освобождаем память
+	free(tmp_stderr_buffer);
 
 	// Null-terminate output buffer
 	if(STDERR->length > 0)
@@ -183,25 +183,20 @@ Return external_call(
 			del_char(&STDERR);
 
 		} else {
-#if 0
+#if 1
 			// Format stderr output
-
-			// Temporary structure
-			MSTRUCT(mem_char,COPY_STDERR);
-			copy_char(COPY_STDERR,STDERR);
-
 			char *str;
-			int rt = asprintf( \
-				&str, \
-				YELLOW "Warning! STDERR buffer is not empty:\n" \
-				YELLOW ">>" RESET "%s" YELLOW "<<\n",
-				COPY_STDERR->mem);
+			int rt = asprintf(&str, \
+				YELLOW "Warning! STDERR buffer is not empty!\n"
+				"External command call:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
+				"Stderr output:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
+				command,STDERR->mem);
 
 			if (rt > -1) {
 				// Copy str to STDERR->mem
-				if(SUCCESS == realloc_char(STDERR,(size_t)rt + 1))
+				if(SUCCESS == realloc_char(STDERR, (size_t)rt + 1))
 				{
-					memcpy(STDERR->mem, str, STDERR->length);
+					memcpy(STDERR->mem, str, STDERR->length * sizeof(STDERR->mem[0]));
 				}
 
 			} else {
@@ -209,9 +204,8 @@ Return external_call(
 			}
 
 			free(str);
-			del_char(&COPY_STDERR);
 #endif
-			return(FAILURE);  // Return if not
+			return(FAILURE);
 		}
 	}
 
@@ -222,35 +216,7 @@ Return external_call(
 		{
 			// Suppress the output from the STDOUT buffer
 			del_char(&STDOUT);
-#if 0
-		} else {
-			// Format stderr output
 
-			// Temporary structure
-			MSTRUCT(mem_char,COPY_STDOUT);
-			copy_char(COPY_STDOUT,STDOUT);
-
-			char *str;
-			int rt = asprintf( \
-				&str, \
-				YELLOW "Warning! STDOUT buffer is not empty:\n" \
-				YELLOW ">>" RESET "%s" YELLOW "<<\n",
-				COPY_STDOUT->mem);
-
-			if (rt > -1) {
-				// Copy str to STDOUT->mem
-				if(SUCCESS == realloc_char(STDOUT, (size_t)rt + 1))
-				{
-					memcpy(STDOUT->mem, str, STDOUT->length);
-				}
-
-			} else {
-				report("Memory allocation failed, requested size: %zu bytes", (size_t)rt + 1);
-			}
-
-			free(str);
-			del_char(&COPY_STDOUT);
-#endif
 		}
 	}
 
@@ -259,23 +225,24 @@ Return external_call(
 	{
 		// Format stderr output
 		char *str;
-		int rt = asprintf(&str, YELLOW "ERROR: Unexpected exit code!\nExternal command call:\n"
-			YELLOW ">>" RESET "%s" YELLOW "<<\n" RESET
-			YELLOW "Exited with code %d but expected %d\n" \
-			"Process terminated signal %d\n" \
-			"Command stderr output:\n"
-			YELLOW ">>" RESET "%s" YELLOW "<<\n",
+		int rt = asprintf(&str, YELLOW "ERROR: Unexpected exit code!" RESET "\n"
+			YELLOW "External command call:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
+			YELLOW "Exited with code " RESET "%d " YELLOW "but expected " RESET "%d\n"
+			YELLOW "Process terminated signal " RESET "%d\n"
+			YELLOW "Stderr output:\n>>" RESET "%s" YELLOW "<<" RESET "\n"
+			YELLOW "Stdout output:\n>>" RESET "%s" YELLOW "<<" RESET "\n",
 			command,
 			exit_code,
 			expected_return_code,
 			WTERMSIG(return_code),
-			STDERR->mem);
+			STDERR->mem,
+			STDOUT->mem);
 
 		if (rt > -1) {
 			// Copy str to STDERR->mem
 			if(SUCCESS == realloc_char(STDERR,(size_t)rt + 1))
 			{
-				memcpy(STDERR->mem, str, STDERR->length);
+				memcpy(STDERR->mem, str, STDERR->length * sizeof(STDERR->mem[0]));
 			}
 
 		} else {

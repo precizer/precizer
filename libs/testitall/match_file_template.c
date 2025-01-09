@@ -52,13 +52,14 @@ Return match_file_template(
 	// Execute command and capture output
 	if(SUCCESS == status)
 	{
-		status = execute_command(command, result, expected_return_code);
+		status = execute_command(command, result, expected_return_code,false,false);
 	}
 
 	// Compare command output against modified template
 	if(SUCCESS == status)
 	{
-		status = match_pattern(result->mem, pattern);
+		//status = match_pattern(result->mem,pattern,filename);
+		status = match_pattern(result->mem,pattern);
 	}
 
 	#if 0

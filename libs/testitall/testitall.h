@@ -84,17 +84,6 @@ extern mem_char *STDERR;
 extern mem_char _EXTEND;
 extern mem_char *EXTEND;
 
-// Macros to define default value of third аrgument
-// https://stackoverflow.com/questions/1472138/c-default-arguments
-// https://gustedt.wordpress.com/2010/06/03/default-arguments-for-c99/
-//#define external_call(...) EXTERNAL_CALL(__VA_ARGS__, false, 0)
-//#define EXTERNAL_CALL(a, b, c, ...) external_call(a, b, c)
-#define external_call(...) EXTERNAL_CALL(__VA_ARGS__, false, 0, false, 0)
-#define EXTERNAL_CALL(a, b, c, d, e, ...) external_call(a, b, c, d)
-
-#define execute_command(...) EXECUTE_COMMAND(__VA_ARGS__, false, 0, false, 0)
-#define EXECUTE_COMMAND(a, b, c, d, e, f, ...) execute_command(a, b, c, d, e)
-
 Return external_call(
 	const char *,
 	const int,
@@ -140,7 +129,8 @@ Return get_file_content(
 
 Return match_pattern(
 	const char *,
-	const char *
+	const char *,
+	...
 );
 
 Return match_file_template(
@@ -164,6 +154,16 @@ Return write_to_temp_file(
 Return check_file_exists(
 	bool *,
 	const char *
+);
+
+Return get_file_stat(
+	const char *,
+	struct stat *
+);
+
+Return check_file_identity(
+	const struct stat *,
+	const struct stat *
 );
 
 /**
