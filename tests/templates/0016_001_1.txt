@@ -1,6 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=database1.db
+TESTING:argument:db_file_name=database1.db
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -54,6 +56,8 @@ TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=database1.db
+TESTING:argument:db_file_name=database1.db
 TESTING:argument:update=yes
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
@@ -158,6 +162,8 @@ TESTING:The precizer completed its execution without any issues
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=database1.db
+TESTING:argument:db_file_name=database1.db
 TESTING:argument:watch-timestamps=yes
 TESTING:argument:update=yes
 TESTING:Arguments parsed
