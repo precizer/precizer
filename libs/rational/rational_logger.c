@@ -24,8 +24,7 @@ char rational_logger_mode = REGULAR;
  *
  * @warning Maximum resulting string length is limited to 256 characters
  */
-char *rational_reconvert(int mode)
-{
+char *rational_reconvert(int mode){
 	/* Static buffer to store the resulting string */
 	static char buffer[256];
 	buffer[0] = '\0';  /* Initialize buffer as empty string */
@@ -38,27 +37,30 @@ char *rational_reconvert(int mode)
 	 */
 	struct {
 		int flag;          /* Flag value from LOGMODES enum */
-		const char* name;  /* String representation of the flag */
+		const char *name;  /* String representation of the flag */
 	} mapping[] = {
-		{REGULAR, "REGULAR"},
-		{VERBOSE, "VERBOSE"},
-		{TESTING, "TESTING"},
-		{ERROR,   "ERROR"},
-		{SILENT,  "SILENT"},
-		{0, NULL}  /* Terminator element */
+		{REGULAR,"REGULAR"},
+		{VERBOSE,"VERBOSE"},
+		{TESTING,"TESTING"},
+		{ERROR,"ERROR"},
+		{SILENT,"SILENT"},
+		{0,NULL}   /* Terminator element */
 	};
 
 	/* Iterate through all possible flags */
-	for (int i = 0; mapping[i].name != NULL; i++) {
+	for(int i = 0; mapping[i].name != NULL; i++)
+	{
 		/* Check if current flag is set in mode using bitwise AND */
-		if (mode & mapping[i].flag) {
+		if(mode & mapping[i].flag)
+		{
 			/* Add separator before all elements except the first one */
-			if (!first) {
-				strcat(buffer, " | ");
+			if(!first)
+			{
+				strcat(buffer," | ");
 			}
 
 			/* Add flag name to the result string */
-			strcat(buffer, mapping[i].name);
+			strcat(buffer,mapping[i].name);
 
 			/* Clear first flag as we've added an element */
 			first = 0;
@@ -75,10 +77,9 @@ char *rational_reconvert(int mode)
  * like this, for example: printf("Start at %s\n",logger_show_time());
  *
  */
-static char *logger_show_time(void)
-{
+static char *logger_show_time(void){
 	struct timeval curTime;
-	gettimeofday(&curTime, NULL);
+	gettimeofday(&curTime,NULL);
 	// Determine the number of milliseconds
 	suseconds_t milliseconds = curTime.tv_usec / 1000;
 
@@ -95,11 +96,11 @@ static char *logger_show_time(void)
 	localtime_r(&s_time,&cur_time);
 
 	// Format a string with date and time accurate to seconds
-	strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &cur_time);
+	strftime(buffer,sizeof(buffer),"%Y-%m-%d %H:%M:%S",&cur_time);
 
 	//Add a string with milliseconds
-	static char str_t[sizeof(buffer) + sizeof(".000") ] = "";
-	sprintf(str_t, "%s:%03llu", buffer, (unsigned long long int)milliseconds);
+	static char str_t[sizeof(buffer) + sizeof(".000")] = "";
+	sprintf(str_t,"%s:%03llu",buffer,(unsigned long long int)milliseconds);
 	#if 0
 	printf("current time: %s \n",str_t);
 	#endif
@@ -113,16 +114,15 @@ static char *logger_show_time(void)
  * and name of the function that generated the message itself
  *
  */
-__attribute__((format(printf, 5, 6))) //Without this we shall get warning
+__attribute__((format(printf,5,6)))   //Without this we shall get warning
 void rational_logger(
-	const char level,
-	const char * const filename,
-	size_t line,
-	const char * const funcname,
-	const char *fmt,
+	const char        level,
+	const char *const filename,
+	size_t            line,
+	const char *const funcname,
+	const char        *fmt,
 	...
-)
-{
+){
 	if(rational_logger_mode & SILENT)
 	{
 		// Output nothing
@@ -155,8 +155,7 @@ void rational_logger(
 		// Print out error prefix
 		printf("ERROR: ");
 
-	} else if(level & ERROR && rational_logger_mode & (TESTING | VERBOSE))
-	{
+	} else if(level & ERROR && rational_logger_mode & (TESTING | VERBOSE)){
 		// Print out the word "ERROR:"
 		printf("ERROR:");
 	}
@@ -165,32 +164,29 @@ void rational_logger(
 	{
 		// Print out other arguments
 		va_list args;
-		va_start(args, fmt);
-		vprintf(fmt, args);
+		va_start(args,fmt);
+		vprintf(fmt,args);
 		va_end(args);
 
-	} else if(level & (REGULAR|ERROR) && rational_logger_mode & REGULAR)
-	{
+	} else if(level & (REGULAR|ERROR) && rational_logger_mode & REGULAR){
 		// Print out other arguments
 		va_list args;
-		va_start(args, fmt);
-		vprintf(fmt, args);
+		va_start(args,fmt);
+		vprintf(fmt,args);
 		va_end(args);
 
-	} else if(level & (VERBOSE|ERROR) && rational_logger_mode & VERBOSE)
-	{
+	} else if(level & (VERBOSE|ERROR) && rational_logger_mode & VERBOSE){
 		// Print out other arguments
 		va_list args;
-		va_start(args, fmt);
-		vprintf(fmt, args);
+		va_start(args,fmt);
+		vprintf(fmt,args);
 		va_end(args);
 
-	} else if(level & (TESTING|ERROR) && rational_logger_mode & TESTING)
-	{
+	} else if(level & (TESTING|ERROR) && rational_logger_mode & TESTING){
 		// Print out other arguments
 		va_list args;
-		va_start(args, fmt);
-		vprintf(fmt, args);
+		va_start(args,fmt);
+		vprintf(fmt,args);
 		va_end(args);
 	}
 }
@@ -200,90 +196,89 @@ void rational_logger(
  * @file test_slog.c
  * @brief Complete test suite for log functionality
  */
-int main(void)
-{
+int main(void){
 	printf("All available combinations:\n");
-	printf("%s\n", rational_convert(REGULAR));
-	printf("%s\n", rational_convert(VERBOSE));
-	printf("%s\n", rational_convert(TESTING));
-	printf("%s\n", rational_convert(SILENT));
-	printf("%s\n", rational_convert(REGULAR|VERBOSE));
-	printf("%s\n", rational_convert(REGULAR|TESTING));
-	printf("%s\n", rational_convert(VERBOSE|TESTING));
-	printf("%s\n", rational_convert(REGULAR|VERBOSE|TESTING));
-	printf("%s\n", rational_convert(ERROR));
+	printf("%s\n",rational_convert(REGULAR));
+	printf("%s\n",rational_convert(VERBOSE));
+	printf("%s\n",rational_convert(TESTING));
+	printf("%s\n",rational_convert(SILENT));
+	printf("%s\n",rational_convert(REGULAR|VERBOSE));
+	printf("%s\n",rational_convert(REGULAR|TESTING));
+	printf("%s\n",rational_convert(VERBOSE|TESTING));
+	printf("%s\n",rational_convert(REGULAR|VERBOSE|TESTING));
+	printf("%s\n",rational_convert(ERROR));
 
 	/* Test REGULAR mode combinations */
 	rational_logger_mode = REGULAR;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("1.  Must print:"); slog(REGULAR, "true"); printf("\n");
-	printf("2. Won't print:"); slog(VERBOSE, "but printed!"); printf("\n");
-	printf("3. Won't print:"); slog(TESTING, "but printed!"); printf("\n");
-	printf("4.  Must print:");   slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("1.  Must print:"); slog(REGULAR,"true"); printf("\n");
+	printf("2. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
+	printf("3. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
+	printf("4.  Must print:");   slog(ERROR,"true"); printf("\n");
 
 	/* Test VERBOSE mode combinations */
 	rational_logger_mode = VERBOSE;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("5. Won't print:"); slog(REGULAR, "but printed!"); printf("\n");
-	printf("6.  Must print:"); slog(VERBOSE, "true"); printf("\n");
-	printf("7. Won't print:"); slog(TESTING, "but printed!"); printf("\n");
-	printf("8.  Must print:");   slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("5. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
+	printf("6.  Must print:"); slog(VERBOSE,"true"); printf("\n");
+	printf("7. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
+	printf("8.  Must print:");   slog(ERROR,"true"); printf("\n");
 
 	/* Test TESTING mode combinations */
 	rational_logger_mode = TESTING;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("9.  Won't print:"); slog(REGULAR, "but printed!"); printf("\n");
-	printf("10. Won't print:"); slog(VERBOSE, "but printed!"); printf("\n");
-	printf("11.  Must print:"); slog(TESTING, "true"); printf("\n");
-	printf("12.  Must print:");   slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("9.  Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
+	printf("10. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
+	printf("11.  Must print:"); slog(TESTING,"true"); printf("\n");
+	printf("12.  Must print:");   slog(ERROR,"true"); printf("\n");
 
 	/* Test SILENT mode combinations */
 	rational_logger_mode = SILENT;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("13. Won't print:"); slog(REGULAR, "but printed!"); printf("\n");
-	printf("14. Won't print:"); slog(VERBOSE, "but printed!"); printf("\n");
-	printf("15. Won't print:"); slog(TESTING, "but printed!"); printf("\n");
-	printf("16. Won't print:");   slog(ERROR, "but printed!"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("13. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
+	printf("14. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
+	printf("15. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
+	printf("16. Won't print:");   slog(ERROR,"but printed!"); printf("\n");
 
 	/* Test REGULAR|VERBOSE combinations */
 	rational_logger_mode = REGULAR|VERBOSE;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("17.  Must print:"); slog(REGULAR, "true"); printf("\n");
-	printf("18.  Must print:"); slog(VERBOSE, "true"); printf("\n");
-	printf("19. Won't print:"); slog(TESTING, "but printed!"); printf("\n");
-	printf("20.  Must print:");   slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("17.  Must print:"); slog(REGULAR,"true"); printf("\n");
+	printf("18.  Must print:"); slog(VERBOSE,"true"); printf("\n");
+	printf("19. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
+	printf("20.  Must print:");   slog(ERROR,"true"); printf("\n");
 
 	/* Test REGULAR|TESTING combinations */
 	rational_logger_mode = REGULAR|TESTING;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("21.  Must print:"); slog(REGULAR, "true"); printf("\n");
-	printf("22. Won't print:"); slog(VERBOSE, "but printed!"); printf("\n");
-	printf("23.  Must print:"); slog(TESTING, "true"); printf("\n");
-	printf("24.  Must print:")  ; slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("21.  Must print:"); slog(REGULAR,"true"); printf("\n");
+	printf("22. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
+	printf("23.  Must print:"); slog(TESTING,"true"); printf("\n");
+	printf("24.  Must print:"); slog(ERROR,"true"); printf("\n");
 
 	/* Test VERBOSE|TESTING combinations */
 	rational_logger_mode = VERBOSE|TESTING;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("25. Won't print:"); slog(REGULAR, "but printed!"); printf("\n");
-	printf("26.  Must print:"); slog(VERBOSE, "true"); printf("\n");
-	printf("27.  Must print:"); slog(TESTING, "true"); printf("\n");
-	printf("28.  Must print:");   slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("25. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
+	printf("26.  Must print:"); slog(VERBOSE,"true"); printf("\n");
+	printf("27.  Must print:"); slog(TESTING,"true"); printf("\n");
+	printf("28.  Must print:");   slog(ERROR,"true"); printf("\n");
 
 	/* Test REGULAR|VERBOSE|TESTING combinations */
 	rational_logger_mode = REGULAR|VERBOSE|TESTING;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("29. Must print:"); slog(REGULAR, "true"); printf("\n");
-	printf("30. Must print:"); slog(VERBOSE, "true"); printf("\n");
-	printf("31. Must print:"); slog(TESTING, "true"); printf("\n");
-	printf("32. Must print:");   slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("29. Must print:"); slog(REGULAR,"true"); printf("\n");
+	printf("30. Must print:"); slog(VERBOSE,"true"); printf("\n");
+	printf("31. Must print:"); slog(TESTING,"true"); printf("\n");
+	printf("32. Must print:");   slog(ERROR,"true"); printf("\n");
 
 	/* Test ERROR mode combinations */
 	rational_logger_mode = ERROR;
-	printf("Mode: %s\n", rational_reconvert(rational_logger_mode));
-	printf("33. Won't print:"); slog(REGULAR, "but printed!"); printf("\n");
-	printf("34. Won't print:"); slog(VERBOSE, "but printed!"); printf("\n");
-	printf("35. Won't print:"); slog(TESTING, "but printed!"); printf("\n");
-	printf("36.  Must print:");   slog(ERROR, "true"); printf("\n");
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("33. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
+	printf("34. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
+	printf("35. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
+	printf("36.  Must print:");   slog(ERROR,"true"); printf("\n");
 
 	return 0;
 }

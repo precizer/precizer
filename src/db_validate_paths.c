@@ -211,25 +211,28 @@ Return db_validate_paths(void){
 
 				bool first_iteration = true;
 
-				while(SQLITE_ROW == (rc_stmt = sqlite3_step(stmt)))
+				if(SUCCESS == status)
 				{
-					const char *prefix = (const char *)sqlite3_column_text(stmt,0);
-
-					if(first_iteration == true)
+					while(SQLITE_ROW == (rc_stmt = sqlite3_step(stmt)))
 					{
-						printf("%s",prefix);
-						first_iteration = false;
-					} else {
-						printf(", %s",prefix);
+						const char *prefix = (const char *)sqlite3_column_text(stmt,0);
+
+						if(first_iteration == true)
+						{
+							printf("%s",prefix);
+							first_iteration = false;
+						} else {
+							printf(", %s",prefix);
+						}
 					}
-				}
 
-				printf("\n");
+					printf("\n");
 
-				if(SQLITE_DONE != rc_stmt)
-				{
-					slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc_stmt,sqlite3_errmsg(config->db));
-					status = FAILURE;
+					if(SQLITE_DONE != rc_stmt)
+					{
+						slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc_stmt,sqlite3_errmsg(config->db));
+						status = FAILURE;
+					}
 				}
 
 				sqlite3_finalize(stmt);

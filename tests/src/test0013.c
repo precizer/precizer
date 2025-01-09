@@ -107,7 +107,7 @@ static Return dry_run_mode_2_test(void){
 	char *pattern = NULL;
 
 	const char *command = "cd ${TMPDIR};"
-		"cp -r tests/examples/ tests/examples_backup/;";
+	        "cp -r tests/examples/ tests/examples_backup/;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
@@ -278,7 +278,7 @@ static Return no_dry_run_mode_3_test(void){
 	// that the --db-clean-ignored option must be specified for permanent
 	// removal of ignored files from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
-			"cp database1.db database1.db.backup;"
+	        "cp database1.db database1.db.backup;"
 	        "./precizer --ignore=\"^1/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
@@ -301,7 +301,7 @@ static Return no_dry_run_mode_3_test(void){
 	// Real live mode permanent deletion of all ignored file
 	// references from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
-			"cp database1.db.backup database1.db;"
+	        "cp database1.db.backup database1.db;"
 	        "./precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
@@ -322,7 +322,7 @@ static Return no_dry_run_mode_3_test(void){
 	del_char(&result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-			"cp database1.db.backup database1.db;"
+	        "cp database1.db.backup database1.db;"
 	        "./precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 

@@ -22,17 +22,17 @@ Return prepare(void){
 	ASSERT(SUCCESS == external_call("cd $ORIGIN_DIR;make sanitize > /dev/null 2>&1",0,false,false));
 
 	command = "export TESTDIRS=${TMPDIR}/tests/examples/diffs/;"
-		"mkdir -p ${TESTDIRS};"
-		"cd ${TMPDIR};"
-		"cp -r $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
-		"cp -r $ORIGIN_DIR/.builds/debug/libs/*.so* ./;"
-		"cp $ORIGIN_DIR/.builds/sanitize/precizer ./";
+	        "mkdir -p ${TESTDIRS};"
+	        "cd ${TMPDIR};"
+	        "cp -r $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
+	        "cp -r $ORIGIN_DIR/.builds/debug/libs/*.so* ./;"
+	        "cp $ORIGIN_DIR/.builds/sanitize/precizer ./";
 
 	ASSERT(SUCCESS == external_call(command,0,false,false));
 
-		command = "export TESTING=true;"
-		"export ASAN_OPTIONS;"
-		"export ASAN_SYMBOLIZER_PATH;PATH=.:${PATH}";
+	command = "export TESTING=true;"
+	        "export ASAN_OPTIONS;"
+	        "export ASAN_SYMBOLIZER_PATH;PATH=.:${PATH}";
 
 	ASSERT(SUCCESS == external_call(command,0,false,false));
 
