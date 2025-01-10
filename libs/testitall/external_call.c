@@ -5,7 +5,7 @@ GSTRUCT(mem_char,STDOUT)
 GSTRUCT(mem_char,STDERR)
 GSTRUCT(mem_char,EXTEND)
 
-extern char **environ;  // Environment variable used by posix_spawnp
+extern char **environ; // Environment variable used by posix_spawnp
 
 /**
  * Executes an external command and captures its stdout and stderr output.
@@ -91,7 +91,7 @@ Return external_call(
 		}
 
 		// Перевыделяем память с учетом новых данных
-		char *new_buffer = realloc(tmp_stdout_buffer,total_read + (size_t)count + 1);  // +1 для нуля в конце
+		char *new_buffer = realloc(tmp_stdout_buffer,total_read + (size_t)count + 1); // +1 для нуля в конце
 
 		if(!new_buffer)
 		{
@@ -139,7 +139,7 @@ Return external_call(
 		}
 
 		// Перевыделяем память с учетом новых данных
-		char *new_buffer = realloc(tmp_stderr_buffer,total_read + (size_t)count + 1);  // +1 для нуля в конце
+		char *new_buffer = realloc(tmp_stderr_buffer,total_read + (size_t)count + 1); // +1 для нуля в конце
 
 		if(!new_buffer)
 		{
