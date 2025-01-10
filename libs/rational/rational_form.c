@@ -51,7 +51,7 @@ const char *form(long double val){
 
 		if(pt > result && *(pt-1) != '-')
 		{
-			//              ^______ to prevent space between  munus and other digits
+			//         ^______ to prevent space between  munus and other digits
 			memmove(pt + 1,pt,n);
 			#if PRINT_CHECKOUT
 			printf("pt: %p, pt addr: %zu\n",(void *)pt,(void *)pt);
