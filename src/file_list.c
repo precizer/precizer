@@ -341,11 +341,8 @@ Return file_list(bool count_size_of_all_files){
 						{
 							status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext);
 
-							if(SUCCESS == status)
+							if(SUCCESS != status)
 							{
-								/* Reflect changes in global */
-								config->something_has_been_changed = true;
-							} else {
 								break;
 							}
 						}
@@ -360,11 +357,8 @@ Return file_list(bool count_size_of_all_files){
 							status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext);
 #endif
 
-							if(SUCCESS == status)
+							if(SUCCESS != status)
 							{
-								/* Reflect changes in global */
-								config->something_has_been_changed = true;
-							} else {
 								break;
 							}
 						}

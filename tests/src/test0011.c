@@ -25,10 +25,12 @@ static Return readme_example_1_test(void){
 
 	char *pattern = NULL;
 
-	ASSERT(SUCCESS == get_file_content("templates/0011_001.txt",&pattern));
+	const char *filename = "templates/0011_001.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
@@ -81,10 +83,12 @@ static Return readme_example_2_test(void){
 
 	char *pattern = NULL;
 
+	const char *filename = "templates/0011_002_1.txt";
+
 	ASSERT(SUCCESS == execute_command(command,result,0,false,false));
-	ASSERT(SUCCESS == get_file_content("templates/0011_002_1.txt",&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
 	free(pattern);
@@ -94,9 +98,11 @@ static Return readme_example_2_test(void){
 	command = "export TESTING=true;cd ${TMPDIR};" \
 	        "./precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
+	filename = "templates/0011_002_2.txt";
+
 	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
-	ASSERT(SUCCESS == get_file_content("templates/0011_002_2.txt",&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
 	free(pattern);
@@ -110,9 +116,11 @@ static Return readme_example_2_test(void){
 	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt;"
 	        "./precizer --update --progress --database=database1.db tests/examples/diffs/diff1";
 
+	filename = "templates/0011_002_3.txt";
+
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content("templates/0011_002_3.txt",&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern));
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	free(pattern);
 	pattern = NULL;

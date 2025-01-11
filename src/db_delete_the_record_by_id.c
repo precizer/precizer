@@ -62,7 +62,7 @@ Return db_delete_the_record_by_id(
 			if(*first_iteration == true)
 			{
 
-				if(config->update == true && config->something_has_been_changed == false)
+				if(config->update == true && config->the_update_warning_has_already_been_shown == false)
 				{
 					slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be deleted against the database %s\n",config->db_file_name);
 				}
@@ -70,7 +70,10 @@ Return db_delete_the_record_by_id(
 				*first_iteration = false;
 
 				/* Reflect changes in global */
-				config->something_has_been_changed = true;
+				if(config->dry_run == false)
+				{
+					config->something_has_been_changed = true;
+				}
 
 				slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
 			}
