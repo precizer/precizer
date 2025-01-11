@@ -137,7 +137,7 @@ Return migrate_from_0_to_1(const char *db_file_path){
 	}
 
 	/* Open database in safe mode */
-	int rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX,NULL);
+	int rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
 
 	if(SQLITE_OK != rc)
 	{
@@ -177,6 +177,19 @@ Return migrate_from_0_to_1(const char *db_file_path){
 		if(SQLITE_OK != rc)
 		{
 			slog(ERROR,"Failed to begin transaction: %s\n",err_msg);
+			sqlite3_free(err_msg);
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		/* Perform create table query */
+		rc = sqlite3_exec(db,"CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE)",NULL,NULL,&err_msg);
+
+		if(SQLITE_OK != rc)
+		{
+			slog(ERROR,"Failed to create table: %s\n",err_msg);
 			sqlite3_free(err_msg);
 			status = FAILURE;
 		}
