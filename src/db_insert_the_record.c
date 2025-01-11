@@ -151,6 +151,13 @@ Return db_insert_the_record(
 		}
 	}
 
+	if(SUCCESS == status)
+	{
+		/* Reflect changes in global */
+		config->something_has_been_changed = true;
+
+	}
+
 	sqlite3_finalize(insert_stmt);
 
 	return(status);

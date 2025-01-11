@@ -274,6 +274,10 @@ typedef struct {
 	/// since the last research
 	bool something_has_been_changed;
 
+	/// The "Warning about using the update option has already been shown"
+	/// option prevents duplicate notifications from being displayed
+	bool the_update_warning_has_already_been_shown;
+
 	/// Recursion depth limit. The depth of the traversal,
 	/// numbered from 0 to N, where a file could be found.
 	/// Representing the maximum of the starting

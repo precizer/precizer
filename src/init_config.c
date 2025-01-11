@@ -94,6 +94,10 @@ void init_config(void){
 	// since the last research
 	config->something_has_been_changed = false;
 
+	/// The "Warning about using the update option has already been shown"
+	/// option prevents duplicate notifications from being displayed
+	config->the_update_warning_has_already_been_shown = false;
+
 	// Recursion depth limit. The depth of the traversal,
 	// numbered from 0 to N, where a file could be found.
 	// Representing the maximum of the starting
