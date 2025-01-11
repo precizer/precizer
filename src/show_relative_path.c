@@ -139,6 +139,7 @@ void show_relative_path(
 			if(config->update == true)
 			{
 				slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
+				config->the_update_warning_has_already_been_shown = true;
 			}
 
 			slog(EVERY,BOLD "These files have been added or changed and those changes will be reflected against the DB %s:" RESET "\n",config->db_file_name);

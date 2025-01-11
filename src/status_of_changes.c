@@ -15,13 +15,6 @@ Return status_of_changes(void){
 
 	if(config->compare != true && global_interrupt_flag == false)
 	{
-		if(config->something_has_been_changed == false)
-		{
-			slog(EVERY,BOLD "Nothing have been changed against the database since the last probe (neither added nor updated or deleted information about files)" RESET "\n");
-		} else {
-			slog(EVERY,BOLD "The database %s has been modified since the last check (files were added, removed, or updated)" RESET "\n",config->db_file_name);
-		}
-
 		if(config->db_file_exists == true)
 		{
 			struct stat db_current_stat = {0};
@@ -36,9 +29,26 @@ Return status_of_changes(void){
 
 			if(memcmp(&db_current_stat,&(config->db_file_stat),sizeof(struct stat)) != 0)
 			{
-				slog(EVERY,BOLD "The database file %s has been modified since the program was launched" RESET "\n",config->db_file_name);
+				if(config->something_has_been_changed == true)
+				{
+					slog(EVERY,BOLD "The database file %s has been modified since the program was launched" RESET "\n",config->db_file_name);
+				} else {
+					slog(ERROR,"Internal error: The database file %s has changed, but according to the global variable tracking modification status, this should not have happened!\n",config->db_file_name);
+				}
 			} else {
-				slog(EVERY,BOLD "The database file %s has NOT been modified since the program was launched" RESET "\n",config->db_file_name);
+				if(config->something_has_been_changed == true)
+				{
+					slog(ERROR,"Internal error. The database file %s has NOT changed, but according to the state of the global variable tracking modifications, it should have!\n",config->db_file_name);
+				} else {
+					slog(EVERY,BOLD "The database file %s has NOT been modified since the program was launched" RESET "\n",config->db_file_name);
+				}
+			}
+		} else {
+			if(config->something_has_been_changed == false)
+			{
+				slog(EVERY,BOLD "Nothing have been changed against the database since the last probe (neither added nor updated or deleted information about files)" RESET "\n");
+			} else {
+				slog(EVERY,BOLD "The database %s has been modified since the last check (files were added, removed, or updated)" RESET "\n",config->db_file_name);
 			}
 		}
 	}

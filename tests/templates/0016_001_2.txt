@@ -9,7 +9,6 @@ The \x1B\[1m--update\x1B\[0m option has been used, so the information about file
 path2/AAA/ZAW/D/e/f/b_file.txt
 Start vacuuming the primary database…
 The primary database has been vacuumed
-\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 \x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 The precizer completed its execution without any issues
 Enjoy your life!
@@ -36,7 +35,6 @@ The \x1B\[1m--update\x1B\[0m option has been used, so the information about file
 path2/AAA/ZAW/D/e/f/b_file.txt
 Start vacuuming the primary database…
 The primary database has been vacuumed
-\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 \x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 The precizer completed its execution without any issues
 Enjoy your life!

@@ -133,6 +133,13 @@ Return db_update_the_record_by_id(
 		}
 	}
 
+	if(SUCCESS == status)
+	{
+		/* Reflect changes in global */
+		config->something_has_been_changed = true;
+
+	}
+
 	sqlite3_finalize(update_stmt);
 
 	return(status);
