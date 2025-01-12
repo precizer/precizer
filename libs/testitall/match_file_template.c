@@ -60,7 +60,7 @@ Return match_file_template(
 	if(SUCCESS == status)
 	{
 		//status = match_pattern(result->mem,pattern,filename);
-		status = match_pattern(result->mem,pattern);
+		status = match_pattern(result->mem,pattern,filename);
 	}
 
 	#if 0
