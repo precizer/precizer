@@ -14,9 +14,6 @@ void init_config(void){
 	// Max available size of a path
 	config->running_dir_size = 0;
 
-	// Total size of all scanned files
-	config->total_size_in_bytes = 0;
-
 	// Absolute path name of the working directory
 	// A directory where the program was executed
 	config->running_dir = NULL;

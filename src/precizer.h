@@ -175,9 +175,6 @@ typedef struct {
 	/// Max available size of a path
 	long int running_dir_size;
 
-	/// Total size of all scanned files
-	size_t total_size_in_bytes;
-
 	/// Absolute path name of the working directory
 	/// A directory where the program was executed
 	char *running_dir;
@@ -462,6 +459,7 @@ void show_relative_path(
 	bool *,
 	bool *,
 	const bool *,
+	bool *,
 	bool *,
 	bool *
 );

@@ -128,39 +128,72 @@ void show_relative_path(
 	bool            *rehashig_from_the_beginning,
 	const bool      *ignored,
 	bool            *at_least_one_file_was_shown,
-	bool            *rehash
+	bool            *rehash,
+	bool            *count_size_of_all_files
 ){
+	bool show_traversal_started = false;
+	bool show_update_warning = false;
+	bool show_changes_will_be_reflected = false;
+	bool show_files_will_be_added = false;
+
 	if(*first_iteration == true)
 	{
 		*first_iteration = false;
+
+		if(*count_size_of_all_files == false)
+		{
+			show_traversal_started = true;
+		}
 
 		if(config->db_contains_data == true)
 		{
 			if(config->update == true)
 			{
-				slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
+				show_update_warning = true;
 				config->the_update_warning_has_already_been_shown = true;
 			}
 
-			slog(EVERY,BOLD "These files have been added or changed and those changes will be reflected against the DB %s:" RESET "\n",config->db_file_name);
+			show_changes_will_be_reflected = true;
 
 		} else {
 			*show_changes = false;
-			slog(EVERY,BOLD "These files will be added against the %s database:" RESET "\n",config->db_file_name);
+			show_files_will_be_added = true;
 		}
 	}
+
+	if(show_update_warning == true)
+	{
+		slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be updated against the database %s\n",config->db_file_name);
+	}
+
+	if(show_traversal_started == true)
+	{
+		slog(EVERY,"File traversal started\n");
+	}
+
+	if(show_changes_will_be_reflected == true)
+	{
+		slog(EVERY,BOLD "These files have been added or changed and those changes will be reflected against the DB %s:" RESET "\n",config->db_file_name);
+	}
+
+	if(show_files_will_be_added == true)
+	{
+		slog(EVERY,BOLD "These files will be added against the %s database:" RESET "\n",config->db_file_name);
+	}
+
 
 	// Print if NOT silent
 	if(!(rational_logger_mode & SILENT))
 	{
+
+		*at_least_one_file_was_shown = true;
+
 		printf("%s",relative_path);
 
 		if(*ignored == true)
 		{
 			printf(" ignored & not added");
 		}
-
-		*at_least_one_file_was_shown = true;
 
 		if(*ignored == false)
 		{
