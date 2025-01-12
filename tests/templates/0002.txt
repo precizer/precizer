@@ -32,6 +32,7 @@ TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs exists
 TESTING:The path tests/examples/diffs is exists and it is a directory
 TESTING:Paths detected
+TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the %DB_NAME% database:\x1B\[0m
 diff1/1/AAA/BCB/CCC/a.txt
 diff1/1/AAA/ZAW/A/b/c/a_file.txt
@@ -57,6 +58,8 @@ diff2/path1/AAA/ZAW/A/b/c/a_file.txt
 diff2/path1/AAA/ZAW/D/e/f/b_file.txt
 diff2/path2/AAA/BCB/CCC/a.txt
 diff2/path2/AAA/ZAW/A/b/c/a_file.txt
+TESTING:File traversal complete
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:No DB version data found in metadata table
 TESTING:The database version 1 has been successfully stored in the DB
 TESTING:Start vacuuming the primary database…

@@ -35,7 +35,9 @@ TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
-TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:File system traversal initiated to calculate file count and storage usage
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
 1/AAA/BCB/CCC/a.txt
 1/AAA/ZAW/A/b/c/a_file.txt
@@ -49,7 +51,8 @@ path1/AAA/ZAW/D/e/f/b_file.txt
 path2/AAA/BCB/CCC/a.txt
 path2/AAA/ZAW/A/b/c/a_file.txt
 path2/AAA/ZAW/D/e/f/b_file.txt
-TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:File traversal complete
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:No DB version data found in metadata table
 TESTING:The database version 1 has been successfully stored in the DB
 TESTING:Start vacuuming the primary database…
@@ -93,7 +96,9 @@ TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff2 exists
 TESTING:The path tests/examples/diffs/diff2 is exists and it is a directory
 TESTING:Paths detected
-TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:File system traversal initiated to calculate file count and storage usage
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the database2.db database:\x1B\[0m
 1/AAA/BCB/CCC/a.txt
 1/AAA/ZAW/A/b/c/a_file.txt
@@ -107,7 +112,8 @@ path1/AAA/ZAW/A/b/c/a_file.txt
 path1/AAA/ZAW/D/e/f/b_file.txt
 path2/AAA/BCB/CCC/a.txt
 path2/AAA/ZAW/A/b/c/a_file.txt
-TESTING:total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:File traversal complete
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:No DB version data found in metadata table
 TESTING:The database version 1 has been successfully stored in the DB
 TESTING:Start vacuuming the primary database…
