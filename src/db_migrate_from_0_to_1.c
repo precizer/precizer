@@ -148,24 +148,19 @@ Return migrate_from_0_to_1(const char *db_file_path){
 	if(SUCCESS == status)
 	{
 		/* Set safety pragmas */
-		const char *pragmas[] = {
-			"PRAGMA journal_mode=WAL",
-			"PRAGMA synchronous=FULL",
-			"PRAGMA foreign_keys=ON",
-			"PRAGMA locking_mode=EXCLUSIVE",
-			NULL
-		};
+		const char *pragmas = "PRAGMA journal_mode=WAL"
+		           "PRAGMA strict = ON;"
+		           "PRAGMA synchronous=FULL"
+		           "PRAGMA foreign_keys=ON"
+		           "PRAGMA locking_mode=EXCLUSIVE";
 
-		for(const char **pragma = pragmas; *pragma && SUCCESS == status; pragma++)
+		rc = sqlite3_exec(db,pragmas,NULL,NULL,&err_msg);
+
+		if(SQLITE_OK != rc)
 		{
-			rc = sqlite3_exec(db,*pragma,NULL,NULL,&err_msg);
-
-			if(SQLITE_OK != rc)
-			{
-				slog(ERROR,"Failed to set pragma: %s, Error: %s\n",*pragma,err_msg);
-				sqlite3_free(err_msg);
-				status = FAILURE;
-			}
+			slog(ERROR,"Failed to set pragmas, Error: %s\n",err_msg);
+			sqlite3_free(err_msg);
+			status = FAILURE;
 		}
 	}
 
