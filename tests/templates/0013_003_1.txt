@@ -1,7 +1,7 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
-TESTING:argument:ignore=tests/examples/diffs/diff1/1/AAA/ZAW/\*
+TESTING:argument:ignore=\^1/AAA/ZAW/\*
 TESTING:argument:update=yes
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
