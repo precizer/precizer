@@ -64,40 +64,42 @@ Return db_init(void){
 	{
 
 #if 0 // Frozen multiPATH feature
-		const char *sql = "PRAGMA foreign_keys=OFF;" \
-		        "BEGIN TRANSACTION;" \
-		        "CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE);" \
+		const char *sql = "PRAGMA foreign_keys=OFF;"
+		        "PRAGMA strict = ON;"
+		        "BEGIN TRANSACTION;"
+		        "CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE);"
 		        "CREATE TABLE IF NOT EXISTS files("  \
-		        "ID INTEGER PRIMARY KEY NOT NULL," \
-		        "offset INTEGER DEFAULT NULL," \
-		        "path_prefix_index INTEGER NOT NULL," \
-		        "relative_path TEXT NOT NULL," \
-		        "sha512 BLOB DEFAULT NULL," \
-		        "stat BLOB DEFAULT NULL," \
-		        "mdContext BLOB DEFAULT NULL," \
-		        "CONSTRAINT full_path UNIQUE (path_prefix_index, relative_path) ON CONFLICT FAIL);" \
-		        "CREATE INDEX IF NOT EXISTS full_path_ASC ON files (path_prefix_index, relative_path ASC);" \
-		        "CREATE TABLE IF NOT EXISTS paths (" \
-		        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL," \
-		        "prefix TEXT NOT NULL UNIQUE);" \
+		        "ID INTEGER PRIMARY KEY NOT NULL,"
+		        "offset INTEGER DEFAULT NULL,"
+		        "path_prefix_index INTEGER NOT NULL,"
+		        "relative_path TEXT NOT NULL,"
+		        "sha512 BLOB DEFAULT NULL,"
+		        "stat BLOB DEFAULT NULL,"
+		        "mdContext BLOB DEFAULT NULL,"
+		        "CONSTRAINT full_path UNIQUE (path_prefix_index, relative_path) ON CONFLICT FAIL);"
+		        "CREATE INDEX IF NOT EXISTS full_path_ASC ON files (path_prefix_index, relative_path ASC);"
+		        "CREATE TABLE IF NOT EXISTS paths ("
+		        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL,"
+		        "prefix TEXT NOT NULL UNIQUE);"
 		        "COMMIT;";
 #endif
 
 		/* Full runtime path is stored in the table 'paths' */
-		const char *sql = "PRAGMA foreign_keys=OFF;" \
-		        "BEGIN TRANSACTION;" \
-		        "CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE);" \
+		const char *sql = "PRAGMA foreign_keys=OFF;"
+		        "PRAGMA strict = ON;"
+		        "BEGIN TRANSACTION;"
+		        "CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE);"
 		        "CREATE TABLE IF NOT EXISTS files("  \
-		        "ID INTEGER PRIMARY KEY NOT NULL," \
-		        "offset INTEGER DEFAULT NULL," \
-		        "relative_path TEXT UNIQUE NOT NULL," \
-		        "sha512 BLOB DEFAULT NULL," \
-		        "stat BLOB DEFAULT NULL," \
-		        "mdContext BLOB DEFAULT NULL);" \
-		        "CREATE UNIQUE INDEX IF NOT EXISTS 'TEXT_ASC' ON 'files' ('relative_path' ASC);" \
-		        "CREATE TABLE IF NOT EXISTS paths (" \
-		        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL," \
-		        "prefix TEXT NOT NULL UNIQUE);" \
+		        "ID INTEGER PRIMARY KEY NOT NULL,"
+		        "offset INTEGER DEFAULT NULL,"
+		        "relative_path TEXT UNIQUE NOT NULL,"
+		        "sha512 BLOB DEFAULT NULL,"
+		        "stat BLOB DEFAULT NULL,"
+		        "mdContext BLOB DEFAULT NULL);"
+		        "CREATE UNIQUE INDEX IF NOT EXISTS 'TEXT_ASC' ON 'files' ('relative_path' ASC);"
+		        "CREATE TABLE IF NOT EXISTS paths ("
+		        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL,"
+		        "prefix TEXT NOT NULL UNIQUE);"
 		        "COMMIT;";
 
 		if(SUCCESS == status)
@@ -118,9 +120,10 @@ Return db_init(void){
 	}
 
 	// Tune the DB performance
-	const char *pragma_sql = "PRAGMA page_size = 4096;" \
-	        "PRAGMA cache_size = 524288;" \
-	        "PRAGMA journal_mode = OFF;" \
+	const char *pragma_sql = "PRAGMA page_size = 4096;"
+	        "PRAGMA strict = ON;"
+	        "PRAGMA cache_size = 524288;"
+	        "PRAGMA journal_mode = OFF;"
 	        "PRAGMA synchronous = OFF;";
 
 	if(SUCCESS == status)
@@ -137,8 +140,8 @@ Return db_init(void){
 		}
 	}
 
-	const char *db_runtime_paths = "ATTACH DATABASE ':memory:' AS " DB_RUNTIME_PATHS_ID ";" \
-	        "CREATE TABLE if not exists runtime_paths_id.the_path_id_does_not_exists" \
+	const char *db_runtime_paths = "ATTACH DATABASE ':memory:' AS " DB_RUNTIME_PATHS_ID ";"
+	        "CREATE TABLE if not exists runtime_paths_id.the_path_id_does_not_exists"
 	        "(path_id INTEGER UNIQUE NOT NULL);";
 
 	if(SUCCESS == status)
