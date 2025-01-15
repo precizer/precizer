@@ -17,10 +17,10 @@ STATIC = -static
 SRC = src
 PRZRSRC = ../src
 BUILDS = ../.builds/$(EXE)
-LIBS = pcre2 testitall mem sha512 rational sqlite xdiff
+LIBS = testitall mem sha512 rational sqlite xdiff
 
 # libc lib for static
-LDFLAGS += $(foreach d,$(LIBS),-l$d)
+LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
 
 # Additional include headers of external libraries
 INCPATH += $(foreach d,$(LIBS),-I../libs/$d)
@@ -137,14 +137,11 @@ coverage-html: coverage-report
 #
 # Sanitize rules
 #
-sanitize: $(STZMAIN)
+sanitize: $(STZEXE)
+	@$(MAKE) -s -C ../ $@
 
-$(STZMAIN): $(STZEXE)
-	@cp $(STZEXE) $(STZMAIN)
-	@echo "$(STZMAIN) copied"
-
-run: $(STZMAIN)
-	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZMAIN)
+run: $(STZEXE)
+	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE)
 
 $(STZEXE): $(STZOBJS) $(STZPRZROBJS)
 	@$(CC) $(CFLAGS) $(STZCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
@@ -164,7 +161,11 @@ $(STZOBJDIR):
 #
 # Debug rules
 #
-debug: $(DBGEXE)
+debug: $(DBGEXE) $(DBGMAIN)
+
+$(DBGMAIN): $(DBGEXE)
+	@cp $(DBGEXE) $(DBGMAIN)
+	@echo "$(DBGMAIN) copied"
 
 $(DBGEXE): $(DBGOBJS) $(DBGPRZROBJS)
 	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) $(STATIC) -o $(DBGEXE) $^ $(LDFLAGS)

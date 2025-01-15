@@ -14,9 +14,9 @@ static Return readme_example_1_test(void){
 	Return status = SUCCESS;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};" \
-	        "./precizer --progress --database=database1.db tests/examples/diffs/diff1;" \
-	        "./precizer --progress --database=database2.db tests/examples/diffs/diff2;" \
-	        "./precizer --compare database1.db database2.db";
+	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1;" \
+	        "${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2;" \
+	        "${BINDIR}/precizer --compare database1.db database2.db";
 
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
@@ -76,7 +76,7 @@ static Return readme_example_2_test(void){
 		"cp -r tests/examples/ tests/examples_backup;",0,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};" \
-	        "./precizer --progress --database=database1.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
@@ -96,7 +96,7 @@ static Return readme_example_2_test(void){
 	del_char(&result);
 
 	command = "export TESTING=true;cd ${TMPDIR};" \
-	        "./precizer --progress --database=database1.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
 	filename = "templates/0011_002_2.txt";
 
@@ -110,11 +110,11 @@ static Return readme_example_2_test(void){
 	del_char(&result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "./precizer --update --progress --database=database1.db tests/examples/diffs/diff1;"
+	        "${BINDIR}/precizer --update --progress --database=database1.db tests/examples/diffs/diff1;"
 	        "echo -n '  ' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
 	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
 	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt;"
-	        "./precizer --update --progress --database=database1.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --update --progress --database=database1.db tests/examples/diffs/diff1";
 
 	filename = "templates/0011_002_3.txt";
 

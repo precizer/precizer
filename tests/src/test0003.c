@@ -12,16 +12,16 @@ Return test0003(void){
 	Return status = SUCCESS;
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"precizer --progress tests/examples/diffs/diff1",0,false,false));
+		"${BINDIR}/precizer --progress tests/examples/diffs/diff1",0,false,false));
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"precizer --progress --database=database2.db tests/examples/diffs/diff2",0,false,false));
+		"${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2",0,false,false));
 
 	if(SUCCESS == status)
 	{
 		// Get the output of an external program
 		const char *command = "export TESTING=true;cd ${TMPDIR};" \
-		        "precizer --compare ${DBNAME} database2.db";
+		        "${BINDIR}/precizer --compare ${DBNAME} database2.db";
 
 		const char *filename = "templates/0003.txt";  // File name
 		const char *template = "%DB_NAME%";
