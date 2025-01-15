@@ -1,7 +1,5 @@
 .builds
 doc
-libs/argp/
-libs/cosmocc/
 src/*/
 tests/examples/huge/
 tests/testitall
@@ -11,4 +9,4 @@ precizer
 *.out.*
 *.old
 *~
-\.*
+\.*/

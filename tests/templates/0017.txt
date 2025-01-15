@@ -1,0 +1,67 @@
+\A=== Testing extreme values ===
+Value: 2147483647 \(decimal\)
+Base 10 result: 2147483647, 2147483647
+-------------------
+Value: -2147483648 \(decimal\)
+Base 10 result: -2147483648, -2147483648
+-------------------
+Value: -2147483648 \(decimal\)
+Base 16 result: 80000000, Should show in hex
+-------------------
+
+=== Testing regular values ===
+Value: 255 \(decimal\)
+Base 16 result: FF, FF
+-------------------
+Value: 255 \(decimal\)
+Base  2 result: 11111111, 11111111
+-------------------
+Value: -255 \(decimal\)
+Base 10 result: -255, -255
+-------------------
+
+=== Testing zero ===
+Value: 0 \(decimal\)
+Base 10 result: 0, 0
+-------------------
+Value: 0 \(decimal\)
+Base 16 result: 0, 0
+-------------------
+Value: 0 \(decimal\)
+Base  2 result: 0, 0
+-------------------
+
+=== Testing different bases ===
+Value: 12345 \(decimal\)
+Base 36 result: 9IX, Maximum supported base
+-------------------
+Value: 12345 \(decimal\)
+Base 16 result: 3039, Common hex value
+-------------------
+Value: 12345 \(decimal\)
+Base  8 result: 30071, Octal
+-------------------
+
+=== Testing negative values ===
+Value: -12345 \(decimal\)
+Base 10 result: -12345, Only base 10 shows negative sign
+-------------------
+Value: -12345 \(decimal\)
+Base 16 result: FFFFCFC7, Should show unsigned hex
+-------------------
+Value: -1 \(decimal\)
+Base  2 result: 11111111111111111111111111111111, All bits set
+-------------------
+
+=== Few more examples ===
+12345
+FF
+1111
+-789
+0
+Number: 1567
+Base: 10	Converted String: 1567
+Base: 2		Converted String: 11000011111
+Base: 8		Converted String: 3037
+Base: 16	Converted String: 61F
+\z

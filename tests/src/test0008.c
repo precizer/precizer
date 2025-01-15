@@ -18,9 +18,14 @@ Return test0008(void){
 
 	ASSERT(SUCCESS == function_capture(report_test,captured_stdout,captured_stderr));
 
+	#if 0
+	printf("captured_stderr:%s",captured_stderr->mem);
+	printf("captured_stdout:%s\n",captured_stdout->mem);
+	#endif
+
 	if(captured_stdout->length > 0)
 	{
-		echo(STDERR,"ERROR: Stdout buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
+		echo(STDERR,"ERROR: Stdout buffer is not empty. It contains characters: %zu\n",captured_stdout->length);
 		status = FAILURE;
 	}
 

@@ -15,7 +15,7 @@ Return test0002(void){
 	        "cd ${TMPDIR};" \
 	        "export ASAN_OPTIONS;" \
 	        "export ASAN_SYMBOLIZER_PATH;" \
-	        "./precizer tests/examples/diffs";
+	        "${BINDIR}/precizer tests/examples/diffs";
 
 	const char *filename = "templates/0002.txt";  // File name
 	const char *template = "%DB_NAME%";

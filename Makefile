@@ -1,10 +1,10 @@
 # How to install dependencies and build the app:
 #
 # GCC
-# sudo apt -y install build-essential clang
+# sudo apt -y install build-essential clang libpcre2-dev
 #
 # LLVM for sanitizer
-# sudo apt -y install llvm
+# sudo apt -y install llvm libubsan1
 #
 # Libraries
 # sudo apt -y install libgoogle-perftools-dev
@@ -12,12 +12,11 @@
 # Inatall stat and test tools
 # sudo apt-get install cloc valgrind clang-tools cppcheck
 #
-# Install tools fot Unit tests CUnit
-# sudo apt-get install libcunit1 libcunit1-doc libcunit1-dev
-#
-# make release # or
+# make production # or
+# make prod # or (same as production)
+# make portable # or
 # make debug # or
-# make # release by default
+# make # prod by default
 #
 # Perf tool:
 # sudo apt-get install linux-tools-common linux-tools-generic linux-tools-`uname -r`
@@ -78,10 +77,10 @@ CONFIG += ordered
 # Build of dependent static library
 SUBDIRS = libs
 
-LIBS = sqlite sha512 pcre2 mem rational
+LIBS = sqlite sha512 mem rational
 
 # libc lib for static
-LDFLAGS += $(foreach d,$(LIBS),-l$d)
+LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
 
 # Additional include headers of external libraries
 INCPATH += $(foreach d,$(LIBS),-Ilibs/$d)
@@ -108,7 +107,6 @@ STZOBJDIR = $(STZDIR)/obj
 STZOBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(OBJS)))
 STZLIBDIR = $(DBGLIBDIR)
 STZLIBS = $(DBGLIBS)
-STZINCPATH = $(DBGINCPATH)
 STZDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
 STZCFLAGS += $(DBGFLAGS)
 STZCFLAGS += -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
@@ -122,7 +120,6 @@ DBGOBJDIR = $(DBGDIR)/obj
 DBGOBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(OBJS)))
 DBGLIBDIR = $(DBGDIR)/libs
 DBGLIBS = -L$(DBGLIBDIR)
-DBGINCPATH = -I$(DBGDIR)/inc
 DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs
 DBGFLAGS = -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 DBGCFLAGS += $(DBGFLAGS)
@@ -138,11 +135,11 @@ DBGCFLAGS += -Wl,--as-needed
 #
 RELDIR = $(BUILDS)/release
 RELEXE = $(RELDIR)/$(EXE)
+RELFINAL = $(CURDIR)/$(EXE)
 RELOBJDIR = $(RELDIR)/obj
 RELOBJS = $(addprefix $(RELOBJDIR)/, $(notdir $(OBJS)))
 RELLIBDIR = $(RELDIR)/libs
 RELLIBS = -L$(RELLIBDIR)
-RELINCPATH = -I$(RELDIR)/inc
 RELDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(RELLIBDIR),-rpath,\$$ORIGIN/libs
 RELCFLAGS = -funroll-loops -DNDEBUG
 RELLDFLAGS += -Wl,--as-needed
@@ -192,11 +189,11 @@ run:
 
 $(STZEXE): $(STZOBJS)
 	@$(CC) $(CFLAGS) $(STZCFLAGS) $(STZLIBS) $(STZDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
+	@echo "$@ linked"
 
 $(STZOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(STZOBJDIR)
-	@$(CC) -c $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
 $(STZOBJDIR):
 	@mkdir -p $(STZOBJDIR)
@@ -208,13 +205,11 @@ debug: $(SUBDIRS) $(DBGEXE)
 
 $(DBGEXE): $(DBGOBJS)
 	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-	@cp $@ ./
-	@echo "$@ moved to current directory"
+	@echo "$@ linked"
 
 $(DBGOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBGOBJDIR)
-	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
 $(DBGOBJDIR):
 	@mkdir -p $(DBGOBJDIR)
@@ -222,7 +217,7 @@ $(DBGOBJDIR):
 #
 # Release rules
 #
-release: $(SUBDIRS) $(RELEXE) banner
+release: $(SUBDIRS) $(RELEXE) $(RELFINAL) banner
 
 # Linking problem with "undefined reference to 'dlopen' "
 # https://stackoverflow.com/a/11221504/7104681
@@ -231,18 +226,31 @@ release: $(SUBDIRS) $(RELEXE) banner
 # But this does:
 # gcc dlopentest.c -ldl
 #
+$(RELFINAL): $(RELEXE)
+	@cp $(RELEXE) ./
+	@echo "The $(RELEXE) has been copied to the current directory"
+
 $(RELEXE): $(RELOBJS)
 	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(RELLIBS) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-	@cp $@ ./
-	@echo "$@ moved to current directory"
+	@echo "$@ linked"
 
 $(RELOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(RELOBJDIR)
-	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
-	@echo $<" compiled."
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
+	@echo $<" compiled"
 
 $(RELOBJDIR):
 	@mkdir -p $(RELOBJDIR)
+
+#
+# Build and test within Docker images
+#
+docker:
+	@docker build -t precizer .
+
+clean-docker:
+	@docker image prune -f
+	@docker image prune -af
+	@docker rmi -f $(shell docker images -q)
 
 #
 # Format rules
@@ -257,7 +265,7 @@ format:
 
 # Optional preprocessor files
 %.i:%.c clean-preproc
-	@$(CC) -E -C -o $@ $(INCPATH) $(RELINCPATH) $(CFLAGS) $<
+	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
 # C-C++ Beautifier
 #	@bcpp -na $@ > $@.h
 	@bcpp -na -s -i 4 $@ > $@.h
@@ -266,7 +274,7 @@ format:
 
 # Optional Assembler files
 %.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
+	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
 
 #
 # Other rules
@@ -275,7 +283,7 @@ format:
 remake: clean all
 
 # Tests
-test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gccanalyzer perf
+test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
 
 #
 # GCC Static Analysis
@@ -320,7 +328,7 @@ doc:
 	@doxygen Doxyfile
 
 spellcheck:
-	@~/.cargo/bin/typos libs/sha512/ libs/rational/ libs/pcre2/ libs/mem/ src/ README.md README.ru.md TODO
+	@~/.cargo/bin/typos libs/sha512/ libs/rational/ libs/mem/ src/ README.md README.ru.md TODO
 
 gource:
 	gource --seconds-per-day 0.1 --auto-skip-seconds 1
@@ -337,7 +345,7 @@ cloc:
 	@cloc ./src
 
 # Character | prevent threading with clean
-cleanall: clean
+clean-all: clean clean-docker
 	@$(MAKE) -C $(SUBDIRS) clean
 
 clean: | clean-preproc clean-asm
@@ -360,7 +368,7 @@ clean-asm:
 	@rm -rf $(ASM)
 
 hugetestfile:
-	dd if=/dev/urandom of=tests/examples/huge/hugetestfile bs=1M count=10240
+	dd if=/dev/urandom of=tests/examples/huge/hugetestfile bs=1M count=10
 
 banner:
 	@printf "Now some tests could be running:\n"
