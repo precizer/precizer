@@ -1,4 +1,4 @@
-#include "rational.h"
+#include "sute.h"
 #include <limits.h>
 
 static void test_conversion(
@@ -21,7 +21,7 @@ static void test_conversion(
  * @note Tests edge cases and different bases with special focus on
  *       negative numbers and MIN/MAX integer values
  */
-Return test0017(void){
+Return test_itoa(void){
 
 	/* Test extreme values */
 	printf("=== Testing extreme values ===\n");
@@ -83,4 +83,36 @@ Return test0017(void){
 	printf("Base: %d\tConverted String: %s\n",16,itoa(1567,str,16));
 
 	return 0; // Success
+}
+
+Return test0017(void){
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	MSTRUCT(mem_char,captured_stdout);
+	MSTRUCT(mem_char,captured_stderr);
+
+	char *pattern = NULL;
+
+	ASSERT(SUCCESS == function_capture(test_itoa,captured_stdout,captured_stderr));
+
+	if(captured_stderr->length > 0)
+	{
+		echo(STDERR,"ERROR: Stderr buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
+		status = FAILURE;
+	}
+
+	ASSERT(SUCCESS == get_file_content("templates/0017.txt",&pattern));
+
+	// Match the result against the pattern
+	ASSERT(SUCCESS == match_pattern(captured_stdout->mem,pattern));
+
+	free(pattern);
+	pattern = NULL;
+
+	del_char(&captured_stdout);
+	del_char(&captured_stderr);
+
+	RETURN_STATUS;
 }

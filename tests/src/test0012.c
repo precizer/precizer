@@ -1,4 +1,3 @@
-#include "precizer.h"
 #include "sute.h"
 #include <stdio.h>
 #include <string.h>

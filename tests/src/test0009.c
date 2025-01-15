@@ -92,9 +92,15 @@ Return test0009(void){
 
 	MSTRUCT(mem_char,captured_stdout);
 	MSTRUCT(mem_char,captured_stderr);
+
 	char *pattern = NULL;
 
 	ASSERT(SUCCESS == function_capture(slog_test,captured_stdout,captured_stderr));
+
+	#if 0
+	printf("captured_stderr:%s",captured_stderr->mem);
+	printf("captured_stdout:%s",captured_stdout->mem);
+	#endif
 
 	if(captured_stderr->length > 0)
 	{

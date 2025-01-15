@@ -1,72 +1,13 @@
 #include "sute.h"
 
 /**
- * @brief Constructs full file path by combining TMPDIR environment variable with filename
- *
- * @param[in] filename Name of the file to append to TMPDIR path
- * @param[out] full_path Pointer to string pointer that will store the allocated path
- * @return Return Status of the operation
- */
-Return construct_path(
-	const char *filename,
-	char       **full_path
-){
-	Return status = SUCCESS;
-	const char *tmp_dir = NULL;
-	size_t path_len = 0;
-
-	if(SUCCESS == status)
-	{
-		if(NULL == filename || NULL == full_path)
-		{
-			status = FAILURE;
-		}
-	}
-
-	if(SUCCESS == status)
-	{
-		tmp_dir = getenv("TMPDIR");
-
-		if(NULL == tmp_dir)
-		{
-			status = FAILURE;
-		}
-	}
-
-	if(SUCCESS == status)
-	{
-		path_len = strlen(tmp_dir) + strlen(filename) + 2;   // +2 for '/' and '\0'
-		*full_path = (char *)malloc(path_len);
-
-		if(NULL == *full_path)
-		{
-			status = FAILURE;
-		}
-	}
-
-	if(SUCCESS == status)
-	{
-		int print_result = snprintf(*full_path,path_len,"%s/%s",tmp_dir,filename);
-
-		if(print_result < 0 || (size_t)print_result >= path_len)
-		{
-			free(*full_path);
-			*full_path = NULL;
-			status = FAILURE;
-		}
-	}
-
-	return(status);
-}
-
-/**
  * The db file should not be created in the Dry Run mode
  */
 static Return dry_run_mode_1_test(void){
 	Return status = SUCCESS;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "./precizer --dry-run --database=database1.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --dry-run --database=database1.db tests/examples/diffs/diff1";
 
 	MSTRUCT(mem_char,result);
 
@@ -113,7 +54,7 @@ static Return dry_run_mode_2_test(void){
 	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "./precizer --database=database1.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
 
@@ -132,7 +73,7 @@ static Return dry_run_mode_2_test(void){
 	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;" // New file
-	        "./precizer --dry-run --update --database=database1.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --dry-run --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
@@ -150,7 +91,7 @@ static Return dry_run_mode_2_test(void){
 	// that the --db-clean-ignored option must be specified for permanent
 	// removal of ignored files from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "./precizer --dry-run --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --dry-run --ignore=\"^1/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -176,7 +117,7 @@ static Return dry_run_mode_2_test(void){
 	// Dry Run mode permanent deletion of all ignored file
 	// references from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "./precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/*\""
 	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -200,7 +141,7 @@ static Return dry_run_mode_2_test(void){
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "./precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
 	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -247,7 +188,7 @@ static Return no_dry_run_mode_3_test(void){
 	char *pattern = NULL;
 	const char *db_file_name = "database1.db";
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "./precizer --database=database1.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -279,7 +220,7 @@ static Return no_dry_run_mode_3_test(void){
 	// removal of ignored files from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp database1.db database1.db.backup;"
-	        "./precizer --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --ignore=\"^1/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -302,7 +243,7 @@ static Return no_dry_run_mode_3_test(void){
 	// references from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp database1.db.backup database1.db;"
-	        "./precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -323,7 +264,7 @@ static Return no_dry_run_mode_3_test(void){
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp database1.db.backup database1.db;"
-	        "./precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -361,7 +302,7 @@ Return test0013(void){
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
 	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
-//	TEST(no_dry_run_mode_3_test,"Now run in live mode without simulation…");
+	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
 
 	RETURN_STATUS;
 }

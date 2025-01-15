@@ -15,16 +15,16 @@ Return test0016(void){
 		"cp -r tests/examples/ tests/examples_backup;",SUCCESS,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};" \
-	        "./precizer --database=database1.db tests/examples/diffs/diff1;" \
+	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1;" \
 	        "cp database1.db database2.db;" \
 	        "echo -n 'PWOEUNVSODNLKUHGE' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;" \
 	        "touch tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" \
 	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt;" \
-	        "./precizer --update --database=database1.db tests/examples/diffs/diff1;" \
-	        "./precizer --compare database1.db database2.db;" \
+	        "${BINDIR}/precizer --update --database=database1.db tests/examples/diffs/diff1;" \
+	        "${BINDIR}/precizer --compare database1.db database2.db;" \
 	        "cp database2.db database1.db;" \
-	        "./precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;" \
-	        "./precizer --compare database1.db database2.db";
+	        "${BINDIR}/precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;" \
+	        "${BINDIR}/precizer --compare database1.db database2.db";
 
 	const char *filename = "templates/0016_001_1.txt";
 
@@ -39,11 +39,11 @@ Return test0016(void){
 
 	command = "export TESTING=false;cd ${TMPDIR};" \
 	        "cp database2.db database1.db;" \
-	        "./precizer --update --database=database1.db tests/examples/diffs/diff1;" \
-	        "./precizer --compare database1.db database2.db;" \
+	        "${BINDIR}/precizer --update --database=database1.db tests/examples/diffs/diff1;" \
+	        "${BINDIR}/precizer --compare database1.db database2.db;" \
 	        "cp database2.db database1.db;" \
-	        "./precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;" \
-	        "./precizer --compare database1.db database2.db";
+	        "${BINDIR}/precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;" \
+	        "${BINDIR}/precizer --compare database1.db database2.db";
 
 	filename = "templates/0016_001_2.txt";
 
