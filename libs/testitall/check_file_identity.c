@@ -1,12 +1,82 @@
 #include "testitall.h"
 
+/*
+ * Modification bits
+ *
+ */
+typedef enum
+{
+    IDENTICAL                 = 0x00, // 0000
+    NOT_EQUAL                 = 0x01, // 0001
+    SIZE_CHANGED              = 0x02, // 010
+    CREATION_TIME_CHANGED     = 0x04, // 0100
+    MODIFICATION_TIME_CHANGED = 0x08  // 1000
+
+} Changed;
+
+/**
+ * @brief Checks if the file's size, creation time, and modification time have
+ *        not changed since the last crawl.
+ *
+ * Compares data from the FTS library file traversal with the stat
+ * structure stored in SQLite from the previous probe.
+ *
+ * @param source		Source file stat structure
+ * @param destination	Destination file stat structure
+ *
+ * @return Return status:
+ *         - IDENTICAL: Files are identical
+ *         - FAILURE: Error in comparison or invalid parameters
+ *         - SIZE_CHANGED
+ *         - MODIFICATION_TIME_CHANGED
+ *         - CREATION_TIME_CHANGED
+ */
+static int compare_file_metadata_equivalence(
+	const struct stat *source,
+	const struct stat *destination
+){
+	/* Validate input parameters */
+	if(NULL == source || NULL == destination)
+	{
+		return(FAILURE);
+	}
+
+	int result = IDENTICAL;
+
+	/* Size of file, in bytes.  */
+	if(source->st_size != destination->st_size)
+	{
+		result |= SIZE_CHANGED;
+
+	}
+
+	/* Modified timestamp */
+	if(!(source->st_mtim.tv_sec == destination->st_mtim.tv_sec &&
+	        source->st_mtim.tv_nsec == destination->st_mtim.tv_nsec))
+	{
+		result |= MODIFICATION_TIME_CHANGED;
+
+	}
+
+	/* Time of last status change  */
+	if(!(source->st_ctim.tv_sec == destination->st_ctim.tv_sec &&
+	        source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
+	{
+		result |= CREATION_TIME_CHANGED;
+
+	}
+
+	return(result);
+}
+
 /**
  * @brief Prints all fields of the stat structure
  *
  * @param[in] st Pointer to the stat structure to print
  * @return Return Status of the operation
  */
-Return print_stat(const struct stat *st){
+Return print_stat(const struct stat *st)
+{
 	Return status = SUCCESS;
 	char time_str[100];
 	struct tm *tm_info;
@@ -35,25 +105,22 @@ Return print_stat(const struct stat *st){
 		echo(STDERR,"Number of blocks: %ld\n",(long)st->st_blocks);
 
 		// Access time
-		tm_info = localtime(&st->st_atime);
+		tm_info = localtime(&st->st_atim.tv_sec);
 		strftime(time_str,sizeof(time_str),"%Y-%m-%d %H:%M:%S",tm_info);
-		echo(STDERR,"Last access: %s\n",time_str);
+		echo(STDERR,"Last access: %s.%09ld\n",time_str,st->st_atim.tv_nsec);
 
 		// Modification time
-		tm_info = localtime(&st->st_mtime);
-
+		tm_info = localtime(&st->st_mtim.tv_sec);
 		strftime(time_str,sizeof(time_str),"%Y-%m-%d %H:%M:%S",tm_info);
-		echo(STDERR,"Last modification: %s\n",time_str);
+		echo(STDERR,"Last modification: %s.%09ld\n",time_str,st->st_mtim.tv_nsec);
 
 		// Status change time
-		tm_info = localtime(&st->st_ctime);
-
+		tm_info = localtime(&st->st_ctim.tv_sec);
 		strftime(time_str,sizeof(time_str),"%Y-%m-%d %H:%M:%S",tm_info);
-		echo(STDERR,"Last status change: %s\n",time_str);
+		echo(STDERR,"Last status change: %s.%09ld\n",time_str,st->st_ctim.tv_nsec);
 
 		// Print file type
 		echo(STDERR,"File type: ");
-
 		switch(st->st_mode & S_IFMT)
 		{
 			case S_IFBLK:
@@ -108,7 +175,7 @@ Return check_file_identity(
 ){
 	Return status = SUCCESS;
 
-	if(memcmp(stat1,stat2,sizeof(struct stat)) != 0)
+	if(IDENTICAL != compare_file_metadata_equivalence(stat1,stat2))
 	{
 		print_stat(stat1);
 		print_stat(stat2);
