@@ -1,3 +1,8 @@
+/**
+ * @file function_capture.c
+ * @brief Functionality for redirecting stdout and stderr streams to buffers
+ */
+
 #include "testitall.h"
 
 /**
@@ -17,229 +22,157 @@
  *   6. Cleans up resources
  */
 Return function_capture(
-	void (   *func )(void),
+	void (*func)(void),
 	mem_char *stdout_buffer,
 	mem_char *stderr_buffer
 ){
-	/* The status that will be passed to return() before exiting */
 	Return status = SUCCESS;
 
-	/* Initialize working variables */
-	int stderr_fd = -1;
-	int stdout_fd = -1;
-	int original_stderr = -1;
-	int original_stdout = -1;
-	char stderr_template[] = "/tmp/testitall_stderr_XXXXXX";
-	char stdout_template[] = "/tmp/testitall_stdout_XXXXXX";
-	ssize_t bytes_read = 0;
-	char read_buffer[PAGE_BYTES];
+	/* Save original file descriptors */
+	int stdout_fd = dup(STDOUT_FILENO);
+	int stderr_fd = dup(STDERR_FILENO);
 
-	/* Validate input parameters */
-	if(stderr_buffer == NULL || stdout_buffer == NULL)
+	if(stdout_fd == -1 || stderr_fd == -1)
 	{
-		serp("Buffer pointers cannot be NULL");
+		slog(ERROR,"Failed to save original file descriptors\n");
+		return FAILURE;
+	}
+
+	/* Create temporary files for redirection */
+	FILE* stdout_tmp = tmpfile();
+	FILE* stderr_tmp = tmpfile();
+
+	if(stdout_tmp == NULL || stderr_tmp == NULL)
+	{
+		slog(ERROR,"Failed to create temporary files for redirection\n");
 		status = FAILURE;
 	}
 
-	/* Save original file descriptors */
+	/* Disable buffering for temporary files */
 	if(SUCCESS == status)
 	{
-		original_stderr = dup(STDERR_FILENO);
-		original_stdout = dup(STDOUT_FILENO);
-
-		if(original_stderr == -1 || original_stdout == -1)
+		if(setvbuf(stdout_tmp, NULL, _IONBF, 0) != 0 ||
+		   setvbuf(stderr_tmp, NULL, _IONBF, 0) != 0)
 		{
-			serp("Failed to save original descriptors");
+			slog(ERROR,"Failed to disable buffering\n");
+		    status = FAILURE;
+		}
+	}
+
+	/* Disable buffering for stdout and stderr */
+	if(SUCCESS == status)
+	{
+		if(setvbuf(stdout, NULL, _IONBF, 0) != 0 ||
+		   setvbuf(stderr, NULL, _IONBF, 0) != 0)
+		{
+			slog(ERROR,"Failed to disable buffering\n");
+		    status = FAILURE;
+		}
+	}
+
+	/* Redirect streams */
+	if(SUCCESS == status)
+	{
+		if(dup2(fileno(stdout_tmp), STDOUT_FILENO) == -1 ||
+		   dup2(fileno(stderr_tmp), STDERR_FILENO) == -1)
+		{
+			slog(ERROR,"Failed to redirect streams\n");
 			status = FAILURE;
 		}
 	}
 
-	/* Create temporary files */
+	/* Execute target function */
 	if(SUCCESS == status)
 	{
-		stderr_fd = mkstemp(stderr_template);
-		stdout_fd = mkstemp(stdout_template);
-
-		if(stderr_fd == -1 || stdout_fd == -1)
-		{
-			serp("Failed to create temporary files");
-			status = FAILURE;
-		}
-	}
-
-	/* Flush both output streams first */
-	if(SUCCESS == status)
-	{
-		if(fflush(stdout) != 0 || fflush(stderr) != 0)
-		{
-			serp("Failed to flush of output streams buffers");
-			status = FAILURE;
-		}
-	}
-
-	/* Redirect output streams */
-	if(SUCCESS == status)
-	{
-		if(dup2(stderr_fd,STDERR_FILENO) == -1 ||
-		        dup2(stdout_fd,STDOUT_FILENO) == -1)
-		{
-			serp("Failed to redirect streams");
-			status = FAILURE;
-		}
-	}
-
-	if(SUCCESS == status)
-	{
-		/* Execute target function */
 		func();
+		fflush(stdout);
+		fflush(stderr);
+	}
 
-		/* Restore original streams */
-		if(dup2(original_stderr,STDERR_FILENO) == -1 ||
-		        dup2(original_stdout,STDOUT_FILENO) == -1)
+	/* Restore original streams */
+	if(SUCCESS == status)
+	{
+		if(dup2(stdout_fd, STDOUT_FILENO) == -1 ||
+		   dup2(stderr_fd, STDERR_FILENO) == -1)
 		{
-			serp("Failed to restore streams");
+			slog(ERROR,"Failed to restore original streams\n");
 			status = FAILURE;
 		}
 	}
 
-	/* Process stderr */
+	/* Read data from temporary files */
 	if(SUCCESS == status)
 	{
-		/* Reset file position */
-		if(lseek(stderr_fd,0,SEEK_SET) == -1)
+		size_t stdout_size, stderr_size;
+
+		/* Get buffer sizes */
+		fseek(stdout_tmp, 0, SEEK_END);
+		fseek(stderr_tmp, 0, SEEK_END);
+		stdout_size = (size_t)ftell(stdout_tmp);
+		stderr_size = (size_t)ftell(stderr_tmp);
+
+		/* Allocate memory for buffers */
+		if(SUCCESS == status)
 		{
-			serp("Failed to seek stderr file");
-			status = FAILURE;
+			if(stdout_size > 0)
+			{
+				status = realloc_char(stdout_buffer, stdout_size + 1);
+			}
 		}
-	}
 
-	/* Read stderr data */
-	if(SUCCESS == status)
-	{
-		while(true)
+		if(SUCCESS == status)
 		{
-			bytes_read = read(stderr_fd,read_buffer,PAGE_BYTES);
+			if(stderr_size > 0)
+			{
+				status = realloc_char(stderr_buffer, stderr_size + 1);
+			}
+		}
 
-			if(bytes_read == -1)
+		/* Read data */
+		if(SUCCESS == status)
+		{
+			fseek(stdout_tmp, 0, SEEK_SET);
+			fseek(stderr_tmp, 0, SEEK_SET);
+
+			size_t read_stdout = 0;
+
+			if(stdout_size > 0)
+			{
+				read_stdout = fread(stdout_buffer->mem, 1, stdout_size, stdout_tmp);
+			}
+
+			size_t read_stderr = 0;
+
+			if(stderr_size > 0)
+			{
+				read_stderr = fread(stderr_buffer->mem, 1, stderr_size, stderr_tmp);
+			}
+
+			if(read_stdout != stdout_size || read_stderr != stderr_size)
 			{
 				status = FAILURE;
-				serp("Failed to read stderr");
-				break;
-
-			} else if(bytes_read == 0){
-
-				/* End of file reached */
-				break;
 			}
 
-			size_t old_length = stderr_buffer->length;
-
-			/* Calculate new required size */
-			size_t new_length = stderr_buffer->length + (size_t)bytes_read;
-
-			/* Reallocate buffer if needed */
-			if(SUCCESS == (status = realloc_char(stderr_buffer,new_length)))
+			if(SUCCESS == status)
 			{
-				/* Copy new data */
-				memcpy(stderr_buffer->mem + old_length,read_buffer,(size_t)bytes_read);
-			} else {
-				serp("Failed to reallocate stderr buffer");
-				break;
-			}
-		}
+				if(read_stdout > 0)
+				{
+					stdout_buffer->mem[stdout_size] = '\0';
+				}
 
-		if(stderr_buffer->length > 0)
-		{
-			// Null-termination
-			if(SUCCESS == (status = realloc_char(stderr_buffer,stderr_buffer->length + 1)))
-			{
-				stderr_buffer->mem[stderr_buffer->length - 1] = '\0';
-			} else {
-				serp("Failed to reallocate stderr buffer");
+				if(read_stderr > 0)
+				{
+					stderr_buffer->mem[stderr_size] = '\0';
+				}
 			}
 		}
 	}
 
-	/* Process stdout */
-	if(SUCCESS == status)
-	{
-		/* Reset file position */
-		if(lseek(stdout_fd,0,SEEK_SET) == -1)
-		{
-			serp("Failed to seek stdout file");
-			status = FAILURE;
-		}
-	}
+	fclose(stdout_tmp);
+	fclose(stderr_tmp);
 
-	/* Read stdout data */
-	if(SUCCESS == status)
-	{
-		while(true)
-		{
-			bytes_read = read(stdout_fd,read_buffer,PAGE_BYTES);
-
-			if(bytes_read == -1)
-			{
-				status = FAILURE;
-				serp("Failed to read stdout");
-				break;
-
-			} else if(bytes_read == 0){
-
-				/* End of file reached */
-				break;
-			}
-
-			size_t old_length = stdout_buffer->length;
-
-			/* Calculate new required size */
-			size_t new_length = stdout_buffer->length + (size_t)bytes_read;
-
-			/* Reallocate buffer if needed */
-			if(SUCCESS == (status = realloc_char(stdout_buffer,new_length)))
-			{
-				/* Copy new data */
-				memcpy(stdout_buffer->mem + old_length,read_buffer,(size_t)bytes_read);
-			} else {
-				serp("Failed to reallocate stdout buffer");
-				break;
-			}
-		}
-
-		if(stdout_buffer->length > 0)
-		{
-			// Null-termination
-			if(SUCCESS == (status = realloc_char(stdout_buffer,stdout_buffer->length + 1)))
-			{
-				stdout_buffer->mem[stdout_buffer->length - 1] = '\0';
-			} else {
-				serp("Failed to reallocate stdout buffer");
-			}
-		}
-	}
-
-	/* Cleanup */
-	if(original_stderr != -1)
-	{
-		close(original_stderr);
-	}
-
-	if(original_stdout != -1)
-	{
-		close(original_stdout);
-	}
-
-	if(stderr_fd != -1)
-	{
-		close(stderr_fd);
-		unlink(stderr_template);
-	}
-
-	if(stdout_fd != -1)
-	{
-		close(stdout_fd);
-		unlink(stdout_template);
-	}
+	close(stdout_fd);
+	close(stderr_fd);
 
 	return(status);
 }
