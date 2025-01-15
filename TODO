@@ -1,40 +1,33 @@
 TODO:
 
-* In `--watch-timestamps` mode, the database isn't being updated when a file's
-   metadata (ctime and mtime) changes. Need to add an update mechanism and
-   include a debug-mode message that reads: "size the same, no rehash, ctime & mtime updated"
+* db_check_up_paths.c
+    * Consider printing paths line by line instead of inline
 
-* Currently, the database stores the complete metadata structure for each file,
-  but only a few fields are actually being used. This results in storing many unnecessary
-  null values. We need to create a custom structure that only includes the fields that are
-   actively used. This will significantly reduce storage space consumption.
+* Add completion messages at the end of each significant code block
+  Like in detect_paths.c ending: slog(TRACE,"Paths detected\n");
 
-This translation preserves the technical meaning while making it sound natural in an office communication context. Would you like me to explain any specific technical terms I used in the translation?
-* Add option to check not only modified file sizes but also creation and modification timestamps
+* Если активна опция --ignored то нужно ли показывать файлы котороые игнорируются или нет? Может добавить отдельную опцию?
+
+* При --compare не работает режим --ignore
+
+* Вернуться к multypath версии, только нигде в документации не заявлять о такой возможности
+
+* Во время предварительного сканирования с опциеями --progress --update можно делать
+  проход по базе данных чтобы сразу в цифрах показать сколько файлов будет подвергнуто изменениям
+  (удалено, добавлено и модифицировано)
+
+* Тест на прирывание сканирования файла большого объёма. Тестирование прерывания хеширования sha512 на большом объёме файла
 
 * Connect xdiff library to tests
-
-* test0014.c and test0015.c
 
 * Create tests combining ignore and dry-run flags, don't forget about --include
   It would be good to repeat all tests from README with dry-run and ignore options
 
 * Testing: Verify that --silent suppresses all output regardless of other options
 
-* Review dry_run implementation throughout the codebase
-
 * Add deep database verification test
 
 * Review English language correctness in all message strings
-
-* db_check_up_paths.c
-    * Consider printing paths line by line instead of inline
-    * Try removing if (!(rational_logger_mode & SILENT)) check and replace printf
-      with slog(REGULAR|VERBOSE|TESTING,
-    * Split file into blocks with status checks via if(SUCCESS == status)
-
-    * Add completion messages at the end of each significant code block
-      Like in detect_paths.c ending: slog(VERBOSE|TESTING,"Paths detected\n");
 
 * Implement fuzzing tests
 
@@ -61,8 +54,6 @@ This translation preserves the technical meaning while making it sound natural i
 
 * Create flatpak and AppImage packages, note that author will assist with package creation for any OS if developers encounter difficulties
 	https://unix.stackexchange.com/questions/740712/does-flatpak-support-command-line-applications
-
-* Static build via GitHub
 
 * Post program information on opennet
 
