@@ -117,7 +117,7 @@ Return set_environment_variable(
 );
 
 Return function_capture(
-	void ( *func )(void),
+	void (*func)(void),
 	mem_char *,
 	mem_char *
 );
@@ -164,6 +164,11 @@ Return check_file_identity(
 	const struct stat *
 );
 
+Return construct_path(
+	const char *,
+	char **
+);
+
 /**
  * @brief Test execution macro
  * @param func Function to test
@@ -205,7 +210,7 @@ Return check_file_identity(
 	return(status);
 
 Return testitall(
-	Return ( *func )(void),
+	Return (*func)(void),
 	const char *,
 	const char *
 );

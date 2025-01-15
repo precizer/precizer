@@ -16,7 +16,7 @@
  *          in a readable way with color coding.
  */
 Return testitall(
-	Return (   *func )(void),
+	Return (*func)(void),
 	const char *function_name,
 	const char *test_description
 ){
@@ -37,9 +37,6 @@ Return testitall(
 	/* Calculate execution time */
 	long long int __end_time = cur_time_ns();
 	long long int elapsed_time = __end_time - __start_time;
-
-	/* Reset terminal color to default white */
-	fprintf(stdout,RESET WHITE);
 
 	/* Format and display test results with color coding */
 	if(SUCCESS == status)
