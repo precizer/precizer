@@ -3,7 +3,7 @@
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
-SUBDIRS  = sqlite rational sha512 pcre2 testitall mem xdiff
+SUBDIRS  = sqlite rational sha512 testitall mem xdiff
 
 TOPTARGETS := all clean release debug prod production sanitize test cosmo
 
