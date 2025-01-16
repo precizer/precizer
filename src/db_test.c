@@ -12,7 +12,6 @@ Return db_test(const char *db_file_path){
 
 	sqlite3_stmt *select_stmt = NULL;
 	sqlite3 *db = NULL;
-	int rc = 0;
 
 	// Default value
 	bool database_is_ok = false;
@@ -94,7 +93,7 @@ Return db_test(const char *db_file_path){
 			slog(TRACE,"The database verification level has been set to FULL\n");
 		}
 
-		rc = sqlite3_prepare_v2(db,sql,-1,&select_stmt,NULL);
+		int rc = sqlite3_prepare_v2(db,sql,-1,&select_stmt,NULL);
 
 		if(SQLITE_OK != rc)
 		{
@@ -105,6 +104,8 @@ Return db_test(const char *db_file_path){
 
 	if(SUCCESS == status)
 	{
+		int rc = 0;
+
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
 			const char *response = (const char *)sqlite3_column_text(select_stmt,0);

@@ -92,7 +92,7 @@ Return db_determine_name(void){
 	}
 
 	// Log message when database file is specified and confirmed as persistent storage (non-memory database)
-	if(SUCCESS == status && config->db_file_path != NULL && config->db_file_path != NULL)
+	if(SUCCESS == status)
 	{
 		if(!(strcmp(config->db_file_path,":memory:") == 0 && rational_logger_mode & REGULAR))
 		{
