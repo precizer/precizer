@@ -91,7 +91,7 @@ ifneq ($(CC), clang)
 RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
 endif
 
-.PHONY: all clean debug release prod production sanitize format
+.PHONY: all clean debug release prod production sanitize format gcc-analyzer
 
 # Default build
 all: debug release
@@ -200,10 +200,10 @@ format:
 #
 # GCC Static Analysis
 #
-gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
+gcc-analyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
 # -Wanalyzer-too-complex
-gccanalyzer: CC = gcc
-gccanalyzer: debug
+gcc-analyzer: CC = gcc
+gcc-analyzer: debug
 
 cppcheck:
 	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i ../mem -i tests --inconclusive .
