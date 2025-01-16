@@ -174,7 +174,7 @@ void *xdl_mmfile_next(
 	mmfile_t *mmf,
 	long     *size
 );
-long xdl_mmfile_size(mmfile_t *mmf);
+long xdl_mmfile_size(mmfile_t *mmf) __attribute__((pure));
 
 int xdl_diff(
 	mmfile_t           *mf1,
@@ -287,20 +287,18 @@ int xdl_emit_diff(
 );
 
 int xdl_prepare_env(
-	mmfile_t        *mf1,
-	mmfile_t        *mf2,
-	xpparam_t const *xpp,
-	xdfenv_t        *xe
+	mmfile_t *mf1,
+	mmfile_t *mf2,
+	xdfenv_t *xe
 );
 void xdl_free_env(xdfenv_t *xe);
 
 int xdlt_load_mmfile(
 	char const *fname,
-	mmfile_t   *mf,
-	int        binmode
+	mmfile_t   *mf
 );
 
-long xdl_bogosqrt(long n);
+long xdl_bogosqrt(long n) __attribute__((const));
 int xdl_emit_diffrec(
 	char const *rec,
 	long       size,
@@ -320,7 +318,7 @@ unsigned long xdl_hash_record(
 	char const **data,
 	char const *top
 );
-unsigned int xdl_hashbits(unsigned int size);
+unsigned int xdl_hashbits(unsigned int size) __attribute__((const));
 int xdl_num_out(
 	char *out,
 	long val
