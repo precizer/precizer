@@ -870,7 +870,7 @@ static int xdlt_outf(
  * @param size Number of bytes to allocate
  * @return void* Returns allocated memory pointer
  */
-static void *wrap_malloc(
+void *wrap_malloc(
 	void         *priv,
 	unsigned int size
 ){
@@ -883,7 +883,7 @@ static void *wrap_malloc(
  * @param priv Private data pointer (unused)
  * @param ptr Pointer to memory to free
  */
-static void wrap_free(
+void wrap_free(
 	void *priv,
 	void *ptr
 ){
@@ -898,7 +898,7 @@ static void wrap_free(
  * @param size New size in bytes
  * @return void* Returns reallocated memory pointer
  */
-static void *wrap_realloc(
+void *wrap_realloc(
 	void         *priv,
 	void         *ptr,
 	unsigned int size
@@ -1018,7 +1018,7 @@ int xdl_emit_diff(
 		/*
 		 * Emit current hunk header.
 		 */
-		if(xdl_emit_hunk_hdr(s1 + 1,e1 - s1,s2 + 1,e2 - s2,ecb) < 0)
+		if(xecfg->str_meta && xdl_emit_hunk_hdr(s1 + 1,e1 - s1,s2 + 1,e2 - s2,ecb) < 0)
 		{
 			return -1;
 		}
