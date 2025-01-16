@@ -1,0 +1,14 @@
+\A-TESTING:argument:dry-run=yes
+-TESTING:Final value for config->db_initialize_tables: false
+\+TESTING:Final value for config->db_initialize_tables: true
+-TESTING:The primary database and tables have NOT been initialized
+\+TESTING:The primary database and tables have been successfully initialized
+-TESTING:Total size: \\d\+.\*, total items: \\d\+, dirs: \\d\+, files: \\d\+, symlnks: \\d\+\$
+-TESTING:Dry Run mode is enabled. The primary database must not be modified
+\+TESTING:Total size: \\d\+.\*, total items: \\d\+, dirs: \\d\+, files: \\d\+, symlnks: \\d\+
+-TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
+-TESTING:\\x1B\\\[1mThe database file database1.db has NOT been modified since the program was launched\\x1B\\\[0m
+\+TESTING:Start vacuuming the primary database…
+\+TESTING:The primary database has been vacuumed
+\+TESTING:\\x1B\\\[1mThe database file database1.db has been modified since the program was launched\\x1B\\\[0m
+\z
