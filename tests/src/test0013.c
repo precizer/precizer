@@ -294,6 +294,72 @@ static Return no_dry_run_mode_3_test(void){
 	RETURN_STATUS;
 }
 
+Return compare_dry_and_real_4_test(void){
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	char *text1 = NULL;
+	char *text2 = NULL;
+	char *diff = NULL;
+	char *pattern = NULL;
+	const char *filename = NULL;
+
+	/* 0013 002 1 */
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_1.txt",&text1));
+
+	ASSERT(SUCCESS == get_file_content("templates/0013_003_1.txt",&text2));
+
+	ASSERT(SUCCESS == compare_strings(&diff,text1,text2));
+
+	filename = "templates/0013_004_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
+
+	free(text1);
+	free(text2);
+	free(diff);
+	free(pattern);
+
+	/* 0013 002 2 */
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_2.txt",&text1));
+
+	ASSERT(SUCCESS == get_file_content("templates/0013_003_2.txt",&text2));
+
+	ASSERT(SUCCESS == compare_strings(&diff,text1,text2));
+
+	filename = "templates/0013_004_2.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
+
+	free(text1);
+	free(text2);
+	free(diff);
+	free(pattern);
+
+	/* 0013 002 3 */
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_3.txt",&text1));
+
+	ASSERT(SUCCESS == get_file_content("templates/0013_003_3.txt",&text2));
+
+	ASSERT(SUCCESS == compare_strings(&diff,text1,text2));
+
+	// _2 is not a mistake. 2 and 3 are equals
+	filename = "templates/0013_004_2.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
+
+	free(text1);
+	free(text2);
+	free(diff);
+	free(pattern);
+
+	RETURN_STATUS;
+}
+
 // Main test runner
 Return test0013(void){
 	/// The status that will be passed to return() before exiting.
@@ -303,6 +369,7 @@ Return test0013(void){
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
 	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
 	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
+	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
 
 	RETURN_STATUS;
 }
