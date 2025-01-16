@@ -39,8 +39,8 @@ Return function_capture(
 	}
 
 	/* Create temporary files for redirection */
-	FILE* stdout_tmp = tmpfile();
-	FILE* stderr_tmp = tmpfile();
+	FILE *stdout_tmp = tmpfile();
+	FILE *stderr_tmp = tmpfile();
 
 	if(stdout_tmp == NULL || stderr_tmp == NULL)
 	{
@@ -51,30 +51,30 @@ Return function_capture(
 	/* Disable buffering for temporary files */
 	if(SUCCESS == status)
 	{
-		if(setvbuf(stdout_tmp, NULL, _IONBF, 0) != 0 ||
-		   setvbuf(stderr_tmp, NULL, _IONBF, 0) != 0)
+		if(setvbuf(stdout_tmp,NULL,_IONBF,0) != 0 ||
+		        setvbuf(stderr_tmp,NULL,_IONBF,0) != 0)
 		{
 			slog(ERROR,"Failed to disable buffering\n");
-		    status = FAILURE;
+			status = FAILURE;
 		}
 	}
 
 	/* Disable buffering for stdout and stderr */
 	if(SUCCESS == status)
 	{
-		if(setvbuf(stdout, NULL, _IONBF, 0) != 0 ||
-		   setvbuf(stderr, NULL, _IONBF, 0) != 0)
+		if(setvbuf(stdout,NULL,_IONBF,0) != 0 ||
+		        setvbuf(stderr,NULL,_IONBF,0) != 0)
 		{
 			slog(ERROR,"Failed to disable buffering\n");
-		    status = FAILURE;
+			status = FAILURE;
 		}
 	}
 
 	/* Redirect streams */
 	if(SUCCESS == status)
 	{
-		if(dup2(fileno(stdout_tmp), STDOUT_FILENO) == -1 ||
-		   dup2(fileno(stderr_tmp), STDERR_FILENO) == -1)
+		if(dup2(fileno(stdout_tmp),STDOUT_FILENO) == -1 ||
+		        dup2(fileno(stderr_tmp),STDERR_FILENO) == -1)
 		{
 			slog(ERROR,"Failed to redirect streams\n");
 			status = FAILURE;
@@ -92,8 +92,8 @@ Return function_capture(
 	/* Restore original streams */
 	if(SUCCESS == status)
 	{
-		if(dup2(stdout_fd, STDOUT_FILENO) == -1 ||
-		   dup2(stderr_fd, STDERR_FILENO) == -1)
+		if(dup2(stdout_fd,STDOUT_FILENO) == -1 ||
+		        dup2(stderr_fd,STDERR_FILENO) == -1)
 		{
 			slog(ERROR,"Failed to restore original streams\n");
 			status = FAILURE;
@@ -103,11 +103,11 @@ Return function_capture(
 	/* Read data from temporary files */
 	if(SUCCESS == status)
 	{
-		size_t stdout_size, stderr_size;
+		size_t stdout_size,stderr_size;
 
 		/* Get buffer sizes */
-		fseek(stdout_tmp, 0, SEEK_END);
-		fseek(stderr_tmp, 0, SEEK_END);
+		fseek(stdout_tmp,0,SEEK_END);
+		fseek(stderr_tmp,0,SEEK_END);
 		stdout_size = (size_t)ftell(stdout_tmp);
 		stderr_size = (size_t)ftell(stderr_tmp);
 
@@ -116,7 +116,7 @@ Return function_capture(
 		{
 			if(stdout_size > 0)
 			{
-				status = realloc_char(stdout_buffer, stdout_size + 1);
+				status = realloc_char(stdout_buffer,stdout_size + 1);
 			}
 		}
 
@@ -124,28 +124,28 @@ Return function_capture(
 		{
 			if(stderr_size > 0)
 			{
-				status = realloc_char(stderr_buffer, stderr_size + 1);
+				status = realloc_char(stderr_buffer,stderr_size + 1);
 			}
 		}
 
 		/* Read data */
 		if(SUCCESS == status)
 		{
-			fseek(stdout_tmp, 0, SEEK_SET);
-			fseek(stderr_tmp, 0, SEEK_SET);
+			fseek(stdout_tmp,0,SEEK_SET);
+			fseek(stderr_tmp,0,SEEK_SET);
 
 			size_t read_stdout = 0;
 
 			if(stdout_size > 0)
 			{
-				read_stdout = fread(stdout_buffer->mem, 1, stdout_size, stdout_tmp);
+				read_stdout = fread(stdout_buffer->mem,1,stdout_size,stdout_tmp);
 			}
 
 			size_t read_stderr = 0;
 
 			if(stderr_size > 0)
 			{
-				read_stderr = fread(stderr_buffer->mem, 1, stderr_size, stderr_tmp);
+				read_stderr = fread(stderr_buffer->mem,1,stderr_size,stderr_tmp);
 			}
 
 			if(read_stdout != stdout_size || read_stderr != stderr_size)
