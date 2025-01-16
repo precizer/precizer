@@ -288,7 +288,7 @@ test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-a
 #
 # GCC Static Analysis
 #
-gcc-analyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -flto
+gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -flto
 # -Wanalyzer-too-complex
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
@@ -317,6 +317,7 @@ SPARSE_FLAGS=-Wsparse-all -nostdinc
 sparse-analyzer:
 	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(WFLAGS) $(src);)
 
+clang-analyzer: CC = clang
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
 	scan-build -V make debug
