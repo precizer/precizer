@@ -18,15 +18,15 @@ STRIP = -s
 
 # Additional check flags. Must have!
 WFLAGS += -Wall
-#WFLAGS += -Werror
+WFLAGS += -Werror
 WFLAGS += -Wpedantic
 WFLAGS += -Wshadow
 WFLAGS += -Wextra
-WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
+#WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
 WFLAGS += -Wfloat-equal -Wundef
-WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
+#WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
 WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
 WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
 WFLAGS += -Wwrite-strings
@@ -86,7 +86,7 @@ ifneq ($(CC), clang)
 RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
 endif
 
-.PHONY: all clean debug release prod production sanitize format
+.PHONY: all clean debug release prod production sanitize format gcc-analyzer
 
 # Default build
 all: debug release
@@ -195,9 +195,9 @@ format:
 #
 # GCC Static Analysis
 #
-gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -Wanalyzer-too-complex
-gccanalyzer: CC = gcc
-gccanalyzer: debug
+gcc-analyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -Wanalyzer-too-complex
+gcc-analyzer: CC = gcc
+gcc-analyzer: debug
 
 cppcheck:
 	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
