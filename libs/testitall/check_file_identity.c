@@ -6,11 +6,11 @@
  */
 typedef enum
 {
-    IDENTICAL                 = 0x00, // 0000
-    NOT_EQUAL                 = 0x01, // 0001
-    SIZE_CHANGED              = 0x02, // 010
-    CREATION_TIME_CHANGED     = 0x04, // 0100
-    MODIFICATION_TIME_CHANGED = 0x08  // 1000
+	IDENTICAL                 = 0x00,// 0000
+	NOT_EQUAL                 = 0x01,// 0001
+	SIZE_CHANGED              = 0x02,// 010
+	CREATION_TIME_CHANGED     = 0x04,// 0100
+	MODIFICATION_TIME_CHANGED = 0x08 // 1000
 
 } Changed;
 
@@ -75,8 +75,7 @@ static int compare_file_metadata_equivalence(
  * @param[in] st Pointer to the stat structure to print
  * @return Return Status of the operation
  */
-Return print_stat(const struct stat *st)
-{
+Return print_stat(const struct stat *st){
 	Return status = SUCCESS;
 	char time_str[100];
 	struct tm *tm_info;
@@ -121,6 +120,7 @@ Return print_stat(const struct stat *st)
 
 		// Print file type
 		echo(STDERR,"File type: ");
+
 		switch(st->st_mode & S_IFMT)
 		{
 			case S_IFBLK:
