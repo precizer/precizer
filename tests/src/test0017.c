@@ -3,8 +3,8 @@
 
 static void test_conversion(
 	int  value,
-	int  base,
-	char *string
+	unsigned int base,
+	const char *string
 ){
 	char buffer[66];  /* 64 bits + sign + null terminator */
 	itoa(value,buffer,base);
@@ -21,7 +21,7 @@ static void test_conversion(
  * @note Tests edge cases and different bases with special focus on
  *       negative numbers and MIN/MAX integer values
  */
-Return test_itoa(void){
+void test_itoa(void){
 
 	/* Test extreme values */
 	printf("=== Testing extreme values ===\n");
@@ -81,8 +81,6 @@ Return test_itoa(void){
 	printf("Base: %d\t\tConverted String: %s\n",2,itoa(1567,str,2));
 	printf("Base: %d\t\tConverted String: %s\n",8,itoa(1567,str,8));
 	printf("Base: %d\tConverted String: %s\n",16,itoa(1567,str,16));
-
-	return 0; // Success
 }
 
 Return test0017(void){
