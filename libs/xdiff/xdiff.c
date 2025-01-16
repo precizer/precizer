@@ -1,56 +1,5 @@
 #include "xdiff.h"
 
-static memallocator_t xmalt = {
-	NULL,NULL,NULL
-};
-
-/**
- * @brief Sets the memory allocator functions for the library
- *
- * @param malt Pointer to memory allocator structure containing custom allocation functions
- * @return int Returns 0 on success
- */
-int xdl_set_allocator(memallocator_t const *malt){
-	xmalt = *malt;
-	return 0;
-}
-
-/**
- * @brief Allocates memory using the configured memory allocator
- *
- * @param size Number of bytes to allocate
- * @return void* Pointer to allocated memory or NULL if allocation fails
- */
-void *xdl_malloc(unsigned int size){
-	return xmalt.malloc ? xmalt.malloc(xmalt.priv,size) : NULL;
-}
-
-/**
- * @brief Frees memory using the configured memory allocator
- *
- * @param ptr Pointer to memory to free
- */
-void xdl_free(void *ptr){
-	if(xmalt.free)
-	{
-		xmalt.free(xmalt.priv,ptr);
-	}
-}
-
-/**
- * @brief Reallocates memory block using the configured memory allocator
- *
- * @param ptr Pointer to existing memory block or NULL
- * @param size New size in bytes
- * @return void* Pointer to reallocated memory or NULL if reallocation fails
- */
-void *xdl_realloc(
-	void         *ptr,
-	unsigned int size
-){
-	return xmalt.realloc ? xmalt.realloc(xmalt.priv,ptr,size) : NULL;
-}
-
 typedef struct s_xdpsplit {
 	long i1,i2;
 	int min_lo,min_hi;
@@ -288,7 +237,7 @@ static long xdl_split(
 		 */
 		if(ec >= xenv->mxcost)
 		{
-			long fbest,fbest1,bbest,bbest1;
+			long fbest,fbest1 = 0,bbest,bbest1 = 0;
 
 			fbest = -1;
 
@@ -478,7 +427,7 @@ int xdl_do_diff(
 	xdalgoenv_t xenv;
 	diffdata_t dd1,dd2;
 
-	if(xdl_prepare_env(mf1,mf2,xpp,xe) < 0)
+	if(xdl_prepare_env(mf1,mf2,xe) < 0)
 	{
 		return -1;
 	}
@@ -489,7 +438,7 @@ int xdl_do_diff(
 	 */
 	ndiags = xe->xdf1.nreff + xe->xdf2.nreff + 3;
 
-	if(!(kvd = (long *)xdl_malloc((2 * ndiags + 2) * sizeof(long))))
+	if(!(kvd = (long *)malloc((2 * ndiags + 2) * sizeof(long))))
 	{
 
 		xdl_free_env(xe);
@@ -531,12 +480,12 @@ int xdl_do_diff(
 		&xenv) < 0)
 	{
 
-		xdl_free(kvd);
+		free(kvd);
 		xdl_free_env(xe);
 		return -1;
 	}
 
-	xdl_free(kvd);
+	free(kvd);
 
 	return 0;
 }
@@ -561,7 +510,7 @@ xdl_add_change(
 ){
 	xdchange_t *xch;
 
-	if(!(xch = (xdchange_t *)xdl_malloc(sizeof(xdchange_t))))
+	if(!(xch = (xdchange_t *)malloc(sizeof(xdchange_t))))
 	{
 		return NULL;
 	}
@@ -783,7 +732,7 @@ void xdl_free_script(xdchange_t *xscr){
 	while((xch = xscr) != NULL)
 	{
 		xscr = xscr->next;
-		xdl_free(xch);
+		free(xch);
 	}
 }
 
@@ -838,44 +787,20 @@ int xdl_diff(
 }
 
 /**
- * @brief Output callback function for writing to file
- *
- * @param priv Private data pointer (FILE*)
- * @param mb Array of buffers to write
- * @param nbuf Number of buffers
- * @return int Returns 0 on success, -1 on error
- */
-static int xdlt_outf(
-	void       *priv,
-	mmbuffer_t *mb,
-	int        nbuf
-){
-	int i;
-
-	for(i = 0; i < nbuf; i++)
-	{
-		if(!fwrite(mb[i].ptr,mb[i].size,1,(FILE *)priv))
-		{
-			return -1;
-		}
-	}
-
-	return 0;
-}
-
-/**
  * @brief Wrapper for standard malloc function
  *
  * @param priv Private data pointer (unused)
  * @param size Number of bytes to allocate
  * @return void* Returns allocated memory pointer
  */
+#if 0
 void *wrap_malloc(
 	void         *priv,
 	unsigned int size
 ){
 	return malloc(size);
 }
+#endif
 
 /**
  * @brief Wrapper for standard free function
@@ -883,12 +808,14 @@ void *wrap_malloc(
  * @param priv Private data pointer (unused)
  * @param ptr Pointer to memory to free
  */
+#if 0
 void wrap_free(
 	void *priv,
 	void *ptr
 ){
 	free(ptr);
 }
+#endif
 
 /**
  * @brief Wrapper for standard realloc function
@@ -898,6 +825,7 @@ void wrap_free(
  * @param size New size in bytes
  * @return void* Returns reallocated memory pointer
  */
+#if 0
 void *wrap_realloc(
 	void         *priv,
 	void         *ptr,
@@ -906,6 +834,7 @@ void *wrap_realloc(
 
 	return realloc(ptr,size);
 }
+#endif
 
 /**
  * @brief Gets record data at specified index
@@ -967,9 +896,15 @@ xdl_emit_record(
  * configuration.
  */
 static xdchange_t *xdl_get_hunk(
+	xdchange_t *,
+	xdemitconf_t const *
+) __attribute__((pure));
+
+static xdchange_t *xdl_get_hunk(
 	xdchange_t         *xscr,
 	xdemitconf_t const *xecfg
 ){
+
 	xdchange_t *xch,*xchp;
 
 	for(xchp = xscr,xch = xscr->next; xch; xchp = xch,xch = xch->next)
@@ -1124,7 +1059,7 @@ static int xdl_init_classifier(
 	}
 
 	if(!(cf->rchash =
-	        (xdlclass_t **)xdl_malloc(cf->hsize * sizeof(xdlclass_t *))))
+	        (xdlclass_t **)malloc(cf->hsize * sizeof(xdlclass_t *))))
 	{
 
 		xdl_cha_free(&cf->ncha);
@@ -1142,7 +1077,7 @@ static int xdl_init_classifier(
 }
 
 static void xdl_free_classifier(xdlclassifier_t *cf){
-	xdl_free(cf->rchash);
+	free(cf->rchash);
 	xdl_cha_free(&cf->ncha);
 }
 
@@ -1194,7 +1129,6 @@ static int xdl_classify_record(
 static int xdl_prepare_ctx(
 	mmfile_t        *mf,
 	long            narec,
-	xpparam_t const *xpp,
 	xdlclassifier_t *cf,
 	xdfile_t        *xdf
 ){
@@ -1214,7 +1148,7 @@ static int xdl_prepare_ctx(
 		return -1;
 	}
 
-	if(!(recs = (xrecord_t **)xdl_malloc(narec * sizeof(xrecord_t *))))
+	if(!(recs = (xrecord_t **)malloc(narec * sizeof(xrecord_t *))))
 	{
 
 		xdl_cha_free(&xdf->rcha);
@@ -1224,10 +1158,10 @@ static int xdl_prepare_ctx(
 	hbits = xdl_hashbits((unsigned int)narec);
 	hsize = 1 << hbits;
 
-	if(!(rhash = (xrecord_t **)xdl_malloc(hsize * sizeof(xrecord_t *))))
+	if(!(rhash = (xrecord_t **)malloc(hsize * sizeof(xrecord_t *))))
 	{
 
-		xdl_free(recs);
+		free(recs);
 		xdl_cha_free(&xdf->rcha);
 		return -1;
 	}
@@ -1258,12 +1192,12 @@ static int xdl_prepare_ctx(
 			{
 				narec *= 2;
 
-				if(!(rrecs = (xrecord_t **)xdl_realloc(
+				if(!(rrecs = (xrecord_t **)realloc(
 					recs,narec * sizeof(xrecord_t *))))
 				{
 
-					xdl_free(rhash);
-					xdl_free(recs);
+					free(rhash);
+					free(recs);
 					xdl_cha_free(&xdf->rcha);
 					return -1;
 				}
@@ -1273,8 +1207,8 @@ static int xdl_prepare_ctx(
 			if(!(crec = xdl_cha_alloc(&xdf->rcha)))
 			{
 
-				xdl_free(rhash);
-				xdl_free(recs);
+				free(rhash);
+				free(recs);
 				xdl_cha_free(&xdf->rcha);
 				return -1;
 			}
@@ -1286,41 +1220,41 @@ static int xdl_prepare_ctx(
 			if(xdl_classify_record(cf,rhash,hbits,crec) < 0)
 			{
 
-				xdl_free(rhash);
-				xdl_free(recs);
+				free(rhash);
+				free(recs);
 				xdl_cha_free(&xdf->rcha);
 				return -1;
 			}
 		}
 	}
 
-	if(!(rchg = (char *)xdl_malloc(nrec + 2)))
+	if(!(rchg = (char *)malloc(nrec + 2)))
 	{
 
-		xdl_free(rhash);
-		xdl_free(recs);
+		free(rhash);
+		free(recs);
 		xdl_cha_free(&xdf->rcha);
 		return -1;
 	}
 	memset(rchg,0,nrec + 2);
 
-	if(!(rindex = (long *)xdl_malloc((nrec + 1) * sizeof(long))))
+	if(!(rindex = (long *)malloc((nrec + 1) * sizeof(long))))
 	{
 
-		xdl_free(rchg);
-		xdl_free(rhash);
-		xdl_free(recs);
+		free(rchg);
+		free(rhash);
+		free(recs);
 		xdl_cha_free(&xdf->rcha);
 		return -1;
 	}
 
-	if(!(ha = (unsigned long *)xdl_malloc((nrec + 1) * sizeof(unsigned long))))
+	if(!(ha = (unsigned long *)malloc((nrec + 1) * sizeof(unsigned long))))
 	{
 
-		xdl_free(rindex);
-		xdl_free(rchg);
-		xdl_free(rhash);
-		xdl_free(recs);
+		free(rindex);
+		free(rchg);
+		free(rhash);
+		free(recs);
 		xdl_cha_free(&xdf->rcha);
 		return -1;
 	}
@@ -1340,11 +1274,11 @@ static int xdl_prepare_ctx(
 }
 
 static void xdl_free_ctx(xdfile_t *xdf){
-	xdl_free(xdf->rhash);
-	xdl_free(xdf->rindex);
-	xdl_free(xdf->rchg - 1);
-	xdl_free(xdf->ha);
-	xdl_free(xdf->recs);
+	free(xdf->rhash);
+	free(xdf->rindex);
+	free(xdf->rchg - 1);
+	free(xdf->ha);
+	free(xdf->recs);
 	xdl_cha_free(&xdf->rcha);
 }
 
@@ -1443,7 +1377,7 @@ static int xdl_cleanup_records(
 	xrecord_t *rec;
 	char *dis,*dis1,*dis2;
 
-	if(!(dis = (char *)xdl_malloc(xdf1->nrec + xdf2->nrec + 2)))
+	if(!(dis = (char *)malloc(xdf1->nrec + xdf2->nrec + 2)))
 	{
 		return -1;
 	}
@@ -1527,7 +1461,7 @@ static int xdl_cleanup_records(
 	}
 	xdf2->nreff = nreff;
 
-	xdl_free(dis);
+	free(dis);
 
 	return 0;
 }
@@ -1586,10 +1520,9 @@ static int xdl_optimize_ctxs(
 }
 
 int xdl_prepare_env(
-	mmfile_t        *mf1,
-	mmfile_t        *mf2,
-	xpparam_t const *xpp,
-	xdfenv_t        *xe
+	mmfile_t *mf1,
+	mmfile_t *mf2,
+	xdfenv_t *xe
 ){
 	long enl1,enl2;
 	xdlclassifier_t cf;
@@ -1602,14 +1535,14 @@ int xdl_prepare_env(
 		return -1;
 	}
 
-	if(xdl_prepare_ctx(mf1,enl1,xpp,&cf,&xe->xdf1) < 0)
+	if(xdl_prepare_ctx(mf1,enl1,&cf,&xe->xdf1) < 0)
 	{
 
 		xdl_free_classifier(&cf);
 		return -1;
 	}
 
-	if(xdl_prepare_ctx(mf2,enl2,xpp,&cf,&xe->xdf2) < 0)
+	if(xdl_prepare_ctx(mf2,enl2,&cf,&xe->xdf2) < 0)
 	{
 
 		xdl_free_ctx(&xe->xdf1);
@@ -1638,8 +1571,7 @@ void xdl_free_env(xdfenv_t *xe){
 
 int xdlt_load_mmfile(
 	char const *fname,
-	mmfile_t   *mf,
-	int        binmode
+	mmfile_t   *mf
 ){
 	int fd;
 	long size;
@@ -1666,7 +1598,7 @@ int xdlt_load_mmfile(
 		return -1;
 	}
 
-	if(read(fd,blk,(size_t)size) != (size_t)size)
+	if(read(fd,blk,(size_t)size) != (ssize_t)size)
 	{
 		perror(fname);
 		xdl_free_mmfile(mf);
@@ -1744,7 +1676,7 @@ void xdl_free_mmfile(mmfile_t *mmf){
 	for(cur = mmf->head; (tmp = cur) != NULL;)
 	{
 		cur = cur->next;
-		xdl_free(tmp);
+		free(tmp);
 	}
 }
 
@@ -1760,7 +1692,7 @@ void *xdl_mmfile_writeallocate(
 	{
 		bsize = XDL_MAX(mmf->bsize,size);
 
-		if(!(wcur = (mmblock_t *)xdl_malloc(sizeof(mmblock_t) + bsize)))
+		if(!(wcur = (mmblock_t *)malloc(sizeof(mmblock_t) + bsize)))
 		{
 			return NULL;
 		}
@@ -1845,7 +1777,7 @@ void xdl_cha_free(chastore_t *cha){
 	for(cur = cha->head; (tmp = cur) != NULL;)
 	{
 		cur = cur->next;
-		xdl_free(tmp);
+		free(tmp);
 	}
 }
 
@@ -1855,7 +1787,7 @@ void *xdl_cha_alloc(chastore_t *cha){
 
 	if(!(ancur = cha->ancur) || ancur->icurr == cha->nsize)
 	{
-		if(!(ancur = (chanode_t *)xdl_malloc(sizeof(chanode_t) + cha->nsize)))
+		if(!(ancur = (chanode_t *)malloc(sizeof(chanode_t) + cha->nsize)))
 		{
 			return NULL;
 		}
@@ -2032,20 +1964,11 @@ int main(
 	int  argc,
 	char *argv[]
 ){
-	int i = 1,ctxlen = 3,do_bdiff,do_bpatch;
-	memallocator_t malt;
+	int i = 1,ctxlen = 3;
 	mmfile_t mf1,mf2;
 	xpparam_t xpp;
 	xdemitconf_t xecfg;
 	xdemitcb_t ecb;
-
-	malt.priv = NULL;
-	malt.malloc = wrap_malloc;
-	malt.free = wrap_free;
-	malt.realloc = wrap_realloc;
-	xdl_set_allocator(&malt);
-
-	do_bdiff = do_bpatch = 0;
 
 	if(!strcmp(argv[i],"--diff"))
 	{
@@ -2068,19 +1991,18 @@ int main(
 	xpp.flags = 0;
 	xecfg.ctxlen = ctxlen;
 
-	if(xdlt_load_mmfile(argv[i],&mf1,do_bdiff || do_bpatch) < 0)
+	if(xdlt_load_mmfile(argv[i],&mf1) < 0)
 	{
 		return 2;
 	}
 
-	if(xdlt_load_mmfile(argv[i + 1],&mf2,do_bdiff || do_bpatch) < 0)
+	if(xdlt_load_mmfile(argv[i + 1],&mf2) < 0)
 	{
 		xdl_free_mmfile(&mf1);
 		return 2;
 	}
 
 	ecb.priv = stdout;
-	ecb.outf = xdlt_outf;
 
 	if(xdl_diff(&mf1,&mf2,&xpp,&xecfg,&ecb) < 0)
 	{
