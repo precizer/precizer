@@ -186,7 +186,7 @@ Return construct_path(
 // Execute a function without checking the status first.
 // For example, to clear temporary data
 // TEST No Result
-#define TESTNR(func,desc) \
+#define RUN(func,desc) \
 	(void)testitall(func, #func,desc);
 
 // Макрос для замера времени на старте
