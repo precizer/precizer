@@ -19,7 +19,6 @@ int main(void){
 	TEST(test0008,"librational test report messaging…");
 	TEST(test0009,"librational test slog messaging…");
 	TEST(test0017,"librational test itoa function…");
-//	TEST(test0015,"libxdiff compare texts…");
 
 	HEADER("\nUnit Testing of precizer\n");
 	TEST(test0012,"add_string_to_array() test set…");
@@ -31,11 +30,12 @@ int main(void){
 	TEST(test0013,"Dry Run mode testing…");
 	TEST(test0014,"Short, long, relative and absolute paths…");
 	TEST(test0016,"--watch-timestamps argument testing…");
+	TEST(test0015,"Database upgrade testing…");
 
 	HEADER("\nClean results\n");
-	TESTNR(clean,"Temporary data cleanup…");
+	RUN(clean,"Temporary data cleanup…");
 
-	TESTNR(finish,"Telemetry");
+	RUN(finish,"Telemetry");
 
 	HEADER("\nFinishing\n");
 	TESTDONE;
