@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -140,6 +141,7 @@ typedef struct s_xdemitcb {
 
 typedef struct s_xdemitconf {
 	long ctxlen;
+	char str_meta;
 } xdemitconf_t;
 
 typedef struct s_bdiffparam {
@@ -284,7 +286,6 @@ int xdl_emit_diff(
 	xdemitconf_t const *xecfg
 );
 
-
 int xdl_prepare_env(
 	mmfile_t        *mf1,
 	mmfile_t        *mf2,
@@ -335,4 +336,26 @@ int xdl_emit_hunk_hdr(
 Return compare_texts(
 	char const *,
 	char const *
+);
+
+Return compare_strings(
+	char **,
+	const char *,
+	const char *
+);
+
+void *wrap_malloc(
+	void *,
+	unsigned int
+);
+
+void wrap_free(
+	void *,
+	void *
+);
+
+void *wrap_realloc(
+	void *,
+	void *,
+	unsigned int
 );
