@@ -239,7 +239,6 @@ static Return remove_functions(
 	FILE* temp = NULL;
 	char line[MAX_LINE_LENGTH];
 	DeclarationState decl_state;
-	int found_opening_brace = 0;
 	char* p = NULL;
 
 	if(NULL == filename || NULL == names)
@@ -272,6 +271,8 @@ static Return remove_functions(
 
 	if(SUCCESS == status)
 	{
+		int found_opening_brace = 0;
+
 		while(fgets(line, sizeof(line), source))
 		{
 			if(!decl_state.in_declaration)
@@ -452,7 +453,6 @@ static Return init_function_names(
 	FunctionNames*	names
 ){
 	Return status = SUCCESS;
-	int i = 0;
 	size_t array_size = 0;
 	int function_count = 0;
 
@@ -464,7 +464,7 @@ static Return init_function_names(
 	if(SUCCESS == status)
 	{
 		function_count = argc - 2; /* Subtract program name and directory path */
-		
+
 		/* Ensure we don't have negative count */
 		if(function_count <= 0)
 		{
@@ -476,7 +476,7 @@ static Return init_function_names(
 	{
 		/* Calculate array size safely */
 		array_size = (size_t)function_count * sizeof(char*);
-		
+
 		/* Check for potential overflow */
 		if(array_size / sizeof(char*) != (size_t)function_count)
 		{
@@ -499,7 +499,7 @@ static Return init_function_names(
 
 	if(SUCCESS == status)
 	{
-		for(i = 0; i < names->count; i++)
+		for(int i = 0; i < names->count; i++)
 		{
 			names->names[i] = strdup(argv[i + 2]);
 			if(NULL == names->names[i])
@@ -529,11 +529,9 @@ static Return init_function_names(
 static void free_function_names(
 	FunctionNames*	names
 ){
-	int i = 0;
-
 	if(NULL != names && NULL != names->names)
 	{
-		for(i = 0; i < names->count; i++)
+		for(int i = 0; i < names->count; i++)
 		{
 			if(NULL != names->names[i])
 			{
@@ -559,11 +557,10 @@ __attribute__((pure)) static Return is_target_function(
 	const FunctionNames*	names
 ){
 	Return status = FAILURE;
-	int i = 0;
 
 	if(NULL != line && NULL != names)
 	{
-		for(i = 0; i < names->count; i++)
+		for(int i = 0; i < names->count; i++)
 		{
 			if(SUCCESS == is_function_declaration(line, names->names[i]))
 			{
