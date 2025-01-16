@@ -323,7 +323,7 @@ typedef struct {
  *
  */
 
-Return file_list(bool);
+Return file_list(const bool);
 
 Return sha512sum(
 	const char *,
@@ -461,7 +461,7 @@ void show_relative_path(
 	const bool *,
 	bool *,
 	bool *,
-	bool *
+	const bool *
 );
 
 Return status_of_changes(void);

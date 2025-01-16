@@ -10,8 +10,8 @@ static void show_status(
 	size_t *count_files,
 	size_t *count_symlnks,
 	size_t *total_size_in_bytes,
-	bool   *count_size_of_all_files,
-	bool   *at_least_one_file_was_shown
+	const bool *count_size_of_all_files,
+	const bool *at_least_one_file_was_shown
 ){
 	size_t total_items = *count_dirs + *count_files + *count_symlnks;
 
@@ -59,7 +59,7 @@ static int compare_by_name(
  * a struct for each file it encounters
  *
  */
-Return file_list(bool count_size_of_all_files){
+Return file_list(const bool count_size_of_all_files){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -82,7 +82,6 @@ Return file_list(bool count_size_of_all_files){
 	bool show_changes = true;
 	bool ignore_showed_once = false;
 	bool include_showed_once = false;
-	bool traversal_initiated_showed_once = false;
 	bool at_least_one_file_was_shown = false;
 
 	FTS *file_systems = NULL;
@@ -123,7 +122,6 @@ Return file_list(bool count_size_of_all_files){
 	 */
 	char *runtime_path_prefix = NULL;
 	FTSENT *current_file_system = child;
-	char *previously_explored_path = NULL;
 
 #if 0 // Old multiPATH solution
 	/**
@@ -140,10 +138,8 @@ Return file_list(bool count_size_of_all_files){
 		slog(EVERY,"Recursion depth limited to: %d\n",config->maxdepth);
 	}
 
-	if(traversal_initiated_showed_once == false && count_size_of_all_files == true && config->progress == true)
+	if(count_size_of_all_files == true && config->progress == true)
 	{
-		traversal_initiated_showed_once = true;
-
 		slog(EVERY,"File system traversal initiated to calculate file count and storage usage\n");
 	}
 
@@ -432,8 +428,6 @@ Return file_list(bool count_size_of_all_files){
 				break;
 		}
 	}
-
-	free(previously_explored_path);
 
 	free(runtime_path_prefix);
 

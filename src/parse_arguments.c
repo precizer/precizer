@@ -152,6 +152,8 @@ static error_t parse_opt(
 
 			if(config->db_file_name == NULL)
 			{
+				free(config->db_file_path);  // Free previously allocated memory
+				config->db_file_path = NULL; // Set to NULL after freeing
 				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_name failed!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
@@ -229,15 +231,6 @@ static error_t parse_opt(
 
 			if(config->compare == true)
 			{
-#if 0
-
-				if(config->update == true)
-				{
-					argp_failure(state,1,0,"ERROR: Using arguments --compare and --update together makes no sense");
-
-				} else
-#endif
-
 				if(state->arg_num < 2)
 				{
 					argp_failure(state,1,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
@@ -445,6 +438,7 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:dry-run=%s\n",config->dry_run ? "yes" : "no");
 		}
+
 	} else {
 
 		// Verbose but NOT silent
@@ -519,6 +513,7 @@ Return parse_arguments(
 				}
 				printf("; ");
 			}
+
 			printf("verbose=%s; silent=no; force=%s; update=%s; watch-timestamps=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, check-level=%s, rational_logger_mode=%s",
 				config->verbose ? "yes" : "no",
 				config->force ? "yes" : "no",

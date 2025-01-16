@@ -39,7 +39,7 @@ static void print_flag_combinations(
 	int             mega,
 	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool            *rehash
+	const bool      *rehash
 ){
 	const char *flags[] = {
 		"size","ctime","mtime"
@@ -129,7 +129,7 @@ void show_relative_path(
 	const bool      *ignored,
 	bool            *at_least_one_file_was_shown,
 	bool            *rehash,
-	bool            *count_size_of_all_files
+	const bool      *count_size_of_all_files
 ){
 	bool show_traversal_started = false;
 	bool show_update_warning = false;

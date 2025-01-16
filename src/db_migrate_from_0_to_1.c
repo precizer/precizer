@@ -17,16 +17,13 @@ static Return process_row(sqlite3_stmt *stmt){
 	/* Allocate memory for new blob data */
 	CmpctStat new_stat = {0};
 
-	if(SUCCESS == status)
-	{
-		/* Get blob data from the 'stat' column (column index 4) */
-		stat = sqlite3_column_blob(stmt,4);
+	/* Get blob data from the 'stat' column (column index 4) */
+	stat = sqlite3_column_blob(stmt,4);
 
-		if(NULL == stat)
-		{
-			slog(ERROR,"NULL blob data\n");
-			status = FAILURE;
-		}
+	if(NULL == stat)
+	{
+		slog(ERROR,"NULL blob data\n");
+		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
@@ -81,15 +78,13 @@ static Return process_row(sqlite3_stmt *stmt){
 static Return process_database(sqlite3 *db){
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
+
 	const char *select_sql = "SELECT * FROM files";
 
-	if(SUCCESS == status)
+	if(SQLITE_OK != sqlite3_prepare_v2(db,select_sql,-1,&stmt,NULL))
 	{
-		if(SQLITE_OK != sqlite3_prepare_v2(db,select_sql,-1,&stmt,NULL))
-		{
-			slog(ERROR,"Error preparing statement: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
+		slog(ERROR,"Error preparing statement: %s\n",sqlite3_errmsg(db));
+		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
