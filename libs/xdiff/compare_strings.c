@@ -4,9 +4,9 @@
  * @brief Structure for storing output buffer
  */
 typedef struct {
-	char *buffer;	/**< Pointer to data buffer */
-	size_t size;	/**< Current size of data in buffer */
-	size_t capacity;	/**< Total buffer capacity */
+	char *buffer;   /**< Pointer to data buffer */
+	size_t size;    /**< Current size of data in buffer */
+	size_t capacity;        /**< Total buffer capacity */
 } output_buffer_t;
 
 /**
@@ -14,13 +14,13 @@ typedef struct {
  *
  * @return output_buffer_t* Pointer to created buffer or NULL on error
  */
-static output_buffer_t* init_output_buffer(void)
-{
+static output_buffer_t *init_output_buffer(void){
 	Return status = SUCCESS;
 	output_buffer_t *buf = NULL;
 
 	/* Allocate memory for buffer structure */
-	buf = (output_buffer_t*)malloc(sizeof(output_buffer_t));
+	buf = (output_buffer_t *)malloc(sizeof(output_buffer_t));
+
 	if(NULL == buf)
 	{
 		status = FAILURE;
@@ -30,7 +30,7 @@ static output_buffer_t* init_output_buffer(void)
 	{
 		/* Set initial size */
 		buf->capacity = 1024;
-		buf->buffer = (char*)malloc(buf->capacity);
+		buf->buffer = (char *)malloc(buf->capacity);
 
 		if(NULL == buf->buffer)
 		{
@@ -57,13 +57,13 @@ static output_buffer_t* init_output_buffer(void)
  * @param nbuf Number of buffers
  * @return Return Operation status
  */
-static Return append_to_buffer(
+static int append_to_buffer(
 	void       *priv,
 	mmbuffer_t *mb,
 	int        nbuf
 ){
-	Return status = SUCCESS;
-	output_buffer_t *buf = (output_buffer_t*)priv;
+	int status = SUCCESS;
+	output_buffer_t *buf = (output_buffer_t *)priv;
 	size_t total_size = 0;
 	size_t new_capacity = 0;
 	char *new_buffer = NULL;
@@ -71,7 +71,7 @@ static Return append_to_buffer(
 	/* Check input parameters */
 	if(NULL == buf || NULL == mb)
 	{
-		return(FAILURE);
+		return(1);
 	}
 
 	/* Calculate total size to append */
@@ -95,13 +95,12 @@ static Return append_to_buffer(
 				new_capacity *= 2;
 			}
 
-			new_buffer = (char*)realloc(buf->buffer, new_capacity);
+			new_buffer = (char *)realloc(buf->buffer,new_capacity);
+
 			if(NULL == new_buffer)
 			{
 				status = FAILURE;
-			}
-			else
-			{
+			} else {
 				buf->buffer = new_buffer;
 				buf->capacity = new_capacity;
 			}
@@ -113,7 +112,7 @@ static Return append_to_buffer(
 	{
 		for(int i = 0; i < nbuf; i++)
 		{
-			memcpy(buf->buffer + buf->size, mb[i].ptr, mb[i].size);
+			memcpy(buf->buffer + buf->size,mb[i].ptr,mb[i].size);
 			buf->size += mb[i].size;
 		}
 		buf->buffer[buf->size] = '\0';
@@ -147,7 +146,7 @@ static Return create_mmfile(
 	/* Initialize mmfile */
 	if(SUCCESS == status)
 	{
-		if(xdl_init_mmfile(mmf, size + 1, XDL_MMF_ATOMIC) < 0)
+		if(xdl_init_mmfile(mmf,size + 1,XDL_MMF_ATOMIC) < 0)
 		{
 			status = FAILURE;
 		}
@@ -156,7 +155,8 @@ static Return create_mmfile(
 	/* Allocate memory and copy data */
 	if(SUCCESS == status)
 	{
-		data = xdl_mmfile_writeallocate(mmf, size);
+		data = xdl_mmfile_writeallocate(mmf,size);
+
 		if(NULL == data)
 		{
 			xdl_free_mmfile(mmf);
@@ -166,7 +166,7 @@ static Return create_mmfile(
 
 	if(SUCCESS == status)
 	{
-		memcpy(data, content, size);
+		memcpy(data,content,size);
 	}
 
 	if(SUCCESS != status)
@@ -191,8 +191,7 @@ Return compare_strings(
 	const char *string2
 ){
 	Return status = SUCCESS;
-	memallocator_t malt = {NULL, NULL, NULL};
-	mmfile_t mf1, mf2;
+	mmfile_t mf1,mf2;
 	xpparam_t xpp;
 	xdemitconf_t xecfg;
 	xdemitcb_t ecb;
@@ -204,26 +203,12 @@ Return compare_strings(
 		return(FAILURE);
 	}
 
-	/* Initialize memory allocator */
-	if(SUCCESS == status)
-	{
-		malt.priv = NULL;
-		malt.malloc = wrap_malloc;
-		malt.free = wrap_free;
-		malt.realloc = wrap_realloc;
-
-		if(xdl_set_allocator(&malt) < 0)
-		{
-			serp("Failed to set allocator");
-			status = FAILURE;
-		}
-	}
-
 	/* Create output buffer */
 	if(SUCCESS == status)
 	{
 		output = init_output_buffer();
-		if(NULL == output)
+
+		if(NULL == output || output->buffer == NULL)
 		{
 			serp("Failed to initialize output buffer");
 			status = FAILURE;
@@ -233,7 +218,7 @@ Return compare_strings(
 	/* Initialize parameters */
 	if(SUCCESS == status)
 	{
-		memset(&xpp, 0, sizeof(xpp));
+		memset(&xpp,0,sizeof(xpp));
 		xpp.flags |= XDF_NEED_MINIMAL;
 		xecfg.ctxlen = 0;
 		xecfg.str_meta = 0;
@@ -244,18 +229,18 @@ Return compare_strings(
 	/* Create mmfile structures from input strings */
 	if(SUCCESS == status)
 	{
-		status = create_mmfile(&mf1, string1);
+		status = create_mmfile(&mf1,string1);
 	}
 
 	if(SUCCESS == status)
 	{
-		status = create_mmfile(&mf2, string2);
+		status = create_mmfile(&mf2,string2);
 	}
 
 	/* Perform comparison */
 	if(SUCCESS == status)
 	{
-		if(xdl_diff(&mf1, &mf2, &xpp, &xecfg, &ecb) < 0)
+		if(xdl_diff(&mf1,&mf2,&xpp,&xecfg,&ecb) < 0)
 		{
 			serp("Diff failed");
 			status = FAILURE;
@@ -266,6 +251,7 @@ Return compare_strings(
 	if(SUCCESS == status)
 	{
 		*diff = strdup(output->buffer);
+
 		if(NULL == *diff)
 		{
 			status = FAILURE;
@@ -275,8 +261,16 @@ Return compare_strings(
 	/* Free resources */
 	xdl_free_mmfile(&mf1);
 	xdl_free_mmfile(&mf2);
-	free(output->buffer);
-	free(output);
+
+	if(output != NULL)
+	{
+		if(output->buffer != NULL)
+		{
+			free(output->buffer);
+		}
+
+		free(output);
+	}
 
 	return(status);
 }
