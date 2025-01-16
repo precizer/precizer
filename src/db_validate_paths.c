@@ -209,10 +209,10 @@ Return db_validate_paths(void){
 					status = FAILURE;
 				}
 
-				bool first_iteration = true;
-
 				if(SUCCESS == status)
 				{
+					bool first_iteration = true;
+
 					while(SQLITE_ROW == (rc_stmt = sqlite3_step(stmt)))
 					{
 						const char *prefix = (const char *)sqlite3_column_text(stmt,0);

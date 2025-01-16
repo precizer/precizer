@@ -34,13 +34,12 @@ static Return db_attach(
 	Return status = SUCCESS;
 
 	char *select_sql = NULL;
-	int rc = 0;
 
 	run(compose_sql(&select_sql,config->db_file_paths[db_A],db_B));
 
 	if(SUCCESS == status)
 	{
-		rc = sqlite3_exec(config->db,select_sql,NULL,NULL,NULL);
+		int rc = sqlite3_exec(config->db,select_sql,NULL,NULL,NULL);
 
 		if(rc!= SQLITE_OK)
 		{

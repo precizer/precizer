@@ -112,15 +112,12 @@ Return db_insert_the_record(
 	/* Copy and bind file metadata */
 	if(SUCCESS == status)
 	{
-		if(SUCCESS == status)
-		{
-			rc = sqlite3_bind_blob(insert_stmt,4,stat,sizeof(CmpctStat),NULL);
+		rc = sqlite3_bind_blob(insert_stmt,4,stat,sizeof(CmpctStat),NULL);
 
-			if(SQLITE_OK != rc)
-			{
-				slog(ERROR,"Failed to bind file metadata (%i): %s\n",rc,sqlite3_errmsg(config->db));
-				status = FAILURE;
-			}
+		if(SQLITE_OK != rc)
+		{
+			slog(ERROR,"Failed to bind file metadata (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			status = FAILURE;
 		}
 	}
 
