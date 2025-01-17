@@ -6,7 +6,7 @@ Return clean(void){
 	Return status = SUCCESS;
 
 	// Clear up all temporary files
-	status = external_call("rm -rf ${TMPDIR};",0,false,false);
+	status = external_call("rm -rf ${TMPDIR};",SUCCESS,false,false);
 
 	if(SUCCESS == status)
 	{

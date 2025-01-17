@@ -18,13 +18,14 @@ Return prepare(void){
 	ASSERT(SUCCESS == set_environment_variable("ASAN_OPTIONS","symbolize=1"));
 	ASSERT(SUCCESS == execute_and_set_variable("ASAN_SYMBOLIZER_PATH","which llvm-symbolizer",0));
 	ASSERT(SUCCESS == set_environment_variable("CC","gcc-12"));
-	ASSERT(SUCCESS == external_call("cd $ORIGIN_DIR;make sanitize > /dev/null 2>&1",0,false,false));
+	ASSERT(SUCCESS == external_call("cd $ORIGIN_DIR;make sanitize > /dev/null 2>&1",SUCCESS,false,false));
 #endif
 
 	command = "export TESTDIRS=${TMPDIR}/tests/examples/diffs/;"
 	        "mkdir -p ${TESTDIRS};"
 	        "cd ${TMPDIR};"
 	        "cp -r $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
+	        "cp -r $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
 	        "test -f $ORIGIN_DIR/precizer && cp $ORIGIN_DIR/precizer .;"
 	        "mkdir -p .builds/debug/;"
 	        "mkdir -p .builds/sanitize/;"
@@ -32,7 +33,7 @@ Return prepare(void){
 	        "test -d $ORIGIN_DIR/.builds/sanitize/ && cp -r $ORIGIN_DIR/.builds/sanitize/ .builds/;"
 	        "true";
 
-	ASSERT(SUCCESS == external_call(command,0,false,false));
+	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
 
 	bool file_exists = false;
 
@@ -58,7 +59,7 @@ Return prepare(void){
 	        "export ASAN_OPTIONS;"
 	        "export ASAN_SYMBOLIZER_PATH;PATH=.:${PATH}";
 
-	ASSERT(SUCCESS == external_call(command,0,false,false));
+	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
 
 	return(status);
 }

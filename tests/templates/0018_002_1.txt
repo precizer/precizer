@@ -1,0 +1,29 @@
+\A-TESTING:argument:maxdepth=3
+\+TESTING:argument:update=yes
+-TESTING:The path database3.db doesn't exist or it is not a file
+-TESTING:The primary DB file not yet exists. Brand new database will be created
+-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\\\|SQLITE_OPEN_CREATE
+\+TESTING:The path database3.db is exists and it is a file
+\+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+-TESTING:The primary database file was just created and doesn't require verification
+\+TESTING:Starting of database file database3.db integrity check…
+\+TESTING:The database verification level has been set to FULL
+\+TESTING:Database database3.db has been verified and is in good condition
+\+TESTING:Version number 1 found in database
+\+TESTING:The database3.db database file is version 1
+\+TESTING:The database database3.db is on version 1 and does not require any upgrades
+\+TESTING:The database database3.db has already been created previously
+-TESTING:Recursion depth limited to: 3
+\+TESTING:The \\x1B\\\[1m--update\\x1B\\\[0m option has been used, so the information about files will be updated against the database database3.db
+-TESTING:\\x1B\\\[1mThese files will be added against the database3.db database:\\x1B\\\[0m
+-1/2/3/ccc.txt
+-1/2/bbb.txt
+-1/aaa.txt
+\+TESTING:\\x1B\\\[1mThese files have been added or changed and those changes will be reflected against the DB database3.db:\\x1B\\\[0m
+\+1/2/3/4/ddd.txt added
+-TESTING:No DB version data found in metadata table
+-TESTING:The database version 1 has been successfully stored in the DB
+\+TESTING:Version number 1 found in database
+-TESTING:\\x1B\\\[1mThe database database3.db has been modified since the last check \\\(files were added, removed, or updated\\\)\\x1B\\\[0m
+\+TESTING:\\x1B\\\[1mThe database file database3.db has been modified since the program was launched\\x1B\\\[0m
+\z

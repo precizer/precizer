@@ -263,7 +263,7 @@ static Return no_dry_run_mode_3_test(void){
 	del_char(&result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp database1.db.backup database1.db;"
+	        "mv database1.db.backup database1.db;"
 	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
