@@ -39,13 +39,9 @@ TODO:
 
 * Implement fuzzing tests
 
-* Work on code coverage
-
 * Design system tests to exercise all conditional report messages
 
 * Add usage hints for --db-clean-ignored option when used with --ignore and --update
-
-* Review entire README and place it in static char doc[] /* Program documentation. */
 
 * Add verification that specified options work only with --compare
 
