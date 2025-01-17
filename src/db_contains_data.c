@@ -85,10 +85,10 @@ Return db_contains_data(void){
 			{
 				slog(TRACE,"The database %s has already been created previously\n",config->db_file_name);
 			} else {
-				slog(EVERY,"The database %s was previously created and already contains data with files and their checksums." \
-					" Use the " BOLD "--update" RESET " option only when you are certain" \
-					" that the database needs to be updated and when file information" \
-					" (including changes, deletions, and additions) should be synchronized" \
+				slog(EVERY,"The database %s was previously created and already contains data with files and their checksums."
+					" Use the " BOLD "--update" RESET " option only when you are certain"
+					" that the database needs to be updated and when file information"
+					" (including changes, deletions, and additions) should be synchronized"
 					" with the database.\n",config->db_file_name);
 				status = FAILURE;
 			}

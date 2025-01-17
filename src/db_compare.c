@@ -230,9 +230,9 @@ Return db_compare(void){
 	        "ORDER BY p.path,f1.relative_path ASC;";
 #else
 	// One PATH solution
-	const char *compare_checksums = "SELECT a.relative_path " \
-	        "FROM db2.files AS a " \
-	        "INNER JOIN db1.files b on b.relative_path = a.relative_path and b.sha512 != a.sha512 " \
+	const char *compare_checksums = "SELECT a.relative_path "
+	        "FROM db2.files AS a "
+	        "INNER JOIN db1.files b on b.relative_path = a.relative_path and b.sha512 != a.sha512 "
 	        "ORDER BY a.relative_path ASC;";
 #endif
 
