@@ -6,6 +6,9 @@
 # LLVM for sanitizer
 # sudo apt -y install llvm libubsan1
 #
+# Support XXH3_128bits algorythm
+# sudo apt -y install libxxhash-dev
+#
 # Libraries
 # sudo apt -y install libgoogle-perftools-dev
 #
