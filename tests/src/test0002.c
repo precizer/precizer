@@ -11,10 +11,10 @@ Return test0002(void){
 	Return status = SUCCESS;
 
 	// Get the output of an external program
-	const char *command = "export TESTING=true;" \
-	        "cd ${TMPDIR};" \
-	        "export ASAN_OPTIONS;" \
-	        "export ASAN_SYMBOLIZER_PATH;" \
+	const char *command = "export TESTING=true;"
+	        "cd ${TMPDIR};"
+	        "export ASAN_OPTIONS;"
+	        "export ASAN_SYMBOLIZER_PATH;"
 	        "${BINDIR}/precizer tests/examples/diffs";
 
 	const char *filename = "templates/0002.txt";  // File name
@@ -31,7 +31,7 @@ Return test0002(void){
 	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",0,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
 
 	RETURN_STATUS;
 }

@@ -13,15 +13,15 @@
 static Return readme_example_1_test(void){
 	Return status = SUCCESS;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};" \
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1;" \
-	        "${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2;" \
+	const char *command = "export TESTING=true;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1;"
+	        "${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2;"
 	        "${BINDIR}/precizer --compare database1.db database2.db";
 
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
 
-	ASSERT(SUCCESS == execute_command(command,result,0,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	char *pattern = NULL;
 
@@ -33,8 +33,8 @@ static Return readme_example_1_test(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
-		"rm database1.db database2.db",0,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
+		"rm database1.db database2.db",SUCCESS,false,false));
 
 	free(pattern);
 	pattern = NULL;
@@ -72,10 +72,10 @@ static Return readme_example_2_test(void){
 	Return status = SUCCESS;
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};" \
-		"cp -r tests/examples/ tests/examples_backup;",0,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
+		"cp -r tests/examples/ tests/examples_backup;",SUCCESS,false,false));
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};" \
+	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
 	// Create memory for the result
@@ -85,7 +85,7 @@ static Return readme_example_2_test(void){
 
 	const char *filename = "templates/0011_002_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,0,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	// Match the result against the pattern
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
@@ -95,7 +95,7 @@ static Return readme_example_2_test(void){
 	pattern = NULL;
 	del_char(&result);
 
-	command = "export TESTING=true;cd ${TMPDIR};" \
+	command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
 	filename = "templates/0011_002_2.txt";
@@ -130,7 +130,7 @@ static Return readme_example_2_test(void){
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
 		"rm database1.db;"
 		"rm -rf tests/examples/;"
-		"mv tests/examples_backup/ tests/examples/",0,false,false));
+		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
 
 	RETURN_STATUS;
 }
