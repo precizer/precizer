@@ -1,31 +1,39 @@
 TODO:
 
+* Integration of the xxHash library using the XXH3_128bits algorithm
+  for high-performance hashing in a multi-threaded implementation.
+  Here's the concept: The file is read in a single thread.
+  Each read data chunk (for example, 1 megabyte) is divided
+  among multiple threads, with the number of threads matching
+  the available CPU cores. Each portion is hashed independently,
+  then the results are aggregated before moving on to read the
+  next block from the file.
+
 * db_check_up_paths.c
     * Consider printing paths line by line instead of inline
 
 * Add completion messages at the end of each significant code block
   Like in detect_paths.c ending: slog(TRACE,"Paths detected\n");
 
-* Если активна опция --ignored то нужно ли показывать файлы котороые игнорируются или нет? Может добавить отдельную опцию?
+* The --ignore mode isn't functioning properly when --compare is enabled.
 
-* При --compare не работает режим --ignore
+* Revert to the multipath version, but keep this capability undocumented.
 
-* Вернуться к multypath версии, только нигде в документации не заявлять о такой возможности
+* For preliminary scans with --progress and --update flags, implement database traversal to show immediate statistics on affected files:
+  - Number of files to be deleted
+  - Number of files to be added
+  - Number of files to be modified
 
-* Во время предварительного сканирования с опциеями --progress --update можно делать
-  проход по базе данных чтобы сразу в цифрах показать сколько файлов будет подвергнуто изменениям
-  (удалено, добавлено и модифицировано)
-
-* Тест на прирывание сканирования файла большого объёма. Тестирование прерывания хеширования sha512 на большом объёме файла
-
-* Connect xdiff library to tests
+* Implement testing for interruption handling:
+  - Test interruption of large file scanning
+  - Test interruption of sha512 hashing process on large files
 
 * Create tests combining ignore and dry-run flags, don't forget about --include
-  It would be good to repeat all tests from README with dry-run and ignore options
+  - It would be good to repeat all tests from README with dry-run and ignore options
 
 * Testing: Verify that --silent suppresses all output regardless of other options
-
-* Add deep database verification test
+  - Add this option to EVERY test! This could help identify messages that aren't being
+    properly suppressed in --silent mode
 
 * Review English language correctness in all message strings
 
@@ -45,8 +53,7 @@ TODO:
 * Add --onlyBnotA option
 * Add --onlySHAdiffs option
 
-* Unit tests - initial implementation:
-	* Create tests using both relative and absolute paths
+* Unit tests with code coverage
 
 * Document all code
 
