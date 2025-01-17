@@ -1,0 +1,53 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=.+/tests/examples/levels
+TESTING:argument:database=database3.db
+TESTING:argument:db_file_name=database3.db
+TESTING:argument:update=yes
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path .+/tests/examples/levels exists
+TESTING:The path .+/tests/examples/levels is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: .*$
+TESTING:Primary database file name: database3.db
+TESTING:Primary database file path: database3.db
+TESTING:DB name determined
+TESTING:Verify that the path database3.db exists
+TESTING:The path database3.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:Starting of database file database3.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database database3.db has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The database3.db database file is version 1
+TESTING:The database database3.db is on version 1 and does not require any upgrades
+TESTING:Successfully opened database database3.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named database3.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database3.db
+TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The database database3.db has already been created previously
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path .+/tests/examples/levels exists
+TESTING:The path .+/tests/examples/levels is exists and it is a directory
+TESTING:Paths detected
+TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database3.db
+TESTING:File traversal started
+TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database3.db:\x1B\[0m
+1/2/3/4/ddd.txt added
+TESTING:File traversal complete
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Version number 1 found in database
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
+TESTING:\x1B\[1mThe database file database3.db has been modified since the program was launched\x1B\[0m
+TESTING:The precizer completed its execution without any issues\z

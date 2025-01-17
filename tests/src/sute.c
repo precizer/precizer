@@ -31,6 +31,7 @@ int main(void){
 	TEST(test0014,"Short, long, relative and absolute paths…");
 	TEST(test0016,"--watch-timestamps argument testing…");
 	TEST(test0015,"Database upgrade testing…");
+	TEST(test0018,"--maxdepth argument testing…");
 
 	HEADER("\nClean results\n");
 	RUN(clean,"Temporary data cleanup…");

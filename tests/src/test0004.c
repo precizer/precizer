@@ -10,7 +10,9 @@ Return test0004(void){
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	ASSERT(SUCCESS == external_call("echo -n > /dev/null",0,false,false));
+	ASSERT(SUCCESS == external_call("echo -n > /dev/null",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("false",FAILURE,false,false));
+	ASSERT(SUCCESS == external_call("true",SUCCESS,false,false));
 
 	RETURN_STATUS;
 }
