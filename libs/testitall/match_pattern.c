@@ -13,6 +13,7 @@ Return match_pattern(
 	...
 ){
 	Return status = SUCCESS;
+	char *diff = NULL;
 
 	va_list args;
 	va_start(args,pattern);
@@ -71,6 +72,7 @@ Return match_pattern(
 				size_t pos = 0;
 				size_t context_size = 50; /* Show this many characters around mismatch */
 				int text_len = strlen(text);
+				char *diff = NULL;
 
 				while(pos < text_len)
 				{
@@ -118,30 +120,27 @@ Return match_pattern(
 				}
 				break;
 			}
-#else
-#if 1
+#endif
+
+				/* Get diff */
+				status = compare_strings(&diff,text,pattern);
 
 				if(NULL != filename)
 				{
-					echo(STDERR,"ERROR: The pattern not match!" \
-						" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+					echo(STDERR,"ERROR: The pattern not match!\n"
+						"Diff:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
+						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
 						YELLOW "Compared to a pattern from the file %s:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						text,filename,pattern);
+						diff,text,filename,pattern);
 				} else {
-					echo(STDERR,"ERROR: The pattern not match!" \
-						" Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
+					echo(STDERR,"ERROR: The pattern not match!\n"
+						"Diff:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
+						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
 						YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						text,pattern);
+						diff,text,pattern);
 				}
-#else
-				echo(STDERR,"ERROR: The pattern not match!\n" \
-					"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" \
-					YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-					text,pattern);
-#endif
 				status = FAILURE;
 				break;
-#endif
 			default:
 				echo(STDERR,"ERROR: pcre2_match error: %d\n",rc);
 				status = FAILURE;
@@ -150,6 +149,7 @@ Return match_pattern(
 	}
 
 	/* Cleanup */
+	free(diff);
 	pcre2_match_data_free(match_data);
 	pcre2_code_free(re);
 

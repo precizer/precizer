@@ -49,7 +49,7 @@ HDRS = $(wildcard *.h)
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
 
-LIBS = rational mem
+LIBS = rational mem xdiff
 
 # Additional include headers of external libraries
 INCPATH += $(foreach d,$(LIBS),-I../$d)

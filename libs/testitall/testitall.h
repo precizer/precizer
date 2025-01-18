@@ -20,7 +20,7 @@
 #include <stdarg.h>
 #define PCRE2_STATIC
 #define PCRE2_CODE_UNIT_WIDTH 8
-#include "pcre2.h"
+#include <pcre2.h>
 
 #include <stdbool.h>
 // Functions to work with time
@@ -35,6 +35,9 @@
 
 // libmem
 #include "mem.h"
+
+// libxdiff
+#include "xdiff.h"
 
 /**
  * @brief Prints a formatted header message if status check passes
