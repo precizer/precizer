@@ -1,7 +1,7 @@
 TODO:
 
 * Integration of the xxHash library using the XXH3_128bits algorithm
-  for high-performance hashing in a multi-threaded implementation.
+  for high-performance hashing as a multi-threaded implementation.
   Here's the concept: The file is read in a single thread.
   Each read data chunk (for example, 1 megabyte) is divided
   among multiple threads, with the number of threads matching
