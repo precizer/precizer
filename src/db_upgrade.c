@@ -25,7 +25,7 @@ Return db_upgrade(
 
 	if(config->update == false)
 	{
-		slog(ERROR,"Program execution cannot continue. Database update required. Use the --update flag to perform this action\n");
+		slog(ERROR,"Program execution cannot continue. Database update required. Use the " BOLD "--update" RESET " flag to perform this action\n");
 		return(FAILURE);
 	}
 
