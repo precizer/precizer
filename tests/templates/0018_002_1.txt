@@ -3,8 +3,10 @@
 -TESTING:The path database3.db doesn't exist or it is not a file
 -TESTING:The primary DB file not yet exists. Brand new database will be created
 -TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\\\|SQLITE_OPEN_CREATE
+-TESTING:Final value for config->db_initialize_tables: true
 \+TESTING:The path database3.db is exists and it is a file
 \+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+\+TESTING:Final value for config->db_initialize_tables: false
 -TESTING:The primary database file was just created and doesn't require verification
 \+TESTING:Starting of database file database3.db integrity check…
 \+TESTING:The database verification level has been set to FULL
@@ -12,6 +14,8 @@
 \+TESTING:Version number 1 found in database
 \+TESTING:The database3.db database file is version 1
 \+TESTING:The database database3.db is on version 1 and does not require any upgrades
+-TESTING:The primary database and tables have been successfully initialized
+\+TESTING:The primary database and tables have NOT been initialized
 \+TESTING:The database database3.db has already been created previously
 -TESTING:Recursion depth limited to: 3
 \+TESTING:The \\x1B\\\[1m--update\\x1B\\\[0m option has been used, so the information about files will be updated against the database database3.db

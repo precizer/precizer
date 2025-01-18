@@ -1,7 +1,6 @@
 #include "sute.h"
 
-Return maxdepth_argument_testing(void)
-{
+Return test0018_1_maxdepth_argument(void){
 	Return status = SUCCESS;
 
 	/* File system traversal with a maximum depth of 3 */
@@ -53,8 +52,7 @@ Return maxdepth_argument_testing(void)
 	RETURN_STATUS;
 }
 
-Return comparing_template_traversal(void)
-{
+Return test0018_2_comparing_templates(void){
 	Return status = SUCCESS;
 
 	char *text1 = NULL;
@@ -93,8 +91,8 @@ Return test0018(void){
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	TEST(maxdepth_argument_testing,"Traversal with limited depth…")
-	TEST(comparing_template_traversal,"Comparing traversal w/ and w/o depth limits…")
+	TEST(test0018_1_maxdepth_argument,"Traversal with limited depth…")
+	TEST(test0018_2_comparing_templates,"Comparing templates w/ and w/o depth limits…")
 
 	RETURN_STATUS;
 }
