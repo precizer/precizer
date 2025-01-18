@@ -21,7 +21,7 @@ TESTING:Successfully opened database DisposableDB
 TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
-TESTING:Database initialized
+TESTING:Database initialization process completed
 TESTING:The comparison of %DB_NAME% and database2.db databases is starting…
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% is exists and it is a file

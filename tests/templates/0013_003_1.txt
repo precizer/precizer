@@ -33,7 +33,7 @@ TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
-TESTING:Database initialized
+TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
