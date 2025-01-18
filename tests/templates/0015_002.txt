@@ -1,0 +1,72 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=./0015_database_v0.db
+TESTING:argument:db_file_name=0015_database_v0.db
+TESTING:argument:update=yes
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: .*$
+TESTING:Primary database file name: 0015_database_v0.db
+TESTING:Primary database file path: ./0015_database_v0.db
+TESTING:DB name determined
+TESTING:Verify that the path ./0015_database_v0.db exists
+TESTING:The path ./0015_database_v0.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Starting of database file 0015_database_v0.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database 0015_database_v0.db has been verified and is in good condition
+TESTING:Metadata table not found in database
+TESTING:The 0015_database_v0.db database file is version 0
+TESTING:The database 0015_database_v0.db file has an outdated version 0 and requires updating to the version 1
+TESTING:Caution! The update will be performed in transaction mode for database safety
+TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
+TESTING:Migration from version 0 to version 1 started
+TESTING:Store the current database version in the metadata table
+TESTING:The database version 1 has been successfully stored in the DB
+TESTING:Migration from version 0 to version 1 completed
+TESTING:The database has been successfully upgraded
+TESTING:The primary database doesn't need to be vacuumed during updates
+TESTING:Successfully opened database 0015_database_v0.db
+TESTING:The primary database and tables have NOT been initialized
+TESTING:The primary database named 0015_database_v0.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database 0015_database_v0.db
+TESTING:Database initialized
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The database 0015_database_v0.db has already been created previously
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database 0015_database_v0.db
+TESTING:File traversal started
+TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB 0015_database_v0.db:\x1B\[0m
+1/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash
+1/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
+1/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
+2/AAA/BBB/CZC/a.txt updated ctime was:.+ no rehash$
+3/AAA/BBB/CCC/a.txt updated ctime was:.+ no rehash$
+4/AAA/BBB/CCC/a.txt updated ctime was:.+ no rehash$
+path1/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash$
+path1/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
+path1/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
+path2/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash$
+path2/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
+path2/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
+TESTING:File traversal complete
+TESTING:Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
+TESTING:Version number 1 found in database
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
+TESTING:\x1B\[1mThe database file 0015_database_v0.db has been modified since the program was launched\x1B\[0m
+TESTING:The precizer completed its execution without any issues\z

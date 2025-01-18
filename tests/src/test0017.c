@@ -2,9 +2,9 @@
 #include <limits.h>
 
 static void test_conversion(
-	int  value,
+	int          value,
 	unsigned int base,
-	const char *string
+	const char   *string
 ){
 	char buffer[66];  /* 64 bits + sign + null terminator */
 	itoa(value,buffer,base);

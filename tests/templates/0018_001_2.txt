@@ -20,7 +20,7 @@ TESTING:DB name determined
 TESTING:Verify that the path database3.db exists
 TESTING:The path database3.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-TESTING:Final value for config->db_initialize_tables: true
+TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting of database file database3.db integrity check…
 TESTING:The database verification level has been set to FULL
@@ -29,7 +29,7 @@ TESTING:Version number 1 found in database
 TESTING:The database3.db database file is version 1
 TESTING:The database database3.db is on version 1 and does not require any upgrades
 TESTING:Successfully opened database database3.db
-TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named database3.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database3.db
 TESTING:Database initialized

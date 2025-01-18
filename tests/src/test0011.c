@@ -10,7 +10,7 @@
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
-static Return readme_example_1_test(void){
+static Return test0011_1_readme_example(void){
 	Return status = SUCCESS;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -55,7 +55,7 @@ static Return readme_example_1_test(void){
  * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
- * cp -r tests/examples/ tests/examples_backup
+ * cp -par tests/examples/ tests/examples_backup
  * # Modify a file
  * echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
  * # Add a new file
@@ -68,12 +68,12 @@ static Return readme_example_1_test(void){
  * rm -rf tests/examples/
  * mv tests/examples_backup/ tests/examples/
  */
-static Return readme_example_2_test(void){
+static Return test0011_2_readme_example(void){
 	Return status = SUCCESS;
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -r tests/examples/ tests/examples_backup;",SUCCESS,false,false));
+		"cp -par tests/examples/ tests/examples_backup;",SUCCESS,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
@@ -141,8 +141,8 @@ Return test0011(void){
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	TEST(readme_example_1_test,"Example 1 test from README…");
-	TEST(readme_example_2_test,"Example 2 test from README…");
+	TEST(test0011_1_readme_example,"Example 1 test from README…");
+	TEST(test0011_2_readme_example,"Example 2 test from README…");
 
 	RETURN_STATUS;
 }
