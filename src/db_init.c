@@ -121,11 +121,26 @@ Return db_init(void){
 	if(SUCCESS == status)
 	{
 		// Tune the DB performance
-		const char *pragma_sql = "PRAGMA page_size = 4096;"
-			    "PRAGMA strict = ON;"
-			    "PRAGMA cache_size = 524288;"
-			    "PRAGMA journal_mode = OFF;"
-			    "PRAGMA synchronous = OFF;";
+		const char *pragma_sql = NULL;
+
+		if(config->compare == true)
+		{
+			// Read-only mode
+			pragma_sql = "PRAGMA journal_mode = OFF;"
+				"PRAGMA synchronous = OFF;"
+				"PRAGMA cache_size = -8000;" // Increased cache to 8MB
+				"PRAGMA temp_store = MEMORY;"
+				"PRAGMA mmap_size = 30000000000;" // Using memory-mapped I/O
+				"PRAGMA page_size = 4096;"
+				"PRAGMA locking_mode = EXCLUSIVE;"
+				"PRAGMA strict = ON;";
+		} else {
+			// Read-write mode
+			pragma_sql = "PRAGMA page_size = 4096;"
+					"PRAGMA strict = ON;"
+					"PRAGMA cache_size = -2000;" // 2MB memory cache
+					"PRAGMA temp_store = MEMORY;"; // In-memory temporary tables
+		}
 
 		// Set SQLite pragmas
 		rc = sqlite3_exec(config->db,pragma_sql,NULL,NULL,NULL);
@@ -156,7 +171,7 @@ Return db_init(void){
 		}
 	}
 
-	slog(TRACE,"Database initialized\n");
+	slog(TRACE,"Database initialization process completed\n");
 
 	return(status);
 }

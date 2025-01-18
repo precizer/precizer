@@ -55,7 +55,7 @@ Return db_determine_mode(void){
 
 	// Initialize tables of the database or not
 	// Default value
-	config->db_initialize_tables = true;
+	config->db_initialize_tables = false;
 
 	/// The flags parameter to sqlite3_open_v2()
 	/// must include, at a minimum, one of the
@@ -92,6 +92,9 @@ Return db_determine_mode(void){
 			config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 
 		} else {
+			// Initialize brand new database
+			config->db_initialize_tables = true;
+
 			// Regular mode
 			config->sqlite_open_flag = SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE;
 
@@ -104,23 +107,8 @@ Return db_determine_mode(void){
 	{
 		if(config->dry_run == true)
 		{
-			if(config->db_file_exists == true)
+			if(config->db_file_exists == false)
 			{
-				// The database file exists and will be used in
-				// Dry Run mode, but no changes will affect it.
-				//
-				// This describes a scenario where:
-				//
-				// * A physical database file exists on the filesystem
-				// * The application is running in Dry Run mode
-				// * The database file will be read but partly kept in a read-only state
-				// * Any modifications during execution will be performed in memory only
-				// * The original database file will remain unmodified
-
-				// In Dry Run mode, no changes should be applied to the database
-				config->db_initialize_tables = false;
-
-			} else {
 				// Dry Run mode is activated and the database file hasn't been created
 				// before launching without this mode. In this case, the database will be
 				// created in memory and this won't affect any changes on disk.
