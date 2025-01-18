@@ -16,7 +16,8 @@ STRIP = -s
 STATIC = -static
 SRC = src
 PRZRSRC = ../src
-BUILDS = ../.builds/$(EXE)
+BUILDS = ../.builds
+BUILEXE = $(BUILDS)/$(EXE)
 LIBS = testitall mem sha512 rational sqlite xdiff
 
 # libc lib for static
@@ -60,7 +61,7 @@ PRZROBJS = $(PRZRSRCS:.c=.o)
 # Coverage build settings
 #
 COV = coverage
-COVDIR = $(BUILDS)/$(COV)
+COVDIR = $(BUILEXE)/$(COV)
 COVEXE = $(COVDIR)/$(EXE)
 COVOBJDIR = $(COVDIR)/obj
 COVREPORTDIR = $(COVOBJDIR)/../report/
@@ -73,7 +74,7 @@ COVLDFLAGS += -lgcov --coverage
 # Sanitize build settings
 #
 STZ = sanitize
-STZDIR = $(BUILDS)/$(STZ)
+STZDIR = $(BUILEXE)/$(STZ)
 STZEXE = $(STZDIR)/$(EXE)
 STZMAIN = $(EXE)
 STZOBJDIR = $(STZDIR)/obj
@@ -86,13 +87,13 @@ STZCFLAGS += -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointe
 # Debug build settings
 #
 DBG = debug
-DBGDIR = $(BUILDS)/$(DBG)
+DBGDIR = $(BUILEXE)/$(DBG)
 DBGEXE = $(DBGDIR)/$(EXE)
 DBGMAIN = $(EXE)
 DBGOBJDIR = $(DBGDIR)/obj
 DBGOBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(OBJS)))
 DBGPRZROBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(PRZROBJS)))
-DBGLIBDIR = $(BUILDS:$(EXE)=)$(DBG)/libs
+DBGLIBDIR = $(BUILEXE:$(EXE)=)$(DBG)/libs
 DBGLIBS = -L$(DBGLIBDIR)
 DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$(DBGLIBDIR)
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
@@ -210,6 +211,8 @@ clean:
 	@rm -rf $(COVREPORTDIR)
 	@test -d $(COVOBJDIR) && rm -d $(COVOBJDIR) 2>/dev/null || true
 	@test -d $(COVDIR) && rm -d $(COVDIR) 2>/dev/null || true
+
+	@test -d $(BUILEXE) && rm -d $(BUILEXE) 2>/dev/null || true
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
 	@echo $(EXE) cleared.
 
