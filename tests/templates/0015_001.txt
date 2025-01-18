@@ -1,0 +1,34 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=./0015_database_v0.db
+TESTING:argument:db_file_name=0015_database_v0.db
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: .*$
+TESTING:Primary database file name: 0015_database_v0.db
+TESTING:Primary database file path: ./0015_database_v0.db
+TESTING:DB name determined
+TESTING:Verify that the path ./0015_database_v0.db exists
+TESTING:The path ./0015_database_v0.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Starting of database file 0015_database_v0.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database 0015_database_v0.db has been verified and is in good condition
+TESTING:Metadata table not found in database
+TESTING:The 0015_database_v0.db database file is version 0
+TESTING:The database 0015_database_v0.db file has an outdated version 0 and requires updating to the version 1
+TESTING:Caution! The update will be performed in transaction mode for database safety
+TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
+ERROR:Program execution cannot continue. Database update required. Use the \x1B\[1m--update\x1B\[0m flag to perform this action
+ERROR:Database 0015_database_v0.db upgrade failed
+ERROR:The precizer process terminated unexpectedly due to an error\z

@@ -78,7 +78,7 @@ TESTING:DB name determined
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-TESTING:Final value for config->db_initialize_tables: true
+TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting of database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
@@ -87,7 +87,7 @@ TESTING:Version number 1 found in database
 TESTING:The database1.db database file is version 1
 TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Successfully opened database database1.db
-TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
@@ -129,10 +129,10 @@ TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-TESTING:Final value for config->db_initialize_tables: true
+TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Successfully opened database DisposableDB
-TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
 TESTING:Database initialized
@@ -187,7 +187,7 @@ TESTING:DB name determined
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-TESTING:Final value for config->db_initialize_tables: true
+TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting of database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
@@ -196,7 +196,7 @@ TESTING:Version number 1 found in database
 TESTING:The database1.db database file is version 1
 TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Successfully opened database database1.db
-TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named database1.db is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
 TESTING:Database initialized
@@ -238,10 +238,10 @@ TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-TESTING:Final value for config->db_initialize_tables: true
+TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Successfully opened database DisposableDB
-TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database and tables have NOT been initialized
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
 TESTING:Database initialized
