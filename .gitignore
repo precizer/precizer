@@ -1,4 +1,5 @@
 .builds
+.vscode
 doc
 src/*/
 tests/examples/huge/
@@ -9,4 +10,3 @@ precizer
 *.out.*
 *.old
 *~
-\.*/

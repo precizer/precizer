@@ -1,0 +1,41 @@
+name: Precizer
+
+on:
+  push:
+    branches: [ "v0.2" ]
+  pull_request:
+    branches: [ "v0.2" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        apt-get install -y build-essential \
+        libpcre2-dev \
+        cmake \
+        llvm
+
+    - name: Build project
+      run: make portable
+
+    - name: Run tests
+      run: |
+        cd tests
+        make sanitize run
+
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: precizer
+
+#    - name: Check code style
+#      run: |
+#        sudo apt-get install -y clang-format
+#        find . -name '*.c' -o -name '*.h' | xargs clang-format --dry-run --Werror
