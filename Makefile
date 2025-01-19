@@ -80,6 +80,9 @@ CONFIG += ordered
 # Build of dependent static library
 SUBDIRS = libs
 
+# Test directory
+TESTDIR = tests
+
 LIBS = sqlite sha512 mem rational
 
 # libc lib for static
@@ -162,11 +165,10 @@ TOPTARGETS := all
 .PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
-all: $(SUBDIRS) release
+all: release
 
 $(SUBDIRS):
-#	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
-#	@$(MAKE) -C $@ all
+	@$(MAKE) -s -C $(SUBDIRS) all
 
 # Clang
 clang: CC = clang
@@ -180,7 +182,7 @@ portable: release
 prod: production
 production: RELCFLAGS += -O3 -march=native
 production: RELLDFLAGS += -O3 -march=native -Wl,--hash-style=gnu
-production: release
+production: $(SUBDIRS) release
 
 #
 # Sanitize rules
@@ -349,7 +351,7 @@ cloc:
 	@cloc ./src
 
 # Character | prevent threading with clean
-clean-all: clean clean-docker
+clean-all: clean-tests clean clean-docker
 	@$(MAKE) -C $(SUBDIRS) clean
 
 clean: | clean-preproc clean-asm
@@ -364,6 +366,9 @@ clean: | clean-preproc clean-asm
 	@test -d $(RELDIR) && rm -d $(RELDIR) 2>/dev/null || true
 	@test -f $(EXE) && rm $(EXE) || true
 	@echo $(EXE) cleared.
+
+clean-tests:
+	@$(MAKE) -C $(TESTDIR) clean
 
 clean-preproc:
 	@rm -rf $(PREPROC)
