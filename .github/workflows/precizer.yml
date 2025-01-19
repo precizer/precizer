@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        apt-get install -y build-essential \
+        sudo apt-get install -y build-essential \
         libpcre2-dev \
         cmake \
         llvm
