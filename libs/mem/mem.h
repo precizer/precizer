@@ -214,3 +214,12 @@ Return copy_ullint(
 	mem_ullint *,
 	mem_ullint *
 );
+
+void FREE_AND_RESET(void **ptr);
+
+/**
+ * @brief Macro for converting argument of reset function to void**
+ * 
+ * @param arg Argument to be converted to void**
+ */
+#define reset(arg) FREE_AND_RESET((void**)(arg))
