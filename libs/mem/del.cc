@@ -9,10 +9,7 @@
 	}
 
 	// Free array memory inside structure
-	free((*structure)->mem);
-
-	// Set pointer to NULL as recommended by best practices
-	(*structure)->mem = NULL;
+	reset(&((*structure)->mem));
 
 	// Update telemetry
 	telemetry_reduce((*structure)->allocated);
