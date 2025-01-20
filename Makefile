@@ -165,7 +165,7 @@ TOPTARGETS := all
 .PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
-all: release
+all: portable
 
 $(SUBDIRS):
 	@$(MAKE) -s -C $(SUBDIRS) all
