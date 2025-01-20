@@ -65,7 +65,7 @@
 	{
 		TYPE *temp = (TYPE*)realloc(structure->mem, new_aligned_bytes);
 		if(temp == NULL){
-			free(structure->mem);
+			reset(&((structure)->mem));
 			report("Memory allocation failed, requested size: %zu bytes", new_aligned_bytes);
 			return(FAILURE);
 		}
