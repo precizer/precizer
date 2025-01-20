@@ -33,8 +33,7 @@ Return test0016(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	command = "export TESTING=false;cd ${TMPDIR};"
@@ -52,8 +51,7 @@ Return test0016(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	// Clean up test results

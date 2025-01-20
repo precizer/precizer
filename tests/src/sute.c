@@ -15,7 +15,7 @@ int main(void){
 
 	HEADER("\nTesting of built-in libraries\n");
 	TEST(test0001,"libsha512 hash check with sha512…");
-	TEST(test0007,"libmem Memory allocator test set");
+	TEST(test0007,"libmem Memory allocator test set…");
 	TEST(test0008,"librational test report messaging…");
 	TEST(test0009,"librational test slog messaging…");
 	TEST(test0017,"librational test itoa function…");

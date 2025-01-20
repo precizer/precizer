@@ -28,7 +28,7 @@ static Return dry_run_mode_1_test(void){
 
 	ASSERT(SUCCESS == check_file_exists(&file_exists,path));
 
-	free(path);
+	reset(&path);
 
 	// Should not be exists
 	ASSERT(file_exists == false);
@@ -105,8 +105,7 @@ static Return dry_run_mode_2_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&result);
 
@@ -131,8 +130,7 @@ static Return dry_run_mode_2_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&result);
 
@@ -155,8 +153,7 @@ static Return dry_run_mode_2_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&result);
 
@@ -164,7 +161,7 @@ static Return dry_run_mode_2_test(void){
 
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
-	free(path);
+	reset(&path);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -234,8 +231,7 @@ static Return no_dry_run_mode_3_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&result);
 
@@ -257,8 +253,7 @@ static Return no_dry_run_mode_3_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&result);
 
@@ -278,12 +273,11 @@ static Return no_dry_run_mode_3_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&result);
 
-	free(path);
+	reset(&path);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -317,14 +311,10 @@ Return compare_dry_and_real_4_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
 
-	free(text1);
-	text1 = NULL;
-	free(text2);
-	text2 = NULL;
-	free(diff);
-	diff = NULL;
-	free(pattern);
-	pattern = NULL;
+	reset(&text1);
+	reset(&text2);
+	reset(&diff);
+	reset(&pattern);
 
 	/* 0013 002 2 */
 	ASSERT(SUCCESS == get_file_content("templates/0013_002_2.txt",&text1));
@@ -339,14 +329,10 @@ Return compare_dry_and_real_4_test(void){
 
 	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
 
-	free(text1);
-	text1 = NULL;
-	free(text2);
-	text2 = NULL;
-	free(diff);
-	diff = NULL;
-	free(pattern);
-	pattern = NULL;
+	reset(&text1);
+	reset(&text2);
+	reset(&diff);
+	reset(&pattern);
 
 	/* 0013 002 3 */
 	ASSERT(SUCCESS == get_file_content("templates/0013_002_3.txt",&text1));
@@ -361,14 +347,10 @@ Return compare_dry_and_real_4_test(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
 
-	free(text1);
-	text1 = NULL;
-	free(text2);
-	text2 = NULL;
-	free(diff);
-	diff = NULL;
-	free(pattern);
-	pattern = NULL;
+	reset(&text1);
+	reset(&text2);
+	reset(&diff);
+	reset(&pattern);
 
 	RETURN_STATUS;
 }

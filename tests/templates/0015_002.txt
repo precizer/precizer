@@ -22,7 +22,7 @@ TESTING:The path ./0015_database_v0.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting of database file 0015_database_v0.db integrity check…
+TESTING:Starting database file 0015_database_v0.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database 0015_database_v0.db has been verified and is in good condition
 TESTING:Metadata table not found in database

@@ -8,7 +8,7 @@
 \+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 \+TESTING:Final value for config->db_initialize_tables: false
 -TESTING:The primary database file was just created and doesn't require verification
-\+TESTING:Starting of database file database3.db integrity check…
+\+TESTING:Starting database file database3.db integrity check…
 \+TESTING:The database verification level has been set to FULL
 \+TESTING:Database database3.db has been verified and is in good condition
 \+TESTING:Version number 1 found in database

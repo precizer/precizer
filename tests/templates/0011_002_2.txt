@@ -22,7 +22,7 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting of database file database1.db integrity check…
+TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
 TESTING:Version number 1 found in database
