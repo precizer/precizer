@@ -27,7 +27,13 @@ Return status_of_changes(void){
 				status = FAILURE;
 			}
 
-			if(memcmp(&db_current_stat,&(config->db_file_stat),sizeof(struct stat)) != 0)
+			CmpctStat before = {0};
+			CmpctStat after = {0};
+
+			stat_copy(&(config->db_file_stat),&before);
+			stat_copy(&db_current_stat,&after);
+
+			if(IDENTICAL != compare_file_metadata_equivalence(&before,&after))
 			{
 				if(config->something_has_been_changed == true)
 				{

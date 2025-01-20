@@ -5,7 +5,7 @@ CONFIG += ordered
 
 SUBDIRS  = sqlite rational sha512 testitall mem xdiff
 
-TOPTARGETS := all clean release debug prod production sanitize test cosmo
+TOPTARGETS := all clean release debug prod production sanitize test cosmo gcc-analyzer
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
@@ -13,7 +13,8 @@ $(SUBDIRS):
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS)
 
-gccanalyzer:
+gcc-analyzer:
 	@true
 
 all: $(SUBDIRS)
+	@echo Building all internal libraries
