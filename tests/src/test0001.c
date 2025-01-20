@@ -3,7 +3,7 @@
 
 /**
  *
- * libsha512 hash check with sha512
+ * libsha512 hash check with the sha512 built-in library
  *
  */
 Return test0001(void){

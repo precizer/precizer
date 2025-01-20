@@ -2,7 +2,7 @@
 
 /**
  *
- * Create default name database
+ * Create a database with the default name
  *
  */
 Return test0002(void){
@@ -11,10 +11,7 @@ Return test0002(void){
 	Return status = SUCCESS;
 
 	// Get the output of an external program
-	const char *command = "export TESTING=true;"
-	        "cd ${TMPDIR};"
-	        "export ASAN_OPTIONS;"
-	        "export ASAN_SYMBOLIZER_PATH;"
+	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer tests/examples/diffs";
 
 	const char *filename = "templates/0002.txt";  // File name
