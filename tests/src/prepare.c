@@ -45,7 +45,7 @@ Return prepare(void){
 
 	ASSERT(SUCCESS == check_file_exists(&file_exists,path));
 
-	free(path);
+	reset(&path);
 
 	if(file_exists == true)
 	{

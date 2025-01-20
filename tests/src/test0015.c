@@ -29,8 +29,7 @@ Return test0015_1_upgrade_db(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	// Clean up test results
@@ -68,8 +67,7 @@ Return test0015_2_upgrade_db(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	RETURN_STATUS;
@@ -102,8 +100,7 @@ Return test0015_3_upgrade_db(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	// Clean up test results

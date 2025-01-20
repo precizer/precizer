@@ -106,8 +106,7 @@ Return test0017(void){
 	// Match the result against the pattern
 	ASSERT(SUCCESS == match_pattern(captured_stdout->mem,pattern));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&captured_stdout);
 	del_char(&captured_stderr);

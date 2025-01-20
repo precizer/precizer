@@ -147,7 +147,7 @@ TESTING:Database initialization process completed
 TESTING:The comparison of database1.db and database2.db databases is starting…
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
-TESTING:Starting of database file database1.db integrity check…
+TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
 TESTING:Version number 1 found in database
@@ -155,7 +155,7 @@ TESTING:The database1.db database file is version 1
 TESTING:The database database1.db is on version 1 and does not require any upgrades
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
-TESTING:Starting of database file database2.db integrity check…
+TESTING:Starting database file database2.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database2.db has been verified and is in good condition
 TESTING:Version number 1 found in database

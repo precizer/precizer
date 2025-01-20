@@ -36,8 +36,7 @@ static Return test0011_1_readme_example(void){
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
 		"rm database1.db database2.db",SUCCESS,false,false));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&result);
 
@@ -91,8 +90,7 @@ static Return test0011_2_readme_example(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
@@ -105,8 +103,7 @@ static Return test0011_2_readme_example(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
@@ -122,8 +119,7 @@ static Return test0011_2_readme_example(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	// Clean up test results

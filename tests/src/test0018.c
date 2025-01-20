@@ -21,8 +21,7 @@ Return test0018_1_maxdepth_argument(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	#if 0
@@ -43,8 +42,7 @@ Return test0018_1_maxdepth_argument(void){
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	// Clean to use it iteratively
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 	del_char(&result);
 
 	// Clean up test results
@@ -73,10 +71,10 @@ Return test0018_2_comparing_templates(void){
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
 
-	free(text1);
-	free(text2);
-	free(diff);
-	free(pattern);
+	reset(&text1);
+	reset(&text2);
+	reset(&diff);
+	reset(&pattern);
 
 	RETURN_STATUS;
 }
