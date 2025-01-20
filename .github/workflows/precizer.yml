@@ -2,9 +2,9 @@ name: Precizer
 
 on:
   push:
-    branches: [ "v0.2" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "v0.2" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -34,4 +34,3 @@ jobs:
       with:
         name: build-artifacts
         path: precizer
-
