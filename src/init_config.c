@@ -124,7 +124,7 @@ void init_config(void){
 	const char *env_var = getenv("TESTING");
 
 	// Check if it exists and compare it to "true"
-	if(env_var != NULL && strncasecmp(env_var, compare_string, strlen(compare_string)) == 0)
+	if(env_var != NULL && strncasecmp(env_var,compare_string,strlen(compare_string)) == 0)
 	{
 		// Global variable
 		rational_logger_mode = TESTING;
