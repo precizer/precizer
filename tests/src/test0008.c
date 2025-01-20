@@ -33,8 +33,7 @@ Return test0008(void){
 
 	ASSERT(SUCCESS == match_pattern(captured_stderr->mem,pattern));
 
-	free(pattern);
-	pattern = NULL;
+	reset(&pattern);
 
 	del_char(&captured_stdout);
 	del_char(&captured_stderr);

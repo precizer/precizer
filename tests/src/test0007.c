@@ -113,7 +113,7 @@ static Return libmem_test_1(void){
 
 	// free an empty int array
 	del_int(&test1);
-	free(int_array);
+	reset(&int_array);
 
 	RETURN_STATUS;
 }
@@ -182,7 +182,7 @@ static Return libmem_test_2(void){
 
 	// free an empty char array
 	del_char(&test2);
-	free(char_array);
+	reset(&char_array);
 
 	RETURN_STATUS;
 }
@@ -357,7 +357,7 @@ static Return libmem_test_3_4_5(void){
 
 	// free an empty unsigned long long int array
 	del_ullint(&test);
-	free(ullint_array);
+	reset(&ullint_array);
 
 	#if SHOW
 	telemetry_show();
