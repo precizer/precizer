@@ -46,10 +46,10 @@ Return db_vacuum(const char *db_file_path){
 	{
 		/* Create SQL statement */
 		const char *sql = "PRAGMA analyze;"
-			    "PRAGMA optimize;"
-			    "VACUUM;"
-			    "PRAGMA analyze;"
-			    "PRAGMA optimize;";
+		        "PRAGMA optimize;"
+		        "VACUUM;"
+		        "PRAGMA analyze;"
+		        "PRAGMA optimize;";
 
 		if(db_is_primary == true)
 		{
@@ -79,7 +79,36 @@ Return db_vacuum(const char *db_file_path){
 	/* Cleanup */
 	if(db != NULL)
 	{
-		sqlite3_close(db);
+		/**
+		 * @brief Force cache flush to disk for data persistence
+		 * @note This is the first approach to ensure data integrity
+		 */
+		if(SQLITE_OK != sqlite3_db_cacheflush(db))
+		{
+			slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
+
+		/**
+		 * @brief Configure SQLite for maximum reliability using PRAGMA
+		 * @note This is the second approach to ensure data integrity
+		 * @details Sets synchronous mode to FULL for maximum durability
+		 */
+		if(SQLITE_OK != sqlite3_exec(db,"PRAGMA synchronous = FULL;",NULL,NULL,NULL))
+		{
+			slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
+
+		/**
+		 * @brief Close database connection and cleanup resources
+		 * @note Must be called to prevent resource leaks
+		 */
+		if(SQLITE_OK != sqlite3_close(db))
+		{
+			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
 	}
 
 	return(status);
