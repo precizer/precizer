@@ -2,7 +2,7 @@
 
 /**
  *
- * Example test
+ * Another simple test case
  *
  */
 Return test0005(void){
