@@ -181,7 +181,6 @@ void show_relative_path(
 		slog(EVERY,BOLD "These files will be added against the %s database:" RESET "\n",config->db_file_name);
 	}
 
-
 	// Print if NOT silent
 	if(!(rational_logger_mode & SILENT))
 	{

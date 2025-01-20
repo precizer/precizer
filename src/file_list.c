@@ -6,10 +6,10 @@
  *
  */
 static void show_status(
-	size_t *count_dirs,
-	size_t *count_files,
-	size_t *count_symlnks,
-	size_t *total_size_in_bytes,
+	size_t     *count_dirs,
+	size_t     *count_files,
+	size_t     *count_symlnks,
+	size_t     *total_size_in_bytes,
 	const bool *count_size_of_all_files,
 	const bool *at_least_one_file_was_shown
 ){
@@ -24,8 +24,8 @@ static void show_status(
 
 	} else if(*at_least_one_file_was_shown == true){
 
-			show_complete = true;
-			show_total = true;
+		show_complete = true;
+		show_total = true;
 	}
 
 	if(show_complete == true)
