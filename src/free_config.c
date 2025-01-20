@@ -15,8 +15,28 @@ void free_config(void){
 	term.c_lflag |= (ICANON|ECHO);
 	tcsetattr(fileno(stdin),0,&term);
 
-	/* Close previously used DB */
-	sqlite3_close(config->db);
+	/* Cleanup and close previously used DB */
+	if(config->db != NULL)
+	{
+		/**
+		 * @brief Force cache flush to disk for data persistence
+		 * @note This is the first approach to ensure data integrity
+		 */
+		sqlite3_db_cacheflush(config->db);
+
+		/**
+		 * @brief Configure SQLite for maximum reliability using PRAGMA
+		 * @note This is the second approach to ensure data integrity
+		 * @details Sets synchronous mode to FULL for maximum durability
+		 */
+		sqlite3_exec(config->db,"PRAGMA synchronous = FULL;",NULL,NULL,NULL);
+
+		/**
+		 * @brief Close database connection and cleanup resources
+		 * @note Must be called to prevent resource leaks
+		 */
+		sqlite3_close(config->db);
+	}
 
 	free(config->running_dir);
 
@@ -55,7 +75,4 @@ void free_config(void){
 		}
 		free(config->include);
 	}
-
-	// DB File sync to disk
-	sync();
 }

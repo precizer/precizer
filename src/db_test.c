@@ -1,9 +1,15 @@
 #include "precizer.h"
 
 /**
+ * @brief Validates the integrity of SQLite database file
+ * @details Performs integrity check on the specified database file using either
+ *          quick or full check based on configuration. Also verifies database
+ *          version and upgrades if necessary.
  *
- * Validate the integrity of database file
- *
+ * @param[in] db_file_path Path to the SQLite database file to validate
+ * @return Return status code:
+ *         - SUCCESS: Database validation passed successfully
+ *         - FAILURE: Database validation failed or errors occurred
  */
 Return db_test(const char *db_file_path){
 	/// The status that will be passed to return() before exiting.
@@ -18,13 +24,13 @@ Return db_test(const char *db_file_path){
 
 	const char *db_file_name = NULL;
 
-	// Extract file name from a path
+	/* Extract file name from path */
 	char *dirc = strdup(db_file_path);
 
 	if(dirc == NULL)
 	{
 		serp("Memory allocation failed during strdup operation");
-		status = FAILURE;
+		return(FAILURE);
 	}
 
 	if(SUCCESS == status)
@@ -33,25 +39,14 @@ Return db_test(const char *db_file_path){
 
 		if(db_file_name == NULL)
 		{
-			report("basename failed for path: %s",db_file_name);
+			report("basename failed for path: %s",db_file_path);
 			status = FAILURE;
 		}
 	}
 
+	/* Check if verification should be skipped */
 	if(SUCCESS == status)
 	{
-#if 0
-
-		// Don't do anything and interrupt
-		if(config->compare == true)
-		{
-			slog(TRACE,"Compare mode is enabled. Database verification for %s is skipped\n",db_file_name);
-			free(dirc);
-			return(SUCCESS);
-
-		} else
-#endif
-
 		if(config->dry_run == true && config->db_file_exists == false)
 		{
 			slog(TRACE,"Dry Run mode is enabled. Database verification for %s is skipped\n",db_file_name);
@@ -60,17 +55,10 @@ Return db_test(const char *db_file_path){
 		}
 	}
 
-	if(SUCCESS != status)
-	{
-		free(dirc);
-		return(status);
-	}
-
+	/* Open database in read-only mode */
 	if(SUCCESS == status)
 	{
-
-		slog(EVERY,"Starting of database file %s integrity check…\n",db_file_name);
-
+		slog(EVERY,"Starting database file %s integrity check…\n",db_file_name);
 		int sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 		/* Open database */
@@ -81,6 +69,7 @@ Return db_test(const char *db_file_path){
 		}
 	}
 
+	/* Prepare integrity check statement */
 	if(SUCCESS == status)
 	{
 		const char *sql = "PRAGMA integrity_check";
@@ -102,6 +91,7 @@ Return db_test(const char *db_file_path){
 		}
 	}
 
+	/* Execute integrity check */
 	if(SUCCESS == status)
 	{
 		int rc = 0;
@@ -123,8 +113,12 @@ Return db_test(const char *db_file_path){
 		}
 	}
 
-	sqlite3_finalize(select_stmt);
+	if(select_stmt != NULL)
+	{
+		sqlite3_finalize(select_stmt);
+	}
 
+	/* Report integrity check results */
 	if(SUCCESS == status)
 	{
 		if(database_is_ok == true)
@@ -136,8 +130,15 @@ Return db_test(const char *db_file_path){
 		}
 	}
 
-	sqlite3_close(db);
+	/* Cleanup resources */
 
+	if(SQLITE_OK != sqlite3_close(db))
+	{
+		slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
+		status = FAILURE;
+	}
+
+	/* Check database version if integrity check passed */
 	if(SUCCESS == status)
 	{
 		/* Check the database version number and upgrade the database if necessary */

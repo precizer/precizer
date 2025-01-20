@@ -144,10 +144,10 @@ Return migrate_from_0_to_1(const char *db_file_path){
 	{
 		/* Set safety pragmas */
 		const char *pragmas = "PRAGMA journal_mode=WAL;"
-		           "PRAGMA strict = ON;"
-		           "PRAGMA synchronous=FULL;"
-		           "PRAGMA foreign_keys=ON;"
-		           "PRAGMA locking_mode=EXCLUSIVE;";
+		        "PRAGMA strict = ON;"
+		        "PRAGMA synchronous=FULL;"
+		        "PRAGMA foreign_keys=ON;"
+		        "PRAGMA locking_mode=EXCLUSIVE;";
 
 		rc = sqlite3_exec(db,pragmas,NULL,NULL,&err_msg);
 
@@ -231,7 +231,36 @@ Return migrate_from_0_to_1(const char *db_file_path){
 	/* Cleanup */
 	if(db != NULL)
 	{
-		sqlite3_close(db);
+		/**
+		 * @brief Force cache flush to disk for data persistence
+		 * @note This is the first approach to ensure data integrity
+		 */
+		if(SQLITE_OK != sqlite3_db_cacheflush(db))
+		{
+			slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
+
+		/**
+		 * @brief Configure SQLite for maximum reliability using PRAGMA
+		 * @note This is the second approach to ensure data integrity
+		 * @details Sets synchronous mode to FULL for maximum durability
+		 */
+		if(SQLITE_OK != sqlite3_exec(db,"PRAGMA synchronous = FULL;",NULL,NULL,NULL))
+		{
+			slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
+
+		/**
+		 * @brief Close database connection and cleanup resources
+		 * @note Must be called to prevent resource leaks
+		 */
+		if(SQLITE_OK != sqlite3_close(db))
+		{
+			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
 	}
 
 	return(status);
