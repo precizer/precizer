@@ -106,7 +106,7 @@ Return db_get_version(
 		if(SQLITE_OK != sqlite3_close(db))
 		{
 			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
-			/* Don't change status as the operation was otherwise successful */
+			status = FAILURE;
 		}
 	}
 
