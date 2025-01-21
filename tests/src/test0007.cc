@@ -7,7 +7,7 @@ for(int i = 0; i < CYCLES;i++)
 	size_t array_length = (size_t)(1L + (rand() % (1000L + 1L)));
 
 	size_t array_size = array_length * sizeof(TYPE);
-	unsigned char *ARRAY_TYPE = (unsigned char *)realloc(ARRAY_TYPE,array_size);
+	unsigned char *array = (unsigned char *)realloc(array,array_size);
 
 	// Seed random number generator
 	srand((unsigned int)time(NULL));
@@ -15,13 +15,13 @@ for(int i = 0; i < CYCLES;i++)
 	// Fill array with random bytes
 	for(size_t j = 0; j < array_size; j++)
 	{
-		ARRAY_TYPE[j] = (unsigned char)(rand() % 256);
+		array[j] = (unsigned char)(rand() % 256);
 	}
 
 	// Calculate SHA-512 hash
 	SHA512_Context ctx;
 	sha512_init(&ctx);
-	sha512_update(&ctx,ARRAY_TYPE,array_size);
+	sha512_update(&ctx,array,array_size);
 	sha512_final(&ctx,hash_1);
 
 	#if SHOW_TEST
@@ -39,7 +39,7 @@ for(int i = 0; i < CYCLES;i++)
 	ASSERT(SUCCESS == REALLOC_TYPE(test,array_length,true_reduce));
 
 	// Test memeory edges
-	memcpy(test->mem,ARRAY_TYPE,test->length * sizeof(test->mem[0]));
+	memcpy(test->mem,array,test->length * sizeof(test->mem[0]));
 
 	// Calculate SHA-512 hash
 	sha512_init(&ctx);
@@ -61,6 +61,5 @@ for(int i = 0; i < CYCLES;i++)
 
 	// free an empty TYPE array
 	DEL_TYPE(&test);
-	reset(&ARRAY_TYPE);
+	reset(&array);
 }
-
