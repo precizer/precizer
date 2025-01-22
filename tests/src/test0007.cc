@@ -3,14 +3,21 @@ for(int i = 0; i < CYCLES;i++)
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
 
-	// Generates a random number within a specified range (0-1000)
-	size_t array_length = (size_t)(1L + (rand() % (1000L + 1L)));
-
-	size_t array_size = array_length * sizeof(TYPE);
-	unsigned char *array = (unsigned char *)realloc(array,array_size);
-
 	// Seed random number generator
 	srand((unsigned int)time(NULL));
+
+	// Generates a random number within a specified range (0-1000)
+	// result = min + (rand() % (max - min + 1));
+	size_t array_length = (size_t)(1L + (rand() % 1000L));
+
+	size_t array_size = array_length * sizeof(TYPE);
+	unsigned char *array = NULL;
+	unsigned char *temp = (unsigned char *)realloc(array,array_size);
+	if (temp == NULL)
+	{
+		echo(STDERR,"Can't allocate memory %zu bytes\n",array_size);
+	}
+	array = temp;
 
 	// Fill array with random bytes
 	for(size_t j = 0; j < array_size; j++)
