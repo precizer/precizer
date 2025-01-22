@@ -1,5 +1,9 @@
 TODO:
 
+* Symlinks are currently ignored. Details in test0019. Need to add
+  symlink processing. Do they have their own size? Does it change
+  when the target changes?
+
 * Integration of the xxHash library using the XXH3_128bits algorithm
   for high-performance hashing as a multi-threaded implementation.
   Here's the concept: The file is read in a single thread.
