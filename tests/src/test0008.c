@@ -7,6 +7,13 @@ static void report_test(void){
 	report("Buffer overflow at position %d with value %s",42,"overflow");
 }
 
+/*
+ * Testing the formatted error message output function.
+ * This function's key feature is that it displays messages
+ * without heap memory allocation. For example, it can be
+ * used to output messages about memory allocation failures
+ * when there is insufficient memory available.
+ */
 Return test0008(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
