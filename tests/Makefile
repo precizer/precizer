@@ -49,6 +49,7 @@ endif
 # Project files
 #
 SRCS = $(wildcard $(SRC)/*.c)
+TMPLTS = $(wildcard $(SRC)/*.cc)
 HDRS = $(wildcard $(SRC)/*.h)
 PRZRHDRS = $(wildcard $(PRZRSRC)/*.h)
 ALLHDRS = $(HDRS) $(PRZRHDRS)
@@ -113,11 +114,11 @@ $(COVEXE): $(COVOBJS) $(COVPRZROBJS)
 	@$(CC) $(CFLAGS) $(COVCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(COVEXE) $^ $(LDFLAGS) $(COVLDFLAGS)
 	@echo "$@ linked."
 
-$(COVOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) | $(COVOBJDIR)
+$(COVOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COVOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(COVCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
-$(COVOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) | $(COVOBJDIR)
+$(COVOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COVOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(COVCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
@@ -148,11 +149,11 @@ $(STZEXE): $(STZOBJS) $(STZPRZROBJS)
 	@$(CC) $(CFLAGS) $(STZCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(STZOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) | $(STZOBJDIR)
+$(STZOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STZOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
-$(STZOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) | $(STZOBJDIR)
+$(STZOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STZOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
@@ -172,11 +173,11 @@ $(DBGEXE): $(DBGOBJS) $(DBGPRZROBJS)
 	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) $(STATIC) -o $(DBGEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(DBGOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) | $(DBGOBJDIR)
+$(DBGOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBGOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
-$(DBGOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) | $(DBGOBJDIR)
+$(DBGOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBGOBJDIR)
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
@@ -188,7 +189,7 @@ $(DBGOBJDIR):
 #
 format:
 	@echo "Formatting source files..."
-	@for file in $(SRCS) $(HDRS); do \
+	@for file in $(SRCS) $(HDRS) $(TMPLTS); do \
 		echo "Formatting $$file"; \
 		uncrustify -c ../Uncrustify.cfg --replace --no-backup $$file; \
 	done

@@ -24,7 +24,7 @@ RUN make hugetestfile \
     && cd - \
     && make sanitize
 
-RUN cd tests && make sanitize debug run
+RUN cd tests && make sanitize debug run && /precizer/tests/testitall
 
 RUN cd - && make portable
 

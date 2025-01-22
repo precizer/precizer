@@ -32,6 +32,7 @@ int main(void){
 	TEST(test0016,"--watch-timestamps argument testing…");
 	TEST(test0015,"Database upgrade testing…");
 	TEST(test0018,"--maxdepth argument testing…");
+	TEST(test0019,"Testing symlink operations…");
 
 	HEADER("\nClean results\n");
 	RUN(clean,"Temporary data cleanup…");
