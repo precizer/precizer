@@ -1,5 +1,15 @@
 TODO:
 
+* Add function return value checks to files:
+    - src/file_availability.c
+
+* Verify that all asprintf, realloc, malloc and other memory
+  handling functions report memory allocation errors as follows:
+  report("Memory allocation failed, requested size: %zu bytes",size);
+  Check syntax! Is \n needed at the end of report() or not?
+
+* Check all strdup() return values for errors (there are many instances).
+
 * Symlinks are currently ignored. Details in test0019. Need to add
   symlink processing. Do they have their own size? Does it change
   when the target changes?
