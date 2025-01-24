@@ -46,10 +46,6 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database 0015_database_v0.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database 0015_database_v0.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB 0015_database_v0.db:\x1B\[0m

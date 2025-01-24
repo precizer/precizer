@@ -51,8 +51,8 @@ int main(
 	// parsing command line arguments
 	run(parse_arguments(argc,argv));
 
-	// Check all paths passed as arguments.
-	// Are they directories and do they exist?
+	// Verify that the provided paths exist and
+	// are directories
 	run(detect_paths());
 
 	// Initialize signals interception like Ctrl+C
@@ -90,10 +90,6 @@ int main(
 	// Save new prefixes that has been passed as
 	// arguments
 	run(db_save_prefixes());
-
-	// Verify that the provided paths exist and
-	// are directories
-	run(detect_paths());
 
 	// Just get a statistic
 	run(file_list(true));

@@ -53,7 +53,6 @@ TESTING:path1/AAA/ZAW/D/e/f/b_file.txt
 TESTING:path2/AAA/BCB/CCC/a.txt
 TESTING:Comparison of %DB_NAME% and database2.db databases is complete
 TESTING:Comparison mode is enabled. The primary database verification is not required
-TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:Comparison mode is enabled. Store the primary database version is not required
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming

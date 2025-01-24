@@ -32,10 +32,6 @@ TESTING:The in-memory runtime_paths_id database successfully attached to the pri
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
 1/AAA/BCB/CCC/a.txt
@@ -98,10 +94,6 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
@@ -165,7 +157,6 @@ TESTING:\x1B\[1mThe SHA512 checksums of these files do not match between databas
 TESTING:1/AAA/BCB/CCC/a.txt
 TESTING:Comparison of database1.db and database2.db databases is complete
 TESTING:Comparison mode is enabled. The primary database verification is not required
-TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:Comparison mode is enabled. Store the primary database version is not required
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
@@ -211,10 +202,6 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
@@ -278,7 +265,6 @@ TESTING:\x1B\[1mThe SHA512 checksums of these files do not match between databas
 TESTING:1/AAA/BCB/CCC/a.txt
 TESTING:Comparison of database1.db and database2.db databases is complete
 TESTING:Comparison mode is enabled. The primary database verification is not required
-TESTING:Comparing databases. Directory path verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:Comparison mode is enabled. Store the primary database version is not required
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
