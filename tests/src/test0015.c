@@ -51,7 +51,7 @@ Return test0015_2_upgrade_db(void){
 	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp -p tests/0015_database_v0.db .;"
-	        "${BINDIR}/precizer --update --database=./0015_database_v0.db tests/examples/diffs/diff1";
+	        "${BINDIR}/precizer --update --database=0015_database_v0.db tests/examples/diffs/diff1";
 
 	MSTRUCT(mem_char,result);
 
