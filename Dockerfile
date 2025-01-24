@@ -40,3 +40,16 @@ COPY --from=builder /precizer/tests/testitall tests/
 
 # Run tests
 RUN cd tests && /precizer/tests/testitall
+
+FROM ubuntu:18.04
+
+WORKDIR /precizer
+
+# Copy required files from builder stage
+COPY --from=builder /precizer/precizer .
+COPY --from=builder /precizer/tests/examples/ tests/examples/
+COPY --from=builder /precizer/tests/templates/ tests/templates/
+COPY --from=builder /precizer/tests/testitall tests/
+
+# Run tests
+RUN cd tests && /precizer/tests/testitall
