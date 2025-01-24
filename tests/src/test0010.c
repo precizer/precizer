@@ -2,7 +2,7 @@
 
 /**
  *
- * Example test
+ * Example test. Testitall library capability demonstration.
  *
  */
 Return test0010(void){

@@ -84,7 +84,10 @@ void slog_test(void){
 	printf("35. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
 	printf("36.  Must print:");   slog(ERROR,"true"); printf("\n");
 }
-
+/**
+ * All available combinations of slog options
+ *
+ */
 Return test0009(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.

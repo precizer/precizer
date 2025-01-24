@@ -1,29 +1,29 @@
 #include "sute.h"
 
 int main(void){
-	// Test function name and its short description
 	TESTSTART;
 
-	HEADER("Preparations\n");
+	HEADER("Preparations");
 	TEST(prepare,"Preparation for tests");
 
-	HEADER("\nTest examples\n");
+	HEADER("Test examples");
+	// Test function name and its short description
 	TEST(test0004,"Example test…");
 	TEST(test0005,"Example test…");
 	TEST(test0006,"Example test…");
-	TEST(test0010,"Example test…");
+	TEST(test0010,"Testitall library capability demonstration…");
 
-	HEADER("\nTesting of built-in libraries\n");
+	HEADER("Testing of built-in libraries");
 	TEST(test0001,"libsha512 hash check with sha512…");
 	TEST(test0007,"libmem Memory allocator test set…");
 	TEST(test0008,"librational test report messaging…");
 	TEST(test0009,"librational test slog messaging…");
 	TEST(test0017,"librational test itoa function…");
 
-	HEADER("\nUnit Testing of precizer\n");
+	HEADER("Unit Testing of precizer");
 	TEST(test0012,"add_string_to_array() test set…");
 
-	HEADER("\nSystem Testing of precizer\n");
+	HEADER("System Testing of precizer");
 	TEST(test0002,"Create default name database…");
 	TEST(test0003,"Comply default DB name to \"hostname.db\" template…");
 	TEST(test0011,"User's Manual and examples from README test set…");
@@ -35,11 +35,11 @@ int main(void){
 	TEST(test0019,"Testing symlink operations…");
 	TEST(test0020,"Testing DB creation attempt in missing directory…");
 
-	HEADER("\nClean results\n");
+	HEADER("Clean results");
 	RUN(clean,"Temporary data cleanup…");
 
 	RUN(finish,"Telemetry");
 
-	HEADER("\nFinishing\n");
+	HEADER("Finishing");
 	TESTDONE;
 }

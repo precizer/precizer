@@ -131,7 +131,11 @@ static Return test0011_2_readme_example(void){
 	RETURN_STATUS;
 }
 
-// Main test runner
+/**
+ *
+ * User's Manual and examples from README test set
+ *
+ */
 Return test0011(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.

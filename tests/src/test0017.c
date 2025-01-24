@@ -83,6 +83,10 @@ void test_itoa(void){
 	printf("Base: %d\tConverted String: %s\n",16,itoa(1567,str,16));
 }
 
+/**
+ * @brief Test program for itoa function
+ *
+ */
 Return test0017(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.

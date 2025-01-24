@@ -355,7 +355,11 @@ Return compare_dry_and_real_4_test(void){
 	RETURN_STATUS;
 }
 
-// Main test runner
+/**
+ *
+ * Dry Run mode testing
+ *
+ */
 Return test0013(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
