@@ -38,10 +38,6 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database 0015_database_v0.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
 TESTING:Version number 1 found in database
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mThe database file 0015_database_v0.db has NOT been modified since the program was launched\x1B\[0m

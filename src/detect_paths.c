@@ -27,10 +27,9 @@ Return detect_paths(void){
 
 	for(int i = 0; config->paths[i]; i++)
 	{
-		if(NOT_FOUND == file_availability(config->paths[i],SHOULD_BE_A_DIRECTORY))
+		if(SUCCESS == status && NOT_FOUND == file_availability(config->paths[i],SHOULD_BE_A_DIRECTORY))
 		{
-			slog(ERROR,"The path %s doesn't exist or is not a directory",config->paths[i]);
-			return(FAILURE);
+			status = FAILURE;
 		}
 	}
 

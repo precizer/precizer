@@ -33,10 +33,6 @@ TESTING:The in-memory runtime_paths_id database successfully attached to the pri
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path .+/tests/examples/levels exists
-TESTING:The path .+/tests/examples/levels is exists and it is a directory
-TESTING:Paths detected
 TESTING:Recursion depth limited to: 3
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the database3.db database:\x1B\[0m
