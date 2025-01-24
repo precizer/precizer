@@ -187,7 +187,14 @@ void show_relative_path(
 
 		*at_least_one_file_was_shown = true;
 
-		printf("%s",relative_path);
+		/* Truncate the file path/name in the display output if it exceeds the length limit */
+		char *shorten_relative_path = strdup(relative_path);
+
+		(void)shorten_path(shorten_relative_path);
+
+		printf("%s",shorten_relative_path);
+
+		free(shorten_relative_path);
 
 		if(*ignored == true)
 		{

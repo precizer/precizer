@@ -13,18 +13,12 @@ Return prepare(void){
 
 	ASSERT(SUCCESS == execute_and_set_variable("DBNAME","echo \"$(hostname).db\"",0));
 
-#if 0 // These operations moved to Makefile
-	ASSERT(SUCCESS == set_environment_variable("ASAN_OPTIONS","symbolize=1"));
-	ASSERT(SUCCESS == execute_and_set_variable("ASAN_SYMBOLIZER_PATH","which llvm-symbolizer",0));
-	ASSERT(SUCCESS == set_environment_variable("CC","gcc-12"));
-	ASSERT(SUCCESS == external_call("cd $ORIGIN_DIR;make sanitize > /dev/null 2>&1",SUCCESS,false,false));
-#endif
-
 	command = "export TESTDIRS=${TMPDIR}/tests/examples/diffs/;"
 	        "mkdir -p ${TESTDIRS};"
 	        "cd ${TMPDIR};"
 	        "cp -apr $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
 	        "cp -apr $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
+	        "cp -apr $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
 	        "cp -apr $ORIGIN_DIR/tests/templates/0015_database_v0.db ${TESTDIRS}/../../;"
 	        "test -f $ORIGIN_DIR/precizer && cp -apr $ORIGIN_DIR/precizer .;"
 	        "mkdir -p .builds/debug/;"

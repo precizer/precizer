@@ -17,6 +17,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: 0015_database_v0.db
 TESTING:Primary database file path: ./0015_database_v0.db
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Verify that the path ./0015_database_v0.db exists
 TESTING:The path ./0015_database_v0.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE

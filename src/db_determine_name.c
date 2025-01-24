@@ -98,7 +98,12 @@ Return db_determine_name(void){
 		{
 			slog(EVERY,"Primary database file name: %s\n",config->db_file_name);
 		}
-		slog(TRACE,"Primary database file path: %s\n",config->db_file_path);
+		/* Truncate the file path/name in the display
+		   output if it exceeds the length limit */
+		char *path = strdup(config->db_file_path);
+		run(shorten_path(path));
+		slog(TRACE,"Primary database file path: %s\n",path);
+		free(path);
 	}
 
 	slog(TRACE,"DB name determined\n");

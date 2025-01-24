@@ -17,6 +17,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created

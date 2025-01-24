@@ -1,4 +1,5 @@
 #include "precizer.h"
+#include <libgen.h>
 
 /**
  * @brief Validates the existence of the database file
@@ -36,20 +37,34 @@ Return db_file_validate_existence(void){
 
 	if(SUCCESS == status)
 	{
-		if(EXISTS == file_availability(config->db_file_path,SHOULD_BE_A_FILE))
+		char *db_file_full_path = strdup(config->db_file_path);
+		char *db_file_dir = dirname(db_file_full_path);
+
+		if(NOT_FOUND == file_availability(db_file_dir,SHOULD_BE_A_DIRECTORY))
 		{
-			config->db_file_exists = true;
+			slog(ERROR,"Unable to create database file. Directory %s not found\n",db_file_dir);
+			status = FAILURE;
+		}
 
-			int rc = stat(config->db_file_path,&(config->db_file_stat));
+		free(db_file_full_path);
 
-			if(rc < 0)
+		if(SUCCESS == status)
+		{
+			if(EXISTS == file_availability(config->db_file_path,SHOULD_BE_A_FILE))
 			{
-				report("Stat of %s failed with error code: %d",config->db_file_path,rc);
-				status = FAILURE;
-			}
+				config->db_file_exists = true;
 
-		} else {
-			config->db_file_exists = false;
+				int rc = stat(config->db_file_path,&(config->db_file_stat));
+
+				if(rc < 0)
+				{
+					report("Stat of %s failed with error code: %d",config->db_file_path,rc);
+					status = FAILURE;
+				}
+
+			} else {
+				config->db_file_exists = false;
+			}
 		}
 	}
 

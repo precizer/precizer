@@ -1,0 +1,23 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=nonexistent_directory/database1.db
+TESTING:argument:db_file_name=database1.db
+TESTING:argument:update=yes
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: .*$
+TESTING:Primary database file name: database1.db
+TESTING:Primary database file path: nonexistent_directory/database1.db
+TESTING:DB name determined
+TESTING:Verify that the path nonexistent_directory exists
+TESTING:The path nonexistent_directory doesn't exist or it is not a directory
+ERROR:Unable to create database file. Directory nonexistent_directory not found
+ERROR:The precizer process terminated unexpectedly due to an error\z

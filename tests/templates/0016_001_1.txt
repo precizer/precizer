@@ -16,6 +16,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
@@ -75,6 +77,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
@@ -128,6 +132,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
@@ -184,6 +190,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
@@ -237,6 +245,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
