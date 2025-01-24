@@ -55,7 +55,7 @@
 #define HEADER(msg) \
 	if(SUCCESS == status) \
 	{ \
-		printf(CYAN msg RESET); \
+		printf("\n" CYAN msg RESET "\n"); \
 	}
 
 #define ASSERT(condition) \

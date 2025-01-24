@@ -112,7 +112,11 @@ static Return test_add_long_string(void){
 	RETURN_STATUS;
 }
 
-// Main test runner
+/**
+ *
+ * Unit Testing of precizer. add_string_to_array() function test set
+ *
+ */
 Return test0012(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.

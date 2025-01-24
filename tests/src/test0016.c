@@ -1,5 +1,10 @@
 #include "sute.h"
 
+/**
+ *
+ * --watch-timestamps argument testing
+ *
+ */
 Return test0016(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
