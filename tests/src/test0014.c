@@ -317,7 +317,8 @@ Return reset_relative_path_test(void){
 	del_char(&result);
 
 	/*
-	 * Second test in the series. First, create a file database with a very
+	 * Second test in the series. The PATH variable has been removed.
+	 * First, create a file database with a very
 	 * long subdirectory path. Then update this database using a new, short
 	 * path and the --force option.
 	 */
@@ -337,7 +338,8 @@ Return reset_relative_path_test(void){
 	del_char(&result);
 
 	/*
-	 * Third test in the series. Very long path as the
+	 * Third test in the series. The PATH variable has been removed.
+	 * Very long path as the
 	 * primamary directory for recursive file traversal
 	 */
 	FILE *file = NULL;
@@ -380,7 +382,8 @@ Return reset_relative_path_test(void){
 	del_char(&result);
 
 	/*
-	 * Test #4 in the series. A very long relative path will
+	 * Test #4 in the series. The PATH variable has been removed.
+	 * A very long relative path will
 	 * be used to create the database file. SQLite has a significantly
 	 * lower built-in path length limit compared to the operating system.
 	 */
