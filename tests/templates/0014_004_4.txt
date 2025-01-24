@@ -1,0 +1,54 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=/.*/tests/examples/long
+TESTING:argument:database=/.*uuuuuuuuuuu/database1.db
+TESTING:argument:db_file_name=database1.db
+TESTING:argument:ignore=\^longpathstofiles/bbb…uuuuuuuuu/database1\\\.db\$
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path /.*/tests/examples/long exists
+TESTING:The path /.*/tests/examples/long is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: /.*$
+TESTING:Primary database file name: database1.db
+TESTING:Primary database file path: /.*uuuuuuuuuuu/database1.db
+TESTING:DB name determined
+TESTING:Verify that the path /.*ttt/uuuuuuuuuuuuuuuuuuuu exists
+TESTING:The path /.*ttt/uuuuuuuuuuuuuuuuuuuu is exists and it is a directory
+TESTING:Verify that the path .*uuuuuuuuuuu/database1.db exists
+TESTING:The path /.*uuuuuuuuuuu/database1.db doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:The primary database file was just created and doesn't require verification
+TESTING:Successfully opened database database1.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named database1.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:File traversal started
+TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
+longpathstofiles/bbbb…uuuuuuuuuuu/database1.db ignored \& not added
+longpathstofiles/bbbb…/path1/AAA/BCB/CCC/a.txt
+longpathstofiles/bbbb…AAA/ZAW/A/b/c/a_file.txt
+longpathstofiles/bbbb…AAA/ZAW/A/b/c/b_file.txt
+longpathstofiles/bbbb…AAA/ZAW/D/e/f/b_file.txt
+longpathstofiles/bbbb…/path2/AAA/BCB/CCC/a.txt
+longpathstofiles/bbbb…/path2/AAA/BCB/CCC/b.txt
+longpathstofiles/bbbb…AAA/ZAW/A/b/c/a_file.txt
+longpathstofiles/bbbb…AAA/ZAW/D/e/f/b_file.txt
+TESTING:File traversal complete
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:No DB version data found in metadata table
+TESTING:The database version 1 has been successfully stored in the DB
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
+TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
+TESTING:The precizer completed its execution without any issues\z
