@@ -61,83 +61,58 @@ Return match_pattern(
 		NULL
 	);
 
-	if(rc < 0)
+    if(rc < 0)
 	{
 		switch(rc)
 		{
 			case PCRE2_ERROR_NOMATCH:
 #if 0
-			{
-				/* Find first mismatch position and context */
-				size_t pos = 0;
-				size_t context_size = 50; /* Show this many characters around mismatch */
-				int text_len = strlen(text);
-				char *diff = NULL;
-
-				while(pos < text_len)
-				{
-					/* Try matching from current position */
-					rc = pcre2_match(
-						re,
-						(PCRE2_SPTR)(text + pos),
-						text_len - pos,
-						0,
-						0,
-						match_data,
-						NULL
-					);
-
-					if(rc >= 0)
-					{
-						break;
-					}
-
-					/* Calculate context range */
-					size_t start = (pos > context_size) ? pos - context_size : 0;
-					size_t end = (pos + context_size < text_len) ? pos + context_size : text_len;
-
-					/* Get the character at mismatch position */
-					char mismatch_char = text[pos];
-
-					echo(STDERR,
-						"ERROR: Pattern not match at position: %zu\n"
-						"Character at mismatch: '%c' (ASCII: %d)\n"
-						"Context around mismatch:\n"
-						YELLOW ">>" RESET "%.*s" RED "%c" RESET "%.*s" YELLOW "<<\n",
-						pos,
-						mismatch_char,(int)mismatch_char,
-						(int)(pos - start),text + start,
-						mismatch_char,
-						(int)(end - pos - 1),text + pos + 1);
-
-					echo(STDERR,
-						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n" YELLOW \
-						"Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						text,pattern);
-
-					status = FAILURE;
-					break;
-				}
-				break;
-			}
-#endif
-
 				/* Get diff */
 				status = compare_strings(&diff,text,pattern);
+#endif
+
+#if 0
+				{
+					// Sequentially match increasing portions of the subject string
+					size_t mismatch_offset = 0;
+					size_t subject_length = strlen(text);
+					for (size_t i = 1; i <= subject_length; i++) {
+						rc = pcre2_match(re,(PCRE2_SPTR)text, i, 0, 0, match_data, NULL);
+						if (rc < 0) {
+							mismatch_offset = i - 1; // Last valid match position
+							break;
+						}
+					}
+
+					if (mismatch_offset < subject_length) {
+						echo(STDERR,"Mismatch starts at offset %zu.\n", mismatch_offset);
+					}
+				}
+#endif
 
 				if(NULL != filename)
 				{
 					echo(STDERR,"ERROR: The pattern not match!\n"
+#if 0
 						"Diff:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
+#endif
 						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
 						YELLOW "Compared to a pattern from the file %s:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						diff,text,filename,pattern);
+#if 0
+						diff,
+#endif
+						text,filename,pattern);
 				} else {
 					echo(STDERR,"ERROR: The pattern not match!\n"
+#if 0
 						"Diff:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
+#endif
 						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
 						YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
-						diff,text,pattern);
+#if 0
+						diff,
+#endif
+						text,pattern);
 				}
 				status = FAILURE;
 				break;
