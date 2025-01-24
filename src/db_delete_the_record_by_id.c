@@ -78,12 +78,20 @@ Return db_delete_the_record_by_id(
 				slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
 			}
 
+			/* Truncate the file path/name in the display output if it exceeds the length limit */
+			char *shorten_relative_path = strdup(relative_path);
+
+			status = shorten_path(shorten_relative_path);
+
 			if(*clean_ignored == true)
 			{
-				slog(EVERY,"%s clean ignored\n",relative_path);
+				slog(EVERY,"%s clean ignored\n",shorten_relative_path);
 			} else {
-				slog(EVERY,"%s\n",relative_path);
+				slog(EVERY,"%s\n",shorten_relative_path);
 			}
+
+			free(shorten_relative_path);
+
 		} else {
 			slog(ERROR,"Delete statement didn't return right code %d (%i): %s\n",sql_return,rc,sqlite3_errmsg(config->db));
 			status = FAILURE;

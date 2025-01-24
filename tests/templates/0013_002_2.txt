@@ -20,6 +20,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Verify that the path database1.db exists
 TESTING:The path database1.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
@@ -46,7 +48,7 @@ TESTING:Paths detected
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-1/AAA/ZAW/D/e/f/b_file.txt ignored & not added
+1/AAA/ZAW/D/e/f/b_file.txt ignored \& not added
 2/AAA/BBB/CZC/b.txt added
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$

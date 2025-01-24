@@ -33,6 +33,7 @@ int main(void){
 	TEST(test0015,"Database upgrade testing…");
 	TEST(test0018,"--maxdepth argument testing…");
 	TEST(test0019,"Testing symlink operations…");
+	TEST(test0020,"Testing DB creation attempt in missing directory…");
 
 	HEADER("\nClean results\n");
 	RUN(clean,"Temporary data cleanup…");

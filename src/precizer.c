@@ -65,7 +65,7 @@ int main(
 	// not passed as an argument
 	run(db_determine_name());
 
-	// Validate database file existence and update existence flag
+	// Validate database file existence and set up existence flag
 	run(db_file_validate_existence());
 
 	// Define the database operation mode

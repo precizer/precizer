@@ -25,7 +25,13 @@ FileAvailability file_availability(
 
 	struct stat stats;
 
-	slog(TRACE,"Verify that the path %s exists\n",path);
+	/* Truncate the file path/name in the display
+	   output if it exceeds the length limit */
+	char *short_path = strdup(path);
+
+	shorten_path(short_path);
+
+	slog(TRACE,"Verify that the path %s exists\n",short_path);
 
 	// Check for existence
 	if(stat(path,&stats) == 0)
@@ -35,8 +41,7 @@ FileAvailability file_availability(
 		{
 			if(S_ISREG(stats.st_mode))
 			{
-				slog(TRACE,"The path %s is exists and it is a file\n",path);
-
+				slog(TRACE,"The path %s is exists and it is a file\n",short_path);
 				presence = EXISTS;
 			} else {
 				presence = NOT_FOUND;
@@ -45,8 +50,7 @@ FileAvailability file_availability(
 		} else {
 			if(S_ISDIR(stats.st_mode))
 			{
-				slog(TRACE,"The path %s is exists and it is a directory\n",path);
-
+				slog(TRACE,"The path %s is exists and it is a directory\n",short_path);
 				presence = EXISTS;
 			} else {
 				presence = NOT_FOUND;
@@ -61,11 +65,13 @@ FileAvailability file_availability(
 	{
 		if(fs_object_type == SHOULD_BE_A_FILE)
 		{
-			slog(EVERY,"The path %s doesn't exist or it is not a file\n",path);
+			slog(EVERY,"The path %s doesn't exist or it is not a file\n",short_path);
 		} else {
-			slog(EVERY,"The path %s doesn't exist or it is not a directory\n",path);
+			slog(EVERY,"The path %s doesn't exist or it is not a directory\n",short_path);
 		}
 	}
+
+	free(short_path);
 
 	return(presence);
 }

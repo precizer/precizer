@@ -14,6 +14,8 @@ TESTING:Current directory: .*$
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined

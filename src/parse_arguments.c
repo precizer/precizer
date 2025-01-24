@@ -230,10 +230,10 @@ Return parse_arguments(
 
 	if(config->paths != NULL)
 	{
-		for(int j = 0; config->paths[j]; j++)
+		for(int i = 0; config->paths[i]; i++)
 		{
 			// Remove unnecessary trailing slash at the end of the directory path
-			remove_trailing_slash(config->paths[j]);
+			remove_trailing_slash(config->paths[i]);
 		}
 	}
 
@@ -244,14 +244,14 @@ Return parse_arguments(
 			// The array with database names
 			config->db_file_paths = config->paths;
 
-			for(int j = 0; config->db_file_paths[j] && (SUCCESS == status); j++)
+			for(int i = 0; config->db_file_paths[i] && (SUCCESS == status); i++)
 			{
 				// Create a copy of the path string for basename
-				char *tmp = strdup(config->db_file_paths[j]);
+				char *tmp = strdup(config->db_file_paths[i]);
 
 				if(tmp == NULL)
 				{
-					report("Failed to duplicate string: %s",config->db_file_paths[j]);
+					report("Failed to duplicate string: %s",config->db_file_paths[i]);
 					status = FAILURE;
 					break;
 				}
@@ -291,16 +291,26 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:paths=");
 
-			for(int j = 0; config->paths[j]; j++)
+			for(int i = 0; config->paths[i]; i++)
 			{
-				printf(j == 0 ? "%s" : ", %s",config->paths[j]);
+				/* Truncate the file path/name in the display
+				   output if it exceeds the length limit */
+				char *path = strdup(config->paths[i]);
+				run(shorten_path(path));
+				printf(i == 0 ? "%s" : ", %s",path);
+				free(path);
 			}
 			printf("\n");
 		}
 
 		if(config->db_file_path != NULL)
 		{
-			slog(TESTING,"argument:database=%s\n",config->db_file_path);
+			/* Truncate the file path/name in the display
+			   output if it exceeds the length limit */
+			char *path = strdup(config->db_file_path);
+			run(shorten_path(path));
+			slog(TESTING,"argument:database=%s\n",path);
+			free(path);
 		}
 
 		if(config->db_file_name != NULL)
@@ -312,9 +322,14 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:db_file_paths=");
 
-			for(int j = 0; config->db_file_paths[j]; j++)
+			for(int i = 0; config->db_file_paths[i]; i++)
 			{
-				printf(j == 0 ? "%s" : ", %s",config->db_file_paths[j]);
+				/* Truncate the file path/name in the display
+				   output if it exceeds the length limit */
+				char *path = strdup(config->db_file_paths[i]);
+				run(shorten_path(path));
+				printf(i == 0 ? "%s" : ", %s",path);
+				free(path);
 			}
 			printf("\n");
 		}
@@ -323,9 +338,14 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:db_file_names=");
 
-			for(int j = 0; config->db_file_names[j]; j++)
+			for(int i = 0; config->db_file_names[i]; i++)
 			{
-				printf(j == 0 ? "%s" : ", %s",config->db_file_names[j]);
+				/* Truncate the file path/name in the display
+				   output if it exceeds the length limit */
+				char *path = strdup(config->db_file_names[i]);
+				run(shorten_path(path));
+				printf(i == 0 ? "%s" : ", %s",path);
+				free(path);
 			}
 			printf("\n");
 		}
@@ -337,7 +357,12 @@ Return parse_arguments(
 			// Print the contents of the string array
 			for(int i = 0; config->ignore[i] != NULL; ++i)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->ignore[i]);
+				/* Truncate the file path/name in the display
+				   output if it exceeds the length limit */
+				char *path = strdup(config->ignore[i]);
+				run(shorten_path(path));
+				printf(i == 0 ? "%s" : ", %s",path);
+				free(path);
 			}
 			printf("\n");
 		}
@@ -349,7 +374,12 @@ Return parse_arguments(
 			// Print the contents of the string array
 			for(int i = 0; config->include[i] != NULL; ++i)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->include[i]);
+				/* Truncate the file path/name in the display
+				   output if it exceeds the length limit */
+				char *path = strdup(config->include[i]);
+				run(shorten_path(path));
+				printf(i == 0 ? "%s" : ", %s",path);
+				free(path);
 			}
 			printf("\n");
 		}
@@ -416,16 +446,26 @@ Return parse_arguments(
 			{
 				printf("paths=");
 
-				for(int j = 0; config->paths[j]; j++)
+				for(int i = 0; config->paths[i]; i++)
 				{
-					printf(j == 0 ? "%s" : ", %s",config->paths[j]);
+					/* Truncate the file path/name in the display
+					   output if it exceeds the length limit */
+					char *path = strdup(config->paths[i]);
+					run(shorten_path(path));
+					printf(i == 0 ? "%s" : ", %s",path);
+					free(path);
 				}
 				printf("; ");
 			}
 
 			if(config->db_file_path != NULL)
 			{
-				printf("database=%s; ",config->db_file_path);
+				/* Truncate the file path/name in the display
+				   output if it exceeds the length limit */
+				char *path = strdup(config->db_file_path);
+				run(shorten_path(path));
+				printf("database=%s; ",path);
+				free(path);
 			}
 
 			if(config->db_file_name != NULL)
@@ -437,9 +477,14 @@ Return parse_arguments(
 			{
 				printf("db_file_paths=");
 
-				for(int j = 0; config->db_file_paths[j]; j++)
+				for(int i = 0; config->db_file_paths[i]; i++)
 				{
-					printf(j == 0 ? "%s" : ", %s",config->db_file_paths[j]);
+					/* Truncate the file path/name in the display
+					   output if it exceeds the length limit */
+					char *path = strdup(config->db_file_paths[i]);
+					run(shorten_path(path));
+					printf(i == 0 ? "%s" : ", %s",path);
+					free(path);
 				}
 				printf("; ");
 			}
@@ -448,9 +493,14 @@ Return parse_arguments(
 			{
 				printf("db_file_names=");
 
-				for(int j = 0; config->db_file_names[j]; j++)
+				for(int i = 0; config->db_file_names[i]; i++)
 				{
-					printf(j == 0 ? "%s" : ", %s",config->db_file_names[j]);
+					/* Truncate the file path/name in the display
+					   output if it exceeds the length limit */
+					char *path = strdup(config->db_file_names[i]);
+					run(shorten_path(path));
+					printf(i == 0 ? "%s" : ", %s",path);
+					free(path);
 				}
 				printf("; ");
 			}
@@ -462,7 +512,12 @@ Return parse_arguments(
 				// Print the contents of the string array
 				for(int i = 0; config->ignore[i] != NULL; ++i)
 				{
-					printf(i == 0 ? "%s" : ", %s",config->ignore[i]);
+					/* Truncate the file path/name in the display
+					   output if it exceeds the length limit */
+					char *path = strdup(config->ignore[i]);
+					run(shorten_path(path));
+					printf(i == 0 ? "%s" : ", %s",path);
+					free(path);
 				}
 				printf("; ");
 			}
@@ -474,7 +529,12 @@ Return parse_arguments(
 				// Print the contents of the string array
 				for(int i = 0; config->include[i] != NULL; ++i)
 				{
-					printf(i == 0 ? "%s" : ", %s",config->include[i]);
+					/* Truncate the file path/name in the display
+					   output if it exceeds the length limit */
+					char *path = strdup(config->include[i]);
+					run(shorten_path(path));
+					printf(i == 0 ? "%s" : ", %s",path);
+					free(path);
 				}
 				printf("; ");
 			}

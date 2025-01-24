@@ -242,13 +242,19 @@ Return db_validate_paths(void){
 			{
 				if(!(rational_logger_mode & SILENT))
 				{
-					slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following path will be written to the database %s: ",config->db_file_name);
+					slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",config->db_file_name);
 
 					for(int i = 0; config->paths[i]; i++)
 					{
-						printf (i == 0 ? "%s" : ", %s",config->paths[i]);
+						/* Truncate the file path/name in the display output if it exceeds the length limit */
+						char *path = strdup(config->paths[i]);
+
+						(void)shorten_path(path);
+
+						printf("%s\n",path);
+
+						free(path);
 					}
-					printf("\n");
 				}
 			} else {
 				slog(EVERY,"Use the" BOLD " --force" RESET " option only when the PATHS stored in the database need"
