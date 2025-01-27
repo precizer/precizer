@@ -1,0 +1,49 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=%DB_NAME%, 0015_database_v0.db
+TESTING:argument:db_file_paths=%DB_NAME%, 0015_database_v0.db
+TESTING:argument:db_file_names=%DB_NAME%, 0015_database_v0.db
+TESTING:argument:compare=yes
+TESTING:Arguments parsed
+TESTING:Comparing databases. Directory path verification is not required
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: .*$
+TESTING:Primary database file name: DisposableDB
+TESTING:Primary database file path: :memory:
+TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Successfully opened database DisposableDB
+TESTING:The primary database and tables have NOT been initialized
+TESTING:The primary database named DisposableDB is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
+TESTING:Database initialization process completed
+TESTING:The comparison of %DB_NAME% and 0015_database_v0.db databases is starting…
+TESTING:Verify that the path %DB_NAME% exists
+TESTING:The path %DB_NAME% is exists and it is a file
+TESTING:Starting database file %DB_NAME% integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database %DB_NAME% has been verified and is in good condition
+TESTING:Version number 1 found in database
+TESTING:The %DB_NAME% database file is version 1
+TESTING:The database %DB_NAME% is on version 1 and does not require any upgrades
+TESTING:Verify that the path 0015_database_v0.db exists
+TESTING:The path 0015_database_v0.db is exists and it is a file
+TESTING:Starting database file 0015_database_v0.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database 0015_database_v0.db has been verified and is in good condition
+TESTING:Metadata table not found in database
+TESTING:The 0015_database_v0.db database file is version 0
+TESTING:The database 0015_database_v0.db file has an outdated version 0 and requires updating to the version 1
+TESTING:Caution! The update will be performed in transaction mode for database safety
+TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
+ERROR:Program execution cannot continue. Database update required. Use the \x1B\[1m--update\x1B\[0m flag to perform this action
+ERROR:Database 0015_database_v0.db upgrade failed
+TESTING:Comparison of %DB_NAME% and 0015_database_v0.db databases is complete
+ERROR:The precizer process terminated unexpectedly due to an error\z

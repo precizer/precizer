@@ -1,10 +1,10 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/diffs
+TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs exists
-TESTING:The path tests/examples/diffs is exists and it is a directory
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
 TESTING:Paths detected
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
@@ -32,30 +32,18 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the %DB_NAME% database:\x1B\[0m
-diff1/1/AAA/BCB/CCC/a.txt
-diff1/1/AAA/ZAW/A/b/c/a_file.txt
-diff1/1/AAA/ZAW/D/e/f/b_file.txt
-diff1/2/AAA/BBB/CZC/a.txt
-diff1/3/AAA/BBB/CCC/a.txt
-diff1/4/AAA/BBB/CCC/a.txt
-diff1/path1/AAA/BCB/CCC/a.txt
-diff1/path1/AAA/ZAW/A/b/c/a_file.txt
-diff1/path1/AAA/ZAW/D/e/f/b_file.txt
-diff1/path2/AAA/BCB/CCC/a.txt
-diff1/path2/AAA/ZAW/A/b/c/a_file.txt
-diff1/path2/AAA/ZAW/D/e/f/b_file.txt
-diff2/1/AAA/BCB/CCC/a.txt
-diff2/1/AAA/ZAW/A/b/c/a_file.txt
-diff2/1/AAA/ZAW/D/e/f/b_file.txt
-diff2/2/AAA/BBB/CZC/a.txt
-diff2/3/AAA/BBB/CCC/a.txt
-diff2/4/AAA/BBB/CCC/a.txt
-diff2/path1/AAA/BCB/CCC/a.txt
-diff2/path1/AAA/BCB/CCC/b.txt
-diff2/path1/AAA/ZAW/A/b/c/a_file.txt
-diff2/path1/AAA/ZAW/D/e/f/b_file.txt
-diff2/path2/AAA/BCB/CCC/a.txt
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt
+1/AAA/BCB/CCC/a.txt
+1/AAA/ZAW/A/b/c/a_file.txt
+1/AAA/ZAW/D/e/f/b_file.txt
+2/AAA/BBB/CZC/a.txt
+3/AAA/BBB/CCC/a.txt
+4/AAA/BBB/CCC/a.txt
+path1/AAA/BCB/CCC/a.txt
+path1/AAA/ZAW/A/b/c/a_file.txt
+path1/AAA/ZAW/D/e/f/b_file.txt
+path2/AAA/BCB/CCC/a.txt
+path2/AAA/ZAW/A/b/c/a_file.txt
+path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:No DB version data found in metadata table

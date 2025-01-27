@@ -1,19 +1,19 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=.+/tests/examples/levels
+TESTING:argument:paths=/.+/tests/examples/levels
 TESTING:argument:database=database3.db
 TESTING:argument:db_file_name=database3.db
 TESTING:argument:maxdepth=3
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path .+/tests/examples/levels exists
-TESTING:The path .+/tests/examples/levels is exists and it is a directory
+TESTING:Verify that the path /.+/tests/examples/levels exists
+TESTING:The path /.+/tests/examples/levels is exists and it is a directory
 TESTING:Paths detected
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: .*$
+TESTING:Current directory: /.*$
 TESTING:Primary database file name: database3.db
 TESTING:Primary database file path: database3.db
 TESTING:DB name determined
