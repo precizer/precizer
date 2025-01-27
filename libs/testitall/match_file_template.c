@@ -45,23 +45,13 @@ Return match_file_template(
 	status = get_file_content(filename,&pattern);
 
 	// Replace template placeholder with actual value
-	if(SUCCESS == status)
-	{
-		status = replace_placeholder(&pattern,template,replacement);
-	}
+	ASSERT(SUCCESS == replace_placeholder(&pattern,template,replacement));
 
 	// Execute command and capture output
-	if(SUCCESS == status)
-	{
-		status = execute_command(command,result,expected_return_code,false,false);
-	}
+	ASSERT(SUCCESS == execute_command(command,result,expected_return_code,false,false));
 
 	// Compare command output against modified template
-	if(SUCCESS == status)
-	{
-		//status = match_pattern(result->mem,pattern,filename);
-		status = match_pattern(result->mem,pattern,filename);
-	}
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
 	#if 0
 	write_to_temp_file(result->mem);
