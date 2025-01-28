@@ -27,7 +27,7 @@ Return match_file_template(
 ){
 	if(!command || !filename || !template || !replacement)
 	{
-		echo(STDERR,"NULL pointer passed to match_file_template");
+		echo(STDERR,"NULL pointer passed to match_file_template\n");
 		return FAILURE;
 	}
 

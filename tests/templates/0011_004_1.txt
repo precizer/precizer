@@ -1,0 +1,42 @@
+\A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/parse_arguments.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
+paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/parse_arguments.c:\d+:parse_arguments:Arguments parsed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/detect_paths.c:\d+:detect_paths:Checking directory paths provided as arguments
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_availability.c:\d+:file_availability:Verify that the path tests/examples/diffs/diff1 exists
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_availability.c:\d+:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/detect_paths.c:\d+:detect_paths:Paths detected
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/init_signals.c:\d+:init_signals:Set signal SIGUSR2 OK:pid:\d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/init_signals.c:\d+:init_signals:Set signal SIGINT OK:pid:\d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/init_signals.c:\d+:init_signals:Set signal SIGTERM OK:pid:\d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/init_signals.c:\d+:init_signals:Signals initialized
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/determine_running_dir.c:\d+:determine_running_dir:Current directory: .*$
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_determine_name.c:\d+:db_determine_name:Primary database file name: database1.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_determine_name.c:\d+:db_determine_name:Primary database file path: database1.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_determine_name.c:\d+:db_determine_name:DB name determined
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_availability.c:\d+:file_availability:Verify that the path . exists
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_availability.c:\d+:file_availability:The path . is exists and it is a directory
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_availability.c:\d+:file_availability:Verify that the path database1.db exists
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_availability.c:\d+:file_availability:The path database1.db is exists and it is a file
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_determine_mode.c:\d+:db_determine_mode:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_determine_mode.c:\d+:db_determine_mode:Final value for config->db_initialize_tables: false
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_determine_mode.c:\d+:db_determine_mode:DB mode determined
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_test.c:\d+:db_test:Starting database file database1.db integrity check…
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_test.c:\d+:db_test:The database verification level has been set to FULL
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_test.c:\d+:db_test:Database database1.db has been verified and is in good condition
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_get_version.c:\d+:db_get_version:Version number 1 found in database
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_check_version.c:\d+:db_check_version:The database1.db database file is version 1
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_check_version.c:\d+:db_check_version:The database database1.db is on version 1 and does not require any upgrades
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:Successfully opened database database1.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:The primary database and tables have NOT been initialized
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:The primary database named database1.db is ready for operations
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:Database initialization process completed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_compare.c:\d+:db_compare:Database comparison mode is not enabled. Skipping comparison
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_contains_data.c:\d+:db_contains_data:The database database1.db has already been created previously
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_validate_paths.c:\d+:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_list.c:\d+:file_list:File system traversal initiated to calculate file count and storage usage
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_list.c:\d+:show_status:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_get_version.c:\d+:db_get_version:Version number 1 found in database
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_consider_vacuum_primary.c:\d+:db_consider_vacuum_primary:No changes were made. The primary database doesn't require vacuuming
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/status_of_changes.c:\d+:status_of_changes:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/exit_status.c:\d+:exit_status:The precizer completed its execution without any issues\z

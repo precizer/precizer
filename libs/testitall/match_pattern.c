@@ -61,7 +61,7 @@ Return match_pattern(
 		NULL
 	);
 
-    if(rc < 0)
+	if(rc < 0)
 	{
 		switch(rc)
 		{
@@ -76,16 +76,21 @@ Return match_pattern(
 					// Sequentially match increasing portions of the subject string
 					size_t mismatch_offset = 0;
 					size_t subject_length = strlen(text);
-					for (size_t i = 1; i <= subject_length; i++) {
-						rc = pcre2_match(re,(PCRE2_SPTR)text, i, 0, 0, match_data, NULL);
-						if (rc < 0) {
+
+					for(size_t i = 1; i <= subject_length; i++)
+					{
+						rc = pcre2_match(re,(PCRE2_SPTR)text,i,0,0,match_data,NULL);
+
+						if(rc < 0)
+						{
 							mismatch_offset = i - 1; // Last valid match position
 							break;
 						}
 					}
 
-					if (mismatch_offset < subject_length) {
-						echo(STDERR,"Mismatch starts at offset %zu.\n", mismatch_offset);
+					if(mismatch_offset < subject_length)
+					{
+						echo(STDERR,"Mismatch starts at offset %zu.\n",mismatch_offset);
 					}
 				}
 #endif

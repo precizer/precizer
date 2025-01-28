@@ -15,6 +15,7 @@ typedef struct {
 	size_t current_bytes; ///< Current heap memory usage in bytes
 	size_t current_effective_bytes; ///< Current effective memory usage
 	size_t new_allocations_counter; ///< How many times was new hash memory allocated (grew from zero to the specified size)
+	size_t new_callocations_counter; ///< How many times was new hash memory callocated (grew from zero to the specified size and each byte filled with zeros)
 	size_t total_allocated_bytes; ///< Total heap memory allocated
 	size_t total_effective_allocated_bytes; ///< Total effective memory allocated
 	size_t aligned_reallocations_counter; ///< Count of aligned reallocations
@@ -37,7 +38,14 @@ void telemetry_realloc_optimized_counter(void);
  * @brief Tracks new memory allocation events
  * @details Atomically increments the counter for new memory allocations
  */
-void telemetry_allocations_counter(void);
+void telemetry_new_allocations_counter(void);
+
+/**
+ * @brief Tracks new memory callocation events
+ * @details Atomically increments the counter for newly allocated memory,
+ * followed by zero-initialization of those bytes.
+ */
+void telemetry_new_callocations_counter(void);
 
 /**
  * @brief Tracks aligned memory reallocation events

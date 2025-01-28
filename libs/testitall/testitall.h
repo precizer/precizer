@@ -172,6 +172,12 @@ Return construct_path(
 	char **
 );
 
+Return random_number_generator(
+	uint64_t *,
+	uint64_t,
+	uint64_t
+);
+
 /**
  * @brief Test execution macro
  * @param func Function to test

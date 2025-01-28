@@ -13,11 +13,6 @@
 		return(SUCCESS);
 	}
 
-	if(!(newlength > 0))
-	{
-		return(FAILURE);
-	}
-
 	const size_t old_length = structure->length;
 
 	const size_t new_bytes = newlength * sizeof(TYPE);
@@ -36,7 +31,8 @@
 	// Do not do real decrease of allocated memory size by default
 	bool decrease_memory = false;
 
-	// Check if actual memory growth is needed
+	/* Check if actual memory growth is needed */
+
 	if(new_aligned_bytes > old_aligned_bytes)
 	{
 		growth_memory = true;
@@ -46,9 +42,15 @@
 	printf("new_aligned_bytes=%ld,old_aligned_bytes=%ld\n",new_aligned_bytes,old_aligned_bytes);
 	#endif
 
-	// Check if memory should be decreased
-	if(new_aligned_bytes < old_aligned_bytes)
+	/* Check if memory should be decreased */
+
+	if(newlength == 0)
 	{
+		if(true_reduce == true)
+		{
+			decrease_memory = true;
+		}
+	} else if(new_aligned_bytes < old_aligned_bytes){
 		if(true_reduce == true)
 		{
 			decrease_memory = true;
@@ -60,27 +62,49 @@
 		#endif
 	}
 
-	// Perform actual reallocation if needed
+	/* Perform actual reallocation if needed */
+
 	if(growth_memory == true || decrease_memory == true)
 	{
-		TYPE *temp = (TYPE*)realloc(structure->mem, new_aligned_bytes);
-		if(temp == NULL){
-			reset(&((structure)->mem));
-			report("Memory allocation failed, requested size: %zu bytes", new_aligned_bytes);
-			return(FAILURE);
-		}
-		structure->mem = temp;
-		#if SHOW
-		printf("aligned realloc() to bytes=%ld\n",new_aligned_bytes);
-		#endif
+		// Reallocation to zerro size (delete 
+		if(newlength == 0)
+		{
+			free(structure->mem);
+			structure->length = 0;
+			new_aligned_bytes = 0;
 
+		} else {
+			TYPE *temp = (TYPE*)realloc(structure->mem, new_aligned_bytes);
+			if(temp == NULL){
+				reset(&((structure)->mem));
+				report("Memory allocation failed, requested size: %zu bytes", new_aligned_bytes);
+				return(FAILURE);
+			}
+
+			structure->mem = temp;
+			#if SHOW
+			printf("aligned realloc() to bytes=%ld\n",new_aligned_bytes);
+			#endif
+		}
 		// Update structure metadata
 		structure->allocated = new_aligned_bytes;
+
+		// Initialize new memory for calloc operations
+		#ifdef CALLOC
+		// Filling a new array with zeros
+		if(old_length == 0 && newlength > 0)
+		{
+			memset(structure->mem, CALLOC, structure->allocated);
+
+			// Telemery update
+			telemetry_new_callocations_counter();
+		} else
+		#endif
 
 		// Update telemetry
 		if(old_length == 0)
 		{
-			telemetry_allocations_counter();
+			telemetry_new_allocations_counter();
 		} else {
 			telemetry_aligned_reallocations_counter();
 		}
@@ -98,15 +122,6 @@
 		// Update telemetry
 		telemetry_realloc_optimized_counter();
 	}
-
-	// Initialize new memory for calloc operations
-	#ifdef CALLOC
-	// Filling a new array with zeros
-	if(old_length == 0 && newlength > 0)
-	{
-		memset(structure->mem, CALLOC, structure->allocated);
-	}
-	#endif
 
 	// Update telemetry for effective memory usage
 	if(structure->length > newlength)
