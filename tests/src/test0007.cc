@@ -1,4 +1,4 @@
-for(int i = 0; i < CYCLES;i++)
+for(int i = 0; i < CYCLES; i++)
 {
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
@@ -13,7 +13,8 @@ for(int i = 0; i < CYCLES;i++)
 	size_t array_size = array_length * sizeof(TYPE);
 	unsigned char *array = NULL;
 	unsigned char *temp = (unsigned char *)realloc(array,array_size);
-	if (temp == NULL)
+
+	if(temp == NULL)
 	{
 		echo(STDERR,"Can't allocate memory %zu bytes\n",array_size);
 	}

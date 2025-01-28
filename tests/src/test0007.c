@@ -484,8 +484,7 @@ static Return test0007_9_libmem_multiple(void){
  * @retval SUCCESS if all tests pass
  * @retval FAILURE if any test fails
  */
-Return test0007(void)
-{
+Return test0007(void){
 	Return status = SUCCESS;
 
 	TEST(test0007_1_libmem,"Copy an array of 0 size…");
