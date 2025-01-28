@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdatomic.h>
 #include "testitall.h"
 #include "mem.h"
 #include "xdiff.h"
 #include "precizer.h"
-#include <stdatomic.h>
 
 Return test0001(void);
 Return test0002(void);

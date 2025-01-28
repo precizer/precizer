@@ -24,22 +24,12 @@ RUN make hugetestfile \
     && cd - \
     && make sanitize
 
-RUN cd tests && make sanitize debug run && /precizer/tests/testitall
+RUN cd tests && make sanitize debug
 
 RUN cd - && make portable
 
-FROM ubuntu:22.04
-
-WORKDIR /precizer
-
-# Copy required files from builder stage
-COPY --from=builder /precizer/precizer .
-COPY --from=builder /precizer/tests/examples/ tests/examples/
-COPY --from=builder /precizer/tests/templates/ tests/templates/
-COPY --from=builder /precizer/tests/testitall tests/
-
 # Run tests
-RUN cd tests && /precizer/tests/testitall
+CMD ["sh", "-c", "cd tests && make run && /precizer/tests/testitall"]
 
 FROM ubuntu:18.04
 
@@ -52,4 +42,4 @@ COPY --from=builder /precizer/tests/templates/ tests/templates/
 COPY --from=builder /precizer/tests/testitall tests/
 
 # Run tests
-RUN cd tests && /precizer/tests/testitall
+CMD ["sh", "-c", "cd tests && /precizer/tests/testitall"]

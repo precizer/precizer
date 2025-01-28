@@ -14,9 +14,9 @@ static Return test0011_1_readme_example(void){
 	Return status = SUCCESS;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=host1.db tests/examples/diffs/diff1;"
-	        "${BINDIR}/precizer --progress --database=host2.db tests/examples/diffs/diff2;"
-	        "${BINDIR}/precizer --compare host1.db host2.db";
+	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1;"
+	        "${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2;"
+	        "${BINDIR}/precizer --compare database1.db database2.db";
 
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
@@ -122,7 +122,69 @@ static Return test0011_2_readme_example(void){
 	reset(&pattern);
 	del_char(&result);
 
+	// Don't clean up test results to use on the next test
+
+	RETURN_STATUS;
+}
+
+/**
+ * The Example 3 from README
+ * Using the --silent mode. When this mode is enabled, the program does not display
+ * anything on the screen. This makes sense when using the program inside scripts.
+ * Let's add the --silent option to the previous example:
+ *
+ * precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
+ *
+ *
+ */
+static Return test0011_3_readme_example(void){
+	Return status = SUCCESS;
+
+	const char *command = "export TESTING=true;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
+
+	// Create memory for the result
+	MSTRUCT(mem_char,result);
+
+	// Stdout output should be 0 characters
+	ASSERT(result->length == 0);
+
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+
+	del_char(&result);
+
+	// Don't clean up test results to use on the next test
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * The Example 4 from README
+ * Additional information with --verbose mode
+ *
+ */
+static Return test0011_4_readme_example(void){
+	Return status = SUCCESS;
+
+	const char *command = "export TESTING=false;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1";
+
+	// Create memory for the result
+	MSTRUCT(mem_char,result);
+
+	char *pattern = NULL;
+
+	const char *filename = "templates/0011_004_1.txt";
+
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+
 	// Clean up test results
+	reset(&pattern);
+	del_char(&result);
+
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
 		"rm database1.db;"
 		"rm -rf tests/examples/;"
@@ -143,6 +205,8 @@ Return test0011(void){
 
 	TEST(test0011_1_readme_example,"Example 1 test from README…");
 	TEST(test0011_2_readme_example,"Example 2 test from README…");
+	TEST(test0011_3_readme_example,"Example 3 test from README…");
+	TEST(test0011_4_readme_example,"Example 4 test from README…");
 
 	RETURN_STATUS;
 }

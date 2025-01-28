@@ -120,8 +120,14 @@ typedef unsigned long long int ullint;
 #define realloc_char(...) REALLOC_CHAR(__VA_ARGS__,false,0)
 #define REALLOC_CHAR(a,b,c,...) realloc_char(a,b,c)
 
+#define calloc_char(...) CALLOC_CHAR(__VA_ARGS__,false,0)
+#define CALLOC_CHAR(a,b,c,...) calloc_char(a,b,c)
+
 #define realloc_int(...) REALLOC_INT(__VA_ARGS__,false,0)
 #define REALLOC_INT(a,b,c,...) realloc_int(a,b,c)
+
+#define calloc_int(...) CALLOC_INT(__VA_ARGS__,false,0)
+#define CALLOC_INT(a,b,c,...) calloc_int(a,b,c)
 
 #define realloc_ullint(...) REALLOC_ULLINT(__VA_ARGS__,false,0)
 #define REALLOC_ULLINT(a,b,c,...) realloc_ullint(a,b,c)
@@ -182,6 +188,12 @@ Return realloc_char(
 	bool
 );
 
+Return calloc_char(
+	mem_char *,
+	const size_t,
+	bool
+);
+
 Return copy_char(
 	mem_char *,
 	mem_char *
@@ -195,6 +207,12 @@ Return append_char(
 Return del_char(mem_char **);
 
 Return realloc_int(
+	mem_int *,
+	const size_t,
+	bool
+);
+
+Return calloc_int(
 	mem_int *,
 	const size_t,
 	bool

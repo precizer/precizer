@@ -41,7 +41,7 @@ __attribute__((always_inline)) static inline size_t get_aligned_bytes(const size
 Return realloc_char(
 	mem_char     *structure,
 	const size_t newlength,
-	bool         true_reduce
+	const bool   true_reduce
 ){
 	#define TYPE char
 	#include "realloc.cc"
@@ -100,7 +100,7 @@ Return append_char(
 Return calloc_char(
 	mem_char     *structure,
 	const size_t newlength,
-	bool         true_reduce
+	const bool true_reduce
 ){
 	#define CALLOC 0
 	#define TYPE char
@@ -133,7 +133,7 @@ Return del_char(mem_char **structure){
 Return realloc_int(
 	mem_int      *structure,
 	const size_t newlength,
-	bool         true_reduce
+	const bool true_reduce
 ){
 	#define TYPE int
 	#include "realloc.cc"
@@ -149,7 +149,7 @@ Return realloc_int(
 Return calloc_int(
 	mem_int      *structure,
 	const size_t newlength,
-	bool         true_reduce
+	const bool true_reduce
 ){
 	#define CALLOC 0
 	#define TYPE int
@@ -181,7 +181,7 @@ Return del_int(mem_int **structure){
 Return realloc_ullint(
 	mem_ullint   *structure,
 	const size_t newlength,
-	bool         true_reduce
+	const bool true_reduce
 ){
 	#define TYPE ullint
 	#include "realloc.cc"
@@ -197,7 +197,7 @@ Return realloc_ullint(
 Return calloc_ullint(
 	mem_ullint   *structure,
 	const size_t newlength,
-	bool         true_reduce
+	const bool true_reduce
 ){
 	#define CALLOC 0
 	#define TYPE ullint

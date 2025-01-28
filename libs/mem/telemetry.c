@@ -4,16 +4,26 @@ void telemetry_realloc_optimized_counter(void){
 	__atomic_fetch_add(&telemetry.realloc_optimized_counter,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_allocations_counter(void){
+void telemetry_new_allocations_counter(void){
 	__atomic_fetch_add(&telemetry.new_allocations_counter,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_new_callocations_counter(void){
+	__atomic_fetch_add(&telemetry.new_callocations_counter,1,__ATOMIC_SEQ_CST);
 }
 
 void telemetry_aligned_reallocations_counter(void){
 	__atomic_fetch_add(&telemetry.aligned_reallocations_counter,1,__ATOMIC_SEQ_CST);
+	#if SHOW
+	printf("telemetry.aligned_reallocations_counter: %zu\n",telemetry.aligned_reallocations_counter);
+	#endif
 }
 
 void telemetry_realloc_noop_counter(void){
 	__atomic_fetch_add(&telemetry.realloc_noop_counter,1,__ATOMIC_SEQ_CST);
+	#if SHOW
+	printf("telemetry.realloc_noop_counter: %zu\n",telemetry.realloc_noop_counter);
+	#endif
 }
 
 void telemetry_free_counter(void){
@@ -77,9 +87,10 @@ void telemetry_show(void){
 	printf("Telemetry: Total memory free number: %s\n",form(telemetry.free_counter));
 	printf("Telemetry: Total memory free bytes: %s\n",bkbmbgbtbpbeb(telemetry.free_total_bytes));
 	printf("Telemetry: Total memory new allocations number: %s\n",form(telemetry.new_allocations_counter));
+	printf("Telemetry: Total memory new callocations number: %s\n",form(telemetry.new_callocations_counter));
 	printf("Telemetry: Total optimized trick memory reallocations number: %s\n",form(telemetry.realloc_optimized_counter));
 	printf("Telemetry: Total aligned memory reallocations number: %s\n",form(telemetry.aligned_reallocations_counter));
 	printf("Telemetry: Total aligned bytes allocated during execution: %s\n",bkbmbgbtbpbeb(telemetry.total_allocated_bytes));
 	printf("Telemetry: Total effective memory allocated during execution: %s\n",bkbmbgbtbpbeb(telemetry.total_effective_allocated_bytes));
-	printf("Telemetry: Count of no-op reallocations: %zu\n",telemetry.realloc_noop_counter);
+	printf("Telemetry: Count of no-op reallocations: %s\n",form(telemetry.realloc_noop_counter));
 }

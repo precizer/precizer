@@ -43,7 +43,7 @@ Return execute_and_set_variable(
 
 		} else {
 			// Empty output is considered a failure
-			echo(STDERR,"Command produced no output: %s",command);
+			echo(STDERR,"Command produced no output: %s\n",command);
 			status = FAILURE;
 		}
 	}

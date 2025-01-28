@@ -251,6 +251,7 @@ $(RELOBJDIR):
 #
 docker:
 	@docker build -t precizer .
+	@docker run precizer
 
 clean-docker:
 	@docker image prune -f

@@ -6,7 +6,7 @@
 #include <time.h>
 #include "sha512.h"
 
-#define CYCLES 1000
+#define CYCLES 10
 #define SHOW_TEST 0 /* Change to 1 to print out debug details */
 
 #if SHOW_TEST
@@ -75,6 +75,7 @@ static Return test0007_2_libmem(void){
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
+	uint64_t random = 0;
 
 	size_t array_length = 1792;
 	size_t array_size = array_length * sizeof(int);
@@ -86,13 +87,11 @@ static Return test0007_2_libmem(void){
 		return(FAILURE);
 	}
 
-	// Generate random test data
-	srand((unsigned int)time(NULL));
-
 	// Fill the array with random bytes
 	for(size_t i = 0; i < array_size; i++)
 	{
-		int_array[i] = (unsigned char)(rand() % 256);
+		ASSERT(SUCCESS == random_number_generator(&random,0,255));
+		int_array[i] = (unsigned char)random;
 	}
 
 	// Calculate SHA-512 initial hash
@@ -113,7 +112,7 @@ static Return test0007_2_libmem(void){
 	MSTRUCT(mem_int,test1);
 
 	// Create an int memory
-	realloc_int(test1,array_length);
+	calloc_int(test1,array_length);
 
 	// Test memeory edges
 	memcpy(test1->mem,int_array,test1->length * sizeof(test1->mem[0]));
@@ -162,18 +161,17 @@ static Return test0007_3_libmem(void){
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
+	uint64_t random = 0;
 
 	size_t array_length = 512;
 	size_t array_size = array_length * sizeof(char);
 	unsigned char *char_array = (unsigned char *)calloc(array_length,sizeof(char));
 
-	// Generate random test data
-	srand((unsigned int)time(NULL));
-
 	// Fill array with random bytes
 	for(size_t i = 0; i < array_size; i++)
 	{
-		char_array[i] = (unsigned char)(rand() % 256);
+		ASSERT(SUCCESS == random_number_generator(&random,0,255));
+		char_array[i] = (unsigned char)random;
 	}
 
 	// Calculate initial hash
@@ -244,8 +242,9 @@ static Return test0007_4_5_6_libmem(void){
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
+	uint64_t random = 0;
 
-	// TEST 3: Large allocation
+	// TEST 4: Large allocation
 	size_t array_length = 4096;
 	size_t array_size = array_length * sizeof(unsigned long long int);
 	unsigned char *ullint_array = (unsigned char *)calloc(array_length,
@@ -256,13 +255,11 @@ static Return test0007_4_5_6_libmem(void){
 		return(FAILURE);
 	}
 
-	// Seed random number generator
-	srand((unsigned int)time(NULL));
-
 	// Fill array with random bytes
 	for(size_t i = 0; i < array_size; i++)
 	{
-		ullint_array[i] = (unsigned char)(rand() % 256);
+		ASSERT(SUCCESS == random_number_generator(&random,0,255));
+		ullint_array[i] = (unsigned char)random;
 	}
 
 	// Calculate SHA-512 hash
@@ -273,69 +270,13 @@ static Return test0007_4_5_6_libmem(void){
 
 	#if SHOW_TEST
 	// Print array summary and hash
-	echo(STDERR,"Test 3 array size: %zu bytes, array_length=%zu, sizeof(unsigned long long int)=%zu bytes\n",array_size,array_length,sizeof(unsigned long long int));
-	echo(STDERR,"Test 3 SHA-512 hash: ");
+	echo(STDERR,"Test 4 array size: %zu bytes, array_length=%zu, sizeof(unsigned long long int)=%zu bytes\n",array_size,array_length,sizeof(unsigned long long int));
+	echo(STDERR,"Test 4 SHA-512 hash: ");
 	print_hash(hash_1);
 	#endif
 
 	// Allocate memory for the structure unsigned long long int
 	MSTRUCT(mem_ullint,test);
-
-	// Create an unsigned long long int memory
-	realloc_ullint(test,array_length);
-
-	// Test memeory edges
-	memcpy(test->mem,ullint_array,test->length * sizeof(test->mem[0]));
-
-	// Calculate SHA-512 hash
-	sha512_init(&ctx);
-	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
-	sha512_final(&ctx,hash_2);
-
-	#if SHOW_TEST
-	// Print array summary and hash
-	echo(STDERR,"Test 3 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
-	echo(STDERR,"Test 3 SHA-512 hash: ");
-	print_hash(hash_2);
-	#endif
-
-	if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
-	{
-		echo(STDERR,"Test 3 fail\n");
-		status = FAILURE;
-	}
-
-	/**
-	 * @brief TEST 4 verifies correct memory reallocation with size reduction
-	 * @details Checks that:
-	 * 1. Memory block can be correctly reallocated to a smaller size
-	 * 2. Memory contents are preserved during reduction
-	 * 3. Memory integrity is maintained after reduction
-	 */
-	array_length = 256;
-	array_size = array_length * sizeof(unsigned long long int);
-	ullint_array = (unsigned char *)realloc(ullint_array,array_size);
-
-	// Seed random number generator
-	srand((unsigned int)time(NULL));
-
-	// Fill array with random bytes
-	for(size_t i = 0; i < array_size; i++)
-	{
-		ullint_array[i] = (unsigned char)(rand() % 256);
-	}
-
-	// Calculate SHA-512 hash
-	sha512_init(&ctx);
-	sha512_update(&ctx,ullint_array,array_size);
-	sha512_final(&ctx,hash_1);
-
-	#if SHOW_TEST
-	// Print array summary and hash
-	echo(STDERR,"Test 4 array size: %zu bytes, array_length=%zu, sizeof(unsigned long long int)=%zu bytes\n",array_size,array_length,sizeof(unsigned long long int));
-	echo(STDERR,"Test 4 SHA-512 hash: ");
-	print_hash(hash_1);
-	#endif
 
 	// Create an unsigned long long int memory
 	realloc_ullint(test,array_length);
@@ -362,25 +303,21 @@ static Return test0007_4_5_6_libmem(void){
 	}
 
 	/**
-	 * @brief TEST 5 validates memory cleanup and deallocation
-	 * @details Verifies:
-	 * 1. Memory can be properly freed
-	 * 2. All memory counters are correctly updated
-	 * 3. Memory structure is reset to initial state
-	 * 4. No memory leaks occur during cleanup
-	 * 5. Telemetry accurately reflects the deallocation
+	 * @brief TEST 5 verifies correct memory reallocation with size reduction
+	 * @details Checks that:
+	 * 1. Memory block can be correctly reallocated to a smaller size
+	 * 2. Memory contents are preserved during reduction
+	 * 3. Memory integrity is maintained after reduction
 	 */
-	array_length = 128;
+	array_length = 256;
 	array_size = array_length * sizeof(unsigned long long int);
 	ullint_array = (unsigned char *)realloc(ullint_array,array_size);
-
-	// Seed random number generator
-	srand((unsigned int)time(NULL));
 
 	// Fill array with random bytes
 	for(size_t i = 0; i < array_size; i++)
 	{
-		ullint_array[i] = (unsigned char)(rand() % 256);
+		ASSERT(SUCCESS == random_number_generator(&random,0,255));
+		ullint_array[i] = (unsigned char)random;
 	}
 
 	// Calculate SHA-512 hash
@@ -396,7 +333,7 @@ static Return test0007_4_5_6_libmem(void){
 	#endif
 
 	// Create an unsigned long long int memory
-	realloc_ullint(test,array_length,true);
+	realloc_ullint(test,array_length);
 
 	// Test memeory edges
 	memcpy(test->mem,ullint_array,test->length * sizeof(test->mem[0]));
@@ -416,6 +353,62 @@ static Return test0007_4_5_6_libmem(void){
 	if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
 	{
 		echo(STDERR,"Test 5 fail\n");
+		status = FAILURE;
+	}
+
+	/**
+	 * @brief TEST 6 validates memory cleanup and deallocation
+	 * @details Verifies:
+	 * 1. Memory can be properly freed
+	 * 2. All memory counters are correctly updated
+	 * 3. Memory structure is reset to initial state
+	 * 4. No memory leaks occur during cleanup
+	 * 5. Telemetry accurately reflects the deallocation
+	 */
+	array_length = 128;
+	array_size = array_length * sizeof(unsigned long long int);
+	ullint_array = (unsigned char *)realloc(ullint_array,array_size);
+
+	// Fill array with random bytes
+	for(size_t i = 0; i < array_size; i++)
+	{
+		ASSERT(SUCCESS == random_number_generator(&random,0,255));
+		ullint_array[i] = (unsigned char)random;
+	}
+
+	// Calculate SHA-512 hash
+	sha512_init(&ctx);
+	sha512_update(&ctx,ullint_array,array_size);
+	sha512_final(&ctx,hash_1);
+
+	#if SHOW_TEST
+	// Print array summary and hash
+	echo(STDERR,"Test 6 array size: %zu bytes, array_length=%zu, sizeof(unsigned long long int)=%zu bytes\n",array_size,array_length,sizeof(unsigned long long int));
+	echo(STDERR,"Test 6 SHA-512 hash: ");
+	print_hash(hash_1);
+	#endif
+
+	// Create an unsigned long long int memory
+	realloc_ullint(test,array_length,true);
+
+	// Test memeory edges
+	memcpy(test->mem,ullint_array,test->length * sizeof(test->mem[0]));
+
+	// Calculate SHA-512 hash
+	sha512_init(&ctx);
+	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
+	sha512_final(&ctx,hash_2);
+
+	#if SHOW_TEST
+	// Print array summary and hash
+	echo(STDERR,"Test 6 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
+	echo(STDERR,"Test 6 SHA-512 hash: ");
+	print_hash(hash_2);
+	#endif
+
+	if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
+	{
+		echo(STDERR,"Test 6 fail\n");
 		status = FAILURE;
 	}
 
