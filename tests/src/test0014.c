@@ -61,9 +61,9 @@ Return long_relative_path_test(void){
 
 	filename = "examples/the_last_of_longest_path";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -105,9 +105,9 @@ Return long_relative_path_test(void){
 
 	filename = "examples/maximum_path_length_of_sqlite";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -204,9 +204,9 @@ Return long_absolute_path_test(void){
 
 	filename = "examples/the_last_of_longest_path";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -248,9 +248,9 @@ Return long_absolute_path_test(void){
 
 	filename = "examples/maximum_path_length_of_sqlite";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -349,9 +349,9 @@ Return reset_relative_path_test(void){
 
 	filename = "examples/the_last_of_longest_path";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -394,9 +394,9 @@ Return reset_relative_path_test(void){
 
 	filename = "examples/maximum_path_length_of_sqlite";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -496,9 +496,9 @@ Return reset_absolute_path_test(void){
 
 	filename = "examples/the_last_of_longest_path";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -541,9 +541,9 @@ Return reset_absolute_path_test(void){
 
 	filename = "examples/maximum_path_length_of_sqlite";
 
-	ASSERT(NULL != (file = fopen(filename, "r")));
+	ASSERT(NULL != (file = fopen(filename,"r")));
 
-	ASSERT(-1 != (read = getline(&line, &len, file)));
+	ASSERT(-1 != (read = getline(&line,&len,file)));
 
 	if(file != NULL)
 	{
@@ -575,7 +575,6 @@ Return reset_absolute_path_test(void){
 	// Clean to use it iteratively
 	reset(&pattern);
 	del_char(&result);
-
 
 	RETURN_STATUS;
 }
