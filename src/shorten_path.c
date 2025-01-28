@@ -13,12 +13,12 @@
  *         - SUCCESS: Path was shortened successfully or didn't need shortening
  *         - FAILURE: Memory operation failed
  */
-Return shorten_path(char* path){
+Return shorten_path(char *path){
 	Return status = SUCCESS;
 	size_t len = strlen(path);
 	size_t maxLen = 50;
-	const char* ellipsis = "…"; /* 3 bytes  of Unicode ellipsis '\u2026' */
-	char* result;
+	const char *ellipsis = "…"; /* 3 bytes  of Unicode ellipsis '\u2026' */
+	char *result;
 	size_t ellipsis_length = 0;
 
 	/* Validate input parameters */
@@ -45,14 +45,16 @@ Return shorten_path(char* path){
 	size_t startLen = (maxLen / 2) - ellipsis_length;
 	size_t endLen = maxLen - startLen - ellipsis_length;
 
-	char* start = (char*)malloc(startLen);
+	char *start = (char *)malloc(startLen);
+
 	if(NULL == start)
 	{
 		report("Memory allocation failed, requested size: %zu bytes",startLen);
 		return(FAILURE);
 	}
 
-	char* end = (char*)malloc(endLen);
+	char *end = (char *)malloc(endLen);
+
 	if(NULL == end)
 	{
 		report("Memory allocation failed, requested size: %zu bytes",endLen);

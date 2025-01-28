@@ -14,9 +14,9 @@ static Return test0011_1_readme_example(void){
 	Return status = SUCCESS;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1;"
-	        "${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2;"
-	        "${BINDIR}/precizer --compare database1.db database2.db";
+	        "${BINDIR}/precizer --progress --database=host1.db tests/examples/diffs/diff1;"
+	        "${BINDIR}/precizer --progress --database=host2.db tests/examples/diffs/diff2;"
+	        "${BINDIR}/precizer --compare host1.db host2.db";
 
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
