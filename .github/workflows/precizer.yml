@@ -1,36 +1,65 @@
 name: Precizer
 
+#on:
+#  push:
+#    tags:
+#      - "v*.*.*"
+#  pull_request:
+#    tags:
+#      - "v*.*.*"
+
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "v*.*.*"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "v*.*.*"
+
+#on:
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential \
-        libpcre2-dev \
-        cmake \
-        llvm
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential libpcre2-dev llvm
 
-    - name: Build project
-      run: make portable
+      - name: Build project
+        run: make portable
 
-    - name: Run tests
-      run: |
-        cd tests
-        make sanitize run
+      - name: Run tests
+        run: |
+          cd tests
+          make sanitize run
 
-    - name: Archive build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-artifacts
-        path: precizer
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: true
+          prerelease: true
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: precizer
+          asset_name: precizer
+          asset_content_type: application/octet-stream
+
