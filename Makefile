@@ -378,7 +378,10 @@ clean-asm:
 	@rm -rf $(ASM)
 
 hugetestfile:
-	dd if=/dev/urandom of=tests/examples/huge/hugetestfile bs=1M count=10
+	@echo Creating a guge file for testing
+	@mkdir -p tests/examples/huge/
+	@dd if=/dev/urandom of=tests/examples/huge/hugetestfile bs=1M count=10
+	@echo The file has been created
 
 banner:
 	@printf "Now some tests could be running:\n"
