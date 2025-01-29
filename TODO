@@ -1,9 +1,5 @@
 TODO:
 
-* Telemetry issue:
-	Total aligned memory reallocations number: 1
-	Count of no-op reallocations: 1
-
 * Add function return value checks to files:
     - src/file_availability.c
 
