@@ -1,4 +1,4 @@
 title: Precizer
 description: precizer is a CLI application for verifying file integrity after synchronization. The program recursively traverses directories, creates a database of files with their checksums, and performs comparisons.
-show_downloads: true
+show_downloads: false
 theme: jekyll-theme-cayman
