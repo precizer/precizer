@@ -256,6 +256,7 @@ docker:
 clean-docker:
 	@docker image prune -f
 	@docker image prune -af
+	@docker rm -f $(shell docker ps -aq)
 	@docker rmi -f $(shell docker images -q)
 
 #
