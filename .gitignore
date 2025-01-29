@@ -10,3 +10,4 @@ precizer
 *.out.*
 *.old
 *~
+*.backup

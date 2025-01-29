@@ -7,20 +7,6 @@ on:
   pull_request:
     tags:
 
-#on:
-#  push:
-#    branches:
-#      - "v*.*.*"
-#  pull_request:
-#    branches:
-#      - "v*.*.*"
-
-#on:
-#  push:
-#    branches: [ "main" ]
-#  pull_request:
-#    branches: [ "main" ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -49,7 +35,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
           draft: true
-          prerelease: true
+          prerelease: false
 
       - name: Upload Release Asset
         id: upload-release-asset
