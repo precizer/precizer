@@ -1,0 +1,44 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/4
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/4 exists
+TESTING:The path tests/examples/4 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: .*$
+TESTING:Primary database file name: %DB_NAME%
+TESTING:Primary database file path: %DB_NAME%
+TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
+TESTING:Verify that the path %DB_NAME% exists
+TESTING:The path %DB_NAME% doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:The primary database file was just created and doesn't require verification
+TESTING:Successfully opened database %DB_NAME%
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named %DB_NAME% is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database %DB_NAME%
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:Recursion depth limited to: \d+$
+TESTING:File traversal started
+TESTING:\x1B\[1mThese files will be added against the %DB_NAME% database:\x1B\[0m
+sss.txt
+TESTING:File traversal complete
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:No DB version data found in metadata table
+TESTING:The database version 1 has been successfully stored in the DB
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
+TESTING:\x1B\[1mThe database %DB_NAME% has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
+TESTING:The precizer completed its execution without any issues\z

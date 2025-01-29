@@ -195,6 +195,57 @@ static Return test0011_4_readme_example(void){
 
 /**
  *
+ * The Example 5 from README
+ * Disable recursion with --maxdepth=0 option
+ *
+ *
+ */
+static Return test0011_5_readme_example(void){
+	Return status = SUCCESS;
+
+	const char *command = "export TESTING=true;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --maxdepth=0 tests/examples/4";
+
+	// Create memory for the result
+	MSTRUCT(mem_char,result);
+
+	const char *filename = "templates/0011_005_1.txt";
+
+	const char *template = "%DB_NAME%";
+
+	const char *replacement = getenv("DBNAME");  // Database name
+
+	if(replacement == NULL)
+	{
+		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
+		return(FAILURE);
+	}
+
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+
+	// Clean up test results
+	del_char(&result);
+
+	/* At the second stage, the --maxdepth=0 option is not used.
+	   Therefore, all files that were not previously included
+	   will be added to the database. */
+
+	command = "export TESTING=true;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --update tests/examples/4";
+
+	filename = "templates/0011_005_2.txt";
+
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));;
+
+	del_char(&result);
+
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+
+	RETURN_STATUS;
+}
+
+/**
+ *
  * User's Manual and examples from README test set
  *
  */
@@ -203,10 +254,11 @@ Return test0011(void){
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	TEST(test0011_1_readme_example,"Example 1 test from README…");
-	TEST(test0011_2_readme_example,"Example 2 test from README…");
-	TEST(test0011_3_readme_example,"Example 3 test from README…");
-	TEST(test0011_4_readme_example,"Example 4 test from README…");
+	TEST(test0011_1_readme_example,"README example 1 Adding and comparing…");
+	TEST(test0011_2_readme_example,"README example 2 Updating the data in DB…");
+	TEST(test0011_3_readme_example,"README example 3 --silent mode…");
+	TEST(test0011_4_readme_example,"README example 4 --verbose mode…");
+	TEST(test0011_5_readme_example,"README example 5 Disable recursion with --maxdepth…");
 
 	RETURN_STATUS;
 }
