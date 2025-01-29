@@ -18,6 +18,7 @@ Return prepare(void){
 	        "cd ${TMPDIR};"
 	        "cp -apr $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
 	        "cp -apr $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
+	        "cp -apr $ORIGIN_DIR/tests/examples/4/ ${TESTDIRS}/../;"
 	        "cp -apr $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
 	        "cp -apr $ORIGIN_DIR/tests/templates/0015_database_v0.db ${TESTDIRS}/../../;"
 	        "test -f $ORIGIN_DIR/precizer && cp -apr $ORIGIN_DIR/precizer .;"
