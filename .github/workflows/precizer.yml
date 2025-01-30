@@ -30,7 +30,7 @@ jobs:
 
       - name: Get annotated tag message
         id: tag_message
-        run: echo "BODY=$(git for-each-ref refs/tags/${{ github.ref_name }} --format='%(contents)')" >> $GITHUB_ENV; cat $GITHUB_ENV
+        run: echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV; cat $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
@@ -40,9 +40,9 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
-          body: "${{ env.BODY }}"
+          body: ${{ env.BODY }}
           draft: true
-          prerelease: false
+          prerelease: true
 
       - name: Upload Release Asset
         id: upload-release-asset
