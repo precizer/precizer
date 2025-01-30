@@ -21,7 +21,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential libpcre2-dev llvm
 
       - name: Build project
-        run: make portable
+        run: |
+          make portable
+          zip --junk-paths precizer precizer
 
       - name: Run tests
         run: |
@@ -30,7 +32,7 @@ jobs:
 
       - name: Get annotated tag message
         id: tag_message
-        run: echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV; cat $GITHUB_ENV
+        run: echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
@@ -51,7 +53,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: precizer
-          asset_name: precizer
+          asset_path: precizer.zip
+          asset_name: precizer.zip
           asset_content_type: application/octet-stream
 
