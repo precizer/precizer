@@ -30,7 +30,7 @@ jobs:
 
       - name: Get annotated tag message
         id: tag_message
-        run: echo "body=$(git for-each-ref refs/tags/${{ github.ref_name }} --format='%(contents)')" >> $GITHUB_ENV
+        run: echo "body=$(git for-each-ref refs/tags/${{ github.ref_name }} --format='%(contents)')" >> $GITHUB_ENV; echo $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
