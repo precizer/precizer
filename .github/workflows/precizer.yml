@@ -23,6 +23,7 @@ jobs:
       - name: Build project
         run: |
           make portable
+          upx --best --lzma -qqq precizer
           zip --junk-paths precizer precizer
 
       - name: Run tests
