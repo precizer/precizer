@@ -50,7 +50,7 @@ endif
 
 EXE = precizer
 
-STATIC = -static -static-libgcc
+STATIC = -static -static-libgcc -Wl,--gc-sections
 SRC = src
 STRIP = -s
 # Flags for additional checks. Must have!
