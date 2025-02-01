@@ -1,6 +1,28 @@
 #include "precizer.h"
 
 /**
+ * @brief Removes trailing '/' and '.' characters from a given string.
+ *
+ * This function iterates through the string from the end and replaces any trailing
+ * '/' or '.' characters with a null terminator '\0'.
+ *
+ * @param str Pointer to the string to be modified.
+ *
+ * @note If the string is NULL or empty, the function does nothing.
+ */
+void trim_trailing_chars(char *str) {
+    if (str == NULL || *str == '\0') {
+        return; // If string is NULL or empty, do nothing
+    }
+
+    size_t len = strlen(str);
+    while(len > 0 && (str[len - 1] == '/' || str[len - 1] == '.')) {
+        str[len - 1] = '\0';
+        len--;
+    }
+}
+
+/**
  * @brief Shortens a path string if it exceeds maximum length
  *
  * If the path length exceeds maxLen characters, the function truncates
@@ -64,9 +86,11 @@ Return shorten_path(char *path){
 	/* Copy path parts */
 	strncpy(start,path,startLen - 1);
 	start[startLen - 1] = '\0';
+	trim_trailing_chars(start);
 
 	strncpy(end,path + len + 1 - endLen,endLen - 1);
 	end[endLen - 1] = '\0';
+	trim_trailing_chars(end);
 
 	/* Format shortened path */
 	if(-1 == asprintf(&result,"%s%s%s",start,ellipsis,end))
