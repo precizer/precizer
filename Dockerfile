@@ -4,11 +4,8 @@ FROM ubuntu:24.04 as builder
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpcre2-dev \
-    clang clang-tools \
-    cppcheck \
-    unzip \
-    cmake \
     llvm \
+    upx \
     && rm -rf /var/lib/apt/lists/*
 
 # Set up working directory
@@ -26,7 +23,7 @@ RUN make hugetestfile \
 
 RUN cd tests && make sanitize debug
 
-RUN cd - && make portable
+RUN cd - && make portable && upx --best --lzma -q precizer
 
 # Run tests
 CMD ["sh", "-c", "cd tests && make run && /precizer/tests/testitall"]
