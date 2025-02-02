@@ -1,9 +1,9 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=/.*/tests/examples/long
-TESTING:argument:database=/.*uuuuuuuuuuu/database1.db
+TESTING:argument:database=/.*/tes…ttttt/uuuuuuuuuuuuuuuuuuuu/database1.db
 TESTING:argument:db_file_name=database1.db
-TESTING:argument:ignore=\^longpathstofiles/bbb…uuuuuuuuu/database1\\\.db\$
+TESTING:argument:ignore=\^longpathstofiles/bbbbbbbbbbbbbbbbbb…ttt/uuuuuuuuuuuuuuuuuuuu/database1\\\.db\$
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path /.*/tests/examples/long exists
@@ -17,10 +17,10 @@ TESTING:Current directory: /.*$
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: /.*uuuuuuuuuuu/database1.db
 TESTING:DB name determined
-TESTING:Verify that the path /.*ttt/uuuuuuuuuuuuuuuuuuuu exists
-TESTING:The path /.*ttt/uuuuuuuuuuuuuuuuuuuu is exists and it is a directory
-TESTING:Verify that the path .*uuuuuuuuuuu/database1.db exists
-TESTING:The path /.*uuuuuuuuuuu/database1.db doesn't exist or it is not a file
+TESTING:Verify that the path /.*/tes…tttttttttttttttttt/uuuuuuuuuuuuuuuuuuuu exists
+TESTING:The path /.*/tes…tttttttttttttttttt/uuuuuuuuuuuuuuuuuuuu is exists and it is a directory
+TESTING:Verify that the path .*/tes…ttttt/uuuuuuuuuuuuuuuuuuuu/database1.db exists
+TESTING:The path /.*/tes…ttttt/uuuuuuuuuuuuuuuuuuuu/database1.db doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
 TESTING:Final value for config->db_initialize_tables: true
@@ -35,15 +35,15 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
-longpathstofiles/bbbb…uuuuuuuuuuu/database1.db ignored \& not added
-longpathstofiles/bbbb…/path1/AAA/BCB/CCC/a.txt
-longpathstofiles/bbbb…AAA/ZAW/A/b/c/a_file.txt
-longpathstofiles/bbbb…AAA/ZAW/A/b/c/b_file.txt
-longpathstofiles/bbbb…AAA/ZAW/D/e/f/b_file.txt
-longpathstofiles/bbbb…/path2/AAA/BCB/CCC/a.txt
-longpathstofiles/bbbb…/path2/AAA/BCB/CCC/b.txt
-longpathstofiles/bbbb…AAA/ZAW/A/b/c/a_file.txt
-longpathstofiles/bbbb…AAA/ZAW/D/e/f/b_file.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…ttttt/uuuuuuuuuuuuuuuuuuuu/database1.db ignored & not added
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeeeeeeeeee/path1/AAA/BCB/CCC/a.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path1/AAA/ZAW/A/b/c/a_file.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path1/AAA/ZAW/A/b/c/b_file.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path1/AAA/ZAW/D/e/f/b_file.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeeeeeeeeee/path2/AAA/BCB/CCC/a.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeeeeeeeeee/path2/AAA/BCB/CCC/b.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path2/AAA/ZAW/A/b/c/a_file.txt
+longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:No DB version data found in metadata table
