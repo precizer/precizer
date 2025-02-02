@@ -464,6 +464,8 @@ void show_relative_path(
 	const bool *
 );
 
+size_t terminal_width(void);
+
 Return shorten_path(char *);
 
 Return status_of_changes(void);

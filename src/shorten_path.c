@@ -1,25 +1,67 @@
 #include "precizer.h"
 
 /**
- * @brief Removes trailing '/' and '.' characters from a given string.
+ * @brief Removes all leading dots ('.') from the beginning of the string.
+ * @param str Pointer to the character array.
+ * @param size Size of the array, including the null terminator.
+ */
+static void remove_leading_dots(
+	char   *str,
+	size_t size
+){
+	if(str == NULL || size < 2)
+	{
+		return;
+	}
+
+	// Find first non-dot character
+	size_t i = 0;
+
+	while(str[i] == '.' && i < size - 1)
+	{
+		i++;
+	}
+
+	// Shift the string to the left if there were leading dots
+	if(i > 0)
+	{
+		size_t j;
+
+		for(j = 0; j < size - i; j++)
+		{
+			str[j] = str[j + i];
+		}
+		// Ensure null terminator at the end
+		str[j] = '\0';
+	}
+}
+
+/**
+ * @brief Removes trailing '.' character from a given string.
  *
  * This function iterates through the string from the end and replaces any trailing
- * '/' or '.' characters with a null terminator '\0'.
+ * '.' character with a null terminator '\0'.
  *
  * @param str Pointer to the string to be modified.
  *
  * @note If the string is NULL or empty, the function does nothing.
  */
-void trim_trailing_chars(char *str) {
-    if (str == NULL || *str == '\0') {
-        return; // If string is NULL or empty, do nothing
-    }
+static void trim_trailing_chars(
+	char   *str,
+	size_t size
+){
+	if(str == NULL || *str == '\0' || size < 2)
+	{
+		return; // If string is NULL or empty, do nothing
+	}
 
-    size_t len = strlen(str);
-    while(len > 0 && (str[len - 1] == '/' || str[len - 1] == '.')) {
-        str[len - 1] = '\0';
-        len--;
-    }
+	size_t len = size;
+
+	while(len > 0 && str[len - 1] == '.')
+	{
+		str[len - 1] = '\0';
+		len--;
+	}
 }
 
 /**
@@ -36,17 +78,20 @@ void trim_trailing_chars(char *str) {
  *         - FAILURE: Memory operation failed
  */
 Return shorten_path(char *path){
+
 	Return status = SUCCESS;
+
 	size_t len = strlen(path);
-	size_t maxLen = 50;
 	const char *ellipsis = "…"; /* 3 bytes  of Unicode ellipsis '\u2026' */
-	char *result;
-	size_t ellipsis_length = 0;
+	char *result = NULL;
+	char *end = NULL;
+
+	size_t maxLen = terminal_width();
 
 	/* Validate input parameters */
-	if(NULL == path || maxLen < 8)
+	if(NULL == path)
 	{
-		return(FAILURE);
+		return(status);
 	}
 
 	/* Path is within limits, no action needed */
@@ -63,7 +108,7 @@ Return shorten_path(char *path){
 	}
 
 	/* Calculate lengths for first and second parts */
-	ellipsis_length = strlen(ellipsis);
+	size_t ellipsis_length = strlen(ellipsis);
 	size_t startLen = (maxLen / 2) - ellipsis_length;
 	size_t endLen = maxLen - startLen - ellipsis_length;
 
@@ -72,30 +117,37 @@ Return shorten_path(char *path){
 	if(NULL == start)
 	{
 		report("Memory allocation failed, requested size: %zu bytes",startLen);
-		return(FAILURE);
-	}
-
-	char *end = (char *)malloc(endLen);
-
-	if(NULL == end)
-	{
-		report("Memory allocation failed, requested size: %zu bytes",endLen);
-		return(FAILURE);
-	}
-
-	/* Copy path parts */
-	strncpy(start,path,startLen - 1);
-	start[startLen - 1] = '\0';
-	trim_trailing_chars(start);
-
-	strncpy(end,path + len + 1 - endLen,endLen - 1);
-	end[endLen - 1] = '\0';
-	trim_trailing_chars(end);
-
-	/* Format shortened path */
-	if(-1 == asprintf(&result,"%s%s%s",start,ellipsis,end))
-	{
 		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		end = (char *)malloc(endLen);
+
+		if(NULL == end)
+		{
+			report("Memory allocation failed, requested size: %zu bytes",endLen);
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		/* Copy path parts */
+		strncpy(start,path,startLen - 1);
+		start[startLen - 1] = '\0';
+		trim_trailing_chars(start,startLen);
+
+		strncpy(end,path + len + 1 - endLen,endLen - 1);
+		end[endLen - 1] = '\0';
+		remove_leading_dots(end,endLen);
+
+		/* Format shortened path */
+		if(-1 == asprintf(&result,"%s%s%s",start,ellipsis,end))
+		{
+			slog(ERROR,"asprintf() failed\n");
+			status = FAILURE;
+		}
 	}
 
 	if(SUCCESS == status && NULL != result)
