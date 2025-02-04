@@ -1,6 +1,8 @@
 #ifndef SHA512_H
 #define SHA512_H
 
+#define SHA512_DIGEST_LENGTH 64
+
 #include <stddef.h>
 
 /*
@@ -18,7 +20,6 @@
 	#define UINT64_C(x) (x + (UINT64_MAX - UINT64_MAX))
     #endif
 #endif
-
 
 #ifndef FIXEDINT_H_INCLUDED
     #define FIXEDINT_H_INCLUDED
@@ -52,8 +53,6 @@ typedef unsigned __int64 uint64_t;
 	#define INT64_C(v) v ## I64
     #endif
 #endif
-
-#define SHA512_DIGEST_LENGTH 64
 
 /* state */
 typedef struct sha512_context_ {
