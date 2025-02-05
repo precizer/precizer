@@ -1,6 +1,6 @@
 #include "sute.h"
 
-void slog_test(void){
+static void slog_test(void){
 	printf("All available combinations:\n");
 	printf("%s\n",rational_convert(REGULAR));
 	printf("%s\n",rational_convert(VERBOSE));
