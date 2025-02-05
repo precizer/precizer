@@ -21,7 +21,7 @@ static void test_conversion(
  * @note Tests edge cases and different bases with special focus on
  *       negative numbers and MIN/MAX integer values
  */
-void test_itoa(void){
+static void test_itoa(void){
 
 	/* Test extreme values */
 	printf("=== Testing extreme values ===\n");
