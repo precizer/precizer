@@ -1,6 +1,4 @@
 #include "precizer.h"
-#include <unistd.h>
-#include <sys/stat.h>
 
 /**
  *

@@ -1,7 +1,4 @@
 #include "precizer.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 static void print_metadata(
 	int             flag,

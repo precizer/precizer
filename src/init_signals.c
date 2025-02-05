@@ -1,8 +1,4 @@
 #include "precizer.h"
-#include <sys/types.h>
-#include <unistd.h>
-#include <signal.h>
-#include <termios.h>
 
 /**
  *

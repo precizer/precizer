@@ -1,5 +1,4 @@
 #include "precizer.h"
-#include <sys/utsname.h>
 #define IN_MEMORY_DB_NAME "DisposableDB"
 
 /**
