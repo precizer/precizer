@@ -23,6 +23,7 @@ int main(void){
 
 	HEADER("Unit Testing of precizer");
 	TEST(test0012,"add_string_to_array() test set…");
+	TEST(test0021,"UTF8 manipulations test set…");
 
 	HEADER("System Testing of precizer");
 	TEST(test0003,"Comply default DB name to \"hostname.db\" template…");

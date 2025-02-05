@@ -1,4 +1,5 @@
-\ATESTING:Configuration initialized
+\ATESTING:Enable UTF-8 support
+TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
@@ -54,6 +55,7 @@ TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
+TESTING:Enable UTF-8 support
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/long
@@ -101,14 +103,30 @@ tests/examples/long
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeeeeeeeeee/path1/AAA/BCB/CCC/a.txt added
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path1/AAA/ZAW/A/b/c/a_file.txt added
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path1/AAA/ZAW/A/b/c/b_file.txt added
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path1/AAA/ZAW/D/e/f/b_file.txt added
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeeeeeeeeee/path2/AAA/BCB/CCC/a.txt added
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeeeeeeeeee/path2/AAA/BCB/CCC/b.txt added
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path2/AAA/ZAW/A/b/c/a_file.txt added
-longpathstofiles/bbbbbbbbbbbbbbbbbbb…eeeeeeee/path2/AAA/ZAW/D/e/f/b_file.txt added
+длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a.txt added
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file.txt added
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file.txt added
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file.txt added
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a.txt added
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b.txt added
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file.txt added
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file.txt added
+длинныйпутьвЮТФ8/аа…путьпуть/path1/AAA/BCB/CCC/a.txt added
+длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/a_file.txt added
+длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/b_file.txt added
+длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/D/e/f/b_file.txt added
+длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/a.txt added
+длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/b.txt added
+длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/A/b/c/a_file.txt added
+длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/D/e/f/b_file.txt added
+длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a.txt added
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file.txt added
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file.txt added
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file.txt added
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a.txt added
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b.txt added
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file.txt added
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file.txt added
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m

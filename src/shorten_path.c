@@ -1,75 +1,176 @@
 #include "precizer.h"
 
 /**
- * @brief Removes all leading dots ('.') from the beginning of the string.
- * @param str Pointer to the character array.
- * @param size Size of the array, including the null terminator.
+ * @brief Gets the terminal width (number of columns)
+ * @return Number of columns in the terminal or default value 80 columns
  */
-static void remove_leading_dots(
-	char   *str,
-	size_t size
-){
-	if(str == NULL || size < 2)
+static size_t terminal_width(void){
+
+	struct winsize w;
+
+	if(ioctl(STDOUT_FILENO,TIOCGWINSZ,&w) == -1)
 	{
+		/* Unable to retrieve terminal window width.
+		   Defaulting to 80 columns. */
+		return(80UL);
+
+	} else {
+		return((size_t)w.ws_col);
+	}
+}
+
+/**
+ * @brief Check if a given UTF-8 character is a period ('.')
+ * 
+ * @param str Pointer to the start of a UTF-8 character
+ * @return true if it is a period, false otherwise
+ */
+STATIC bool is_utf8_dot(const char *str) {
+	mbstate_t state;
+	memset(&state, 0, sizeof(state));
+	wchar_t wc;
+	size_t len = mbrtowc(&wc, str, MB_CUR_MAX, &state);
+	return (len > 0 && wc == L'.');
+}
+
+/**
+ * @brief Remove all leading dots ('.') from a UTF-8 string
+ * 
+ * @param str UTF-8 encoded input string
+ */
+STATIC void remove_leading_dots(char *str) {
+	if (!str || *str == '\0') return;
+
+	char *start = str;
+	while (*start && is_utf8_dot(start)) {
+		size_t len = mbrlen(start, MB_CUR_MAX, NULL);
+		if (len == 0 || len == (size_t)-1) break;
+		start += len;
+	}
+
+	// Move trimmed string to the beginning
+	if (start != str) memmove(str, start, strlen(start) + 1);
+}
+
+/**
+ * @brief Remove all trailing dots ('.') from a UTF-8 string
+ * 
+ * @param str UTF-8 encoded input string
+ */
+STATIC void remove_trailing_dots(char *str) {
+	if (!str || *str == '\0') return;
+
+	char *end = str + strlen(str);
+
+	// Найти последний символ, который не является точкой
+	while (end > str) {
+		char *p = end - 1;
+		while (p > str && (*p & 0xC0) == 0x80) { // Пропуск многобайтовых символов
+			p--;
+		}
+
+		if (!is_utf8_dot(p)) {
+			break; // Найден символ, который не точка
+		}
+
+		// Правильное удаление последней точки
+		*p = '\0';
+		end = p;
+	}
+}
+
+/**
+ * @brief Truncates a UTF-8 string to the specified number of characters in place.
+ *
+ * @param str Input UTF-8 string (modified in place).
+ * @param max_chars Maximum number of characters to keep.
+ */
+static void utf8_truncate(char* str, size_t max_chars) {
+	if (!str || max_chars == 0) {
 		return;
 	}
 
-	// Find first non-dot character
-	size_t i = 0;
+	unsigned char *ptr = (unsigned char*)str;
+	unsigned char *end = ptr;
+	size_t count = 0;
 
-	while(str[i] == '.' && i < size - 1)
-	{
-		i++;
-	}
-
-	// Shift the string to the left if there were leading dots
-	if(i > 0)
-	{
-		size_t j;
-
-		for(j = 0; j < size - i; j++)
-		{
-			str[j] = str[j + i];
+	// Iterate through the string character by character
+	while (*ptr) {
+		unsigned char *next = ptr;
+		if ((*ptr & 0x80) == 0) { // 1-byte character (ASCII)
+			next = ptr + 1;
+		} else if ((*ptr & 0xE0) == 0xC0) { // 2-byte character
+			next = ptr + 2;
+		} else if ((*ptr & 0xF0) == 0xE0) { // 3-byte character
+			next = ptr + 3;
+		} else if ((*ptr & 0xF8) == 0xF0) { // 4-byte character
+			next = ptr + 4;
+		} else {
+			break; // Invalid UTF-8 sequence
 		}
-		// Ensure null terminator at the end
-		str[j] = '\0';
+
+		if (next > (unsigned char*)str + strlen(str)) {
+			break; // Prevent buffer overflow
+		}
+
+		if(++count > max_chars)
+		{
+			break;
+		}
+
+		end = next;
+		ptr = next;
 	}
+
+	// Truncate the string in place
+	*end = '\0';
 }
 
 /**
- * @brief Removes trailing '.' character from a given string.
+ * @brief Keeps only the last N characters of a UTF-8 string in place.
  *
- * This function iterates through the string from the end and replaces any trailing
- * '.' character with a null terminator '\0'.
- *
- * @param str Pointer to the string to be modified.
- *
- * @note If the string is NULL or empty, the function does nothing.
+ * @param str Input UTF-8 string (modified in place).
+ * @param max_chars Maximum number of characters to keep from the end.
  */
-static void trim_trailing_chars(
-	char   *str,
-	size_t size
-){
-	if(str == NULL || *str == '\0' || size < 2)
-	{
-		return; // If string is NULL or empty, do nothing
+static void utf8_keep_last_chars(char* str, size_t max_chars) {
+	if (!str || max_chars == 0) {
+		return;
 	}
 
-	size_t len = size;
+	size_t len = strlen(str);
+	unsigned char *ptr = (unsigned char*)str + len;
+	size_t count = 0;
 
-	while(len > 0 && str[len - 1] == '.')
-	{
-		str[len - 1] = '\0';
-		len--;
+	// Move backwards through the string character by character
+	while (ptr > (unsigned char*)str) {
+		unsigned char *prev = ptr - 1;
+		while (prev > (unsigned char*)str && (*prev & 0xC0) == 0x80) {
+			prev--; // Move to the start of the current UTF-8 character
+		}
+
+		if (++count == max_chars) {
+			ptr = prev;
+			break;
+		}
+
+		ptr = prev;
 	}
+
+	// Ensure valid UTF-8 starting position
+	while ((*ptr & 0xC0) == 0x80) {
+		ptr++;
+	}
+
+	// Move the last N characters to the beginning
+	size_t remaining_bytes = strlen((char*)ptr);
+	memmove(str, ptr, remaining_bytes + 1);
 }
 
 /**
- * @brief Shortens a path string if it exceeds maximum length
+ * @brief Shortens a UTF-8 path string if it exceeds maximum length.
  *
  * If the path length exceeds maxLen characters, the function truncates
- * the middle portion of the string and inserts an ellipsis character.
- * The resulting string has format: "<first_half>…<second_half>"
+ * the middle portion of the string and inserts a Unicode ellipsis.
  *
  * @param path[in,out] Path string to be shortened
  *
@@ -81,79 +182,101 @@ Return shorten_path(char *path){
 
 	Return status = SUCCESS;
 
-	size_t len = strlen(path);
-	const char *ellipsis = "…"; /* 3 bytes  of Unicode ellipsis '\u2026' */
-	char *result = NULL;
-	char *end = NULL;
-
-	size_t maxLen = terminal_width();
-
 	/* Validate input parameters */
 	if(NULL == path)
 	{
+		/* No action needed */
+		return(status);
+	}
+
+	// Convert UTF-8 string to wide-character string to measure its length correctly
+	size_t len = mbstowcs(NULL, path, 0);
+	if (len == (size_t)-1 || len == (size_t)-2) {
+		/* Invalid UTF-8 encoding. No action needed */
+		return(status);
+	}
+
+	if(len < 2)
+	{
+		/* No action needed */
+		return(status);
+	}
+
+	size_t maxLen = terminal_width();
+
+	/* Integer overflow possible if this value is less than threshold */
+	if(maxLen < 8)
+	{
+		/* No action needed */
 		return(status);
 	}
 
 	/* Path is within limits, no action needed */
 	if(len <= maxLen)
 	{
+		/* No action needed */
 		return(status);
 	}
 
-	/* Integer overflow possible if this value is less than,
-	   no action needed */
-	if(maxLen < 8)
-	{
+	const char *ellipsis = "…"; // Unicode ellipsis (U+2026)
+	mbstate_t state = {0}; // Initialize multibyte state
+	size_t ellipsis_length = mbrlen(ellipsis, MB_CUR_MAX, &state);
+	if (ellipsis_length == (size_t)-1 || ellipsis_length == (size_t)-2) {
+		/* Invalid UTF-8 encoding. No action needed */
 		return(status);
 	}
 
-	/* Calculate lengths for first and second parts */
-	size_t ellipsis_length = strlen(ellipsis);
 	size_t startLen = (maxLen / 2) - ellipsis_length;
 	size_t endLen = maxLen - startLen - ellipsis_length;
 
-	char *start = (char *)malloc(startLen);
+	char *start = (char *)malloc(startLen + 1);
+	char *end = (char *)malloc(endLen + 1);
 
-	if(NULL == start)
+	if(NULL == start || NULL == end)
 	{
-		report("Memory allocation failed, requested size: %zu bytes",startLen);
+		report("Memory allocation failed");
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && startLen > 0 && endLen > 0)
+	{
+		/* Copy path parts */
+		strncpy(start, path, startLen);
+		start[startLen] = '\0';
+		utf8_truncate(start,startLen);
+		remove_trailing_dots(start);
+
+		strncpy(end, path + strlen(path) - endLen, endLen);
+		end[endLen] = '\0';
+		utf8_keep_last_chars(end,endLen);
+		remove_leading_dots(end);
+	}
+
+	/* Allocate memory for result */
+	size_t result_size = maxLen + 1;
+	char *result = (char *)malloc(result_size);
+
+	if(result == NULL)
+	{
+		report("Memory allocation failed");
 		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
 	{
-		end = (char *)malloc(endLen);
-
-		if(NULL == end)
+		/* Format shortened path */
+		if(snprintf(result, result_size, "%s%s%s", start, ellipsis, end) < 0)
 		{
-			report("Memory allocation failed, requested size: %zu bytes",endLen);
+			report("snprintf() failed");
 			status = FAILURE;
 		}
 	}
 
 	if(SUCCESS == status)
 	{
-		/* Copy path parts */
-		strncpy(start,path,startLen - 1);
-		start[startLen - 1] = '\0';
-		trim_trailing_chars(start,startLen);
-
-		strncpy(end,path + len + 1 - endLen,endLen - 1);
-		end[endLen - 1] = '\0';
-		remove_leading_dots(end,endLen);
-
-		/* Format shortened path */
-		if(-1 == asprintf(&result,"%s%s%s",start,ellipsis,end))
-		{
-			slog(ERROR,"asprintf() failed\n");
-			status = FAILURE;
-		}
-	}
-
-	if(SUCCESS == status && NULL != result)
-	{
-		memcpy(path,result,maxLen - 1);
-		path[maxLen - 1] = '\0';
+		// Copy to path safely
+		strncpy(path, result, result_size);
+		path[maxLen] = '\0';
 	}
 
 	/* Cleanup */
@@ -163,3 +286,4 @@ Return shorten_path(char *path){
 
 	return(status);
 }
+

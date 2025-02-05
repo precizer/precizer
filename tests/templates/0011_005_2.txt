@@ -1,4 +1,5 @@
-\ATESTING:Configuration initialized
+\ATESTING:Enable UTF-8 support
+TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/4
 TESTING:argument:update=yes

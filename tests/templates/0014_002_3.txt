@@ -1,12 +1,13 @@
-\ATESTING:Configuration initialized
+\ATESTING:Enable UTF-8 support
+TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=/.*ddd/eeeeeeeeeeeeeeeeeeee
+TESTING:argument:paths=/.*/test…eeeeee/языкеdddddddddкрайний
 TESTING:argument:database=/.*/database1.db
 TESTING:argument:db_file_name=database1.db
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path /.*ddd/eeeeeeeeeeeeeeeeeeee exists
-TESTING:The path /.*ddd/eeeeeeeeeeeeeeeeeeee is exists and it is a directory
+TESTING:Verify that the path /.*/test…eeeeee/языкеdddddddddкрайний exists
+TESTING:The path /.*/test…eeeeee/языкеdddddddddкрайний is exists and it is a directory
 TESTING:Paths detected
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
