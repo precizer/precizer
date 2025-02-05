@@ -1,5 +1,4 @@
 #include "precizer.h"
-#include <argp.h>
 
 /**
  *

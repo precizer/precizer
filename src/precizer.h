@@ -22,9 +22,51 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <libgen.h>
 
-#define SHA512_DIGEST_LENGTH 64
+/* Determine hostname */
+#include <sys/utsname.h>
+
+/* String operations */
+#include <string.h>
+
+/* Terminal window width and
+   other terminal operations */
+#include <sys/ioctl.h>
+#include <termios.h>
+
+/* System Signals */
+#include <sys/types.h>
+#include <signal.h>
+
+/* UTF8 Characters */
+#include <uchar.h>
+#include <wchar.h>
+#include <locale.h>
+
+/* Atomic operations */
+#include <stdatomic.h>
+
+/* PCRE2 Library */
+#define PCRE2_STATIC
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+
+/* File traversal library */
+#include <fts.h>
+
+/* Parse arguments with argp library */
+#include <argp.h>
+
 #define SQL_DRY_RUN_MODE ((int)-1)
+
+#ifdef TESTITALL
+    #define STATIC
+#else
+    #define STATIC static
+#endif
 
 // PCRE2 return codes
 typedef enum
@@ -464,9 +506,16 @@ void show_relative_path(
 	const bool *
 );
 
-size_t terminal_width(void);
-
 Return shorten_path(char *);
+
+#ifdef TESTITALL
+/*
+ * All static functions for unit testing purposes are declared here
+ *
+ */
+void remove_leading_dots(char *str);
+void remove_trailing_dots(char *str);
+#endif
 
 Return status_of_changes(void);
 

@@ -1,8 +1,4 @@
 #include "precizer.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 
 /**
  * Save the runtime directory absolute path into global config structure,

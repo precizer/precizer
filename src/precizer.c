@@ -5,7 +5,6 @@
  *
  */
 #include "precizer.h"
-#include <stdatomic.h>
 
 /**
  * Global definitions

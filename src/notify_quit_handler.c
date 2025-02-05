@@ -1,6 +1,4 @@
 #include "precizer.h"
-#include <signal.h>
-#include <termios.h>
 
 /**
  *

@@ -1,5 +1,4 @@
 #include "precizer.h"
-#include <fts.h>
 
 /**
  * @brief Display statistics for filesystem components

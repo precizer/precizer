@@ -1,6 +1,4 @@
 #include "precizer.h"
-#include <termios.h>
-#include <unistd.h>
 
 /**
  *

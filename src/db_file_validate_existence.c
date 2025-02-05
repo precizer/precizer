@@ -1,5 +1,4 @@
 #include "precizer.h"
-#include <libgen.h>
 
 /**
  * @brief Validates the existence of the database file
