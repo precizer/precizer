@@ -1,4 +1,5 @@
-\ATESTING:Configuration initialized
+\ATESTING:Enable UTF-8 support
+TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
@@ -57,6 +58,7 @@ TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database database1.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
+TESTING:Enable UTF-8 support
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff2
@@ -116,6 +118,7 @@ TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database database2.db has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
+TESTING:Enable UTF-8 support
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=database1.db, database2.db

@@ -141,5 +141,12 @@ void init_config(void){
 	/// will force a rescan and update the checksum in the database.
 	config->watch_timestamps = false;
 
+	if(NULL != setlocale(LC_ALL, ""))
+	{
+		slog(TRACE,"Enable UTF-8 support\n");
+	} else {
+		slog(ERROR,"Failed to set UTF-8 locale\n");
+	}
+
 	slog(TRACE,"Configuration initialized\n");
 }
