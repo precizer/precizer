@@ -2,7 +2,7 @@
 
 static void test0021_1(void){
 
-    setlocale(LC_ALL, ""); // Enable UTF-8 support
+	setlocale(LC_ALL,""); // Enable UTF-8 support
 
 	char test1[] = "...Пример строки...";
 	char test2[] = "....Тест...";
@@ -28,17 +28,17 @@ static void test0021_1(void){
 	remove_leading_dots(test7);
 	remove_trailing_dots(test8);
 
-	printf("Result 1: \"%s\"\n", test1);
-	printf("Result 2: \"%s\"\n", test2);
-	printf("Result 3: \"%s\"\n", test3);
-	printf("Result 4: \"%s\"\n", test4);
-	printf("Result 5: \"%s\"\n", test5);
-	printf("Result 6: \"%s\"\n", test6);
-	printf("Result 7: \"%s\"\n", test7);
-	printf("Result 8: \"%s\"\n", test8);
+	printf("Result 1: \"%s\"\n",test1);
+	printf("Result 2: \"%s\"\n",test2);
+	printf("Result 3: \"%s\"\n",test3);
+	printf("Result 4: \"%s\"\n",test4);
+	printf("Result 5: \"%s\"\n",test5);
+	printf("Result 6: \"%s\"\n",test6);
+	printf("Result 7: \"%s\"\n",test7);
+	printf("Result 8: \"%s\"\n",test8);
 
 	// Disable locale
-	setlocale(LC_ALL, "C");
+	setlocale(LC_ALL,"C");
 }
 
 /**
