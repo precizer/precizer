@@ -49,11 +49,11 @@ Return prepare(void){
 		ASSERT(SUCCESS == execute_and_set_variable("BINDIR","echo \"${TMPDIR}/.builds/sanitize/\"",0));
 	}
 
-	command = "export TESTING=true;"
-	        "export ASAN_OPTIONS;"
-	        "export ASAN_SYMBOLIZER_PATH;PATH=.:${PATH}";
+	/* Enable UTF-8 */
+	ASSERT(SUCCESS == set_environment_variable("LC_ALL","C.UTF-8"));
+	ASSERT(SUCCESS == set_environment_variable("LANG","C.UTF-8"));
 
-	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	return(status);
 }
