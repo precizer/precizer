@@ -1,6 +1,35 @@
 #include "precizer.h"
 
 /**
+ * @brief Determines the maximum amount of memory that can be allocated for the buffer.
+ *
+ * This function estimates how much memory can be allocated for a buffer based on
+ * available physical memory. It defaults to 1MB if system calls fail.
+ *
+ * @note The function assumes that only 1% of available RAM should be used for the buffer.
+ *       It may not be suitable for embedded or IoT devices with constrained memory.
+ *
+ * @return The maximum buffer size in bytes. Defaults to 1MB if system information is unavailable.
+ */
+static long нow_much_memory_can_be_allocated_for_the_buffer(void)
+{
+	// Default value is 1MB buffer. Is it too big for embedded and IoT?
+	const long buffer_size = 1024*1024;
+
+	long pages = sysconf(_SC_AVPHYS_PAGES); // Number of actually free pages
+	long page_size = sysconf(_SC_PAGESIZE); // Page size in bytes
+
+	if(pages == -1 || page_size == -1) {
+		return(buffer_size);
+	}
+
+	// Only 1% of available RAM
+	long available_memory = pages * page_size;
+	long one_percent = available_memory / 100;
+	return(one_percent);
+}
+
+/**
  *
  * Calculate SHA512 cryptographic hash of a file
  *
@@ -16,8 +45,8 @@ Return sha512sum(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	const size_t buffer_size = 1024*1024;   // 1MB buffer. Is it too big for embedded and IoT?
-	unsigned char buffer[buffer_size];
+	const long buffer_size = нow_much_memory_can_be_allocated_for_the_buffer();
+	unsigned char *buffer = (unsigned char *)calloc((size_t)buffer_size, sizeof(unsigned char));
 	FILE *fileptr = NULL;
 	size_t len = 0;
 
@@ -53,7 +82,7 @@ Return sha512sum(
 		sha512_init(mdContext);
 	}
 
-	while((len = fread(buffer,1,buffer_size,fileptr)) != 0)      // read from infile
+	while((len = fread(buffer,1,(size_t)buffer_size,fileptr)) != 0)      // read from infile
 	{
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */
@@ -66,6 +95,8 @@ Return sha512sum(
 		*offset += (sqlite3_int64)len;
 	}
 
+	free(buffer);
+
 	fclose(fileptr); // Close the file
 
 	if(loop_was_interrupted == false)
@@ -75,7 +106,6 @@ Return sha512sum(
 	}
 
 #if 0
-
 	for(size_t i = 0; i < SHA512_DIGEST_LENGTH; i++)
 	{
 		printf("%02x",sha512[i]);
