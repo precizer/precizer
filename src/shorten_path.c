@@ -326,4 +326,3 @@ Return shorten_path(char *path){
 
 	return(status);
 }
-

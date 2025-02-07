@@ -3,7 +3,6 @@
 /**
  *
  * Reflect global change status against database
- * @arg @c config Main global configuration structure
  *
  */
 Return status_of_changes(void){

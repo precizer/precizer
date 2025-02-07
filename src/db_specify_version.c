@@ -122,4 +122,3 @@ Return db_specify_version(const char *db_file_path){
 
 	return(status);
 }
-

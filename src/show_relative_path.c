@@ -1,5 +1,16 @@
 #include "precizer.h"
 
+/**
+ * @brief Prints metadata details based on the specified flag.
+ * 
+ * This function outputs metadata such as file size or timestamps (creation and modification times)
+ * in a human-readable format. It is used to display changes between two sets of file metadata.
+ * 
+ * @param[in] flag Identifier for the type of metadata to print:
+ *                 - 0: File size
+ *                 - 1: Creation time
+ *                 - 2: Modification time
+ */
 static void print_metadata(
 	int             flag,
 	const CmpctStat *was,
@@ -29,8 +40,12 @@ static void print_metadata(
 }
 
 /**
- * @brief Prints combinations of flags based on bit values
- * @param[in] mega Integer containing combined flag values
+ * @brief Prints combinations of change flags for a file.
+ * 
+ * This function evaluates a bitmask of change flags and prints the corresponding descriptions
+ * (e.g., "size", "ctime", "mtime") along with their metadata differences. It also indicates
+ * whether the file will be rehashed.
+ * 
  */
 static void print_flag_combinations(
 	int             mega,
@@ -83,6 +98,13 @@ static void print_flag_combinations(
 	}
 }
 
+/**
+ * @brief Prints details about updated or added files.
+ * 
+ * This function outputs information about files that have been updated or newly added to the database.
+ * It includes metadata changes and rehashing status.
+ * 
+ */
 static void print_updated_or_added(
 	const int       *metadata_of_scanned_and_saved_files,
 	const DBrow     *dbrow,
@@ -98,6 +120,13 @@ static void print_updated_or_added(
 	}
 }
 
+/**
+ * @brief Prints details about changed files.
+ * 
+ * This function outputs information about files that have changed, including metadata differences
+ * and rehashing status.
+ * 
+ */
 static void print_changed(
 	const int       *metadata_of_scanned_and_saved_files,
 	const DBrow     *dbrow,
@@ -112,12 +141,11 @@ static void print_changed(
 }
 
 /**
- *
- * Print out the relative path of the file
- * with additional explanations of what
- * exactly will happen to this file
- * @arg @c relative_path Relative path by itself
- * @arg @c metadata_of_scanned_and_saved_files Code of changes in file metadata
+ * @brief Displays the relative path of a file with additional contextual information.
+ * 
+ * This function prints the relative path of a file along with explanations of what actions
+ * will be taken regarding the file (e.g., ignored, updated, added, or rehashed). It also handles
+ * initial messages for traversal, updates, and warnings.
  *
  */
 void show_relative_path(

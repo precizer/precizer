@@ -7,7 +7,7 @@
  *
  */
 void show_checksum_gracefully_interrupted(
-	const char *relative_path,
+	const char          *relative_path,
 	const sqlite3_int64 *offset
 ){
 	if(*offset > 0 && global_interrupt_flag == true)
