@@ -1,7 +1,22 @@
 #include "precizer.h"
 
 /**
+ * @brief Copies essential elements from a `struct stat` to a `CmpctStat` structure
  *
+ * This function performs a selective copy of key fields from the source `struct stat`
+ * object to the destination `CmpctStat` object. The copied fields include file size,
+ * modification time (seconds and nanoseconds), and status change time (seconds and nanoseconds)
+ *
+ * The `CmpctStat` structure is designed to contain only the minimal necessary data
+ * required for comparison purposes, making it significantly more space-efficient
+ * compared to the full `struct stat`. This compact representation is particularly
+ * advantageous when storing large amounts of file metadata in a database,
+ * where storage optimization are critical.
+ *
+ * @param source A pointer to the source `struct stat` object containing the original file metadata
+ *               Must not be NULL. If NULL is provided, the function will fail
+ * @param destination A pointer to the destination `CmpctStat` object where the selected
+ *                    fields will be copied
  *
  */
 Return stat_copy(
