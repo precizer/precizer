@@ -16,7 +16,8 @@
  *         - SUCCESS: Check completed successfully
  *         - FAILURE: Error occurred during check
  */
-Return db_contains_data(void){
+Return db_contains_data(void)
+{
 	/** @var Return status
 	 *  @brief The status that will be passed to return() before exiting
 	 *  @details By default, the function worked without errors

@@ -17,7 +17,8 @@
  *         - SUCCESS: Version set successfully
  *         - FAILURE: Database error or invalid parameters
  */
-Return db_specify_version(const char *db_file_path){
+Return db_specify_version(const char *db_file_path)
+{
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;

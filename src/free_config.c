@@ -5,7 +5,8 @@
  * Clean up allocated memory
  *
  */
-void free_config(void){
+void free_config(void)
+{
 	/// Enable key echo in terminal (return back
 	/// default settings)
 	struct termios term;

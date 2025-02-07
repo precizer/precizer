@@ -22,8 +22,8 @@ Return db_update_the_record_by_id(
 	const sqlite3_int64  *offset,
 	const unsigned char  *sha512,
 	const CmpctStat      *stat,
-	const SHA512_Context *mdContext
-){
+	const SHA512_Context *mdContext)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

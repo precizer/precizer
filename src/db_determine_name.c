@@ -7,7 +7,8 @@
  * Unless specified, the default database filename
  * will be the hostname and ".db" as the filename extension
  */
-Return db_determine_name(void){
+Return db_determine_name(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

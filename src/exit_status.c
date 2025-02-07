@@ -7,8 +7,8 @@
  */
 int exit_status(
 	Return status,
-	char   **argv
-){
+	char   **argv)
+{
 	/*
 	 *
 	 * Exit

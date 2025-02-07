@@ -7,7 +7,8 @@
  *
  */
 
-Return detect_paths(void){
+Return detect_paths(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

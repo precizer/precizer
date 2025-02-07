@@ -21,8 +21,8 @@
  */
 Return stat_copy(
 	const struct stat *source,
-	CmpctStat         *destination
-){
+	CmpctStat         *destination)
+{
 	Return status = SUCCESS;
 
 	if(source == NULL || destination == NULL)

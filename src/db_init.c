@@ -6,7 +6,8 @@
  * Initialize SQLite database
  *
  */
-Return db_init(void){
+Return db_init(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

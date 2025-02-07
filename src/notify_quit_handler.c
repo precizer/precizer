@@ -7,7 +7,8 @@
  * kill -15 (SIGINT)
  *
  */
-void notify_quit_handler(int sig){
+void notify_quit_handler(int sig)
+{
 	printf("Notify quit!\n");
 	global_interrupt_flag = true;
 

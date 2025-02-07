@@ -37,7 +37,8 @@
  *         - FAILURE (1): Path mismatch detected without force flag
  *                       or database operation error occurred
  */
-Return db_validate_paths(void){
+Return db_validate_paths(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

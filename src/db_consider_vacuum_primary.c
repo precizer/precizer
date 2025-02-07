@@ -6,7 +6,8 @@
  * repacking it into a minimal amount of disk space.
  *
  */
-Return db_consider_vacuum_primary(void){
+Return db_consider_vacuum_primary(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

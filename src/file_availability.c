@@ -9,8 +9,8 @@
  */
 FileAvailability file_availability(
 	const char          *path,
-	const unsigned char fs_object_type
-){
+	const unsigned char fs_object_type)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	FileAvailability presence = NOT_FOUND;

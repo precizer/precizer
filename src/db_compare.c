@@ -13,8 +13,8 @@
 static Return compose_sql(
 	char       **sql,
 	const char *db_path,
-	int        db_num
-){
+	int        db_num)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -40,8 +40,8 @@ static Return compose_sql(
  */
 static Return db_attach(
 	int db_A,
-	int db_B
-){
+	int db_B)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -84,8 +84,8 @@ static Return db_changes(
 	bool       *files_the_same,
 	bool       *the_databases_are_equal,
 	int        db_A,
-	int        db_B
-){
+	int        db_B)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -150,7 +150,8 @@ static Return db_changes(
  *          Checks for file existence, missing files and SHA512 checksums
  * @return Return enum indicating operation status
  */
-Return db_compare(void){
+Return db_compare(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

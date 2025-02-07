@@ -11,8 +11,8 @@
  */
 Return db_check_version(
 	const char *db_file_path,
-	const char *db_file_name
-){
+	const char *db_file_name)
+{
 	Return status = SUCCESS;
 
 	/* Has the database been updated or not? */

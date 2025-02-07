@@ -5,7 +5,8 @@
  * Reflect global change status against database
  *
  */
-Return status_of_changes(void){
+Return status_of_changes(void)
+{
 	/** @var Return status
 	 *  @brief The status that will be passed to return() before exiting
 	 *  @details By default, the function worked without errors

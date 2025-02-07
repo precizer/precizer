@@ -10,7 +10,8 @@
  * @param stmt Prepared statement with current row
  * @return Operation status
  */
-static Return process_row(sqlite3_stmt *stmt){
+static Return process_row(sqlite3_stmt *stmt)
+{
 	Return status = SUCCESS;
 	const struct stat *stat = {0};
 
@@ -75,7 +76,8 @@ static Return process_row(sqlite3_stmt *stmt){
  * @param db_path Path to SQLite database file
  * @return Operation status
  */
-static Return process_database(sqlite3 *db){
+static Return process_database(sqlite3 *db)
+{
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
 
@@ -120,7 +122,8 @@ static Return process_database(sqlite3 *db){
  * @param db_file_path Path to the SQLite database file
  * @return Return status code
  */
-Return migrate_from_0_to_1(const char *db_file_path){
+Return migrate_from_0_to_1(const char *db_file_path)
+{
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;

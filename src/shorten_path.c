@@ -4,7 +4,8 @@
  * @brief Gets the terminal width (number of columns)
  * @return Number of columns in the terminal or default value 80 columns
  */
-static size_t terminal_width(void){
+static size_t terminal_width(void)
+{
 
 	struct winsize w;
 
@@ -25,7 +26,8 @@ static size_t terminal_width(void){
  * @param str Pointer to the start of a UTF-8 character
  * @return true if it is a period, false otherwise
  */
-STATIC bool is_utf8_dot(const char *str){
+STATIC bool is_utf8_dot(const char *str)
+{
 	mbstate_t state;
 	memset(&state,0,sizeof(state));
 	wchar_t wc;
@@ -38,7 +40,8 @@ STATIC bool is_utf8_dot(const char *str){
  *
  * @param str UTF-8 encoded input string
  */
-STATIC void remove_leading_dots(char *str){
+STATIC void remove_leading_dots(char *str)
+{
 	if(!str || *str == '\0')
 	{
 		return;
@@ -69,7 +72,8 @@ STATIC void remove_leading_dots(char *str){
  *
  * @param str UTF-8 encoded input string
  */
-STATIC void remove_trailing_dots(char *str){
+STATIC void remove_trailing_dots(char *str)
+{
 	if(!str || *str == '\0')
 	{
 		return;
@@ -106,8 +110,8 @@ STATIC void remove_trailing_dots(char *str){
  */
 static void utf8_truncate(
 	char   *str,
-	size_t max_chars
-){
+	size_t max_chars)
+{
 	if(!str || max_chars == 0)
 	{
 		return;
@@ -161,8 +165,8 @@ static void utf8_truncate(
  */
 static void utf8_keep_last_chars(
 	char   *str,
-	size_t max_chars
-){
+	size_t max_chars)
+{
 	if(!str || max_chars == 0)
 	{
 		return;
@@ -214,7 +218,8 @@ static void utf8_keep_last_chars(
  *         - SUCCESS: Path was shortened successfully or didn't need shortening
  *         - FAILURE: Memory operation failed
  */
-Return shorten_path(char *path){
+Return shorten_path(char *path)
+{
 
 	Return status = SUCCESS;
 

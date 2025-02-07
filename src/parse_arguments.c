@@ -85,8 +85,8 @@ static struct argp_option options[] = {
 static error_t parse_opt(
 	int               key,
 	char              *arg,
-	struct argp_state *state
-){
+	struct argp_state *state)
+{
 	/* Get the input argument from argp_parse, which we
 	   know is a pointer to our arguments structure. */
 	//struct arguments *arguments = state->input;
@@ -217,8 +217,8 @@ static struct argp argp = {
 
 Return parse_arguments(
 	const int argc,
-	char      *argv[]
-){
+	char      *argv[])
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

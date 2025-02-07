@@ -11,7 +11,8 @@
  *
  * @return The maximum buffer size in bytes. Defaults to 1MB if system information is unavailable.
  */
-static long how_much_memory_can_be_allocated_for_the_buffer(void){
+static long how_much_memory_can_be_allocated_for_the_buffer(void)
+{
 	// Default value is 1MB buffer. Is it too big for embedded and IoT?
 	const long buffer_size = 1024*1024;
 
@@ -39,8 +40,8 @@ Return sha512sum(
 	const short unsigned int *relative_path_size,
 	unsigned char            *sha512,
 	sqlite3_int64            *offset,
-	SHA512_Context           *mdContext
-){
+	SHA512_Context           *mdContext)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

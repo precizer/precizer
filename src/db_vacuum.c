@@ -6,7 +6,8 @@
  * repacking it into a minimal amount of disk space.
  *
  */
-Return db_vacuum(const char *db_file_path){
+Return db_vacuum(const char *db_file_path)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

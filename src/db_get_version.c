@@ -21,8 +21,8 @@
  */
 Return db_get_version(
 	int        *db_version,
-	const char *db_file_path
-){
+	const char *db_file_path)
+{
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;

@@ -8,8 +8,8 @@
  */
 void show_checksum_gracefully_interrupted(
 	const char          *relative_path,
-	const sqlite3_int64 *offset
-){
+	const sqlite3_int64 *offset)
+{
 	if(*offset > 0 && global_interrupt_flag == true)
 	{
 		/* Truncate the file path/name in the display output if it exceeds the length limit */

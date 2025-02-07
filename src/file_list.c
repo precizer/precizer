@@ -10,8 +10,8 @@ static void show_status(
 	size_t     *count_symlnks,
 	size_t     *total_size_in_bytes,
 	const bool *count_size_of_all_files,
-	const bool *at_least_one_file_was_shown
-){
+	const bool *at_least_one_file_was_shown)
+{
 	size_t total_items = *count_dirs + *count_files + *count_symlnks;
 
 	bool show_total = false;
@@ -47,8 +47,8 @@ static void show_status(
  */
 static int compare_by_name(
 	const FTSENT **first,
-	const FTSENT **second
-){
+	const FTSENT **second)
+{
 	return strcmp((*first)->fts_name,(*second)->fts_name);
 }
 
@@ -58,7 +58,8 @@ static int compare_by_name(
  * a struct for each file it encounters
  *
  */
-Return file_list(const bool count_size_of_all_files){
+Return file_list(const bool count_size_of_all_files)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
