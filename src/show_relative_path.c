@@ -72,7 +72,12 @@ static void print_flag_combinations(
 
 	if(*rehash == true)
 	{
-		printf(" rehashed");
+		if(dbrow->saved_offset > 0)
+		{
+			printf(" continue to rehash from %s",bkbmbgbtbpbeb((const size_t)dbrow->saved_offset));
+		} else {
+			printf(" rehash");
+		}
 	} else {
 		printf(" no rehash");
 	}
@@ -86,10 +91,10 @@ static void print_updated_or_added(
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
-		printf(" updated");
+		printf(" update");
 		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 	} else {
-		printf(" added");
+		printf(" add");
 	}
 }
 
@@ -101,7 +106,7 @@ static void print_changed(
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
-		printf(" changed");
+		printf(" change");
 		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 	}
 }
