@@ -4,7 +4,8 @@
  * Save the runtime directory absolute path into global config structure,
  * fopen() was not able to process relative paths, only absolute ones.
  */
-Return determine_running_dir(void){
+Return determine_running_dir(void)
+{
 	char *cwd = get_current_dir_name();
 
 	if(cwd != NULL)

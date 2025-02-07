@@ -10,7 +10,8 @@
  * from the beginning of the string to that character.
  *
  */
-size_t correction(char *path){
+size_t correction(char *path)
+{
 
 	size_t drift = 0;
 

@@ -372,13 +372,11 @@ Return sha512sum(
 	const short unsigned int *,
 	unsigned char *,
 	sqlite3_int64 *,
-	SHA512_Context *
-);
+	SHA512_Context *);
 
 Return add_string_to_array(
 	char ***,
-	const char *
-);
+	const char *);
 
 void remove_trailing_slash(char *);
 
@@ -400,8 +398,7 @@ Return db_delete_the_record_by_id(
 	sqlite_int64 *,
 	bool *,
 	const bool *,
-	const char *
-);
+	const char *);
 
 Return db_init(void);
 
@@ -411,24 +408,21 @@ Return db_consider_vacuum_primary(void);
 
 Return db_read_file_data_from(
 	DBrow *,
-	const char *
-);
+	const char *);
 
 Return db_update_the_record_by_id(
 	const sqlite3_int64 *,
 	const sqlite3_int64 *,
 	const unsigned char *,
 	const CmpctStat *,
-	const SHA512_Context *
-);
+	const SHA512_Context *);
 
 Return db_insert_the_record(
 	const char *,
 	const sqlite3_int64 *,
 	const unsigned char *,
 	const CmpctStat *,
-	const SHA512_Context *
-);
+	const SHA512_Context *);
 
 Return db_determine_name(void);
 
@@ -448,19 +442,16 @@ Return db_test(const char *);
 
 Return db_get_version(
 	int *,
-	const char *
-);
+	const char *);
 
 Return db_check_version(
 	const char *,
-	const char *
-);
+	const char *);
 
 Return db_upgrade(
 	const int *,
 	const char *,
-	const char *
-);
+	const char *);
 
 Return migrate_from_0_to_1(const char *);
 
@@ -473,24 +464,20 @@ Return primary_db_file_test(void);
 #if 0 // Old multiPATH solution
 Return db_get_path_prefix_index(
 	const char *,
-	sqlite3_int64 *
-);
+	sqlite3_int64 *);
 #endif
 
 Return stat_copy(
 	const struct stat *,
-	CmpctStat *
-);
+	CmpctStat *);
 
 int compare_file_metadata_equivalence(
 	const CmpctStat *,
-	const CmpctStat *
-) __attribute__ ((pure));
+	const CmpctStat *) __attribute__ ((pure));
 
 Return parse_arguments(
 	const int,
-	char **
-);
+	char **);
 
 void show_relative_path(
 	const char *,
@@ -503,13 +490,11 @@ void show_relative_path(
 	const bool *,
 	bool *,
 	bool *,
-	const bool *
-);
+	const bool *);
 
 void show_checksum_gracefully_interrupted(
 	const char *,
-	const sqlite3_int64 *
-);
+	const sqlite3_int64 *);
 
 Return shorten_path(char *);
 
@@ -526,32 +511,27 @@ Return status_of_changes(void);
 
 FileAvailability file_availability(
 	const char *,
-	const unsigned char
-);
+	const unsigned char);
 
 Return detect_paths(void);
 
 Ignore ignore(
 	const char *,
-	bool *
-);
+	bool *);
 
 Include include(
 	const char *,
-	bool *
-);
+	bool *);
 
 REGEXP regexp_match
 (
 	const char *,
 	const char *,
-	bool *
-);
+	bool *);
 
 int exit_status(
 	Return,
-	char **
-);
+	char **);
 
 // Macro to call a function only if the current status is SUCCESS.
 // If the status is SUCCESS, the function's return value will be assigned to status.

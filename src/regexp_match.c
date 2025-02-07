@@ -8,8 +8,8 @@
 REGEXP regexp_match(
 	const char *regexp,
 	const char *relative_path,
-	bool       *showed_once
-){
+	bool       *showed_once)
+{
 	bool match = false;
 
 	/* for pcre2_compile */

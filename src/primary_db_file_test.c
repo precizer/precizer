@@ -5,7 +5,8 @@
  * Validate the integrity of primary database file
  *
  */
-Return primary_db_file_test(void){
+Return primary_db_file_test(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

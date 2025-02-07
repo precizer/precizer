@@ -9,8 +9,8 @@
  */
 Ignore ignore(
 	const char *relative_path,
-	bool       *ignore_showed_once
-){
+	bool       *ignore_showed_once)
+{
 	if(config->ignore == NULL)
 	{
 		// Nothing to ignore

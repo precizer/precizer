@@ -20,8 +20,8 @@
  */
 Return add_string_to_array(
 	char       ***array_ptr,
-	const char *new_string
-){
+	const char *new_string)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

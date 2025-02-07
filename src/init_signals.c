@@ -10,7 +10,8 @@
  * running of the program.
  *
  */
-Return init_signals(void){
+Return init_signals(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

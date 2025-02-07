@@ -19,8 +19,8 @@
  */
 int compare_file_metadata_equivalence(
 	const CmpctStat *source,
-	const CmpctStat *destination
-){
+	const CmpctStat *destination)
+{
 	/* Validate input parameters */
 	if(NULL == source || NULL == destination)
 	{

@@ -11,7 +11,8 @@
  * metadata table
  *
  */
-Return db_consider_version_update(void){
+Return db_consider_version_update(void)
+{
 	Return status = SUCCESS;
 
 	// Don't do anything

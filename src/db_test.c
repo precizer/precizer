@@ -11,7 +11,8 @@
  *         - SUCCESS: Database validation passed successfully
  *         - FAILURE: Database validation failed or errors occurred
  */
-Return db_test(const char *db_file_path){
+Return db_test(const char *db_file_path)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

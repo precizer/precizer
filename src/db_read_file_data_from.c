@@ -10,8 +10,8 @@ Return db_read_file_data_from(
 #if 0 // Old multiPATH solution
 	const sqlite3_int64 *path_prefix_index,
 #endif
-	const char *relative_path
-){
+	const char *relative_path)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

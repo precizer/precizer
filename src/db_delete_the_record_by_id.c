@@ -10,8 +10,8 @@ Return db_delete_the_record_by_id(
 	sqlite_int64 *ID,
 	bool         *first_iteration,
 	const bool   *clean_ignored,
-	const char   *relative_path
-){
+	const char   *relative_path)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

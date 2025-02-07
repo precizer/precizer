@@ -9,8 +9,8 @@
  */
 Include include(
 	const char *relative_path,
-	bool       *include_showed_once
-){
+	bool       *include_showed_once)
+{
 	if(config->include == NULL)
 	{
 		// Nothing to include

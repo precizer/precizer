@@ -46,7 +46,8 @@
  *      - SUCCESS (0): Paths saved successfully
  *      - FAILURE (1): Operation failed due to database errors
  */
-Return db_save_prefixes(void){
+Return db_save_prefixes(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

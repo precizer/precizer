@@ -6,7 +6,8 @@
  * Initialization the structure elements by zerro.
  *
  */
-void init_config(void){
+void init_config(void)
+{
 
 	// Fill out with zerroes
 	memset(config,0,sizeof(Config));

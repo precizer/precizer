@@ -14,8 +14,8 @@
 static void print_metadata(
 	int             flag,
 	const CmpctStat *was,
-	const CmpctStat *now
-){
+	const CmpctStat *now)
+{
 	if(rational_logger_mode & (VERBOSE|TESTING))
 	{
 		switch(flag)
@@ -51,8 +51,8 @@ static void print_flag_combinations(
 	int             mega,
 	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	const bool      *rehash
-){
+	const bool      *rehash)
+{
 	const char *flags[] = {
 		"size","ctime","mtime"
 	};
@@ -109,8 +109,8 @@ static void print_updated_or_added(
 	const int       *metadata_of_scanned_and_saved_files,
 	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool            *rehash
-){
+	bool            *rehash)
+{
 	if(dbrow->relative_path_already_in_db == true)
 	{
 		printf(" updated");
@@ -131,8 +131,8 @@ static void print_changed(
 	const int       *metadata_of_scanned_and_saved_files,
 	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool            *rehash
-){
+	bool            *rehash)
+{
 	if(dbrow->relative_path_already_in_db == true)
 	{
 		printf(" changed");
@@ -159,8 +159,8 @@ void show_relative_path(
 	const bool      *ignored,
 	bool            *at_least_one_file_was_shown,
 	bool            *rehash,
-	const bool      *count_size_of_all_files
-){
+	const bool      *count_size_of_all_files)
+{
 	bool show_traversal_started = false;
 	bool show_update_warning = false;
 	bool show_changes_will_be_reflected = false;

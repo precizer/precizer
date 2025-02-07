@@ -36,8 +36,8 @@ Config *config = &_config;
  */
 int main(
 	int  argc,
-	char **argv
-){
+	char **argv)
+{
 
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
