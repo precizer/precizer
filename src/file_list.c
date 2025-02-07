@@ -349,8 +349,11 @@ Return file_list(const bool count_size_of_all_files){
 					{
 						status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext);
 
-						if(SUCCESS != status)
+						if(SUCCESS == status)
 						{
+							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
+							show_checksum_gracefully_interrupted(relative_path,&offset);
+						} else {
 							break;
 						}
 					}

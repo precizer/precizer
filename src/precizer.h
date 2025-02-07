@@ -506,6 +506,11 @@ void show_relative_path(
 	const bool *
 );
 
+void show_checksum_gracefully_interrupted(
+	const char *,
+	const sqlite3_int64 *
+);
+
 Return shorten_path(char *);
 
 #ifdef TESTITALL
