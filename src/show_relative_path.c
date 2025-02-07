@@ -91,7 +91,7 @@ static void print_updated_or_added(
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
-		printf(" update");
+		printf(" updated");
 		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 	} else {
 		printf(" add");
@@ -106,7 +106,7 @@ static void print_changed(
 ){
 	if(dbrow->relative_path_already_in_db == true)
 	{
-		printf(" change");
+		printf(" changed");
 		print_flag_combinations(*metadata_of_scanned_and_saved_files,dbrow,stat,rehash);
 	}
 }

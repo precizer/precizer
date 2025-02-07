@@ -24,7 +24,7 @@
 -1/2/bbb.txt
 -1/aaa.txt
 \+TESTING:\\x1B\\\[1mThese files have been added or changed and those changes will be reflected against the DB database3.db:\\x1B\\\[0m
-\+1/2/3/4/ddd.txt added
+\+1/2/3/4/ddd.txt add
 -TESTING:No DB version data found in metadata table
 -TESTING:The database version 1 has been successfully stored in the DB
 \+TESTING:Version number 1 found in database
