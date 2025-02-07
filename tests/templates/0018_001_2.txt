@@ -42,7 +42,7 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database3.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database3.db:\x1B\[0m
-1/2/3/4/ddd.txt added
+1/2/3/4/ddd.txt add
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Version number 1 found in database
