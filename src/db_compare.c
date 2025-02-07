@@ -1,11 +1,14 @@
 #include "precizer.h"
 
 /**
- * @brief Composes SQL ATTACH DATABASE query string
- * @param[out] sql Pointer to string that will hold the SQL query
- * @param[in] db_path Path to database file
- * @param[in] db_num Database number (1 or 2)
- * @return Return structure containing operation status
+ * @brief Composes an SQL ATTACH DATABASE query string.
+ * 
+ * This function generates an SQL query string to attach a database with a specified path and number.
+ * 
+ * @param[out] sql Pointer to a string that will hold the generated SQL query.
+ * @param[in] db_path Path to the database file to be attached.
+ * @param[in] db_num Database number (1 or 2) used in the query.
+ * @return Return structure indicating the operation status.
  */
 static Return compose_sql(
 	char       **sql,
@@ -25,6 +28,16 @@ static Return compose_sql(
 	return(status);
 }
 
+/**
+ * @brief Attaches a secondary database to the primary database connection.
+ * 
+ * This function attaches a secondary database (specified by its index in the configuration)
+ * to the primary SQLite database connection using the ATTACH DATABASE command.
+ * 
+ * @param[in] db_A Index of the database path in the configuration array.
+ * @param[in] db_B Database number (1 or 2) to be used in the ATTACH DATABASE command.
+ * @return Return structure indicating the operation status.
+ */
 static Return db_attach(
 	int db_A,
 	int db_B
@@ -53,7 +66,19 @@ static Return db_attach(
 	return(status);
 }
 
-
+/**
+ * @brief Compares changes between two databases.
+ * 
+ * This function executes a provided SQL query to compare differences between two databases.
+ * It identifies files that exist in one database but not the other, updating flags to reflect the comparison results.
+ * 
+ * @param[in] compare_sql SQL query string for comparison.
+ * @param[out] files_the_same Flag indicating whether files are identical between the databases.
+ * @param[out] the_databases_are_equal Flag indicating whether the databases are equal.
+ * @param[in] db_A Index of the first database in the configuration array.
+ * @param[in] db_B Index of the second database in the configuration array.
+ * @return Return structure indicating the operation status.
+ */
 static Return db_changes(
 	const char *compare_sql,
 	bool       *files_the_same,

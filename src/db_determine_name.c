@@ -2,12 +2,10 @@
 #define IN_MEMORY_DB_NAME "DisposableDB"
 
 /**
- *
  * Determine file name of the database.
  * This database file name can be passed as an argument --database=FILE
  * Unless specified, the default database filename
  * will be the hostname and ".db" as the filename extension
- *
  */
 Return db_determine_name(void){
 	/// The status that will be passed to return() before exiting.
