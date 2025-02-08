@@ -1,7 +1,7 @@
 #include "sute.h"
 
 Return test0018_1_maxdepth_argument(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -51,7 +51,7 @@ Return test0018_1_maxdepth_argument(void){
 }
 
 Return test0018_2_comparing_templates(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	char *text1 = NULL;
 	char *text2 = NULL;
@@ -85,9 +85,7 @@ Return test0018_2_comparing_templates(void){
  *
  */
 Return test0018(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	TEST(test0018_1_maxdepth_argument,"Traversal with limited depth…")
 	TEST(test0018_2_comparing_templates,"Comparing templates w/ and w/o depth limits…")

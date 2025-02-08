@@ -218,6 +218,12 @@ Return random_number_generator(
 	} \
 	return(status);
 
+// Инициализация теста. Определение возврата из функции SUCCESS или FAILURE
+#define INITTEST \
+	/* The status that will be passed to return() before exiting */ \
+	/* By default, the function worked without errors.           */ \
+	Return status = SUCCESS;
+
 Return testitall(
 	Return (*func)(void),
 	const char *,

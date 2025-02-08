@@ -1,0 +1,16 @@
+\APrimary database file name: %DB_NAME%
+Starting database file %DB_NAME% integrity check…
+Database %DB_NAME% has been verified and is in good condition
+The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be deleted against the database %DB_NAME%
+\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB %DB_NAME%:\x1B\[0m
+diff1/1/AAA/BCB/CCC/a.txt clean ignored
+diff1/1/AAA/ZAW/A/b/c/a_file.txt clean ignored
+diff1/1/AAA/ZAW/D/e/f/b_file.txt clean ignored
+diff2/1/AAA/BCB/CCC/a.txt clean ignored
+diff2/1/AAA/ZAW/A/b/c/a_file.txt clean ignored
+diff2/1/AAA/ZAW/D/e/f/b_file.txt clean ignored
+Start vacuuming the primary database…
+The primary database has been vacuumed
+\x1B\[1mThe database file %DB_NAME% has been modified since the program was launched\x1B\[0m
+The precizer completed its execution without any issues
+Enjoy your life!\z

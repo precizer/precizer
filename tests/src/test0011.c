@@ -10,8 +10,8 @@
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
-static Return test0011_1_readme_example(void){
-	Return status = SUCCESS;
+static Return test0011_1_readme(void){
+	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1;"
@@ -67,8 +67,8 @@ static Return test0011_1_readme_example(void){
  * rm -rf tests/examples/
  * mv tests/examples_backup/ tests/examples/
  */
-static Return test0011_2_readme_example(void){
-	Return status = SUCCESS;
+static Return test0011_2_readme(void){
+	INITTEST;
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -137,8 +137,8 @@ static Return test0011_2_readme_example(void){
  *
  *
  */
-static Return test0011_3_readme_example(void){
-	Return status = SUCCESS;
+static Return test0011_3_readme(void){
+	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
@@ -164,8 +164,8 @@ static Return test0011_3_readme_example(void){
  * Additional information with --verbose mode
  *
  */
-static Return test0011_4_readme_example(void){
-	Return status = SUCCESS;
+static Return test0011_4_readme(void){
+	INITTEST;
 
 	const char *command = "export TESTING=false;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1";
@@ -200,14 +200,11 @@ static Return test0011_4_readme_example(void){
  *
  *
  */
-static Return test0011_5_readme_example(void){
-	Return status = SUCCESS;
+static Return test0011_5_readme(void){
+	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --maxdepth=0 tests/examples/4";
-
-	// Create memory for the result
-	MSTRUCT(mem_char,result);
 
 	const char *filename = "templates/0011_005_1.txt";
 
@@ -223,9 +220,6 @@ static Return test0011_5_readme_example(void){
 
 	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
 
-	// Clean up test results
-	del_char(&result);
-
 	/* At the second stage, the --maxdepth=0 option is not used.
 	   Therefore, all files that were not previously included
 	   will be added to the database. */
@@ -236,8 +230,6 @@ static Return test0011_5_readme_example(void){
 	filename = "templates/0011_005_2.txt";
 
 	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));;
-
-	del_char(&result);
 
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
 
@@ -251,16 +243,13 @@ static Return test0011_5_readme_example(void){
  *
  *
  */
-static Return test0011_6_readme_example(void){
-	Return status = SUCCESS;
+static Return test0011_6_readme(void){
+	INITTEST;
 
 	const char *command = "export TESTING=false;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --ignore=\"^diff2/1/.*\" tests/examples/diffs";
+	        "${BINDIR}/precizer --ignore=\"^diff1/1/.*\" tests/examples/diffs";
 
-	// Create memory for the result
-	MSTRUCT(mem_char,result);
-
-	const char *filename = "templates/0011_006.txt";
+	const char *filename = "templates/0011_006_1.txt";
 
 	const char *template = "%DB_NAME%";
 
@@ -274,8 +263,82 @@ static Return test0011_6_readme_example(void){
 
 	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
 
-	// Clean up test results
-	del_char(&result);
+	filename = "templates/0011_006_2.txt";
+
+	command = "export TESTING=false;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --update tests/examples/diffs";
+
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * The Example 7 from README
+ * Multiple regular expressions for ignoring can be specified
+ * using many --ignore options
+ *
+ */
+static Return test0011_7_readme(void){
+	INITTEST;
+
+	const char *command = "export TESTING=false;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --update --db-clean-ignored --ignore=\"^diff1/1/.*\" --ignore=\"^diff2/1/.*\" tests/examples/diffs";
+
+	const char *filename = "templates/0011_007.txt";
+
+	const char *template = "%DB_NAME%";
+
+	const char *replacement = getenv("DBNAME");  // Database name
+
+	if(replacement == NULL)
+	{
+		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
+		return(FAILURE);
+	}
+
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * The Example 8 from README
+ * Using the --ignore option(s) together with --include
+ *
+ *
+ */
+static Return test0011_8_readme(void){
+	INITTEST;
+
+	const char *command = "cd ${TMPDIR};"
+	        "${BINDIR}/precizer tests/examples/diffs";
+
+	ASSERT(SUCCESS == execute_command(command,NULL,SUCCESS,true,true));
+
+	command = "export TESTING=false;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --update"
+	        " --db-clean-ignored --ignore=\"^.*/path2/.*\""
+	        " --ignore=\"diff2/.*\" --include=\"diff2/1/AAA/ZAW/A/b/c/.*\""
+	        " --include=\"diff2/path1/AAA/ZAW/.*\" tests/examples/diffs";
+
+	const char *filename = "templates/0011_008.txt";
+
+	const char *template = "%DB_NAME%";
+
+	const char *replacement = getenv("DBNAME");  // Database name
+
+	if(replacement == NULL)
+	{
+		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
+		return(FAILURE);
+	}
+
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
 
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
 
@@ -290,14 +353,16 @@ static Return test0011_6_readme_example(void){
 Return test0011(void){
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
-	TEST(test0011_1_readme_example,"README example 1 Adding and comparing…");
-	TEST(test0011_2_readme_example,"README example 2 Updating the data in DB…");
-	TEST(test0011_3_readme_example,"README example 3 --silent mode…");
-	TEST(test0011_4_readme_example,"README example 4 --verbose mode…");
-	TEST(test0011_5_readme_example,"README example 5 Disable recursion with --maxdepth…");
-	TEST(test0011_6_readme_example,"README example 6 Relative path to ignore with --ignore…");
+	TEST(test0011_1_readme,"README example 1 Adding and comparing…");
+	TEST(test0011_2_readme,"README example 2 Updating the data in DB…");
+	TEST(test0011_3_readme,"README example 3 --silent mode…");
+	TEST(test0011_4_readme,"README example 4 --verbose mode…");
+	TEST(test0011_5_readme,"README example 5 Disable recursion with --maxdepth…");
+	TEST(test0011_6_readme,"README example 6 Relative path to ignore with --ignore…");
+	TEST(test0011_7_readme,"README example 7 Multiple regexp for ignoring…");
+	TEST(test0011_8_readme,"README example 8 The --ignore option(s) together with --include…");
 
 	RETURN_STATUS;
 }

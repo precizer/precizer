@@ -4,7 +4,7 @@
  * The db file should not be created in the Dry Run mode
  */
 static Return dry_run_mode_1_test(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --dry-run --database=database1.db tests/examples/diffs/diff1";
@@ -40,7 +40,7 @@ static Return dry_run_mode_1_test(void){
  * The db file should not be updated in the Dry Run mode
  */
 static Return dry_run_mode_2_test(void){
-	Return status = SUCCESS;
+	INITTEST;
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
 	struct stat stat1;
@@ -178,7 +178,7 @@ static Return dry_run_mode_2_test(void){
  * the results will be compared against each other
  */
 static Return no_dry_run_mode_3_test(void){
-	Return status = SUCCESS;
+	INITTEST;
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
 	char *path = NULL;
@@ -289,9 +289,7 @@ static Return no_dry_run_mode_3_test(void){
 }
 
 Return compare_dry_and_real_4_test(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	char *text1 = NULL;
 	char *text2 = NULL;
@@ -361,9 +359,7 @@ Return compare_dry_and_real_4_test(void){
  *
  */
 Return test0013(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
 	TEST(dry_run_mode_2_test,"The DB file should not be updated…");

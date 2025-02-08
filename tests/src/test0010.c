@@ -6,9 +6,7 @@
  *
  */
 Return test0010(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	// Set environment variable
 	ASSERT(SUCCESS == set_environment_variable("REPLACEMENT","gentl"));

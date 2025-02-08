@@ -15,9 +15,7 @@ static void report_test(void){
  * when there is insufficient memory available.
  */
 Return test0008(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	MSTRUCT(mem_char,captured_stdout);
 	MSTRUCT(mem_char,captured_stderr);
