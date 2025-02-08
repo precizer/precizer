@@ -246,6 +246,44 @@ static Return test0011_5_readme_example(void){
 
 /**
  *
+ * The Example 6 from README
+ * Relative path to ignore with --ignore
+ *
+ *
+ */
+static Return test0011_6_readme_example(void){
+	Return status = SUCCESS;
+
+	const char *command = "export TESTING=false;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --ignore=\"^diff2/1/.*\" tests/examples/diffs";
+
+	// Create memory for the result
+	MSTRUCT(mem_char,result);
+
+	const char *filename = "templates/0011_006.txt";
+
+	const char *template = "%DB_NAME%";
+
+	const char *replacement = getenv("DBNAME");  // Database name
+
+	if(replacement == NULL)
+	{
+		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
+		return(FAILURE);
+	}
+
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+
+	// Clean up test results
+	del_char(&result);
+
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+
+	RETURN_STATUS;
+}
+
+/**
+ *
  * User's Manual and examples from README test set
  *
  */
@@ -259,6 +297,7 @@ Return test0011(void){
 	TEST(test0011_3_readme_example,"README example 3 --silent mode…");
 	TEST(test0011_4_readme_example,"README example 4 --verbose mode…");
 	TEST(test0011_5_readme_example,"README example 5 Disable recursion with --maxdepth…");
+	TEST(test0011_6_readme_example,"README example 6 Relative path to ignore with --ignore…");
 
 	RETURN_STATUS;
 }
