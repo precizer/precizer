@@ -8,7 +8,7 @@
  *
  */
 Return test0015_1_upgrade_db(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -46,7 +46,7 @@ Return test0015_1_upgrade_db(void){
  *
  */
 Return test0015_2_upgrade_db(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -80,7 +80,7 @@ Return test0015_2_upgrade_db(void){
  *
  */
 Return test0015_3_upgrade_db(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -116,9 +116,7 @@ Return test0015_3_upgrade_db(void){
  *
  */
 Return test0015_4_upgrade_db(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	// Get the output of an external program
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -148,9 +146,7 @@ Return test0015_4_upgrade_db(void){
  *
  */
 Return test0015_5_upgrade_db(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	// Get the output of an external program
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -200,9 +196,7 @@ Return test0015_5_upgrade_db(void){
  *
  */
 Return test0015_6_upgrade_db(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	// Get the output of an external program
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -239,7 +233,7 @@ Return test0015_6_upgrade_db(void){
  * - Run the database comparison again using the --compare parameter, but this time with the --update option. The database should be upgraded accordingly.
  */
 Return test0015(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	TEST(test0015_1_upgrade_db,"Upgrade a DB from v0 to v1. Error handling…");
 	TEST(test0015_2_upgrade_db,"Upgrade a DB from v0 to v1 as the primary database…");

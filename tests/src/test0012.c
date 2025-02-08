@@ -24,7 +24,7 @@ static Return verify_array_contents(
 	size_t     expected_size
 ){
 
-	Return status = SUCCESS;
+	INITTEST;
 
 	ASSERT(array != NULL);
 
@@ -39,7 +39,7 @@ static Return verify_array_contents(
 }
 
 static Return test_add_string_to_empty_array(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	char **array = NULL;
 	const char *test_string = "Hello World";
@@ -56,7 +56,7 @@ static Return test_add_string_to_empty_array(void){
 }
 
 static Return test_add_multiple_strings(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	char **array = NULL;
 	const char *strings[] = {
@@ -77,7 +77,7 @@ static Return test_add_multiple_strings(void){
 }
 
 static Return test_add_empty_string(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	char **array = NULL;
 	const char *empty_string = "";
@@ -94,7 +94,7 @@ static Return test_add_empty_string(void){
 }
 
 static Return test_add_long_string(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	char **array = NULL;
 	char long_string[1024];
@@ -118,9 +118,7 @@ static Return test_add_long_string(void){
  *
  */
 Return test0012(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	TEST(test_add_string_to_empty_array,"Adding string to empty array…");
 	TEST(test_add_multiple_strings,"Testing adding multiple strings…");

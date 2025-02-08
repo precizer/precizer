@@ -7,9 +7,7 @@
  *
  */
 Return test0001(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	unsigned char hash[SHA512_DIGEST_LENGTH];
 

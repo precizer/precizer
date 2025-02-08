@@ -7,9 +7,7 @@
  *
  */
 Return test0003(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
 		"${BINDIR}/precizer --progress tests/examples/diffs/diff1",SUCCESS,false,false));

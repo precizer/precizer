@@ -6,7 +6,7 @@
  *
  */
 Return test0020_1(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=nonexistent_directory/database1.db tests/examples/diffs/diff1";
@@ -37,7 +37,7 @@ Return test0020_1(void){
  *
  */
 Return test0020_2(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=nonexistent_database1.db tests/examples/diffs/diff1";
@@ -64,9 +64,7 @@ Return test0020_2(void){
 
 Return test0020(void){
 
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	TEST(test0020_1,"DB creation in missing directory…")
 	TEST(test0020_2,"Creation attempt with --update and missing database……")

@@ -1,10 +1,7 @@
 #include "sute.h"
 
 Return long_relative_path_test(void){
-
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	char *pattern = NULL;
 
@@ -145,9 +142,7 @@ Return long_relative_path_test(void){
 }
 
 Return long_absolute_path_test(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	char *pattern = NULL;
 
@@ -288,9 +283,7 @@ Return long_absolute_path_test(void){
 }
 
 Return reset_relative_path_test(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	char *pattern = NULL;
 
@@ -434,9 +427,7 @@ Return reset_relative_path_test(void){
 }
 
 Return reset_absolute_path_test(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	char *pattern = NULL;
 
@@ -582,9 +573,7 @@ Return reset_absolute_path_test(void){
 
 // Main test runner
 Return test0014(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	TEST(long_relative_path_test,"Very long relative path…");
 	TEST(long_absolute_path_test,"Long absolute path…");

@@ -39,9 +39,7 @@ static void print_hash(unsigned char *hash){
  * @retval FAILURE if test failed
  */
 static Return test0007_1_libmem(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	// Allocate memory for the structure int
 	MSTRUCT(mem_ullint,test0_0);
@@ -69,9 +67,7 @@ static Return test0007_1_libmem(void){
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
 static Return test0007_2_libmem(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
@@ -155,9 +151,7 @@ static Return test0007_2_libmem(void){
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
 static Return test0007_3_libmem(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
@@ -236,9 +230,7 @@ static Return test0007_3_libmem(void){
  * @retval FAILURE if any test fails or memory allocation fails
  */
 static Return test0007_4_5_6_libmem(void){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	INITTEST;
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
@@ -428,7 +420,7 @@ static Return test0007_4_5_6_libmem(void){
  *
  */
 static Return test0007_7_libmem_multiple(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	#define TYPE ullint
 	#include "test0007.cc"
@@ -442,7 +434,7 @@ static Return test0007_7_libmem_multiple(void){
  *
  */
 static Return test0007_8_libmem_multiple(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	#define TYPE char
 	#include "test0007.cc"
@@ -456,7 +448,7 @@ static Return test0007_8_libmem_multiple(void){
  *
  */
 static Return test0007_9_libmem_multiple(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	#define TYPE int
 	#include "test0007.cc"
@@ -478,7 +470,7 @@ static Return test0007_9_libmem_multiple(void){
  * @retval FAILURE if any test fails
  */
 Return test0007(void){
-	Return status = SUCCESS;
+	INITTEST;
 
 	TEST(test0007_1_libmem,"Copy an array of 0 size…");
 	TEST(test0007_2_libmem,"libmem Memory allocator test 1…");
