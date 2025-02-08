@@ -165,7 +165,7 @@ TOPTARGETS := all
 .PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
-all: portable
+all: production
 
 $(SUBDIRS):
 	@$(MAKE) -s -C $(SUBDIRS) all
@@ -206,7 +206,11 @@ $(STZOBJDIR):
 #
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE)
+debug: $(SUBDIRS) $(DBGEXE) $(DBGFINAL)
+
+$(DBGFINAL): $(DBGEXE)
+	@cp $(DBGEXE) ./
+	@echo "The $(DBGEXE) has been copied to the current directory"
 
 $(DBGEXE): $(DBGOBJS)
 	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
