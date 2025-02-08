@@ -4,8 +4,8 @@ Database database1.db has been verified and is in good condition
 The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 File traversal started
 \x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-1/AAA/BCB/CCC/a.txt changed size & ctime & mtime rehash
-2/AAA/BBB/CZC/a.txt updated ctime & mtime no rehash
+1/AAA/BCB/CCC/a.txt changed size \& ctime \& mtime rehash
+2/AAA/BBB/CZC/a.txt updated ctime \& mtime no rehash
 File traversal complete
 Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 \x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
@@ -33,8 +33,8 @@ Database database1.db has been verified and is in good condition
 The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 File traversal started
 \x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-1/AAA/BCB/CCC/a.txt changed size & ctime & mtime rehash
-2/AAA/BBB/CZC/a.txt changed ctime & mtime rehash
+1/AAA/BCB/CCC/a.txt changed size \& ctime \& mtime rehash
+2/AAA/BBB/CZC/a.txt changed ctime \& mtime rehash
 File traversal complete
 Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 \x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m

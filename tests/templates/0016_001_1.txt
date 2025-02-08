@@ -99,8 +99,8 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehash
-2/AAA/BBB/CZC/a.txt updated ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) no rehash
+1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* \& ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehash
+2/AAA/BBB/CZC/a.txt updated ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) no rehash
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
@@ -209,8 +209,8 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
-1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehash
-2/AAA/BBB/CZC/a.txt changed ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehash
+1/AAA/BCB/CCC/a.txt changed size was:\d+.*, now:\d+.* \& ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehash
+2/AAA/BBB/CZC/a.txt changed ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) rehash
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
