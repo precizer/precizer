@@ -20,8 +20,15 @@ BUILDS = ../.builds
 BUILEXE = $(BUILDS)/$(EXE)
 LIBS = testitall mem sha512 rational sqlite xdiff
 
-# libc lib for static
+# Extra libs for linking
 LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+
+# For old gcc versions
+GCC_VERSION := $(shell gcc -dumpversion)
+# Checking if the GCC version is less than 10
+ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
+LDFLAGS += -pthread
+endif
 
 # Additional include headers of external libraries
 INCPATH += $(foreach d,$(LIBS),-I../libs/$d)

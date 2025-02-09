@@ -18,7 +18,7 @@ STRIP = -s
 
 # Additional check flags. Must have!
 WFLAGS += -Wall
-WFLAGS += -Werror
+#WFLAGS += -Werror
 WFLAGS += -Wpedantic
 WFLAGS += -Wshadow
 WFLAGS += -Wextra

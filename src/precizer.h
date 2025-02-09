@@ -8,10 +8,23 @@
 #ifndef _PRECIZER_H
 #define _PRECIZER_H
 
-/// Included libraries from "libs" subdir
-#include "rational.h"
-#include "sha512.h"
-#include "sqlite3.h"
+/*
+ *
+ *
+ * Defining control macros for system libraries
+ *
+ *
+ */
+
+// Need for strdup(), clock_gettime()
+// Have to be at the beginning of the file
+#define _GNU_SOURCE
+
+// Need for pathconf()
+#define _POSIX_SOURCE 1
+
+// 64bit File Systems
+#define __USE_FILE_OFFSET64 1
 
 /*
  *
@@ -19,7 +32,6 @@
  * of the project
  *
  */
-
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -59,6 +71,11 @@
 
 /* Parse arguments with argp library */
 #include <argp.h>
+
+/// Included libraries from "libs" subdir
+#include "rational.h"
+#include "sha512.h"
+#include "sqlite3.h"
 
 #define SQL_DRY_RUN_MODE ((int)-1)
 
