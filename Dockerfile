@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 as builder
+FROM ubuntu:18.04 as builder
 
 # Install required packages
 RUN apt-get update && apt-get install -y \
@@ -15,20 +15,21 @@ WORKDIR /precizer
 COPY . .
 
 # Build project
-RUN make hugetestfile \
-    && cd libs \
-    && make \
-    && cd - \
-    && make sanitize
+RUN make hugetestfile && cd libs && make
 
-RUN cd tests && make sanitize debug
+# Build project
+RUN make sanitize
 
-RUN cd - && make portable && upx --best --lzma -q precizer
+RUN cd tests && make sanitize
+
+RUN cd tests && make debug
+
+RUN make portable && upx --best --lzma -q precizer
 
 # Run tests
 CMD ["sh", "-c", "cd tests && make run && /precizer/tests/testitall"]
 
-FROM ubuntu:18.04
+FROM ubuntu:24.04
 
 WORKDIR /precizer
 

@@ -85,8 +85,15 @@ TESTDIR = tests
 
 LIBS = sqlite sha512 mem rational
 
-# libc lib for static
+# Extra libs for linking
 LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+
+# For old gcc versions
+GCC_VERSION := $(shell gcc -dumpversion)
+# Checking if the GCC version is less than 10
+ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
+LDFLAGS += -pthread
+endif
 
 # Additional include headers of external libraries
 INCPATH += $(foreach d,$(LIBS),-Ilibs/$d)
@@ -96,7 +103,7 @@ INCPATH += $(foreach d,$(LIBS),-Ilibs/$d)
 #
 SRCS = $(wildcard $(SRC)/*.c)
 HDRS = $(wildcard $(SRC)/*.h)
-BUILDS = .builds
+BUILDDIR = .builds
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
 PREPROC = $(SRCS:.c=.i) # Preproc files http://www.viva64.com/en/t/0076/
@@ -107,7 +114,7 @@ ASM = $(SRCS:.c=.asm)
 #
 # Sanitize build settings
 #
-STZDIR = $(BUILDS)/sanitize
+STZDIR = $(BUILDDIR)/sanitize
 STZEXE = $(STZDIR)/$(EXE)
 STZOBJDIR = $(STZDIR)/obj
 STZOBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(OBJS)))
@@ -120,7 +127,7 @@ STZCFLAGS += -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointe
 #
 # Debug build settings
 #
-DBGDIR = $(BUILDS)/debug
+DBGDIR = $(BUILDDIR)/debug
 DBGEXE = $(DBGDIR)/$(EXE)
 DBGOBJDIR = $(DBGDIR)/obj
 DBGOBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(OBJS)))
@@ -137,27 +144,30 @@ DBGCFLAGS += -Wl,--as-needed
 #DBGCFLAGS += -pg
 
 #
-# Release build settings
+# Production build settings
 #
-RELDIR = $(BUILDS)/release
-RELEXE = $(RELDIR)/$(EXE)
-RELFINAL = $(CURDIR)/$(EXE)
-RELOBJDIR = $(RELDIR)/obj
-RELOBJS = $(addprefix $(RELOBJDIR)/, $(notdir $(OBJS)))
-RELLIBDIR = $(RELDIR)/libs
-RELLIBS = -L$(RELLIBDIR)
-RELDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(RELLIBDIR),-rpath,\$$ORIGIN/libs
-RELCFLAGS = -funroll-loops -DNDEBUG
-RELLDFLAGS += -Wl,--as-needed
+PRDDIR = $(BUILDDIR)/release
+PRDEXE = $(PRDDIR)/$(EXE)
+PRDOBJDIR = $(PRDDIR)/obj
+PRDOBJS = $(addprefix $(PRDOBJDIR)/, $(notdir $(OBJS)))
+PRDLIBDIR = $(PRDDIR)/libs
+PRDLIBS = -L$(PRDLIBDIR)
+PRDDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRDLIBDIR),-rpath,\$$ORIGIN/libs
+PRDCFLAGS = -O3 -march=native -funroll-loops -DNDEBUG
+PRDLDFLAGS += -O3 -march=native -Wl,--hash-style=gnu -Wl,--as-needed
 
-# If static build, then add flags
-ifdef STATIC
-RELLDFLAGS += -lc
-endif
-# If it is not clang, then these options are for gcc
-ifneq ($(CC), clang)
-RELCFLAGS += -flto
-endif
+#
+# Portable build settings
+#
+PRTDIR = $(BUILDDIR)/portable
+PRTEXE = $(PRTDIR)/$(EXE)
+PRTOBJDIR = $(PRTDIR)/obj
+PRTOBJS = $(addprefix $(PRTOBJDIR)/, $(notdir $(OBJS)))
+PRTLIBDIR = $(PRDLIBDIR)
+PRTLIBS = -L$(PRTLIBDIR)
+PRTDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTLIBDIR),-rpath,\$$ORIGIN/libs
+PRTCFLAGS = -O2 -mtune=generic -funroll-loops -DNDEBUG
+PRTLDFLAGS += -O2 -mtune=generic -Wl,--hash-style=both -Wl,--as-needed 
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
@@ -174,15 +184,24 @@ $(SUBDIRS):
 clang: CC = clang
 clang: all
 
-# Portable release
-portable: RELCFLAGS += -O2 -mtune=generic
-portable: RELLDFLAGS += -O2 -mtune=generic -Wl,--hash-style=both
-portable: release
+# Portable rules
+#
+portable: $(SUBDIRS) $(PRTEXE) PRTFINAL banner
 
-prod: production
-production: RELCFLAGS += -O3 -march=native
-production: RELLDFLAGS += -O3 -march=native -Wl,--hash-style=gnu
-production: $(SUBDIRS) release
+PRTFINAL: $(PRTEXE)
+	@cp $(PRTEXE) ./
+	@echo "The $(PRTEXE) has been copied to the current directory"
+
+$(PRTEXE): $(PRTOBJS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRTLIBS) $(PRTDYNLIB) $(PRTLDFLAGS) -o $(PRTEXE) $^ $(LDFLAGS)
+	@echo "$@ linked"
+
+$(PRTOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTOBJDIR)
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRTWFLAGS) $(PRTCFLAGS) -o $@ $<
+	@echo $<" compiled"
+
+$(PRTOBJDIR):
+	@mkdir -p $(PRTOBJDIR)
 
 #
 # Sanitize rules
@@ -206,9 +225,9 @@ $(STZOBJDIR):
 #
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE) $(DBGFINAL)
+debug: $(SUBDIRS) $(DBGEXE) DBGFINAL
 
-$(DBGFINAL): $(DBGEXE)
+DBGFINAL: $(DBGEXE)
 	@cp $(DBGEXE) ./
 	@echo "The $(DBGEXE) has been copied to the current directory"
 
@@ -224,31 +243,26 @@ $(DBGOBJDIR):
 	@mkdir -p $(DBGOBJDIR)
 
 #
-# Release rules
+# Production rules
 #
-release: $(SUBDIRS) $(RELEXE) $(RELFINAL) banner
+release: production
+prod: production
+production: $(SUBDIRS) $(PRDEXE) PRDFINAL banner
 
-# Linking problem with "undefined reference to 'dlopen' "
-# https://stackoverflow.com/a/11221504/7104681
-# take in account that this doesn't work:
-# gcc -ldl dlopentest.c
-# But this does:
-# gcc dlopentest.c -ldl
-#
-$(RELFINAL): $(RELEXE)
-	@cp $(RELEXE) ./
-	@echo "The $(RELEXE) has been copied to the current directory"
+PRDFINAL: $(PRDEXE)
+	@cp $(PRDEXE) ./
+	@echo "The $(PRDEXE) has been copied to the current directory"
 
-$(RELEXE): $(RELOBJS)
-	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(RELLIBS) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
+$(PRDEXE): $(PRDOBJS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRDLIBS) $(PRDDYNLIB) $(PRDLDFLAGS) -o $(PRDEXE) $^ $(LDFLAGS)
 	@echo "$@ linked"
 
-$(RELOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(RELOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
+$(PRDOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRDOBJDIR)
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDWFLAGS) $(PRDCFLAGS) -o $@ $<
 	@echo $<" compiled"
 
-$(RELOBJDIR):
-	@mkdir -p $(RELOBJDIR)
+$(PRDOBJDIR):
+	@mkdir -p $(PRDOBJDIR)
 
 #
 # Build and test within Docker images
@@ -285,7 +299,7 @@ format:
 
 # Optional Assembler files
 %.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
+	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDWFLAGS) $(PRDCFLAGS) $(PRDLDFLAGS) -o $@ $(LDFLAGS) $<
 
 #
 # Other rules
@@ -353,7 +367,7 @@ perf:
 # Statistic code info and count of lines
 stat: cloc
 cloc:
-#	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(RELDIR) ./src
+#	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(PRDDIR) $(PRTDIR) ./src
 	@cloc ./src
 
 # Character | prevent threading with clean
@@ -362,14 +376,23 @@ clean-all: clean-tests clean clean-docker
 
 clean: | clean-preproc clean-asm
 	@rm -rf *.out.* doc \
-		$(DBGEXE) $(STZEXE) $(RELEXE) \
-		$(STZOBJS) $(DBGOBJS) $(RELOBJS)
+		$(DBGEXE) $(STZEXE) $(PRTEXE) $(PRDEXE)\
+		$(STZOBJS) $(DBGOBJS) $(PRTOBJS) $(PRDOBJS)
+
 	@test -d $(STZOBJDIR) && rm -d $(STZOBJDIR) 2>/dev/null || true
 	@test -d $(STZDIR) && rm -d $(STZDIR) 2>/dev/null || true
+
 	@test -d $(DBGOBJDIR) && rm -d $(DBGOBJDIR) 2>/dev/null || true
 	@test -d $(DBGDIR) && rm -d $(DBGDIR) 2>/dev/null || true
-	@test -d $(RELOBJDIR) && rm -d $(RELOBJDIR) 2>/dev/null || true
-	@test -d $(RELDIR) && rm -d $(RELDIR) 2>/dev/null || true
+
+	@test -d $(PRDOBJDIR) && rm -d $(PRDOBJDIR) 2>/dev/null || true
+	@test -d $(PRDDIR) && rm -d $(PRDDIR) 2>/dev/null || true
+
+	@test -d $(PRTOBJDIR) && rm -d $(PRTOBJDIR) 2>/dev/null || true
+	@test -d $(PRTDIR) && rm -d $(PRTDIR) 2>/dev/null || true
+
+	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
+
 	@test -f $(EXE) && rm $(EXE) || true
 	@echo $(EXE) cleared.
 
