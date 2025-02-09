@@ -14,17 +14,14 @@ WORKDIR /precizer
 # Copy project files
 COPY . .
 
-# Build project
-RUN make hugetestfile && cd libs && make
-
-# Build project
 RUN make sanitize
 
-RUN cd tests && make sanitize
+RUN cd tests && make sanitize run
+
+# Build project
+RUN make portable && upx --best --lzma -q precizer
 
 RUN cd tests && make debug
-
-RUN make portable && upx --best --lzma -q precizer
 
 # Run tests
 CMD ["sh", "-c", "cd tests && make run && /precizer/tests/testitall"]
