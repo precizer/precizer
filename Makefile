@@ -175,7 +175,7 @@ TOPTARGETS := all
 .PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
-all: production
+all: hugetestfile production
 
 $(SUBDIRS):
 	@$(MAKE) -s -C $(SUBDIRS) all
@@ -186,9 +186,9 @@ clang: all
 
 # Portable rules
 #
-portable: $(SUBDIRS) $(PRTEXE) PRTFINAL banner
+portable: $(SUBDIRS) $(PRTEXE) prtfinal banner
 
-PRTFINAL: $(PRTEXE)
+prtfinal: $(PRTEXE)
 	@cp $(PRTEXE) ./
 	@echo "The $(PRTEXE) has been copied to the current directory"
 
@@ -206,7 +206,7 @@ $(PRTOBJDIR):
 #
 # Sanitize rules
 #
-sanitize: $(SUBDIRS) $(STZEXE)
+sanitize: hugetestfile $(SUBDIRS) $(STZEXE)
 
 run:
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
@@ -225,9 +225,9 @@ $(STZOBJDIR):
 #
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE) DBGFINAL
+debug: $(SUBDIRS) $(DBGEXE) dbgfinal
 
-DBGFINAL: $(DBGEXE)
+dbgfinal: $(DBGEXE)
 	@cp $(DBGEXE) ./
 	@echo "The $(DBGEXE) has been copied to the current directory"
 
@@ -247,9 +247,9 @@ $(DBGOBJDIR):
 #
 release: production
 prod: production
-production: $(SUBDIRS) $(PRDEXE) PRDFINAL banner
+production: $(SUBDIRS) $(PRDEXE) prdfinal banner
 
-PRDFINAL: $(PRDEXE)
+prdfinal: $(PRDEXE)
 	@cp $(PRDEXE) ./
 	@echo "The $(PRDEXE) has been copied to the current directory"
 
