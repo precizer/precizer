@@ -22,10 +22,10 @@
  *   6. Cleans up resources
  */
 Return function_capture(
-	void (*func)(void),
+	void (   *func )(void),
 	mem_char *stdout_buffer,
-	mem_char *stderr_buffer
-){
+	mem_char *stderr_buffer)
+{
 	Return status = SUCCESS;
 
 	/* Save original file descriptors */

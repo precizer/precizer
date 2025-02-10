@@ -376,8 +376,8 @@ clean-all: clean-tests clean clean-docker
 
 clean: | clean-preproc clean-asm
 	@rm -rf *.out.* doc \
-		$(DBGEXE) $(STZEXE) $(PRTEXE) $(PRDEXE)\
-		$(STZOBJS) $(DBGOBJS) $(PRTOBJS) $(PRDOBJS)
+		$(DBGEXE) $(STZEXE) $(PRTEXE) $(PRDEXE) \
+		$(STZOBJS) $(DBGOBJS) $(PRTOBJS) $(PRDOBJS) $(HUGETESTFILE)
 
 	@test -d $(STZOBJDIR) && rm -d $(STZOBJDIR) 2>/dev/null || true
 	@test -d $(STZDIR) && rm -d $(STZDIR) 2>/dev/null || true
@@ -405,10 +405,14 @@ clean-preproc:
 clean-asm:
 	@rm -rf $(ASM)
 
-hugetestfile:
+HUGETESTFILE = tests/examples/huge/hugetestfile
+
+hugetestfile: $(HUGETESTFILE)
+
+$(HUGETESTFILE):
 	@echo Creating a guge file for testing
 	@mkdir -p tests/examples/huge/
-	@dd if=/dev/urandom of=tests/examples/huge/hugetestfile bs=1M count=10
+	@dd if=/dev/urandom of=$(HUGETESTFILE) bs=1M count=10
 	@echo The file has been created
 
 banner:

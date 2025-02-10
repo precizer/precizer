@@ -4,8 +4,8 @@
 Return replace_placeholder(
 	char       **pattern,
 	const char *placeholder,
-	const char *replacement
-){
+	const char *replacement)
+{
 	if(!pattern || !*pattern || !placeholder || !replacement)
 	{
 		return(FAILURE); // Invalid arguments

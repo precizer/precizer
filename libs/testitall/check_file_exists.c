@@ -17,8 +17,8 @@
  */
 Return check_file_exists(
 	bool       *file_exists,
-	const char *filename
-){
+	const char *filename)
+{
 	Return status = SUCCESS;
 
 	*file_exists = false;

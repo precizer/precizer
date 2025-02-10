@@ -16,8 +16,8 @@
 Return execute_and_set_variable(
 	const char *variable,
 	const char *command,
-	const int  expected_return_code
-){
+	const int  expected_return_code)
+{
 	if(!variable || !command)
 	{
 		serp("NULL pointer passed to execute_and_set_variable");

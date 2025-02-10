@@ -33,8 +33,8 @@ Return execute_command(
 	mem_char   *result,
 	const int  expected_return_code,
 	bool       suppress_stderr,
-	bool       suppress_stdout
-){
+	bool       suppress_stdout)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

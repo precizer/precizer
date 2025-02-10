@@ -15,8 +15,8 @@
  */
 Return get_file_content(
 	const char *filename,
-	char       **pattern
-){
+	char       **pattern)
+{
 	Return status = SUCCESS;
 	FILE *file = NULL;
 	*pattern = NULL; // Initialize to NULL in case of failure

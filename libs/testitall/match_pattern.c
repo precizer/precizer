@@ -10,8 +10,8 @@
 Return match_pattern(
 	const char *text,
 	const char *pattern,
-	...
-){
+	...)
+{
 	Return status = SUCCESS;
 	char *diff = NULL;
 

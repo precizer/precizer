@@ -16,11 +16,12 @@
 Return random_number_generator(
 	uint64_t *random_number,
 	uint64_t start,
-	uint64_t end
-){
+	uint64_t end)
+{
 	Return status = SUCCESS;
 
-	FILE*fp=fopen("/dev/urandom","rb");
+	FILE *fp = fopen("/dev/urandom","rb");
+
 	if(!fp)
 	{
 		echo(STDERR,"Can't open /dev/urandom\n");
@@ -48,8 +49,8 @@ Return random_number_generator(
 			status = FAILURE;
 		}
 
-		uint64_t range=(end-start)+1;
-		*random_number=(random_value%range)+start;
+		uint64_t range = (end-start)+1;
+		*random_number = (random_value%range)+start;
 	}
 
 	#if 0
@@ -58,4 +59,3 @@ Return random_number_generator(
 
 	return(status);
 }
-

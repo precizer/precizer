@@ -114,7 +114,7 @@ typedef unsigned long long int ullint;
 	struct_type _ ## struct_name; \
 	struct_type *struct_name = &_ ## struct_name; \
 
-// Macros to define default value of third аrgument
+// Macros to define default value of third argument
 // https://stackoverflow.com/questions/1472138/c-default-arguments
 // https://gustedt.wordpress.com/2010/06/03/default-arguments-for-c99/
 #define realloc_char(...) REALLOC_CHAR(__VA_ARGS__,false,0)

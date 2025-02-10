@@ -1,14 +1,13 @@
 #pragma once
 
-// The definition used to disable specific
-// functions in the tested application,
-// for example, the main() function.
+// This definition is used to disable specific functions in the application being tested,
+// such as the main() function.
 #ifndef TESTITALL
 #define TESTITALL
 #endif
 
-// Need for strdup(), clock_gettime()
-// Have to be at the beginning of the file
+// Required for strdup(), clock_gettime().
+// Must be placed at the beginning of the file.
 #define _GNU_SOURCE
 
 #include <stdio.h>
@@ -21,32 +20,32 @@
 #define PCRE2_STATIC
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
-
 #include <stdbool.h>
-// Functions to work with time
+
+// Functions for working with time.
 #include <time.h>
 #include <sys/time.h>
 
-// Work with strings
+// Functions for string manipulation.
 #include <string.h>
 
-// librational
+// librational library.
 #include "rational.h"
 
-// libmem
+// libmem library.
 #include "mem.h"
 
-// libxdiff
+// libxdiff library.
 #include "xdiff.h"
 
 /**
- * @brief Prints a formatted header message if status check passes
- * @details Outputs the given message in cyan color if the status equals SUCCESS
+ * @brief Prints a formatted header message if the status check passes.
+ * @details Outputs the provided message in cyan if the status equals SUCCESS.
  *
- * @param msg The message to be printed (should include newline if needed)
+ * @param msg The message to print (include a newline if needed).
  *
- * @note Requires a 'status' variable to be in scope
- * @note Assumes SUCCESS is defined elsewhere in the codebase
+ * @note Requires a 'status' variable to be in scope.
+ * @note Assumes SUCCESS is defined elsewhere in the codebase.
  *
  * @example
  * // Example usage:
@@ -78,8 +77,7 @@
 	} \
 	return(status); \
 
-
-// Global buffers for capturing output streams
+// Global buffers for capturing output streams.
 extern mem_char _STDOUT;
 extern mem_char *STDOUT;
 extern mem_char _STDERR;
@@ -91,86 +89,72 @@ Return external_call(
 	const char *,
 	const int,
 	bool,
-	bool
-);
+	bool);
 
 void echo(
 	mem_char *,
 	const char *,
-	...
-) __attribute__((format(gnu_printf,2,3)));
+	...) __attribute__((format(gnu_printf,2,3)));
 
 Return execute_command(
 	const char *,
 	mem_char *,
 	const int,
 	bool,
-	bool
-);
+	bool);
 
 Return execute_and_set_variable(
 	const char *,
 	const char *,
-	const int
-);
+	const int);
 
 Return set_environment_variable(
 	const char *,
-	const char *
-);
+	const char *);
 
 Return function_capture(
 	void (*func)(void),
 	mem_char *,
-	mem_char *
-);
+	mem_char *);
 
 Return get_file_content(
 	const char *,
-	char **
-);
+	char **);
 
 Return match_pattern(
 	const char *,
 	const char *,
-	...
-);
+	...);
 
 Return match_file_template(
 	const char *,
 	const char *,
 	const char *,
 	const char *,
-	const int
-);
+	const int);
 
 Return replace_placeholder(
 	char **,
 	const char *,
-	const char *
-);
+	const char *);
 
 Return write_to_temp_file(const char *);
 
 Return check_file_exists(
 	bool *,
-	const char *
-);
+	const char *);
 
 Return get_file_stat(
 	const char *,
-	struct stat *
-);
+	struct stat *);
 
 Return check_file_identity(
 	const struct stat *,
-	const struct stat *
-);
+	const struct stat *);
 
 Return construct_path(
 	const char *,
-	char **
-);
+	char **);
 
 Return random_number_generator(
 	uint64_t *,
@@ -179,9 +163,9 @@ Return random_number_generator(
 );
 
 /**
- * @brief Test execution macro
- * @param func Function to test
- * @param desc Test description
+ * @brief Macro for executing a test.
+ * @param func The function to test.
+ * @param desc Description of the test.
  */
 #define TEST(func,desc) \
 	if(SUCCESS == status) \
@@ -192,20 +176,20 @@ Return random_number_generator(
 #define EXEC(func,desc) \
 	status = testitall(func, #func,desc);
 
-// Execute a function without checking the status first.
-// For example, to clear temporary data
-// TEST No Result
+// Executes a function without checking the status first.
+// Useful for tasks like clearing temporary data.
+// Does not return a Result.
 #define RUN(func,desc) \
 	(void)testitall(func, #func,desc);
 
-// Макрос для замера времени на старте
+// Macro to measure the start time of a test.
 #define TESTSTART \
 	long long int _test_start_time = cur_time_ns(); \
-	/* The status that will be passed to return() before exiting */ \
-	/* By default, the function worked without errors.           */ \
+	/* The status that will be returned before exiting. */ \
+	/* By default, assumes the function ran without errors. */ \
 	Return status = SUCCESS;
 
-// Макрос для замера времени на финише
+// Macro to measure the end time of a test.
 #define TESTDONE \
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
@@ -218,14 +202,13 @@ Return random_number_generator(
 	} \
 	return(status);
 
-// Инициализация теста. Определение возврата из функции SUCCESS или FAILURE
+// Initializes a test. Defines the return value as SUCCESS or FAILURE.
 #define INITTEST \
-	/* The status that will be passed to return() before exiting */ \
-	/* By default, the function worked without errors.           */ \
+	/* The status that will be returned before exiting. */ \
+	/* By default, assumes the function ran without errors. */ \
 	Return status = SUCCESS;
 
 Return testitall(
 	Return (*func)(void),
 	const char *,
-	const char *
-);
+	const char *);
