@@ -190,7 +190,6 @@ Return external_call(
 			del_char(&STDERR);
 
 		} else {
-#if 1
 			// Format stderr output
 			char *str;
 			int rt = asprintf(&str, \
@@ -212,7 +211,7 @@ Return external_call(
 			}
 
 			free(str);
-#endif
+
 			return(FAILURE);
 		}
 	}
