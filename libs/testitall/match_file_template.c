@@ -23,8 +23,8 @@ Return match_file_template(
 	const char *filename,
 	const char *template,
 	const char *replacement,
-	const int  expected_return_code
-){
+	const int  expected_return_code)
+{
 	if(!command || !filename || !template || !replacement)
 	{
 		echo(STDERR,"NULL pointer passed to match_file_template\n");

@@ -14,8 +14,8 @@
  */
 Return get_file_stat(
 	const char  *path,
-	struct stat *stat_buf
-){
+	struct stat *stat_buf)
+{
 	Return status = SUCCESS;
 
 	if((NULL == path) || (NULL == stat_buf))

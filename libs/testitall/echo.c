@@ -12,8 +12,8 @@
 void echo(
 	mem_char   *buffer,
 	const char *format,
-	...
-){
+	...)
+{
 	char *result = NULL;
 	va_list args;
 	va_start(args,format);

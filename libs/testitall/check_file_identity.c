@@ -33,8 +33,8 @@ typedef enum
  */
 static int compare_file_metadata_equivalence(
 	const struct stat *source,
-	const struct stat *destination
-){
+	const struct stat *destination)
+{
 	/* Validate input parameters */
 	if(NULL == source || NULL == destination)
 	{
@@ -75,7 +75,8 @@ static int compare_file_metadata_equivalence(
  * @param[in] st Pointer to the stat structure to print
  * @return Return Status of the operation
  */
-Return print_stat(const struct stat *st){
+Return print_stat(const struct stat *st)
+{
 	Return status = SUCCESS;
 	char time_str[100];
 	struct tm *tm_info;
@@ -171,8 +172,8 @@ Return print_stat(const struct stat *st){
  */
 Return check_file_identity(
 	const struct stat *stat1,
-	const struct stat *stat2
-){
+	const struct stat *stat2)
+{
 	Return status = SUCCESS;
 
 	if(IDENTICAL != compare_file_metadata_equivalence(stat1,stat2))

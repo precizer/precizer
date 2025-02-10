@@ -18,8 +18,8 @@
 Return testitall(
 	Return (*func)(void),
 	const char *function_name,
-	const char *test_description
-){
+	const char *test_description)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

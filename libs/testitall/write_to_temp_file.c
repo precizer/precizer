@@ -6,7 +6,8 @@
  * @return Return enum value indicating execution status
  * @note Creates a temporary file using mkstemp with template /tmp/testitall_XXXXXX
  */
-Return write_to_temp_file(const char *buffer){
+Return write_to_temp_file(const char *buffer)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;

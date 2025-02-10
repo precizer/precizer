@@ -9,8 +9,8 @@
  */
 Return construct_path(
 	const char *filename,
-	char       **full_path
-){
+	char       **full_path)
+{
 	Return status = SUCCESS;
 	const char *tmp_dir = NULL;
 	size_t path_len = 0;
