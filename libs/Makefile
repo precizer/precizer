@@ -9,7 +9,7 @@ TOPTARGETS := all clean release debug prod production sanitize test cosmo gcc-an
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
-	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
+	@$(MAKE) -s -C $@ $(MAKECMDGOALS) 2>/dev/null
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS)
 
