@@ -268,11 +268,16 @@ $(PRDOBJDIR):
 # Build and test within Docker container
 #
 docker: build-docker run-docker copy-from-docker clean-docker
+docker-portable: build-docker-portable run-docker copy-from-docker clean-docker
 
 
 # Build image and create application container
 build-docker:
 	@docker build -t $(EXE) .
+	@docker create --name $(EXE) $(EXE)
+
+build-docker-portable:
+	@docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t precizer .
 	@docker create --name $(EXE) $(EXE)
 
 # Copying a statically compiled application from a container
@@ -431,7 +436,7 @@ HUGETESTFILE = tests/examples/huge/hugetestfile
 hugetestfile: $(HUGETESTFILE)
 
 $(HUGETESTFILE):
-	@echo Creating a guge file for testing
+	@echo Creating a huge file for testing
 	@mkdir -p tests/examples/huge/
 	@dd if=/dev/urandom of=$(HUGETESTFILE) bs=1M count=10
 	@echo The file has been created
