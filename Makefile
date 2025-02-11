@@ -26,6 +26,20 @@
 # make perf # or
 # make test
 #
+# Autobated build with GitHub Actions:
+#
+# * Create an annotated tag:
+#   ```sh
+#   git tag -a v0.2.0 -m "Release version 0.2.0"
+#   ```
+# * Push the tag to the remote server for release creation:
+#   ```sh
+#   git push origin v0.2.0
+#   ```
+# * Delete a failed local tag:
+#   ```sh
+#   git tag -d v0.2.0
+#   ```
 
 # Define our suffix list for quick compilation
 .SUFFIXES:          # Delete the default suffixes

@@ -99,11 +99,14 @@ RELOBJS = $(addprefix $(RELLIBDIR)/, $(OBJS))
 RELCFLAGS = -O3 -funroll-loops -DNDEBUG
 RELCFLAGS += -march=native
 
-.PHONY: all clean debug release prod production sanitize
+.PHONY: all clean debug release prod production sanitize warning
 
 # Default build
-all: debug release
+all: warning debug release
 	@true
+
+warning:
+	@echo Library compilation has started. This process may take a considerable amount of time.
 
 prod: release
 	@true
