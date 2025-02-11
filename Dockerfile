@@ -1,11 +1,14 @@
-ARG UBUNTU_VERSION=24.04
-ARG BUILD_TYPE=production
+ARG OS=ubuntu:24.04
+ARG BUILD=production
 
-FROM ubuntu:$UBUNTU_VERSION as builder
+FROM ${OS} as builder
+
+ARG BUILD
+ENV BUILD=${BUILD}
 
 # Install required packages
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    gcc make \
     libpcre2-dev \
     llvm \
     upx \
@@ -22,7 +25,7 @@ RUN make sanitize
 RUN cd tests && make sanitize run
 
 # Build project
-RUN make $BUILD_TYPE && upx --best --lzma -q precizer
+RUN make ${BUILD} && upx --best --lzma -q precizer
 
 RUN cd tests && make debug
 

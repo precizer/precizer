@@ -273,19 +273,19 @@ docker: build-docker run-docker copy-from-docker clean-docker
 # Build image and create application container
 build-docker:
 	@docker build -t $(EXE) .
-	@docker create --name precizer precizer
+	@docker create --name $(EXE) $(EXE)
 
 # Copying a statically compiled application from a container
 # to the current directory on the system
 copy-from-docker:
-	@docker cp precizer:/precizer/precizer $(EXE)
+	@docker cp precizer:/$(EXE)/$(EXE) $(EXE)
 
 # Run the application within the built container
 run-docker:
 	@docker run $(EXE)
 
 # Run it 1000 times
-test-in-docker:
+test-in-docker: build-docker
 	for i in {1..1000}; do docker run $(EXE) || break; done
 
 # Clean the built container

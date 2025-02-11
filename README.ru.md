@@ -196,6 +196,45 @@ make
 
 # Перейти к пункту 4.
 ```
+### Сборка с помощью Docker
+
+Если есть причины не устанавливать дополнительные пакеты для сборки приложения, то можно воспользоваться подготовленным решением на базе Docker.
+
+Для сборки достаточно в системе уже иметь установленный docker.
+
+Результатом работы простой команды `make docker`:
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+make docker
+```
+
+станет то, что в текущей директории будет создан бинарный исполняемый файл precizer. Его можно запускать на месте или скопировать в директории из списка $PATH
+
+Если утилита make не установлена, то для сборки приложения в контейнере достаточно выполнить следующие действия:
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+docker build -t precizer .
+docker create --name precizer precizer
+docker cp precizer:/precizer/precizer precizer
+docker rm -f precizer
+```
+
+В результате в текущей директории появится статически слинкованный бинарный файл
+
+Если есть проблемы с исполняемым файлом, то можно попробовать повысить его переносимость между разными системами.
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t precizer .
+docker create --name precizer precizer
+docker cp precizer:/precizer/precizer precizer
+docker rm -f precizer
+```
 
 ## ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
 ### Тесты
@@ -203,7 +242,7 @@ make
 
 Запуск тестов:  
 ```sh
-git clone https://github.com/precizer/precizer.git  
+git clone https://github.com/precizer/precizer.git
 cd precizer
 make debug
 cd tests/

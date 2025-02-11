@@ -9,6 +9,7 @@ TOPTARGETS := all clean release debug prod production sanitize test cosmo gcc-an
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
+	@echo Library compilation has started. This process may take a considerable amount of time.
 	@$(MAKE) -s -C $@ $(MAKECMDGOALS) 2>/dev/null
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS)
