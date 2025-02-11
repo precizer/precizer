@@ -265,13 +265,34 @@ $(PRDOBJDIR):
 	@mkdir -p $(PRDOBJDIR)
 
 #
-# Build and test within Docker images
+# Build and test within Docker container
 #
-docker:
-	@docker build -t precizer .
-	@docker run precizer
+docker: build-docker run-docker copy-from-docker clean-docker
 
+
+# Build image and create application container
+build-docker:
+	@docker build -t $(EXE) .
+	@docker create --name precizer precizer
+
+# Copying a statically compiled application from a container
+# to the current directory on the system
+copy-from-docker:
+	@docker cp precizer:/precizer/precizer $(EXE)
+
+# Run the application within the built container
+run-docker:
+	@docker run $(EXE)
+
+# Run it 1000 times
+test-in-docker:
+	for i in {1..1000}; do docker run $(EXE) || break; done
+
+# Clean the built container
 clean-docker:
+	@docker rm -f $(EXE)
+
+clean-all-dockers:
 	@docker image prune -f
 	@docker image prune -af
 	@docker rm -f $(shell docker ps -aq)
@@ -417,9 +438,9 @@ $(HUGETESTFILE):
 
 banner:
 	@printf "Now some tests could be running:\n"
-	@printf "\033[1mStage 1. Adding:\033[0m\n./precizer --progress --database=database1.db tests/examples/diffs/diff1\n"
-	@printf "\033[1mStage 2. Adding:\033[0m\n./precizer --progress --database=database2.db tests/examples/diffs/diff2\n"
-	@printf "\033[1mFinal stage. Comparing:\033[0m\n./precizer --compare database1.db database2.db\n"
+	@printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/examples/diffs/diff1\n"
+	@printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/examples/diffs/diff2\n"
+	@printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 
 #
 # Print of variables
