@@ -1,4 +1,7 @@
-FROM ubuntu:18.04 as builder
+ARG UBUNTU_VERSION=24.04
+ARG BUILD_TYPE=production
+
+FROM ubuntu:$UBUNTU_VERSION as builder
 
 # Install required packages
 RUN apt-get update && apt-get install -y \
@@ -19,7 +22,7 @@ RUN make sanitize
 RUN cd tests && make sanitize run
 
 # Build project
-RUN make portable && upx --best --lzma -q precizer
+RUN make $BUILD_TYPE && upx --best --lzma -q precizer
 
 RUN cd tests && make debug
 
