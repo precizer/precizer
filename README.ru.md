@@ -169,33 +169,44 @@ sudo apk add --update build-base fts-dev argp-standalone
 
 ```sh
 git clone https://github.com/precizer/precizer.git
+cd precizer
 ```
 
 3. Build
 
 ```sh
-cd precizer
 make
 ```
 
 4. Скопируйте получившийся исполняемый файл **precizer** в любое место, прописанное в системной переменной $PATH для быстрого вызова.
 
-5. Clean everything and update
+5. Clean everything
 
 ```sh
-
 # Clean
 make clean
 
 # Clean with building libraries
 make cleanall
+```
 
-# Update
+6. Update
+
+```sh
 git pull
 make
 
 # Перейти к пункту 4.
 ```
+
+### Сборка portable
+
+Повторить пункты 1. и 2. Вместо пункта 3 выполнить:
+
+```sh
+make portable
+```
+
 ### Сборка с помощью Docker
 
 Если есть причины не устанавливать дополнительные пакеты для сборки приложения, то можно воспользоваться подготовленным решением на базе Docker.
@@ -226,6 +237,13 @@ docker rm -f precizer
 В результате в текущей директории появится статически слинкованный бинарный файл
 
 Если есть проблемы с исполняемым файлом, то можно попробовать повысить его переносимость между разными системами.
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+make docker-portable
+```
+или
 
 ```sh
 git clone https://github.com/precizer/precizer.git
