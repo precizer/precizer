@@ -118,7 +118,7 @@ Consider a scenario where a primary storage system has a backup copy. For exampl
 * You can reach out to the author via:  
   * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
   * You can also [report a bug on GitHub](https://github.com/precizer/precizer/issues/new).
-* If you run into issues while using the program, feel free to ask a question on [ru.stackoverflow.com](https://ru.stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and will be happy to help with troubleshooting any problems.
+* If you run into issues while using the program, feel free to ask a question on [stackoverflow.com](https://stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and will be happy to help with troubleshooting any problems.
 
 ## BUILD & INSTALLATION
 
