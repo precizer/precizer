@@ -109,7 +109,7 @@ Consider a scenario where a primary storage system has a backup copy. For exampl
 * The program is *extremely fast* thanks to the use of *SQLite* and *FTS* ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).  
 * *Command-line argument parsing* is implemented using *ARGP* library.  
 * *Regular expressions* are handled via *PCRE2* libpcre2.  
-* The program is *safe* to use with *massive* numbers of files, directories, and deeply nested subdirectories. With *FTS*, *recursion is avoided*, preventing *stack overflow issues* even in cases of extreme directory depth.  
+* The program is *safe* to use with massive numbers of files, directories, and deeply nested subdirectories. With *FTS*, *recursion is avoided*, preventing *stack overflow issues* even in cases of extreme directory depth.  
 * Due to its *compact and portable code*, the program can be used even on *specialized NAS devices, embedded systems, or IoT platforms*.
 
 ## QUESTIONS & BUG REPORTS
