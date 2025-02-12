@@ -83,7 +83,7 @@ This ensures that even when files reside in different mount points or sources, t
 
 Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its *Disaster Recovery* copy. Synchronization from the primary storage to the backup occurs periodically, but due to the *massive data volumes*, synchronization is most likely not performed byte-by-byte but rather by detecting *metadata changes* within the file system. In such cases, *file size* and *modification time* are taken into account, but the actual content is *not verified byte by byte*. This approach makes sense because the primary data center and the *Disaster Recovery* site usually have *high-speed communication channels*, but a full byte-by-byte synchronization would take an *unreasonably long time*. Tools like *rsync* allow both types of synchronization — *metadata-based* and *byte-by-byte* — but they have one *major drawback*: *state is not preserved between sessions*. Let’s analyze this issue with the following scenario:
 
-* Given: *Server "A"* and *Server "B"* (Primary Data Center and Disaster Recovery)  
+* Given: *Server "A"* and *Server "B"* (Primary Data Center and Disaster Recovery)
 * Some files have been modified on *Server "A"*.  
 * The *rsync* algorithm detects them based on changes in *size and modification time* and synchronizes them to *Server "B"*.  
 * Multiple *connection failures* occur during synchronization between the Primary Data Center and the Disaster Recovery site.  
