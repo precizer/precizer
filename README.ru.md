@@ -1,3 +1,6 @@
+
+[English language README file](README.md)
+
 # Precizer
 Крошечное, высокопроизводительное приложение для проверки целостности файлов
 
