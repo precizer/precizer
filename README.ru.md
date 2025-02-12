@@ -392,48 +392,48 @@ precizer --silent --update --progress --database=database1.db tests/examples/dif
 ```sh
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
-<sub>2025-01-28 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
+<sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
 paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
-2025-01-28 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
-2025-01-28 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments  
-2025-01-28 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/examples/diffs/diff1 exists  
-2025-01-28 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory  
-2025-01-28 09:55:59:821 src/detect_paths.c:036:detect_paths:Paths detected  
-2025-01-28 09:55:59:821 src/init_signals.c:034:init_signals:Set signal SIGUSR2 OK:pid:604770  
-2025-01-28 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770  
-2025-01-28 09:55:59:821 src/init_signals.c:052:init_signals:Set signal SIGTERM OK:pid:604770  
-2025-01-28 09:55:59:821 src/init_signals.c:055:init_signals:Signals initialized  
-2025-01-28 09:55:59:821 src/determine_running_dir.c:018:determine_running_dir:Current directory: /tmp  
-2025-01-28 09:55:59:821 src/db_determine_name.c:099:db_determine_name:Primary database file name: database1.db  
-2025-01-28 09:55:59:821 src/db_determine_name.c:105:db_determine_name:Primary database file path: database1.db  
-2025-01-28 09:55:59:821 src/db_determine_name.c:109:db_determine_name:DB name determined  
-2025-01-28 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path . exists  
-2025-01-28 09:55:59:821 src/file_availability.c:053:file_availability:The path . is exists and it is a directory  
-2025-01-28 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path database1.db exists  
-2025-01-28 09:55:59:821 src/file_availability.c:044:file_availability:The path database1.db is exists and it is a file  
-2025-01-28 09:55:59:821 src/db_determine_mode.c:128:db_determine_mode:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE  
-2025-01-28 09:55:59:821 src/db_determine_mode.c:129:db_determine_mode:Final value for config->db_initialize_tables: false  
-2025-01-28 09:55:59:821 src/db_determine_mode.c:131:db_determine_mode:DB mode determined  
-2025-01-28 09:55:59:821 src/db_test.c:061:db_test:Starting database file database1.db integrity check…  
-2025-01-28 09:55:59:821 src/db_test.c:082:db_test:The database verification level has been set to FULL  
-2025-01-28 09:55:59:821 src/db_test.c:126:db_test:Database database1.db has been verified and is in good condition  
-2025-01-28 09:55:59:822 src/db_get_version.c:087:db_get_version:Version number 1 found in database  
-2025-01-28 09:55:59:822 src/db_check_version.c:032:db_check_version:The database1.db database file is version 1  
-2025-01-28 09:55:59:822 src/db_check_version.c:061:db_check_version:The database database1.db is on version 1 and does not require any upgrades  
-2025-01-28 09:55:59:822 src/db_init.c:030:db_init:Successfully opened database database1.db  
-2025-01-28 09:55:59:822 src/db_init.c:118:db_init:The primary database and tables have NOT been initialized  
-2025-01-28 09:55:59:822 src/db_init.c:150:db_init:The primary database named database1.db is ready for operations  
-2025-01-28 09:55:59:822 src/db_init.c:167:db_init:The in-memory runtime_paths_id database successfully attached to the primary database database1.db  
-2025-01-28 09:55:59:822 src/db_init.c:174:db_init:Database initialization process completed  
-2025-01-28 09:55:59:822 src/db_compare.c:136:db_compare:Database comparison mode is not enabled. Skipping comparison  
-2025-01-28 09:55:59:822 src/db_contains_data.c:086:db_contains_data:The database database1.db has already been created previously  
-2025-01-28 09:55:59:822 src/db_validate_paths.c:192:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical  
-2025-01-28 09:55:59:822 src/file_list.c:143:file_list:File system traversal initiated to calculate file count and storage usage  
-2025-01-28 09:55:59:823 src/file_list.c:038:show_status:Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
-2025-01-28 09:55:59:825 src/db_get_version.c:087:db_get_version:Version number 1 found in database  
-2025-01-28 09:55:59:825 src/db_consider_vacuum_primary.c:025:db_consider_vacuum_primary:No changes were made. The primary database doesn't require vacuuming  
-2025-01-28 09:55:59:825 src/status_of_changes.c:049:status_of_changes:**The database file database1.db has NOT been modified since the program was launched**  
-2025-01-28 09:55:59:825 src/exit_status.c:027:exit_status:The precizer completed its execution without any issues  
+2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
+2025-01-25 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments  
+2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/examples/diffs/diff1 exists  
+2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory  
+2025-01-25 09:55:59:821 src/detect_paths.c:036:detect_paths:Paths detected  
+2025-01-25 09:55:59:821 src/init_signals.c:034:init_signals:Set signal SIGUSR2 OK:pid:604770  
+2025-01-25 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770  
+2025-01-25 09:55:59:821 src/init_signals.c:052:init_signals:Set signal SIGTERM OK:pid:604770  
+2025-01-25 09:55:59:821 src/init_signals.c:055:init_signals:Signals initialized  
+2025-01-25 09:55:59:821 src/determine_running_dir.c:018:determine_running_dir:Current directory: /tmp  
+2025-01-25 09:55:59:821 src/db_determine_name.c:099:db_determine_name:Primary database file name: database1.db  
+2025-01-25 09:55:59:821 src/db_determine_name.c:105:db_determine_name:Primary database file path: database1.db  
+2025-01-25 09:55:59:821 src/db_determine_name.c:109:db_determine_name:DB name determined  
+2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path . exists  
+2025-01-25 09:55:59:821 src/file_availability.c:053:file_availability:The path . is exists and it is a directory  
+2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path database1.db exists  
+2025-01-25 09:55:59:821 src/file_availability.c:044:file_availability:The path database1.db is exists and it is a file  
+2025-01-25 09:55:59:821 src/db_determine_mode.c:128:db_determine_mode:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE  
+2025-01-25 09:55:59:821 src/db_determine_mode.c:129:db_determine_mode:Final value for config->db_initialize_tables: false  
+2025-01-25 09:55:59:821 src/db_determine_mode.c:131:db_determine_mode:DB mode determined  
+2025-01-25 09:55:59:821 src/db_test.c:061:db_test:Starting database file database1.db integrity check…  
+2025-01-25 09:55:59:821 src/db_test.c:082:db_test:The database verification level has been set to FULL  
+2025-01-25 09:55:59:821 src/db_test.c:126:db_test:Database database1.db has been verified and is in good condition  
+2025-01-25 09:55:59:822 src/db_get_version.c:087:db_get_version:Version number 1 found in database  
+2025-01-25 09:55:59:822 src/db_check_version.c:032:db_check_version:The database1.db database file is version 1  
+2025-01-25 09:55:59:822 src/db_check_version.c:061:db_check_version:The database database1.db is on version 1 and does not require any upgrades  
+2025-01-25 09:55:59:822 src/db_init.c:030:db_init:Successfully opened database database1.db  
+2025-01-25 09:55:59:822 src/db_init.c:118:db_init:The primary database and tables have NOT been initialized  
+2025-01-25 09:55:59:822 src/db_init.c:150:db_init:The primary database named database1.db is ready for operations  
+2025-01-25 09:55:59:822 src/db_init.c:167:db_init:The in-memory runtime_paths_id database successfully attached to the primary database database1.db  
+2025-01-25 09:55:59:822 src/db_init.c:174:db_init:Database initialization process completed  
+2025-01-25 09:55:59:822 src/db_compare.c:136:db_compare:Database comparison mode is not enabled. Skipping comparison  
+2025-01-25 09:55:59:822 src/db_contains_data.c:086:db_contains_data:The database database1.db has already been created previously  
+2025-01-25 09:55:59:822 src/db_validate_paths.c:192:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical  
+2025-01-25 09:55:59:822 src/file_list.c:143:file_list:File system traversal initiated to calculate file count and storage usage  
+2025-01-25 09:55:59:823 src/file_list.c:038:show_status:Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+2025-01-25 09:55:59:825 src/db_get_version.c:087:db_get_version:Version number 1 found in database  
+2025-01-25 09:55:59:825 src/db_consider_vacuum_primary.c:025:db_consider_vacuum_primary:No changes were made. The primary database doesn't require vacuuming  
+2025-01-25 09:55:59:825 src/status_of_changes.c:049:status_of_changes:**The database file database1.db has NOT been modified since the program was launched**  
+2025-01-25 09:55:59:825 src/exit_status.c:027:exit_status:The precizer completed its execution without any issues  
 </sub>
 
 ### Пример 5
