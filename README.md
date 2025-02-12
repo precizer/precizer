@@ -142,7 +142,7 @@ The build process produces a statically linked ELF binary with no external depen
 
 Most required libraries are embedded into the binary, and by default, the program is built as a static executable. This approach enhances portability and eliminates dependency issues. Thanks to this setup, compiling the program on most modern platforms is straightforward — just follow these steps:
 
-1. Install build tools on Linux
+1. Install build and compile tools on Linux
 
 #### Arch Linux
 
@@ -251,11 +251,26 @@ docker cp precizer:/precizer/precizer precizer
 docker rm -f precizer
 ```
 
-## EXAMPLES OF USING
-To explore the program's features, you can use test sets from the tests/examples/ directory in the program source code:
+## USAGE EXAMPLES
+
+### Running Tests
+
+To evaluate the program’s capabilities, you can use the test sets available in the `tests/examples/` directory within the source code.
+
+Run tests with the following commands:
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+make debug
+cd tests/
+make debug
+./testitall
+```
 
 ### Example 1
-Add files into two databases and compare them with each other:
+
+Adding files to two separate databases and comparing them:
 
 ```sh
 precizer --progress --database=database1.db tests/examples/diffs/diff1
@@ -264,6 +279,7 @@ precizer --progress --database=database2.db tests/examples/diffs/diff2
 
 precizer --compare database1.db database2.db
 ```
+
 <sup>The comparison of database1.db and database2.db databases is starting…  
 Starting database file database1.db integrity check…  
 Database database1.db has been verified and is in good condition  
@@ -428,6 +444,7 @@ Disable recursion with `--maxdepth` option
 
 ```sh
 tree tests/examples/4
+
 tests/examples/4
 ├── AAA
 │   ├── BBB
@@ -445,6 +462,7 @@ The `--maxdepth` option with a value of `=0` disables recursion completely.
 ```sh
 precizer --maxdepth=0 tests/examples/4
 ```
+
 <sub>Primary database file name: myhost.db  
 The path myhost.db doesn't exist or it is not a file  
 The primary DB file not yet exists. Brand new database will be created  
@@ -470,6 +488,7 @@ To understand what a relative path looks like, just run directory traverses with
 
 ```sh
 % tree -L 3 tests/examples/diffs
+
 tests/examples/diffs
 ├── diff1
 │   ├── 1
@@ -507,35 +526,42 @@ precizer --ignore="diff2/1/.*" tests/examples/diffs
 
 In this example the starting path for the traverses is ./tests/examples/diffs and the path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
 
-<sub>Database file name: myhost.db  
-Starting of database file myhost.db integrity check...  
-The database myhost.db is in good condition  
-**These files will be added against the DB myhost.db:**  
+<sub>Primary database file name: myhost.db  
+The path myhost.db doesn't exist or it is not a file  
+The primary DB file not yet exists. Brand new database will be created  
+File traversal started  
+**These files will be added against the myhost.db database:**  
+diff1/1/AAA/BCB/CCC/a.txt **ignored & not added**  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt **ignored & not added**  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt **ignored & not added**  
+diff1/2/AAA/BBB/CZC/a.txt  
 diff1/3/AAA/BBB/CCC/a.txt  
+diff1/4/AAA/BBB/CCC/a.txt  
+diff1/path1/AAA/BCB/CCC/a.txt  
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
 diff1/path2/AAA/BCB/CCC/a.txt  
 diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
 diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
-diff1/1/AAA/BCB/CCC/a.txt  
-diff1/1/AAA/ZAW/A/b/c/a_file.txt  
-diff1/1/AAA/ZAW/D/e/f/b_file.txt  
-diff1/4/AAA/BBB/CCC/a.txt  
-diff1/2/AAA/BBB/CZC/a.txt  
-diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
-diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
-diff2/3/AAA/BBB/CCC/a.txt  
-diff2/path2/AAA/BCB/CCC/a.txt  
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
-**ignored** diff2/1/AAA/BCB/CCC/a.txt  
-**ignored** diff2/1/AAA/ZAW/A/b/c/a_file.txt  
-**ignored** diff2/1/AAA/ZAW/D/e/f/b_file.txt  
-diff2/4/AAA/BBB/CCC/a.txt  
+diff2/1/AAA/BCB/CCC/a.txt  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt  
 diff2/2/AAA/BBB/CZC/a.txt  
-diff2/path1/AAA/BCB/CCC/b.txt  
+diff2/3/AAA/BBB/CCC/a.txt  
+diff2/4/AAA/BBB/CCC/a.txt  
 diff2/path1/AAA/BCB/CCC/a.txt  
+diff2/path1/AAA/BCB/CCC/b.txt  
 diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
 diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
-Start vacuuming...  
-The database has been vacuumed  
+diff2/path2/AAA/BCB/CCC/a.txt  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
+File traversal complete  
+Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database myhost.db has been modified since the last check (files were added, removed, or updated)**  
+The precizer completed its execution without any issues  
+Enjoy your life!  
 </sub>
 
 Let's repeat the same example but without the `--ignore` option to add three previously ignored files:
@@ -544,17 +570,21 @@ Let's repeat the same example but without the `--ignore` option to add three pre
 precizer --update tests/examples/diffs
 ```
 
-<sub>Database file name: myhost.db  
-The database has already been created in the past  
-Starting of database file myhost.db integrity check...  
-The database myhost.db is in good condition  
+<sub>Primary database file name: myhost.db  
+Starting database file myhost.db integrity check…  
+Database myhost.db has been verified and is in good condition  
 The **--update** option has been used, so the information about files will be updated against the database myhost.db  
+File traversal started  
 **These files have been added or changed and those changes will be reflected against the DB myhost.db:**  
-diff2/1/AAA/BCB/CCC/a.txt adding  
-diff2/1/AAA/ZAW/A/b/c/a_file.txt adding  
-diff2/1/AAA/ZAW/D/e/f/b_file.txt adding  
-Start vacuuming...  
-The database has been vacuumed  
+diff1/1/AAA/BCB/CCC/a.txt add  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt add  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt add  
+File traversal complete  
+Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database file myhost.db has been modified since the program was launched**  
+The precizer completed its execution without any issues  
 </sub>
 
 ### Example 7
@@ -632,23 +662,25 @@ precizer --update --db-clean-ignored \
 	tests/examples/diffs
 ```
 
-<sub>Database file name: myhost.db  
-Starting of database file myhost.db integrity check...  
-The database myhost.db has been verified and is in good condition  
-The **--update** option has been used, so the information about files will be updated against the database myhost.db  
-**These files are ignored or no longer exist and will be deleted against the DB myhost.db:**  
-clean ignored diff1/path2/AAA/BCB/CCC/a.txt  
-clean ignored diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
-clean ignored diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
-clean ignored diff2/1/AAA/BCB/CCC/a.txt  
-clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt  
-clean ignored diff2/2/AAA/BBB/CZC/a.txt  
-clean ignored diff2/3/AAA/BBB/CCC/a.txt  
-clean ignored diff2/4/AAA/BBB/CCC/a.txt  
-clean ignored diff2/path1/AAA/BCB/CCC/a.txt  
-clean ignored diff2/path1/AAA/BCB/CCC/b.txt  
-clean ignored diff2/path2/AAA/BCB/CCC/a.txt  
-clean ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
-Start vacuuming...  
-The database has been vacuumed  
+<sub>Primary database file name: myhost.db  
+Starting database file myhost.db integrity check…  
+Database myhost.db has been verified and is in good condition  
+The **--update** option has been used, so the information about files will be deleted against the database myhost.db  
+**These files are no longer exist or ignored and will be deleted against the DB myhost.db:**  
+diff1/path2/AAA/BCB/CCC/a.txt clean ignored  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt clean ignored  
+diff2/1/AAA/BCB/CCC/a.txt clean ignored  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt clean ignored  
+diff2/2/AAA/BBB/CZC/a.txt clean ignored  
+diff2/3/AAA/BBB/CCC/a.txt clean ignored  
+diff2/4/AAA/BBB/CCC/a.txt clean ignored  
+diff2/path1/AAA/BCB/CCC/a.txt clean ignored  
+diff2/path1/AAA/BCB/CCC/b.txt clean ignored  
+diff2/path2/AAA/BCB/CCC/a.txt clean ignored  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database file myhost.db has been modified since the program was launched**  
+The precizer completed its execution without any issues  
 </sub>
