@@ -81,7 +81,7 @@ This ensures that even when files reside in different mount points or sources, t
 
 ## TECHNICAL DETAILS
 
-Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its **Disaster Recovery** copy. Synchronization from the primary storage to the backup occurs periodically, but due to the **massive data volumes**, synchronization is most likely not performed byte-by-byte but rather by detecting **metadata changes** within the file system. In such cases, **file size** and **modification time** are taken into account, but the actual content is **not verified byte by byte**. This approach makes sense because the primary data center and the **Disaster Recovery** site usually have **high-speed communication channels**, but a full byte-by-byte synchronization would take an **unreasonably long time**. Tools like **rsync** allow both types of synchronization—**metadata-based** and **byte-by-byte**—but they have one **major drawback**: **state is not preserved between sessions**. Let’s analyze this issue with the following scenario:
+Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its *Disaster Recovery* copy. Synchronization from the primary storage to the backup occurs periodically, but due to the *massive data volumes*, synchronization is most likely not performed byte-by-byte but rather by detecting *metadata changes* within the file system. In such cases, *file size* and *modification time* are taken into account, but the actual content is *not verified byte by byte*. This approach makes sense because the primary data center and the *Disaster Recovery* site usually have *high-speed communication channels*, but a full byte-by-byte synchronization would take an *unreasonably long time*. Tools like *rsync* allow both types of synchronization — *metadata-based* and *byte-by-byte* — but they have one *major drawback*: *state is not preserved between sessions*. Let’s analyze this issue with the following scenario:
 
 * Given: *Server "A"* and *Server "B"* (Primary Data Center and Disaster Recovery)  
 * Some files have been modified on *Server "A"*.  
@@ -109,7 +109,7 @@ Consider a scenario where a primary storage system has a backup copy. For exampl
 * The program is *extremely fast* thanks to the use of *SQLite* and *FTS* ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).  
 * *Command-line argument parsing* is implemented using *ARGP* library.  
 * *Regular expressions* are handled via *PCRE2* libpcre2.  
-* The program is *safe* to use with *massive* numbers of files, directories, and deeply nested subdirectories. Thanks to *FTS*, *recursion is avoided*, preventing *stack overflow issues* even in cases of extreme directory depth.  
+* The program is *safe* to use with *massive* numbers of files, directories, and deeply nested subdirectories. With *FTS*, *recursion is avoided*, preventing *stack overflow issues* even in cases of extreme directory depth.  
 * Due to its *compact and portable code*, the program can be used even on *specialized NAS devices, embedded systems, or IoT platforms*.
 
 ## QUESTIONS & BUG REPORTS
@@ -140,7 +140,7 @@ The prebuilt version is a statically linked ELF binary that can be run immediate
 
 The build process produces a statically linked ELF binary with no external dependencies. This self-contained executable can run on nearly any modern Linux distribution.
 
-Most required libraries are embedded into the binary, and by default, the program is built as a static executable. This approach enhances portability and eliminates dependency issues. Thanks to this setup, compiling the program on most modern platforms is straightforward—just follow these steps:
+Most required libraries are embedded into the binary, and by default, the program is built as a static executable. This approach enhances portability and eliminates dependency issues. Thanks to this setup, compiling the program on most modern platforms is straightforward — just follow these steps:
 
 1. Install build tools on Linux
 
