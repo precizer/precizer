@@ -114,85 +114,143 @@ Consider a scenario where a primary storage system has a backup copy. For exampl
 * The program is **safe** to use with **massive** numbers of files, directories, and deeply nested subdirectories. Thanks to **FTS**, **recursion is avoided**, preventing **stack overflow issues** even in cases of extreme directory depth.  
 * Due to its **compact and portable code**, the program can be used even on **specialized NAS devices, embedded systems, or IoT platforms**.
 
-## QUESTIONS AND BUGREPORTS
+## QUESTIONS & BUG REPORTS
 
-* For inquiries, access help information using _--help_ The help is made as detailed as possible to help users who do not have specialized technical knowledge.
-* You can contact the author through [the github form](https://github.com/dennisrazumovsky). You can also [share a bug report there](https://github.com/dennisrazumovsky/precizer/issues/new).
-* If you have questions about using the program, you can ask a question on stackoverflow using the **precizer** tag. The author is monitoring such questions and will be happy to provide his answer.
+* The `--help` option is designed to be as detailed as possible, specifically to assist users who may not have advanced technical knowledge.
+* You can reach out to the author via:  
+  * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
+  * You can also [report a bug on GitHub](https://github.com/precizer/precizer/issues/new).
+* If you run into issues while using the program, feel free to ask a question on [ru.stackoverflow.com](https://ru.stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and will be happy to help with troubleshooting any problems.
 
-## COMPILE AND INSTALLATION
+## BUILD & INSTALLATION
 
-### Distribution Packaging
+### Prebuilt Portable Version
 
-* The author was happy to prepare and will continue to support the compiled binary packages for Flatpak and AppImage.
-* The author is NOT prepared to independently make and support future packaging of the **precizer** app for all existing OS distributions.
-* If you are eager to create a package for any OS distribution and are faced with insurmountable difficulties in adapting the program code, then in this case the author will be very happy to provide all the necessary assistance in supporting the initiative and optimizing the program code for the specific distribution or package manager. How to contact the author is described in the "Questions and bug reports" section.
+A fully ready-to-use version [can be downloaded here](https://github.com/precizer/precizer/releases).
 
-### Portable
+#### Technical Details of the Portable Build
 
-Download binary-precompiled solution
+The prebuilt version is a statically linked ELF binary that can be run immediately on nearly any x64 Linux distribution. The binary is automatically built using GitHub's CI/CD pipeline, then compressed with [UPX (an executable file packer)](https://upx.github.io). The final self-extracting compressed binary is then placed inside a zip archive for easier downloading. To use it, simply extract the zip file and run the executable.
 
-#### Flatpak
-TODO!
+### Distributive Packaging
 
-#### AppImage
-TODO!
+* The author has set up an automated build system using GitHub Workflows and will continue maintaining new versions.
+* However, the author is **not** willing to personally package and maintain **precizer** for _all_ existing operating system distributions.
+* If you are eager to create a package for a specific distribution but encounter significant challenges adapting the code, the author will gladly provide assistance in optimizing the program for that distribution or package manager. Contact details can be found in the [“Questions & Bug Reports”](#questions--bug-reports) section.
 
-### Self-build
+### Manual Build
 
-The result of the build will be a statically linked binary executable file without any dynamic dependencies. This file is the entire program and can be run on almost any modern Linux distribution.
+The build process produces a statically linked ELF binary with no external dependencies. This self-contained executable can run on nearly any modern Linux distribution.
 
-Nearly all utilized libraries are integrated into the program, and by default, it's built as a static executable file. This is done to increase portability and reduce dependencies. Thanks to the above, the program can be easily compiled on most modern platforms by running a few commands:
+Most required libraries are embedded into the binary, and by default, the program is built as a static executable. This approach enhances portability and eliminates dependency issues. Thanks to this setup, compiling the program on most modern platforms is straightforward—just follow these steps:
 
-1. Install build and compile tools on Linux
+1. Install build tools on Linux
 
 #### Arch Linux
 
 ```sh
-sudo pacman -S --noconfirm base-devel cmake git unzip
+sudo pacman -S --noconfirm base-devel
 ```
+
 #### Debian/Ubuntu Linux
 
 ```sh
-sudo apt -y install build-essential cmake git unzip
+sudo apt -y install build-essential
 ```
 
 #### Alpine Linux
 
 ```sh
-sudo apk add --update build-base git cmake fts-dev argp-standalone
+sudo apk add --update build-base fts-dev argp-standalone
 ```
 
-2. Get source code
+2. Get the source code
 
 ```sh
-git clone https://github.com/dennisrazumovsky/precizer.git
-```
-
-3. Build
-
-```sh
+git clone https://github.com/precizer/precizer.git
 cd precizer
+```
+
+3. Build the project
+
+```sh
 make
 ```
 
-4. Copy the resulting executable file **precizer** to any location specified in the $PATH system variable for quick access.
+4. Copy the compiled **precizer** binary to any directory listed in the system's `$PATH` to enable quick execution.
 
-5. Clean everything and update
+5. Clean up
 
 ```sh
-
-# Clean
+# Remove build artifacts
 make clean
 
-# Clean with building libraries
-make cleanall
+# Remove all build files, including compiled libraries
+make clean-all
+```
 
-# Update
+6. Update
+
+```sh
 git pull
 make
 
-# Go to point 4.
+# Then proceed to step 4.
+```
+
+### Building a Portable Version
+
+Repeat steps 1. and 2. Instead of step 3, run:
+
+```sh
+make portable
+```
+
+### Building with Docker
+
+If you prefer not to install additional packages on your system, you can use a preconfigured Docker-based build environment.
+
+To build the project, all you need is a working installation of Docker.
+
+Running the simple `make docker` command:
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+make docker
+```
+
+will generate a compiled `precizer` binary in the current directory. You can either run it from there or move it to a directory listed in `$PATH`.
+
+If `make` is not installed, you can still build the application inside a container with these commands:
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+docker build -t precizer .
+docker create --name precizer precizer
+docker cp precizer:/precizer/precizer precizer
+docker rm -f precizer
+```
+
+This will produce a statically linked ELF binary in the current directory.
+
+If you run into compatibility issues with the compiled binary across different systems, you can try increasing its portability:
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+make docker-portable
+```
+or
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t precizer .
+docker create --name precizer precizer
+docker cp precizer:/precizer/precizer precizer
+docker rm -f precizer
 ```
 
 ## EXAMPLES OF USING
