@@ -15,12 +15,6 @@ void init_config(void)
 	// Max available size of a path
 	config->running_dir_size = 0;
 
-	// The pointer to the main database
-	config->db = NULL;
-
-	// Total size of all scanned files
-	config->total_size_in_bytes = 0;
-
 	// Absolute path name of the working directory
 	// A directory where the program was executed
 	config->running_dir = NULL;
@@ -46,18 +40,23 @@ void init_config(void)
 	// An array of paths to traverse
 	config->paths = NULL;
 
+	// The pointer to the primary database
+	config->db = NULL;
+
+	/// The flags parameter to sqlite3_open_v2()
+	/// must include, at a minimum, one of the
+	/// following flag combinations:
+	///   - SQLITE_OPEN_READONLY
+	///   - SQLITE_OPEN_READWRITE
+	///   - SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
+	/// Default value: RO
+	config->sqlite_open_flag = SQLITE_OPEN_READONLY;
+
 	// The path of DB file
 	config->db_file_path = NULL;
 
 	// The name of DB file
 	config->db_file_name = NULL;
-
-	// The flag means that the DB already exists
-	config->db_already_exists = false;
-
-	// Flag that reflects the presence of any changes
-	// since the last research
-	config->something_has_been_changed = false;
 
 	// Pointers to the array with database paths
 	config->db_file_paths = NULL;
@@ -65,8 +64,37 @@ void init_config(void)
 	// Pointers to the array with database file names
 	config->db_file_names = NULL;
 
-	// Don't produce any output
-	config->silent = false;
+	/// Allow or disallow database table
+	/// initialization. True by default
+	config->db_initialize_tables = true;
+
+	/// Flag indicating whether the database file exists
+	config->db_file_exists = false;
+
+	// The flag means that the DB already exists
+	// and not empty
+	config->db_contains_data = false;
+
+	// Must be specified additionally in order
+	// to remove from the database mention of
+	// files that matches the regular expression
+	// passed through the ignore option(s)
+	// This is special protection against accidental
+	// deletion of information from the database.
+	config->db_clean_ignored = false;
+
+	/// Select database validation level: 'quick' for basic
+	/// structure check, 'full' (default) for comprehensive
+	/// integrity verification
+	config->db_check_level = FULL;
+
+	// Flag that reflects the presence of any changes
+	// since the last research
+	config->something_has_been_changed = false;
+
+	/// The "Warning about using the update option has already been shown"
+	/// option prevents duplicate notifications from being displayed
+	config->the_update_warning_has_already_been_shown = false;
 
 	// Recursion depth limit. The depth of the traversal,
 	// numbered from 0 to N, where a file could be found.
@@ -84,15 +112,42 @@ void init_config(void)
 	// The string array of PCRE2 regular expressions
 	config->include = NULL;
 
-	// Must be specified additionally in order
-	// to remove from the database mention of
-	// files that matches the regular expression
-	// passed through the ignore option(s)
-	// This is special protection against accidental
-	// deletion of information from the database.
-	config->db_clean_ignored = false;
-
 	// Perform a trial run with no changes made
 	config->dry_run = false;
 
+	// Define the comparison string
+	const char *compare_string = "true";
+
+	// Retrieve the value of the "TESTING" environment variable,
+	// Validate if the environment variable TESTING exists
+	// and if it match to "true" display ONLY testing
+	// messages for System Testing purposes.
+	const char *env_var = getenv("TESTING");
+
+	// Check if it exists and compare it to "true"
+	if(env_var != NULL && strncasecmp(env_var,compare_string,strlen(compare_string)) == 0)
+	{
+		// Global variable
+		rational_logger_mode = TESTING;
+	}
+
+	/// This option prevents directory traversal from descending into
+	/// directories that have a different device number than the file
+	/// from  which the descent began
+	config->start_device_only = false;
+
+	/// Track both file metadata (created/modified dates) and size changes
+	/// for change detection. Out of the box, only size changes trigger
+	/// a rescan. When enabled, any update to timestamps or file size
+	/// will force a rescan and update the checksum in the database.
+	config->watch_timestamps = false;
+
+	if(NULL != setlocale(LC_ALL,""))
+	{
+		slog(TRACE,"Enable UTF-8 support\n");
+	} else {
+		slog(ERROR,"Failed to set UTF-8 locale\n");
+	}
+
+	slog(TRACE,"Configuration initialized\n");
 }

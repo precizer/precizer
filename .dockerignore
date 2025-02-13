@@ -1,0 +1,5 @@
+tests/examples/huge/hugetestfile
+\.*
+precizer
+tools/tool_*
+*\.db

@@ -1,16 +1,65 @@
 #include "precizer.h"
-#include <fts.h>
+
+/**
+ * @brief Display statistics for filesystem components
+ *
+ */
+static void show_status(
+	size_t     *count_dirs,
+	size_t     *count_files,
+	size_t     *count_symlnks,
+	size_t     *total_size_in_bytes,
+	const bool *count_size_of_all_files,
+	const bool *at_least_one_file_was_shown)
+{
+	size_t total_items = *count_dirs + *count_files + *count_symlnks;
+
+	bool show_total = false;
+	bool show_complete = false;
+
+	if(*count_size_of_all_files == true)
+	{
+		show_total = true;
+
+	} else if(*at_least_one_file_was_shown == true){
+
+		show_complete = true;
+		show_total = true;
+	}
+
+	if(show_complete == true)
+	{
+		slog(EVERY,"File traversal complete\n");
+	}
+
+	if(show_total == true)
+	{
+		slog(EVERY,"Total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(*total_size_in_bytes),total_items,*count_dirs,*count_files,*count_symlnks);
+	}
+}
+
+/**
+ * @brief Compare two FTS entries by filename
+ * @param first Pointer to first FTSENT structure
+ * @param second Pointer to second FTSENT structure
+ * @return Integer less than, equal to, or greater than zero if first is found,
+ *         respectively, to be less than, to match, or be greater than second
+ */
+static int compare_by_name(
+	const FTSENT **first,
+	const FTSENT **second)
+{
+	return strcmp((*first)->fts_name,(*second)->fts_name);
+}
 
 /**
  *
  * Traverses a directory recursively and returns
  * a struct for each file it encounters
  *
-*/
-Return file_list
-(
-	bool count_size_of_all_files
-){
+ */
+Return file_list(const bool count_size_of_all_files)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -21,7 +70,8 @@ Return file_list
 		return(status);
 	}
 
-	if(config->progress == false && count_size_of_all_files == true){
+	if(config->progress == false && count_size_of_all_files == true)
+	{
 		// Don't do anything
 		return(status);
 	}
@@ -38,29 +88,37 @@ Return file_list
 	FTSENT *p = NULL;
 	FTSENT *child = NULL;
 
-	int fts_options = FTS_PHYSICAL | FTS_XDEV;
+	int fts_options = FTS_PHYSICAL;
 
-	size_t count_files = 0, count_dirs = 0, count_symlnks = 0;
+	if(config->start_device_only == true)
+	{
+		fts_options |= FTS_XDEV;
+	}
 
-	if ((file_systems = fts_open(config->paths, fts_options, NULL)) == NULL) {
-		slog(false,"fts_open() error\n");
+	size_t count_files = 0,count_dirs = 0,count_symlnks = 0,total_size_in_bytes = 0;
+
+	if((file_systems = fts_open(config->paths,fts_options,compare_by_name)) == NULL)
+	{
+		report("fts_open() error\n");
 		status = FAILURE;
 		fts_close(file_systems);
 		return(status);
 	}
 
-	/* Initialize file_systems with as many argv[] parts as possible. */
-	child = fts_children(file_systems, 0);
-	if (child == NULL) {
-		 /* no files to traverse */
+	// Initialize the file systems using as many argv[] components as possible
+	child = fts_children(file_systems,0);
+
+	if(child == NULL)
+	{
+		// No files to traverse
 		fts_close(file_systems);
 		return(status);
 	}
 
 	/*
-	 * Determine absolute path prefix
-	 * We are only interested in relative paths in DB
-	 * To get a relative path we need to trim the prefix from the absolute path
+	 * Determine the absolute path prefix.
+	 * We are only interested in relative paths in the database.
+	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
 	char *runtime_path_prefix = NULL;
 	FTSENT *current_file_system = child;
@@ -77,26 +135,34 @@ Return file_list
 	// Limit recursion to the depth determined in config->maxdepth
 	if(config->maxdepth > -1)
 	{
-		slog(false,"Recursion depth limited to: %d\n", config->maxdepth);
+		slog(EVERY,"Recursion depth limited to: %d\n",config->maxdepth);
+	}
+
+	if(count_size_of_all_files == true && config->progress == true)
+	{
+		slog(EVERY,"File system traversal initiated to calculate file count and storage usage\n");
 	}
 
 	while((p = fts_read(file_systems)) != NULL)
 	{
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */
-		if(global_interrupt_flag == true){
+		if(global_interrupt_flag == true)
+		{
 			break;
 		}
 
-		if (count_size_of_all_files == false)
+		if(count_size_of_all_files == false)
 		{
 			/* Get absolute path prefix from FTSENT structure and current runtime path */
-			if (p == current_file_system){
+			if(p == current_file_system)
+			{
 				// All below run once per new path prefix
-				char *tmp = (char *)realloc(runtime_path_prefix,(current_file_system->fts_pathlen + 1) * sizeof(char));
+				char *tmp = (char *)realloc(runtime_path_prefix,(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
+
 				if(NULL == tmp)
 				{
-					slog(false,"Realloc error\n");
+					report("Memory allocation failed, requested size: %zu bytes",(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
 					status = FAILURE;
 					break;
 				} else {
@@ -113,6 +179,7 @@ Return file_list
 				current_file_system = current_file_system->fts_link;
 
 #if 0 // Old multiPATH solution
+
 				// If several paths were passed as arguments,
 				// then the counting of the path prefix index
 				// will start from zero
@@ -124,193 +191,244 @@ Return file_list
 			}
 		}
 
-		switch (p->fts_info) {
-		case FTS_D:
-			count_dirs++;
-			break;
-		case FTS_F:
+		switch(p->fts_info)
+		{
+			case FTS_D:
+				count_dirs++;
+				break;
+			case FTS_F:
 			{
+				CmpctStat stat = {0};
+
+				(void)stat_copy(p->fts_statp,&stat);
+
 				// Limit recursion to the depth determined in config->maxdepth
 				if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
 				{
 					break;
 				}
 
-				if (count_size_of_all_files == true){
-					config->total_size_in_bytes += (size_t)p->fts_statp->st_size;
-					count_files++;
-				} else if(runtime_path_prefix != NULL)
+				total_size_in_bytes += (size_t)stat.st_size;
+				count_files++;
+
+				if(runtime_path_prefix == NULL)
 				{
-					const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
-					struct stat *stat = p->fts_statp;
-					count_files++;
+					continue;
+				}
 
-					/* Write all columns from DB row to the structure DBrow */
-					DBrow _dbrow;
-					DBrow *dbrow = &_dbrow;
-					// Clean the structure to prevent reuse;
-					memset(dbrow,0,sizeof(DBrow));
+				const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
 
+				/* Write all columns from DB row to the structure DBrow */
+				DBrow _dbrow;
+				DBrow *dbrow = &_dbrow;
+				// Clean the structure to prevent reuse;
+				memset(dbrow,0,sizeof(DBrow));
+
+				/* Get all file's metadata from the database */
+				if(SUCCESS == status)
+				{
 #if 0 // Old multiPATH solution
-					if(SUCCESS != (status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path)))
+					status = db_read_file_data_from(dbrow,&path_prefix_index,relative_path);
+#else
+					status = db_read_file_data_from(dbrow,relative_path);
 #endif
-					/* Get all file's metadata from the database */
-					if(SUCCESS != (status = db_read_file_data_from(dbrow,relative_path)))
+
+					if(SUCCESS != status)
 					{
-						break;
-					}
-
-					// Check up if size, creation and modification time of a
-					// file has not changed since last scanning.
-					int metadata_of_scanned_and_saved_files = NOT_EQUAL;
-
-					if(dbrow->relative_path_already_in_db == true)
-					{
-						// Check up if size, creation and modification time of a
-						// file has not changed since last scanning.
-						metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),p->fts_statp);
-
-						// The file metadata in DB and on the file system are identical
-						if(metadata_of_scanned_and_saved_files == IDENTICAL)
-						{
-							// The file saved against the database has been read
-							// from the file system in its entirety
-							if(dbrow->saved_offset == 0){
-								// Relative path already in DB and doesn't need any change
-								break;
-							}
-						}
-					}
-
-					sqlite3_int64 offset = 0; // Offset bytes
-					SHA512_Context mdContext;
-
-					// For a file which had been changed before creation of its checksum has been already finished.
-					bool rehashig_from_the_beginning = false;
-
-					// Ignored with --ignore= or admit with --include=
-					bool ignored = false;
-
-					if(dbrow->saved_offset > 0)
-					{
-						if (metadata_of_scanned_and_saved_files == IDENTICAL)
-						{
-							// Contunue hashing
-							offset = dbrow->saved_offset;
-							memcpy(&mdContext,&(dbrow->saved_mdContext),sizeof(SHA512_Context));
-						} else {
-							// The SHA512 hashing of the file had not been finished previously and the file has been changed
-							rehashig_from_the_beginning = true;
-						}
-					}
-
-					/* PCRE2 regexp to include the file */
-					{
-						Include response = include(relative_path,&include_showed_once);
-
-						if(DO_NOT_INCLUDE == response)
-						{
-							/* PCRE2 regexp to ignore the file */
-
-							Ignore result = ignore(relative_path,&ignore_showed_once);
-
-							if(IGNORE == result)
-							{
-								ignored = true;
-
-							} else if (FAIL_REGEXP_IGNORE == result)
-							{
-								status = FAILURE;
-								break;
-							}
-
-						} else if (FAIL_REGEXP_INCLUDE == response)
-						{
-							status = FAILURE;
-							break;
-						}
-					}
-
-					unsigned char sha512[SHA512_DIGEST_LENGTH];
-					memset(sha512,0,sizeof(sha512)); // Clean sha512 to prevent reuse;
-
-					// Print out of a file name and its changes
-					show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,p->fts_statp,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown);
-
-					if(ignored == true)
-					{
-						break;
-					}
-
-					if(SUCCESS != (status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext)))
-					{
-						break;
-					}
-
-					bool update_db = false;
-
-					if (dbrow->relative_path_already_in_db == true)
-					{
-						if(offset > dbrow->saved_offset)
-						{
-							// Update DB record
-							update_db = true;
-
-						} else if(dbrow->saved_offset > 0 && offset == 0)
-						{
-							// Update DB record
-							update_db = true;
-
-						} else if(metadata_of_scanned_and_saved_files != IDENTICAL)
-						{
-							// Update DB record
-							update_db = true;
-						}
-					}
-
-					/* In any other case NO need to update DB record just insert the record */
-					if(update_db == true)
-					{
-						/* Update record in DB */
-						if(SUCCESS == (status = db_update_the_record(&(dbrow->ID),&offset,sha512,stat,&mdContext)))
-						{
-							// Reflect changes in global
-							config->something_has_been_changed = true;
-						} else {
-							break;
-						}
-
-					} else {
-						/* Insert to DB */
-#if 0 // Old multiPATH solution
-						if(SUCCESS != (status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,stat,&mdContext)))
-#endif
-						if(SUCCESS == (status = db_insert_the_record(relative_path,&offset,sha512,stat,&mdContext)))
-						{
-							// Reflect changes in global
-							config->something_has_been_changed = true;
-						} else {
-							break;
-						}
-					}
-
-					/**
-					 * Interrupt the loop smoothly
-					 * Interrupt when Ctrl+C
-					 * Don't write a result because sha512sum() function
-					 * has been interrupted and the sha512 contains wrong data
-					*/
-					if(global_interrupt_flag == true){
 						break;
 					}
 				}
+
+				// Validate if size, creation and modification time of a
+				// file has not changed since last scanning.
+				// Default value is:
+				int metadata_of_scanned_and_saved_files = NOT_EQUAL;
+
+				// Decision whether to rehash the file contents using
+				// the SHA512 algorithm. Defaults to Yes, rehash"
+				bool rehash = true;
+
+				if(dbrow->relative_path_already_in_db == true)
+				{
+					// Validate if size, creation and modification time of a
+					// file has not changed since last scanning.
+					metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),&stat);
+
+					// The file metadata in DB and on the file system are identical
+					if(metadata_of_scanned_and_saved_files == IDENTICAL)
+					{
+						// The file saved against the database has been read
+						// from the file system in its entirety
+						if(dbrow->saved_offset == 0)
+						{
+							// Relative path already in DB and doesn't require any change
+							break;
+						}
+					} else {
+
+						if(config->watch_timestamps == false)
+						{
+							if(!(metadata_of_scanned_and_saved_files & SIZE_CHANGED))
+							{
+								// The file saved against the database has been read
+								// from the file system in its entirety
+								if(dbrow->saved_offset == 0)
+								{
+									// The relative path is already in the database, but
+									// since the ctime and mtime have changed, a database
+									// update is required. However, rehashing the file content
+									// is unnecessary as the file size remains unchanged.
+									rehash = false;
+								}
+							}
+						}
+					}
+				}
+
+				sqlite3_int64 offset = 0;           // Offset bytes
+				SHA512_Context mdContext;
+
+				// For a file which had been changed before creation of its checksum has been already finished.
+				bool rehashig_from_the_beginning = false;
+
+				// Ignored with --ignore= or admit with --include=
+				bool ignored = false;
+
+				if(dbrow->saved_offset > 0)
+				{
+					if(metadata_of_scanned_and_saved_files == IDENTICAL)
+					{
+						// Contunue hashing
+						offset = dbrow->saved_offset;
+						memcpy(&mdContext,&(dbrow->saved_mdContext),sizeof(SHA512_Context));
+					} else {
+						// The SHA512 hashing of the file had not been finished previously and the file has been changed
+						rehashig_from_the_beginning = true;
+					}
+				}
+
+				/* PCRE2 regexp to include the file */
+				{
+					Include response = include(relative_path,&include_showed_once);
+
+					if(DO_NOT_INCLUDE == response)
+					{
+						/* PCRE2 regexp to ignore the file */
+
+						Ignore result = ignore(relative_path,&ignore_showed_once);
+
+						if(IGNORE == result)
+						{
+							ignored = true;
+
+						} else if(FAIL_REGEXP_IGNORE == result){
+							status = FAILURE;
+							break;
+						}
+
+					} else if(FAIL_REGEXP_INCLUDE == response){
+						status = FAILURE;
+						break;
+					}
+				}
+
+				unsigned char sha512[SHA512_DIGEST_LENGTH];
+				// Clean sha512 to prevent reuse;
+				memset(sha512,0,sizeof(sha512));
+
+				// Print out of a file name and its changes
+				show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&stat,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown,&rehash,&count_size_of_all_files);
+
+				if(ignored == true)
+				{
+					break;
+				}
+
+				if(rehash == true)
+				{
+					if(SUCCESS == status)
+					{
+						status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext);
+
+						if(SUCCESS == status)
+						{
+							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
+							show_checksum_gracefully_interrupted(relative_path,&offset);
+						} else {
+							break;
+						}
+					}
+				} else {
+					memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
+				}
+
+				bool update_db = false;
+
+				if(dbrow->relative_path_already_in_db == true)
+				{
+					if(offset > dbrow->saved_offset)
+					{
+						// Update DB record
+						update_db = true;
+
+					} else if(dbrow->saved_offset > 0 && offset == 0){
+						// Update DB record
+						update_db = true;
+
+					} else if(metadata_of_scanned_and_saved_files != IDENTICAL){
+						// Update DB record
+						update_db = true;
+					}
+				}
+
+				/* In all other scenarios, insert the record directly without updating the existing database entry */
+				if(update_db == true)
+				{
+					/* Update record in DB */
+					if(SUCCESS == status)
+					{
+						status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext);
+
+						if(SUCCESS != status)
+						{
+							break;
+						}
+					}
+
+				} else {
+					/* Insert to DB */
+					if(SUCCESS == status)
+					{
+#if 0 // Old multiPATH solution
+						status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext);
+#else
+						status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext);
+#endif
+
+						if(SUCCESS != status)
+						{
+							break;
+						}
+					}
+				}
+
+				/**
+				 * Interrupt the loop smoothly
+				 * Interrupt when Ctrl+C
+				 * Don't write a result because sha512sum() function
+				 * has been interrupted and the sha512 contains wrong data
+				 */
+				if(global_interrupt_flag == true)
+				{
+					break;
+				}
 			}
 			break;
-		case FTS_SL:
-			count_symlnks++;
-			break;
-		default:
-			break;
+			case FTS_SL:
+				count_symlnks++;
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -318,15 +436,10 @@ Return file_list
 
 	fts_close(file_systems);
 
-	size_t total_items = count_dirs + count_files + count_symlnks;
-
-	if(config->progress == true)
+	// Display statistics for filesystem components
+	if(SUCCESS == status)
 	{
-		if(count_size_of_all_files == true ||
-			(count_size_of_all_files == false && at_least_one_file_was_shown == true))
-		{
-			slog(false,"total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(config->total_size_in_bytes),total_items,count_dirs,count_files,count_symlnks);
-		}
+		show_status(&count_dirs,&count_files,&count_symlnks,&total_size_in_bytes,&count_size_of_all_files,&at_least_one_file_was_shown);
 	}
 
 	return(status);
