@@ -1,57 +1,79 @@
-TODO
+TODO:
 
-* flatpak
-	https://docs.flatpak.org/en/latest/first-build.html
+* Add function return value checks to files:
+    - src/file_availability.c
 
-* Progress bar with escape sequences
-	"ansi escape sequences progress in c"
-	Escape Sequences - A Quick Guide
-		https://morningcoffee.io/escape-sequences-a-quick-guide.html
-	ANSI Escape Sequences
-		http://isthe.com/chongo/tech/comp/ansi_escapes.html
-		https://eskerda.com/minimal-bash-progress-bar-ansi-escape-sequences/
-	How to implement progress bars in C like apt-get?
-		https://stackoverflow.com/questions/73468165/how-to-implement-progress-bars-in-c-like-apt-get
-	Here’s How to Enable the Handy Apt Terminal Progress Bar in Ubuntu 14.04
-		https://www.omgubuntu.co.uk/2014/04/how-to-enable-apt-terminal-progress-bar
-	apt source code
-		https://salsa.debian.org/apt-team/apt
-	Others
-		https://www.geeksforgeeks.org/escape-sequence-in-c/
-		https://gist.github.com/ConnerWill/d4b6c776b509add763e17f9f113fd25b
-		https://unstop.com/blog/escape-sequence-in-c
-	Examples
-		pacman
-		apt
+* Verify that all asprintf, realloc, malloc and other memory
+  handling functions report memory allocation errors as follows:
+  report("Memory allocation failed, requested size: %zu bytes",size);
+  Check syntax! Is \n needed at the end of report() or not?
 
-* Сalculate remaining download time
-	https://stackoverflow.com/questions/798800/whats-the-best-way-to-calculate-remaining-download-time
-	https://stackoverflow.com/questions/933242/smart-progress-bar-eta-computation
-	* Progress bar ncurses based
-		add building file list progress
+* Check all strdup() return values for errors (there are many instances).
 
-* void sqlite3_interrupt(sqlite3*) and int sqlite3_is_interrupted(sqlite3*); for a long vacuuming command.
+* Symlinks are currently ignored. Details in test0019. Need to add
+  symlink processing. Do they have their own size? Does it change
+  when the target changes?
 
-* SQLite performance tuning
-	https://phiresky.github.io/blog/2020/sqlite-performance-tuning/
+* Integration of the xxHash library using the XXH3_128bits algorithm
+  for high-performance hashing as a multi-threaded implementation.
+  Here's the concept: The file is read in a single thread.
+  Each read data chunk (for example, 1 megabyte) is divided
+  among multiple threads, with the number of threads matching
+  the available CPU cores. Each portion is hashed independently,
+  then the results are aggregated before moving on to read the
+  next block from the file.
 
-* Shell completions
-	Great examples:
-		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.bash
-		https://github.com/altdesktop/playerctl/blob/master/data/playerctl.zsh
+* db_check_up_paths.c
+    * Consider printing paths line by line instead of inline
 
-* How to make installation package for many Linux distributions
-	"how to create a package for many distros"
-		https://unix.stackexchange.com/questions/136387/how-to-make-installation-package-for-many-linux-distributions
+* Add completion messages at the end of each significant code block
+  Like in detect_paths.c ending: slog(TRACE,"Paths detected\n");
 
-* Smoke tests
-	Run with --silent option and without it
-	Run under sanitizer
+* The --ignore mode isn't functioning properly when --compare is enabled.
 
-* Unit tests
-	CUnit
+* Revert to the multipath version, but keep this capability undocumented.
 
-* Sqlite Compression?
-	https://github.com/techrah/sqlite3-compression-encryption-vfs
+* For preliminary scans with --progress and --update flags, implement database traversal to show immediate statistics on affected files:
+  - Number of files to be deleted
+  - Number of files to be added
+  - Number of files to be modified
 
-* ALL DONE!
+* Implement testing for interruption handling:
+  - Test interruption of large file scanning
+  - Test interruption of sha512 hashing process on large files
+
+* Create tests combining ignore and dry-run flags, don't forget about --include
+  - It would be good to repeat all tests from README with dry-run and ignore options
+
+* Testing: Verify that --silent suppresses all output regardless of other options
+  - Add this option to EVERY test! This could help identify messages that aren't being
+    properly suppressed in --silent mode
+
+* Review English language correctness in all message strings
+
+* Implement fuzzing tests
+
+* Design system tests to exercise all conditional report messages
+
+* Add usage hints for --db-clean-ignored option when used with --ignore and --update
+
+* Add verification that specified options work only with --compare
+
+* Add --onlyAnotB option
+* Add --onlyBnotA option
+* Add --onlySHAdiffs option
+
+* Unit tests with code coverage
+
+* Document all code
+
+* Create man documentation
+
+* Create flatpak and AppImage packages, note that author will assist with package creation for any OS if developers encounter difficulties
+	https://unix.stackexchange.com/questions/740712/does-flatpak-support-command-line-applications
+
+* Post program information on opennet
+
+* Subscribe to precizer tag on Stack Overflow, create tag if needed and follow it
+
+* ALL DONE

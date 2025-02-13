@@ -5,14 +5,13 @@
  * @brief Read data about the file from DB
  *
  */
-Return db_read_file_data_from
-(
+Return db_read_file_data_from(
 	DBrow *dbrow,
 #if 0 // Old multiPATH solution
 	const sqlite3_int64 *path_prefix_index,
 #endif
-	const char *relative_path
-){
+	const char *relative_path)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -23,25 +22,32 @@ Return db_read_file_data_from
 
 	/* Create SQL statement */
 #if 0 // Old multiPATH solution
-	const char *select_sql = "SELECT ID,offset,stat,mdContext FROM files WHERE path_prefix_index = ?1 and relative_path = ?2;";
+	const char *select_sql = "SELECT ID,offset,stat,mdContext,sha512 FROM files WHERE path_prefix_index = ?1 and relative_path = ?2;";
+#else
+	const char *select_sql = "SELECT ID,offset,stat,mdContext,sha512 FROM files WHERE relative_path = ?1;";
 #endif
-	const char *select_sql = "SELECT ID,offset,stat,mdContext FROM files WHERE relative_path = ?1;";
-	rc = sqlite3_prepare_v2(config->db, select_sql, -1, &select_stmt, NULL);
-	if(SQLITE_OK != rc) {
-		slog(false,"Can't prepare select statement %s (%i): %s\n", select_sql, rc, sqlite3_errmsg(config->db));
+	rc = sqlite3_prepare_v2(config->db,select_sql,-1,&select_stmt,NULL);
+
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Can't prepare select statement %s (%i): %s\n",select_sql,rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
 #if 0 // Old multiPATH solution
-	rc = sqlite3_bind_int64(select_stmt, 1, *path_prefix_index);
-	if(SQLITE_OK != rc) {
-		printf("Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
+	rc = sqlite3_bind_int64(select_stmt,1,*path_prefix_index);
+
+	if(SQLITE_OK != rc)
+	{
+		printf("Error binding value in select (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 #endif
-	rc = sqlite3_bind_text(select_stmt, 1, relative_path, (int)strlen(relative_path), NULL);
-	if(SQLITE_OK != rc) {
-		slog(false,"Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
+	rc = sqlite3_bind_text(select_stmt,1,relative_path,(int)strlen(relative_path),NULL);
+
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Error binding value in select (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -49,18 +55,32 @@ Return db_read_file_data_from
 	{
 		dbrow->ID = sqlite3_column_int64(select_stmt,0);
 		dbrow->saved_offset = sqlite3_column_int64(select_stmt,1);
-		const struct stat *get_stat = sqlite3_column_blob(select_stmt,2);
-		if(get_stat != NULL){
-			memcpy(&dbrow->saved_stat,get_stat,sizeof(struct stat));
+		const CmpctStat *get_stat = sqlite3_column_blob(select_stmt,2);
+
+		if(get_stat != NULL)
+		{
+			memcpy(&dbrow->saved_stat,get_stat,sizeof(CmpctStat));
 		}
 		const SHA512_Context *get_mdContext = sqlite3_column_blob(select_stmt,3);
-		if(get_mdContext != NULL){
+
+		if(get_mdContext != NULL)
+		{
 			memcpy(&dbrow->saved_mdContext,get_mdContext,sizeof(SHA512_Context));
 		}
+
+		const unsigned char *get_sha512 = sqlite3_column_blob(select_stmt,4);
+
+		if(get_sha512 != NULL)
+		{
+			memcpy(&dbrow->sha512,get_sha512,SHA512_DIGEST_LENGTH);
+		}
+
 		dbrow->relative_path_already_in_db = true;
 	}
-	if(SQLITE_DONE != rc) {
-		slog(false,"Select statement didn't finish with DONE (%i): %s\n", rc, sqlite3_errmsg(config->db));
+
+	if(SQLITE_DONE != rc)
+	{
+		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);

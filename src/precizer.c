@@ -5,7 +5,6 @@
  *
  */
 #include "precizer.h"
-#include <stdatomic.h>
 
 /**
  * Global definitions
@@ -20,6 +19,7 @@ _Atomic bool global_interrupt_flag = false;
 Config _config;
 Config *config = &_config;
 
+#ifndef TESTITALL // Unit testing library
 /**
  * @mainpage
  * @brief precizer is a CLI application designed to verify the integrity of files after synchronization.
@@ -34,7 +34,10 @@ Config *config = &_config;
  * same sources over different times.
  *
  */
-int main(int argc,char **argv){
+int main(
+	int  argc,
+	char **argv)
+{
 
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -45,110 +48,69 @@ int main(int argc,char **argv){
 
 	// Fill Config structure
 	// parsing command line arguments
-	status = parse_arguments(argc,argv);
+	run(parse_arguments(argc,argv));
 
-	if(SUCCESS == status)
-	{
-		// Check all paths passed as arguments.
-		// Are they directories and do they exist?
-		status = detect_paths();
-	}
+	// Verify that the provided paths exist and
+	// are directories
+	run(detect_paths());
 
-	if(SUCCESS == status)
-	{
-		// Initialize signals interception like Ctrl+C
-		status = init_signals();
-	}
+	// Initialize signals interception like Ctrl+C
+	run(init_signals());
 
-	if(SUCCESS == status)
-	{
-		// Generate DB file name if not passed as an argument
-		status = db_create_name();
-	}
+	// The current directory where app being executed
+	run(determine_running_dir());
 
-	if(SUCCESS == status)
-	{
-		// Initialize SQLite database
-		status = db_init();
-	}
+	// Generate DB file name if
+	// not passed as an argument
+	run(db_determine_name());
 
-	if(SUCCESS == status)
-	{
-		// Compare databases
-		status = db_compare();
-	}
+	// Validate database file existence and set up existence flag
+	run(db_file_validate_existence());
 
-	if(SUCCESS == status)
-	{
-		// The current directory where app being executed
-		status = determine_running_dir();
-	}
+	// Define the database operation mode
+	run(db_determine_mode());
 
-	if(SUCCESS == status)
-	{
-		// Check whether the database already exists or not yet
-		status = db_already_exists();
-	}
+	// Primary database file integrity check
+	run(primary_db_file_test());
 
-	if(SUCCESS == status)
-	{
-		// Check up the integrity of database file
-		status = db_test(config->db_file_path);
-	}
+	// Initialize SQLite database
+	run(db_init());
 
-	if(SUCCESS == status)
-	{
-		// Check up if the paths that passed as arguments
-		// exactly the same as saved against the database
-		status = db_check_up_paths();
-	}
+	// Compare databases
+	run(db_compare());
 
-	if(SUCCESS == status)
-	{
-		// Save new prefixes that has been passed as
-		// arguments
-		status = db_save_prefixes_into();
-	}
+	// Check whether the database already exists or not yet
+	run(db_contains_data());
 
-	if(SUCCESS == status)
-	{
-		// Check up the paths passed as arguments and make sure
-		// that they are directories and exist
-		status = detect_paths();
-	}
+	// Verify that the provided path arguments match
+	// the paths stored in the database
+	run(db_validate_paths());
 
-	if(SUCCESS == status)
-	{
-		// Just get a statistic
-		status = file_list(true);
-	}
+	// Save new prefixes that has been passed as
+	// arguments
+	run(db_save_prefixes());
 
-	if(SUCCESS == status)
-	{
-		// Get file list and their CRC
-		status = file_list(false);
-	}
+	// Just get a statistic
+	run(file_list(true));
 
-	if(SUCCESS == status)
-	{
-		// Update the database. Remove files that
-		// no longer exist.
-		status = db_delete_missing_files_from();
-	}
+	// Get file list and their CRC
+	run(file_list(false));
 
-	if(SUCCESS == status)
-	{
-		// Optimizing the space occupied by a database file.
-		status = db_vacuum();
-	}
+	// Update the database. Remove files that
+	// no longer exist.
+	run(db_delete_missing_metadata());
 
-	if(SUCCESS == status)
-	{
-		// Print out whether there have been changes to
-		// the file system and accordingly against the database
-		// since the last research
-		status_of_changes();
-	}
+	// If the database has been modified, then store the current
+	// database version in the metadata table
+	run(db_consider_version_update());
+
+	// Optimizing the space occupied by a database file.
+	run(db_consider_vacuum_primary());
+
+	// Print out whether there have been changes to
+	// the file system and accordingly against the database
+	// since the last research
+	run(status_of_changes());
 
 	// Free allocated memory
 	// for arrays and variables
@@ -156,3 +118,4 @@ int main(int argc,char **argv){
 
 	return(exit_status(status,argv));
 }
+#endif // TESTITALL
