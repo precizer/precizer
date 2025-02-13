@@ -272,7 +272,7 @@ make debug
 
 ### Example 1
 
-Adding files to two separate databases and comparing them:
+Add files to two databases and compare them with each other:
 
 ```sh
 precizer --progress --database=database1.db tests/examples/diffs/diff1
@@ -302,9 +302,9 @@ The precizer completed its execution without any issues
 </sub>
 
 ### Example 2
-Updating the database
+Database Update
 
-Let's try to reuse previous example once agan. The first try. The warning message.
+Let’s run the previous example again. First attempt. Warning message.
 
 ```sh
 precizer --progress --database=database1.db tests/examples/diffs/diff1
@@ -315,7 +315,7 @@ The database database1.db has been created in the past and already contains data
 The precizer unexpectedly finished due to an error.  
 </sub>
 
-**--update** option should be added. The `--update` parameter is necessary to protect the database against the loss of information due to accidental executions.
+The **--update** parameter must be included. This parameter is required to protect the database from data loss caused by accidental execution.
 
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
@@ -330,7 +330,7 @@ Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
 The precizer completed its execution without any issues  
 </sub>
 
-Now let's make some changes:
+Now let's make some adjustments:
 
 ```sh
 # Modify a file
@@ -344,7 +344,7 @@ rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
 
 ```
 
-and run the **precizer** once again:
+And run **precizer** again, this time with the `--update` parameter:
 
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
@@ -370,33 +370,35 @@ The primary database has been vacuumed
 The precizer completed its execution without any issues  
 </sub>
 
-In every run of **precizer**, it traverses the file system to verify whether there is an entry about certain file in the database. In other words, the state of the file system on the disk takes priority for the program.
+Every time **precizer** runs, it traverses the file system and then checks whether a record for a specific file already exists in the database. In other words, the program prioritizes the current state of the file system on disk.
 
-**precizer** works very similarly to directory traversal with rsync because it employs a similar algorithm.
+The directory traversal in **precizer** works similarly to **rsync** as it uses a similar algorithm.
 
-Please note that **precizer** will not recalculate SHA512 checksums for files that have already been written to the database and for which the file metadata (such as creation time, modification time, and size) remains the same.
+It's important to note that **precizer** will not recalculate SHA512 checksums for files that are already recorded in the database, as long as their metadata remains unchanged (such as size and last access time, **atime**). If the `--watch-timestamps` argument is specified, the program will also consider the creation time (**ctime**) and modification time (**mtime**) in addition to the file size.
 
-Any new files, deleted files, or files that have changed between runs of the application will be processed, and all changes will be reflected in the database if the `--update` option is specified.
+Any new, deleted, or modified files between application runs will be processed accordingly. All changes will be reflected in the database if the `--update` parameter is specified.
 
 ### Example 3
-Using the `--silent` mode. When this mode is enabled, the program does not display anything on the screen. This makes sense when using the program inside scripts.
 
-Let's add the **--silent** option to the previous example:
+Using the `--silent` mode. When this mode is enabled, the program does not produce any output on the screen. This is useful when **precizer** is used in scripts.
+
+Let's add the **--silent** parameter to the previous example:
 
 ```sh
 precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
 
-As a result, nothing will be displayed on the screen
+As a result, nothing will be displayed on the screen.
 
 ### Example 4
-Additional information in `--verbose` mode. May be useful for debugging.
+Additional Information in `--verbose` mode. This mode can be useful for debugging.
 
-Let's add the **--verbose** option to the previous example
+Let's add the **--verbose** parameter to the previous example:
 
 ```sh
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
+
 <sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
 paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
 2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
@@ -442,7 +444,7 @@ paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.
 </sub>
 
 ### Example 5
-Disable recursion with `--maxdepth` option
+Non-recursive traversal using the `--maxdepth` parameter
 
 ```sh
 tree tests/examples/4
@@ -459,7 +461,7 @@ tests/examples/4
 3 directories, 4 files
 ```
 
-The `--maxdepth` option with a value of `=0` disables recursion completely.
+The `--maxdepth=0` parameter completely disables recursion.
 
 ```sh
 precizer --maxdepth=0 tests/examples/4
@@ -482,11 +484,11 @@ The precizer completed its execution without any issues
 
 ### Example 6
 
-Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths in the regular expression must be specified as **relative**.
+Example of a Path to Ignore. To specify a pattern for ignoring files or directories, you can use PCRE2 regular expressions. **Note:** All paths in the regular expression must be specified as **relative**.
 
-To validate and test your PCRE2 regular expressions you can use https://regex101.com/
+You can test and validate PCRE2 regular expressions using [https://regex101.com/](https://regex101.com/).
 
-To understand what a relative path looks like, just run directory traverses without the `--ignore` option and look up how the terminal will display relative paths that are writing to the database:
+To understand how a relative path looks, simply run a directory traversal without the `--ignore` option and check how the terminal displays the relative paths recorded in the database:
 
 ```sh
 % tree -L 3 tests/examples/diffs
@@ -523,10 +525,10 @@ tests/examples/diffs
 ```
 
 ```sh
-precizer --ignore="diff2/1/.*" tests/examples/diffs
+precizer --ignore="diff1/1/.*" tests/examples/diffs
 ```
 
-In this example the starting path for the traverses is ./tests/examples/diffs and the path to ignore will be ./tests/examples/diffs/diff2/1/ with all subdirectories (/*).
+In this example, the initial traversal path is `./tests/examples/diffs`, and the generated ignore path is `./tests/examples/diffs/diff1/1/` along with all its subdirectories (`/*`).
 
 <sub>Primary database file name: myhost.db  
 The path myhost.db doesn't exist or it is not a file  
@@ -566,7 +568,7 @@ The precizer completed its execution without any issues
 Enjoy your life!  
 </sub>
 
-Let's repeat the same example but without the `--ignore` option to add three previously ignored files:
+Let's repeat the same example, but this time without the `--ignore` option to include the three previously ignored files:
 
 ```sh
 precizer --update tests/examples/diffs
@@ -591,70 +593,70 @@ The precizer completed its execution without any issues
 
 ### Example 7
 
-Continuation of previous example [Example 6](#example-6).
+Continuation of the Previous Example [Example 6](#example-6).
 
-Multiple regular expressions for ignoring can be specified using many `--ignore` options simultaneously:
+Multiple regular expressions for ignoring files can be specified simultaneously using the `--ignore` option.
+
+The database will be cleaned of references to files matching the regular expressions provided via the `--ignore` arguments: `"diff1/1/.*"` and `"diff2/1/.*"`.
+
+The `--db-clean-ignored` parameter must be explicitly specified to remove database entries for files that match the patterns passed through the `--ignore` option.
+
+No changes were made to the file system, but the ignored files will be removed from the database.
 
 ```sh
-precizer --ignore="diff2/1/.*" --ignore="diff2/2/.*" tests/examples/diffs
+# Update the database by removing entries for files that were marked as ignored:
+
+precizer \
+    --update \
+    --db-clean-ignored \
+    --ignore="diff1/1/.*" \
+    --ignore="diff2/1/.*" \
+    tests/examples/diffs
 ```
 
-`--update` and `--db-clean-ignored` options must be specified. This is special protection against accidental deletion of information from the database.
+<sub>Primary database file name: myhost.db  
+Starting database file myhost.db integrity check…  
+Database myhost.db has been verified and is in good condition  
+The **--update** option has been used, so the information about files will be deleted against the database myhost.db  
+**These files are no longer exist or ignored and will be deleted against the DB myhost.db:**  
+diff1/1/AAA/BCB/CCC/a.txt **clean ignored**  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt **clean ignored**  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt **clean ignored**  
+diff2/1/AAA/BCB/CCC/a.txt **clean ignored**  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt **clean ignored**  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt **clean ignored**  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database file myhost.db has been modified since the program was launched**  
+The precizer completed its execution without any issues  
+</sub>
 
 ### Example 8
 
-Using the `--ignore` option(s) together with `--include`
+Using `--ignore` together with `--include`
 
 ```sh
-# Let's delete the old database and create a new one, fill it out with data:
+
+# Remove the old database and create a new one, then populate it with data:
 
 rm -i "${HOST}.db"
 
 precizer tests/examples/diffs
 ```
 
-<sub>Database file name: myhost.db  
-Starting of database file myhost.db integrity check...  
-The database myhost.db is in good condition  
-**These files will be added against the DB myhost.db:**  
-diff1/3/AAA/BBB/CCC/a.txt  
-diff1/path2/AAA/BCB/CCC/a.txt  
-diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
-diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
-diff1/1/AAA/BCB/CCC/a.txt  
-diff1/1/AAA/ZAW/A/b/c/a_file.txt  
-diff1/1/AAA/ZAW/D/e/f/b_file.txt  
-diff1/4/AAA/BBB/CCC/a.txt  
-diff1/2/AAA/BBB/CZC/a.txt  
-diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
-diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
-diff2/3/AAA/BBB/CCC/a.txt  
-diff2/path2/AAA/BCB/CCC/a.txt  
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
-diff2/1/AAA/BCB/CCC/a.txt  
-diff2/1/AAA/ZAW/A/b/c/a_file.txt  
-diff2/1/AAA/ZAW/D/e/f/b_file.txt  
-diff2/4/AAA/BBB/CCC/a.txt  
-diff2/2/AAA/BBB/CZC/a.txt  
-diff2/path1/AAA/BCB/CCC/b.txt  
-diff2/path1/AAA/BCB/CCC/a.txt  
-diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
-diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
-Start vacuuming...  
-The database has been vacuumed  
-</sub>
+Let's complicate things by using regular expressions.
 
-PCRE2 regular expressions of relative paths to be included. Include specified relative paths even if they were previously excluded via the `--ignore` option(s). Multiple regular expressions could be specified with `--include`
+PCRE2 regular expressions for relative paths that need to be included. The specified relative paths will be included even if they were excluded using one or more `--ignore` parameters. Multiple regular expressions can be specified using `--include`.
 
-To validate and test your PCRE2 regular expressions you can use https://regex101.com/
+To check and test PCRE2 regular expressions, you can use [https://regex101.com/](https://regex101.com/).
 
-The database will be cleared of file mentions that match the regular expressions from the arguments `--ignore:` "^.\*/path2/.\*" and "diff2/.\*" but paths matching the patterns from `--include` will remain in the database
+The DB will be cleaned of references to files matching the regular expressions provided in the `--ignore` arguments: `"^.*/path2/.*"` and `"diff2/.*"`, but paths matching the patterns in `--include` will remain in the database.
 
-`--db-clean-ignored` option must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the `--ignore` option(s). This is special protection against accidental deletion of information from the database.
+The `--db-clean-ignored` parameter must be specified additionally to remove references to files matching the regular expressions passed via the `--ignore` options from the database.
 
 ```sh
-
-# Update the database by deleting information about those files which have been specified as ignored
+# Update the database, removing references to files that were marked as ignored, 
+# except for paths matching the --include patterns.
 
 precizer --update --db-clean-ignored \
 	--ignore="^.*/path2/.*" \

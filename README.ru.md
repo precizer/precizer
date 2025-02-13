@@ -262,6 +262,7 @@ docker rm -f precizer
 Для проверки возможностей программы можно использовать наборы тестов из директории tests/examples/ в исходном коде программы
 
 Запуск тестов:
+
 ```sh
 git clone https://github.com/precizer/precizer.git
 cd precizer
@@ -282,6 +283,7 @@ precizer --progress --database=database2.db tests/examples/diffs/diff2
 
 precizer --compare database1.db database2.db
 ```
+
 <sup>The comparison of database1.db and database2.db databases is starting…  
 Starting database file database1.db integrity check…  
 Database database1.db has been verified and is in good condition  
@@ -378,6 +380,7 @@ The precizer completed its execution without any issues
 Любые новые файлы, удаленные файлы или те файлы, которые изменились между запусками приложения, будут обработаны и, соответственно, все изменения будут отражены в базе данных если указан параметр `--update`.
 
 ### Пример 3
+
 Использование режима `--silent` При включении этого режима программа ничего не выводит на экран. Это имеет смысл при использовании **precizer** в скриптах.
 
 Добавим параметр **--silent** к предыдущему примеру:
@@ -396,6 +399,7 @@ precizer --silent --update --progress --database=database1.db tests/examples/dif
 ```sh
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
+
 <sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
 paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
 2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
@@ -525,7 +529,7 @@ tests/examples/diffs
 precizer --ignore="diff1/1/.*" tests/examples/diffs
 ```
 
-В этом примере начальный путь сканирования — ./tests/examples/diffs, а сформированный путь для игнорирования — ./tests/examples/diffs/diff2/1/ со всеми подкаталогами (/*).
+В этом примере начальный путь сканирования — `./tests/examples/diffs`, а сформированный путь для игнорирования — `./tests/examples/diffs/diff1/1/` со всеми подкаталогами (`/*`).
 
 <sub>Primary database file name: myhost.db  
 The path myhost.db doesn't exist or it is not a file  
@@ -628,17 +632,19 @@ The primary database has been vacuumed
 The precizer completed its execution without any issues  
 </sub>
 
-### Example 8
+### Пример 8
 
 Использование параметров `--ignore` вместе с `--include`
 
 ```sh
+
 # Удалим старую базу данных и создадим новую, наполним ее данными:
 
 rm -i "${HOST}.db"
 
 precizer tests/examples/diffs
 ```
+
 Усложним задачу с использованием регулярных выражений.
 
 Регулярные выражения PCRE2 для относительных путей, которые необходимо включить. Включаем указанные относительные пути, даже если они были исключены с помощью одного или нескольких параметров `--ignore`. Несколько регулярных выражений могут быть указаны с помощью `--include`
