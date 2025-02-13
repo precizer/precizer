@@ -1,40 +1,54 @@
 #include "precizer.h"
 
 /**
+ * @brief Checks if the file's size, creation time, and modification time have
+ *        not changed since the last crawl.
  *
- * The function check up if size, creation and modification time of a file did
- * not change since last crawling.
- * It takes data from FTS library traversing of the file and compare with the
- * structure "stat" stored against SQLite after previous probe
+ * Compares data from the FTS library file traversal with the stat
+ * structure stored in SQLite from the previous probe.
  *
+ * @param source		Source file stat structure
+ * @param destination	Destination file stat structure
+ *
+ * @return Return status:
+ *         - IDENTICAL: Files are identical
+ *         - FAILURE: Error in comparison or invalid parameters
+ *         - SIZE_CHANGED
+ *         - MODIFICATION_TIME_CHANGED
+ *         - CREATION_TIME_CHANGED
  */
-int compare_file_metadata_equivalence
-(
-	const struct stat *source,
-	const struct stat *destination
-){
+int compare_file_metadata_equivalence(
+	const CmpctStat *source,
+	const CmpctStat *destination)
+{
+	/* Validate input parameters */
+	if(NULL == source || NULL == destination)
+	{
+		return(FAILURE);
+	}
+
 	int result = IDENTICAL;
 
 	/* Size of file, in bytes.  */
 	if(source->st_size != destination->st_size)
 	{
-		result += SIZE_CHANGED;
+		result |= SIZE_CHANGED;
 
 	}
 
 	/* Modified timestamp */
-	if(!(source->st_mtim.tv_sec == destination->st_mtim.tv_sec &&
-			source->st_mtim.tv_nsec == destination->st_mtim.tv_nsec))
+	if(!(source->mtim_tv_sec == destination->mtim_tv_sec &&
+	        source->mtim_tv_nsec == destination->mtim_tv_nsec))
 	{
-		result += MODIFICATION_TIME_CHANGED;
+		result |= MODIFICATION_TIME_CHANGED;
 
 	}
 
 	/* Time of last status change  */
-	if(!(source->st_ctim.tv_sec == destination->st_ctim.tv_sec &&
-			source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
+	if(!(source->ctim_tv_sec == destination->ctim_tv_sec &&
+	        source->ctim_tv_nsec == destination->ctim_tv_nsec))
 	{
-		result += CREATION_TIME_CHANGED;
+		result |= CREATION_TIME_CHANGED;
 
 	}
 

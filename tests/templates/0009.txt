@@ -1,0 +1,56 @@
+\AAll available combinations:
+REGULAR
+VERBOSE
+TESTING
+SILENT
+REGULAR\|VERBOSE
+REGULAR\|TESTING
+VERBOSE\|TESTING
+REGULAR\|VERBOSE\|TESTING
+ERROR
+Mode: REGULAR
+1.  Must print:true
+2. Won't print:
+3. Won't print:
+4.  Must print:ERROR: true
+Mode: VERBOSE
+5. Won't print:
+6.  Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:true
+7. Won't print:
+8.  Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:ERROR:true
+Mode: TESTING
+9.  Won't print:
+10. Won't print:
+11.  Must print:TESTING:true
+12.  Must print:ERROR:true
+Mode: SILENT
+13. Won't print:
+14. Won't print:
+15. Won't print:
+16. Won't print:
+Mode: REGULAR \| VERBOSE
+17.  Must print:true
+18.  Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:true
+19. Won't print:
+20.  Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:ERROR: true
+Mode: REGULAR \| TESTING
+21.  Must print:true
+22. Won't print:
+23.  Must print:TESTING:true
+24.  Must print:ERROR: true
+Mode: VERBOSE \| TESTING
+25. Won't print:
+26.  Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:true
+27.  Must print:TESTING:true
+28.  Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:ERROR:true
+Mode: REGULAR \| VERBOSE \| TESTING
+29. Must print:true
+30. Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:true
+31. Must print:TESTING:true
+32. Must print:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src\/test0009.c:\d+:slog_test:ERROR: true
+Mode: ERROR
+33. Won't print:
+34. Won't print:
+35. Won't print:
+36.  Must print:ERROR: true
+\z

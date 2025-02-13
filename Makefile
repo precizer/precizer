@@ -1,10 +1,13 @@
 # How to install dependencies and build the app:
 #
 # GCC
-# sudo apt -y install build-essential clang
+# sudo apt -y install build-essential clang libpcre2-dev
 #
 # LLVM for sanitizer
-# sudo apt -y install llvm
+# sudo apt -y install llvm libubsan1
+#
+# Support XXH3_128bits algorythm
+# sudo apt -y install libxxhash-dev
 #
 # Libraries
 # sudo apt -y install libgoogle-perftools-dev
@@ -12,22 +15,35 @@
 # Inatall stat and test tools
 # sudo apt-get install cloc valgrind clang-tools cppcheck
 #
-# Install tools fot Unit tests CUnit
-# sudo apt-get install libcunit1 libcunit1-doc libcunit1-dev
-#
-# make release # or
+# make production # or
+# make prod # or (same as production)
+# make portable # or
 # make debug # or
-# make prod[uction]
+# make # prod by default
 #
 # Perf tool:
 # sudo apt-get install linux-tools-common linux-tools-generic linux-tools-`uname -r`
 # make perf # or
 # make test
 #
+# Autobated build with GitHub Actions:
+#
+# * Create an annotated tag:
+#   ```sh
+#   git tag -a v0.2.0 -m "Release version 0.2.0"
+#   ```
+# * Push the tag to the remote server for release creation:
+#   ```sh
+#   git push origin v0.2.0
+#   ```
+# * Delete a failed local tag:
+#   ```sh
+#   git tag -d v0.2.0
+#   ```
 
 # Define our suffix list for quick compilation
-.SUFFIXES:              # Delete the default suffixes
-.SUFFIXES: .c .o .h .d  # Define our suffix list
+.SUFFIXES:          # Delete the default suffixes
+.SUFFIXES: .c .o .h # Define our suffix list
 
 #
 # Compiler flags
@@ -40,22 +56,15 @@ CFLAGS += -fbuiltin
 # make DEFINES=-DWRITE_CSV=false memtest
 CFLAGS += $(DEFINES)
 
-# libc lib for static
-LDFLAGS += -lrational -lsqlite -lsha512 -lpcre
+SYS := $(shell gcc -dumpmachine)
+ifneq (, $(findstring alpine, $(SYS)))
+# Alpine Linux uses external libraries
+LDFLAGS += -largp -lfts
+endif
 
 EXE = precizer
 
-# If define PRODUCTION is set, then a mode is activated
-# in which some functions that exist only for additional
-# research will not be run. By default, the mode is activated
-# only for the production build.
-#
-# To activate in debug modes, excluding checks and disabling
-# counters, just specify PRODUCTION= as a variable for make.
-# For example:
-PRODUCTION ?= PRODUCTION
-
-STATIC = -static
+STATIC = -static -static-libgcc -Wl,--gc-sections
 SRC = src
 STRIP = -s
 # Flags for additional checks. Must have!
@@ -65,11 +74,13 @@ WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
 WFLAGS += -Wfloat-equal -Wundef -Wshadow
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
+WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
+WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
 # If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
-GCCWFLAGS += -Wlogical-op
+WFLAGS += -Wlogical-op
 endif
 
 # Arguments for tests
@@ -83,31 +94,30 @@ CONFIG += ordered
 # Build of dependent static library
 SUBDIRS = libs
 
-LIBPATH = libs/sqlite libs/rational libs/sha512 libs/pcre
+# Test directory
+TESTDIR = tests
+
+LIBS = sqlite sha512 mem rational
+
+# Extra libs for linking
+LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+
+# For old gcc versions
+GCC_VERSION := $(shell gcc -dumpversion)
+# Checking if the GCC version is less than 10
+ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
+LDFLAGS += -pthread
+endif
 
 # Additional include headers of external libraries
-INCPATH=$(foreach d,$(LIBPATH),-I$d)
-
-# Additional rpath
-LIBSEARCHPATH = -Wl,-rpath,\$$ORIGIN
-
-COSMOBIN = $(CURDIR)/libs/cosmocc/cosmocc/bin/
-
-#
-# Print of variables
-#
-# If you want to find out the value of a makefile variable, just:
-#make print-VARIABLE
-# and it will return:
-#VARIABLE = the_value_of_the_variable
-#
-print-% : ; @echo $* = $($*)
+INCPATH += $(foreach d,$(LIBS),-Ilibs/$d)
 
 #
 # Project files
 #
 SRCS = $(wildcard $(SRC)/*.c)
 HDRS = $(wildcard $(SRC)/*.h)
+BUILDDIR = .builds
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
 PREPROC = $(SRCS:.c=.i) # Preproc files http://www.viva64.com/en/t/0076/
@@ -118,64 +128,29 @@ ASM = $(SRCS:.c=.asm)
 #
 # Sanitize build settings
 #
-STZDIR = $(SRC)/sanitize
+STZDIR = $(BUILDDIR)/sanitize
 STZEXE = $(STZDIR)/$(EXE)
-STZOBJS = $(addprefix $(STZDIR)/, $(notdir $(OBJS)))
-STZDEP = $(STZOBJS:.o=.d)
-STZLIBDIR = $(subst $(SRC)/,,$(STZDIR))
-STZLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
-STZINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
-STZDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-STZCFLAGS += -fsanitize=address -g -O0 -DDEBUG
-
-#
-# Cosmopolitan settings
-#
-COSMODIR = $(SRC)/cosmo
-COSMOEXE = $(COSMODIR)/$(EXE)
-COSMOOBJS = $(addprefix $(COSMODIR)/, $(notdir $(OBJS)))
-COSMODEP = $(COSMOOBJS:.o=.d)
-COSMOLIBDIR = $(subst $(SRC)/,,$(COSMODIR))
-COSMOLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
-COSMOINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
-COSMODYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-
-#
-# Unittest build settings
-#
-
-#
-# Project files
-#
-UNITSRCS = basic.c
-# Exclude a file
-UNITOBJS = $(UNITSRCS:.c=.o)
-
-UNITDIR = $(SRC)/unittests
-UNITEXE = $(UNITDIR)/$(EXE)
-UNITPATH = $(addprefix $(UNITDIR)/, $(UNITOBJS))
-UNITDEP = $(UNITPATH:.o=.d)
-UNITLIBDIR = $(subst $(SRC)/,,$(UNITDIR))
-UNITLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(UNITLIBDIR))
-UNITINCPATH = $(foreach d,$(INCPATH),$d/$(UNITLIBDIR))
-UNITDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-UNITCFLAGS += -DUNITTEST -g -O0 -DDEBUG
-ifdef STATIC
-UNITCFLAGS += -static-libasan
-endif
+STZOBJDIR = $(STZDIR)/obj
+STZOBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(OBJS)))
+STZLIBDIR = $(DBGLIBDIR)
+STZLIBS = $(DBGLIBS)
+STZDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+STZCFLAGS += $(DBGFLAGS)
+STZCFLAGS += -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 
 #
 # Debug build settings
 #
-DBGDIR = $(SRC)/debug
+DBGDIR = $(BUILDDIR)/debug
 DBGEXE = $(DBGDIR)/$(EXE)
-DBGOBJS = $(addprefix $(DBGDIR)/, $(notdir $(OBJS)))
-DBGDEP = $(DBGOBJS:.o=.d)
-DBGLIBDIR = $(subst $(SRC)/,,$(DBGDIR))
-DBGLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGLIBDIR))
-DBGINCPATH = $(foreach d,$(INCPATH),$d/$(DBGLIBDIR))
-DBGDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$d/$(DBGLIBDIR))
-DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
+DBGOBJDIR = $(DBGDIR)/obj
+DBGOBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(OBJS)))
+DBGLIBDIR = $(DBGDIR)/libs
+DBGLIBS = -L$(DBGLIBDIR)
+DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs
+DBGFLAGS = -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
+DBGCFLAGS += $(DBGFLAGS)
+DBGCFLAGS += -Wl,--as-needed
 # Activation of the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
@@ -185,194 +160,177 @@ DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 #
 # Production build settings
 #
-PRODDIR = $(SRC)/production
-PRODEXE = $(PRODDIR)/$(EXE)
-PRODOBJS = $(addprefix $(PRODDIR)/, $(notdir $(OBJS)))
-PRODDEP = $(PRODOBJS:.o=.d)
-PRODLIBDIR = $(subst $(SRC)/,,$(PRODDIR))
-PRODLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
-PRODINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
-PRODDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
-PRODCFLAGS = -O3 -funroll-loops -DNDEBUG -D$(PRODUCTION)
-ifneq ($(CC), cosmocc)
-PRODCFLAGS += -march=native
-endif
-# If static build, then add flags
-ifdef STATIC
-PRODLDFLAGS += -lc
-endif
-ifneq ($(CC), clang)
-PRODCFLAGS += -flto
-endif
+PRDDIR = $(BUILDDIR)/release
+PRDEXE = $(PRDDIR)/$(EXE)
+PRDOBJDIR = $(PRDDIR)/obj
+PRDOBJS = $(addprefix $(PRDOBJDIR)/, $(notdir $(OBJS)))
+PRDLIBDIR = $(PRDDIR)/libs
+PRDLIBS = -L$(PRDLIBDIR)
+PRDDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRDLIBDIR),-rpath,\$$ORIGIN/libs
+PRDCFLAGS = -O3 -march=native -funroll-loops -DNDEBUG
+PRDLDFLAGS += -O3 -march=native -Wl,--hash-style=gnu -Wl,--as-needed
 
 #
-# Release build settings
+# Portable build settings
 #
-RELDIR = $(SRC)/release
-RELEXE = $(RELDIR)/$(EXE)
-RELOBJS = $(addprefix $(RELDIR)/, $(notdir $(OBJS)))
-RELDEP = $(RELOBJS:.o=.d)
-RELLIBDIR = $(subst $(SRC)/,,$(RELDIR))
-RELLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELLIBDIR))
-RELINCPATH = $(foreach d,$(INCPATH),$d/$(RELLIBDIR))
-RELDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,\$$ORIGIN/$d/$(RELLIBDIR),-rpath,\$$ORIGIN/../../$d/$(RELLIBDIR))
-RELCFLAGS = -O3 -funroll-loops -DNDEBUG
-ifneq ($(CC), cosmocc)
-RELCFLAGS += -march=native
-endif
-# If static build, then add flags
-ifdef STATIC
-RELLDFLAGS += -lc
-endif
-# If it is not clang, then these options are for gcc
-ifneq ($(CC), clang)
-RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
-RELCFLAGS += -flto
-endif
+PRTDIR = $(BUILDDIR)/portable
+PRTEXE = $(PRTDIR)/$(EXE)
+PRTOBJDIR = $(PRTDIR)/obj
+PRTOBJS = $(addprefix $(PRTOBJDIR)/, $(notdir $(OBJS)))
+PRTLIBDIR = $(PRDLIBDIR)
+PRTLIBS = -L$(PRTLIBDIR)
+PRTDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTLIBDIR),-rpath,\$$ORIGIN/libs
+PRTCFLAGS = -O2 -mtune=generic -funroll-loops -DNDEBUG
+PRTLDFLAGS += -O2 -mtune=generic -Wl,--hash-style=both -Wl,--as-needed 
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug prep release remake clang openmp one test sanitize banner $(SUBDIRS)
+.PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
-all: $(SUBDIRS) release
+all: hugetestfile production
 
 $(SUBDIRS):
-	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
-#	@$(MAKE) -C $@ all
+	@$(MAKE) -s -C $(SUBDIRS) all
 
 # Clang
 clang: CC = clang
 clang: all
 
+# Portable rules
+#
+portable: $(SUBDIRS) $(PRTEXE) prtfinal banner
+
+prtfinal: $(PRTEXE)
+	@cp $(PRTEXE) ./
+	@echo "The $(PRTEXE) has been copied to the current directory"
+
+$(PRTEXE): $(PRTOBJS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRTLIBS) $(PRTDYNLIB) $(PRTLDFLAGS) -o $(PRTEXE) $^ $(LDFLAGS)
+	@echo "$@ linked"
+
+$(PRTOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTOBJDIR)
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRTWFLAGS) $(PRTCFLAGS) -o $@ $<
+	@echo $<" compiled"
+
+$(PRTOBJDIR):
+	@mkdir -p $(PRTOBJDIR)
+
 #
 # Sanitize rules
 #
-sanitize: CC = clang
-sanitize: $(SUBDIRS) $(STZEXE)
+sanitize: hugetestfile $(SUBDIRS) $(STZEXE)
+
+run:
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
 
 $(STZEXE): $(STZOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(STZCFLAGS) $(STZLIBPATH) $(STZDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
+	@$(CC) $(CFLAGS) $(STZCFLAGS) $(STZLIBS) $(STZDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
+	@echo "$@ linked"
 
--include $(STZDEP)
+$(STZOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(STZOBJDIR)
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(STZDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(STZDIR)
-	@$(CC) -MM $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(STZDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(STZINCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
-
-#
-# Cosmopolitan rules
-#
-#cosmo: $(SUBDIRS) $(COSMOEXE) banner
-cosmo: $(COSMOEXE) banner
-
-$(COSMOEXE): $(COSMOOBJS)
-	$(CC) $(LIBSEARCHPATH) $(COSMOLIBPATH) $(COSMODYNLIB) -o $(COSMOEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-
--include $(COSMODEP)
-
-$(COSMODIR)/%.o: $(SRC)/%.c
-	mkdir -p $(COSMODIR)
-	$(CC) -MM $(INCPATH) $(COSMOINCPATH) $< | sed '1s/^/$$\(COSMODIR\)\//' > $(@D)/$(*F).d
-	$(CC) -c $(INCPATH) $(COSMOINCPATH) -o $@ $<
-	@echo $<" compiled."
-
+$(STZOBJDIR):
+	@mkdir -p $(STZOBJDIR)
 
 #
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE) banner
+debug: $(SUBDIRS) $(DBGEXE) dbgfinal
+
+dbgfinal: $(DBGEXE)
+	@cp $(DBGEXE) ./
+	@echo "The $(DBGEXE) has been copied to the current directory"
 
 $(DBGEXE): $(DBGOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBPATH) $(DBGDYNLIB) $(WFLAGS) $(GCCWFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-	@cp $@ ./
-	@echo "$@ moved to current directory"
+	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
+	@echo "$@ linked"
 
--include $(DBGDEP)
+$(DBGOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBGOBJDIR)
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(DBGDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(DBGDIR)
-	@$(CC) -MM $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $(GCCWFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(DBGINCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $(GCCWFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(DBGOBJDIR):
+	@mkdir -p $(DBGOBJDIR)
 
 #
 # Production rules
 #
-prod: $(SUBDIRS) production banner
-production: $(PRODEXE)
+release: production
+prod: production
+production: $(SUBDIRS) $(PRDEXE) prdfinal banner
 
-$(PRODEXE): $(PRODOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(STATIC) $(STRIP) $(PRODLIBPATH) $(PRODDYNLIB) $(PRODLDFLAGS) -o $(PRODEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-	@cp $@ ./
-	@echo "$@ moved to current directory"
+prdfinal: $(PRDEXE)
+	@cp $(PRDEXE) ./
+	@echo "The $(PRDEXE) has been copied to the current directory"
 
--include $(PRODDEP)
+$(PRDEXE): $(PRDOBJS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRDLIBS) $(PRDDYNLIB) $(PRDLDFLAGS) -o $(PRDEXE) $^ $(LDFLAGS)
+	@echo "$@ linked"
 
-$(PRODDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(PRODDIR)
-	@$(CC) -MM $(INCPATH) $(PRODINCPATH) $(CFLAGS) $(PRODCFLAGS) $< | sed '1s/^/$$\(PRODDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(PRODINCPATH) $(CFLAGS) $(PRODCFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(PRDOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRDOBJDIR)
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDWFLAGS) $(PRDCFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-#
-# Release rules
-#
-release: $(SUBDIRS) $(RELEXE) banner
-
-# Linking problem with "undefined reference to 'dlopen' "
-# https://stackoverflow.com/a/11221504/7104681
-$(RELEXE): $(RELOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(STATIC) $(STRIP) $(RELLIBPATH) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-	@cp $@ ./
-	@echo "$@ moved to current directory"
-
--include $(RELDEP)
-
-$(RELDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(RELDIR)
-	@$(CC) -MM $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) $< | sed '1s/^/$$\(RELDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(PRDOBJDIR):
+	@mkdir -p $(PRDOBJDIR)
 
 #
-# GCC Static Analysis
+# Build and test within Docker container
 #
-gccanalyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -Wanalyzer-too-complex
-#gccanalyzer: WFLAGS += -fdump-analyzer -fdump-analyzer-callgraph -fdump-analyzer-exploded-graph -fdump-analyzer-exploded-nodes -fdump-analyzer-exploded-nodes-2 -fdump-analyzer-exploded-nodes-3 -fdump-analyzer-feasibility -fdump-analyzer-json -fdump-analyzer-state-purge -fdump-analyzer-stderr -fdump-analyzer-supergraph
-gccanalyzer: CC = gcc-12
-gccanalyzer: debug
+docker: build-docker run-docker copy-from-docker clean-docker
+docker-portable: build-docker-portable run-docker copy-from-docker clean-docker
+
+
+# Build image and create application container
+build-docker:
+	@docker build -t $(EXE) .
+	@docker create --name $(EXE) $(EXE)
+
+build-docker-portable:
+	@docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t precizer .
+	@docker create --name $(EXE) $(EXE)
+
+# Copying a statically compiled application from a container
+# to the current directory on the system
+copy-from-docker:
+	@docker cp precizer:/$(EXE)/$(EXE) $(EXE)
+
+# Run the application within the built container
+run-docker:
+	@docker run $(EXE)
+
+# Run it 1000 times
+test-in-docker: build-docker
+	for i in {1..1000}; do docker run $(EXE) || break; done
+
+# Clean the built container
+clean-docker:
+	@docker rm -f $(EXE)
+
+clean-all-dockers:
+	@docker image prune -f
+	@docker image prune -af
+	@docker rm -f $(shell docker ps -aq)
+	@docker rmi -f $(shell docker images -q)
 
 #
-# Unittesting
+# Format rules
 #
-
-unittest: $(SUBDIRS) $(UNITEXE)
-
-$(UNITEXE): $(UNITOBJS)
-	@$(CC) $(LIBSEARCHPATH) $(CFLAGS) $(UNITCFLAGS) $(UNITLIBPATH) $(UNITDYNLIB) $(WFLAGS) $(GCCWFLAGS) -o $(UNITEXE) $^ $(LDFLAGS)
-	@echo "$@ linked."
-
--include $(UNITDEP)
-
-$(UNITDIR)/%.o: $(SRC)/%.c
-	@mkdir -p $(UNITDIR)
-	@$(CC) -MM $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $(GCCWFLAGS) $< | sed '1s/^/$$\(UNITDIR\)\//' > $(@D)/$(*F).d
-	@$(CC) -c $(INCPATH) $(UNITINCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $(GCCWFLAGS) -o $@ $<
-	@echo $<" compiled."
+format:
+	@echo "Formatting source files..."
+	@for file in $(SRCS) $(HDRS); do \
+		echo "Formatting $$file"; \
+		uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
+	done
+	@echo "All files formatted."
 
 # Optional preprocessor files
 %.i:%.c clean-preproc
-	@$(CC) -E -C -o $@ $(INCPATH) $(RELINCPATH) $(CFLAGS) $<
+	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
 # C-C++ Beautifier
 #	@bcpp -na $@ > $@.h
 	@bcpp -na -s -i 4 $@ > $@.h
@@ -381,7 +339,7 @@ $(UNITDIR)/%.o: $(SRC)/%.c
 
 # Optional Assembler files
 %.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(RELINCPATH) $(CFLAGS) $(WFLAGS) $(GCCWFLAGS) $(RELWFLAGS) $(RELCFLAGS) $(RELLDFLAGS) -o $@ $(LDFLAGS) $<
+	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDWFLAGS) $(PRDCFLAGS) $(PRDLDFLAGS) -o $@ $(LDFLAGS) $<
 
 #
 # Other rules
@@ -390,7 +348,15 @@ $(UNITDIR)/%.o: $(SRC)/%.c
 remake: clean all
 
 # Tests
-test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gccanalyzer perf
+test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
+
+#
+# GCC Static Analysis
+#
+gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -flto
+# -Wanalyzer-too-complex
+gcc-analyzer: CC = gcc
+gcc-analyzer: debug
 
 cppcheck:
 	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
@@ -411,6 +377,12 @@ massif: debug
 	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)
 	ms_print ./massif.out.*
 
+SPARSE=sparse
+SPARSE_FLAGS=-Wsparse-all -nostdinc
+sparse-analyzer:
+	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(WFLAGS) $(src);)
+
+clang-analyzer: CC = clang
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
 	scan-build -V make debug
@@ -422,7 +394,7 @@ doc:
 	@doxygen Doxyfile
 
 spellcheck:
-	@~/.cargo/bin/typos libs/sha512/ libs/rational/ src/ README.md README.ru.md TODO
+	@~/.cargo/bin/typos libs/sha512/ libs/rational/ libs/mem/ src/ README.md README.ru.md TODO
 
 gource:
 	gource --seconds-per-day 0.1 --auto-skip-seconds 1
@@ -435,22 +407,37 @@ perf:
 # Statistic code info and count of lines
 stat: cloc
 cloc:
-	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(PRODDIR),$(RELDIR),$(OMPDIR) ../
+#	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(PRDDIR) $(PRTDIR) ./src
+	@cloc ./src
 
 # Character | prevent threading with clean
-cleanall: clean
+clean-all: clean-tests clean clean-docker
 	@$(MAKE) -C $(SUBDIRS) clean
 
 clean: | clean-preproc clean-asm
-	@rm -rf *.out.* doc $(STZDEP) $(DBGDEP) $(PRODDEP) $(RELDEP) \
-		$(DBGEXE) $(STZEXE) $(PRODEXE) $(RELEXE) \
-		$(STZOBJS) $(DBGOBJS) $(PRODOBJS) $(RELOBJS)
-	@test -d $(STZDIR) && rm -rf $(STZDIR) || true
-	@test -d $(DBGDIR) && rm -rf $(DBGDIR) || true
-	@test -d $(PRODDIR) && rm -rf $(PRODDIR) || true
-	@test -d $(RELDIR) && rm -rf $(RELDIR) || true
-	@test -f $(EXE) && rm -f $(EXE) || true
+	@rm -rf *.out.* doc \
+		$(DBGEXE) $(STZEXE) $(PRTEXE) $(PRDEXE) \
+		$(STZOBJS) $(DBGOBJS) $(PRTOBJS) $(PRDOBJS) $(HUGETESTFILE)
+
+	@test -d $(STZOBJDIR) && rm -d $(STZOBJDIR) 2>/dev/null || true
+	@test -d $(STZDIR) && rm -d $(STZDIR) 2>/dev/null || true
+
+	@test -d $(DBGOBJDIR) && rm -d $(DBGOBJDIR) 2>/dev/null || true
+	@test -d $(DBGDIR) && rm -d $(DBGDIR) 2>/dev/null || true
+
+	@test -d $(PRDOBJDIR) && rm -d $(PRDOBJDIR) 2>/dev/null || true
+	@test -d $(PRDDIR) && rm -d $(PRDDIR) 2>/dev/null || true
+
+	@test -d $(PRTOBJDIR) && rm -d $(PRTOBJDIR) 2>/dev/null || true
+	@test -d $(PRTDIR) && rm -d $(PRTDIR) 2>/dev/null || true
+
+	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
+
+	@test -f $(EXE) && rm $(EXE) || true
 	@echo $(EXE) cleared.
+
+clean-tests:
+	@$(MAKE) -C $(TESTDIR) clean
 
 clean-preproc:
 	@rm -rf $(PREPROC)
@@ -458,8 +445,28 @@ clean-preproc:
 clean-asm:
 	@rm -rf $(ASM)
 
+HUGETESTFILE = tests/examples/huge/hugetestfile
+
+hugetestfile: $(HUGETESTFILE)
+
+$(HUGETESTFILE):
+	@echo Creating a huge file for testing
+	@mkdir -p tests/examples/huge/
+	@dd if=/dev/urandom of=$(HUGETESTFILE) bs=1M count=10
+	@echo The file has been created
+
 banner:
 	@printf "Now some tests could be running:\n"
-	@printf "\033[1mStage 1. Adding:\033[0m\n./precizer --progress --database=database1.db tests/examples/diffs/diff1\n"
-	@printf "\033[1mStage 2. Adding:\033[0m\n./precizer --progress --database=database2.db tests/examples/diffs/diff2\n"
-	@printf "\033[1mFinal stage. Comparing:\033[0m\n./precizer --compare database1.db database2.db\n"
+	@printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/examples/diffs/diff1\n"
+	@printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/examples/diffs/diff2\n"
+	@printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
+
+#
+# Print of variables
+#
+# If you want to find out the value of a makefile variable, just:
+#make print-VARIABLE
+# and it will return:
+#VARIABLE = the_value_of_the_variable
+#
+print-% : ; @echo $* = $($*)

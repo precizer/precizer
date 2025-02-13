@@ -3,14 +3,18 @@
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
-SUBDIRS  = sqlite rational sha512 pcre cunit
+SUBDIRS  = sqlite rational sha512 testitall mem xdiff
 
-TOPTARGETS := all clean release debug prod production sanitize test cosmo
+TOPTARGETS := all clean release debug prod production sanitize test cosmo gcc-analyzer
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
-	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
+	@$(MAKE) -s -C $@ $(MAKECMDGOALS) 2>/dev/null
 
-.PHONY: $(TOPTARGETS) $(SUBDIRS)
+.PHONY: $(TOPTARGETS) $(SUBDIRS) warning
+
+gcc-analyzer:
+	@true
 
 all: $(SUBDIRS)
+	@echo Building all internal libraries
