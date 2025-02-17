@@ -25,7 +25,7 @@ RUN make sanitize
 RUN cd tests && make sanitize run
 
 # Build project
-RUN make ${BUILD} && upx --best --lzma -q precizer
+RUN make ${BUILD}
 
 RUN cd tests && make debug
 
