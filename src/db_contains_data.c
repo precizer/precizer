@@ -28,7 +28,7 @@ Return db_contains_data(void)
 	if(config->compare == true)
 	{
 		slog(TRACE,"Comparison mode is enabled. The primary database verification is not required\n");
-		return(status);
+		provide(status);
 	}
 
 	/** @var sqlite3_stmt *select_stmt
@@ -96,5 +96,5 @@ Return db_contains_data(void)
 		}
 	}
 
-	return(status);
+	provide(status);
 }

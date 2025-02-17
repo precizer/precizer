@@ -52,7 +52,7 @@ Return add_string_to_array(
 			free(array[i]);
 		}
 		free(array);
-		return(FAILURE);
+		provide(FAILURE);
 	} else {
 		array = tmp;
 	}
@@ -70,7 +70,7 @@ Return add_string_to_array(
 			free(array[i]);
 		}
 		free(array);
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
 	strcpy(array[size],new_string);
@@ -81,5 +81,5 @@ Return add_string_to_array(
 	// Update the array pointer in the calling function
 	*array_ptr = array;
 
-	return(status);
+	provide(status);
 }

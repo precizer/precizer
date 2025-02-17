@@ -41,7 +41,7 @@ Return db_insert_the_record(
 	/* Skip database operations in dry run mode --dry-run */
 	if(config->dry_run == true)
 	{
-		return(status);
+		provide(status);
 	}
 
 	int rc = 0;
@@ -157,5 +157,5 @@ Return db_insert_the_record(
 
 	sqlite3_finalize(insert_stmt);
 
-	return(status);
+	provide(status);
 }

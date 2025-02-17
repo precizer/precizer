@@ -19,10 +19,10 @@ Return db_consider_version_update(void)
 	if(config->compare == true)
 	{
 		slog(TRACE,"Comparison mode is enabled. Store the primary database version is not required\n");
-		return(status);
+		provide(status);
 	} else if(config->dry_run == true && config->db_file_exists == false){
 		slog(TRACE,"Dry Run mode is enabled. Store the primary database version is not required\n");
-		return(status);
+		provide(status);
 	}
 
 	int db_version = 0;
@@ -47,5 +47,5 @@ Return db_consider_version_update(void)
 		}
 	}
 
-	return(status);
+	provide(status);
 }
