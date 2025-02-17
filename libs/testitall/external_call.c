@@ -264,4 +264,3 @@ Return external_call(
 
 	return(SUCCESS);
 }
-
