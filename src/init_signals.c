@@ -51,5 +51,5 @@ Return init_signals(void)
 
 	slog(TRACE,"Signals initialized\n");
 
-	return status;
+	provide(status);
 }
