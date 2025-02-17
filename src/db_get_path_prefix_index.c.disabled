@@ -46,5 +46,5 @@ Return db_get_path_prefix_index
 		status = FAILURE;
 	}
 
-	return(status);
+	provide(status);
 }

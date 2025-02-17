@@ -20,7 +20,8 @@
  * @note Only compiled when SHOW_TEST is set to 1
  * @note Requires STDERR to be properly initialized
  */
-static void print_hash(unsigned char *hash){
+static void print_hash(unsigned char *hash)
+{
 	for(int i = 0; i < SHA512_DIGEST_LENGTH; i++)
 	{
 		echo(STDERR,"%02x",hash[i]);
@@ -38,7 +39,8 @@ static void print_hash(unsigned char *hash){
  * @retval SUCCESS if test passed
  * @retval FAILURE if test failed
  */
-static Return test0007_1_libmem(void){
+static Return test0007_1_libmem(void)
+{
 	INITTEST;
 
 	// Allocate memory for the structure int
@@ -66,7 +68,8 @@ static Return test0007_1_libmem(void){
  * @retval SUCCESS if memory allocation worked and hashes match
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
-static Return test0007_2_libmem(void){
+static Return test0007_2_libmem(void)
+{
 	INITTEST;
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
@@ -150,7 +153,8 @@ static Return test0007_2_libmem(void){
  * @retval SUCCESS if memory allocation worked and hashes match
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
-static Return test0007_3_libmem(void){
+static Return test0007_3_libmem(void)
+{
 	INITTEST;
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
@@ -229,7 +233,8 @@ static Return test0007_3_libmem(void){
  * @retval SUCCESS if all three tests pass
  * @retval FAILURE if any test fails or memory allocation fails
  */
-static Return test0007_4_5_6_libmem(void){
+static Return test0007_4_5_6_libmem(void)
+{
 	INITTEST;
 
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
@@ -419,7 +424,8 @@ static Return test0007_4_5_6_libmem(void){
  * @brief Multiple tests with ullint type and different array sizes
  *
  */
-static Return test0007_7_libmem_multiple(void){
+static Return test0007_7_libmem_multiple(void)
+{
 	INITTEST;
 
 	#define TYPE ullint
@@ -433,7 +439,8 @@ static Return test0007_7_libmem_multiple(void){
  * @brief Multiple tests with char type and different array sizes
  *
  */
-static Return test0007_8_libmem_multiple(void){
+static Return test0007_8_libmem_multiple(void)
+{
 	INITTEST;
 
 	#define TYPE char
@@ -447,7 +454,8 @@ static Return test0007_8_libmem_multiple(void){
  * @brief Multiple tests with char type and different array sizes
  *
  */
-static Return test0007_9_libmem_multiple(void){
+static Return test0007_9_libmem_multiple(void)
+{
 	INITTEST;
 
 	#define TYPE int
@@ -469,7 +477,8 @@ static Return test0007_9_libmem_multiple(void){
  * @retval SUCCESS if all tests pass
  * @retval FAILURE if any test fails
  */
-Return test0007(void){
+Return test0007(void)
+{
 	INITTEST;
 
 	TEST(test0007_1_libmem,"Copy an array of 0 size…");

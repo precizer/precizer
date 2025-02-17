@@ -68,7 +68,7 @@ static Return process_row(sqlite3_stmt *stmt)
 		}
 	}
 
-	return(status);
+	provide(status);
 }
 
 /**
@@ -114,7 +114,7 @@ static Return process_database(sqlite3 *db)
 		sqlite3_finalize(stmt);
 	}
 
-	return(status);
+	provide(status);
 }
 
 /**
@@ -131,7 +131,7 @@ Return migrate_from_0_to_1(const char *db_file_path)
 	if(config->dry_run == true)
 	{
 		slog(TRACE,"Dry Run mode is enabled. Database migration is not required\n");
-		return(status);
+		provide(status);
 	}
 
 	/* Open database in safe mode */
@@ -266,5 +266,5 @@ Return migrate_from_0_to_1(const char *db_file_path)
 		}
 	}
 
-	return(status);
+	provide(status);
 }

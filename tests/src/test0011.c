@@ -10,7 +10,8 @@
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
-static Return test0011_1_readme(void){
+static Return test0011_1_readme(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -67,7 +68,8 @@ static Return test0011_1_readme(void){
  * rm -rf tests/examples/
  * mv tests/examples_backup/ tests/examples/
  */
-static Return test0011_2_readme(void){
+static Return test0011_2_readme(void)
+{
 	INITTEST;
 
 	// Preparation for tests
@@ -137,7 +139,8 @@ static Return test0011_2_readme(void){
  *
  *
  */
-static Return test0011_3_readme(void){
+static Return test0011_3_readme(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -164,7 +167,8 @@ static Return test0011_3_readme(void){
  * Additional information with --verbose mode
  *
  */
-static Return test0011_4_readme(void){
+static Return test0011_4_readme(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=false;cd ${TMPDIR};"
@@ -200,7 +204,8 @@ static Return test0011_4_readme(void){
  *
  *
  */
-static Return test0011_5_readme(void){
+static Return test0011_5_readme(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -243,7 +248,8 @@ static Return test0011_5_readme(void){
  *
  *
  */
-static Return test0011_6_readme(void){
+static Return test0011_6_readme(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=false;cd ${TMPDIR};"
@@ -280,7 +286,8 @@ static Return test0011_6_readme(void){
  * using many --ignore options
  *
  */
-static Return test0011_7_readme(void){
+static Return test0011_7_readme(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=false;cd ${TMPDIR};"
@@ -312,7 +319,8 @@ static Return test0011_7_readme(void){
  *
  *
  */
-static Return test0011_8_readme(void){
+static Return test0011_8_readme(void)
+{
 	INITTEST;
 
 	const char *command = "cd ${TMPDIR};"
@@ -350,7 +358,8 @@ static Return test0011_8_readme(void){
  * User's Manual and examples from README test set
  *
  */
-Return test0011(void){
+Return test0011(void)
+{
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	INITTEST;

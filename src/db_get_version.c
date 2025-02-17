@@ -32,7 +32,7 @@ Return db_get_version(
 	if(db_file_path == NULL)
 	{
 		slog(ERROR,"Invalid input parameters: db_file_path\n");
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
 	/* Open database connection */
@@ -110,5 +110,5 @@ Return db_get_version(
 		}
 	}
 
-	return(status);
+	provide(status);
 }

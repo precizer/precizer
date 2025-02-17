@@ -80,5 +80,5 @@ Return db_check_version(
 		}
 	}
 
-	return(status);
+	provide(status);
 }

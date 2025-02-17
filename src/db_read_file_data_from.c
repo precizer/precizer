@@ -85,5 +85,5 @@ Return db_read_file_data_from(
 	}
 	sqlite3_finalize(select_stmt);
 
-	return(status);
+	provide(status);
 }

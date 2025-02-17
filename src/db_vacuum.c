@@ -20,13 +20,13 @@ Return db_vacuum(const char *db_file_path)
 	if(db_file_path == NULL)
 	{
 		slog(ERROR,"Invalid input parameters: db_file_path\n");
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
 	if(config->dry_run == true)
 	{
 		slog(TRACE,"Dry Run mode is enabled. The database doesn't require vacuuming\n");
-		return(status);
+		provide(status);
 	}
 
 	if(strcmp(config->db_file_path,db_file_path) == 0)
@@ -112,5 +112,5 @@ Return db_vacuum(const char *db_file_path)
 		}
 	}
 
-	return(status);
+	provide(status);
 }

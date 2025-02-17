@@ -68,5 +68,5 @@ Return db_file_validate_existence(void)
 		}
 	}
 
-	return(status);
+	provide(status);
 }

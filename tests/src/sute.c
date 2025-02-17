@@ -1,6 +1,7 @@
 #include "sute.h"
 
-int main(void){
+int main(void)
+{
 	TESTSTART;
 
 	HEADER("Preparations");
@@ -24,6 +25,8 @@ int main(void){
 	HEADER("Unit Testing of precizer");
 	TEST(test0012,"add_string_to_array() test set…");
 	TEST(test0021,"UTF8 manipulations test set…");
+	TEST(test0022,"remove_trailing_slash() test set…");
+	TEST(test0023,"extract_relative_path() test set…");
 
 	HEADER("System Testing of precizer");
 	TEST(test0003,"Comply default DB name to \"hostname.db\" template…");

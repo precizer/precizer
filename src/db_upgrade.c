@@ -26,7 +26,7 @@ Return db_upgrade(
 	if(config->update == false)
 	{
 		slog(ERROR,"Program execution cannot continue. Database update required. Use the " BOLD "--update" RESET " flag to perform this action\n");
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
 	/* Sequentially upgrade through versions */
@@ -66,5 +66,5 @@ Return db_upgrade(
 		slog(EVERY,"The database has been successfully upgraded\n");
 	}
 
-	return(status);
+	provide(status);
 }

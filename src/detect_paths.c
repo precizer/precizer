@@ -19,7 +19,7 @@ Return detect_paths(void)
 		// The option to compare databases has been selected.
 		// There is no need to compare paths
 		slog(TRACE,"Comparing databases. Directory path verification is not required\n");
-		return(status);
+		provide(status);
 	} else {
 		// Check directory paths passed as arguments, traverse
 		// them for files, and store the file metadata in the database
@@ -36,5 +36,5 @@ Return detect_paths(void)
 
 	slog(TRACE,"Paths detected\n");
 
-	return(status);
+	provide(status);
 }

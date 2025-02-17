@@ -3,7 +3,8 @@
 /**
  * The db file should not be created in the Dry Run mode
  */
-static Return dry_run_mode_1_test(void){
+static Return dry_run_mode_1_test(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -39,7 +40,8 @@ static Return dry_run_mode_1_test(void){
 /**
  * The db file should not be updated in the Dry Run mode
  */
-static Return dry_run_mode_2_test(void){
+static Return dry_run_mode_2_test(void)
+{
 	INITTEST;
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
@@ -177,7 +179,8 @@ static Return dry_run_mode_2_test(void){
  * will now be tested in live mode without simulation, and
  * the results will be compared against each other
  */
-static Return no_dry_run_mode_3_test(void){
+static Return no_dry_run_mode_3_test(void)
+{
 	INITTEST;
 	// Create memory for the result
 	MSTRUCT(mem_char,result);
@@ -288,7 +291,8 @@ static Return no_dry_run_mode_3_test(void){
 	RETURN_STATUS;
 }
 
-Return compare_dry_and_real_4_test(void){
+Return compare_dry_and_real_4_test(void)
+{
 	INITTEST;
 
 	char *text1 = NULL;
@@ -358,7 +362,8 @@ Return compare_dry_and_real_4_test(void){
  * Dry Run mode testing
  *
  */
-Return test0013(void){
+Return test0013(void)
+{
 	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");

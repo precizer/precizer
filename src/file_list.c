@@ -99,10 +99,10 @@ Return file_list(const bool count_size_of_all_files)
 
 	if((file_systems = fts_open(config->paths,fts_options,compare_by_name)) == NULL)
 	{
-		report("fts_open() error\n");
-		status = FAILURE;
+		slog(ERROR,"fts_open() error\n");
 		fts_close(file_systems);
-		return(status);
+		status = FAILURE;
+		provide(status);
 	}
 
 	// Initialize the file systems using as many argv[] components as possible
@@ -112,7 +112,8 @@ Return file_list(const bool count_size_of_all_files)
 	{
 		// No files to traverse
 		fts_close(file_systems);
-		return(status);
+		slog(ERROR,"fts_children() error\n");
+		provide(status);
 	}
 
 	/*
@@ -143,7 +144,9 @@ Return file_list(const bool count_size_of_all_files)
 		slog(EVERY,"File system traversal initiated to calculate file count and storage usage\n");
 	}
 
-	while((p = fts_read(file_systems)) != NULL)
+	bool continue_the_loop = true;
+
+	while((p = fts_read(file_systems)) != NULL && continue_the_loop == true)
 	{
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */
@@ -164,6 +167,7 @@ Return file_list(const bool count_size_of_all_files)
 				{
 					report("Memory allocation failed, requested size: %zu bytes",(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
 					status = FAILURE;
+					continue_the_loop = false;
 					break;
 				} else {
 					runtime_path_prefix = tmp;
@@ -185,6 +189,7 @@ Return file_list(const bool count_size_of_all_files)
 				// will start from zero
 				if(SUCCESS != (status = db_get_path_prefix_index(config,runtime_path_prefix,&path_prefix_index)))
 				{
+					continue_the_loop = false;
 					break;
 				}
 #endif
@@ -216,7 +221,7 @@ Return file_list(const bool count_size_of_all_files)
 					continue;
 				}
 
-				const char *relative_path = p->fts_path + strlen(runtime_path_prefix) + 1 + correction(p->fts_path + strlen(runtime_path_prefix) + 1);
+				const char *relative_path = extract_relative_path(p->fts_path,runtime_path_prefix);
 
 				/* Write all columns from DB row to the structure DBrow */
 				DBrow _dbrow;
@@ -235,6 +240,7 @@ Return file_list(const bool count_size_of_all_files)
 
 					if(SUCCESS != status)
 					{
+						continue_the_loop = false;
 						break;
 					}
 				}
@@ -286,7 +292,7 @@ Return file_list(const bool count_size_of_all_files)
 				}
 
 				sqlite3_int64 offset = 0;           // Offset bytes
-				SHA512_Context mdContext;
+				SHA512_Context mdContext = {0};
 
 				// For a file which had been changed before creation of its checksum has been already finished.
 				bool rehashig_from_the_beginning = false;
@@ -322,12 +328,16 @@ Return file_list(const bool count_size_of_all_files)
 							ignored = true;
 
 						} else if(FAIL_REGEXP_IGNORE == result){
+							slog(ERROR,"Fail ignore REGEXP for a string: %s",relative_path);
 							status = FAILURE;
+							continue_the_loop = false;
 							break;
 						}
 
 					} else if(FAIL_REGEXP_INCLUDE == response){
+						slog(ERROR,"Fail include REGEXP for a string: %s",relative_path);
 						status = FAILURE;
+						continue_the_loop = false;
 						break;
 					}
 				}
@@ -336,8 +346,36 @@ Return file_list(const bool count_size_of_all_files)
 				// Clean sha512 to prevent reuse;
 				memset(sha512,0,sizeof(sha512));
 
+				// The file is available for reading
+				bool is_readable = false;
+
+				/* Check file access */
+				status = file_check_access(p->fts_path,&p->fts_pathlen,&is_readable);
+
+				if(SUCCESS != status)
+				{
+					continue_the_loop = false;
+					break;
+				}
+
 				// Print out of a file name and its changes
-				show_relative_path(relative_path,&metadata_of_scanned_and_saved_files,dbrow,&stat,&first_iteration,&show_changes,&rehashig_from_the_beginning,&ignored,&at_least_one_file_was_shown,&rehash,&count_size_of_all_files);
+				show_relative_path(relative_path,
+				                   &metadata_of_scanned_and_saved_files,
+				                   dbrow,
+				                   &stat,
+				                   &first_iteration,
+				                   &show_changes,
+				                   &rehashig_from_the_beginning,
+				                   &ignored,
+				                   &at_least_one_file_was_shown,
+				                   &rehash,
+				                   &count_size_of_all_files,
+				                   &is_readable);
+
+				if(is_readable != true)
+				{
+					break;
+				}
 
 				if(ignored == true)
 				{
@@ -355,9 +393,11 @@ Return file_list(const bool count_size_of_all_files)
 							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
 							show_checksum_gracefully_interrupted(relative_path,&offset);
 						} else {
+							continue_the_loop = false;
 							break;
 						}
 					}
+
 				} else {
 					memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
 				}
@@ -391,6 +431,7 @@ Return file_list(const bool count_size_of_all_files)
 
 						if(SUCCESS != status)
 						{
+							continue_the_loop = false;
 							break;
 						}
 					}
@@ -407,6 +448,7 @@ Return file_list(const bool count_size_of_all_files)
 
 						if(SUCCESS != status)
 						{
+							continue_the_loop = false;
 							break;
 						}
 					}
@@ -442,5 +484,5 @@ Return file_list(const bool count_size_of_all_files)
 		show_status(&count_dirs,&count_files,&count_symlnks,&total_size_in_bytes,&count_size_of_all_files,&at_least_one_file_was_shown);
 	}
 
-	return(status);
+	provide(status);
 }

@@ -227,7 +227,7 @@ Return shorten_path(char *path)
 	if(NULL == path)
 	{
 		/* No action needed */
-		return(status);
+		provide(status);
 	}
 
 	// Convert UTF-8 string to wide-character string to measure its length correctly
@@ -236,13 +236,13 @@ Return shorten_path(char *path)
 	if(len == (size_t)-1 || len == (size_t)-2)
 	{
 		/* Invalid UTF-8 encoding. No action needed */
-		return(status);
+		provide(status);
 	}
 
 	if(len < 2)
 	{
 		/* No action needed */
-		return(status);
+		provide(status);
 	}
 
 	size_t maxLen = terminal_width();
@@ -251,14 +251,14 @@ Return shorten_path(char *path)
 	if(maxLen < 8)
 	{
 		/* No action needed */
-		return(status);
+		provide(status);
 	}
 
 	/* Path is within limits, no action needed */
 	if(len <= maxLen)
 	{
 		/* No action needed */
-		return(status);
+		provide(status);
 	}
 
 	const char *ellipsis = "…"; // Unicode ellipsis (U+2026)
@@ -268,7 +268,7 @@ Return shorten_path(char *path)
 	if(ellipsis_length == (size_t)-1 || ellipsis_length == (size_t)-2)
 	{
 		/* Invalid UTF-8 encoding. No action needed */
-		return(status);
+		provide(status);
 	}
 
 	size_t startLen = (maxLen / 2) - ellipsis_length;
@@ -329,5 +329,5 @@ Return shorten_path(char *path)
 	free(end);
 	free(result);
 
-	return(status);
+	provide(status);
 }
