@@ -7,7 +7,8 @@
  * parameter and needs to display an error message.
  *
  */
-Return test0015_1_upgrade_db(void){
+Return test0015_1_upgrade_db(void)
+{
 	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
@@ -45,7 +46,8 @@ Return test0015_1_upgrade_db(void){
  * completes successfully
  *
  */
-Return test0015_2_upgrade_db(void){
+Return test0015_2_upgrade_db(void)
+{
 	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
@@ -79,7 +81,8 @@ Return test0015_2_upgrade_db(void){
  *
  *
  */
-Return test0015_3_upgrade_db(void){
+Return test0015_3_upgrade_db(void)
+{
 	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
@@ -115,7 +118,8 @@ Return test0015_3_upgrade_db(void){
  * Create a database with the default name
  *
  */
-Return test0015_4_upgrade_db(void){
+Return test0015_4_upgrade_db(void)
+{
 	INITTEST;
 
 	// Get the output of an external program
@@ -145,7 +149,8 @@ Return test0015_4_upgrade_db(void){
  * appropriate error message
  *
  */
-Return test0015_5_upgrade_db(void){
+Return test0015_5_upgrade_db(void)
+{
 	INITTEST;
 
 	// Get the output of an external program
@@ -195,7 +200,8 @@ Return test0015_5_upgrade_db(void){
  * the --update option. The database should be upgraded accordingly.
  *
  */
-Return test0015_6_upgrade_db(void){
+Return test0015_6_upgrade_db(void)
+{
 	INITTEST;
 
 	// Get the output of an external program
@@ -232,7 +238,8 @@ Return test0015_6_upgrade_db(void){
  * - Run the program with the --compare parameter to compare databases when one of them has an older version — this should generate an appropriate error message
  * - Run the database comparison again using the --compare parameter, but this time with the --update option. The database should be upgraded accordingly.
  */
-Return test0015(void){
+Return test0015(void)
+{
 	INITTEST;
 
 	TEST(test0015_1_upgrade_db,"Upgrade a DB from v0 to v1. Error handling…");

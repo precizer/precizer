@@ -1,6 +1,7 @@
 #include "sute.h"
 
-Return long_relative_path_test(void){
+Return long_relative_path_test(void)
+{
 	INITTEST;
 
 	char *pattern = NULL;
@@ -141,7 +142,8 @@ Return long_relative_path_test(void){
 	RETURN_STATUS;
 }
 
-Return long_absolute_path_test(void){
+Return long_absolute_path_test(void)
+{
 	INITTEST;
 
 	char *pattern = NULL;
@@ -282,7 +284,8 @@ Return long_absolute_path_test(void){
 	RETURN_STATUS;
 }
 
-Return reset_relative_path_test(void){
+Return reset_relative_path_test(void)
+{
 	INITTEST;
 
 	char *pattern = NULL;
@@ -426,7 +429,8 @@ Return reset_relative_path_test(void){
 	RETURN_STATUS;
 }
 
-Return reset_absolute_path_test(void){
+Return reset_absolute_path_test(void)
+{
 	INITTEST;
 
 	char *pattern = NULL;
@@ -572,7 +576,8 @@ Return reset_absolute_path_test(void){
 }
 
 // Main test runner
-Return test0014(void){
+Return test0014(void)
+{
 	INITTEST;
 
 	TEST(long_relative_path_test,"Very long relative path…");

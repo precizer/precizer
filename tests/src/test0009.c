@@ -1,6 +1,7 @@
 #include "sute.h"
 
-static void slog_test(void){
+static void slog_test(void)
+{
 	printf("All available combinations:\n");
 	printf("%s\n",rational_convert(REGULAR));
 	printf("%s\n",rational_convert(VERBOSE));
@@ -88,7 +89,8 @@ static void slog_test(void){
  * All available combinations of slog options
  *
  */
-Return test0009(void){
+Return test0009(void)
+{
 	INITTEST;
 
 	MSTRUCT(mem_char,captured_stdout);

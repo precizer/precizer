@@ -5,7 +5,8 @@
  * Testing database creation attempt in missing directory
  *
  */
-Return test0020_1(void){
+Return test0020_1(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -36,7 +37,8 @@ Return test0020_1(void){
  * Testing database creation attempt with --update and missing database
  *
  */
-Return test0020_2(void){
+Return test0020_2(void)
+{
 	INITTEST;
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
@@ -62,7 +64,8 @@ Return test0020_2(void){
 	RETURN_STATUS;
 }
 
-Return test0020(void){
+Return test0020(void)
+{
 
 	INITTEST;
 

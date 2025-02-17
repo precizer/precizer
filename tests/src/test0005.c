@@ -5,7 +5,8 @@
  * Another simple test case
  *
  */
-Return test0005(void){
+Return test0005(void)
+{
 	INITTEST;
 
 	// Example of suppress messages to STDERR

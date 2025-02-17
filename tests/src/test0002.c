@@ -5,7 +5,8 @@
  *
  *
  */
-Return test0002(void){
+Return test0002(void)
+{
 	INITTEST;
 
 	RETURN_STATUS;
