@@ -231,7 +231,7 @@ void show_relative_path(
 		{
 			printf(" inaccessible\n");
 
-		} else if (*ignored == true){
+		} else if(*ignored == true){
 
 			printf(" ignored & not added\n");
 
