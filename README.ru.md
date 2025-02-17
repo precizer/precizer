@@ -15,7 +15,7 @@
 ## LICENSE
 This program is distributed under the [CC0 (Creative Commons Share Alike) license](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
 
-Использование программы, исходных текстов или частей исходного кода категорически запрещено на территории рашстского террористического государства, захваченного оккупировавшей власть авторитарной диктатурой.
+Использование программы, исходного кода частично или полностью, категорически запрещено на территории рашстского террористического государства, захваченного оккупировавшей власть авторитарной диктатурой.
 
 ## КРАТКО
 
