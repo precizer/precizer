@@ -1,28 +1,11 @@
 #include "sute.h"
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-
-// Test helper function to free the array
-static void free_test_array(char **array){
-	if(array == NULL)
-	{
-		return;
-	}
-
-	for(size_t i = 0; array[i] != NULL; i++)
-	{
-		free(array[i]);
-	}
-	free(array);
-}
 
 // Test helper function to verify array contents
 static Return verify_array_contents(
 	char       **array,
 	const char **expected,
-	size_t     expected_size
-){
+	size_t     expected_size)
+{
 
 	INITTEST;
 
@@ -38,7 +21,8 @@ static Return verify_array_contents(
 	return(status);
 }
 
-static Return test_add_string_to_empty_array(void){
+static Return test_add_string_to_empty_array(void)
+{
 	INITTEST;
 
 	char **array = NULL;
@@ -50,12 +34,13 @@ static Return test_add_string_to_empty_array(void){
 	ASSERT(strcmp(array[0],test_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_test_array(array);
+	free_str_array(array);
 
 	RETURN_STATUS;
 }
 
-static Return test_add_multiple_strings(void){
+static Return test_add_multiple_strings(void)
+{
 	INITTEST;
 
 	char **array = NULL;
@@ -71,12 +56,13 @@ static Return test_add_multiple_strings(void){
 
 	ASSERT(SUCCESS == verify_array_contents(array,strings,num_strings));
 
-	free_test_array(array);
+	free_str_array(array);
 
 	RETURN_STATUS;
 }
 
-static Return test_add_empty_string(void){
+static Return test_add_empty_string(void)
+{
 	INITTEST;
 
 	char **array = NULL;
@@ -88,12 +74,13 @@ static Return test_add_empty_string(void){
 	ASSERT(strcmp(array[0],empty_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_test_array(array);
+	free_str_array(array);
 
 	RETURN_STATUS;
 }
 
-static Return test_add_long_string(void){
+static Return test_add_long_string(void)
+{
 	INITTEST;
 
 	char **array = NULL;
@@ -107,7 +94,7 @@ static Return test_add_long_string(void){
 	ASSERT(strcmp(array[0],long_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_test_array(array);
+	free_str_array(array);
 
 	RETURN_STATUS;
 }
@@ -117,7 +104,8 @@ static Return test_add_long_string(void){
  * Unit Testing of precizer. add_string_to_array() function test set
  *
  */
-Return test0012(void){
+Return test0012(void)
+{
 	INITTEST;
 
 	TEST(test_add_string_to_empty_array,"Adding string to empty array…");

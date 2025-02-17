@@ -6,7 +6,8 @@
  * libsha512 hash check with the sha512 built-in library
  *
  */
-Return test0001(void){
+Return test0001(void)
+{
 	INITTEST;
 
 	unsigned char hash[SHA512_DIGEST_LENGTH];
