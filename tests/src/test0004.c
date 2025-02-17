@@ -5,7 +5,8 @@
  * Just simple example test
  *
  */
-Return test0004(void){
+Return test0004(void)
+{
 	INITTEST;
 
 	ASSERT(SUCCESS == external_call("echo -n > /dev/null",SUCCESS,false,false));

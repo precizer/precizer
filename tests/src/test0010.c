@@ -5,7 +5,8 @@
  * Example test. Testitall library capability demonstration.
  *
  */
-Return test0010(void){
+Return test0010(void)
+{
 	INITTEST;
 
 	// Set environment variable

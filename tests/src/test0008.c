@@ -1,6 +1,7 @@
 #include "sute.h"
 
-static void report_test(void){
+static void report_test(void)
+{
 	// Report an error with formatted message
 	report("Memory reallocation failed with bytes %d",10);
 	// Report an error with multiple arguments
@@ -14,7 +15,8 @@ static void report_test(void){
  * used to output messages about memory allocation failures
  * when there is insufficient memory available.
  */
-Return test0008(void){
+Return test0008(void)
+{
 	INITTEST;
 
 	MSTRUCT(mem_char,captured_stdout);
