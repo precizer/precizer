@@ -239,6 +239,11 @@ static void get_directory(char* dir, const char* path) {
 	}
 }
 
+/** Global array to track missing header files */
+char missing_headers[MAX_HEADERS][MAX_PATH];
+/** Counter for number of missing headers */
+int missing_count = 0;
+
 /**
  * @brief Recursively process a header file and its dependencies
  *
@@ -298,6 +303,11 @@ static void process_header(const char* file_path) {
 						process_header(include_path);
 					} else {
 						printf("Warning: Cannot find header file: %s\n", start);
+						if (missing_count < MAX_HEADERS) {
+							strncpy(missing_headers[missing_count], start, MAX_PATH - 1);
+							missing_headers[missing_count][MAX_PATH - 1] = '\0';
+							missing_count++;
+						}
 					}
 				}
 			}
@@ -422,9 +432,18 @@ int main(int argc, char* argv[]) {
 
 	memset(processed_headers, 0, sizeof(processed_headers));
 	header_count = 0;
+	missing_count = 0;
 
 	process_header(input_file);
+
+	if (missing_count > 0) {
+		printf("\n/* Missing header files: */\n");
+		for (int i = 0; i < missing_count; i++) {
+			printf(" * %s\n", missing_headers[i]);
+		}
+	}
 
 	printf("\n/* Processed %d header files */\n", header_count);
 	return 0;
 }
+
