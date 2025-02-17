@@ -106,7 +106,7 @@ all: warning debug release
 	@true
 
 warning:
-	@echo Library compilation has started. This process may take a considerable amount of time.
+	@echo SQLite library compilation has started. This process may take a considerable amount of time.
 
 prod: release
 	@true

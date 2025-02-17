@@ -453,7 +453,7 @@ $(HUGETESTFILE):
 	@echo Creating a huge file for testing
 	@mkdir -p tests/examples/huge/
 	@dd if=/dev/urandom of=$(HUGETESTFILE) bs=1M count=10
-	@echo The file has been created
+	@echo The huge file for testing has been created
 
 banner:
 	@printf "Now some tests could be running:\n"
