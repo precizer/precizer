@@ -5,7 +5,7 @@ CONFIG += ordered
 
 SUBDIRS  = sqlite rational sha512 testitall mem xdiff
 
-TOPTARGETS := all clean release debug prod production sanitize test cosmo gcc-analyzer
+TOPTARGETS := all clean release debug prod production sanitize test cosmo gcc-analyzer format
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):

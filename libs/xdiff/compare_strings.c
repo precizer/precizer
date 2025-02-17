@@ -14,7 +14,8 @@ typedef struct {
  *
  * @return output_buffer_t* Pointer to created buffer or NULL on error
  */
-static output_buffer_t *init_output_buffer(void){
+static output_buffer_t *init_output_buffer(void)
+{
 	Return status = SUCCESS;
 	output_buffer_t *buf = NULL;
 
@@ -60,8 +61,8 @@ static output_buffer_t *init_output_buffer(void){
 static int append_to_buffer(
 	void       *priv,
 	mmbuffer_t *mb,
-	int        nbuf
-){
+	int        nbuf)
+{
 	int status = SUCCESS;
 	output_buffer_t *buf = (output_buffer_t *)priv;
 	size_t total_size = 0;
@@ -130,8 +131,8 @@ static int append_to_buffer(
  */
 static Return create_mmfile(
 	mmfile_t   *mmf,
-	const char *content
-){
+	const char *content)
+{
 	Return status = SUCCESS;
 	size_t size = 0;
 	void *data = NULL;
@@ -188,8 +189,8 @@ static Return create_mmfile(
 Return compare_strings(
 	char       **diff,
 	const char *string1,
-	const char *string2
-){
+	const char *string2)
+{
 	Return status = SUCCESS;
 	mmfile_t mf1,mf2;
 	xpparam_t xpp;
