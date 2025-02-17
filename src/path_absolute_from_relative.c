@@ -11,8 +11,8 @@
  * @param path_size Size of the relative path string.
  */
 Return path_absolute_from_relative(
-	char **absolute_path,
-	const char *path,
+	char                     **absolute_path,
+	const char               *path,
 	const short unsigned int *path_size)
 {
 	/// The status that will be passed to return() before exiting.
@@ -21,7 +21,8 @@ Return path_absolute_from_relative(
 
 	size_t len = 0;
 
-	if(!absolute_path || !path) {
+	if(!absolute_path || !path)
+	{
 		provide(FAILURE);
 	}
 
@@ -31,6 +32,7 @@ Return path_absolute_from_relative(
 		// The provided path is actually absolute!
 		len = (size_t)*path_size + 1;
 		*absolute_path = (char *)malloc(len);
+
 		if(absolute_path == NULL)
 		{
 			report("Memory allocation failed, requested size: %zu bytes",len);
@@ -44,6 +46,7 @@ Return path_absolute_from_relative(
 		// The provided path is indeed relative!
 		len = (size_t)config->running_dir_size + (size_t)*path_size + 1;
 		*absolute_path = (char *)malloc(len);
+
 		if(absolute_path == NULL)
 		{
 			report("Memory allocation failed, requested size: %zu bytes",len);
