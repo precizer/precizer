@@ -19,24 +19,38 @@ Return path_absolute_from_relative(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	size_t len = 0;
+
 	if(!absolute_path || !path) {
 		provide(FAILURE);
 	}
 
 	// Allocate memory for the absolute path (base dir + '/' + relative path + null terminator)
-	size_t len = (size_t)config->running_dir_size + (size_t)*path_size + 1;
-	*absolute_path = (char *)malloc(len);
-	if(absolute_path == NULL)
-	{
-		report("Memory allocation failed, requested size: %zu bytes",len);
-		status = FAILURE;
-		provide(status);
-	}
-
 	if(*path_size > 0 && path[0] == '/')
 	{
-		snprintf(*absolute_path,len,"%s%s",config->running_dir,path);
+		// The provided path is actually absolute!
+		len = (size_t)*path_size + 1;
+		*absolute_path = (char *)malloc(len);
+		if(absolute_path == NULL)
+		{
+			report("Memory allocation failed, requested size: %zu bytes",len);
+			status = FAILURE;
+			provide(status);
+		}
+
+		snprintf(*absolute_path,len,"%s",path);
+
 	} else {
+		// The provided path is indeed relative!
+		len = (size_t)config->running_dir_size + (size_t)*path_size + 1;
+		*absolute_path = (char *)malloc(len);
+		if(absolute_path == NULL)
+		{
+			report("Memory allocation failed, requested size: %zu bytes",len);
+			status = FAILURE;
+			provide(status);
+		}
+
 		snprintf(*absolute_path,len,"%s/%s",config->running_dir,path);
 	}
 
