@@ -397,7 +397,19 @@ Return add_string_to_array(
 
 void remove_trailing_slash(char *);
 
-size_t correction(char *) __attribute__ ((pure));
+const char *extract_relative_path(
+	const char *,
+	const char *);
+
+Return path_absolute_from_relative(
+	char **,
+	const char *,
+	const short unsigned int *);
+
+Return file_check_access(
+	const char *,
+	const short unsigned int *,
+	bool *);
 
 void notify_quit_handler(int);
 
@@ -507,6 +519,7 @@ void show_relative_path(
 	const bool *,
 	bool *,
 	bool *,
+	const bool *,
 	const bool *);
 
 void show_checksum_gracefully_interrupted(
@@ -520,8 +533,9 @@ Return shorten_path(char *);
  * All static functions for unit testing purposes are declared here
  *
  */
-void remove_leading_dots(char *str);
-void remove_trailing_dots(char *str);
+void remove_leading_dots(char *);
+void remove_trailing_dots(char *);
+void free_str_array(char **);
 #endif
 
 Return status_of_changes(void);
