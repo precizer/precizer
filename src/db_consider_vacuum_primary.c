@@ -16,26 +16,26 @@ Return db_consider_vacuum_primary(void)
 	if(config->compare == true)
 	{
 		slog(TRACE,"Comparison mode is enabled. The primary database doesn't require vacuuming\n");
-		return(status);
+		provide(status);
 
 	} else if(config->dry_run == true){
 		slog(TRACE,"Dry Run mode is enabled. The primary database doesn't require vacuuming\n");
-		return(status);
+		provide(status);
 
 	} else if(config->something_has_been_changed == false){
 		slog(TRACE,"No changes were made. The primary database doesn't require vacuuming\n");
-		return(status);
+		provide(status);
 	}
 
 	/* Interrupt the function smoothly */
 	/* Interrupt when Ctrl+C */
 	if(global_interrupt_flag == true)
 	{
-		return(status);
+		provide(status);
 	}
 
 	/* Vacuum the primary database */
 	status = db_vacuum(config->db_file_path);
 
-	return(status);
+	provide(status);
 }

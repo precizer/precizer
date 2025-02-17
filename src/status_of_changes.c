@@ -59,5 +59,5 @@ Return status_of_changes(void)
 		}
 	}
 
-	return(status);
+	provide(status);
 }
