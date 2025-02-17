@@ -94,8 +94,8 @@ static const uint64_t K[80] =
 /* compress 1024-bits */
 static int sha512_compress(
 	SHA512_Context      *md,
-	const unsigned char *buf
-){
+	const unsigned char *buf)
+{
 	uint64_t S[8],W[80],t0,t1;
 	int i;
 
@@ -147,13 +147,13 @@ static int sha512_compress(
 	return 0;
 }
 
-
 /**
    Initialize the hash state
    @param md   The hash state you wish to initialize
    @return 0 if successful
  */
-int sha512_init(SHA512_Context *md){
+int sha512_init(SHA512_Context *md)
+{
 	if(md == NULL)
 	{
 		return 1;
@@ -173,7 +173,6 @@ int sha512_init(SHA512_Context *md){
 	return 0;
 }
 
-
 /**
    Process a block of memory though the hash
    @param md     The hash state
@@ -184,8 +183,8 @@ int sha512_init(SHA512_Context *md){
 int sha512_update(
 	SHA512_Context      *md,
 	const unsigned char *in,
-	size_t              inlen
-){
+	size_t              inlen)
+{
 	size_t n;
 	size_t i;
 	int err;
@@ -242,7 +241,6 @@ int sha512_update(
 	return 0;
 }
 
-
 /**
    Terminate the hash to get the digest
    @param md  The hash state
@@ -251,8 +249,8 @@ int sha512_update(
  */
 int sha512_final(
 	SHA512_Context *md,
-	unsigned char  *out
-){
+	unsigned char  *out)
+{
 	int i;
 
 	if(md == NULL)
@@ -316,8 +314,8 @@ int sha512_final(
 void test(
 	const unsigned char *message,
 	size_t              message_len,
-	unsigned char       *out
-){
+	unsigned char       *out)
+{
 	// int ret;
 	// if ((ret = sha512_init(&ctx))) return ret;
 	// if ((ret = sha512_update(&ctx, message, message_len))) return ret;
@@ -329,7 +327,8 @@ void test(
 	sha512_final(&ctx,out);
 }
 
-int main(void){
+int main(void)
+{
 	unsigned char out[SHA512_DIGEST_LENGTH];
 	const unsigned char message[] = "Hello World";
 	test(message,sizeof(message),out);

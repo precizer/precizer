@@ -185,59 +185,51 @@ typedef struct {
 Return realloc_char(
 	mem_char *,
 	const size_t,
-	bool
-);
+	bool);
 
 Return calloc_char(
 	mem_char *,
 	const size_t,
-	bool
-);
+	bool);
 
 Return copy_char(
 	mem_char *,
-	mem_char *
-);
+	mem_char *);
 
 Return append_char(
 	mem_char *,
-	mem_char *
-);
+	mem_char *);
 
 Return del_char(mem_char **);
 
 Return realloc_int(
 	mem_int *,
 	const size_t,
-	bool
-);
+	bool);
 
 Return calloc_int(
 	mem_int *,
 	const size_t,
-	bool
-);
+	bool);
 
 Return del_int(mem_int **);
 
 Return realloc_ullint(
 	mem_ullint *,
 	const size_t,
-	bool
-);
+	bool);
 
 Return del_ullint(mem_ullint **);
 
 Return copy_ullint(
 	mem_ullint *,
-	mem_ullint *
-);
+	mem_ullint *);
 
 void FREE_AND_RESET(void **ptr);
 
 /**
  * @brief Macro for converting argument of reset function to void**
- * 
+ *
  * @param arg Argument to be converted to void**
  */
-#define reset(arg) FREE_AND_RESET((void**)(arg))
+#define reset(arg) FREE_AND_RESET((void **)(arg))

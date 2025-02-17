@@ -36,6 +36,17 @@ all: $(BINS)
 	@$(CC) $(CFLAGS) $< -o $(BIN_DIR)/$@
 	@echo $@ done
 
+#
+# Format rules
+#
+format:
+	@echo "Formatting source files..."
+	@for file in $(SRCS); do \
+		echo "Formatting $$file"; \
+		uncrustify -c ../Uncrustify.cfg --replace --no-backup $$file; \
+	done
+	@echo "All files formatted."
+
 # Clean target
 clean:
 	rm -f $(BINS)

@@ -16,24 +16,25 @@
  * @return SUCCESS if function executed correctly, otherwise an error code.
  */
 Return file_check_access(
-	const char *path,
+	const char               *path,
 	const short unsigned int *path_size,
-	bool *is_readable)
+	bool                     *is_readable)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	if(access(path, R_OK) == 0)
+	if(access(path,R_OK) == 0)
 	{
 		*is_readable = true;
 
 	} else {
 		char *absolute_path = NULL;
 		status = path_absolute_from_relative(&absolute_path,path,path_size);
+
 		if(SUCCESS == status)
 		{
-			if(access(absolute_path, R_OK) == 0)
+			if(access(absolute_path,R_OK) == 0)
 			{
 				*is_readable = true;
 			} else {
