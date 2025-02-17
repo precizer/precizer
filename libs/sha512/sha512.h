@@ -64,12 +64,10 @@ typedef struct sha512_context_ {
 int sha512_init(SHA512_Context *);
 int sha512_final(
 	SHA512_Context *,
-	unsigned char *
-);
+	unsigned char *);
 int sha512_update(
 	SHA512_Context *,
 	const unsigned char *,
-	size_t
-);
+	size_t);
 
 #endif // SHA512_H

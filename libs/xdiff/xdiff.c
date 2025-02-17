@@ -27,8 +27,8 @@ static long xdl_split(
 	long                *kvdb,
 	int                 need_min,
 	xdpsplit_t          *spl,
-	xdalgoenv_t         *xenv
-){
+	xdalgoenv_t         *xenv)
+{
 	long dmin = off1 - lim2,dmax = lim1 - off2;
 	long fmid = off1 - off2,bmid = lim1 - lim2;
 	long odd = (fmid - bmid) & 1;
@@ -313,8 +313,8 @@ int xdl_recs_cmp(
 	long        *kvdf,
 	long        *kvdb,
 	int         need_min,
-	xdalgoenv_t *xenv
-){
+	xdalgoenv_t *xenv)
+{
 	unsigned long const *ha1 = dd1->ha,*ha2 = dd2->ha;
 
 	/*
@@ -420,8 +420,8 @@ int xdl_do_diff(
 	mmfile_t        *mf1,
 	mmfile_t        *mf2,
 	xpparam_t const *xpp,
-	xdfenv_t        *xe
-){
+	xdfenv_t        *xe)
+{
 	long ndiags;
 	long *kvd,*kvdf,*kvdb;
 	xdalgoenv_t xenv;
@@ -506,8 +506,8 @@ xdl_add_change(
 	long       i1,
 	long       i2,
 	long       chg1,
-	long       chg2
-){
+	long       chg2)
+{
 	xdchange_t *xch;
 
 	if(!(xch = (xdchange_t *)malloc(sizeof(xdchange_t))))
@@ -533,8 +533,8 @@ xdl_add_change(
  */
 static int xdl_change_compact(
 	xdfile_t *xdf,
-	xdfile_t *xdfo
-){
+	xdfile_t *xdfo)
+{
 	long ix,ixo,ixref,grpsiz,nrec = xdf->nrec;
 	char *rchg = xdf->rchg,*rchgo = xdfo->rchg;
 	xrecord_t **recs = xdf->recs;
@@ -684,8 +684,8 @@ static int xdl_change_compact(
  */
 int xdl_build_script(
 	xdfenv_t   *xe,
-	xdchange_t **xscr
-){
+	xdchange_t **xscr)
+{
 	xdchange_t *cscr = NULL,*xch;
 	char *rchg1 = xe->xdf1.rchg,*rchg2 = xe->xdf2.rchg;
 	long i1,i2,l1,l2;
@@ -726,7 +726,8 @@ int xdl_build_script(
  *
  * @param xscr Change script to free
  */
-void xdl_free_script(xdchange_t *xscr){
+void xdl_free_script(xdchange_t *xscr)
+{
 	xdchange_t *xch;
 
 	while((xch = xscr) != NULL)
@@ -751,8 +752,8 @@ int xdl_diff(
 	mmfile_t           *mf2,
 	xpparam_t const    *xpp,
 	xdemitconf_t const *xecfg,
-	xdemitcb_t         *ecb
-){
+	xdemitcb_t         *ecb)
+{
 	xdchange_t *xscr;
 	xdfenv_t xe;
 
@@ -796,8 +797,8 @@ int xdl_diff(
 #if 0
 void *wrap_malloc(
 	void         *priv,
-	unsigned int size
-){
+	unsigned int size)
+{
 	return malloc(size);
 }
 #endif
@@ -811,8 +812,8 @@ void *wrap_malloc(
 #if 0
 void wrap_free(
 	void *priv,
-	void *ptr
-){
+	void *ptr)
+{
 	free(ptr);
 }
 #endif
@@ -829,8 +830,8 @@ void wrap_free(
 void *wrap_realloc(
 	void         *priv,
 	void         *ptr,
-	unsigned int size
-){
+	unsigned int size)
+{
 
 	return realloc(ptr,size);
 }
@@ -847,8 +848,8 @@ void *wrap_realloc(
 static long xdl_get_rec(
 	xdfile_t   *xdf,
 	long       ri,
-	char const **rec
-){
+	char const **rec)
+{
 
 	*rec = xdf->recs[ri]->ptr;
 
@@ -869,8 +870,8 @@ xdl_emit_record(
 	xdfile_t   *xdf,
 	long       ri,
 	char const *pre,
-	xdemitcb_t *ecb
-){
+	xdemitcb_t *ecb)
+{
 	long size,psize = strlen(pre);
 	char const *rec;
 
@@ -897,13 +898,12 @@ xdl_emit_record(
  */
 static xdchange_t *xdl_get_hunk(
 	xdchange_t *,
-	xdemitconf_t const *
-) __attribute__((pure));
+	xdemitconf_t const *) __attribute__((pure));
 
 static xdchange_t *xdl_get_hunk(
 	xdchange_t         *xscr,
-	xdemitconf_t const *xecfg
-){
+	xdemitconf_t const *xecfg)
+{
 
 	xdchange_t *xch,*xchp;
 
@@ -931,8 +931,8 @@ int xdl_emit_diff(
 	xdfenv_t           *xe,
 	xdchange_t         *xscr,
 	xdemitcb_t         *ecb,
-	xdemitconf_t const *xecfg
-){
+	xdemitconf_t const *xecfg)
+{
 	long s1,s2,e1,e2,lctx;
 	xdchange_t *xch,*xche;
 
@@ -1027,7 +1027,6 @@ int xdl_emit_diff(
 	return 0;
 }
 
-
 typedef struct s_xdlclass {
 	struct s_xdlclass *next;
 	unsigned long ha;
@@ -1046,8 +1045,8 @@ typedef struct s_xdlclassifier {
 
 static int xdl_init_classifier(
 	xdlclassifier_t *cf,
-	long            size
-){
+	long            size)
+{
 	long i;
 
 	cf->hbits = xdl_hashbits((unsigned int)size);
@@ -1076,7 +1075,8 @@ static int xdl_init_classifier(
 	return 0;
 }
 
-static void xdl_free_classifier(xdlclassifier_t *cf){
+static void xdl_free_classifier(xdlclassifier_t *cf)
+{
 	free(cf->rchash);
 	xdl_cha_free(&cf->ncha);
 }
@@ -1085,8 +1085,8 @@ static int xdl_classify_record(
 	xdlclassifier_t *cf,
 	xrecord_t       **rhash,
 	unsigned int    hbits,
-	xrecord_t       *rec
-){
+	xrecord_t       *rec)
+{
 	long hi;
 	char const *line;
 	xdlclass_t *rcrec;
@@ -1130,8 +1130,8 @@ static int xdl_prepare_ctx(
 	mmfile_t        *mf,
 	long            narec,
 	xdlclassifier_t *cf,
-	xdfile_t        *xdf
-){
+	xdfile_t        *xdf)
+{
 	unsigned int hbits;
 	long i,nrec,hsize,bsize;
 	unsigned long hav;
@@ -1273,7 +1273,8 @@ static int xdl_prepare_ctx(
 	return 0;
 }
 
-static void xdl_free_ctx(xdfile_t *xdf){
+static void xdl_free_ctx(xdfile_t *xdf)
+{
 	free(xdf->rhash);
 	free(xdf->rindex);
 	free(xdf->rchg - 1);
@@ -1286,8 +1287,8 @@ static int xdl_clean_mmatch(
 	char const *dis,
 	long       i,
 	long       s,
-	long       e
-){
+	long       e)
+{
 	long r,rdis0,rpdis0,rdis1,rpdis1;
 
 	/*
@@ -1369,8 +1370,8 @@ static int xdl_clean_mmatch(
  */
 static int xdl_cleanup_records(
 	xdfile_t *xdf1,
-	xdfile_t *xdf2
-){
+	xdfile_t *xdf2)
+{
 	long i,nm,rhi,nreff,mlim;
 	unsigned long hav;
 	xrecord_t **recs;
@@ -1471,8 +1472,8 @@ static int xdl_cleanup_records(
  */
 static int xdl_trim_ends(
 	xdfile_t *xdf1,
-	xdfile_t *xdf2
-){
+	xdfile_t *xdf2)
+{
 	long i,lim;
 	xrecord_t **recs1,**recs2;
 
@@ -1509,8 +1510,8 @@ static int xdl_trim_ends(
 
 static int xdl_optimize_ctxs(
 	xdfile_t *xdf1,
-	xdfile_t *xdf2
-){
+	xdfile_t *xdf2)
+{
 	if(xdl_trim_ends(xdf1,xdf2) < 0 || xdl_cleanup_records(xdf1,xdf2) < 0)
 	{
 		return -1;
@@ -1522,8 +1523,8 @@ static int xdl_optimize_ctxs(
 int xdl_prepare_env(
 	mmfile_t *mf1,
 	mmfile_t *mf2,
-	xdfenv_t *xe
-){
+	xdfenv_t *xe)
+{
 	long enl1,enl2;
 	xdlclassifier_t cf;
 
@@ -1563,16 +1564,16 @@ int xdl_prepare_env(
 	return 0;
 }
 
-void xdl_free_env(xdfenv_t *xe){
+void xdl_free_env(xdfenv_t *xe)
+{
 	xdl_free_ctx(&xe->xdf2);
 	xdl_free_ctx(&xe->xdf1);
 }
 
-
 int xdlt_load_mmfile(
 	char const *fname,
-	mmfile_t   *mf
-){
+	mmfile_t   *mf)
+{
 	int fd;
 	long size;
 	char *blk;
@@ -1610,7 +1611,8 @@ int xdlt_load_mmfile(
 	return 0;
 }
 
-long xdl_bogosqrt(long n){
+long xdl_bogosqrt(long n)
+{
 	long i;
 
 	/*
@@ -1629,8 +1631,8 @@ int xdl_emit_diffrec(
 	long       size,
 	char const *pre,
 	long       psize,
-	xdemitcb_t *ecb
-){
+	xdemitcb_t *ecb)
+{
 	int i = 2;
 	mmbuffer_t mb[3];
 
@@ -1657,8 +1659,8 @@ int xdl_emit_diffrec(
 int xdl_init_mmfile(
 	mmfile_t      *mmf,
 	long          bsize,
-	unsigned long flags
-){
+	unsigned long flags)
+{
 
 	mmf->flags = flags;
 	mmf->head = mmf->tail = NULL;
@@ -1670,7 +1672,8 @@ int xdl_init_mmfile(
 	return 0;
 }
 
-void xdl_free_mmfile(mmfile_t *mmf){
+void xdl_free_mmfile(mmfile_t *mmf)
+{
 	mmblock_t *cur,*tmp;
 
 	for(cur = mmf->head; (tmp = cur) != NULL;)
@@ -1682,8 +1685,8 @@ void xdl_free_mmfile(mmfile_t *mmf){
 
 void *xdl_mmfile_writeallocate(
 	mmfile_t *mmf,
-	long     size
-){
+	long     size)
+{
 	long bsize;
 	mmblock_t *wcur;
 	char *blk;
@@ -1724,8 +1727,8 @@ void *xdl_mmfile_writeallocate(
 
 void *xdl_mmfile_first(
 	mmfile_t *mmf,
-	long     *size
-){
+	long     *size)
+{
 
 	if(!(mmf->rcur = mmf->head))
 	{
@@ -1739,8 +1742,8 @@ void *xdl_mmfile_first(
 
 void *xdl_mmfile_next(
 	mmfile_t *mmf,
-	long     *size
-){
+	long     *size)
+{
 
 	if(!mmf->rcur || !(mmf->rcur = mmf->rcur->next))
 	{
@@ -1752,15 +1755,16 @@ void *xdl_mmfile_next(
 	return mmf->rcur->ptr;
 }
 
-long xdl_mmfile_size(mmfile_t *mmf){
+long xdl_mmfile_size(mmfile_t *mmf)
+{
 	return mmf->fsize;
 }
 
 int xdl_cha_init(
 	chastore_t *cha,
 	long       isize,
-	long       icount
-){
+	long       icount)
+{
 
 	cha->head = cha->tail = NULL;
 	cha->isize = isize;
@@ -1771,7 +1775,8 @@ int xdl_cha_init(
 	return 0;
 }
 
-void xdl_cha_free(chastore_t *cha){
+void xdl_cha_free(chastore_t *cha)
+{
 	chanode_t *cur,*tmp;
 
 	for(cur = cha->head; (tmp = cur) != NULL;)
@@ -1781,7 +1786,8 @@ void xdl_cha_free(chastore_t *cha){
 	}
 }
 
-void *xdl_cha_alloc(chastore_t *cha){
+void *xdl_cha_alloc(chastore_t *cha)
+{
 	chanode_t *ancur;
 	void *data;
 
@@ -1813,7 +1819,8 @@ void *xdl_cha_alloc(chastore_t *cha){
 	return data;
 }
 
-long xdl_guess_lines(mmfile_t *mf){
+long xdl_guess_lines(mmfile_t *mf)
+{
 	long nl = 0,size,tsize = 0;
 	char const *data,*cur,*top;
 
@@ -1853,8 +1860,8 @@ long xdl_guess_lines(mmfile_t *mf){
 
 unsigned long xdl_hash_record(
 	char const **data,
-	char const *top
-){
+	char const *top)
+{
 	unsigned long ha = 5381;
 	char const *ptr = *data;
 
@@ -1868,7 +1875,8 @@ unsigned long xdl_hash_record(
 	return ha;
 }
 
-unsigned int xdl_hashbits(unsigned int size){
+unsigned int xdl_hashbits(unsigned int size)
+{
 	unsigned int val = 1,bits = 0;
 
 	for(; val < size && bits < CHAR_BIT * sizeof(unsigned int);
@@ -1881,8 +1889,8 @@ unsigned int xdl_hashbits(unsigned int size){
 
 int xdl_num_out(
 	char *out,
-	long val
-){
+	long val)
+{
 	char *ptr,*str = out;
 	char buf[32];
 
@@ -1919,8 +1927,8 @@ int xdl_emit_hunk_hdr(
 	long       c1,
 	long       s2,
 	long       c2,
-	xdemitcb_t *ecb
-){
+	xdemitcb_t *ecb)
+{
 	int nb = 0;
 	mmbuffer_t mb;
 	char buf[128];
@@ -1962,8 +1970,8 @@ int xdl_emit_hunk_hdr(
 #if 0
 int main(
 	int  argc,
-	char *argv[]
-){
+	char *argv[])
+{
 	int i = 1,ctxlen = 3;
 	mmfile_t mf1,mf2;
 	xpparam_t xpp;

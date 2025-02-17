@@ -48,6 +48,13 @@ Return sha512sum(
 
 	const long buffer_size = how_much_memory_can_be_allocated_for_the_buffer();
 
+	if(buffer_size <= 0)
+	{
+		slog(ERROR,"Invalid buffer size: %ld bytes\n",buffer_size);
+		status = FAILURE;
+		provide(status);
+	}
+
 	unsigned char *buffer = (unsigned char *)calloc((size_t)buffer_size,sizeof(unsigned char));
 
 	if(buffer == NULL)
@@ -57,11 +64,10 @@ Return sha512sum(
 		provide(status);
 	}
 
-	FILE *fileptr = NULL;
 	char *absolute_path = NULL;
 	size_t len = 0;
 
-	fileptr = fopen(path,"rb");
+	FILE *fileptr = fopen(path,"rb");
 
 	if(fileptr == NULL)
 	{
@@ -73,10 +79,15 @@ Return sha512sum(
 		}
 
 		status = path_absolute_from_relative(&absolute_path,path,path_size);
-		if(SUCCESS != status)
+
+		if(absolute_path == NULL || SUCCESS != status)
 		{
 			slog(ERROR,"Can't constructs an absolute path from the base directory %s and a relative path %s\n",config->running_dir,path);
-			free(absolute_path);
+
+			if(absolute_path != NULL)
+			{
+				free(absolute_path);
+			}
 			free(buffer);
 			provide(status);
 		}
@@ -162,7 +173,6 @@ Return sha512sum(
 	if(fclose(fileptr) != 0)
 	{
 		slog(ERROR,"Error closing file %s\n",path);
-		status = FAILURE;
 	}
 
 	free(absolute_path);

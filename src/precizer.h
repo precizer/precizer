@@ -399,7 +399,7 @@ void remove_trailing_slash(char *);
 
 const char *extract_relative_path(
 	const char *,
-	const char *);
+	const char *) __attribute__ ((pure));
 
 Return path_absolute_from_relative(
 	char **,
