@@ -1,7 +1,7 @@
 # How to install dependencies and build the app:
 #
 # GCC
-# sudo apt -y install build-essential clang libpcre2-dev
+# sudo apt -y install gcc make libpcre2-dev lvm
 #
 # LLVM for sanitizer
 # sudo apt -y install llvm libubsan1
@@ -189,7 +189,7 @@ TOPTARGETS := all
 .PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
-all: hugetestfile production
+all: production
 
 $(SUBDIRS):
 	@$(MAKE) -s -C $(SUBDIRS) all
@@ -200,10 +200,11 @@ clang: all
 
 # Portable rules
 #
-portable: $(SUBDIRS) $(PRTEXE) prtfinal banner
+portable: $(SUBDIRS) $(PRTEXE) portfinal banner
 
-prtfinal: $(PRTEXE)
-	@cp $(PRTEXE) ./
+portfinal: $(PRTEXE)
+	@cp $(PRTEXE) $(EXE)
+	@upx --best --lzma -qqq $(EXE)
 	@echo "The $(PRTEXE) has been copied to the current directory"
 
 $(PRTEXE): $(PRTOBJS)
@@ -220,7 +221,7 @@ $(PRTOBJDIR):
 #
 # Sanitize rules
 #
-sanitize: hugetestfile $(SUBDIRS) $(STZEXE)
+sanitize: $(SUBDIRS) $(STZEXE)
 
 run:
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
@@ -239,10 +240,11 @@ $(STZOBJDIR):
 #
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE) dbgfinal
+debug: $(SUBDIRS) $(DBGEXE) debugfinal
 
-dbgfinal: $(DBGEXE)
-	@cp $(DBGEXE) ./
+debugfinal: $(DBGEXE)
+	@cp $(DBGEXE) $(EXE)
+	@upx --best --lzma -qqq $(EXE)
 	@echo "The $(DBGEXE) has been copied to the current directory"
 
 $(DBGEXE): $(DBGOBJS)
@@ -261,10 +263,11 @@ $(DBGOBJDIR):
 #
 release: production
 prod: production
-production: $(SUBDIRS) $(PRDEXE) prdfinal banner
+production: $(SUBDIRS) $(PRDEXE) prodfinal banner
 
-prdfinal: $(PRDEXE)
-	@cp $(PRDEXE) ./
+prodfinal: $(PRDEXE)
+	@cp $(PRDEXE) $(EXE)
+	@upx --best --lzma -qqq $(EXE)
 	@echo "The $(PRDEXE) has been copied to the current directory"
 
 $(PRDEXE): $(PRDOBJS)
@@ -414,10 +417,10 @@ cloc:
 clean-all: clean-tests clean clean-docker
 	@$(MAKE) -C $(SUBDIRS) clean
 
-clean: | clean-preproc clean-asm
+clean: | clean-preproc clean-asm clean-tests
 	@rm -rf *.out.* doc \
 		$(DBGEXE) $(STZEXE) $(PRTEXE) $(PRDEXE) \
-		$(STZOBJS) $(DBGOBJS) $(PRTOBJS) $(PRDOBJS) $(HUGETESTFILE)
+		$(STZOBJS) $(DBGOBJS) $(PRTOBJS) $(PRDOBJS)
 
 	@test -d $(STZOBJDIR) && rm -d $(STZOBJDIR) 2>/dev/null || true
 	@test -d $(STZDIR) && rm -d $(STZDIR) 2>/dev/null || true
@@ -444,16 +447,6 @@ clean-preproc:
 
 clean-asm:
 	@rm -rf $(ASM)
-
-HUGETESTFILE = tests/examples/huge/hugetestfile
-
-hugetestfile: $(HUGETESTFILE)
-
-$(HUGETESTFILE):
-	@echo Creating a huge file for testing
-	@mkdir -p tests/examples/huge/
-	@dd if=/dev/urandom of=$(HUGETESTFILE) bs=1M count=10
-	@echo The huge file for testing has been created
 
 banner:
 	@printf "Now some tests could be running:\n"
