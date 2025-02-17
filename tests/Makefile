@@ -109,7 +109,7 @@ DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 .PHONY: all clean debug release prod production sanitize coverage run coverage-report coverage-html format
 
 # Default build
-all: sanitize
+all: hugetestfile sanitize
 	@true
 
 #
@@ -146,10 +146,10 @@ coverage-html: coverage-report
 #
 # Sanitize rules
 #
-sanitize: $(STZEXE)
+sanitize: hugetestfile $(STZEXE)
 	@$(MAKE) -s -C ../ $@
 
-run: $(STZEXE)
+run: hugetestfile sanitize $(STZEXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE)
 
 $(STZEXE): $(STZOBJS) $(STZPRZROBJS)
@@ -170,7 +170,7 @@ $(STZOBJDIR):
 #
 # Debug rules
 #
-debug: $(DBGEXE) $(DBGMAIN)
+debug: hugetestfile $(DBGEXE) $(DBGMAIN)
 
 $(DBGMAIN): $(DBGEXE)
 	@cp $(DBGEXE) $(DBGMAIN)
@@ -191,6 +191,17 @@ $(DBGOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBGOBJDIR)
 $(DBGOBJDIR):
 	@mkdir -p "$(DBGOBJDIR)"
 
+HUGETESTFILE = examples/huge/hugetestfile
+HUGETESTDIR := $(dir $(HUGETESTFILE))
+
+hugetestfile: $(HUGETESTFILE)
+
+$(HUGETESTFILE):
+	@echo Creating a huge file for testing
+	@mkdir -p $(HUGETESTDIR)
+	@dd if=/dev/urandom of=$(HUGETESTFILE) bs=1M count=10
+	@echo The huge file for testing has been created
+
 #
 # Format rules
 #
@@ -203,6 +214,7 @@ format:
 	@echo "All files formatted."
 
 clean:
+	@rm -f $(HUGETESTFILE)
 	@rm -f $(STZMAIN) $(STZEXE) $(DBGEXE) $(COVEXE)
 	@rm -f $(DBGOBJS) $(DBGPRZROBJS)
 	@rm -f $(STZOBJS) $(STZPRZROBJS)
