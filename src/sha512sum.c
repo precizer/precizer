@@ -36,8 +36,8 @@ static long how_much_memory_can_be_allocated_for_the_buffer(void)
  *
  */
 Return sha512sum(
-	const char               *relative_path,
-	const short unsigned int *relative_path_size,
+	const char               *path,
+	const short unsigned int *path_size,
 	unsigned char            *sha512,
 	sqlite3_int64            *offset,
 	SHA512_Context           *mdContext)
@@ -47,43 +47,87 @@ Return sha512sum(
 	Return status = SUCCESS;
 
 	const long buffer_size = how_much_memory_can_be_allocated_for_the_buffer();
+
 	unsigned char *buffer = (unsigned char *)calloc((size_t)buffer_size,sizeof(unsigned char));
+
+	if(buffer == NULL)
+	{
+		report("Memory allocation failed, requested size: %zu bytes",(size_t)buffer_size * sizeof(unsigned char));
+		status = FAILURE;
+		provide(status);
+	}
+
 	FILE *fileptr = NULL;
+	char *absolute_path = NULL;
 	size_t len = 0;
 
-	fileptr = fopen(relative_path,"rb");
+	fileptr = fopen(path,"rb");
 
 	if(fileptr == NULL)
 	{
-		// The variable in the stack is extremely fast
-		char absolute_path[config->running_dir_size + *relative_path_size + 1];
+		// No read permission
+		if(errno == EACCES)
+		{
+			free(buffer);
+			provide(status);
+		}
 
-		strcpy(absolute_path,config->running_dir);
-		absolute_path[strlen(config->running_dir)] = '/';
-		absolute_path[strlen(config->running_dir) + 1] = '\0';
-		strcat(absolute_path,relative_path);
+		status = path_absolute_from_relative(&absolute_path,path,path_size);
+		if(SUCCESS != status)
+		{
+			slog(ERROR,"Can't constructs an absolute path from the base directory %s and a relative path %s\n",config->running_dir,path);
+			free(absolute_path);
+			free(buffer);
+			provide(status);
+		}
 
 		fileptr = fopen(absolute_path,"rb");
 
 		if(fileptr == NULL)
 		{
-			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path\n",relative_path,absolute_path);
+			// No read permission
+			if(errno == EACCES)
+			{
+				free(buffer);
+				free(absolute_path);
+				provide(status);
+			}
+
+			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path with errno: %d\n",path,absolute_path,errno);
 			status = FAILURE;
-			return(status);
+			free(buffer);
+			free(absolute_path);
+			provide(status);
 		}
 	}
 
 	// It moves the file pointer "offset" bytes from the beginning of the file
-	fseek(fileptr,*offset,SEEK_SET);
+	if(fseek(fileptr,*offset,SEEK_SET) != 0)
+	{
+		slog(ERROR,"Failed to seek to offset %lld in file %s\n",*offset,path);
+		free(buffer);
+		free(absolute_path);
+		fclose(fileptr);
+		status = FAILURE;
+		provide(status);
+	}
 
 	bool loop_was_interrupted = false;
 
 	if(*offset == 0)
 	{
-		sha512_init(mdContext);
+		if(sha512_init(mdContext) == 1)
+		{
+			slog(ERROR,"SHA512 initialization failed\n");
+			free(buffer);
+			free(absolute_path);
+			fclose(fileptr);
+			status = FAILURE;
+			provide(status);
+		}
 	}
 
-	while((len = fread(buffer,1,(size_t)buffer_size,fileptr)) != 0)      // read from infile
+	while((len = fread(buffer,1,(size_t)buffer_size,fileptr)) != 0)
 	{
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */
@@ -92,18 +136,49 @@ Return sha512sum(
 			loop_was_interrupted = true;
 			break;
 		}
-		sha512_update(mdContext,buffer,len);
-		*offset += (sqlite3_int64)len;
+
+		if(ferror(fileptr))
+		{
+			slog(ERROR,"Error reading file %s\n",path);
+			status = FAILURE;
+			break;
+		}
+
+		if(SUCCESS == status)
+		{
+			if(sha512_update(mdContext,buffer,len) == 1)
+			{
+				slog(ERROR,"SHA512 update failed\n");
+				status = FAILURE;
+				break;
+			}
+
+			*offset += (sqlite3_int64)len;
+		}
 	}
 
 	free(buffer);
 
-	fclose(fileptr); // Close the file
-
-	if(loop_was_interrupted == false)
+	if(fclose(fileptr) != 0)
 	{
-		*offset = 0;
-		sha512_final(mdContext,sha512);
+		slog(ERROR,"Error closing file %s\n",path);
+		status = FAILURE;
+	}
+
+	free(absolute_path);
+
+	if(SUCCESS == status)
+	{
+		if(loop_was_interrupted == false)
+		{
+			*offset = 0;
+
+			if(sha512_final(mdContext,sha512) == 1)
+			{
+				slog(ERROR,"SHA512 finalization failed\n");
+				status = FAILURE;
+			}
+		}
 	}
 
 #if 0
@@ -116,5 +191,5 @@ Return sha512sum(
 
 #endif
 
-	return(status);
+	provide(status);
 }
