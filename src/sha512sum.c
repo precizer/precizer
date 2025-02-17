@@ -48,8 +48,9 @@ Return sha512sum(
 
 	const long buffer_size = how_much_memory_can_be_allocated_for_the_buffer();
 
-	if (buffer_size <= 0) {
-		slog(ERROR, "Invalid buffer size: %ld bytes\n", buffer_size);
+	if(buffer_size <= 0)
+	{
+		slog(ERROR,"Invalid buffer size: %ld bytes\n",buffer_size);
 		status = FAILURE;
 		provide(status);
 	}
@@ -82,6 +83,7 @@ Return sha512sum(
 		if(absolute_path == NULL || SUCCESS != status)
 		{
 			slog(ERROR,"Can't constructs an absolute path from the base directory %s and a relative path %s\n",config->running_dir,path);
+
 			if(absolute_path != NULL)
 			{
 				free(absolute_path);
