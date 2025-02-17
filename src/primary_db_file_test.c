@@ -22,5 +22,5 @@ Return primary_db_file_test(void)
 
 	}
 
-	return(status);
+	provide(status);
 }

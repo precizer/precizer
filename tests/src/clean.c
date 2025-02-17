@@ -1,6 +1,7 @@
 #include "sute.h"
 
-Return clean(void){
+Return clean(void)
+{
 	INITTEST;
 
 	// Clear up all temporary files

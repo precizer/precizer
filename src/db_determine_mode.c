@@ -133,5 +133,5 @@ Return db_determine_mode(void)
 
 	slog(TRACE,"DB mode determined\n");
 
-	return(status);
+	provide(status);
 }

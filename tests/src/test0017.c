@@ -4,8 +4,8 @@
 static void test_conversion(
 	int          value,
 	unsigned int base,
-	const char   *string
-){
+	const char   *string)
+{
 	char buffer[66];  /* 64 bits + sign + null terminator */
 	itoa(value,buffer,base);
 
@@ -21,7 +21,8 @@ static void test_conversion(
  * @note Tests edge cases and different bases with special focus on
  *       negative numbers and MIN/MAX integer values
  */
-static void test_itoa(void){
+static void test_itoa(void)
+{
 
 	/* Test extreme values */
 	printf("=== Testing extreme values ===\n");
@@ -87,7 +88,8 @@ static void test_itoa(void){
  * @brief Test program for itoa function
  *
  */
-Return test0017(void){
+Return test0017(void)
+{
 	INITTEST;
 
 	MSTRUCT(mem_char,captured_stdout);

@@ -167,7 +167,7 @@ static error_t parse_opt(
 			} else if(0 == strncasecmp(arg,"FULL",sizeof("FULL"))){
 				config->db_check_level = FULL;
 			} else {
-				return ARGP_ERR_UNKNOWN;
+				return(ARGP_ERR_UNKNOWN);
 			}
 			break;
 		case 's':
@@ -204,10 +204,10 @@ static error_t parse_opt(
 			}
 			break;
 		default:
-			return ARGP_ERR_UNKNOWN;
+			return(ARGP_ERR_UNKNOWN);
 	}
 
-	return 0;
+	return(0);
 }
 
 /* Our argp parser. */
@@ -279,7 +279,7 @@ Return parse_arguments(
 
 	if(SUCCESS != status)
 	{
-		return(status);
+		provide(status);
 	}
 
 	if(rational_logger_mode & TESTING)
@@ -556,5 +556,5 @@ Return parse_arguments(
 
 	slog(TRACE,"Arguments parsed\n");
 
-	return(status);
+	provide(status);
 }

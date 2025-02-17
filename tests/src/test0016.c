@@ -5,7 +5,8 @@
  * --watch-timestamps argument testing
  *
  */
-Return test0016(void){
+Return test0016(void)
+{
 	INITTEST;
 
 	char *pattern = NULL;

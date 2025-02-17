@@ -83,11 +83,14 @@ Return db_delete_the_record_by_id(
 
 			status = shorten_path(shorten_relative_path);
 
-			if(*clean_ignored == true)
+			if(!(rational_logger_mode & SILENT))
 			{
-				slog(EVERY,"%s clean ignored\n",shorten_relative_path);
-			} else {
-				slog(EVERY,"%s\n",shorten_relative_path);
+				if(*clean_ignored == true)
+				{
+					printf("%s clean ignored\n",shorten_relative_path);
+				} else {
+					printf("%s\n",shorten_relative_path);
+				}
 			}
 
 			free(shorten_relative_path);
@@ -100,5 +103,5 @@ Return db_delete_the_record_by_id(
 
 	sqlite3_finalize(delete_stmt);
 
-	return(status);
+	provide(status);
 }
