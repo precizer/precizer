@@ -27,19 +27,19 @@ Return db_specify_version(const char *db_file_path)
 	if(db_file_path == NULL)
 	{
 		slog(ERROR,"Invalid input parameter: db_file_path\n");
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
 	if(global_interrupt_flag == true)
 	{
 		slog(TRACE,"The program has been gracefully terminated. Store the current database version is not required\n");
-		return(status);
+		provide(status);
 	}
 
 	if(config->dry_run == true)
 	{
 		slog(TRACE,"Dry Run mode is enabled. Store the current database version is not required\n");
-		return(status);
+		provide(status);
 	}
 
 	/* Open database connection */
@@ -121,5 +121,5 @@ Return db_specify_version(const char *db_file_path)
 		}
 	}
 
-	return(status);
+	provide(status);
 }

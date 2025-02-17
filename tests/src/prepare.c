@@ -1,6 +1,7 @@
 #include "sute.h"
 
-Return prepare(void){
+Return prepare(void)
+{
 	INITTEST;
 
 	const char *command = NULL;

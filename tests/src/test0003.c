@@ -6,7 +6,8 @@
  * Does it really comply with to the "hostname.db" template
  *
  */
-Return test0003(void){
+Return test0003(void)
+{
 	INITTEST;
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \

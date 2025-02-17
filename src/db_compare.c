@@ -25,7 +25,7 @@ static Return compose_sql(
 		report("Memory allocation failed for SQL query string");
 	}
 
-	return(status);
+	provide(status);
 }
 
 /**
@@ -63,7 +63,7 @@ static Return db_attach(
 
 	free(select_sql);
 
-	return(status);
+	provide(status);
 }
 
 /**
@@ -141,7 +141,7 @@ static Return db_changes(
 
 	sqlite3_finalize(select_stmt);
 
-	return(status);
+	provide(status);
 }
 
 /**
@@ -160,7 +160,7 @@ Return db_compare(void)
 	if(config->compare != true)
 	{
 		slog(TRACE,"Database comparison mode is not enabled. Skipping comparison\n");
-		return(status);
+		provide(status);
 	}
 
 	slog(EVERY,"The comparison of %s and %s databases is starting…\n",
@@ -371,5 +371,5 @@ Return db_compare(void)
 		config->db_file_names[0],
 		config->db_file_names[1]);
 
-	return(status);
+	provide(status);
 }

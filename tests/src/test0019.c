@@ -10,7 +10,8 @@
  * 3. Add symlinks, update database
  *
  */
-Return test0019(void){
+Return test0019(void)
+{
 	INITTEST;
 
 	char *pattern = NULL;

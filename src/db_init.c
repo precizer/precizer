@@ -174,5 +174,5 @@ Return db_init(void)
 
 	slog(TRACE,"Database initialization process completed\n");
 
-	return(status);
+	provide(status);
 }

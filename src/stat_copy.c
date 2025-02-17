@@ -27,7 +27,7 @@ Return stat_copy(
 
 	if(source == NULL || destination == NULL)
 	{
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
 	/* Copying essential elements from the stat structure to the new one */
@@ -37,5 +37,5 @@ Return stat_copy(
 	destination->ctim_tv_sec = source->st_ctim.tv_sec;
 	destination->ctim_tv_nsec = source->st_ctim.tv_nsec;
 
-	return(status);
+	provide(status);
 }

@@ -159,7 +159,8 @@ void show_relative_path(
 	const bool      *ignored,
 	bool            *at_least_one_file_was_shown,
 	bool            *rehash,
-	const bool      *count_size_of_all_files)
+	const bool      *count_size_of_all_files,
+	const bool      *is_readable)
 {
 	bool show_traversal_started = false;
 	bool show_update_warning = false;
@@ -226,13 +227,16 @@ void show_relative_path(
 
 		free(shorten_relative_path);
 
-		if(*ignored == true)
+		if(*is_readable == false)
 		{
-			printf(" ignored & not added");
-		}
+			printf(" inaccessible\n");
 
-		if(*ignored == false)
-		{
+		} else if (*ignored == true){
+
+			printf(" ignored & not added\n");
+
+		} else if(*ignored == false){
+
 			if(*rehashig_from_the_beginning)
 			{
 				printf(" the SHA512 hashing of the file had not been finished previously, since then the file has been changed and will be rehashed from the beginning\n");

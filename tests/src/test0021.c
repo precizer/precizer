@@ -1,6 +1,7 @@
 #include "sute.h"
 
-static void test0021_1(void){
+static void test0021_1(void)
+{
 
 	setlocale(LC_ALL,""); // Enable UTF-8 support
 
@@ -46,7 +47,8 @@ static void test0021_1(void){
  * @brief UTF8 manipulations
  *
  */
-Return test0021(void){
+Return test0021(void)
+{
 	INITTEST;
 
 	MSTRUCT(mem_char,captured_stdout);

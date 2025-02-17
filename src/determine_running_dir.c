@@ -10,12 +10,13 @@ Return determine_running_dir(void)
 
 	if(cwd != NULL)
 	{
+		remove_trailing_slash(cwd);
 		config->running_dir = cwd;
 		config->running_dir_size = (long int)strlen(config->running_dir) + 1;
 		slog(TRACE,"Current directory: %s\n",config->running_dir);
-		return(SUCCESS);
+		provide(SUCCESS);
 	} else {
 		slog(ERROR,"Error getting current directory\n");
-		return(FAILURE);
+		provide(FAILURE);
 	}
 }
