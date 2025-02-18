@@ -35,10 +35,10 @@ jobs:
       - name: Create GitHub Release with gh CLI
         id: create_release
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create ${{ github.ref_name }} precizer.zip \
             --title "Release ${{ github.ref_name }}" \
             --notes "${{ env.BODY }}" \
-            --prerelease
+            --draft
 
