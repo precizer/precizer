@@ -28,10 +28,6 @@ jobs:
           cd tests
           make sanitize run
 
-      - name: Get annotated tag message
-        id: tag_message
-        run: echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV
-
       - name: Create GitHub Release with gh CLI
         id: create_release
         env:
