@@ -13,10 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
 
       - name: Build project
         run: |
@@ -30,27 +30,17 @@ jobs:
 
       - name: Get annotated tag message
         id: tag_message
-        run: echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV
+        run: |
+          #git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release with gh CLI
         id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          body: ${{ env.BODY }}
-          draft: true
-          prerelease: true
+        run: |
+          gh release create ${{ github.ref_name }} precizer.zip \
+            --title "Release ${{ github.ref_name }}" \
+            --notes "${{ env.BODY }}" \
+            --draft
 
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: precizer.zip
-          asset_name: precizer.zip
-          asset_content_type: application/octet-stream
