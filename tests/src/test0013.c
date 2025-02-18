@@ -93,7 +93,7 @@ static Return dry_run_mode_2_test(void)
 	// that the --db-clean-ignored option must be specified for permanent
 	// removal of ignored files from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --dry-run --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --dry-run --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -118,7 +118,7 @@ static Return dry_run_mode_2_test(void)
 	// Dry Run mode permanent deletion of all ignored file
 	// references from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -141,7 +141,7 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\""
 	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -220,7 +220,7 @@ static Return no_dry_run_mode_3_test(void)
 	// removal of ignored files from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp -p database1.db database1.db.backup;"
-	        "${BINDIR}/precizer --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -242,7 +242,7 @@ static Return no_dry_run_mode_3_test(void)
 	// references from the database
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp -p database1.db.backup database1.db;"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
@@ -262,7 +262,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "mv database1.db.backup database1.db;"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/*\""
+	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
