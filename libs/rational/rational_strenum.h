@@ -24,6 +24,9 @@ typedef enum
 	WARNING, // The actual value is 2
 
 	// Do nothing
-	DONOTHING // The actual value is 3
+	DONOTHING, // The actual value is 3
+
+	// The process has been permanently stopped
+	HALTED // The actual value is 4
 
 } Return;
