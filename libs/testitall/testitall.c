@@ -52,6 +52,18 @@ Return testitall(
 		}
 		fprintf(stdout,"\n");
 
+	} else if(SKIPPED == status){
+		/* Green OK for passed tests */
+		fprintf(stdout,WHITE "[ " BOLDYELLOW "SKIP" RESET WHITE  " ]" RESET );
+		fprintf(stdout,WHITE " %lldns %s %s" RESET,elapsed_time,function_name,test_description);
+
+		/* Display any additional info captured in EXTEND buffer */
+		if(EXTEND->length > 0)
+		{
+			fprintf(stdout,WHITE " %s" RESET,EXTEND->mem);
+		}
+		fprintf(stdout,"\n");
+		status = SUCCESS;
 	} else {
 		/* Red FAIL for failed tests */
 		fprintf(stdout,WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" RESET );

@@ -428,6 +428,8 @@ static Return test0007_7_libmem_multiple(void)
 {
 	INITTEST;
 
+	SLOWTEST;
+
 	#define TYPE ullint
 	#include "test0007.cc"
 	#undef TYPE
@@ -443,6 +445,8 @@ static Return test0007_8_libmem_multiple(void)
 {
 	INITTEST;
 
+	SLOWTEST;
+
 	#define TYPE char
 	#include "test0007.cc"
 	#undef TYPE
@@ -457,6 +461,8 @@ static Return test0007_8_libmem_multiple(void)
 static Return test0007_9_libmem_multiple(void)
 {
 	INITTEST;
+
+	SLOWTEST;
 
 	#define TYPE int
 	#include "test0007.cc"
