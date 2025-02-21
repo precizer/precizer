@@ -6,7 +6,8 @@
  *
  */
 static inline Byte tobyte(const size_t) __attribute__((always_inline));
-static inline Byte tobyte(const size_t bytes){
+static inline Byte tobyte(const size_t bytes)
+{
 	/// Number of bytes in a kilobyte
 	/// 1024
 	const size_t bytes_in_kilobyte = 1024ULL;
@@ -75,8 +76,8 @@ static inline Byte tobyte(const size_t bytes){
 static void catbyte(
 	char *const       result,
 	const size_t      bytes,
-	const char *const suffix
-){
+	const char *const suffix)
+{
 	if(bytes > 0ULL)
 	{
 		// Temporary array
@@ -103,7 +104,8 @@ static void catbyte(
  * eb - Exabyte
  *
  */
-char *bkbmbgbtbpbeb(const size_t bytes){
+char *bkbmbgbtbpbeb(const size_t bytes)
+{
 	static char result[MAX_NUMBER_CHARACTERS];
 
 	// Zero out a static memory area with a string array
@@ -136,7 +138,8 @@ char *bkbmbgbtbpbeb(const size_t bytes){
 /// Test
 /// 4617322122555958282 = ((1024*1024*1024*1024*1024*1024)*4)+((1024*1024*1024*1024*1024)*5)+((1024*1024*1024*1024)*6)+((1024*1024*1024)*7)+((1024*1024)*8)+((1024)*9)+10
 /// Should be 4EB 5PB 6TB 7GB 8MB 9kB 10B
-int main(void){
+int main(void)
+{
 	const size_t bytes = 4617322122555958282ULL;
 	printf("%s\n",bkbmbgbtbpbeb(bytes));
 	return 0;

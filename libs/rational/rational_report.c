@@ -20,8 +20,8 @@
 void SERP(
 	const char *prefix,
 	const char *file,
-	const char *func
-){
+	const char *func)
+{
 	/* Buffer for converting errno to string, size 32 is sufficient for max int */
 	char itoa_buf[32];
 
@@ -63,8 +63,8 @@ void REPORT(
 	const char *func_name,
 	int        line_num,
 	const char *format,
-	...
-){
+	...)
+{
 	/* Buffers for message construction, zero-initialized for safety */
 	char msg_buffer[MAX_NUMBER_CHARACTERS] = {0};    /* User message buffer */
 	char final_buffer[MAX_NUMBER_CHARACTERS] = {0};  /* Complete error message */

@@ -85,7 +85,6 @@
  */
 #include "rational_report.h"
 
-
 /**
  *
  * Common usage structures and enumerations

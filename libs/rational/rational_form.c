@@ -11,7 +11,8 @@
  * @return Pointer to a string
  *
  */
-const char *form(long double val){
+const char *form(long double val)
+{
 	static char result[MAX_NUMBER_CHARACTERS];
 
 	// Compare the argument passed to the parent function
@@ -118,7 +119,8 @@ const char *form(long double val){
 
 // Test
 #if 0
-int main(void){
+int main(void)
+{
 	double digit = 837452834.94;
 	printf("digit: %s\n",form(digit));
 }
