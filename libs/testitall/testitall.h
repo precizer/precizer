@@ -162,6 +162,8 @@ Return random_number_generator(
 	uint64_t
 );
 
+#define SKIPPED 100500
+
 /**
  * @brief Macro for executing a test.
  * @param func The function to test.
@@ -207,6 +209,16 @@ Return random_number_generator(
 	/* The status that will be returned before exiting. */ \
 	/* By default, assumes the function ran without errors. */ \
 	Return status = SUCCESS;
+
+#define SLOWTEST \
+	const char *compare_string = "skip"; \
+	const char *env_var = getenv("SLOWTEST"); \
+	/* Check if it exists and compare it to "skip" */ \
+	if(env_var != NULL && strncasecmp(env_var,compare_string,strlen(compare_string)) == 0) \
+	{ \
+		echo(EXTEND,BOLDYELLOW "➡" BOLDWHITE " skipped" RESET); \
+		return(SKIPPED); \
+	}
 
 Return testitall(
 	Return (*func)(void),
