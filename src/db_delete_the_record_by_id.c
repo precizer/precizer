@@ -61,13 +61,22 @@ Return db_delete_the_record_by_id(
 		{
 			if(*first_iteration == true)
 			{
+				*first_iteration = false;
 
-				if(config->update == true && config->the_update_warning_has_already_been_shown == false)
+				if(config->ignore != NULL)
+				{
+					if(config->db_clean_ignored == false)
+					{
+						slog(EVERY,"If the information about ignored files should be removed from the database the " BOLD "--db-clean-ignored" RESET " option must be specified. This is special protection against accidental deletion of information from the database\n");
+					} else {
+						slog(TRACE,"The " BOLD "--db-clean-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
+					}
+				}
+
+				if(config->the_update_warning_has_already_been_shown == false)
 				{
 					slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be deleted against the database %s\n",config->db_file_name);
 				}
-
-				*first_iteration = false;
 
 				/* Reflect changes in global */
 				if(config->dry_run == false)

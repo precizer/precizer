@@ -13,6 +13,13 @@ Return db_determine_name(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	if(config->compare == true)
 	{
 		if(config->db_file_path == NULL)

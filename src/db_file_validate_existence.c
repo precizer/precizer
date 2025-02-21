@@ -25,6 +25,13 @@ Return db_file_validate_existence(void)
 	 */
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	// DB file exists or not
 	config->db_file_exists = false;
 

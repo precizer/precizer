@@ -15,6 +15,13 @@ Return db_consider_version_update(void)
 {
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	// Don't do anything
 	if(config->compare == true)
 	{

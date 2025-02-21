@@ -57,4 +57,5 @@ TESTING:Comparison mode is enabled. The primary database verification is not req
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:Comparison mode is enabled. Store the primary database version is not required
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
-TESTING:The precizer completed its execution without any issues\z
+TESTING:The precizer completed its execution without any issues
+TESTING:Exit status » SUCCESS\z

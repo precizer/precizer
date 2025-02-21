@@ -105,9 +105,9 @@ Return sha512sum(
 			}
 
 			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path with errno: %d\n",path,absolute_path,errno);
-			status = FAILURE;
 			free(buffer);
 			free(absolute_path);
+			status = FAILURE;
 			provide(status);
 		}
 	}
