@@ -49,6 +49,13 @@ Return db_validate_paths(void)
 		return(status);
 	}
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	sqlite3_stmt *select_stmt = NULL;
 	sqlite3_stmt *insert_stmt = NULL;
 	int rc = 0;
@@ -261,7 +268,7 @@ Return db_validate_paths(void)
 				slog(EVERY,"Use the" BOLD " --force" RESET " option only when the PATHS stored in the database need"
 					" to be updated. Warning: If this option is used incorrectly, file and checksum information"
 					" in the database may be lost or completely replaced with different values.\n");
-				status = FAILURE;
+				status = WARNING;
 			}
 		}
 	}

@@ -27,4 +27,5 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Returned db_determine_mode:\d+ status: FAILURE
-ERROR:The precizer process terminated unexpectedly due to an error\z
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » FAILURE\z

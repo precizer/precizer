@@ -100,7 +100,7 @@ static Return test0011_2_readme(void)
 
 	filename = "templates/0011_002_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
