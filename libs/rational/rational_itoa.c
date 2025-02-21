@@ -3,8 +3,8 @@
 // A utility function to reverse a string
 static void reverse(
 	char   str[],
-	size_t length
-){
+	size_t length)
+{
 	size_t start = 0;
 	size_t end = length > 0 ? length - 1 : 0;  // Guard against empty strings
 
@@ -32,8 +32,8 @@ static void reverse(
 char *itoa(
 	int          num,
 	char         *str,
-	unsigned int base
-){
+	unsigned int base)
+{
 	size_t i = 0;
 	bool isNegative = false;
 	unsigned int unum; // Use unsigned int for calculations
@@ -85,8 +85,8 @@ char *itoa(
 static void test_conversion(
 	int  value,
 	int  base,
-	char *string
-){
+	char *string)
+{
 	char buffer[66];  /* 64 bits + sign + null terminator */
 	itoa(value,buffer,base);
 
@@ -102,7 +102,8 @@ static void test_conversion(
  * @note Tests edge cases and different bases with special focus on
  *       negative numbers and MIN/MAX integer values
  */
-int main(void){
+int main(void)
+{
 
 	/* Test extreme values */
 	printf("=== Testing extreme values ===\n");

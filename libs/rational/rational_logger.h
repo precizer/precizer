@@ -51,5 +51,4 @@ void rational_logger
 	size_t,
 	const char *,
 	const char *,
-	...
-);
+	...);

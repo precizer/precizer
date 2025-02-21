@@ -8,5 +8,4 @@
 char *itoa(
 	int  value,
 	char *str,
-	unsigned int
-);
+	unsigned int);
