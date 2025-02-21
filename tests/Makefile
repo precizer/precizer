@@ -236,6 +236,15 @@ clean:
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
 	@echo $(EXE) cleared.
 
+# Optional preprocessor files
+%.i:%.c
+	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
+# C-C++ Beautifier
+#	@bcpp -na $@ > $@.h
+	@bcpp -na -s -i 4 $@ > $@.h
+	@sed -i 's/[ \t]*\# [[:digit:]]\+ \".*//g' $@.h
+#	@sed -i '/^ *$//d' $@.h
+
 #
 # Print of variables
 #

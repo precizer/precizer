@@ -33,7 +33,7 @@ Return path_absolute_from_relative(
 		len = (size_t)*path_size + 1;
 		*absolute_path = (char *)malloc(len);
 
-		if(absolute_path == NULL)
+		if(*absolute_path == NULL)
 		{
 			report("Memory allocation failed, requested size: %zu bytes",len);
 			status = FAILURE;
@@ -47,7 +47,7 @@ Return path_absolute_from_relative(
 		len = (size_t)config->running_dir_size + (size_t)*path_size + 1;
 		*absolute_path = (char *)malloc(len);
 
-		if(absolute_path == NULL)
+		if(*absolute_path == NULL)
 		{
 			report("Memory allocation failed, requested size: %zu bytes",len);
 			status = FAILURE;

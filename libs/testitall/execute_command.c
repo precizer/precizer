@@ -45,8 +45,11 @@ Return execute_command(
 		status = FAILURE; // Invalid arguments
 	}
 
-	// Clean the STDOUT buffer to prepare for new command output
-	status = del_char(&STDOUT);
+	/* Clean the STDOUT buffer to prepare for new command output */
+	if(SUCCESS == status)
+	{
+		status = del_char(&STDOUT);
+	}
 
 	/* Execute the command with specified parameters */
 	if(SUCCESS == status)

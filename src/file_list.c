@@ -4,7 +4,7 @@
  * @brief Display statistics for filesystem components
  *
  */
-static void show_status(
+static void display_status(
 	size_t     *count_dirs,
 	size_t     *count_files,
 	size_t     *count_symlnks,
@@ -167,7 +167,6 @@ Return file_list(const bool count_size_of_all_files)
 				{
 					report("Memory allocation failed, requested size: %zu bytes",(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
 					status = FAILURE;
-					continue_the_loop = false;
 					break;
 				} else {
 					runtime_path_prefix = tmp;
@@ -481,7 +480,7 @@ Return file_list(const bool count_size_of_all_files)
 	// Display statistics for filesystem components
 	if(SUCCESS == status)
 	{
-		show_status(&count_dirs,&count_files,&count_symlnks,&total_size_in_bytes,&count_size_of_all_files,&at_least_one_file_was_shown);
+		display_status(&count_dirs,&count_files,&count_symlnks,&total_size_in_bytes,&count_size_of_all_files,&at_least_one_file_was_shown);
 	}
 
 	provide(status);

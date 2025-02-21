@@ -4,7 +4,8 @@
  * @brief Current time in milliseconds
  * @return Returns long long int the number of milliseconds since the UNIX epoch
  */
-long long int cur_time_ms(void){
+long long int cur_time_ms(void)
+{
 	struct timeval t;
 	gettimeofday(&t,NULL);
 	long long mt = (long long)t.tv_sec * 1000 + t.tv_usec / 1000;
@@ -16,7 +17,8 @@ long long int cur_time_ms(void){
  * @return long long int number of nanoseconds, count starts at the Unix Epoch on January 1st, 1970 at UTC
  * @details Source: https://stackoverflow.com/questions/39439268/printing-time-since-epoch-in-nanoseconds
  */
-long long int cur_time_ns(void){
+long long int cur_time_ns(void)
+{
 	long long int ns;
 	time_t sec;
 	struct timespec spec;
@@ -34,7 +36,8 @@ long long int cur_time_ns(void){
  * If 0 is passed, the current time will be printed out in ISO format.
  *
  */
-char *seconds_to_ISOdate(time_t seconds){
+char *seconds_to_ISOdate(time_t seconds)
+{
 	struct timeval curTime;
 	gettimeofday(&curTime,NULL);
 
@@ -62,7 +65,8 @@ char *seconds_to_ISOdate(time_t seconds){
  * @brief "As a date", Convert nanoseconds to date format
  *
  */
-__attribute__((always_inline)) static inline Date asadate(const long long int nanoseconds){
+__attribute__((always_inline)) static inline Date asadate(const long long int nanoseconds)
+{
 	/// Number of nanoseconds in a year
 	/// 365*24*60*60*1000*1000*1000
 	const long long int ns_in_year = 31536000000000000LL;
@@ -145,8 +149,8 @@ __attribute__((always_inline)) static inline Date asadate(const long long int na
 static void catdate(
 	char *const         result,
 	const long long int number,
-	const char *const   suffix
-){
+	const char *const   suffix)
+{
 	if(number > 0LL)
 	{
 		// Temporary array
@@ -167,7 +171,8 @@ static void catdate(
  * Convert nanoseconds to human-readable date as a string
  *
  */
-char *form_date(const long long int nanoseconds){
+char *form_date(const long long int nanoseconds)
+{
 	static char result[MAX_NUMBER_CHARACTERS];
 
 	// Zero out a static memory area with a string array
@@ -218,8 +223,8 @@ char *form_date(const long long int nanoseconds){
 /// 339800645368118513 = ((365*24*60*60*1000*1000*1000)*10) + (((365*24*60*60*1000*1000*1000)/12)*9)+((7*24*60*60*1000*1000*1000)*1)+((24*60*60*1000*1000*1000)*2)+((60*60*1000*1000*1000)*3)+((60*1000*1000*1000)*4)+((1000*1000*1000)*5)+((1000*1000)*368)+((1000)*118)+513
 /// Should be 10y 9mon 1w 2d 3h 4min 5s 368ms 118μs 513ns
 
-
-int main(void){
+int main(void)
+{
 
 	long long int ns = 339800645368118513LL;
 	printf("%s\n",form_date(ns));

@@ -24,6 +24,13 @@ Return db_contains_data(void)
 	 */
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	/* Skip check if in comparison mode */
 	if(config->compare == true)
 	{
@@ -91,7 +98,7 @@ Return db_contains_data(void)
 					" that the database needs to be updated and when file information"
 					" (including changes, deletions, and additions) should be synchronized"
 					" with the database.\n",config->db_file_name);
-				status = FAILURE;
+				status = WARNING;
 			}
 		}
 	}

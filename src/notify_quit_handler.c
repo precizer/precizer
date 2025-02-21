@@ -10,7 +10,12 @@
 void notify_quit_handler(int sig)
 {
 	printf("Notify quit!\n");
-	global_interrupt_flag = true;
+
+	atomic_store(&global_interrupt_flag,true);
+
+	atomic_store(&global_return_status,HALTED);
+
+	printf("The global return status and exit flag has been set to %s\n",show_status(global_return_status));
 
 	if(sig==SIGTERM)
 	{

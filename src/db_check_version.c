@@ -15,6 +15,13 @@ Return db_check_version(
 {
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	/* Has the database been updated or not? */
 	bool db_has_been_upgraded = false;
 
@@ -33,7 +40,6 @@ Return db_check_version(
 	} else {
 
 		slog(ERROR,"Failed to get database version\n");
-		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
@@ -45,11 +51,8 @@ Return db_check_version(
 			if(SUCCESS == status)
 			{
 				db_has_been_upgraded = true;
-
 			} else {
-
 				slog(ERROR,"Database %s upgrade failed\n",db_file_name);
-				status = FAILURE;
 			}
 
 		} else if(db_version > CURRENT_DB_VERSION){

@@ -50,7 +50,7 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database 0015_database_v0.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB 0015_database_v0.db:\x1B\[0m
-1/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash
+1/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash$
 1/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
 1/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
 2/AAA/BBB/CZC/a.txt updated ctime was:.+ no rehash$
@@ -64,8 +64,11 @@ path2/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
 path2/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
 TESTING:File traversal complete
 TESTING:Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
+TESTING:Searching for files that no longer exist on the file system…
+TESTING:Missing file search completed
 TESTING:Version number 1 found in database
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:\x1B\[1mThe database file 0015_database_v0.db has been modified since the program was launched\x1B\[0m
-TESTING:The precizer completed its execution without any issues\z
+TESTING:The precizer completed its execution without any issues
+TESTING:Exit status » SUCCESS\z

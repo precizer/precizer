@@ -39,7 +39,10 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database 0015_database_v0.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:Searching for files that no longer exist on the file system…
+TESTING:Missing file search completed
 TESTING:Version number 1 found in database
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mThe database file 0015_database_v0.db has NOT been modified since the program was launched\x1B\[0m
-TESTING:The precizer completed its execution without any issues\z
+TESTING:The precizer completed its execution without any issues
+TESTING:Exit status » SUCCESS\z

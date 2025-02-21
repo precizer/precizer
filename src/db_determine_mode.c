@@ -56,6 +56,13 @@ Return db_determine_mode(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	// Initialize tables of the database or not
 	// Default value
 	config->db_initialize_tables = false;
