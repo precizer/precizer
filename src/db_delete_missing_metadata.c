@@ -12,26 +12,39 @@ Return db_delete_missing_metadata(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	/* Skip in comparison mode */
 	if(config->compare == true)
 	{
 		slog(TRACE,"Comparison mode is enabled. The primary database does not require cleanup\n");
 		provide(status);
-	} else if(config->dry_run == true && config->db_file_exists == true){
+	}
+
+	/* Update mode should be enabled */
+	if(config->update == true)
+	{
+		slog(EVERY,"Searching for files that no longer exist on the file system…\n");
+
+	} else {
+		// Don't do anything
+		provide(status);
+	}
+
+	if(config->dry_run == true && config->db_file_exists == true)
+	{
 		slog(TRACE,"Dry Run mode is enabled. The primary database must not be modified\n");
 	}
 
-	if(config->update == true && config->ignore != NULL)
-	{
-		if(config->db_clean_ignored == false)
-		{
-			slog(EVERY,"If the information about ignored files should be removed from the database the " BOLD "--db-clean-ignored" RESET " option must be specified. This is special protection against accidental deletion of information from the database\n");
-		} else {
-			slog(TRACE,"The " BOLD "--db-clean-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
-		}
-	}
+	bool first_iteration = true;
 
 	sqlite3_stmt *select_stmt = NULL;
+
 	int rc = 0;
 
 #if 0 // Old multiPATH solutions
@@ -46,8 +59,6 @@ Return db_delete_missing_metadata(void)
 		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
-
-	bool first_iteration = true;
 
 	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 	{
@@ -70,7 +81,6 @@ Return db_delete_missing_metadata(void)
 
 		if(runtime_path_prefix != NULL && relative_path != NULL)
 		{
-
 			/*
 			 * Remove from the database mention of
 			 * files that matches the regular expression
@@ -114,30 +124,30 @@ Return db_delete_missing_metadata(void)
 				}
 			}
 
-			// The variable in the stack is extremely fast
-			size_t runtime_path_prefix_size = strlen(runtime_path_prefix);
-			size_t relative_path_size = strlen(relative_path);
-			absolute_path = (char *)calloc(runtime_path_prefix_size + relative_path_size + 2,sizeof(char));    // One for '/' and second for '\0' at the end of the line
-
-			if(absolute_path == NULL)
+			if(strlen(runtime_path_prefix) > 0 && strlen(relative_path) > 0)
 			{
-				report("Memory allocation failed, requested size: %zu bytes",runtime_path_prefix_size + relative_path_size + 2,sizeof(char));
+				int length = asprintf(&absolute_path,"%s/%s",runtime_path_prefix,relative_path);
+
+				if(length == -1)
+				{
+					slog(ERROR,"Generating the absolute path failed\n");
+					status = FAILURE;
+					break;
+				}
+			} else {
+				slog(ERROR,"A zero-length path has been found\n");
 				status = FAILURE;
 				break;
 			}
-			strcpy(absolute_path,runtime_path_prefix);
-			absolute_path[runtime_path_prefix_size] = '/';
-			absolute_path[runtime_path_prefix_size + 1] = '\0';
-			strcat(absolute_path,relative_path);
-			absolute_path[runtime_path_prefix_size + relative_path_size + 1] = '\0';
 		} else {
 			path_was_removed_from_db = true;
 		}
 
-		if(clean_ignored == true || path_was_removed_from_db == true || access(absolute_path,F_OK) != 0)
+		if(clean_ignored == true || path_was_removed_from_db == true || (absolute_path != NULL && access(absolute_path,F_OK) != 0))
 		{
 			status = db_delete_the_record_by_id(&ID,&first_iteration,&clean_ignored,relative_path);
 		}
+
 		free(absolute_path);
 	}
 
@@ -151,6 +161,8 @@ Return db_delete_missing_metadata(void)
 	}
 
 	sqlite3_finalize(select_stmt);
+
+	slog(EVERY,"Missing file search completed\n");
 
 	provide(status);
 }

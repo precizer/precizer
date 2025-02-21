@@ -100,7 +100,7 @@ static Return test0011_2_readme(void)
 
 	filename = "templates/0011_002_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
 
@@ -331,8 +331,8 @@ static Return test0011_8_readme(void)
 	command = "export TESTING=false;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update"
 	        " --db-clean-ignored --ignore=\"^.*/path2/.*\""
-	        " --ignore=\"diff2/.*\" --include=\"diff2/1/AAA/ZAW/A/b/c/.*\""
-	        " --include=\"diff2/path1/AAA/ZAW/.*\" tests/examples/diffs";
+	        " --ignore=\"^diff2/.*\" --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
+	        " --include=\"^diff2/path1/AAA/ZAW/.*\" tests/examples/diffs";
 
 	const char *filename = "templates/0011_008.txt";
 

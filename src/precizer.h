@@ -574,7 +574,10 @@ int exit_status(
 
 extern _Atomic bool global_interrupt_flag;
 
+extern _Atomic Return global_return_status;
+
 extern Config _config;
+
 extern Config *config;
 
 // Application name and current code version
