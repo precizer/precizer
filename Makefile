@@ -361,8 +361,10 @@ gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-sum
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
+REDUCEDLIBS = $(subst -Ilibs/sqlite,,$(INCPATH))
+
 cppcheck:
-	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive .
+	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests $(REDUCEDLIBS) --suppress=missingIncludeSystem --inconclusive .
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)
