@@ -25,8 +25,8 @@ Return init_signals(void)
 	// kill -USR2 <pid>
 	if((signal(SIGUSR2,&notify_quit_handler)==SIG_ERR)!=0)
 	{
-		status = FAILURE;
 		slog(ERROR,"Failed set signal SIGUSR2\n");
+		status = FAILURE;
 	} else {
 		slog(TRACE,"Set signal SIGUSR2 OK:pid:%i\n",getpid());
 	}
@@ -34,8 +34,8 @@ Return init_signals(void)
 	// Ctrl-C
 	if((signal(SIGINT,&notify_quit_handler)==SIG_ERR)!=0)
 	{
-		status = FAILURE;
 		slog(ERROR,"Failed set signal SIGINT\n");
+		status = FAILURE;
 	} else {
 		slog(TRACE,"Set signal SIGINT OK:pid:%i\n",getpid());
 	}
@@ -43,8 +43,8 @@ Return init_signals(void)
 	// Default kill Termination signal (15)
 	if((signal(SIGTERM,&notify_quit_handler)==SIG_ERR)!=0)
 	{
-		status = FAILURE;
 		slog(ERROR,"Failed set signal SIGTERM\n");
+		status = FAILURE;
 	} else {
 		slog(TRACE,"Set signal SIGTERM OK:pid:%i\n",getpid());
 	}

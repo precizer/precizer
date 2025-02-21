@@ -32,6 +32,12 @@ STATIC bool is_utf8_dot(const char *str)
 	memset(&state,0,sizeof(state));
 	wchar_t wc;
 	size_t len = mbrtowc(&wc,str,MB_CUR_MAX,&state);
+
+	if(!mbsinit(&state))
+	{
+		// Error
+		return(false);
+	}
 	return (len > 0 && wc == L'.');
 }
 
@@ -48,16 +54,23 @@ STATIC void remove_leading_dots(char *str)
 	}
 
 	char *start = str;
+	mbstate_t state = {0}; // Initialize multibyte state
 
 	while(*start && is_utf8_dot(start))
 	{
-		size_t len = mbrlen(start,MB_CUR_MAX,NULL);
+		size_t len = mbrlen(start,MB_CUR_MAX,&state);
 
 		if(len == 0 || len == (size_t)-1)
 		{
 			break;
 		}
 		start += len;
+	}
+
+	if(!mbsinit(&state))
+	{
+		// Error
+		return;
 	}
 
 	// Move trimmed string to the beginning
@@ -81,22 +94,22 @@ STATIC void remove_trailing_dots(char *str)
 
 	char *end = str + strlen(str);
 
-	// Найти последний символ, который не является точкой
+	// Find the last character that is not a dot
 	while(end > str)
 	{
 		char *p = end - 1;
 
-		while(p > str && (*p & 0xC0) == 0x80)    // Пропуск многобайтовых символов
+		while(p > str && (*p & 0xC0) == 0x80)    // Skip multibyte characters
 		{
 			p--;
 		}
 
 		if(!is_utf8_dot(p))
 		{
-			break; // Найден символ, который не точка
+			break; // Found a character that is not a dot
 		}
 
-		// Правильное удаление последней точки
+		// Properly remove the last dot
 		*p = '\0';
 		end = p;
 	}
@@ -124,7 +137,7 @@ static void utf8_truncate(
 	// Iterate through the string character by character
 	while(*ptr)
 	{
-		unsigned char *next = ptr;
+		unsigned char *next = NULL;
 
 		if((*ptr & 0x80) == 0)    // 1-byte character (ASCII)
 		{
@@ -220,7 +233,6 @@ static void utf8_keep_last_chars(
  */
 Return shorten_path(char *path)
 {
-
 	Return status = SUCCESS;
 
 	/* Validate input parameters */
@@ -268,6 +280,12 @@ Return shorten_path(char *path)
 	if(ellipsis_length == (size_t)-1 || ellipsis_length == (size_t)-2)
 	{
 		/* Invalid UTF-8 encoding. No action needed */
+		provide(status);
+	}
+
+	if(!mbsinit(&state))
+	{
+		// Error
 		provide(status);
 	}
 

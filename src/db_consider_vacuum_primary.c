@@ -12,6 +12,13 @@ Return db_consider_vacuum_primary(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	// Don't do anything
 	if(config->compare == true)
 	{
@@ -24,13 +31,6 @@ Return db_consider_vacuum_primary(void)
 
 	} else if(config->something_has_been_changed == false){
 		slog(TRACE,"No changes were made. The primary database doesn't require vacuuming\n");
-		provide(status);
-	}
-
-	/* Interrupt the function smoothly */
-	/* Interrupt when Ctrl+C */
-	if(global_interrupt_flag == true)
-	{
 		provide(status);
 	}
 

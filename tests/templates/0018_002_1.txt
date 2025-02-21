@@ -27,6 +27,8 @@
 \+1/2/3/4/ddd.txt add
 -TESTING:No DB version data found in metadata table
 -TESTING:The database version 1 has been successfully stored in the DB
+\+TESTING:Searching for files that no longer exist on the file system…
+\+TESTING:Missing file search completed
 \+TESTING:Version number 1 found in database
 -TESTING:\\x1B\\\[1mThe database database3.db has been modified since the last check \\\(files were added, removed, or updated\\\)\\x1B\\\[0m
 \+TESTING:\\x1B\\\[1mThe database file database3.db has been modified since the program was launched\\x1B\\\[0m
