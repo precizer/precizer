@@ -24,7 +24,8 @@ char rational_logger_mode = REGULAR;
  *
  * @warning Maximum resulting string length is limited to 256 characters
  */
-char *rational_reconvert(int mode){
+char *rational_reconvert(int mode)
+{
 	/* Static buffer to store the resulting string */
 	static char buffer[256];
 	buffer[0] = '\0';  /* Initialize buffer as empty string */
@@ -77,7 +78,8 @@ char *rational_reconvert(int mode){
  * like this, for example: printf("Start at %s\n",logger_show_time());
  *
  */
-static char *logger_show_time(void){
+static char *logger_show_time(void)
+{
 	struct timeval curTime;
 	gettimeofday(&curTime,NULL);
 	// Determine the number of milliseconds
@@ -121,8 +123,8 @@ void rational_logger(
 	size_t            line,
 	const char *const funcname,
 	const char        *fmt,
-	...
-){
+	...)
+{
 	if(rational_logger_mode & SILENT)
 	{
 		// Output nothing
@@ -196,7 +198,8 @@ void rational_logger(
  * @file test_slog.c
  * @brief Complete test suite for log functionality
  */
-int main(void){
+int main(void)
+{
 	printf("All available combinations:\n");
 	printf("%s\n",rational_convert(REGULAR));
 	printf("%s\n",rational_convert(VERBOSE));
