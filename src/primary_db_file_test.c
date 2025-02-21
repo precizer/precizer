@@ -11,6 +11,13 @@ Return primary_db_file_test(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	// Primary database file integrity check
 	if(config->db_file_exists == true)
 	{

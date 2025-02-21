@@ -31,43 +31,35 @@ Return db_test(const char *db_file_path)
 	if(dirc == NULL)
 	{
 		serp("Memory allocation failed during strdup operation");
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
-	if(SUCCESS == status)
-	{
-		db_file_name = basename(dirc);
+	db_file_name = basename(dirc);
 
-		if(db_file_name == NULL)
-		{
-			report("basename failed for path: %s",db_file_path);
-			status = FAILURE;
-		}
+	if(db_file_name == NULL)
+	{
+		report("basename() failed for path: %s",db_file_path);
+		free(dirc);
+		provide(FAILURE);
 	}
 
 	/* Check if verification should be skipped */
-	if(SUCCESS == status)
+	if(config->dry_run == true && config->db_file_exists == false)
 	{
-		if(config->dry_run == true && config->db_file_exists == false)
-		{
-			slog(TRACE,"Dry Run mode is enabled. Database verification for %s is skipped\n",db_file_name);
-			free(dirc);
-			return(SUCCESS);
-		}
+		slog(TRACE,"Dry Run mode is enabled. Database verification for %s is skipped\n",db_file_name);
+		free(dirc);
+		provide(SUCCESS);
 	}
 
 	/* Open database in read-only mode */
-	if(SUCCESS == status)
-	{
-		slog(EVERY,"Starting database file %s integrity check…\n",db_file_name);
-		int sqlite_open_flag = SQLITE_OPEN_READONLY;
+	slog(EVERY,"Starting database file %s integrity check…\n",db_file_name);
+	int sqlite_open_flag = SQLITE_OPEN_READONLY;
 
-		/* Open database */
-		if(sqlite3_open_v2(db_file_path,&db,sqlite_open_flag,NULL))
-		{
-			slog(ERROR,"Can't open database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
+	/* Open database */
+	if(sqlite3_open_v2(db_file_path,&db,sqlite_open_flag,NULL))
+	{
+		slog(ERROR,"Can't open database: %s\n",sqlite3_errmsg(db));
+		status = FAILURE;
 	}
 
 	/* Prepare integrity check statement */
@@ -146,7 +138,10 @@ Return db_test(const char *db_file_path)
 		status = db_check_version(db_file_path,db_file_name);
 	}
 
-	free(dirc);
+	if(dirc != NULL)
+	{
+		free(dirc);
+	}
 
-	return(status);
+	provide(status);
 }

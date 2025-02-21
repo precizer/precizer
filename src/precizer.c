@@ -15,6 +15,8 @@
 // Atomic variable is very fast and will be called very often
 _Atomic bool global_interrupt_flag = false;
 
+_Atomic Return global_return_status = SUCCESS;
+
 // The global structure Config where all runtime settings will be stored
 Config _config;
 Config *config = &_config;

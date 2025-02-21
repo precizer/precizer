@@ -52,6 +52,13 @@ Return db_save_prefixes(void)
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	/* Interrupt the function smoothly */
+	/* Interrupt when Ctrl+C */
+	if(global_interrupt_flag == true)
+	{
+		provide(status);
+	}
+
 	/* Skip in comparison mode */
 	if(config->compare == true)
 	{
