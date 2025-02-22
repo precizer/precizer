@@ -16,8 +16,10 @@
 \+TESTING:The database database3.db is on version 1 and does not require any upgrades
 -TESTING:The primary database and tables have been successfully initialized
 \+TESTING:The primary database and tables have NOT been initialized
-\+TESTING:The database database3.db has already been created previously
+-TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 -TESTING:Recursion depth limited to: 3
+\+TESTING:The database database3.db has already been created previously
+\+TESTING:The paths written against the database and the paths passed as arguments are completely identical
 \+TESTING:The \\x1B\\\[1m--update\\x1B\\\[0m option has been used, so the information about files will be updated against the database database3.db
 -TESTING:\\x1B\\\[1mThese files will be added against the database3.db database:\\x1B\\\[0m
 -1/2/3/ccc.txt

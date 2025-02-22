@@ -195,80 +195,86 @@ Return db_validate_paths(void)
 
 	if(SUCCESS == status)
 	{
-		if(paths_are_equal == true)
+		/* If the database was just created */
+		if(config->db_file_exists == false && config->compare == false)
 		{
-			slog(TRACE,"The paths written against the database and the paths passed as arguments are completely identical\n");
+			slog(TRACE,"The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments\n");
+			provide(status);
+
 		} else {
-			slog(EVERY,"The paths passed as arguments differ from those saved in the database. File paths and checksum information may be lost!\n");
 
-			if(!(rational_logger_mode & SILENT))
+			if(paths_are_equal == true)
 			{
-				slog(EVERY,"Paths saved in the database: ");
+				slog(TRACE,"The paths written against the database and the paths passed as arguments are completely identical\n");
+			} else {
+				slog(EVERY,"The paths passed as arguments differ from those saved in the database. File paths and checksum information may be lost!\n");
 
-				sqlite3_stmt *stmt;
-				int rc_stmt = 0;
-				char const *sql = "SELECT prefix FROM paths;";
-
-				rc_stmt = sqlite3_prepare_v2(config->db,sql,-1,&stmt,NULL);
-
-				if(SQLITE_OK != rc_stmt)
+				if(!(rational_logger_mode & SILENT))
 				{
-					slog(ERROR,"Can't prepare select statement %s (%i): %s\n",sql,rc_stmt,sqlite3_errmsg(config->db));
-					status = FAILURE;
-				}
+					slog(EVERY,"Paths saved in the database:\n");
 
-				if(SUCCESS == status)
-				{
-					bool first_iteration = true;
+					sqlite3_stmt *stmt;
+					int rc_stmt = 0;
+					char const *sql = "SELECT prefix FROM paths;";
 
-					while(SQLITE_ROW == (rc_stmt = sqlite3_step(stmt)))
+					rc_stmt = sqlite3_prepare_v2(config->db,sql,-1,&stmt,NULL);
+
+					if(SQLITE_OK != rc_stmt)
 					{
-						const char *prefix = (const char *)sqlite3_column_text(stmt,0);
+						slog(ERROR,"Can't prepare select statement %s (%i): %s\n",sql,rc_stmt,sqlite3_errmsg(config->db));
+						status = FAILURE;
+					}
 
-						if(first_iteration == true)
+					if(SUCCESS == status)
+					{
+						while(SQLITE_ROW == (rc_stmt = sqlite3_step(stmt)))
 						{
-							printf("%s",prefix);
-							first_iteration = false;
-						} else {
-							printf(", %s",prefix);
+							const char *prefix = (const char *)sqlite3_column_text(stmt,0);
+
+							/* Truncate the file path/name in the display output if it exceeds the length limit */
+							char *path = strdup(prefix);
+
+							(void)shorten_path(path);
+
+							printf("%s\n",path);
+
+							free(path);
+						}
+
+						if(SQLITE_DONE != rc_stmt)
+						{
+							slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc_stmt,sqlite3_errmsg(config->db));
+							status = FAILURE;
 						}
 					}
 
-					printf("\n");
-
-					if(SQLITE_DONE != rc_stmt)
-					{
-						slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc_stmt,sqlite3_errmsg(config->db));
-						status = FAILURE;
-					}
+					sqlite3_finalize(stmt);
 				}
 
-				sqlite3_finalize(stmt);
-			}
-
-			if(config->force == true)
-			{
-				if(!(rational_logger_mode & SILENT))
+				if(config->force == true)
 				{
-					slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",config->db_file_name);
-
-					for(int i = 0; config->paths[i]; i++)
+					if(!(rational_logger_mode & SILENT))
 					{
-						/* Truncate the file path/name in the display output if it exceeds the length limit */
-						char *path = strdup(config->paths[i]);
+						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",config->db_file_name);
 
-						(void)shorten_path(path);
+						for(int i = 0; config->paths[i]; i++)
+						{
+							/* Truncate the file path/name in the display output if it exceeds the length limit */
+							char *path = strdup(config->paths[i]);
 
-						printf("%s\n",path);
+							(void)shorten_path(path);
 
-						free(path);
+							printf("%s\n",path);
+
+							free(path);
+						}
 					}
+				} else {
+					slog(EVERY,"Use the" BOLD " --force" RESET " option only when the PATHS stored in the database need"
+						" to be updated. Warning: If this option is used incorrectly, file and checksum information"
+						" in the database may be lost or completely replaced with different values.\n");
+					status = WARNING;
 				}
-			} else {
-				slog(EVERY,"Use the" BOLD " --force" RESET " option only when the PATHS stored in the database need"
-					" to be updated. Warning: If this option is used incorrectly, file and checksum information"
-					" in the database may be lost or completely replaced with different values.\n");
-				status = WARNING;
 			}
 		}
 	}
