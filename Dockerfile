@@ -1,4 +1,4 @@
-ARG OS=ubuntu:24.04
+ARG OS=ubuntu:18.04
 ARG BUILD=production
 
 FROM ${OS} as builder
@@ -20,17 +20,13 @@ WORKDIR /precizer
 # Copy project files
 COPY . .
 
-RUN make sanitize
-
-RUN cd tests && make sanitize run
+RUN make sanitize && make tests tests-sanitize
 
 # Build project
 RUN make ${BUILD}
 
-RUN cd tests && make debug
-
 # Run tests
-CMD ["sh", "-c", "cd tests && make run && /precizer/tests/testitall"]
+CMD ["sh", "-c", "cd tests && make tests"]
 
 FROM ubuntu:24.04
 

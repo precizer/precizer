@@ -109,8 +109,15 @@ DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 .PHONY: all clean debug release prod production sanitize coverage run coverage-report coverage-html format
 
 # Default build
-all: hugetestfile sanitize
-	@true
+all: tests
+
+run: run-debug
+
+tests: tests-debug
+
+tests-debug: hugetestfile debug run-debug
+
+tests-sanitize: hugetestfile sanitize run-sanitize
 
 #
 # Coverage rules
@@ -149,7 +156,7 @@ coverage-html: coverage-report
 sanitize: hugetestfile $(STZEXE)
 	@$(MAKE) -s -C ../ $@
 
-run: hugetestfile sanitize $(STZEXE)
+run-sanitize: sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE)
 
 $(STZEXE): $(STZOBJS) $(STZPRZROBJS)
@@ -171,6 +178,9 @@ $(STZOBJDIR):
 # Debug rules
 #
 debug: hugetestfile $(DBGEXE) $(DBGMAIN)
+
+run-debug: debug
+	@./$(DBGMAIN)
 
 $(DBGMAIN): $(DBGEXE)
 	@cp $(DBGEXE) $(DBGMAIN)
