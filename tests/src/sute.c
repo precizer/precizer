@@ -2,7 +2,7 @@
 
 int main(void)
 {
-	TESTSTART;
+	SUTESTART;
 
 	HEADER("Preparations");
 	TEST(prepare,"Preparation for tests");
@@ -45,5 +45,5 @@ int main(void)
 	RUN(finish,"Telemetry");
 
 	HEADER("Finishing");
-	TESTDONE;
+	SUTEDONE;
 }
