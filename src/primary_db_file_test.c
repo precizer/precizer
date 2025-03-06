@@ -18,8 +18,8 @@ Return primary_db_file_test(void)
 		provide(status);
 	}
 
-	// Primary database file integrity check
-	if(config->db_file_exists == true)
+	// The primary database file integrity check
+	if(config->db_primary_file_exists == true)
 	{
 		run(db_test(config->db_file_path));
 

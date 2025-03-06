@@ -195,8 +195,8 @@ Return db_validate_paths(void)
 
 	if(SUCCESS == status)
 	{
-		/* If the database was just created */
-		if(config->db_file_exists == false && config->compare == false)
+		/* If the primary database was just created */
+		if(config->db_primary_file_exists == false && config->compare == false)
 		{
 			slog(TRACE,"The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments\n");
 			provide(status);

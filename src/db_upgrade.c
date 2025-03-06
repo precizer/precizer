@@ -26,14 +26,14 @@ Return db_upgrade(
 	if(config->update == false)
 	{
 		slog(ERROR,"Program execution cannot continue. Database update required. Use the " BOLD "--update" RESET " flag to perform this action\n");
-		provide(FAILURE);
+		provide(WARNING);
 	}
 
 	/* Sequentially upgrade through versions */
 	if(*db_version < 1)
 	{
 		slog(TRACE,"Migration from version 0 to version 1 started\n");
-		status = migrate_from_0_to_1(db_file_path);
+		status = db_migrate_from_0_to_1(db_file_path);
 
 		if(SUCCESS == status)
 		{
@@ -52,7 +52,7 @@ Return db_upgrade(
 	if(SUCCESS == status && *db_version < 2)
 	{
 		slog(TRACE,"Migration from version 1 to version 2 started\n");
-		status = migrate_from_1_to_2(&db_version,db_file_path,db_file_name);
+		status = db_migrate_from_1_to_2(&db_version,db_file_path,db_file_name);
 
 		if(SUCCESS == status)
 		{

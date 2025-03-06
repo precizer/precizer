@@ -21,7 +21,7 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Successfully opened database DisposableDB
-TESTING:The primary database and tables have NOT been initialized
+TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
 TESTING:Database initialization process completed

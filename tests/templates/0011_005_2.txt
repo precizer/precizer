@@ -30,7 +30,7 @@ TESTING:Version number 1 found in database
 TESTING:The %DB_NAME% database file is version 1
 TESTING:The database %DB_NAME% is on version 1 and does not require any upgrades
 TESTING:Successfully opened database %DB_NAME%
-TESTING:The primary database and tables have NOT been initialized
+TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named %DB_NAME% is ready for operations
 TESTING:The in-memory runtime_paths_id database successfully attached to the primary database %DB_NAME%
 TESTING:Database initialization process completed
