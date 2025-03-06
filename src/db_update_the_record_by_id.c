@@ -22,7 +22,8 @@ Return db_update_the_record_by_id(
 	const sqlite3_int64  *offset,
 	const unsigned char  *sha512,
 	const CmpctStat      *stat,
-	const SHA512_Context *mdContext)
+	const SHA512_Context *mdContext,
+	const bool           *zero_size_file)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -80,7 +81,7 @@ Return db_update_the_record_by_id(
 	/* Bind SHA512 checksum */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0)
+		if(*offset == 0 && *zero_size_file == false)
 		{
 			rc = sqlite3_bind_blob(update_stmt,2,sha512,SHA512_DIGEST_LENGTH,NULL);
 		} else {

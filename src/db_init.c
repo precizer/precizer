@@ -1,5 +1,7 @@
 #include "precizer.h"
 #define DB_RUNTIME_PATHS_ID "runtime_paths_id"
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 
 /**
  *
@@ -90,7 +92,8 @@ Return db_init(void)
 			        "CREATE TABLE IF NOT EXISTS paths ("
 			        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL,"
 			        "prefix TEXT NOT NULL UNIQUE);"
-			        "COMMIT;";
+			        "COMMIT;"
+			        "REPLACE INTO metadata (db_version) VALUES (" TOSTRING(CURRENT_DB_VERSION) ");";
 #endif
 
 			/* Full runtime path is stored in the table 'paths' */
@@ -109,7 +112,8 @@ Return db_init(void)
 			        "CREATE TABLE IF NOT EXISTS paths ("
 			        "ID INTEGER PRIMARY KEY UNIQUE NOT NULL,"
 			        "prefix TEXT NOT NULL UNIQUE);"
-			        "COMMIT;";
+			        "COMMIT;"
+			        "REPLACE INTO metadata (db_version) VALUES (" TOSTRING(CURRENT_DB_VERSION) ");";
 
 			/* Execute SQL statement */
 			rc = sqlite3_exec(config->db,sql,NULL,NULL,NULL);
@@ -123,7 +127,7 @@ Return db_init(void)
 			}
 		}
 	} else {
-		slog(TRACE,"The primary database and tables have NOT been initialized\n");
+		slog(TRACE,"The primary database and tables do not require initialization\n");
 	}
 
 	if(SUCCESS == status)

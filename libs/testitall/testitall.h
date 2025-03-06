@@ -54,7 +54,13 @@
 #define HEADER(msg) \
 	if(SUCCESS == status) \
 	{ \
-		printf("\n" CYAN msg RESET "\n"); \
+		if(first_header == true) \
+		{ \
+			first_header = false; \
+		} else { \
+			printf("\n"); \
+		} \
+		printf(CYAN msg RESET "\n"); \
 	}
 
 #define ASSERT(condition) \
@@ -185,14 +191,15 @@ Return random_number_generator(
 	(void)testitall(func, #func,desc);
 
 // Macro to measure the start time of a test.
-#define TESTSTART \
+#define SUTESTART \
 	long long int _test_start_time = cur_time_ns(); \
 	/* The status that will be returned before exiting. */ \
 	/* By default, assumes the function ran without errors. */ \
-	Return status = SUCCESS;
+	Return status = SUCCESS; \
+	bool first_header = true;
 
 // Macro to measure the end time of a test.
-#define TESTDONE \
+#define SUTEDONE \
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
 	printf(WHITE "Total execution time: %lldns (%s)\n" RESET,_time_spent,form_date(_time_spent)); \

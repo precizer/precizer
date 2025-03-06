@@ -105,7 +105,7 @@ Return db_save_prefixes(void)
 	 *          and Dry Run mode is not activated. With Dry Run mode activated,
 	 *          if a physical file is not opened, writing occurs to an in-memory database.
 	 */
-	if(!(config->dry_run == true && config->db_file_exists == true))
+	if(!(config->dry_run == true && config->db_primary_file_exists == true))
 	{
 		for(int i = 0; config->paths[i]; i++)
 		{

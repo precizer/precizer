@@ -122,7 +122,7 @@ static Return process_database(sqlite3 *db)
  * @param db_file_path Path to the SQLite database file
  * @return Return status code
  */
-Return migrate_from_0_to_1(const char *db_file_path)
+Return db_migrate_from_0_to_1(const char *db_file_path)
 {
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
