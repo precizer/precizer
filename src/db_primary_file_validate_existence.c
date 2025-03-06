@@ -1,9 +1,9 @@
 #include "precizer.h"
 
 /**
- * @brief Validates the existence of the database file
- * @details Checks if the database file exists and is accessible. Updates the
- *    global config->db_file_exists flag based on the check result.
+ * @brief Validates the existence of the primary database file
+ * @details Checks if the primary database file exists and is accessible. Updates the
+ *    global config->db_primary_file_exists flag based on the check result.
  *    The function attempts to access the file using the path stored
  *    in the global configuration config->db_file_path
  *
@@ -14,10 +14,10 @@
  * @note This function only verifies file existence and basic accessibility.
  *    It does not validate file format or content integrity.
  *
- * @see config->db_file_exists
+ * @see config->db_primary_file_exists
  * @see config->db_file_path
  */
-Return db_file_validate_existence(void)
+Return db_primary_file_validate_existence(void)
 {
 	/** @var Return status
 	 *  @brief The status that will be passed to return() before exiting
@@ -32,8 +32,8 @@ Return db_file_validate_existence(void)
 		provide(status);
 	}
 
-	// DB file exists or not
-	config->db_file_exists = false;
+	// Primary DB file exists or not
+	config->db_primary_file_exists = false;
 
 	// The variable is defined in db_determine_name()
 	// and must not be empty
@@ -59,7 +59,7 @@ Return db_file_validate_existence(void)
 		{
 			if(EXISTS == file_availability(config->db_file_path,SHOULD_BE_A_FILE))
 			{
-				config->db_file_exists = true;
+				config->db_primary_file_exists = true;
 
 				int rc = stat(config->db_file_path,&(config->db_file_stat));
 
@@ -70,7 +70,7 @@ Return db_file_validate_existence(void)
 				}
 
 			} else {
-				config->db_file_exists = false;
+				config->db_primary_file_exists = false;
 			}
 		}
 	}

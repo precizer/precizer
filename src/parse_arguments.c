@@ -77,7 +77,7 @@ static struct argp_option options[] = {
 	{ 0,0,0,0,"Visualizations options:\n",-1},
 	{"silent",'s',0,0,"Don't produce any output. The option will not affect " BOLD "--compare" RESET,0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
-	{"progress",'p',0,0,"Show progress bar. This assume a preliminary count of files and the space they occupy to predict execution time. It is strongly recommended not to specify this option if the program is called from a script. This will reduce execution time (sometimes significantly) and reduce screen output.",0 },
+	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
 	{0}
 };
 

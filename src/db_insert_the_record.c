@@ -32,7 +32,8 @@ Return db_insert_the_record(
 	const sqlite3_int64  *offset,
 	const unsigned char  *sha512,
 	const CmpctStat      *stat,
-	const SHA512_Context *mdContext)
+	const SHA512_Context *mdContext,
+	const bool           *zero_size_file)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -95,7 +96,7 @@ Return db_insert_the_record(
 	/* Bind SHA512 checksum */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0)
+		if(*offset == 0 && *zero_size_file == false)
 		{
 			rc = sqlite3_bind_blob(insert_stmt,3,sha512,SHA512_DIGEST_LENGTH,NULL);
 		} else {

@@ -202,15 +202,15 @@ Return file_list(const bool count_size_of_all_files)
 				break;
 			case FTS_F:
 			{
-				CmpctStat stat = {0};
-
-				(void)stat_copy(p->fts_statp,&stat);
-
 				// Limit recursion to the depth determined in config->maxdepth
 				if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
 				{
 					break;
 				}
+
+				CmpctStat stat = {0};
+
+				(void)stat_copy(p->fts_statp,&stat);
 
 				total_size_in_bytes += (size_t)stat.st_size;
 				count_files++;
@@ -357,6 +357,14 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
+				bool zero_size_file = false;
+
+				if(p->fts_statp->st_size == 0)
+				{
+					zero_size_file = true;
+					rehash = false;
+				}
+
 				// Print out of a file name and its changes
 				show_relative_path(relative_path,
 					&metadata_of_scanned_and_saved_files,
@@ -369,7 +377,8 @@ Return file_list(const bool count_size_of_all_files)
 					&at_least_one_file_was_shown,
 					&rehash,
 					&count_size_of_all_files,
-					&is_readable);
+					&is_readable,
+					&zero_size_file);
 
 				if(is_readable != true)
 				{
@@ -426,7 +435,7 @@ Return file_list(const bool count_size_of_all_files)
 					/* Update record in DB */
 					if(SUCCESS == status)
 					{
-						status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext);
+						status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext,&zero_size_file);
 
 						if(SUCCESS != status)
 						{
@@ -442,7 +451,7 @@ Return file_list(const bool count_size_of_all_files)
 #if 0 // Old multiPATH solution
 						status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext);
 #else
-						status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext);
+						status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext,&zero_size_file);
 #endif
 
 						if(SUCCESS != status)

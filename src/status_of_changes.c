@@ -15,7 +15,7 @@ Return status_of_changes(void)
 
 	if(config->compare != true && global_interrupt_flag == false)
 	{
-		if(config->db_file_exists == true)
+		if(config->db_primary_file_exists == true)
 		{
 			struct stat db_current_stat = {0};
 
@@ -52,9 +52,9 @@ Return status_of_changes(void)
 		} else {
 			if(config->something_has_been_changed == false)
 			{
-				slog(EVERY,BOLD "Nothing have been changed against the database since the last probe (neither added nor updated or deleted information about files)" RESET "\n");
+				slog(EVERY,BOLD "Nothing has changed in the primary database since the program was launched (no files were added, updated, or deleted)" RESET "\n");
 			} else {
-				slog(EVERY,BOLD "The database %s has been modified since the last check (files were added, removed, or updated)" RESET "\n",config->db_file_name);
+				slog(EVERY,BOLD "The brand-new primary database %s was created and modified since the program started (files were added, removed, or updated)" RESET "\n",config->db_file_name);
 			}
 		}
 	}

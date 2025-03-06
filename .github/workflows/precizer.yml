@@ -22,9 +22,7 @@ jobs:
           zip --junk-paths precizer precizer
 
       - name: Run tests
-        run: |
-          cd tests
-          make sanitize run
+        run: make tests-sanitize
 
       - name: Get annotated tag message
         id: tag_message

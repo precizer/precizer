@@ -11,7 +11,6 @@ Return test0015_1_upgrade_db(void)
 {
 	INITTEST;
 
-	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp -p tests/0015_database_v0.db .;"
 	        "${BINDIR}/precizer --database=./0015_database_v0.db tests/examples/diffs/diff1";
@@ -22,7 +21,7 @@ Return test0015_1_upgrade_db(void)
 
 	const char *filename = "templates/0015_001.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,&pattern));
 
@@ -50,7 +49,6 @@ Return test0015_2_upgrade_db(void)
 {
 	INITTEST;
 
-	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "cp -p tests/0015_database_v0.db .;"
 	        "${BINDIR}/precizer --update --database=0015_database_v0.db tests/examples/diffs/diff1";
@@ -85,7 +83,6 @@ Return test0015_3_upgrade_db(void)
 {
 	INITTEST;
 
-	/* File system traversal with a maximum depth of 3 */
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=./0015_database_v0.db tests/examples/diffs/diff1";
 
@@ -182,7 +179,7 @@ Return test0015_5_upgrade_db(void)
 	ASSERT(SUCCESS == replace_placeholder(&pattern,template,replacement));
 
 	// Execute command and capture output
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
 
 	// Compare command output against modified template
 	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
