@@ -68,8 +68,8 @@ void init_config(void)
 	/// initialization. True by default
 	config->db_initialize_tables = true;
 
-	/// Flag indicating whether the database file exists
-	config->db_file_exists = false;
+	/// Flag indicating whether the primary database file exists
+	config->db_primary_file_exists = false;
 
 	// The flag means that the DB already exists
 	// and not empty

@@ -37,10 +37,9 @@ TESTING:\x1B\[1mThese files will be added against the %DB_NAME% database:\x1B\[0
 sss.txt
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-TESTING:No DB version data found in metadata table
-TESTING:The database version 1 has been successfully stored in the DB
+TESTING:Version number 1 found in database
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
-TESTING:\x1B\[1mThe database %DB_NAME% has been modified since the last check \(files were added, removed, or updated\)\x1B\[0m
+TESTING:\x1B\[1mThe brand-new primary database %DB_NAME% was created and modified since the program started \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Exit status » SUCCESS\z
