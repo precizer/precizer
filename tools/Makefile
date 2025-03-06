@@ -49,7 +49,8 @@ format:
 
 # Clean target
 clean:
-	rm -f $(BINS)
+	@rm -f $(BINS)
+	@echo "Tools are cleaned"
 
 # Show help
 help:

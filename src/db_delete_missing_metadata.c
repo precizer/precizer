@@ -36,7 +36,7 @@ Return db_delete_missing_metadata(void)
 		provide(status);
 	}
 
-	if(config->dry_run == true && config->db_file_exists == true)
+	if(config->dry_run == true && config->db_primary_file_exists == true)
 	{
 		slog(TRACE,"Dry Run mode is enabled. The primary database must not be modified\n");
 	}

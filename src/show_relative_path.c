@@ -160,7 +160,8 @@ void show_relative_path(
 	bool            *at_least_one_file_was_shown,
 	bool            *rehash,
 	const bool      *count_size_of_all_files,
-	const bool      *is_readable)
+	const bool      *is_readable,
+	const bool      *zero_size_file)
 {
 	bool show_traversal_started = false;
 	bool show_update_warning = false;
@@ -234,6 +235,10 @@ void show_relative_path(
 		} else if(*ignored == true){
 
 			printf(" ignored & not added\n");
+
+		} else if(*zero_size_file == true){
+
+			printf(" zero size\n");
 
 		} else if(*ignored == false){
 

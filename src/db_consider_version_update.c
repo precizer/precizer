@@ -27,7 +27,7 @@ Return db_consider_version_update(void)
 	{
 		slog(TRACE,"Comparison mode is enabled. Store the primary database version is not required\n");
 		provide(status);
-	} else if(config->dry_run == true && config->db_file_exists == false){
+	} else if(config->dry_run == true && config->db_primary_file_exists == false){
 		slog(TRACE,"Dry Run mode is enabled. Store the primary database version is not required\n");
 		provide(status);
 	}

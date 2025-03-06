@@ -83,36 +83,37 @@ This ensures that even when files reside in different mount points or sources, t
 
 ## TECHNICAL DETAILS
 
-Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its *Disaster Recovery* copy. Synchronization from the primary storage to the backup occurs periodically, but due to the *massive data volumes*, synchronization is most likely not performed byte-by-byte but rather by detecting *metadata changes* within the file system. In such cases, *file size* and *modification time* are taken into account, but the actual content is *not verified byte by byte*. This approach makes sense because the primary data center and the *Disaster Recovery* site usually have *high-speed communication channels*, but a full byte-by-byte synchronization would take an *unreasonably long time*. Tools like *rsync* allow both types of synchronization — *metadata-based* and *byte-by-byte* — but they have one *major drawback*: *state is not preserved between sessions*. Let’s analyze this issue with the following scenario:
+Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its *Disaster Recovery* copy. Synchronization from the primary storage to the backup occurs periodically, but due to the *massive data volumes*, synchronization is most likely not performed byte-by-byte but rather by detecting *metadata changes* within the file system. In such cases, *file size* and *modification time* are taken into account, but the actual content is *not verified byte by byte*. This approach makes sense because the primary data center and the *Disaster Recovery* site usually have *high-speed communication channels*, but a full byte-by-byte synchronization would take an *unreasonably long time*. Tools like `rsync` allow both types of synchronization — *metadata-based* and *byte-by-byte* — but they have one *major drawback*: *state is not preserved between sessions*. Let’s analyze this issue with the following scenario:
 
-* Given: *Server "A"* and *Server "B"* (Primary Data Center and Disaster Recovery)
-* Some files have been modified on *Server "A"*.
-* The *rsync* algorithm detects them based on changes in *size and modification time* and synchronizes them to *Server "B"*.
-* Multiple *connection failures* occur during synchronization between the Primary Data Center and the Disaster Recovery site.
-* To verify *data integrity* (i.e., ensuring that files on "A" and "B" are *identical byte by byte*), *rsync* is often used with byte-by-byte comparison. The process works as follows:
-  * *rsync* is launched on *Server "A"* with the `--checksum` mode, attempting to compute checksums sequentially on both *"A"* and *"B"* in a *single session*.
-  * This process takes an *extremely long time* for *large-scale storage systems*.
-  * Since *rsync does not save computed checksums between sessions*, it introduces several *technical challenges*:
-    * If the connection *drops*, *rsync* *terminates the session*, and on the next run, *everything must start from scratch*! Given the *huge data volumes*, performing a *byte-by-byte verification* for full data integrity becomes an *impossible task*.
-  * Storage subsystem *failures* can also lead to *binary inconsistencies*. In such cases, *file system metadata* cannot reliably determine whether file contents on *"A"* and *"B"* are truly identical.
-  * Over time, *errors accumulate*, increasing the risk of maintaining an *inconsistent Disaster Recovery copy* of system *"A"* on system *"B"*, rendering the entire Disaster Recovery effort *useless*. Standard utilities *do not detect these inconsistencies*, and technical personnel may be *completely unaware* of data integrity problems in the Disaster Recovery storage.
-* To overcome these limitations, *precizer* was developed. The program *identifies* exactly *which files differ* between *"A"* and *"B"* so that they can be *resynchronized* with the necessary corrections. The tool operates at *maximum speed* (pushing hardware performance to its limits) because it is written in *pure C* and utilizes *high-performance algorithms* optimized for efficiency. The program is designed to handle *both small files and petabyte-scale data volumes*, with *no upper limits*.
-* The name *precizer* comes from the word *precision*, implying something that *enhances accuracy*.
-* The program *precisely* analyzes directory contents, including *subdirectories*, computing *checksums* for every encountered file while *storing metadata* in an *SQLite database* (a regular binary file).
-* *precizer* is *fault-tolerant* and can *resume execution* from the point of interruption. For example, if the program is *terminated* via *Ctrl+C* while analyzing a *petabyte-scale file*, it will *NOT* restart from the beginning but *continue exactly where it left off* using previously recorded data in the database. This significantly *saves resources, time, and effort* for system administrators.
-* The program can be *interrupted at any time* using *any method*, and this is completely *safe* for both the scanned data and the *database created by precizer*.
-* If the program is *intentionally or accidentally stopped*, *there is no need to worry* about losing progress. All results are *fully preserved* and can be *used in subsequent runs*.
-* *SHA512* is used for *checksum computation*, ensuring *high speed* and *collision-free results*, even when analyzing *petabyte-scale* files. If two *huge* files differ *by just a single byte*, *SHA512 will detect it*, whereas *weaker hash functions* (such as *SHA1 or CRC32*) do *not guarantee* the same accuracy.
-* The *precizer* algorithms are designed so that it is *easy* to keep stored data *up-to-date* without *recomputing everything from scratch*. Simply run the program with the `--update` parameter, and the database will be updated with *new files*, while records of *deleted files* will be removed. For *modified files* whose *sizes* have changed, a *new SHA512 checksum* will be computed and updated in the database.
-* An additional option allows database updates to consider not only *file size changes* but also *creation or modification timestamps*. This means that *any metadata changes* will trigger an *SHA512 checksum recalculation* and database update. For example, if a file's *ctime* changes but its size remains the same, the *checksum will NOT be recomputed* if only `--update` is used. This is because *ctime* can change due to permission modifications, which *does not indicate content changes*. However, if the `--watch-timestamps` parameter is specified, *any* metadata change (e.g., *mtime* or *ctime*) will trigger a full *SHA512 checksum recalculation* and database update.
-* By *comparing databases* from the *same sources* at *different points in time*, *precizer* can function as a *security monitoring tool*, detecting intrusion consequences by identifying *unauthorized file modifications* where *content has changed, but metadata remains unchanged*.
-* The program *never* modifies, deletes, moves, or copies *any files or directories* it scans. Instead, it *only* builds *lists of files*, computes *checksums*, and stores them in a *database*. All modifications occur *exclusively within the database*, which is a simple *binary file*.
-* The program’s *performance is primarily limited by the disk subsystem*. Every file is read *byte by byte*, and a *SHA512 checksum* is computed for each one.
-* The program is *extremely fast* thanks to the use of *SQLite* and *FTS* ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).
-* *Command-line argument parsing* is implemented using *ARGP* library.
-* *Regular expressions* are handled via *PCRE2* libpcre2.
-* The program is *safe* to use with massive numbers of files, directories, and deeply nested subdirectories. With *FTS*, *recursion is avoided*, preventing *stack overflow issues* even in cases of extreme directory depth.
-* Due to its *compact and portable code*, the program can be used even on *specialized NAS devices, embedded systems, or IoT platforms*.
+* Given: Server "A" and Server "B" (Primary Data Center and Disaster Recovery)
+* Some files have been modified on Server "A".
+* The `rsync` algorithm detects them based on changes in size and modification time and synchronizes them to Server "B".
+* Multiple connection failures occur during synchronization between the Primary Data Center and the Disaster Recovery site.
+* To verify data integrity (i.e., ensuring that files on "A" and "B" are identical byte by byte), `rsync` is often used with byte-by-byte comparison. The process works as follows:
+  * `rsync` is launched on Server "A" with the `--checksum` mode, attempting to compute checksums sequentially on both "A" and "B" in a single session.
+  * This process takes an extremely long time for large-scale storage systems.
+  * Since `rsync` does not save computed checksums between sessions, it introduces several technical challenges:
+    * If the connection drops, `rsync` terminates the session, and on the next run, everything must start from scratch! Given the huge data volumes, performing a byte-by-byte verification for full data integrity becomes an impossible task.
+  * Storage subsystem failures can also lead to binary inconsistencies. In such cases, file system metadata cannot reliably determine whether file contents on "A" and "B" are truly identical.
+  * Over time, errors accumulate, increasing the risk of maintaining an inconsistent Disaster Recovery copy of system "A" on system "B", rendering the entire Disaster Recovery effort useless. Standard utilities do not detect these inconsistencies, and technical personnel may be completely unaware of data integrity problems in the Disaster Recovery storage.
+* To overcome these limitations, precizer was developed. The program identifies exactly which files differ between "A" and "B" so that they can be resynchronized with the necessary corrections. The tool operates at maximum speed (pushing hardware performance to its limits) because it is written in pure C and utilizes high-performance algorithms optimized for efficiency. The program is designed to handle both small files and petabyte-scale data volumes, with no upper limits*.
+* The name precizer comes from the word precision, implying something that enhances accuracy.
+* The program precisely analyzes directory contents, including subdirectories, computing checksums for every encountered file while storing metadata in an SQLite database (a regular binary file).
+* precizer is fault-tolerant and can resume execution from the point of interruption. For example, if the program is terminated via Ctrl+C while analyzing a petabyte-scale file, it will NOT restart from the beginning but continue exactly where it left off using previously recorded data in the database. This significantly saves resources, time, and effort for system administrators.
+* The program can be interrupted at any time using any method, and this is completely safe for both the scanned data and the database created by precizer.
+* If the program is intentionally or accidentally stopped, there is no need to worry about losing progress. All results are fully preserved and can be used in subsequent runs.
+* The checksum calculations rely on a reliable and fast SHA512 algorithm, which completely eliminates collisions even when analyzing a single massive file. If there are two identical large files differing by just one byte, SHA512 will detect it, and their checksums will be different—something that cannot be guaranteed with simpler hash functions like SHA1 or CRC32.
+* The algorithms in precizer are designed to make it easy to keep the database up to date without having to recalculate everything from scratch. Simply run the program with the `--update` parameter, and new files will be added to the database, while entries for deleted files will be removed. If a file has been modified and its size has changed, its SHA512 checksum will be recalculated and updated in the database.
+* There is an option to consider not only the file size when updating the database but also the file’s creation or modification timestamps. This means that any change in file metadata will trigger an SHA512 checksum recalculation and update in the database. For example, if a file’s ctime changes but its size remains the same, the checksum will NOT be recalculated if only the `--update` parameter is used. To force checksum recalculation for such files `--watch-timestamps` should be added. This option is disabled by default because ctime (like mtime) can change frequently due to commands like `chmod` or `chown`, even when the file’s content remains the same.
+* precizer can be used as a security monitoring tool, detecting unauthorized file modifications where contents might have changed while metadata remains untouched.
+* The program never modifies, deletes, moves, or copies any files or directories it processes. All it does is list files, compute their checksums, and update them in the database. All changes are strictly confined to the database.
+* Performance is primarily limited by disk subsystem speed. Each file is read byte by byte, and its SHA512 checksum is computed.
+* The program runs very fast thanks to SQLite and FTS libraries ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).
+* Command-line argument parsing is handled via the ARGP library.
+* Regular expression support is provided by PCRE2.
+* The program is safe to use with an enormous number of files, directories, and deeply nested subdirectories. Thanks to the FTS library, recursion is avoided, preventing stack overflows even with extreme levels of nesting.
+* Due to its compact and portable codebase, the program can be used even on specialized devices like NAS systems, embedded platforms, or IoT devices.
+* Use [DB Browser for SQLite](https://sqlitebrowser.org) if you want to explore the contents of the database created by **precizer**.
 
 ## QUESTIONS & BUG REPORTS
 
@@ -372,7 +373,7 @@ The precizer completed its execution without any issues
 
 Every time **precizer** runs, it traverses the file system and then checks whether a record for a specific file already exists in the database. In other words, the program prioritizes the current state of the file system on disk.
 
-The directory traversal in **precizer** works similarly to **rsync** as it uses a similar algorithm.
+The directory traversal in **precizer** works similarly to `rsync` as it uses a similar algorithm.
 
 It's important to note that **precizer** will not recalculate SHA512 checksums for files that are already recorded in the database, as long as their metadata remains unchanged (such as size and last access time, **atime**). If the `--watch-timestamps` argument is specified, the program will also consider the creation time (**ctime**) and modification time (**mtime**) in addition to the file size.
 

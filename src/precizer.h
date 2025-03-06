@@ -278,10 +278,11 @@ typedef struct {
 	/// initialization
 	bool db_initialize_tables;
 
-	/// Flag indicating whether the database file exists
-	/// This flag is set to true if the database FILE exists and is accessible,
-	/// false otherwise. The value is updated by db_file_validate_existence()
-	bool db_file_exists;
+	/// Flag indicating whether the primary database file exists
+	/// This flag is set to true if the primary database FILE exists and
+	/// is accessible, false otherwise. The value is updated
+	/// by db_primary_file_validate_existence()
+	bool db_primary_file_exists;
 
 	/// The structure contains all database file metadata
 	/// to compare within status_of_changes();
@@ -291,7 +292,7 @@ typedef struct {
 	 * @brief Flag indicating if the database contains data from previous runs
 	 * @details This flag is set to true if the database file exists and contains
 	 *    valid data from previous program executions. This differs from
-	 *    db_file_exists in that it not only checks for file existence,
+	 *    db_primary_file_exists in that it not only checks for file existence,
 	 *    but also verifies that the database has been previously
 	 *    populated with data.
 	 *
@@ -300,7 +301,7 @@ typedef struct {
 	 *    - false: Database is either empty or has not been initialized
 	 *             with data from previous program runs
 	 *
-	 * @see db_file_exists
+	 * @see db_primary_file_exists
 	 */
 	bool db_contains_data;
 
@@ -444,14 +445,16 @@ Return db_update_the_record_by_id(
 	const sqlite3_int64 *,
 	const unsigned char *,
 	const CmpctStat *,
-	const SHA512_Context *);
+	const SHA512_Context *,
+	const bool *);
 
 Return db_insert_the_record(
 	const char *,
 	const sqlite3_int64 *,
 	const unsigned char *,
 	const CmpctStat *,
-	const SHA512_Context *);
+	const SHA512_Context *,
+	const bool *);
 
 Return db_determine_name(void);
 
@@ -465,7 +468,7 @@ Return db_validate_paths(void);
 
 Return db_contains_data(void);
 
-Return db_file_validate_existence(void);
+Return db_primary_file_validate_existence(void);
 
 Return db_test(const char *);
 
@@ -482,7 +485,7 @@ Return db_upgrade(
 	const char *,
 	const char *);
 
-Return migrate_from_0_to_1(const char *);
+Return db_migrate_from_0_to_1(const char *);
 
 Return db_specify_version(const char *);
 
@@ -519,6 +522,7 @@ void show_relative_path(
 	const bool *,
 	bool *,
 	bool *,
+	const bool *,
 	const bool *,
 	const bool *);
 
