@@ -85,9 +85,9 @@ Return db_determine_mode(void)
 		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 
 	} else if(config->update == true){
-		if(config->db_file_exists == false)
+		if(config->db_primary_file_exists == false)
 		{
-			// The database file does NOT exists
+			// The primary database file does NOT exists
 			slog(ERROR,"Update mode is only available for existing databases. A brand new database file will not be created if it wasn't created previously\n");
 			status = FAILURE;
 		} else {
@@ -96,7 +96,7 @@ Return db_determine_mode(void)
 
 	} else {
 
-		if(config->db_file_exists == true)
+		if(config->db_primary_file_exists == true)
 		{
 			// RW mode
 			config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
@@ -117,9 +117,9 @@ Return db_determine_mode(void)
 	{
 		if(config->dry_run == true)
 		{
-			if(config->db_file_exists == false)
+			if(config->db_primary_file_exists == false)
 			{
-				// Dry Run mode is activated and the database file hasn't been created
+				// Dry Run mode is activated and the primary database file hasn't been created
 				// before launching without this mode. In this case, the database will be
 				// created in memory and this won't affect any changes on disk.
 				//
