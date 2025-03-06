@@ -24,7 +24,7 @@
 # Perf tool:
 # sudo apt-get install linux-tools-common linux-tools-generic linux-tools-`uname -r`
 # make perf # or
-# make test
+# make analize
 #
 # Autobated build with GitHub Actions:
 #
@@ -96,6 +96,9 @@ SUBDIRS = libs
 
 # Test directory
 TESTDIR = tests
+
+# Tools directory
+TOOLSDIR = tools
 
 LIBS = sqlite sha512 mem rational
 
@@ -186,7 +189,7 @@ PRTLDFLAGS += -O2 -mtune=generic -Wl,--hash-style=both -Wl,--as-needed
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug prep release remake clang openmp one test sanitize banner run format portable production prod $(SUBDIRS)
+.PHONY: all clean debug prep release remake clang openmp one tests sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
 all: production
@@ -244,7 +247,6 @@ debug: $(SUBDIRS) $(DBGEXE) debugfinal
 
 debugfinal: $(DBGEXE)
 	@cp $(DBGEXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
 	@echo "The $(DBGEXE) has been copied to the current directory"
 
 $(DBGEXE): $(DBGOBJS)
@@ -281,12 +283,17 @@ $(PRDOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRDOBJDIR)
 $(PRDOBJDIR):
 	@mkdir -p $(PRDOBJDIR)
 
+tests: debug
+	@$(MAKE) -C $(TESTDIR) tests
+
+tests-sanitize: sanitize
+	@$(MAKE) -C $(TESTDIR) tests-sanitize
+
 #
 # Build and test within Docker container
 #
 docker: build-docker run-docker copy-from-docker clean-docker
 docker-portable: build-docker-portable run-docker copy-from-docker clean-docker
-
 
 # Build image and create application container
 build-docker:
@@ -307,7 +314,7 @@ run-docker:
 	@docker run $(EXE)
 
 # Run it 1000 times
-test-in-docker: build-docker
+tests-in-docker: build-docker
 	for i in {1..1000}; do docker run $(EXE) || break; done
 
 # Clean the built container
@@ -350,8 +357,8 @@ format:
 
 remake: clean all
 
-# Tests
-test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
+# Static analysers and sanitizers
+analyze: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
 
 #
 # GCC Static Analysis
@@ -416,8 +423,11 @@ cloc:
 	@cloc ./src
 
 # Character | prevent threading with clean
-clean-all: clean-tests clean clean-docker
+clean-all: clean-tests clean clean-tools clean-docker
 	@$(MAKE) -C $(SUBDIRS) clean
+
+clean-tools:
+	@$(MAKE) -C $(TOOLSDIR) clean
 
 clean: | clean-preproc clean-asm clean-tests
 	@rm -rf *.out.* doc \
