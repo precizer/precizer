@@ -138,20 +138,25 @@ Return db_init(void)
 		if(config->compare == true)
 		{
 			// Read-only mode
-			pragma_sql = "PRAGMA journal_mode = OFF;"
-			        "PRAGMA synchronous = OFF;"
-			        "PRAGMA cache_size = -8000;" // Increased cache to 8MB
-			        "PRAGMA temp_store = MEMORY;"
-			        "PRAGMA mmap_size = 30000000000;" // Using memory-mapped I/O
-			        "PRAGMA page_size = 4096;"
-			        "PRAGMA locking_mode = EXCLUSIVE;"
-			        "PRAGMA strict = ON;";
+			pragma_sql =
+			        "PRAGMA journal_mode=OFF;"
+			        "PRAGMA synchronous=OFF;"
+			        "PRAGMA cache_size=-8192;" // Increased cache to 8MB
+			        "PRAGMA temp_store=MEMORY;"
+			        "PRAGMA mmap_size=30000000000;" // Using memory-mapped I/O
+			        "PRAGMA page_size=4096;"
+			        "PRAGMA locking_mode=EXCLUSIVE;"
+			        "PRAGMA strict=ON;";
 		} else {
 			// Read-write mode
-			pragma_sql = "PRAGMA page_size = 4096;"
-			        "PRAGMA strict = ON;"
-			        "PRAGMA cache_size = -2000;"         // 2MB memory cache
-			        "PRAGMA temp_store = MEMORY;";         // In-memory temporary tables
+			pragma_sql =
+			        "PRAGMA journal_mode=WAL; "          // Enable Write-Ahead Logging (WAL) mode for better concurrency
+			        "PRAGMA wal_autocheckpoint=1000; "   // Set WAL checkpoint to trigger every 1000 pages (4KB each = ~4MB)
+			        "PRAGMA page_size=4096; "            // Set page size to 4KB (default, but explicit for clarity)
+			        "PRAGMA cache_size=-8192; "          // Use 8MB of memory for caching (negative value = KB)
+			        "PRAGMA synchronous=NORMAL; "        // Balance speed and safety (NORMAL = fsync only for checkpoints)
+			        "PRAGMA temp_store=MEMORY; "         // Store temporary tables in memory (not on disk)
+			        "PRAGMA strict=ON;";                 // Enforce STRICT table schema validation
 		}
 
 		// Set SQLite pragmas
