@@ -53,7 +53,7 @@ void init_config(void)
 	config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 	// The path of DB file
-	config->db_file_path = NULL;
+	config->db_primary_file_path = NULL;
 
 	// The name of DB file
 	config->db_file_name = NULL;
@@ -90,7 +90,7 @@ void init_config(void)
 
 	// Flag that reflects the presence of any changes
 	// since the last research
-	config->something_has_been_changed = false;
+	config->db_primary_file_modified = false;
 
 	/// The "Warning about using the update option has already been shown"
 	/// option prevents duplicate notifications from being displayed

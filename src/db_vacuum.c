@@ -15,6 +15,7 @@ Return db_vacuum(const char *db_file_path)
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;
 	bool db_is_primary = false;
+	bool db_file_modified = false;
 
 	/* Validate input parameters */
 	if(db_file_path == NULL)
@@ -29,7 +30,7 @@ Return db_vacuum(const char *db_file_path)
 		provide(status);
 	}
 
-	if(strcmp(config->db_file_path,db_file_path) == 0)
+	if(strcmp(db_file_path,config->db_primary_file_path) == 0)
 	{
 		db_is_primary = true;
 	}
@@ -46,7 +47,8 @@ Return db_vacuum(const char *db_file_path)
 	if(SUCCESS == status)
 	{
 		/* Create SQL statement */
-		const char *sql = "PRAGMA analyze;"
+		const char *sql =
+		        "PRAGMA analyze;"
 		        "PRAGMA optimize;"
 		        "VACUUM;"
 		        "PRAGMA analyze;"
@@ -68,6 +70,8 @@ Return db_vacuum(const char *db_file_path)
 			sqlite3_free(err_msg);
 			status = FAILURE;
 		} else {
+			db_file_modified = true;
+
 			if(db_is_primary == true)
 			{
 				slog(EVERY,"The primary database has been vacuumed\n");
@@ -77,39 +81,26 @@ Return db_vacuum(const char *db_file_path)
 		}
 	}
 
-	/* Cleanup */
-	if(db != NULL)
+	if(SUCCESS == status)
 	{
 		/**
-		 * @brief Force cache flush to disk for data persistence
-		 * @note This is the first approach to ensure data integrity
+		 *
+		 * If the database being updated is the primary one, adjust the global
+		 * flag indicating that the main database file has been
+		 * modified (this will consequently update the file's ctime, mtime, and size)
 		 */
-		if(SQLITE_OK != sqlite3_db_cacheflush(db))
+		if(db_is_primary == true)
 		{
-			slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
+			/* Changes have been made to the database. Update
+			   this in the global variable value. */
+			config->db_primary_file_modified = true;
 		}
+	}
 
-		/**
-		 * @brief Configure SQLite for maximum reliability using PRAGMA
-		 * @note This is the second approach to ensure data integrity
-		 * @details Sets synchronous mode to FULL for maximum durability
-		 */
-		if(SQLITE_OK != sqlite3_exec(db,"PRAGMA synchronous = FULL;",NULL,NULL,NULL))
-		{
-			slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
-
-		/**
-		 * @brief Close database connection and cleanup resources
-		 * @note Must be called to prevent resource leaks
-		 */
-		if(SQLITE_OK != sqlite3_close(db))
-		{
-			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
+	/* Cleanup */
+	if(SUCCESS == status)
+	{
+		status = db_close(db,&db_file_modified);
 	}
 
 	provide(status);
