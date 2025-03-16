@@ -81,7 +81,7 @@ Return db_delete_the_record_by_id(
 				/* Reflect changes in global */
 				if(config->dry_run == false)
 				{
-					config->something_has_been_changed = true;
+					config->db_primary_file_modified = true;
 				}
 
 				slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);

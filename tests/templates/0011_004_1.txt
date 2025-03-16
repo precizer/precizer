@@ -24,8 +24,8 @@ paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_test.c:\d+:db_test:The database verification level has been set to FULL
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_test.c:\d+:db_test:Database database1.db has been verified and is in good condition
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_get_version.c:\d+:db_get_version:Version number \d+ found in database
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_check_version.c:\d+:db_check_version:The database1.db database file is version 1
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_check_version.c:\d+:db_check_version:The database database1.db is on version 1 and does not require any upgrades
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_check_version.c:\d+:db_check_version:The database1.db database file is version 2
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_check_version.c:\d+:db_check_version:The database database1.db is on version 2 and does not require any upgrades
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:Successfully opened database database1.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:The primary database and tables do not require initialization
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_init.c:\d+:db_init:The primary database named database1.db is ready for operations
@@ -38,8 +38,8 @@ paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/file_list.c:\d+:display_status:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Missing file search completed
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_get_version.c:\d+:db_get_version:Version number \d+ found in database
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_consider_vacuum_primary.c:\d+:db_consider_vacuum_primary:No changes were made. The primary database doesn't require vacuuming
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/status_of_changes.c:\d+:status_of_changes:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_close.c:\d+:db_close:The connection to the primary database has been closed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_primary_consider_vacuum.c:\d+:db_primary_consider_vacuum:No changes were made. The primary database doesn't require vacuuming
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/db_check_changes.c:\d+:db_check_changes:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/exit_status.c:\d+:exit_status:The precizer completed its execution without any issues
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} src/exit_status.c:\d+:exit_status:Exit status » SUCCESS\z

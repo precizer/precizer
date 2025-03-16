@@ -61,6 +61,7 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
 
 	#if 0
+	printf("Path: %s\n",path);
 	echo(STDOUT,"Path: %s\n",path);
 	#endif
 
@@ -80,6 +81,7 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
+	printf("%s\n",result->mem);
 	echo(STDOUT,"%s\n",result->mem);
 	#endif
 

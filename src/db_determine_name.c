@@ -22,17 +22,17 @@ Return db_determine_name(void)
 
 	if(config->compare == true)
 	{
-		if(config->db_file_path == NULL)
+		if(config->db_primary_file_path == NULL)
 		{
 			config->db_file_name = NULL;
 
 			// In-memory database
 			const char *in_memory_db_path = ":memory:";
-			config->db_file_path = strdup(in_memory_db_path);
+			config->db_primary_file_path = strdup(in_memory_db_path);
 
-			if(config->db_file_path == NULL)
+			if(config->db_primary_file_path == NULL)
 			{
-				report("Memory allocation failed for config->db_file_path");
+				report("Memory allocation failed for config->db_primary_file_path");
 				status = FAILURE;
 			}
 
@@ -43,19 +43,19 @@ Return db_determine_name(void)
 				if(config->db_file_name == NULL)
 				{
 					report("Memory allocation failed for config->db_file_name");
-					free(config->db_file_path);
-					config->db_file_path = NULL;
+					free(config->db_primary_file_path);
+					config->db_primary_file_path = NULL;
 					status = FAILURE;
 				}
 			}
 		} else {
-			slog(ERROR,"General failure. config->db_file_path should be NULL in this case");
+			slog(ERROR,"General failure. config->db_primary_file_path should be NULL in this case");
 			status = FAILURE;
 		}
 
 	} else {
 
-		if(config->db_file_path == NULL)
+		if(config->db_primary_file_path == NULL)
 		{
 
 			config->db_file_name = NULL;
@@ -73,7 +73,7 @@ Return db_determine_name(void)
 			if(SUCCESS == status)
 			{
 				// Create temporary string with full path
-				if(asprintf(&config->db_file_path,"%s.db",utsname.nodename) == -1)
+				if(asprintf(&config->db_primary_file_path,"%s.db",utsname.nodename) == -1)
 				{
 					report("Failed to allocate memory for database path");
 					status = FAILURE;
@@ -83,13 +83,13 @@ Return db_determine_name(void)
 			if(SUCCESS == status)
 			{
 				// Copy the same path to db_file_name
-				config->db_file_name = strdup(config->db_file_path);
+				config->db_file_name = strdup(config->db_primary_file_path);
 
 				if(config->db_file_name == NULL)
 				{
-					report("Memory allocation failed, requested size: %zu bytes",strlen(config->db_file_path) + 1 * sizeof(char));
-					free(config->db_file_path);
-					config->db_file_path = NULL;
+					report("Memory allocation failed, requested size: %zu bytes",strlen(config->db_primary_file_path) + 1 * sizeof(char));
+					free(config->db_primary_file_path);
+					config->db_primary_file_path = NULL;
 					status = FAILURE;
 				}
 			}
@@ -99,13 +99,13 @@ Return db_determine_name(void)
 	// Log message when database file is specified and confirmed as persistent storage (non-memory database)
 	if(SUCCESS == status)
 	{
-		if(!(strcmp(config->db_file_path,":memory:") == 0 && rational_logger_mode & REGULAR))
+		if(!(strcmp(config->db_primary_file_path,":memory:") == 0 && rational_logger_mode & REGULAR))
 		{
 			slog(EVERY,"Primary database file name: %s\n",config->db_file_name);
 		}
 		/* Truncate the file path/name in the display
 		   output if it exceeds the length limit */
-		char *path = strdup(config->db_file_path);
+		char *path = strdup(config->db_primary_file_path);
 		run(shorten_path(path));
 		slog(TRACE,"Primary database file path: %s\n",path);
 		free(path);
