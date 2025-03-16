@@ -10,7 +10,9 @@
  * @param stmt Prepared statement with current row
  * @return Operation status
  */
-static Return process_row(sqlite3_stmt *stmt)
+static Return process_row(
+	sqlite3_stmt *stmt,
+	bool         *db_file_modified)
 {
 	Return status = SUCCESS;
 	const struct stat *stat = {0};
@@ -61,7 +63,7 @@ static Return process_row(sqlite3_stmt *stmt)
 			} else {
 				/* Changes have been made to the database. Update
 				   this in the global variable value. */
-				config->something_has_been_changed = true;
+				*db_file_modified = true;
 			}
 
 			sqlite3_finalize(update_stmt);
@@ -76,7 +78,9 @@ static Return process_row(sqlite3_stmt *stmt)
  * @param db_path Path to SQLite database file
  * @return Operation status
  */
-static Return process_database(sqlite3 *db)
+static Return process_database(
+	sqlite3 *db,
+	bool    *db_file_modified)
 {
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
@@ -99,7 +103,7 @@ static Return process_database(sqlite3 *db)
 				break;
 			}
 
-			status = process_row(stmt);
+			status = process_row(stmt,db_file_modified);
 
 			if(SUCCESS != status)
 			{
@@ -127,6 +131,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;
+	bool db_file_modified = false;
 
 	if(config->dry_run == true)
 	{
@@ -146,10 +151,11 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 	if(SUCCESS == status)
 	{
 		/* Set safety pragmas */
-		const char *pragmas = "PRAGMA journal_mode=WAL;"
-		        "PRAGMA strict = ON;"
-		        "PRAGMA synchronous=FULL;"
-		        "PRAGMA foreign_keys=ON;"
+		const char *pragmas =
+		        "PRAGMA journal_mode=WAL;"
+		        "PRAGMA strict=ON;"
+		        "PRAGMA fsync=ON;"
+		        "PRAGMA synchronous=EXTRA;"
 		        "PRAGMA locking_mode=EXCLUSIVE;";
 
 		rc = sqlite3_exec(db,pragmas,NULL,NULL,&err_msg);
@@ -191,7 +197,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 	if(SUCCESS == status)
 	{
 		/* Perform version update query */
-		status = process_database(db);
+		status = process_database(db,&db_file_modified);
 
 		if(SUCCESS != status)
 		{
@@ -231,39 +237,29 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 		}
 	}
 
-	/* Cleanup */
-	if(db != NULL)
+	if(SUCCESS == status)
 	{
 		/**
-		 * @brief Force cache flush to disk for data persistence
-		 * @note This is the first approach to ensure data integrity
+		 *
+		 * If the database being updated is the primary one, adjust the global
+		 * flag indicating that the main database file has been
+		 * modified (this will consequently update the file's ctime, mtime, and size)
 		 */
-		if(SQLITE_OK != sqlite3_db_cacheflush(db))
+		if(db_file_modified == true)
 		{
-			slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
+			if(strcmp(db_file_path,config->db_primary_file_path) == 0)
+			{
+				/* Changes have been made to the database. Update
+				   this in the global variable value. */
+				config->db_primary_file_modified = true;
+			}
 		}
+	}
 
-		/**
-		 * @brief Configure SQLite for maximum reliability using PRAGMA
-		 * @note This is the second approach to ensure data integrity
-		 * @details Sets synchronous mode to FULL for maximum durability
-		 */
-		if(SQLITE_OK != sqlite3_exec(db,"PRAGMA synchronous = FULL;",NULL,NULL,NULL))
-		{
-			slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
-
-		/**
-		 * @brief Close database connection and cleanup resources
-		 * @note Must be called to prevent resource leaks
-		 */
-		if(SQLITE_OK != sqlite3_close(db))
-		{
-			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
+	/* Cleanup */
+	if(SUCCESS == status)
+	{
+		status = db_close(db,&db_file_modified);
 	}
 
 	provide(status);

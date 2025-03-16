@@ -97,9 +97,9 @@ static error_t parse_opt(
 	{
 		case 'd':
 			// Full path to DB file
-			config->db_file_path = strdup(arg);
+			config->db_primary_file_path = strdup(arg);
 
-			if(config->db_file_path == NULL)
+			if(config->db_primary_file_path == NULL)
 			{
 				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_path failed!");
 				exit(ARGP_ERR_UNKNOWN);
@@ -110,8 +110,8 @@ static error_t parse_opt(
 
 			if(config->db_file_name == NULL)
 			{
-				free(config->db_file_path);  // Free previously allocated memory
-				config->db_file_path = NULL; // Set to NULL after freeing
+				free(config->db_primary_file_path);  // Free previously allocated memory
+				config->db_primary_file_path = NULL; // Set to NULL after freeing
 				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_name failed!");
 				exit(ARGP_ERR_UNKNOWN);
 			}
@@ -302,11 +302,11 @@ Return parse_arguments(
 			printf("\n");
 		}
 
-		if(config->db_file_path != NULL)
+		if(config->db_primary_file_path != NULL)
 		{
 			/* Truncate the file path/name in the display
 			   output if it exceeds the length limit */
-			char *path = strdup(config->db_file_path);
+			char *path = strdup(config->db_primary_file_path);
 			run(shorten_path(path));
 			slog(TESTING,"argument:database=%s\n",path);
 			free(path);
@@ -457,11 +457,11 @@ Return parse_arguments(
 				printf("; ");
 			}
 
-			if(config->db_file_path != NULL)
+			if(config->db_primary_file_path != NULL)
 			{
 				/* Truncate the file path/name in the display
 				   output if it exceeds the length limit */
-				char *path = strdup(config->db_file_path);
+				char *path = strdup(config->db_primary_file_path);
 				run(shorten_path(path));
 				printf("database=%s; ",path);
 				free(path);

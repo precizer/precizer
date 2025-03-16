@@ -102,12 +102,12 @@ int main(
 	// no longer exist.
 	run(db_delete_missing_metadata());
 
-	// If the database has been modified, then store the current
-	// database version in the metadata table
-	run(db_consider_version_update());
+	// Disable journaling, flush the journal to the main database,
+	// clear the cache, and close the database
+	db_close(config->db,&config->db_primary_file_modified);
 
 	// Optimizing the space occupied by a database file.
-	run(db_consider_vacuum_primary());
+	run(db_primary_consider_vacuum());
 
 	// Print out whether there have been changes to
 	// the file system and accordingly against the database

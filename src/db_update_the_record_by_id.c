@@ -137,7 +137,7 @@ Return db_update_the_record_by_id(
 	if(SUCCESS == status)
 	{
 		/* Reflect changes in global */
-		config->something_has_been_changed = true;
+		config->db_primary_file_modified = true;
 
 	}
 
