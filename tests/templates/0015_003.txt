@@ -28,9 +28,9 @@ TESTING:DB mode determined
 TESTING:Starting database file 0015_database_v0.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database 0015_database_v0.db has been verified and is in good condition
-TESTING:Version number 1 found in database
-TESTING:The 0015_database_v0.db database file is version 1
-TESTING:The database 0015_database_v0.db is on version 1 and does not require any upgrades
+TESTING:Version number 2 found in database
+TESTING:The 0015_database_v0.db database file is version 2
+TESTING:The database 0015_database_v0.db is on version 2 and does not require any upgrades
 TESTING:Successfully opened database 0015_database_v0.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named 0015_database_v0.db is ready for operations
@@ -41,7 +41,7 @@ TESTING:The database 0015_database_v0.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
-TESTING:Version number 1 found in database
+TESTING:The connection to the primary database has been closed
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mThe database file 0015_database_v0.db has NOT been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues

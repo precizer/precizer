@@ -93,7 +93,7 @@ Return db_save_prefixes(void)
 		if(SUCCESS == status)
 		{
 			/* Reflect changes in global */
-			config->something_has_been_changed = true;
+			config->db_primary_file_modified = true;
 		}
 
 		sqlite3_finalize(delete_stmt);
@@ -183,10 +183,10 @@ Return db_save_prefixes(void)
 					}
 				}
 
-				if(SUCCESS == status)
+				if(SUCCESS == status && config->dry_run == false)
 				{
 					/* Reflect changes in global */
-					config->something_has_been_changed = true;
+					config->db_primary_file_modified = true;
 				}
 
 				sqlite3_finalize(insert_stmt);
