@@ -17,11 +17,14 @@
  *         - SUCCESS: Version set successfully
  *         - FAILURE: Database error or invalid parameters
  */
-Return db_specify_version(const char *db_file_path)
+Return db_specify_version(
+	const char *db_file_path,
+	int        version)
 {
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
+	bool db_file_modified = false;
 
 	/* Validate input parameters */
 	if(db_file_path == NULL)
@@ -59,13 +62,13 @@ Return db_specify_version(const char *db_file_path)
 			slog(ERROR,"Failed to prepare insert query: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
 		} else {
-			slog(TRACE,"The database version %d has been successfully stored in the DB\n",CURRENT_DB_VERSION);
+			slog(TRACE,"The database version %d has been successfully stored in the DB\n",version);
 		}
 	}
 
 	if(SUCCESS == status)
 	{
-		if(SQLITE_OK != sqlite3_bind_int(stmt,1,CURRENT_DB_VERSION))
+		if(SQLITE_OK != sqlite3_bind_int(stmt,1,version))
 		{
 			slog(ERROR,"Failed to bind version number: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
@@ -78,6 +81,15 @@ Return db_specify_version(const char *db_file_path)
 		{
 			slog(ERROR,"Failed to execute insert query: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
+		} else {
+			db_file_modified = true;
+
+			if(strcmp(db_file_path,config->db_primary_file_path) == 0)
+			{
+				/* Changes have been made to the database. Update
+				   this in the global variable value. */
+				config->db_primary_file_modified = true;
+			}
 		}
 	}
 
@@ -87,38 +99,10 @@ Return db_specify_version(const char *db_file_path)
 		sqlite3_finalize(stmt);
 	}
 
-	if(db != NULL)
+	/* Cleanup */
+	if(SUCCESS == status)
 	{
-		/**
-		 * @brief Force cache flush to disk for data persistence
-		 * @note This is the first approach to ensure data integrity
-		 */
-		if(SQLITE_OK != sqlite3_db_cacheflush(db))
-		{
-			slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
-
-		/**
-		 * @brief Configure SQLite for maximum reliability using PRAGMA
-		 * @note This is the second approach to ensure data integrity
-		 * @details Sets synchronous mode to FULL for maximum durability
-		 */
-		if(SQLITE_OK != sqlite3_exec(db,"PRAGMA synchronous = FULL;",NULL,NULL,NULL))
-		{
-			slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
-
-		/**
-		 * @brief Close database connection and cleanup resources
-		 * @note Must be called to prevent resource leaks
-		 */
-		if(SQLITE_OK != sqlite3_close(db))
-		{
-			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
-			status = FAILURE;
-		}
+		status = db_close(db,&db_file_modified);
 	}
 
 	provide(status);

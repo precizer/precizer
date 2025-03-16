@@ -123,10 +123,10 @@ Return long_relative_path_test(void)
 	reset(&line);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer "
-	        "--database=tests/examples/long/${LONG_PATH}/database1.db "
-	        "--ignore=\"^${LONG_PATH}/database1\\.db$\" "
-	        "tests/examples/long;"
+	        "${BINDIR}/precizer"
+	        " --database=tests/examples/long/${LONG_PATH}/database1.db"
+	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
+	        " tests/examples/long;"
 	        "rm tests/examples/long/${LONG_PATH}/database1.db;";
 
 	filename = "templates/0014_001_4.txt";
@@ -265,10 +265,10 @@ Return long_absolute_path_test(void)
 	reset(&line);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer "
-	        "--database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db "
-	        "--ignore=\"^${LONG_PATH}/database1\\.db$\" "
-	        "${TMPDIR}/tests/examples/long;"
+	        "${BINDIR}/precizer"
+	        " --database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db"
+	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
+	        " ${TMPDIR}/tests/examples/long;"
 	        "rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db;";
 
 	filename = "templates/0014_002_4.txt";
@@ -410,10 +410,10 @@ Return reset_relative_path_test(void)
 	reset(&line);
 
 	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer "
-	        "--database=tests/examples/long/${LONG_PATH}/database1.db "
-	        "--ignore=\"^${LONG_PATH}/database1\\.db$\" "
-	        "tests/examples/long;"
+	        "${BINDIR}/precizer"
+	        " --database=tests/examples/long/${LONG_PATH}/database1.db"
+	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
+	        " tests/examples/long;"
 	        "/bin/rm tests/examples/long/${LONG_PATH}/database1.db;";
 
 	filename = "templates/0014_003_4.txt";
@@ -556,10 +556,10 @@ Return reset_absolute_path_test(void)
 	reset(&line);
 
 	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer "
-	        "--database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db "
-	        "--ignore=\"^${LONG_PATH}/database1\\.db$\" "
-	        "${TMPDIR}/tests/examples/long;"
+	        "${BINDIR}/precizer"
+	        " --database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db"
+	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
+	        " ${TMPDIR}/tests/examples/long;"
 	        "/bin/rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db;";
 
 	filename = "templates/0014_004_4.txt";

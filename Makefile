@@ -72,7 +72,7 @@ WFLAGS += -Wall -Wextra -Wpedantic -Wshadow
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
-WFLAGS += -Wfloat-equal -Wundef -Wshadow
+WFLAGS += -Wfloat-equal -Wundef
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
 WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
 WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
@@ -135,7 +135,6 @@ STZDIR = $(BUILDDIR)/sanitize
 STZEXE = $(STZDIR)/$(EXE)
 STZOBJDIR = $(STZDIR)/obj
 STZOBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(OBJS)))
-STZLIBDIR = $(DBGLIBDIR)
 STZLIBS = $(DBGLIBS)
 STZDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
 STZCFLAGS += $(DBGFLAGS)
@@ -189,7 +188,7 @@ PRTLDFLAGS += -O2 -mtune=generic -Wl,--hash-style=both -Wl,--as-needed
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug prep release remake clang openmp one tests sanitize banner run format portable production prod $(SUBDIRS)
+.PHONY: all clean debug release remake clang tests sanitize banner run format portable production prod $(SUBDIRS)
 
 # Default build
 all: production
@@ -215,7 +214,7 @@ $(PRTEXE): $(PRTOBJS)
 	@echo "$@ linked"
 
 $(PRTOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRTWFLAGS) $(PRTCFLAGS) -o $@ $<
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRTCFLAGS) -o $@ $<
 	@echo $<" compiled"
 
 $(PRTOBJDIR):
@@ -277,7 +276,7 @@ $(PRDEXE): $(PRDOBJS)
 	@echo "$@ linked"
 
 $(PRDOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRDOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDWFLAGS) $(PRDCFLAGS) -o $@ $<
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDCFLAGS) -o $@ $<
 	@echo $<" compiled"
 
 $(PRDOBJDIR):
@@ -349,7 +348,7 @@ format:
 
 # Optional Assembler files
 %.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDWFLAGS) $(PRDCFLAGS) $(PRDLDFLAGS) -o $@ $(LDFLAGS) $<
+	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDCFLAGS) $(PRDLDFLAGS) -o $@ $(LDFLAGS) $<
 
 #
 # Other rules

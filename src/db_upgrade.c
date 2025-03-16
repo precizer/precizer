@@ -37,8 +37,8 @@ Return db_upgrade(
 
 		if(SUCCESS == status)
 		{
-			slog(TRACE,"Store the current database version in the metadata table\n");
-			status = db_specify_version(db_file_path);
+			slog(TRACE,"Store the database version 1 in the metadata table\n");
+			status = db_specify_version(db_file_path,1);
 		}
 
 		if(SUCCESS == status)
@@ -47,19 +47,22 @@ Return db_upgrade(
 		}
 	}
 
-#if 0
-
 	if(SUCCESS == status && *db_version < 2)
 	{
 		slog(TRACE,"Migration from version 1 to version 2 started\n");
-		status = db_migrate_from_1_to_2(&db_version,db_file_path,db_file_name);
+		status = db_migrate_from_1_to_2(db_file_path);
+
+		if(SUCCESS == status)
+		{
+			slog(TRACE,"Store the database version 2 in the metadata table\n");
+			status = db_specify_version(db_file_path,2);
+		}
 
 		if(SUCCESS == status)
 		{
 			slog(TRACE,"Migration from version 1 to version 2 completed\n");
 		}
 	}
-#endif
 
 	if(SUCCESS == status)
 	{
