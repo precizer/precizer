@@ -95,11 +95,8 @@ Return db_vacuum(const char *db_file_path)
 			   this in the global variable value. */
 			config->db_primary_file_modified = true;
 		}
-	}
 
-	/* Cleanup */
-	if(SUCCESS == status)
-	{
+		/* Cleanup */
 		status = db_close(db,&db_file_modified);
 	}
 

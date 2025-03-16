@@ -6,10 +6,11 @@ tests/examples/huge/
 tests/testitall
 tools/tool_*
 precizer
-*.old
+/*.old
 *~
 *.backup
-./*.db
-./*.db-shm
-./*.db-wal
-./*.out.*
+/*.db
+/*.db-shm
+/*.db-wal
+/*.out.*
+/src/tool_*
