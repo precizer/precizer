@@ -440,7 +440,7 @@ Return init_signals(void);
 
 Return db_close(
 	sqlite3 *,
-	bool *);
+	const bool *);
 
 void db_primary_sync(void);
 
