@@ -258,6 +258,40 @@ Return test0015_7_upgrade_db(void)
 	reset(&pattern);
 	del_char(&result);
 
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * Run the program again to verify that the database
+ * is actually at the current version
+ *
+ *
+ */
+Return test0015_8_upgrade_db(void)
+{
+	INITTEST;
+
+	const char *command = "export TESTING=true;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --update --database=./0015_database_v1.db tests/examples/diffs/diff1";
+
+	MSTRUCT(mem_char,result);
+
+	char *pattern = NULL;
+
+	const char *filename = "templates/0015_008.txt";
+
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+
+	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+
+	// Match the result against the pattern
+	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+
+	// Clean to use it iteratively
+	reset(&pattern);
+	del_char(&result);
+
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",SUCCESS,false,false));
 
@@ -270,7 +304,7 @@ Return test0015_7_upgrade_db(void)
  * Upgrading from 1 to the last version
  *
  */
-Return test0015_8_upgrade_db(void)
+Return test0015_9_upgrade_db(void)
 {
 	INITTEST;
 
@@ -279,7 +313,7 @@ Return test0015_8_upgrade_db(void)
 	        "cp -p tests/0015_database_v1.db .;"
 	        "${BINDIR}/precizer --compare --update ${DBNAME} 0015_database_v1.db";
 
-	const char *filename = "templates/0015_008.txt";  // File name
+	const char *filename = "templates/0015_009.txt";  // File name
 	const char *template = "%DB_NAME%";
 
 	const char *replacement = getenv("DBNAME");  // Database name
@@ -320,7 +354,8 @@ Return test0015(void)
 	TEST(test0015_5_upgrade_db,"Attempting an upgrade with a single --compare parameter…");
 	TEST(test0015_6_upgrade_db,"Upgrading from 0 to the last version using the --compare and --update…");
 	TEST(test0015_7_upgrade_db,"Upgrade a DB from v1 to the current version as the primary database…");
-	TEST(test0015_8_upgrade_db,"Upgrading from 1 to the last version using the --compare and --update…");
+	TEST(test0015_8_upgrade_db,"Verify that the DB is actually at version 2…");
+	TEST(test0015_9_upgrade_db,"Upgrading from 1 to the last version using the --compare and --update…");
 
 	RETURN_STATUS;
 }
