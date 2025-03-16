@@ -52,12 +52,30 @@ Return db_specify_version(
 		status = FAILURE;
 	}
 
+	if(SUCCESS == status)
+	{
+		/* Begin transaction */
+		if(SQLITE_OK != sqlite3_exec(db,"BEGIN TRANSACTION",NULL,NULL,NULL))
+		{
+			slog(ERROR,"Failed to begin transaction: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		/* Remove all from the table */
+		if(SQLITE_OK != sqlite3_exec(db,"DELETE FROM metadata;",NULL,NULL,NULL))
+		{
+			slog(ERROR,"Failed to remove all from the table: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
+		}
+	}
+
 	/* Insert version number */
 	if(SUCCESS == status)
 	{
-		const char *insert_query = "REPLACE INTO metadata (db_version) VALUES (?);";
-
-		if(SQLITE_OK != sqlite3_prepare_v2(db,insert_query,-1,&stmt,NULL))
+		if(SQLITE_OK != sqlite3_prepare_v2(db,"INSERT INTO metadata (db_version) VALUES(?);",-1,&stmt,NULL))
 		{
 			slog(ERROR,"Failed to prepare insert query: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
@@ -81,6 +99,16 @@ Return db_specify_version(
 		{
 			slog(ERROR,"Failed to execute insert query: %s\n",sqlite3_errmsg(db));
 			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		/* Commit transaction */
+		if(SQLITE_OK != sqlite3_exec(db,"COMMIT",NULL,NULL,NULL))
+		{
+			slog(ERROR,"Failed to commit transaction: %s\n",sqlite3_errmsg(db));
+			status = FAILURE;
 		} else {
 			db_file_modified = true;
 
@@ -90,6 +118,17 @@ Return db_specify_version(
 				   this in the global variable value. */
 				config->db_primary_file_modified = true;
 			}
+		}
+	}
+
+	if(SUCCESS != status)
+	{
+		/* Attempt rollback */
+		if(SQLITE_OK == sqlite3_exec(db,"ROLLBACK",NULL,NULL,NULL))
+		{
+			slog(TRACE,"The transaction has been rolled back\n");
+		} else {
+			slog(ERROR,"Failed to rollback transaction: %s\n",sqlite3_errmsg(db));
 		}
 	}
 
