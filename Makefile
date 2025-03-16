@@ -83,7 +83,7 @@ ifneq ($(CC), clang)
 WFLAGS += -Wlogical-op
 endif
 
-# Arguments for tests
+# Arguments for the test
 ARGS = --update tests/examples/diffs
 
 # Config settings:

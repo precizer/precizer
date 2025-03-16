@@ -26,6 +26,18 @@ Return add_string_to_array(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	if(array_ptr == NULL)
+	{
+		report("Invalid parameter: array_ptr is NULL");
+		provide(FAILURE);
+	}
+
+	if(new_string == NULL)
+	{
+		report("Invalid parameter: new_string is NULL");
+		provide(FAILURE);
+	}
+
 	// Calculate the size of the current string array
 	size_t size = 0;
 	char **array = *array_ptr;
