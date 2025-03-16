@@ -85,6 +85,14 @@
     #define STATIC static
 #endif
 
+// Macro to call a function only if the current status is SUCCESS.
+// If the status is SUCCESS, the function's return value will be assigned to status.
+#define run(func) \
+	if(SUCCESS == status) \
+	{ \
+		status = (func); \
+	}
+
 // PCRE2 return codes
 typedef enum
 {
@@ -263,7 +271,7 @@ typedef struct {
 	sqlite3 *db;
 
 	/// The path of DB file
-	char *db_file_path;
+	char *db_primary_file_path;
 
 	/// The name of DB file
 	char *db_file_name;
@@ -329,7 +337,7 @@ typedef struct {
 
 	/// Flag that reflects the presence of any changes
 	/// since the last research
-	bool something_has_been_changed;
+	bool db_primary_file_modified;
 
 	/// The "Warning about using the update option has already been shown"
 	/// option prevents duplicate notifications from being displayed
@@ -383,6 +391,16 @@ typedef struct {
  *
  */
 
+#ifdef TESTITALL
+/*
+ * All static functions for unit testing purposes are declared here
+ *
+ */
+void remove_leading_dots(char *);
+void remove_trailing_dots(char *);
+void free_str_array(char **);
+#endif
+
 Return file_list(const bool);
 
 Return sha512sum(
@@ -420,6 +438,12 @@ void init_config(void);
 
 Return init_signals(void);
 
+Return db_close(
+	sqlite3 *,
+	bool *);
+
+void db_primary_sync(void);
+
 void free_config(void);
 
 Return db_delete_missing_metadata(void);
@@ -434,7 +458,7 @@ Return db_init(void);
 
 Return db_vacuum(const char *);
 
-Return db_consider_vacuum_primary(void);
+Return db_primary_consider_vacuum(void);
 
 Return db_read_file_data_from(
 	DBrow *,
@@ -487,9 +511,11 @@ Return db_upgrade(
 
 Return db_migrate_from_0_to_1(const char *);
 
-Return db_specify_version(const char *);
+Return db_migrate_from_1_to_2(const char *);
 
-Return db_consider_version_update(void);
+Return db_specify_version(
+	const char *,
+	int);
 
 Return primary_db_file_test(void);
 
@@ -532,17 +558,9 @@ void show_checksum_gracefully_interrupted(
 
 Return shorten_path(char *);
 
-#ifdef TESTITALL
-/*
- * All static functions for unit testing purposes are declared here
- *
- */
-void remove_leading_dots(char *);
-void remove_trailing_dots(char *);
-void free_str_array(char **);
-#endif
-
 Return status_of_changes(void);
+
+Return db_check_changes(void);
 
 FileAvailability file_availability(
 	const char *,
@@ -567,14 +585,6 @@ REGEXP regexp_match
 int exit_status(
 	Return,
 	char **);
-
-// Macro to call a function only if the current status is SUCCESS.
-// If the status is SUCCESS, the function's return value will be assigned to status.
-#define run(func) \
-	if(SUCCESS == status) \
-	{ \
-		status = (func); \
-	}
 
 extern _Atomic bool global_interrupt_flag;
 

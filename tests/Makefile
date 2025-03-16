@@ -106,7 +106,7 @@ DBGLIBS = -L$(DBGLIBDIR)
 DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$(DBGLIBDIR)
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
-.PHONY: all clean debug release prod production sanitize coverage run coverage-report coverage-html format
+.PHONY: all clean debug sanitize coverage run coverage-report coverage-html format
 
 # Default build
 all: tests

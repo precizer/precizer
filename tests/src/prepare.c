@@ -19,7 +19,7 @@ Return prepare(void)
 	        "cp -apr $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
 	        "cp -apr $ORIGIN_DIR/tests/examples/4/ ${TESTDIRS}/../;"
 	        "cp -apr $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
-	        "cp -apr $ORIGIN_DIR/tests/templates/0015_database_v0.db ${TESTDIRS}/../../;"
+	        "cp -apr $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TESTDIRS}/../../;"
 	        "test -f $ORIGIN_DIR/precizer && cp -apr $ORIGIN_DIR/precizer .;"
 	        "mkdir -p .builds/debug/;"
 	        "mkdir -p .builds/sanitize/;"
