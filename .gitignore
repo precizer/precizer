@@ -14,3 +14,4 @@ precizer
 /*.db-wal
 /*.out.*
 /src/tool_*
+.vms/
