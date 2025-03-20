@@ -1,22 +1,25 @@
 #include "precizer.h"
 
 /**
- * @brief Adds a new string to a NULL-terminated array of strings
+ * @brief Adds a new string to a dynamically allocated NULL-terminated array of strings.
  *
- * @details This function adds additional strings to a dynamic
- * array of strings. The last line contains NULL. This
- * way safely loop could be used until NULL is
- * encountered.
+ * @details This function dynamically appends a string to an array of strings.
+ *          The array must be NULL-terminated to allow safe iteration.
+ *          It reallocates memory to accommodate the new entry, ensuring the array
+ *          remains NULL-terminated after adding the new string.
  *
- * @return Return SUCCESS if string was added successfully,
- *         FAILURE if memory allocation failed
+ * @param array_ptr  Pointer to the dynamic array of strings (NULL-terminated).
+ *                   The array will be reallocated to fit the new string.
+ * @param new_string The string to append to the array.
  *
- * @note The array must be NULL-terminated
+ * @return SUCCESS if the string was successfully added.
+ *         FAILURE if memory allocation fails at any point.
  *
- * @warning Freeing the memory from the string
- * array occurs in the free_config() function
- * before the app exits.
+ * @note The provided array must be initialized properly as either NULL or a valid
+ *       NULL-terminated array of strings before calling this function.
  *
+ * @warning Memory allocated by this function is freed by calling the free_config()
+ *          function upon program termination.
  */
 Return add_string_to_array(
 	char       ***array_ptr,
