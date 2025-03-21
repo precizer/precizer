@@ -34,7 +34,12 @@ static void display_status(
 
 	if(show_total == true)
 	{
-		slog(EVERY,"Total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",bkbmbgbtbpbeb(*total_size_in_bytes),total_items,*count_dirs,*count_files,*count_symlnks);
+		slog(EVERY,"Total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",
+			bkbmbgbtbpbeb(*total_size_in_bytes),
+			total_items,
+			*count_dirs,
+			*count_files,
+			*count_symlnks);
 	}
 }
 
@@ -160,12 +165,14 @@ Return file_list(const bool count_size_of_all_files)
 			/* Get absolute path prefix from FTSENT structure and current runtime path */
 			if(p == current_file_system)
 			{
+				size_t new_size = (size_t)(current_file_system->fts_pathlen + 1) * sizeof(char);
+
 				// All below run once per new path prefix
-				char *tmp = (char *)realloc(runtime_path_prefix,(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
+				char *tmp = (char *)realloc(runtime_path_prefix,new_size);
 
 				if(NULL == tmp)
 				{
-					report("Memory allocation failed, requested size: %zu bytes",(size_t)(current_file_system->fts_pathlen + 1) * sizeof(char));
+					report("Memory allocation failed, requested size: %zu bytes",new_size);
 					status = FAILURE;
 					break;
 				} else {
@@ -186,7 +193,9 @@ Return file_list(const bool count_size_of_all_files)
 				// If several paths were passed as arguments,
 				// then the counting of the path prefix index
 				// will start from zero
-				if(SUCCESS != (status = db_get_path_prefix_index(config,runtime_path_prefix,&path_prefix_index)))
+				if(SUCCESS != (status = db_get_path_prefix_index(config,
+					runtime_path_prefix,
+					&path_prefix_index)))
 				{
 					continue_the_loop = false;
 					break;
@@ -293,7 +302,8 @@ Return file_list(const bool count_size_of_all_files)
 				sqlite3_int64 offset = 0;           // Offset bytes
 				SHA512_Context mdContext = {0};
 
-				// For a file which had been changed before creation of its checksum has been already finished.
+				/* For a file which had been changed before creation
+				   of its checksum has been already finished */
 				bool rehashig_from_the_beginning = false;
 
 				// Ignored with --ignore= or admit with --include=
@@ -307,7 +317,8 @@ Return file_list(const bool count_size_of_all_files)
 						offset = dbrow->saved_offset;
 						memcpy(&mdContext,&(dbrow->saved_mdContext),sizeof(SHA512_Context));
 					} else {
-						// The SHA512 hashing of the file had not been finished previously and the file has been changed
+						/* The SHA512 hashing of the file had not been
+						   finished previously and the file has been changed */
 						rehashig_from_the_beginning = true;
 					}
 				}
@@ -349,7 +360,9 @@ Return file_list(const bool count_size_of_all_files)
 				bool is_readable = false;
 
 				/* Check file access */
-				status = file_check_access(p->fts_path,&p->fts_pathlen,&is_readable);
+				status = file_check_access(p->fts_path,
+					&p->fts_pathlen,
+					&is_readable);
 
 				if(SUCCESS != status)
 				{
@@ -406,7 +419,12 @@ Return file_list(const bool count_size_of_all_files)
 				{
 					if(SUCCESS == status)
 					{
-						status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext,&wrong_file_type);
+						status = sha512sum(p->fts_path,
+							&p->fts_pathlen,
+							sha512,
+							&offset,
+							&mdContext,
+							&wrong_file_type);
 
 						if(SUCCESS == status)
 						{
@@ -441,13 +459,20 @@ Return file_list(const bool count_size_of_all_files)
 					}
 				}
 
-				/* In all other scenarios, insert the record directly without updating the existing database entry */
+				/* In all other scenarios, insert the record directly
+				   without updating the existing database entry */
 				if(update_db == true)
 				{
 					/* Update record in DB */
 					if(SUCCESS == status)
 					{
-						status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext,&zero_size_file,&wrong_file_type);
+						status = db_update_the_record_by_id(&(dbrow->ID),
+							&offset,
+							sha512,
+							&stat,
+							&mdContext,
+							&zero_size_file,
+							&wrong_file_type);
 
 						if(SUCCESS != status)
 						{
@@ -461,9 +486,21 @@ Return file_list(const bool count_size_of_all_files)
 					if(SUCCESS == status)
 					{
 #if 0 // Old multiPATH solution
-						status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext,&zero_size_file,&wrong_file_type);
+						status = db_insert_the_record(&path_prefix_index,
+							relative_path,
+							&offset,sha512,
+							&stat,
+							&mdContext,
+							&zero_size_file,
+							&wrong_file_type);
 #else
-						status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext,&zero_size_file,&wrong_file_type);
+						status = db_insert_the_record(relative_path,
+							&offset,
+							sha512,
+							&stat,
+							&mdContext,
+							&zero_size_file,
+							&wrong_file_type);
 #endif
 
 						if(SUCCESS != status)
@@ -501,7 +538,12 @@ Return file_list(const bool count_size_of_all_files)
 	// Display statistics for filesystem components
 	if(SUCCESS == status)
 	{
-		display_status(&count_dirs,&count_files,&count_symlnks,&total_size_in_bytes,&count_size_of_all_files,&at_least_one_file_was_shown);
+		display_status(&count_dirs,
+			&count_files,
+			&count_symlnks,
+			&total_size_in_bytes,
+			&count_size_of_all_files,
+			&at_least_one_file_was_shown);
 	}
 
 	provide(status);
