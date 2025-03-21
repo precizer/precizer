@@ -26,7 +26,8 @@ jobs:
       - name: Build project
         run: |
           make portable
-          zip --junk-paths precizer.v${{ env.VERSION }} precizer
+          zip --junk-paths precizer.v${{ env.VERSION }}.zip precizer
+          ls -la
 
       - name: Run tests
         run: make tests-sanitize
