@@ -27,7 +27,6 @@ jobs:
         run: |
           make portable
           zip --junk-paths precizer.v${{ env.VERSION }}.zip precizer
-          ls -la
 
       - name: Run tests
         run: make tests-sanitize
