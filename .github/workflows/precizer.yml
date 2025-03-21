@@ -26,7 +26,7 @@ jobs:
       - name: Build project
         run: |
           make portable
-          zip --junk-paths precizer.v${{ env.VERSION }}.zip precizer
+          zip --junk-paths precizer_v${{ env.VERSION }}.zip precizer
 
       - name: Run tests
         run: make tests-sanitize
@@ -37,7 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} precizer.v${{ env.VERSION }}.zip \
+          gh release create ${{ github.ref_name }} precizer_v${{ env.VERSION }}.zip \
             --title "v${{ github.ref_name }}" \
             --notes "${{ env.BODY }}" \
             --draft
