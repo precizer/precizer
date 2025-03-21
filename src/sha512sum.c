@@ -40,7 +40,8 @@ Return sha512sum(
 	const short unsigned int *path_size,
 	unsigned char            *sha512,
 	sqlite3_int64            *offset,
-	SHA512_Context           *mdContext)
+	SHA512_Context           *mdContext,
+	bool                     *wrong_file_type)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -115,11 +116,11 @@ Return sha512sum(
 	// It moves the file pointer "offset" bytes from the beginning of the file
 	if(fseek(fileptr,*offset,SEEK_SET) != 0)
 	{
-		slog(ERROR,"Failed to seek to offset %lld in file %s\n",*offset,path);
+		// Looks like the wrong file type
+		*wrong_file_type = true;
 		free(buffer);
 		free(absolute_path);
 		fclose(fileptr);
-		status = FAILURE;
 		provide(status);
 	}
 

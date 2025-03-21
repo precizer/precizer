@@ -408,7 +408,8 @@ Return sha512sum(
 	const short unsigned int *,
 	unsigned char *,
 	sqlite3_int64 *,
-	SHA512_Context *);
+	SHA512_Context *,
+	bool *);
 
 Return add_string_to_array(
 	char ***,
@@ -440,7 +441,7 @@ Return init_signals(void);
 
 Return db_close(
 	sqlite3 *,
-	bool *);
+	const bool *);
 
 void db_primary_sync(void);
 
@@ -470,6 +471,7 @@ Return db_update_the_record_by_id(
 	const unsigned char *,
 	const CmpctStat *,
 	const SHA512_Context *,
+	const bool *,
 	const bool *);
 
 Return db_insert_the_record(
@@ -478,6 +480,7 @@ Return db_insert_the_record(
 	const unsigned char *,
 	const CmpctStat *,
 	const SHA512_Context *,
+	const bool *,
 	const bool *);
 
 Return db_determine_name(void);
