@@ -254,11 +254,8 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 				config->db_primary_file_modified = true;
 			}
 		}
-	}
 
-	/* Cleanup */
-	if(SUCCESS == status)
-	{
+		/* Cleanup */
 		status = db_close(db,&db_file_modified);
 	}
 

@@ -13,29 +13,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get annotated tag message
+        id: tag_message
+        run: |
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
 
       - name: Build project
         run: |
           make portable
-          zip --junk-paths precizer precizer
+          zip --junk-paths precizer.v${{ env.VERSION }}.zip precizer
 
       - name: Run tests
         run: make tests-sanitize
 
-      - name: Get annotated tag message
-        id: tag_message
-        run: |
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV
 
       - name: Create GitHub Release with gh CLI
         id: create_release
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} precizer.zip \
+          gh release create ${{ github.ref_name }} precizer.v${{ env.VERSION }}.zip \
             --title "v${{ github.ref_name }}" \
             --notes "${{ env.BODY }}" \
             --draft

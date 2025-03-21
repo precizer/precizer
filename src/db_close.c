@@ -6,8 +6,8 @@
  *
  */
 Return db_close(
-	sqlite3 *db,
-	bool    *db_file_modified)
+	sqlite3    *db,
+	const bool *db_file_modified)
 {
 	Return status = SUCCESS;
 

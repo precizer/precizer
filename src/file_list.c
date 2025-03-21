@@ -359,6 +359,18 @@ Return file_list(const bool count_size_of_all_files)
 
 				bool zero_size_file = false;
 
+				/**
+				 * On some special file systems (such as /sys, which has
+				 * the SYSFS_MAGIC constant == 0x62656572), standard
+				 * file operations like fopen, fseek, and lseek
+				 * cannot be used for reading and seeking.
+				 * While information about the file itself will be
+				 * recorded in the primary database, due to the
+				 * nature of such files, their hash sum is never
+				 * read and is stored as NULL
+				 */
+				bool wrong_file_type = false;
+
 				if(p->fts_statp->st_size == 0)
 				{
 					zero_size_file = true;
@@ -394,7 +406,7 @@ Return file_list(const bool count_size_of_all_files)
 				{
 					if(SUCCESS == status)
 					{
-						status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext);
+						status = sha512sum(p->fts_path,&p->fts_pathlen,sha512,&offset,&mdContext,&wrong_file_type);
 
 						if(SUCCESS == status)
 						{
@@ -435,7 +447,7 @@ Return file_list(const bool count_size_of_all_files)
 					/* Update record in DB */
 					if(SUCCESS == status)
 					{
-						status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext,&zero_size_file);
+						status = db_update_the_record_by_id(&(dbrow->ID),&offset,sha512,&stat,&mdContext,&zero_size_file,&wrong_file_type);
 
 						if(SUCCESS != status)
 						{
@@ -449,9 +461,9 @@ Return file_list(const bool count_size_of_all_files)
 					if(SUCCESS == status)
 					{
 #if 0 // Old multiPATH solution
-						status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext);
+						status = db_insert_the_record(&path_prefix_index,relative_path,&offset,sha512,&stat,&mdContext,&zero_size_file,&wrong_file_type);
 #else
-						status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext,&zero_size_file);
+						status = db_insert_the_record(relative_path,&offset,sha512,&stat,&mdContext,&zero_size_file,&wrong_file_type);
 #endif
 
 						if(SUCCESS != status)
