@@ -68,6 +68,7 @@ STATIC = -static -static-libgcc -Wl,--gc-sections
 SRC = src
 STRIP = -s
 # Flags for additional checks. Must have!
+WFLAGS += -flto
 WFLAGS += -Wall -Wextra -Wpedantic -Wshadow
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
