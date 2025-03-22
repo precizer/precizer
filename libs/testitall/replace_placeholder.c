@@ -42,14 +42,13 @@ Return replace_placeholder(
 
 	// Estimate output buffer size based on the number of matches and replacement size
 	PCRE2_SIZE out_len = subject_len + 1; // Start with original length
-	size_t match_count = 0;
+
 	int rc = pcre2_match(re,subject,subject_len,0,0,match_data,NULL);
 
 	while(rc >= 0)
 	{
 		out_len += strlen(replacement) - (pcre2_get_ovector_pointer(match_data)[1] -
 		        pcre2_get_ovector_pointer(match_data)[0]);
-		match_count++;
 		rc = pcre2_match(re,subject,subject_len,
 			pcre2_get_ovector_pointer(match_data)[1],0,match_data,NULL);
 	}

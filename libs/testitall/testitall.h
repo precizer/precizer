@@ -100,7 +100,7 @@ Return external_call(
 void echo(
 	mem_char *,
 	const char *,
-	...) __attribute__((format(gnu_printf,2,3)));
+	...) __attribute__((format(printf,2,3)));
 
 Return execute_command(
 	const char *,

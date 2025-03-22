@@ -13,7 +13,7 @@ BUILDDIR = ../../.builds
 #
 
 # Stop the build on any errors -Werror
-CFLAGS += -pipe -std=c11 -static -finline-functions
+CFLAGS += -pipe -std=c11 -finline-functions
 CFLAGS += -fbuiltin
 
 SO = $(LIBNAME).so
@@ -32,8 +32,6 @@ WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
 WFLAGS += -Wfloat-equal -Wundef
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
-WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
-WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
 # If not clang, then these options are for gcc
@@ -84,17 +82,41 @@ RELLIBDIR = $(RELDIR)/libs
 RELSO = $(RELLIBDIR)/$(SO)
 RELSTAT = $(RELLIBDIR)/$(STATLIB)
 RELOBJS = $(addprefix $(RELLIBDIR)/, $(OBJS))
-RELCFLAGS = -O3 -funroll-loops -DNDEBUG
-RELCFLAGS += -march=native
+RELCFLAGS += -flto -O3 -march=native -funroll-loops -DNDEBUG
+RELLDFLAGS += -flto -O3 -march=native -Wl,--hash-style=gnu -Wl,--as-needed
 # If not clang, then these options are for gcc
 ifneq ($(CC), clang)
-RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
+RELWFLAGS += -Wsuggest-attribute=const
+RELWFLAGS += -Wsuggest-attribute=pure
+RELWFLAGS += -Wsuggest-attribute=noreturn
+RELWFLAGS += -Wsuggest-attribute=format
+RELWFLAGS += -Wmissing-format-attribute
 endif
 
-.PHONY: all clean debug release prod production sanitize format gcc-analyzer
+#
+# Portable build settings
+#
+PRTDIR = $(BUILDDIR)/portable
+PRTLIBDIR = $(PRTDIR)/libs
+PRTSO = $(PRTLIBDIR)/$(SO)
+PRTSTAT = $(PRTLIBDIR)/$(STATLIB)
+PRTOBJS = $(addprefix $(PRTLIBDIR)/, $(OBJS))
+PRTCFLAGS += -flto -O2 -mtune=generic -funroll-loops -DNDEBUG
+PRTLDFLAGS += -flto -O2 -mtune=generic -Wl,--hash-style=gnu -Wl,--as-needed
+# If not clang, then these options are for gcc
+ifneq ($(CC), clang)
+PRTWFLAGS += -Wsuggest-attribute=const
+PRTWFLAGS += -Wsuggest-attribute=pure
+PRTWFLAGS += -Wsuggest-attribute=noreturn
+PRTWFLAGS += -Wsuggest-attribute=format
+PRTWFLAGS += -Wmissing-format-attribute
+endif
+
+
+.PHONY: all clean debug release prod production portable sanitize format gcc-analyzer
 
 # Default build
-all: debug release
+all: debug release portable
 	@true
 
 prod: release
@@ -159,7 +181,7 @@ $(RELSTAT): $(RELOBJS)
 	@echo "$@ prepared to be the static library."
 
 $(RELSO): $(RELOBJS)
-	@$(CC) -shared $(STRIP) $(INCPATH) -o $(RELSO) $^
+	@$(CC) -shared $(STRIP) $(INCPATH) $(RELLDFLAGS) -o $(RELSO) $^
 	@echo "$@ prepared to be the shared library."
 
 $(RELLIBDIR)/%.o: %.c $(HDRS) | $(RELLIBDIR)
@@ -169,8 +191,29 @@ $(RELLIBDIR)/%.o: %.c $(HDRS) | $(RELLIBDIR)
 $(RELLIBDIR):
 	@mkdir -p "$(RELLIBDIR)"
 
+#
+# Portable rules
+#
+portable: $(PRTSO) $(PRTSTAT)
+
+$(PRTSTAT): $(PRTOBJS)
+	@ar rcs $@ $+
+	@echo "$@ prepared to be the static library."
+
+$(PRTSO): $(PRTOBJS)
+	@$(CC) -shared $(STRIP) $(INCPATH) $(PRTLDFLAGS) -o $(PRTSO) $^
+	@echo "$@ prepared to be the shared library."
+
+$(PRTLIBDIR)/%.o: %.c $(HDRS) | $(PRTLIBDIR)
+	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRTWFLAGS) $(PRTCFLAGS) -o $@ $<
+	@echo $<" compiled."
+
+$(PRTLIBDIR):
+	@mkdir -p "$(PRTLIBDIR)"
+
 clean:
 	@rm -rf $(RELSO) $(RELSTAT) $(RELOBJS)
+	@rm -rf $(PRTSO) $(PRTSTAT) $(PRTOBJS)
 	@rm -rf $(DBGSO) $(DBGSTAT) $(DBGOBJS)
 	@rm -rf $(STZSO) $(STZSTAT) $(STZOBJS)
 
@@ -183,8 +226,11 @@ clean:
 	@test -d $(RELLIBDIR) && rm -d $(RELLIBDIR) 2>/dev/null || true
 	@test -d $(RELDIR) && rm -d $(RELDIR) 2>/dev/null || true
 
+	@test -d $(PRTLIBDIR) && rm -d $(PRTLIBDIR) 2>/dev/null || true
+	@test -d $(PRTDIR) && rm -d $(PRTDIR) 2>/dev/null || true
+
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
-	@echo $(LIBNAME) cleared.
+	@echo $(LIBNAME) cleared
 
 #
 # Format rules
@@ -206,7 +252,7 @@ gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
 cppcheck:
-	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i ../mem -i tests --inconclusive .
+	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i ../mem --inconclusive .
 
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
