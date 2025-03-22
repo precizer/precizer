@@ -33,5 +33,5 @@ int exit_status(
 		}
 	}
 
-	return(status);
+	return((int)status);
 }

@@ -1,7 +1,6 @@
 TODO:
 
-* Add function return value checks to files:
-    - src/file_availability.c
+* mimalloc?
 
 * Verify that all asprintf, realloc, malloc and other memory
   handling functions report memory allocation errors as follows:
@@ -22,9 +21,8 @@ TODO:
   the available CPU cores. Each portion is hashed independently,
   then the results are aggregated before moving on to read the
   next block from the file.
-
-* db_check_up_paths.c
-    * Consider printing paths line by line instead of inline
+  
+* Replaced the current extremely slow algorithm for filling arrays with random data used in testing.
 
 * Add completion messages at the end of each significant code block
   Like in detect_paths.c ending: slog(TRACE,"Paths detected\n");

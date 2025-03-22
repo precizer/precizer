@@ -57,7 +57,7 @@ void SERP(
  * @example
  *    REPORT(__FILE__, __func__, __LINE__, "Failed to allocate %d bytes", size);
  */
-__attribute__((format(gnu_printf,4,5)))
+__attribute__((format(printf,4,5)))
 void REPORT(
 	const char *source_file,
 	const char *func_name,
@@ -75,7 +75,7 @@ void REPORT(
 	va_end(args);
 
 	/* Format complete error message with debug info and errno details */
-	ssize_t len = (size_t)snprintf(final_buffer,
+	ssize_t len = snprintf(final_buffer,
 		sizeof(final_buffer),
 		"ERROR: %s:%s:%d %s Errno: %s (errno: %d)\n",
 		source_file,
