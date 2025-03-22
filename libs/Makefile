@@ -5,11 +5,11 @@ CONFIG += ordered
 
 SUBDIRS  = sqlite rational sha512 testitall mem xdiff
 
-TOPTARGETS := all clean release debug prod production sanitize test cosmo gcc-analyzer format
+TOPTARGETS := all clean release debug prod production portable sanitize test cosmo gcc-analyzer format
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
-	@$(MAKE) -s -C $@ $(MAKECMDGOALS) 2>/dev/null
+	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS) warning
 

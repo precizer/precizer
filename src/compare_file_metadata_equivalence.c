@@ -24,7 +24,7 @@ int compare_file_metadata_equivalence(
 	/* Validate input parameters */
 	if(NULL == source || NULL == destination)
 	{
-		provide(FAILURE);
+		return(COMPARE_FAILED);
 	}
 
 	int result = IDENTICAL;
