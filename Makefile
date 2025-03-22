@@ -229,7 +229,7 @@ $(PRTOBJDIR):
 #
 # Sanitize rules
 #
-sanitize: $(STZLIBDIR) $(STZEXE)
+sanitize: $(DBGLIBDIR) $(STZEXE)
 
 run:
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
