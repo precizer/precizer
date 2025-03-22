@@ -74,13 +74,16 @@ WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
 WFLAGS += -Wfloat-equal -Wundef
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
-WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
-WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
-# If it is not clang, then these options are for gcc
+# If not clang, then these options are for gcc
 ifneq ($(CC), clang)
 WFLAGS += -Wlogical-op
+WFLAGS += -Wsuggest-attribute=const
+WFLAGS += -Wsuggest-attribute=pure
+WFLAGS += -Wsuggest-attribute=noreturn
+WFLAGS += -Wsuggest-attribute=format
+WFLAGS += -Wmissing-format-attribute
 endif
 
 # Arguments for the test
@@ -90,9 +93,6 @@ ARGS = --update tests/examples/diffs
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
-
-# Build of dependent static library
-SUBDIRS = libs
 
 # Test directory
 TESTDIR = tests
@@ -152,7 +152,7 @@ DBGLIBS = -L$(DBGLIBDIR)
 DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs
 DBGFLAGS = -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 DBGCFLAGS += $(DBGFLAGS)
-DBGCFLAGS += -Wl,--as-needed
+DBGLDFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -Wl,--as-needed
 # Activation of the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
@@ -169,8 +169,8 @@ PRDOBJS = $(addprefix $(PRDOBJDIR)/, $(notdir $(OBJS)))
 PRDLIBDIR = $(PRDDIR)/libs
 PRDLIBS = -L$(PRDLIBDIR)
 PRDDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRDLIBDIR),-rpath,\$$ORIGIN/libs
-PRDCFLAGS = -O3 -march=native -funroll-loops -DNDEBUG
-PRDLDFLAGS += -O3 -march=native -Wl,--hash-style=gnu -Wl,--as-needed
+PRDCFLAGS = -flto=auto -O3 -march=native -funroll-loops -DNDEBUG
+PRDLDFLAGS += -flto=auto -w -O3 -march=native -Wl,--hash-style=gnu -Wl,--as-needed
 
 #
 # Portable build settings
@@ -179,22 +179,28 @@ PRTDIR = $(BUILDDIR)/portable
 PRTEXE = $(PRTDIR)/$(EXE)
 PRTOBJDIR = $(PRTDIR)/obj
 PRTOBJS = $(addprefix $(PRTOBJDIR)/, $(notdir $(OBJS)))
-PRTLIBDIR = $(PRDLIBDIR)
+PRTLIBDIR = $(PRTDIR)/libs
 PRTLIBS = -L$(PRTLIBDIR)
 PRTDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTLIBDIR),-rpath,\$$ORIGIN/libs
-PRTCFLAGS = -O2 -mtune=generic -funroll-loops -DNDEBUG
-PRTLDFLAGS += -O2 -mtune=generic -Wl,--hash-style=both -Wl,--as-needed 
+PRTCFLAGS = -flto=auto -O2 -mtune=generic -funroll-loops -DNDEBUG
+PRTLDFLAGS += -flto=auto -w -O2 -mtune=generic -Wl,--hash-style=both -Wl,--as-needed 
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug release remake clang tests sanitize banner run format portable production prod $(SUBDIRS)
+.PHONY: all clean debug release remake clang tests sanitize banner run format portable production prod
 
 # Default build
 all: production
 
-$(SUBDIRS):
-	@$(MAKE) -s -C $(SUBDIRS) all
+$(DBGLIBDIR):
+	@$(MAKE) -s -C libs debug
+
+$(PRDLIBDIR):
+	@$(MAKE) -s -C libs production
+
+$(PRTLIBDIR):
+	@$(MAKE) -s -C libs portable
 
 # Clang
 clang: CC = clang
@@ -202,7 +208,7 @@ clang: all
 
 # Portable rules
 #
-portable: $(SUBDIRS) $(PRTEXE) portfinal banner
+portable: $(PRTLIBDIR) $(PRTEXE) portfinal banner
 
 portfinal: $(PRTEXE)
 	@cp $(PRTEXE) $(EXE)
@@ -223,17 +229,17 @@ $(PRTOBJDIR):
 #
 # Sanitize rules
 #
-sanitize: $(SUBDIRS) $(STZEXE)
+sanitize: $(DBGLIBDIR) $(STZEXE)
 
 run:
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
 
 $(STZEXE): $(STZOBJS)
-	@$(CC) $(CFLAGS) $(STZCFLAGS) $(STZLIBS) $(STZDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STZCFLAGS) $(STZLIBS) $(STZDYNLIB) -o $(STZEXE) $^ $(LDFLAGS)
 	@echo "$@ linked"
 
 $(STZOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(STZOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(STZCFLAGS) -o $@ $<
 	@echo $<" compiled"
 
 $(STZOBJDIR):
@@ -242,18 +248,18 @@ $(STZOBJDIR):
 #
 # Debug rules
 #
-debug: $(SUBDIRS) $(DBGEXE) debugfinal
+debug: $(DBGLIBDIR) $(DBGEXE) debugfinal
 
 debugfinal: $(DBGEXE)
 	@cp $(DBGEXE) $(EXE)
 	@echo "The $(DBGEXE) has been copied to the current directory"
 
 $(DBGEXE): $(DBGOBJS)
-	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(STATIC) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(DBGCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(DBGLDFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
 	@echo "$@ linked"
 
 $(DBGOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBGOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(DBGCFLAGS) -o $@ $<
 	@echo $<" compiled"
 
 $(DBGOBJDIR):
@@ -264,7 +270,7 @@ $(DBGOBJDIR):
 #
 release: production
 prod: production
-production: $(SUBDIRS) $(PRDEXE) prodfinal banner
+production: $(PRDLIBDIR) $(PRDEXE) prodfinal banner
 
 prodfinal: $(PRDEXE)
 	@cp $(PRDEXE) $(EXE)
@@ -272,7 +278,7 @@ prodfinal: $(PRDEXE)
 	@echo "The $(PRDEXE) has been copied to the current directory"
 
 $(PRDEXE): $(PRDOBJS)
-	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRDLIBS) $(PRDDYNLIB) $(PRDLDFLAGS) -o $(PRDEXE) $^ $(LDFLAGS)
+	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRDCFLAGS) $(PRDLIBS) $(PRDDYNLIB) $(PRDLDFLAGS) -o $(PRDEXE) $^ $(LDFLAGS)
 	@echo "$@ linked"
 
 $(PRDOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRDOBJDIR)
@@ -318,13 +324,15 @@ tests-in-docker: build-docker
 
 # Clean the built container
 clean-docker:
-	@docker rm -f $(EXE)
+	@docker rm -f $(EXE) > /dev/null 2>&1
+	@echo Docker image $(EXE) cleared
 
 clean-all-dockers:
-	@docker image prune -f
-	@docker image prune -af
-	@docker rm -f $(shell docker ps -aq)
-	@docker rmi -f $(shell docker images -q)
+	@docker image prune -f > /dev/null 2>&1
+	@docker image prune -af > /dev/null 2>&1
+	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1
+	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1
+	@echo All docker images cleared
 
 #
 # Format rules
@@ -362,7 +370,7 @@ analyze: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gc
 #
 # GCC Static Analysis
 #
-gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -flto
+gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
 # -Wanalyzer-too-complex
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
@@ -423,7 +431,7 @@ cloc:
 
 # Character | prevent threading with clean
 clean-all: clean-tests clean clean-tools clean-docker
-	@$(MAKE) -C $(SUBDIRS) clean
+	@$(MAKE) -C libs clean
 
 clean-tools:
 	@$(MAKE) -C $(TOOLSDIR) clean
@@ -448,7 +456,7 @@ clean: | clean-preproc clean-asm clean-tests
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 
 	@test -f $(EXE) && rm $(EXE) || true
-	@echo $(EXE) cleared.
+	@echo $(EXE) cleared
 
 clean-tests:
 	@$(MAKE) -C $(TESTDIR) clean
