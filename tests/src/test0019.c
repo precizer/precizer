@@ -17,7 +17,7 @@ Return test0019(void)
 	char *pattern = NULL;
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"

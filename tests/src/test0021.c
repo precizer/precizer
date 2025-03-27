@@ -51,8 +51,8 @@ Return test0021(void)
 {
 	INITTEST;
 
-	MSTRUCT(mem_char,captured_stdout);
-	MSTRUCT(mem_char,captured_stderr);
+	calloc_mem(mem_char,captured_stdout);
+	calloc_mem(mem_char,captured_stderr);
 
 	char *pattern = NULL;
 

@@ -7,7 +7,7 @@ Return long_relative_path_test(void)
 	char *pattern = NULL;
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	/*
 	 * First test in the series. Database update with a new path
@@ -149,7 +149,7 @@ Return long_absolute_path_test(void)
 	char *pattern = NULL;
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	/*
 	 * First test in the series. Database update with a new path
@@ -291,7 +291,7 @@ Return reset_relative_path_test(void)
 	char *pattern = NULL;
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	/*
 	 * First test in the series. Database update with a new path
@@ -436,7 +436,7 @@ Return reset_absolute_path_test(void)
 	char *pattern = NULL;
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	/*
 	 * First test in the series. The PATH variable has been removed.

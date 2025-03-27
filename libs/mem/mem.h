@@ -21,6 +21,7 @@
 // Package complex types containing spaces into single tokens
 // for macro usage (CONCAT and MEM_TYPE)
 typedef unsigned long long int ullint;
+typedef unsigned char          uchar;
 
 /**
  * @brief Memory alignment for allocation (4KB pages)
@@ -104,13 +105,13 @@ typedef unsigned long long int ullint;
  *
  * @see memset
  */
-#define MSTRUCT(struct_type,struct_name) \
+#define calloc_mem(struct_type,struct_name) \
 	struct_type _ ## struct_name; \
 	struct_type *struct_name = &_ ## struct_name; \
 	memset(struct_name,0,sizeof(struct_type));
 
 /* The same w/o memset to use as global structures */
-#define GSTRUCT(struct_type,struct_name) \
+#define alloc_mem(struct_type,struct_name) \
 	struct_type _ ## struct_name; \
 	struct_type *struct_name = &_ ## struct_name; \
 
@@ -123,6 +124,12 @@ typedef unsigned long long int ullint;
 #define calloc_char(...) CALLOC_CHAR(__VA_ARGS__,false,0)
 #define CALLOC_CHAR(a,b,c,...) calloc_char(a,b,c)
 
+#define realloc_uchar(...) REALLOC_UCHAR(__VA_ARGS__,false,0)
+#define REALLOC_UCHAR(a,b,c,...) realloc_uchar(a,b,c)
+
+#define calloc_uchar(...) CALLOC_UCHAR(__VA_ARGS__,false,0)
+#define CALLOC_UCHAR(a,b,c,...) calloc_uchar(a,b,c)
+
 #define realloc_int(...) REALLOC_INT(__VA_ARGS__,false,0)
 #define REALLOC_INT(a,b,c,...) realloc_int(a,b,c)
 
@@ -132,6 +139,9 @@ typedef unsigned long long int ullint;
 #define realloc_ullint(...) REALLOC_ULLINT(__VA_ARGS__,false,0)
 #define REALLOC_ULLINT(a,b,c,...) realloc_ullint(a,b,c)
 
+#define calloc_ullint(...) CALLOC_ULLINT(__VA_ARGS__,false,0)
+#define CALLOC_ULLINT(a,b,c,...) calloc_ullint(a,b,c)
+
 /**
  * @brief Structure for char array management
  */
@@ -140,6 +150,15 @@ typedef struct {
 	size_t allocated; ///< Actually allocated memory in bytes
 	char *mem;        ///< Pointer to dynamic array
 } mem_char;
+
+/**
+ * @brief Structure for unsigned char array management
+ */
+typedef struct {
+	size_t length;    ///< Current array length
+	size_t allocated; ///< Actually allocated memory in bytes
+	uchar *mem;       ///< Pointer to dynamic array
+} mem_uchar;
 
 /**
  * @brief Structure for int array management
@@ -201,6 +220,26 @@ Return append_char(
 	mem_char *);
 
 Return del_char(mem_char **);
+
+Return realloc_uchar(
+	mem_uchar *,
+	const size_t,
+	bool);
+
+Return calloc_uchar(
+	mem_uchar *,
+	const size_t,
+	bool);
+
+Return copy_uchar(
+	mem_uchar *,
+	mem_uchar *);
+
+Return append_uchar(
+	mem_uchar *,
+	mem_uchar *);
+
+Return del_uchar(mem_uchar **);
 
 Return realloc_int(
 	mem_int *,
