@@ -47,20 +47,22 @@ Return sha512sum(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	const long buffer_size = how_much_memory_can_be_allocated_for_the_buffer();
+	const long buffer_length = how_much_memory_can_be_allocated_for_the_buffer();
+	size_t buffer_size = (size_t)buffer_length * sizeof(unsigned char);
 
-	if(buffer_size <= 0)
+	if(buffer_length <= 0)
 	{
-		slog(ERROR,"Invalid buffer size: %ld bytes\n",buffer_size);
+		slog(ERROR,"Invalid buffer size: %ld bytes\n",buffer_length);
 		status = FAILURE;
 		provide(status);
 	}
 
-	unsigned char *buffer = (unsigned char *)calloc((size_t)buffer_size,sizeof(unsigned char));
+	calloc_mem(mem_uchar,buffer);
+	calloc_uchar(buffer,buffer_size);
 
-	if(buffer == NULL)
+	if(buffer->mem == NULL)
 	{
-		report("Memory allocation failed, requested size: %zu bytes",(size_t)buffer_size * sizeof(unsigned char));
+		report("Memory allocation failed, requested size: %zu bytes",buffer_size);
 		status = FAILURE;
 		provide(status);
 	}
@@ -75,7 +77,7 @@ Return sha512sum(
 		// No read permission
 		if(errno == EACCES)
 		{
-			free(buffer);
+			del_uchar(&buffer);
 			provide(status);
 		}
 
@@ -89,7 +91,7 @@ Return sha512sum(
 			{
 				free(absolute_path);
 			}
-			free(buffer);
+			del_uchar(&buffer);
 			provide(status);
 		}
 
@@ -100,13 +102,13 @@ Return sha512sum(
 			// No read permission
 			if(errno == EACCES)
 			{
-				free(buffer);
+				del_uchar(&buffer);
 				free(absolute_path);
 				provide(status);
 			}
 
 			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path with errno: %d\n",path,absolute_path,errno);
-			free(buffer);
+			del_uchar(&buffer);
 			free(absolute_path);
 			status = FAILURE;
 			provide(status);
@@ -118,7 +120,7 @@ Return sha512sum(
 	{
 		// Looks like the wrong file type
 		*wrong_file_type = true;
-		free(buffer);
+		del_uchar(&buffer);
 		free(absolute_path);
 		fclose(fileptr);
 		provide(status);
@@ -131,7 +133,7 @@ Return sha512sum(
 		if(sha512_init(mdContext) == 1)
 		{
 			slog(ERROR,"SHA512 initialization failed\n");
-			free(buffer);
+			del_uchar(&buffer);
 			free(absolute_path);
 			fclose(fileptr);
 			status = FAILURE;
@@ -139,7 +141,7 @@ Return sha512sum(
 		}
 	}
 
-	while((len = fread(buffer,1,(size_t)buffer_size,fileptr)) != 0)
+	while((len = fread(buffer->mem,sizeof(unsigned char),(size_t)buffer_length,fileptr)) != 0)
 	{
 		/* Interrupt the loop smoothly */
 		/* Interrupt when Ctrl+C */
@@ -158,7 +160,7 @@ Return sha512sum(
 
 		if(SUCCESS == status)
 		{
-			if(sha512_update(mdContext,buffer,len) == 1)
+			if(sha512_update(mdContext,buffer->mem,len) == 1)
 			{
 				slog(ERROR,"SHA512 update failed\n");
 				status = FAILURE;
@@ -169,7 +171,7 @@ Return sha512sum(
 		}
 	}
 
-	free(buffer);
+	del_uchar(&buffer);
 
 	if(fclose(fileptr) != 0)
 	{
