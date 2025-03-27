@@ -39,7 +39,7 @@ Return match_file_template(
 	char *pattern = NULL;
 
 	// Create memory for command output
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	// Read template pattern from file
 	status = get_file_content(filename,&pattern);
