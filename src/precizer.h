@@ -75,6 +75,7 @@
 /// Included libraries from "libs" subdir
 #include "rational.h"
 #include "sha512.h"
+#include "mem.h"
 #include "sqlite3.h"
 
 #define SQL_DRY_RUN_MODE ((int)-1)
