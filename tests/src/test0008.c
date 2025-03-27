@@ -19,8 +19,8 @@ Return test0008(void)
 {
 	INITTEST;
 
-	MSTRUCT(mem_char,captured_stdout);
-	MSTRUCT(mem_char,captured_stderr);
+	calloc_mem(mem_char,captured_stdout);
+	calloc_mem(mem_char,captured_stderr);
 	char *pattern = NULL;
 
 	ASSERT(SUCCESS == function_capture(report_test,captured_stdout,captured_stderr));

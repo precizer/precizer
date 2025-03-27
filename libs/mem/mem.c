@@ -122,6 +122,98 @@ Return del_char(mem_char **structure)
 }
 
 /*
+ * Unsigned char type memory management functions
+ */
+
+/**
+ * @brief Reallocates memory for unsigned char array
+ * @param structure Pointer to mem_uchar structure
+ * @param length New desired length of the array
+ * @param true_reduce If true, actually reduce allocated memory when shrinking
+ */
+Return realloc_uchar(
+	mem_uchar    *structure,
+	const size_t newlength,
+	const bool   true_reduce)
+{
+	#define TYPE uchar
+	#include "realloc.cc"
+	#undef TYPE
+}
+
+/**
+ * @brief Reallocate destination and make a copy from source to destination
+ * @param destination Pointer to mem_uchar structure
+ * @param source Pointer to mem_uchar structure
+ */
+Return copy_uchar(
+	mem_uchar *destination,
+	mem_uchar *source)
+{
+	#define TYPE uchar
+	#include "copy.cc"
+	#undef TYPE
+}
+
+/**
+ * @brief Concatenates the contents of two mem_uchar structures, appending source data to the destination.
+ *
+ * @param destination Pointer to the target mem_uchar structure where data will be added.
+ * @param source Pointer to the source mem_uchar structure whose data will be appended.
+ *
+ * @return Operation status (SUCCESS on success, FAILURE on error).
+ *
+ * @details This function performs concatenation of data from the source structure
+ * to the end of the destination structure. The operation includes:
+ * - Validating input pointers for correctness
+ * - Allocating additional memory for data merging
+ * - Copying source contents to the end of destination
+ *
+ * @note Careful memory management is required after the operation.
+ *
+ * @warning Improper use may result in data loss or memory leaks.
+ *
+ * @see mem_uchar
+ */
+Return append_uchar(
+	mem_uchar *destination,
+	mem_uchar *source)
+{
+	#define TYPE uchar
+	#include "append.cc"
+	#undef TYPE
+}
+
+/**
+ * @brief Allocates and zeros memory for unsigned char array
+ * @param structure Pointer to mem_uchar structure
+ * @param length Desired length of the array
+ * @param true_reduce If true, actually reduce allocated memory when shrinking
+ */
+Return calloc_uchar(
+	mem_uchar    *structure,
+	const size_t newlength,
+	const bool   true_reduce)
+{
+	#define CALLOC 0
+	#define TYPE uchar
+	#include "realloc.cc"
+	#undef TYPE
+	#undef CALLOC
+}
+
+/**
+ * @brief Deallocates memory for unsigned char array
+ * @param structure Pointer to pointer to mem_uchar structure
+ */
+Return del_uchar(mem_uchar **structure)
+{
+	#define TYPE uchar
+	#include "del.cc"
+	#undef TYPE
+}
+
+/*
  * Int type memory management functions
  */
 

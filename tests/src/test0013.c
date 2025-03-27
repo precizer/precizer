@@ -10,7 +10,7 @@ static Return dry_run_mode_1_test(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --dry-run --database=database1.db tests/examples/diffs/diff1";
 
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
@@ -44,7 +44,7 @@ static Return dry_run_mode_2_test(void)
 {
 	INITTEST;
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 	struct stat stat1;
 	struct stat stat2;
 	char *pattern = NULL;
@@ -185,7 +185,7 @@ static Return no_dry_run_mode_3_test(void)
 {
 	INITTEST;
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 	char *path = NULL;
 	char *pattern = NULL;
 	const char *db_file_name = "database1.db";

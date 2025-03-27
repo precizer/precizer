@@ -1,9 +1,9 @@
 #include "testitall.h"
 
 // Allocate memory for the structure char
-GSTRUCT(mem_char,STDOUT)
-GSTRUCT(mem_char,STDERR)
-GSTRUCT(mem_char,EXTEND)
+alloc_mem(mem_char,STDOUT)
+alloc_mem(mem_char,STDERR)
+alloc_mem(mem_char,EXTEND)
 
 extern char **environ; // Environment variables used by posix_spawnp
 

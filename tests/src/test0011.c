@@ -20,7 +20,7 @@ static Return test0011_1_readme(void)
 	        "${BINDIR}/precizer --compare database1.db database2.db";
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
@@ -80,7 +80,7 @@ static Return test0011_2_readme(void)
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	char *pattern = NULL;
 
@@ -147,7 +147,7 @@ static Return test0011_3_readme(void)
 	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	// Stdout output should be 0 characters
 	ASSERT(result->length == 0);
@@ -175,7 +175,7 @@ static Return test0011_4_readme(void)
 	        "${BINDIR}/precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1";
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	char *pattern = NULL;
 

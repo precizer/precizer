@@ -29,7 +29,7 @@ Return execute_and_set_variable(
 	Return status = SUCCESS;
 
 	// Create memory for storing command output
-	MSTRUCT(mem_char,result);
+	calloc_mem(mem_char,result);
 
 	// Execute command and capture output
 	status = execute_command(command,result,expected_return_code,false,false);
