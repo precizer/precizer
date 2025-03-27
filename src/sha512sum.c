@@ -57,7 +57,7 @@ Return sha512sum(
 		provide(status);
 	}
 
-	calloc_mem(mem_uchar,buffer);
+	create_mem(mem_uchar,buffer);
 	calloc_uchar(buffer,buffer_size);
 
 	if(buffer->mem == NULL)
