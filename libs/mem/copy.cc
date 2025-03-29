@@ -1,5 +1,5 @@
 /**
- * @file copy.d
+ * @file copy.cc
  * @brief Memory copy template for generic types
  * @details Reallocates destination structure memory and copies data from source structure
  *          Handles memory reallocation and copying for different data types using preprocessor macros
@@ -19,16 +19,12 @@
 		return(SUCCESS); // Nothing to copy
 	}
 
-	if(SUCCESS == status)
+	if(source->length > 0)
 	{
-
-		if(source->length > 0)
-		{
-			status = REALLOC_TYPE(destination,source->length);
-		} else {
-			// Zero length and cleared memory
-			status = DEL_TYPE(&destination);
-		}
+		status = REALLOC_TYPE(destination,source->length);
+	} else {
+		// Zero length and cleared memory
+		status = DEL_TYPE(&destination);
 	}
 
 	if(SUCCESS == status)

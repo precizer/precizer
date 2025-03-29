@@ -44,8 +44,8 @@ static Return test0007_1_libmem(void)
 	INITTEST;
 
 	// Allocate memory for the structure int
-	calloc_mem(mem_ullint,test0_0);
-	calloc_mem(mem_ullint,test0_1);
+	create_mem(mem_ullint,test0_0);
+	create_mem(mem_ullint,test0_1);
 
 	// Create and copy of an ullint memory arrays
 	ASSERT(SUCCESS == realloc_ullint(test0_0,0));
@@ -108,7 +108,7 @@ static Return test0007_2_libmem(void)
 	#endif
 
 	// Allocate memory for the structure int
-	calloc_mem(mem_int,test1);
+	create_mem(mem_int,test1);
 
 	// Create an int memory
 	calloc_int(test1,array_length);
@@ -186,7 +186,7 @@ static Return test0007_3_libmem(void)
 	#endif
 
 	// Test managed memory structure
-	calloc_mem(mem_char,test2);
+	create_mem(mem_char,test2);
 
 	// Create an char memory
 	realloc_char(test2,array_length);
@@ -273,7 +273,7 @@ static Return test0007_4_5_6_libmem(void)
 	#endif
 
 	// Allocate memory for the structure unsigned long long int
-	calloc_mem(mem_ullint,test);
+	create_mem(mem_ullint,test);
 
 	// Create an unsigned long long int memory
 	realloc_ullint(test,array_length);
