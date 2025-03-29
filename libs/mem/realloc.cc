@@ -1,5 +1,5 @@
 /**
- * @file realloc.d
+ * @file realloc.cc
  * @brief Template for heap memory resizing
  * @details Handles memory reallocation with optimization for reducing actual
  * reallocations and maintains telemetry data

@@ -5,7 +5,7 @@ for(int i = 0; i < CYCLES; i++)
 	uint64_t random = 0;
 
 	// Allocate memory for the structure TYPE
-	calloc_mem(MEM_TYPE,test);
+	create_mem(MEM_TYPE,test);
 
 	for(int k = 0; k < CYCLES; k++)
 	{

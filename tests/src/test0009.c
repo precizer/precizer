@@ -93,8 +93,8 @@ Return test0009(void)
 {
 	INITTEST;
 
-	calloc_mem(mem_char,captured_stdout);
-	calloc_mem(mem_char,captured_stderr);
+	create_mem(mem_char,captured_stdout);
+	create_mem(mem_char,captured_stderr);
 
 	char *pattern = NULL;
 

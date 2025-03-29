@@ -93,6 +93,38 @@ Return append_char(
 }
 
 /**
+ * @brief Concatenating two strings stored in memory structures.
+ * @details Requires both memory blocks to contain
+ *          null-terminated strings (`'\0'` at the end).
+ */
+Return strcat_char(
+	mem_char *destination,
+	mem_char *source)
+{
+	#define TYPE char
+	#include "strcat.cc"
+	#undef TYPE
+}
+
+/**
+ * @brief Concatenates a string from a memory structure with a constant C-style string.
+ * @details This template handles the concatenation of a null-terminated string stored
+ * in a memory structure with a constant string literal (`const char *`).
+ *
+ * Both input strings must be null-terminated (`'\0'`) to ensure safe operation.
+ * The destination buffer must have enough space to hold the combined result,
+ * including the null terminator.
+ */
+Return concat_char(
+	mem_char   *destination,
+	const char *source)
+{
+	#define TYPE char
+	#include "concat.cc"
+	#undef TYPE
+}
+
+/**
  * @brief Allocates and zeros memory for char array
  * @param structure Pointer to mem_char structure
  * @param length Desired length of the array

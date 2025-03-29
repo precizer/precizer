@@ -1,5 +1,5 @@
 /**
- * @file del.d
+ * @file del.cc
  * @brief Template for array deallocation based on type
  * @details Handles memory freeing and telemetry updates for dynamic arrays
  */

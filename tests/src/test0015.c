@@ -15,7 +15,7 @@ Return test0015_1_upgrade_db(void)
 	        "cp -p tests/0015_database_v0.db .;"
 	        "${BINDIR}/precizer --database=./0015_database_v0.db tests/examples/diffs/diff1";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 
@@ -53,7 +53,7 @@ Return test0015_2_upgrade_db(void)
 	        "cp -p tests/0015_database_v0.db .;"
 	        "${BINDIR}/precizer --update --database=0015_database_v0.db tests/examples/diffs/diff1";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 
@@ -87,7 +87,7 @@ Return test0015_3_upgrade_db(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=./0015_database_v0.db tests/examples/diffs/diff1";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 
@@ -171,7 +171,7 @@ Return test0015_5_upgrade_db(void)
 	char *pattern = NULL;
 
 	// Create memory for command output
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	// Read template pattern from file
 	status = get_file_content(filename,&pattern);
@@ -241,7 +241,7 @@ Return test0015_7_upgrade_db(void)
 	        "cp -p tests/0015_database_v1.db .;"
 	        "${BINDIR}/precizer --update --database=0015_database_v1.db tests/examples/diffs/diff1";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 
@@ -275,7 +275,7 @@ Return test0015_8_upgrade_db(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=./0015_database_v1.db tests/examples/diffs/diff1";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 

@@ -196,11 +196,8 @@ static error_t parse_opt(
 				} else if(state->arg_num > 2){
 					argp_failure(state,1,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
 				}
-			} else {
-				if(state->arg_num > 1)
-				{
-					argp_failure(state,1,0,"ERROR: Too many arguments\nOnly one PATH argument can be used for traversing file hierarchy. See --help for more information");
-				}
+			} else if(state->arg_num > 1){
+				slog(TRACE,"Caution: multiple PATH arguments received. Multipath mode activated. It’s important to note that when comparison mode is enabled, the ORDER of the paths must be identical for the database comparison to work correctly. Number of paths: %d\n",state->arg_num);
 			}
 			break;
 		default:

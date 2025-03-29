@@ -71,6 +71,8 @@ typedef unsigned char          uchar;
  */
 #define MEM_TYPE CONCAT(mem_,TYPE)
 #define REALLOC_TYPE CONCAT(realloc_,TYPE)
+#define APPEND_TYPE CONCAT(append_,TYPE)
+#define STRCAT_TYPE CONCAT(strcat_,TYPE)
 #define DEL_TYPE CONCAT(del_,TYPE)
 
 /**
@@ -218,6 +220,14 @@ Return copy_char(
 Return append_char(
 	mem_char *,
 	mem_char *);
+
+Return strcat_char(
+	mem_char *,
+	mem_char *);
+
+Return concat_char(
+	mem_char *,
+	const char *);
 
 Return del_char(mem_char **);
 

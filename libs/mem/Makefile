@@ -252,3 +252,9 @@ cppcheck:
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
 	scan-build -V make debug
+
+# Optional preprocessor files
+%.i:%.c
+	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
+	@bcpp -na -s -i 4 $@ > $@.h
+	@sed -i 's/[ \t]*\# [[:digit:]]\+ \".*//g' $@.h

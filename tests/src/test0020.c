@@ -12,7 +12,7 @@ Return test0020_1(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=nonexistent_directory/database1.db tests/examples/diffs/diff1";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 
@@ -44,7 +44,7 @@ Return test0020_2(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=nonexistent_database1.db tests/examples/diffs/diff1";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 

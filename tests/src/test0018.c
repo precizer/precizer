@@ -8,7 +8,7 @@ Return test0018_1_maxdepth_argument(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --maxdepth=3 --database=database3.db ${TMPDIR}/tests/examples/levels";
 
-	calloc_mem(mem_char,result);
+	create_mem(mem_char,result);
 
 	char *pattern = NULL;
 
