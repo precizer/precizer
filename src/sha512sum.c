@@ -1,36 +1,6 @@
 #include "precizer.h"
 
 /**
- * @brief Determines the maximum amount of memory that can be allocated for the buffer.
- *
- * This function estimates how much memory can be allocated for a buffer based on
- * available physical memory. It defaults to 1MB if system calls fail.
- *
- * @note The function assumes that only 1% of available RAM should be used for the buffer.
- *       It may not be suitable for embedded or IoT devices with constrained memory.
- *
- * @return The maximum buffer size in bytes. Defaults to 1MB if system information is unavailable.
- */
-static long how_much_memory_can_be_allocated_for_the_buffer(void)
-{
-	// Default value is 1MB buffer. Is it too big for embedded and IoT?
-	const long buffer_size = 1024*1024;
-
-	long pages = sysconf(_SC_AVPHYS_PAGES); // Number of actually free pages
-	long page_size = sysconf(_SC_PAGESIZE); // Page size in bytes
-
-	if(pages == -1 || page_size == -1)
-	{
-		return(buffer_size);
-	}
-
-	// Only 1% of available RAM
-	long available_memory = pages * page_size;
-	long one_percent = available_memory / 100;
-	return(one_percent);
-}
-
-/**
  *
  * Calculate SHA512 cryptographic hash of a file
  *
@@ -38,6 +8,7 @@ static long how_much_memory_can_be_allocated_for_the_buffer(void)
 Return sha512sum(
 	const char               *path,
 	const short unsigned int *path_size,
+	const long               *buffer_length,
 	unsigned char            *sha512,
 	sqlite3_int64            *offset,
 	SHA512_Context           *mdContext,
@@ -47,27 +18,25 @@ Return sha512sum(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	const long buffer_length = how_much_memory_can_be_allocated_for_the_buffer();
-	size_t buffer_size = (size_t)buffer_length * sizeof(unsigned char);
-
-	if(buffer_length <= 0)
+	if(*buffer_length <= 0)
 	{
 		slog(ERROR,"Invalid buffer size: %ld bytes\n",buffer_length);
-		status = FAILURE;
-		provide(status);
+		provide(FAILURE);
 	}
 
-	create_mem(mem_uchar,buffer);
-	calloc_uchar(buffer,buffer_size);
+	size_t buffer_size = (size_t)*buffer_length * sizeof(unsigned char);
 
-	if(buffer->mem == NULL)
+	create_mem(mem_uchar,buffer);
+
+	status = calloc_uchar(buffer,buffer_size);
+
+	if(SUCCESS != status)
 	{
-		report("Memory allocation failed, requested size: %zu bytes",buffer_size);
-		status = FAILURE;
 		provide(status);
 	}
 
 	char *absolute_path = NULL;
+
 	size_t len = 0;
 
 	FILE *fileptr = fopen(path,"rb");
@@ -110,15 +79,15 @@ Return sha512sum(
 			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path with errno: %d\n",path,absolute_path,errno);
 			del_uchar(&buffer);
 			free(absolute_path);
-			status = FAILURE;
-			provide(status);
+			provide(FAILURE);
 		}
 	}
 
 	// It moves the file pointer "offset" bytes from the beginning of the file
 	if(fseek(fileptr,*offset,SEEK_SET) != 0)
 	{
-		// Looks like the wrong file type
+		/* Looks like the wrong file type.
+		   Doesn't need to return FAILURE status */
 		*wrong_file_type = true;
 		del_uchar(&buffer);
 		free(absolute_path);
@@ -136,38 +105,40 @@ Return sha512sum(
 			del_uchar(&buffer);
 			free(absolute_path);
 			fclose(fileptr);
-			status = FAILURE;
-			provide(status);
+			provide(FAILURE);
 		}
 	}
 
-	while((len = fread(buffer->mem,sizeof(unsigned char),(size_t)buffer_length,fileptr)) != 0)
+	if(config->dry_run == false)
 	{
-		/* Interrupt the loop smoothly */
-		/* Interrupt when Ctrl+C */
-		if(global_interrupt_flag == true)
+		while((len = fread(buffer->mem,sizeof(unsigned char),buffer_size,fileptr)) != 0)
 		{
-			loop_was_interrupted = true;
-			break;
-		}
-
-		if(ferror(fileptr))
-		{
-			slog(ERROR,"Error reading file %s\n",path);
-			status = FAILURE;
-			break;
-		}
-
-		if(SUCCESS == status)
-		{
-			if(sha512_update(mdContext,buffer->mem,len) == 1)
+			/* Interrupt the loop smoothly */
+			/* Interrupt when Ctrl+C */
+			if(global_interrupt_flag == true)
 			{
-				slog(ERROR,"SHA512 update failed\n");
+				loop_was_interrupted = true;
+				break;
+			}
+
+			if(ferror(fileptr))
+			{
+				slog(ERROR,"Error reading file %s\n",path);
 				status = FAILURE;
 				break;
 			}
 
-			*offset += (sqlite3_int64)len;
+			if(SUCCESS == status)
+			{
+				if(sha512_update(mdContext,buffer->mem,len) == 1)
+				{
+					slog(ERROR,"SHA512 update failed\n");
+					status = FAILURE;
+					break;
+				}
+
+				*offset += (sqlite3_int64)len;
+			}
 		}
 	}
 
