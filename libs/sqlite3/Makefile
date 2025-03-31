@@ -1,5 +1,5 @@
 # Name of the library
-LIBNAME=libsqlite
+LIBNAME=libsqlite3
 
 BUILDDIR = ../../.builds
 
