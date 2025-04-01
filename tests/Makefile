@@ -18,7 +18,7 @@ SRC = src
 PRZRSRC = ../src
 BUILDS = ../.builds
 BUILEXE = $(BUILDS)/$(EXE)
-LIBS = testitall mem sha512 rational sqlite xdiff
+LIBS = testitall mem sha512 rational sqlite3 xdiff
 
 # Extra libs for linking
 LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
