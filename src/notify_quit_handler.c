@@ -9,27 +9,28 @@
  */
 void notify_quit_handler(int sig)
 {
-	printf("Notify quit!\n");
+        /*
+         * Only async-signal-safe operations are allowed inside
+         * the signal handler.  Using printf() or other stdio
+         * functions may lead to undefined behaviour and could
+         * interrupt the graceful shutdown procedure.
+         */
 
-	atomic_store(&global_interrupt_flag,true);
+        atomic_store(&global_interrupt_flag,true);
+        atomic_store(&global_return_status,HALTED);
 
-	atomic_store(&global_return_status,HALTED);
+        const char msg_term[] =
+                "Terminating the application. Please wait while the database will be closed smoothly…\n";
+        const char msg_int[] =
+                "Interrupting the application. Please wait while the database will be closed smoothly…\n";
 
-	printf("The global return status and exit flag has been set to %s\n",show_status(global_return_status));
+        if(sig==SIGTERM)
+        {
+                (void)write(STDOUT_FILENO,msg_term,sizeof(msg_term)-1);
+        }
 
-	if(sig==SIGTERM)
-	{
-		printf("Terminating the application. Please wait while the database will be closed smoothly…\n");
-	}
-
-	if(sig==SIGINT)
-	{
-		printf("Interrupting the application. Please wait while the database will be closed smoothly…\n");
-	}
-
-	/// Enable key echo in terminal
-	struct termios term;
-	tcgetattr(fileno(stdin),&term);
-	term.c_lflag |= (ICANON|ECHO);
-	tcsetattr(fileno(stdin),0,&term);
+        if(sig==SIGINT)
+        {
+                (void)write(STDOUT_FILENO,msg_int,sizeof(msg_int)-1);
+        }
 }
