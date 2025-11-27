@@ -1,5 +1,12 @@
 #include "precizer.h"
 
+#ifdef TESTITALL
+// In test builds route sysconf() through a test hook to avoid overriding
+// the libc symbol globally (ASan/UBSan may rely on it).
+long testitall_sysconf(int name);
+#define sysconf(name) testitall_sysconf(name)
+#endif
+
 /**
  * @brief Determines the maximum amount of memory that can be allocated for the buffer.
  *
