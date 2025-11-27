@@ -27,6 +27,8 @@ int main(void)
 //	TEST(test0021,"Native international UTF8 encoding test set…");
 	TEST(test0022,"remove_trailing_slash() test set…");
 	TEST(test0023,"extract_relative_path() test set…");
+	TEST(test0025,"file_buffer_memory() test set…");
+	TEST(test0026,"file_check_access() test set…");
 
 	HEADER("System Testing of precizer");
 	TEST(test0003,"Comply default DB name to \"hostname.db\" template…");

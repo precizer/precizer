@@ -32,6 +32,8 @@ Return test0021(void);
 Return test0022(void);
 Return test0023(void);
 Return test0024(void);
+Return test0025(void);
+Return test0026(void);
 
 Return prepare(void);
 Return finish(void);
