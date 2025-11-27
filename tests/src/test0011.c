@@ -20,26 +20,26 @@ static Return test0011_1_readme(void)
 	        "${BINDIR}/precizer --compare database1.db database2.db";
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0011_001.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
 		"rm database1.db database2.db",SUCCESS,false,false));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -80,20 +80,20 @@ static Return test0011_2_readme(void)
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0011_002_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
@@ -101,12 +101,12 @@ static Return test0011_2_readme(void)
 	filename = "templates/0011_002_2.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --progress --database=database1.db tests/examples/diffs/diff1;"
@@ -118,11 +118,11 @@ static Return test0011_2_readme(void)
 	filename = "templates/0011_002_3.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	// Don't clean up test results to use on the next test
 
@@ -143,20 +143,36 @@ static Return test0011_3_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
-
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
-	// Stdout output should be 0 characters
-	ASSERT(result->length == 0);
+	const char *command = "export TESTING=false;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	del_char(&result);
+	#if 0
+	printf("captured_result:%s",getcstring(result));
+	#endif
 
-	// Don't clean up test results to use on the next test
+	// Verify that silent mode produced no stdout after command execution
+	ASSERT(result->length == 0);
+
+	del(result);
+
+	create(char,pattern);
+
+	command = "export TESTING=true;cd ${TMPDIR};"
+	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
+
+	const char *filename = "templates/0011_003.txt";
+
+	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -175,19 +191,19 @@ static Return test0011_4_readme(void)
 	        "${BINDIR}/precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1";
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0011_004_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
 		"rm database1.db;"
@@ -291,7 +307,10 @@ static Return test0011_7_readme(void)
 	INITTEST;
 
 	const char *command = "export TESTING=false;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --db-clean-ignored --ignore=\"^diff1/1/.*\" --ignore=\"^diff2/1/.*\" tests/examples/diffs";
+	        "${BINDIR}/precizer --update --db-clean-ignored"
+	        " --ignore=\"^diff1/1/.*\""
+	        " --ignore=\"^diff2/1/.*\""
+	        " tests/examples/diffs";
 
 	const char *filename = "templates/0011_007.txt";
 
@@ -330,9 +349,12 @@ static Return test0011_8_readme(void)
 
 	command = "export TESTING=false;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update"
-	        " --db-clean-ignored --ignore=\"^.*/path2/.*\""
-	        " --ignore=\"^diff2/.*\" --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
-	        " --include=\"^diff2/path1/AAA/ZAW/.*\" tests/examples/diffs";
+	        " --db-clean-ignored"
+	        " --ignore=\"^.*/path2/.*\""
+	        " --ignore=\"^diff2/.*\""
+	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
+	        " --include=\"^diff2/path1/AAA/ZAW/.*\""
+	        " tests/examples/diffs";
 
 	const char *filename = "templates/0011_008.txt";
 

@@ -1,5 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
+\ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
@@ -33,6 +32,7 @@ TESTING:The in-memory runtime_paths_id database successfully attached to the pri
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
+TESTING:Bytes that can be allocated for the file buffer: \d+.*$
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
 1/AAA/BCB/CCC/a.txt

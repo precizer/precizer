@@ -1,18 +1,18 @@
 # How to install dependencies and build the app:
 #
 # GCC
-# sudo apt -y install gcc make libpcre2-dev lvm
+# sudo apt -y install gcc make libpcre2-dev llvm
 #
 # LLVM for sanitizer
 # sudo apt -y install llvm libubsan1
 #
-# Support XXH3_128bits algorythm
+# Support XXH3_128bits algorithm
 # sudo apt -y install libxxhash-dev
 #
 # Libraries
 # sudo apt -y install libgoogle-perftools-dev
 #
-# Inatall stat and test tools
+# Install statistics and test tools
 # sudo apt-get install cloc valgrind clang-tools cppcheck
 #
 # make production # or
@@ -24,9 +24,9 @@
 # Perf tool:
 # sudo apt-get install linux-tools-common linux-tools-generic linux-tools-`uname -r`
 # make perf # or
-# make analize
+# make analyze
 #
-# Autobated build with GitHub Actions:
+# Automated build with GitHub Actions:
 #
 # * Create an annotated tag:
 #   ```sh
@@ -45,30 +45,44 @@
 .SUFFIXES:          # Delete the default suffixes
 .SUFFIXES: .c .o .h # Define our suffix list
 
+BUILDDIR = .builds
+
 #
 # Compiler flags
 #
 
-CFLAGS += -pipe -std=c11
+CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
-# To pass #define inside a code:
+# To pass a #define into the build:
 # make DEFINES=-DWRITE_CSV=false memtest
 CFLAGS += $(DEFINES)
+
+LIBS = sha512 mem rational
+EXTRA_LIBS = $(LIBS) sqlite3
+LDLIBS = $(foreach d,$(EXTRA_LIBS),-l$d)
 
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
 # Alpine Linux uses external libraries
-LDFLAGS += -largp -lfts
+LDLIBS += -largp -lfts
 endif
+
+# Detect whether we're using GCC (covers names like arm-linux-gnu-gcc)
+GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
 
 STATIC = -static -static-libgcc -Wl,--gc-sections
 SRC = src
 STRIP = -s
-# Flags for additional checks. Must have!
-WFLAGS += -Wall -Wextra -Wpedantic -Wshadow
+
+# Warning flags for additional checks
+WFLAGS += -Werror # Stop the build on any errors
+WFLAGS += -Wall
+WFLAGS += -Wpedantic
+WFLAGS += -Wshadow
+WFLAGS += -Wextra
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
@@ -76,8 +90,8 @@ WFLAGS += -Wfloat-equal -Wundef
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
-# If not clang, then these options are for gcc
-ifneq ($(CC), clang)
+# Extra warnings enabled only for GCC
+ifneq ($(GCC),)
 WFLAGS += -Wlogical-op
 WFLAGS += -Wsuggest-attribute=const
 WFLAGS += -Wsuggest-attribute=pure
@@ -87,7 +101,7 @@ WFLAGS += -Wmissing-format-attribute
 endif
 
 # Arguments for the test
-ARGS = --update tests/examples/diffs
+ARGS = tests/examples/diffs
 
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
@@ -100,27 +114,34 @@ TESTDIR = tests
 # Tools directory
 TOOLSDIR = tools
 
-LIBS = sqlite sha512 mem rational
-
 # Extra libs for linking
-LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+LDLIBS += -lpcre2-8
 
 # For old gcc versions
 GCC_VERSION := $(shell gcc -dumpversion)
 # Checking if the GCC version is less than 10
 ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
-LDFLAGS += -pthread
+LDLIBS += -pthread
 endif
 
 # Additional include headers of external libraries
-INCPATH += $(foreach d,$(LIBS),-Ilibs/$d)
+INTERNAL_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
+INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
+
+# Default build
+all: production
+
+# Clang
+clang: CC = clang
+clang: all
 
 #
 # Project files
 #
-SRCS = $(wildcard $(SRC)/*.c)
-HDRS = $(wildcard $(SRC)/*.h)
-BUILDDIR = .builds
+SRC_DIR = src
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+HDRS = $(wildcard $(SRC_DIR)/*.h)
+
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
 PREPROC = $(SRCS:.c=.i) # Preproc files http://www.viva64.com/en/t/0076/
@@ -129,198 +150,242 @@ PREPROC += $(SRCS:.c=.i.h)
 ASM = $(SRCS:.c=.asm)
 
 #
-# Sanitize build settings
-#
-STZDIR = $(BUILDDIR)/sanitize
-STZEXE = $(STZDIR)/$(EXE)
-STZOBJDIR = $(STZDIR)/obj
-STZOBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(OBJS)))
-STZLIBS = $(DBGLIBS)
-STZDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
-STZCFLAGS += $(DBGFLAGS)
-STZCFLAGS += -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
-
-#
 # Debug build settings
 #
-DBGDIR = $(BUILDDIR)/debug
-DBGEXE = $(DBGDIR)/$(EXE)
-DBGOBJDIR = $(DBGDIR)/obj
-DBGOBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(OBJS)))
-DBGLIBDIR = $(DBGDIR)/libs
-DBGLIBS = -L$(DBGLIBDIR)
-DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/libs
-DBGFLAGS = -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
-DBGCFLAGS += $(DBGFLAGS)
-DBGLDFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -Wl,--as-needed
+DBG_DIR = $(BUILDDIR)/debug
+DBG_LIBDIR = $(DBG_DIR)/libs
+DBG_OBJDIR = $(DBG_DIR)/obj
+DBG_LD_PATH = -L$(DBG_LIBDIR)
+DBG_EXE = $(DBG_DIR)/$(EXE)
+DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
+DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
+DBG_LDFLAGS = -Wl,--as-needed
 # Activation of the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
 # is supported by visualization tools like kcachegrind.
-#DBGCFLAGS += -pg
+#DBG_CFLAGS += -pg
+
+#
+# Sanitize build settings
+#
+SNTZ_DIR = $(BUILDDIR)/sanitize
+SNTZ_LIBDIR = $(SNTZ_DIR)/libs
+SNTZ_OBJDIR = $(SNTZ_DIR)/obj
+SNTZ_LD_PATH = -L$(SNTZ_LIBDIR)
+SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
+SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
+SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
+SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 
 #
 # Production build settings
 #
-PRDDIR = $(BUILDDIR)/release
-PRDEXE = $(PRDDIR)/$(EXE)
-PRDOBJDIR = $(PRDDIR)/obj
-PRDOBJS = $(addprefix $(PRDOBJDIR)/, $(notdir $(OBJS)))
-PRDLIBDIR = $(PRDDIR)/libs
-PRDLIBS = -L$(PRDLIBDIR)
-PRDDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRDLIBDIR),-rpath,\$$ORIGIN/libs
-PRDCFLAGS = -flto=auto -O3 -march=native -funroll-loops -DNDEBUG
-PRDLDFLAGS += -flto=auto -w -O3 -march=native -Wl,--hash-style=gnu -Wl,--as-needed
+PROD_DIR = $(BUILDDIR)/production
+PROD_LIBDIR = $(PROD_DIR)/libs
+PROD_OBJDIR = $(PROD_DIR)/obj
+PROD_LD_PATH = -L$(PROD_LIBDIR)
+PROD_EXE = $(PROD_DIR)/$(EXE)
+PROD_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
+PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
+PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
+PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+
+#
+# Dynamic production build settings
+#
+DYNP_DIR = $(BUILDDIR)/dynamic-production
+DYNP_OBJDIR = $(DYNP_DIR)/obj
+DYNP_LD_PATH = -L$(PROD_LIBDIR)
+DYNP_EXE = $(DYNP_DIR)/$(EXE)
+DYNP_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
+DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
+DYNP_CFLAGS = $(PROD_CFLAGS)
+DYNP_LDFLAGS = $(PROD_LDFLAGS)
+DYNP_STATIC_LIBS = $(addprefix $(PROD_LIBDIR)/lib,$(addsuffix .a,$(LIBS)))
+DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 
 #
 # Portable build settings
 #
-PRTDIR = $(BUILDDIR)/portable
-PRTEXE = $(PRTDIR)/$(EXE)
-PRTOBJDIR = $(PRTDIR)/obj
-PRTOBJS = $(addprefix $(PRTOBJDIR)/, $(notdir $(OBJS)))
-PRTLIBDIR = $(PRTDIR)/libs
-PRTLIBS = -L$(PRTLIBDIR)
-PRTDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTLIBDIR),-rpath,\$$ORIGIN/libs
-PRTCFLAGS = -flto=auto -O2 -mtune=generic -funroll-loops -DNDEBUG
-PRTLDFLAGS += -flto=auto -w -O2 -mtune=generic -Wl,--hash-style=both -Wl,--as-needed 
+PRTB_DIR = $(BUILDDIR)/portable
+PRTB_LIBDIR = $(PRTB_DIR)/libs
+PRTB_OBJDIR = $(PRTB_DIR)/obj
+PRTB_LD_PATH = -L$(PRTB_LIBDIR)
+PRTB_EXE = $(PRTB_DIR)/$(EXE)
+PRTB_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTB_LIBDIR),-rpath,\$$ORIGIN/libs
+PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
+PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug release remake clang tests sanitize banner run format portable production prod
-
-# Default build
-all: production
-
-$(DBGLIBDIR):
-	@$(MAKE) -s -C libs debug
-
-$(PRDLIBDIR):
-	@$(MAKE) -s -C libs production
-
-$(PRTLIBDIR):
-	@$(MAKE) -s -C libs portable
-
-# Clang
-clang: CC = clang
-clang: all
-
-# Portable rules
-#
-portable: $(PRTLIBDIR) $(PRTEXE) portfinal banner
-
-portfinal: $(PRTEXE)
-	@cp $(PRTEXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
-	@echo "The $(PRTEXE) has been copied to the current directory"
-
-$(PRTEXE): $(PRTOBJS)
-	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRTLIBS) $(PRTDYNLIB) $(PRTLDFLAGS) -o $(PRTEXE) $^ $(LDFLAGS)
-	@echo "$@ linked"
-
-$(PRTOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRTCFLAGS) -o $@ $<
-	@echo $<" compiled"
-
-$(PRTOBJDIR):
-	@mkdir -p $(PRTOBJDIR)
-
-#
-# Sanitize rules
-#
-sanitize: $(DBGLIBDIR) $(STZEXE)
-
-run:
-	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE) $(ARGS)
-
-$(STZEXE): $(STZOBJS)
-	@$(CC) $(CFLAGS) $(WFLAGS) $(STZCFLAGS) $(STZLIBS) $(STZDYNLIB) -o $(STZEXE) $^ $(LDFLAGS)
-	@echo "$@ linked"
-
-$(STZOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(STZOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(STZCFLAGS) -o $@ $<
-	@echo $<" compiled"
-
-$(STZOBJDIR):
-	@mkdir -p $(STZOBJDIR)
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal
 
 #
 # Debug rules
 #
-debug: $(DBGLIBDIR) $(DBGEXE) debugfinal
+debug: $(DBG_LIBDIR) $(DBG_EXE) debugfinal
 
-debugfinal: $(DBGEXE)
-	@cp $(DBGEXE) $(EXE)
-	@echo "The $(DBGEXE) has been copied to the current directory"
+debugfinal: $(DBG_EXE)
+	@echo "The application has been built and is located: $(DBG_EXE)"
 
-$(DBGEXE): $(DBGOBJS)
-	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(DBGCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(DBGLDFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
+$(DBG_EXE): $(DBG_OBJS)
+	@$(CC) $(STATIC) $(DBG_LD_PATH) $(DBG_DYNLIB) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
-$(DBGOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBGOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(DBGCFLAGS) -o $@ $<
-	@echo $<" compiled"
+$(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
+	@$(CC) -c $(INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
+	@echo "$< compiled"
 
-$(DBGOBJDIR):
-	@mkdir -p $(DBGOBJDIR)
+$(DBG_OBJDIR):
+	@mkdir -p $(DBG_OBJDIR)
+
+$(DBG_LIBDIR):
+	@$(MAKE) -s -C libs debug
+
+#
+# Sanitize rules
+#
+run: sanitize
+	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE) $(ARGS)
+
+sanitize: $(SNTZ_LIBDIR) $(SNTZ_EXE) sanitizefinal
+
+sanitizefinal: $(SNTZ_EXE)
+	@echo "The application has been built and is located: $(SNTZ_EXE)"
+
+$(SNTZ_EXE): $(SNTZ_OBJS)
+	@$(CC) $(SNTZ_LD_PATH) $(SNTZ_DYNLIB) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@echo "$@ linked"
+
+$(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
+	@$(CC) -c $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
+	@echo "$< compiled"
+
+$(SNTZ_OBJDIR):
+	@mkdir -p $(SNTZ_OBJDIR)
+
+$(SNTZ_LIBDIR):
+	@$(MAKE) -s -C libs sanitize
 
 #
 # Production rules
 #
-release: production
 prod: production
-production: $(PRDLIBDIR) $(PRDEXE) prodfinal banner
+production: $(PROD_LIBDIR) $(PROD_EXE) prodfinal banner
 
-prodfinal: $(PRDEXE)
-	@cp $(PRDEXE) $(EXE)
+prodfinal: $(PROD_EXE)
+	@cp $(PROD_EXE) $(EXE)
 	@upx --best --lzma -qqq $(EXE)
-	@echo "The $(PRDEXE) has been copied to the current directory"
+	@echo "The $(PROD_EXE) has been copied to the current directory"
 
-$(PRDEXE): $(PRDOBJS)
-	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRDCFLAGS) $(PRDLIBS) $(PRDDYNLIB) $(PRDLDFLAGS) -o $(PRDEXE) $^ $(LDFLAGS)
+$(PROD_EXE): $(PROD_OBJS)
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LD_PATH) $(PROD_DYNLIB) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
-$(PRDOBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRDOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDCFLAGS) -o $@ $<
-	@echo $<" compiled"
+$(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
+	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	@echo "$< compiled"
 
-$(PRDOBJDIR):
-	@mkdir -p $(PRDOBJDIR)
+$(PROD_OBJDIR):
+	@mkdir -p $(PROD_OBJDIR)
 
-tests: debug
-	@$(MAKE) -C $(TESTDIR) tests
-
-tests-sanitize: sanitize
-	@$(MAKE) -C $(TESTDIR) tests-sanitize
+$(PROD_LIBDIR):
+	@$(MAKE) -s -C libs production
 
 #
-# Build and test within Docker container
+# Dynamic production rules
 #
-docker: build-docker run-docker copy-from-docker clean-docker
-docker-portable: build-docker-portable run-docker copy-from-docker clean-docker
+dynamic-production: $(PROD_LIBDIR) $(DYNP_EXE) dynprodfinal banner
 
-# Build image and create application container
-build-docker:
-	@docker build -t $(EXE) .
-	@docker create --name $(EXE) $(EXE)
+dynprodfinal: $(DYNP_EXE)
+	@cp $(DYNP_EXE) $(EXE)
+	@upx --best --lzma -qqq $(EXE)
+	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
-build-docker-portable:
-	@docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t precizer .
-	@docker create --name $(EXE) $(EXE)
+$(DYNP_EXE): $(DYNP_OBJS)
+	@$(CC) $(STRIP) $(DYNP_LD_PATH) $(DYNP_DYNLIB) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@echo "$@ linked"
 
-# Copying a statically compiled application from a container
-# to the current directory on the system
-copy-from-docker:
-	@docker cp precizer:/$(EXE)/$(EXE) $(EXE)
+$(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
+	@$(CC) -c $(INTERNAL_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
+	@echo "$< compiled"
 
-# Run the application within the built container
-run-docker:
-	@docker run $(EXE)
+$(DYNP_OBJDIR):
+	@mkdir -p $(DYNP_OBJDIR)
 
-# Run it 1000 times
-tests-in-docker: build-docker
-	for i in {1..1000}; do docker run $(EXE) || break; done
+#
+# Portable rules
+#
+portable: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal banner
+
+portfinal: $(PRTB_EXE)
+	@cp $(PRTB_EXE) $(EXE)
+	@upx --best --lzma -qqq $(EXE)
+	@echo "The $(PRTB_EXE) has been copied to the current directory"
+
+$(PRTB_EXE): $(PRTB_OBJS)
+	@$(CC) $(STATIC) $(STRIP) $(PRTB_LD_PATH) $(PRTB_DYNLIB) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@echo "$@ linked"
+
+$(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
+	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
+	@echo "$< compiled"
+
+$(PRTB_OBJDIR):
+	@mkdir -p $(PRTB_OBJDIR)
+
+$(PRTB_LIBDIR):
+	@$(MAKE) -s -C libs portable
+
+clean: | clean-preproc clean-asm clean-tests
+	@rm -f *.out.* doc
+	@rm -f $(DBG_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
+	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
+
+	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
+	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
+	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
+
+	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
+	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
+	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
+
+	@test -d $(PROD_OBJDIR) && rm -d $(PROD_OBJDIR) 2>/dev/null || true
+	@test -d $(PROD_DIR) && rm -d $(PROD_DIR) 2>/dev/null || true
+	@test -d $(PROD_LIBDIR) && rm -d $(PROD_LIBDIR) 2>/dev/null || true
+
+	@test -d $(DYNP_OBJDIR) && rm -d $(DYNP_OBJDIR) 2>/dev/null || true
+	@test -d $(DYNP_DIR) && rm -d $(DYNP_DIR) 2>/dev/null || true
+
+	@test -d $(PRTB_OBJDIR) && rm -d $(PRTB_OBJDIR) 2>/dev/null || true
+	@test -d $(PRTB_DIR) && rm -d $(PRTB_DIR) 2>/dev/null || true
+	@test -d $(PRTB_LIBDIR) && rm -d $(PRTB_LIBDIR) 2>/dev/null || true
+
+	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
+
+	@test -f $(EXE) && rm $(EXE) || true
+	@echo $(EXE) cleared
+
+clean-all: clean-tests clean clean-tools clean-docker
+	@$(MAKE) -C libs clean
+
+clean-tools:
+	@$(MAKE) -C $(TOOLSDIR) clean
+
+clean-tests:
+	@$(MAKE) -C $(TESTDIR) clean
+
+clean-preproc:
+	@rm -rf $(PREPROC)
+
+clean-asm:
+	@rm -rf $(ASM)
 
 # Clean the built container
 clean-docker:
@@ -334,19 +399,56 @@ clean-all-dockers:
 	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1
 	@echo All docker images cleared
 
+test: tests
+tests: tests-sanitize
+tests-sanitize: sanitize
+	@$(MAKE) -s -C $(TESTDIR) sanitize
+
+tests-debug: debug
+	@$(MAKE) -s -C $(TESTDIR) debug
+
+#
+# Build and test within Docker container
+#
+docker: build-docker run-docker copy-from-docker clean-docker
+docker-portable: build-docker-portable run-docker copy-from-docker clean-docker
+
+# Build image and create application container
+build-docker:
+	@docker build -t $(EXE) .
+	@docker create --name $(EXE) $(EXE)
+
+build-docker-portable:
+	@docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t $(EXE) .
+	@docker create --name $(EXE) $(EXE)
+
+# Copying a statically compiled application from a container
+# to the current directory on the system
+copy-from-docker:
+	@docker cp $(EXE):/$(EXE)/$(EXE) $(EXE)
+
+# Run the application within the built container
+run-docker:
+	@docker run --rm $(EXE)
+
+# Run it 1000 times
+tests-in-docker: build-docker
+	i=1; while [ $$i -le 1000 ]; do docker run --rm $(EXE) || break; i=$$((i + 1)); done
+
 #
 # Format rules
 #
 format:
 	@echo "Formatting source files..."
 	@for file in $(SRCS) $(HDRS); do \
-		echo "Formatting $$file"; \
-		uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
+	    echo "Formatting $$file"; \
+	    uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
 	done
 	@echo "All files formatted."
 
 # Optional preprocessor files
-%.i:%.c clean-preproc
+%.i:%.c
+	@rm -f $@ $@.h
 	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
 # C-C++ Beautifier
 #	@bcpp -na $@ > $@.h
@@ -355,8 +457,9 @@ format:
 #	@sed -i '/^ *$//d' $@.h
 
 # Optional Assembler files
-%.asm:%.c clean-asm
-	@$(CC) -S -C $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRDCFLAGS) $(PRDLDFLAGS) -o $@ $(LDFLAGS) $<
+%.asm:%.c
+	@rm -f $@
+	@$(CC) -S -C $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) $(PROD_LDFLAGS) -o $@ $(LDLIBS) $<
 
 #
 # Other rules
@@ -375,36 +478,35 @@ gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-sum
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
-REDUCEDLIBS = $(subst -Ilibs/sqlite,,$(INCPATH))
-
 cppcheck:
-	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests $(REDUCEDLIBS) --suppress=missingIncludeSystem --inconclusive .
+	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs -i tests $(INTERNAL_INCPATH) --inconclusive .
 
 memtest: debug
-	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)
+	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 
 cachegrind: debug
-	valgrind --tool=cachegrind --branch-sim=yes $(DBGDIR)/$(EXE) $(ARGS)
+	valgrind --tool=cachegrind --branch-sim=yes $(DBG_DIR)/$(EXE) $(ARGS)
 
 callgrind: debug
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes $(DBGDIR)/$(EXE) $(ARGS)
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes $(DBG_DIR)/$(EXE) $(ARGS)
 
 helgrind: debug
-	valgrind --tool=helgrind --read-var-info=yes --track-origins=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)
+	valgrind --tool=helgrind --read-var-info=yes --track-origins=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 
 massif: debug
-	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)
+	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 	ms_print ./massif.out.*
 
 SPARSE=sparse
 SPARSE_FLAGS=-Wsparse-all -nostdinc
 sparse-analyzer:
-	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(WFLAGS) $(src);)
+	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(DBG_CFLAGS) $(DBG_LD_PATH) $(WFLAGS) $(src);)
 
-clang-analyzer: CC = clang
+clang-analyzer: CC = clang-20
+clang-analyzer: SCAN-BUILD = scan-build-20
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
-	scan-build -V make debug
+	$(SCAN-BUILD) --exclude libs/sqlite3 -V $(MAKE) debug
 
 splint:
 	splint -I /usr/include/x86_64-linux-gnu +posixlib $(SRCS) $(INCPATH)
@@ -421,51 +523,13 @@ gource:
 #https://eax.me/c-cpp-profiling/
 #https://perf.wiki.kernel.org/index.php/Main_Page
 perf:
-	sudo perf stat $(DBGDIR)/$(EXE) $(ARGS)
+	sudo perf stat $(DBG_DIR)/$(EXE) $(ARGS)
 
-# Statistic code info and count of lines
+# Code statistics and line counts
 stat: cloc
 cloc:
-#	@cloc --exclude-dir=$(STZDIR),$(DBGDIR),$(PRDDIR) $(PRTDIR) ./src
+#	@cloc --exclude-dir=$(SNTZ_DIR),$(DBG_DIR),$(PROD_DIR) $(PRTB_DIR) ./src
 	@cloc ./src
-
-# Character | prevent threading with clean
-clean-all: clean-tests clean clean-tools clean-docker
-	@$(MAKE) -C libs clean
-
-clean-tools:
-	@$(MAKE) -C $(TOOLSDIR) clean
-
-clean: | clean-preproc clean-asm clean-tests
-	@rm -rf *.out.* doc \
-		$(DBGEXE) $(STZEXE) $(PRTEXE) $(PRDEXE) \
-		$(STZOBJS) $(DBGOBJS) $(PRTOBJS) $(PRDOBJS)
-
-	@test -d $(STZOBJDIR) && rm -d $(STZOBJDIR) 2>/dev/null || true
-	@test -d $(STZDIR) && rm -d $(STZDIR) 2>/dev/null || true
-
-	@test -d $(DBGOBJDIR) && rm -d $(DBGOBJDIR) 2>/dev/null || true
-	@test -d $(DBGDIR) && rm -d $(DBGDIR) 2>/dev/null || true
-
-	@test -d $(PRDOBJDIR) && rm -d $(PRDOBJDIR) 2>/dev/null || true
-	@test -d $(PRDDIR) && rm -d $(PRDDIR) 2>/dev/null || true
-
-	@test -d $(PRTOBJDIR) && rm -d $(PRTOBJDIR) 2>/dev/null || true
-	@test -d $(PRTDIR) && rm -d $(PRTDIR) 2>/dev/null || true
-
-	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
-
-	@test -f $(EXE) && rm $(EXE) || true
-	@echo $(EXE) cleared
-
-clean-tests:
-	@$(MAKE) -C $(TESTDIR) clean
-
-clean-preproc:
-	@rm -rf $(PREPROC)
-
-clean-asm:
-	@rm -rf $(ASM)
 
 banner:
 	@printf "Now some tests could be running:\n"
@@ -481,4 +545,5 @@ banner:
 # and it will return:
 #VARIABLE = the_value_of_the_variable
 #
-print-% : ; @echo $* = $($*)
+print-%:
+	@echo '$* = $($*)'

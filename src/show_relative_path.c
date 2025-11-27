@@ -109,7 +109,7 @@ static void print_updated_or_added(
 	const int       *metadata_of_scanned_and_saved_files,
 	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool            *rehash)
+	const bool      *rehash)
 {
 	if(dbrow->relative_path_already_in_db == true)
 	{
@@ -131,7 +131,7 @@ static void print_changed(
 	const int       *metadata_of_scanned_and_saved_files,
 	const DBrow     *dbrow,
 	const CmpctStat *stat,
-	bool            *rehash)
+	const bool      *rehash)
 {
 	if(dbrow->relative_path_already_in_db == true)
 	{
@@ -155,10 +155,10 @@ void show_relative_path(
 	const CmpctStat *stat,
 	bool            *first_iteration,
 	bool            *show_changes,
-	bool            *rehashig_from_the_beginning,
+	const bool      *rehashig_from_the_beginning,
 	const bool      *ignored,
 	bool            *at_least_one_file_was_shown,
-	bool            *rehash,
+	const bool      *rehash,
 	const bool      *count_size_of_all_files,
 	const bool      *is_readable,
 	const bool      *zero_size_file)
@@ -216,31 +216,23 @@ void show_relative_path(
 	// Print if NOT silent
 	if(!(rational_logger_mode & SILENT))
 	{
-
 		*at_least_one_file_was_shown = true;
-
-		/* Truncate the file path/name in the display output if it exceeds the length limit */
-		char *shorten_relative_path = strdup(relative_path);
-
-		(void)shorten_path(shorten_relative_path);
-
-		printf("%s",shorten_relative_path);
-
-		free(shorten_relative_path);
 
 		if(*is_readable == false)
 		{
-			printf(" inaccessible\n");
+			printf("%s %s\n",relative_path,"inaccessible");
 
-		} else if(*ignored == true){
+		} else if(*ignored == true)
+                {
+			printf("%s %s\n",relative_path,"ignored & not added");
 
-			printf(" ignored & not added\n");
+		} else if(*zero_size_file == true)
+		{
+			printf("%s %s\n",relative_path,"zero size");
 
-		} else if(*zero_size_file == true){
-
-			printf(" zero size\n");
-
-		} else if(*ignored == false){
+		} else if(*ignored == false)
+		{
+			printf("%s",relative_path);
 
 			if(*rehashig_from_the_beginning)
 			{

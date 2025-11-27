@@ -8,25 +8,25 @@ Return test0018_1_maxdepth_argument(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --maxdepth=3 --database=database3.db ${TMPDIR}/tests/examples/levels";
 
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0018_001_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
 	/* File system traversal with unlimited depth */
@@ -37,14 +37,14 @@ Return test0018_1_maxdepth_argument(void)
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/database3.db\"",SUCCESS,false,false));
@@ -55,28 +55,31 @@ Return test0018_2_comparing_templates(void)
 {
 	INITTEST;
 
-	char *text1 = NULL;
-	char *text2 = NULL;
+	create(char,text1);
+	create(char,text2);
 	char *diff = NULL;
-	char *pattern = NULL;
+	create(char,pattern);
 	const char *filename = NULL;
 
 	/* 0018 001 */
-	ASSERT(SUCCESS == get_file_content("templates/0018_001_1.txt",&text1));
+	ASSERT(SUCCESS == get_file_content("templates/0018_001_1.txt",text1));
 
-	ASSERT(SUCCESS == get_file_content("templates/0018_001_2.txt",&text2));
+	ASSERT(SUCCESS == get_file_content("templates/0018_001_2.txt",text2));
 
-	ASSERT(SUCCESS == compare_strings(&diff,text1,text2));
+	ASSERT(SUCCESS == compare_strings(&diff,getcstring(text1),getcstring(text2)));
 
 	filename = "templates/0018_002_1.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	create(char,diff_buffer);
+	ASSERT(SUCCESS == copy_literal(diff_buffer,diff));
+	ASSERT(SUCCESS == match_pattern(diff_buffer,pattern,filename));
 
-	reset(&text1);
-	reset(&text2);
+	del(text1);
+	del(text2);
 	reset(&diff);
-	reset(&pattern);
+	del(pattern);
+	del(diff_buffer);
 
 	RETURN_STATUS;
 }

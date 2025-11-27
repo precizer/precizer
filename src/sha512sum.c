@@ -8,7 +8,7 @@
 Return sha512sum(
 	const char               *path,
 	const short unsigned int *path_size,
-	const long               *buffer_length,
+	memory                   *file_buffer,
 	unsigned char            *sha512,
 	sqlite3_int64            *offset,
 	SHA512_Context           *mdContext,
@@ -18,26 +18,13 @@ Return sha512sum(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	if(*buffer_length <= 0)
+	if(file_buffer->length == 0)
 	{
-		slog(ERROR,"Invalid buffer size: %ld bytes\n",buffer_length);
+		slog(ERROR,"Invalid buffer size: %ld bytes\n",file_buffer->length);
 		provide(FAILURE);
 	}
 
-	size_t buffer_size = (size_t)*buffer_length * sizeof(unsigned char);
-
-	create_mem(mem_uchar,buffer);
-
-	status = calloc_uchar(buffer,buffer_size);
-
-	if(SUCCESS != status)
-	{
-		provide(status);
-	}
-
 	char *absolute_path = NULL;
-
-	size_t len = 0;
 
 	FILE *fileptr = fopen(path,"rb");
 
@@ -46,7 +33,6 @@ Return sha512sum(
 		// No read permission
 		if(errno == EACCES)
 		{
-			del_uchar(&buffer);
 			provide(status);
 		}
 
@@ -60,7 +46,6 @@ Return sha512sum(
 			{
 				free(absolute_path);
 			}
-			del_uchar(&buffer);
 			provide(status);
 		}
 
@@ -71,13 +56,11 @@ Return sha512sum(
 			// No read permission
 			if(errno == EACCES)
 			{
-				del_uchar(&buffer);
 				free(absolute_path);
 				provide(status);
 			}
 
 			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path with errno: %d\n",path,absolute_path,errno);
-			del_uchar(&buffer);
 			free(absolute_path);
 			provide(FAILURE);
 		}
@@ -89,7 +72,6 @@ Return sha512sum(
 		/* Looks like the wrong file type.
 		   Doesn't need to return FAILURE status */
 		*wrong_file_type = true;
-		del_uchar(&buffer);
 		free(absolute_path);
 		fclose(fileptr);
 		provide(status);
@@ -102,7 +84,6 @@ Return sha512sum(
 		if(sha512_init(mdContext) == 1)
 		{
 			slog(ERROR,"SHA512 initialization failed\n");
-			del_uchar(&buffer);
 			free(absolute_path);
 			fclose(fileptr);
 			provide(FAILURE);
@@ -111,7 +92,11 @@ Return sha512sum(
 
 	if(config->dry_run == false)
 	{
-		while((len = fread(buffer->mem,sizeof(unsigned char),buffer_size,fileptr)) != 0)
+		unsigned char * buffer = data(unsigned char,file_buffer);
+
+		size_t len = 0;
+
+		while(true)
 		{
 			/* Interrupt the loop smoothly */
 			/* Interrupt when Ctrl+C */
@@ -121,16 +106,22 @@ Return sha512sum(
 				break;
 			}
 
-			if(ferror(fileptr))
+			len = fread(buffer,sizeof(unsigned char),file_buffer->length,fileptr);
+
+			if(len == 0)
 			{
-				slog(ERROR,"Error reading file %s\n",path);
-				status = FAILURE;
+				if(ferror(fileptr))
+				{
+					slog(ERROR,"Error reading file %s\n",path);
+					status = FAILURE;
+				}
+
 				break;
 			}
 
 			if(SUCCESS == status)
 			{
-				if(sha512_update(mdContext,buffer->mem,len) == 1)
+				if(sha512_update(mdContext,buffer,len) == 1)
 				{
 					slog(ERROR,"SHA512 update failed\n");
 					status = FAILURE;
@@ -141,8 +132,6 @@ Return sha512sum(
 			}
 		}
 	}
-
-	del_uchar(&buffer);
 
 	if(fclose(fileptr) != 0)
 	{

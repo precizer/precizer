@@ -19,15 +19,15 @@ Return test0008(void)
 {
 	INITTEST;
 
-	create_mem(mem_char,captured_stdout);
-	create_mem(mem_char,captured_stderr);
-	char *pattern = NULL;
+	create(char,captured_stdout);
+	create(char,captured_stderr);
+	create(char,pattern);
 
 	ASSERT(SUCCESS == function_capture(report_test,captured_stdout,captured_stderr));
 
 	#if 0
-	printf("captured_stderr:%s",captured_stderr->mem);
-	printf("captured_stdout:%s\n",captured_stdout->mem);
+	printf("captured_stderr:%s",getcstring(captured_stderr));
+	printf("captured_stdout:%s\n",getcstring(captured_stdout));
 	#endif
 
 	if(captured_stdout->length > 0)
@@ -36,14 +36,14 @@ Return test0008(void)
 		status = FAILURE;
 	}
 
-	ASSERT(SUCCESS == get_file_content("templates/0008.txt",&pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0008.txt",pattern));
 
-	ASSERT(SUCCESS == match_pattern(captured_stderr->mem,pattern));
+	ASSERT(SUCCESS == match_pattern(captured_stderr,pattern));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&captured_stdout);
-	del_char(&captured_stderr);
+	del(captured_stdout);
+	del(captured_stderr);
 
 	RETURN_STATUS;
 }

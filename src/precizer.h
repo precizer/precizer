@@ -53,11 +53,6 @@
 #include <sys/types.h>
 #include <signal.h>
 
-/* UTF8 Characters */
-#include <uchar.h>
-#include <wchar.h>
-#include <locale.h>
-
 /* Atomic operations */
 #include <stdatomic.h>
 
@@ -396,22 +391,34 @@ typedef struct {
 #ifdef TESTITALL
 /*
  * All static functions for unit testing purposes are declared here
+ * Prototypes of functions
  *
  */
+#if 0
 void remove_leading_dots(char *);
 void remove_trailing_dots(char *);
+#endif
 void free_str_array(char **);
 #endif
+
+/*
+ *
+ * Prototypes of functions
+ *
+ */
 
 Return file_list(const bool);
 
 Return sha512sum(
 	const char *,
 	const short unsigned int *,
+	memory *,
 	unsigned char *,
 	sqlite3_int64 *,
 	SHA512_Context *,
 	bool *);
+
+size_t file_buffer_memory(void);
 
 Return add_string_to_array(
 	char ***,
@@ -522,7 +529,11 @@ Return db_specify_version(
 	const char *,
 	int);
 
-Return primary_db_file_test(void);
+Return db_primary_file_test(void);
+
+Return db_sql_wrap_string(
+	memory *,
+	const char *);
 
 #if 0 // Old multiPATH solution
 Return db_get_path_prefix_index(
@@ -549,10 +560,10 @@ void show_relative_path(
 	const CmpctStat *,
 	bool *,
 	bool *,
-	bool *,
+	const bool *,
 	const bool *,
 	bool *,
-	bool *,
+	const bool *,
 	const bool *,
 	const bool *,
 	const bool *);
@@ -560,8 +571,6 @@ void show_relative_path(
 void show_checksum_gracefully_interrupted(
 	const char *,
 	const sqlite3_int64 *);
-
-Return shorten_path(char *);
 
 Return status_of_changes(void);
 
@@ -592,8 +601,6 @@ int exit_status(
 	char **);
 
 extern _Atomic bool global_interrupt_flag;
-
-extern _Atomic Return global_return_status;
 
 extern Config _config;
 

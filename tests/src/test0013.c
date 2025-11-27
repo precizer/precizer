@@ -10,26 +10,26 @@ static Return dry_run_mode_1_test(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --dry-run --database=database1.db tests/examples/diffs/diff1";
 
-	create_mem(mem_char,result);
+	create(char,result);
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
-	del_char(&result);
+	del(result);
 
 	// Does file exists or not
 	const char *db_filename = "database1.db";
-	char *path = NULL;
+	create(char,path);
 	bool file_exists = false;
 
-	ASSERT(SUCCESS == construct_path(db_filename,&path));
+	ASSERT(SUCCESS == construct_path(db_filename,path));
 
-	ASSERT(SUCCESS == check_file_exists(&file_exists,path));
+	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(path)));
 
-	reset(&path);
+	del(path);
 
 	// Should not be exists
 	ASSERT(file_exists == false);
@@ -44,10 +44,10 @@ static Return dry_run_mode_2_test(void)
 {
 	INITTEST;
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 	struct stat stat1;
 	struct stat stat2;
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
 	        "cp -pr tests/examples/ tests/examples_backup/;";
@@ -65,12 +65,12 @@ static Return dry_run_mode_2_test(void)
 	echo(STDOUT,"Path: %s\n",path);
 	#endif
 
-	char *path = NULL;
+	create(char,path);
 	const char *db_filename = "database1.db";
 
-	ASSERT(SUCCESS == construct_path(db_filename,&path));
+	ASSERT(SUCCESS == construct_path(db_filename,path));
 
-	ASSERT(SUCCESS == get_file_stat(path,&stat1));
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat1));
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
@@ -81,13 +81,13 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	printf("%s\n",result->mem);
-	echo(STDOUT,"%s\n",result->mem);
+	printf("%s\n",getcstring(result));
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
-	del_char(&result);
+	del(result);
 
-	ASSERT(SUCCESS == get_file_stat(path,&stat2));
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat2));
 
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
@@ -101,19 +101,19 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
 	const char *filename = "templates/0013_002_1.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
-	ASSERT(SUCCESS == get_file_stat(path,&stat2));
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat2));
 
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
@@ -126,19 +126,19 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
 	filename = "templates/0013_002_2.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
-	ASSERT(SUCCESS == get_file_stat(path,&stat2));
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat2));
 
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
@@ -149,23 +149,23 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
 	filename = "templates/0013_002_3.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
-	ASSERT(SUCCESS == get_file_stat(path,&stat2));
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat2));
 
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
-	reset(&path);
+	del(path);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -185,9 +185,9 @@ static Return no_dry_run_mode_3_test(void)
 {
 	INITTEST;
 	// Create memory for the result
-	create_mem(mem_char,result);
-	char *path = NULL;
-	char *pattern = NULL;
+	create(char,result);
+	create(char,path);
+	create(char,pattern);
 	const char *db_file_name = "database1.db";
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1";
@@ -196,7 +196,7 @@ static Return no_dry_run_mode_3_test(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
 		"cp -pr tests/examples/ tests/examples_backup/;",SUCCESS,false,false));
 
-	ASSERT(SUCCESS == construct_path(db_file_name,&path));
+	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
 	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
 
@@ -212,10 +212,10 @@ static Return no_dry_run_mode_3_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
-	del_char(&result);
+	del(result);
 
 	// Compare against the sample. A message should be displayed indicating
 	// that the --db-clean-ignored option must be specified for permanent
@@ -228,17 +228,17 @@ static Return no_dry_run_mode_3_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
 	const char *filename = "templates/0013_003_1.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
 	// Real live mode permanent deletion of all ignored file
 	// references from the database
@@ -250,17 +250,17 @@ static Return no_dry_run_mode_3_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
 	filename = "templates/0013_003_2.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "mv database1.db.backup database1.db;"
@@ -270,19 +270,19 @@ static Return no_dry_run_mode_3_test(void)
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
 	#if 0
-	echo(STDOUT,"%s\n",result->mem);
+	echo(STDOUT,"%s\n",getcstring(result));
 	#endif
 
 	filename = "templates/0013_003_3.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
-	reset(&path);
+	del(path);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -297,64 +297,70 @@ Return compare_dry_and_real_4_test(void)
 {
 	INITTEST;
 
-	char *text1 = NULL;
-	char *text2 = NULL;
+	create(char,text1);
+	create(char,text2);
 	char *diff = NULL;
-	char *pattern = NULL;
+	create(char,pattern);
 	const char *filename = NULL;
 
 	/* 0013 002 1 */
-	ASSERT(SUCCESS == get_file_content("templates/0013_002_1.txt",&text1));
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_1.txt",text1));
 
-	ASSERT(SUCCESS == get_file_content("templates/0013_003_1.txt",&text2));
+	ASSERT(SUCCESS == get_file_content("templates/0013_003_1.txt",text2));
 
-	ASSERT(SUCCESS == compare_strings(&diff,text1,text2));
+	ASSERT(SUCCESS == compare_strings(&diff,getcstring(text1),getcstring(text2)));
 
 	filename = "templates/0013_004_1.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	create(char,diff_buffer);
+	ASSERT(SUCCESS == copy_literal(diff_buffer,diff));
+	ASSERT(SUCCESS == match_pattern(diff_buffer,pattern,filename));
 
-	reset(&text1);
-	reset(&text2);
+	del(text1);
+	del(text2);
 	reset(&diff);
-	reset(&pattern);
+	del(pattern);
 
 	/* 0013 002 2 */
-	ASSERT(SUCCESS == get_file_content("templates/0013_002_2.txt",&text1));
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_2.txt",text1));
 
-	ASSERT(SUCCESS == get_file_content("templates/0013_003_2.txt",&text2));
+	ASSERT(SUCCESS == get_file_content("templates/0013_003_2.txt",text2));
 
-	ASSERT(SUCCESS == compare_strings(&diff,text1,text2));
+	ASSERT(SUCCESS == compare_strings(&diff,getcstring(text1),getcstring(text2)));
 
 	filename = "templates/0013_004_2.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	del(diff_buffer);
+	ASSERT(SUCCESS == copy_literal(diff_buffer,diff));
+	ASSERT(SUCCESS == match_pattern(diff_buffer,pattern,filename));
 
-	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
-
-	reset(&text1);
-	reset(&text2);
+	del(text1);
+	del(text2);
 	reset(&diff);
-	reset(&pattern);
+	del(pattern);
 
 	/* 0013 002 3 */
-	ASSERT(SUCCESS == get_file_content("templates/0013_002_3.txt",&text1));
+	ASSERT(SUCCESS == get_file_content("templates/0013_002_3.txt",text1));
 
-	ASSERT(SUCCESS == get_file_content("templates/0013_003_3.txt",&text2));
+	ASSERT(SUCCESS == get_file_content("templates/0013_003_3.txt",text2));
 
-	ASSERT(SUCCESS == compare_strings(&diff,text1,text2));
+	ASSERT(SUCCESS == compare_strings(&diff,getcstring(text1),getcstring(text2)));
 
 	// _2 is not a mistake. 2 and 3 are equals
 	filename = "templates/0013_004_2.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(diff,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	del(diff_buffer);
+	ASSERT(SUCCESS == copy_literal(diff_buffer,diff));
+	ASSERT(SUCCESS == match_pattern(diff_buffer,pattern,filename));
 
-	reset(&text1);
-	reset(&text2);
+	del(text1);
+	del(text2);
 	reset(&diff);
-	reset(&pattern);
+	del(pattern);
+	del(diff_buffer);
 
 	RETURN_STATUS;
 }

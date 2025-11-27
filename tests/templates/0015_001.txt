@@ -1,5 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
+\ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=./0015_database_v0.db
@@ -37,7 +36,7 @@ TESTING:Returned db_upgrade:\d+ status: WARNING
 ERROR:Database 0015_database_v0.db upgrade failed
 TESTING:Returned db_check_version:\d+ status: WARNING
 TESTING:Returned db_test:\d+ status: WARNING
-TESTING:Returned primary_db_file_test:\d+ status: WARNING
+TESTING:Returned db_primary_file_test:\d+ status: WARNING
 TESTING:The connection to the primary database has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » WARNING\z

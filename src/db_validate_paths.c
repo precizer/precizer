@@ -62,43 +62,34 @@ Return db_validate_paths(void)
 
 	bool paths_are_equal = true;
 
-	create_mem(mem_char,select_sql);
+	create(char,select_sql);
 
 	// Create the SQL request
 	if(config->paths[0] != NULL)
 	{
 		char const *sql_1 = "SELECT ID FROM paths WHERE prefix NOT IN (";
 
-		status = concat_char(select_sql,sql_1);
+		status = concat_literal(select_sql,sql_1);
 
 		if(SUCCESS != status)
 		{
-			del_char(&select_sql);
+			del(select_sql);
 			provide(status);
 		}
 
-		create_mem(mem_char,sql_appending);
-
 		for(int i = 0; config->paths[i]; i++)
 		{
-			char *prefix = config->paths[i];
+			create(char,path);
 
-			/* Length of the line, two chars like ' and \0 (EOL char) */
-			size_t length = strlen(prefix) + 3;
+			run(db_sql_wrap_string(path,config->paths[i]));
 
-			status = realloc_char(sql_appending,length);
+			run(concat_literal(select_sql,getcstring(path)));
 
-			if(SUCCESS == status)
-			{
-				snprintf(sql_appending->mem,sql_appending->length * sizeof(char),"'%s'",prefix);
-
-				status = strcat_char(select_sql,sql_appending);
-			}
+			del(path);
 
 			if(SUCCESS != status)
 			{
-				del_char(&select_sql);
-				del_char(&sql_appending);
+				del(select_sql);
 				provide(status);
 			}
 
@@ -106,12 +97,11 @@ Return db_validate_paths(void)
 			if(config->paths[i + 1] != 0)
 			{
 				/* Concatenate with the comma character "," */
-				status = concat_char(select_sql,",");
+				status = concat_literal(select_sql,",");
 
 				if(SUCCESS != status)
 				{
-					del_char(&select_sql);
-					del_char(&sql_appending);
+					del(select_sql);
 					provide(status);
 				}
 			}
@@ -120,23 +110,20 @@ Return db_validate_paths(void)
 		/* Close the string that contains SQL request */
 
 		/* Concatenate with the ");" characters */
-		status = concat_char(select_sql,");");
+		status = concat_literal(select_sql,");");
 
 		if(SUCCESS != status)
 		{
-			del_char(&select_sql);
-			del_char(&sql_appending);
+			del(select_sql);
 			provide(status);
 		}
-
-		del_char(&sql_appending);
 	}
 
-	rc = sqlite3_prepare_v2(config->db,select_sql->mem,-1,&select_stmt,NULL);
+	rc = sqlite3_prepare_v2(config->db,getstring(select_sql),-1,&select_stmt,NULL);
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare select statement %s (%i): %s\n",select_sql->mem,rc,sqlite3_errmsg(config->db));
+		slog(ERROR,"Can't prepare select statement %s (%i): %s\n",getstring(select_sql),rc,sqlite3_errmsg(config->db));
 		status = FAILURE;
 	}
 
@@ -194,7 +181,7 @@ Return db_validate_paths(void)
 		}
 	}
 
-	del_char(&select_sql);
+	del(select_sql);
 
 	sqlite3_finalize(select_stmt);
 
@@ -236,14 +223,7 @@ Return db_validate_paths(void)
 						{
 							const char *prefix = (const char *)sqlite3_column_text(stmt,0);
 
-							/* Truncate the file path/name in the display output if it exceeds the length limit */
-							char *path = strdup(prefix);
-
-							(void)shorten_path(path);
-
-							printf("%s\n",path);
-
-							free(path);
+							printf("%s\n",prefix);
 						}
 
 						if(SQLITE_DONE != rc_stmt)
@@ -264,14 +244,7 @@ Return db_validate_paths(void)
 
 						for(int i = 0; config->paths[i]; i++)
 						{
-							/* Truncate the file path/name in the display output if it exceeds the length limit */
-							char *path = strdup(config->paths[i]);
-
-							(void)shorten_path(path);
-
-							printf("%s\n",path);
-
-							free(path);
+							printf("%s\n",config->paths[i]);
 						}
 					}
 				} else {

@@ -5,12 +5,12 @@
  *
  */
 static void display_status(
-	size_t     *count_dirs,
-	size_t     *count_files,
-	size_t     *count_symlnks,
-	size_t     *total_size_in_bytes,
-	const bool *count_size_of_all_files,
-	const bool *at_least_one_file_was_shown)
+	size_t       *count_dirs,
+	size_t       *count_files,
+	size_t       *count_symlnks,
+	size_t const *total_size_in_bytes,
+	const bool   *count_size_of_all_files,
+	const bool   *at_least_one_file_was_shown)
 {
 	size_t total_items = *count_dirs + *count_files + *count_symlnks;
 
@@ -106,8 +106,7 @@ Return file_list(const bool count_size_of_all_files)
 	{
 		slog(ERROR,"fts_open() error\n");
 		fts_close(file_systems);
-		status = FAILURE;
-		provide(status);
+		provide(FAILURE);
 	}
 
 	// Initialize the file systems using as many argv[] components as possible
@@ -127,7 +126,7 @@ Return file_list(const bool count_size_of_all_files)
 	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
 	char *runtime_path_prefix = NULL;
-	FTSENT *current_file_system = child;
+	FTSENT const * current_file_system = child;
 
 #if 0 // Old multiPATH solution
 	/**
@@ -150,6 +149,19 @@ Return file_list(const bool count_size_of_all_files)
 	}
 
 	bool continue_the_loop = true;
+
+	// Allocate space for a memory structure
+	create(unsigned char,file_buffer);
+
+	if(count_size_of_all_files == false)
+	{
+		status = resize(file_buffer,file_buffer_memory());
+
+		if(SUCCESS != status)
+		{
+			provide(status);
+		}
+	}
 
 	while((p = fts_read(file_systems)) != NULL && continue_the_loop == true)
 	{
@@ -421,6 +433,7 @@ Return file_list(const bool count_size_of_all_files)
 					{
 						status = sha512sum(p->fts_path,
 							&p->fts_pathlen,
+							file_buffer,
 							sha512,
 							&offset,
 							&mdContext,
@@ -488,7 +501,8 @@ Return file_list(const bool count_size_of_all_files)
 #if 0 // Old multiPATH solution
 						status = db_insert_the_record(&path_prefix_index,
 							relative_path,
-							&offset,sha512,
+							&offset,
+							sha512,
 							&stat,
 							&mdContext,
 							&zero_size_file,
@@ -530,6 +544,8 @@ Return file_list(const bool count_size_of_all_files)
 				break;
 		}
 	}
+
+	del(file_buffer);
 
 	free(runtime_path_prefix);
 
