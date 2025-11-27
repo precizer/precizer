@@ -1,5 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
+\ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
@@ -42,6 +41,7 @@ TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:File system traversal initiated to calculate file count and storage usage
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Bytes that can be allocated for the file buffer: \d+.*$
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
 TESTING:The connection to the primary database has been closed
@@ -49,7 +49,6 @@ TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Exit status » SUCCESS
-TESTING:Enable UTF-8 support
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
@@ -93,6 +92,7 @@ TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:File system traversal initiated to calculate file count and storage usage
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Bytes that can be allocated for the file buffer: \d+.*$
 TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m

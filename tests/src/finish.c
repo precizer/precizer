@@ -2,7 +2,6 @@
 
 Return finish(void)
 {
-
 	printf(CYAN "\nTelemetry\n");
 	printf(WHITE);
 	telemetry_show();

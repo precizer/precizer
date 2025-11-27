@@ -4,8 +4,7 @@ for(int i = 0; i < CYCLES; i++)
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
 	uint64_t random = 0;
 
-	// Allocate memory for the structure TYPE
-	create_mem(MEM_TYPE,test);
+	create(TYPE,test);
 
 	for(int k = 0; k < CYCLES; k++)
 	{
@@ -15,13 +14,15 @@ for(int i = 0; i < CYCLES; i++)
 
 		size_t array_size = array_length * sizeof(TYPE);
 		unsigned char *array = NULL;
-		unsigned char *temp = (unsigned char *)realloc(array,array_size);
+			unsigned char *temp = (unsigned char *)realloc(array,array_size);
 
-		if(temp == NULL)
-		{
-			echo(STDERR,"Can't allocate memory %zu bytes\n",array_size);
-		}
-		array = temp;
+			if(temp == NULL)
+			{
+				echo(STDERR,"Can't allocate memory %zu bytes\n",array_size);
+				status = FAILURE;
+				continue;
+			}
+			array = temp;
 
 		// Fill array with random bytes
 		for(size_t j = 0; j < array_size; j++)
@@ -43,22 +44,34 @@ for(int i = 0; i < CYCLES; i++)
 		print_hash(hash_1);
 		#endif
 
-		// Create an TYPE memory with randomly real reallocation or not
+		// Create a TYPE memory with randomly real reallocation or not
 		ASSERT(SUCCESS == random_number_generator(&random,0,1));
 		bool true_reduce = (bool)random;
-		ASSERT(SUCCESS == REALLOC_TYPE(test,array_length,true_reduce));
+		(void)true_reduce; /* resizing always keeps spare capacity */
+		ASSERT(SUCCESS == resize(test,array_length));
 
-		// Test memeory edges
-		memcpy(test->mem,array,test->length * sizeof(test->mem[0]));
+		TYPE *test_data = data(TYPE,test);
+		ASSERT(test_data != NULL);
+
+		if(test_data != NULL)
+		{
+			memcpy(test_data,array,test->length * sizeof(TYPE));
+		}
 
 		// Calculate SHA-512 hash
 		sha512_init(&ctx);
-		sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
+		const TYPE *test_view = cdata(TYPE,test);
+		ASSERT(test_view != NULL);
+
+		if(test_view != NULL)
+		{
+			sha512_update(&ctx,(const unsigned char *)test_view,test->length * sizeof(TYPE));
+		}
 		sha512_final(&ctx,hash_2);
 
 		#if SHOW_TEST
 		// Print array summary and hash
-		echo(STDERR,"Test %d:%d array size: %zu bytes\n",i,k,test->length * sizeof(test->mem[0]));
+		echo(STDERR,"Test %d:%d array size: %zu bytes\n",i,k,test->length * sizeof(TYPE));
 		echo(STDERR,"Test %d:%d SHA-512 hash: ",i,k);
 		print_hash(hash_2);
 		#endif
@@ -73,5 +86,5 @@ for(int i = 0; i < CYCLES; i++)
 	}
 
 	// free an empty TYPE array
-	DEL_TYPE(&test);
+	del(test);
 }

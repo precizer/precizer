@@ -15,8 +15,6 @@
 // Atomic variable is very fast and will be called very often
 _Atomic bool global_interrupt_flag = false;
 
-_Atomic Return global_return_status = SUCCESS;
-
 // The global structure Config where all runtime settings will be stored
 Config _config;
 Config *config = &_config;
@@ -40,7 +38,6 @@ int main(
 	int  argc,
 	char **argv)
 {
-
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -73,7 +70,7 @@ int main(
 	run(db_determine_mode());
 
 	// Primary database file integrity check
-	run(primary_db_file_test());
+	run(db_primary_file_test());
 
 	// Initialize SQLite database
 	run(db_init());

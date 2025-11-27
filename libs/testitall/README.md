@@ -4,5 +4,5 @@
 
 ```
 “The Winner Test It All”
-                 © ABBA
+                 ©ABBA
 ```

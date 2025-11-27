@@ -10,7 +10,7 @@ static void test_conversion(
 
 	/* Print original value in decimal and result in specified base */
 	printf("Value: %d (decimal)\n",value);
-	printf("Base %2d result: %s, %s\n",base,buffer,string);
+	printf("Base %2u result: %s, %s\n",base,buffer,string);
 	printf("-------------------\n");
 }
 
@@ -22,7 +22,6 @@ static void test_conversion(
  */
 static void test_itoa(void)
 {
-
 	/* Test extreme values */
 	printf("=== Testing extreme values ===\n");
 	test_conversion(INT_MAX,10,"2147483647");
@@ -91,10 +90,10 @@ Return test0017(void)
 {
 	INITTEST;
 
-	create_mem(mem_char,captured_stdout);
-	create_mem(mem_char,captured_stderr);
+	create(char,captured_stdout);
+	create(char,captured_stderr);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	ASSERT(SUCCESS == function_capture(test_itoa,captured_stdout,captured_stderr));
 
@@ -102,17 +101,20 @@ Return test0017(void)
 	{
 		echo(STDERR,"ERROR: Stderr buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
 		status = FAILURE;
+		#if 0
+		echo(STDOUT,"%s\n",getcstring(captured_stderr));
+		#endif
 	}
 
-	ASSERT(SUCCESS == get_file_content("templates/0017.txt",&pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0017.txt",pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(captured_stdout->mem,pattern));
+	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&captured_stdout);
-	del_char(&captured_stderr);
+	del(captured_stdout);
+	del(captured_stderr);
 
 	RETURN_STATUS;
 }

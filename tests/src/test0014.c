@@ -4,10 +4,10 @@ Return long_relative_path_test(void)
 {
 	INITTEST;
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
 	/*
 	 * First test in the series. Database update with a new path
@@ -22,12 +22,12 @@ Return long_relative_path_test(void)
 	const char *filename = "templates/0014_001_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Second test in the series. First, create a file database with a very
@@ -42,12 +42,12 @@ Return long_relative_path_test(void)
 	filename = "templates/0014_001_2.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Third test in the series. Very long path as the
@@ -85,12 +85,12 @@ Return long_relative_path_test(void)
 	filename = "templates/0014_001_3.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Test #4 in the series. A very long relative path will
@@ -132,12 +132,12 @@ Return long_relative_path_test(void)
 	filename = "templates/0014_001_4.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -146,10 +146,10 @@ Return long_absolute_path_test(void)
 {
 	INITTEST;
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
 	/*
 	 * First test in the series. Database update with a new path
@@ -164,12 +164,12 @@ Return long_absolute_path_test(void)
 	const char *filename = "templates/0014_002_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Second test in the series. First, create a file database with a very
@@ -184,12 +184,12 @@ Return long_absolute_path_test(void)
 	filename = "templates/0014_002_2.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Third test in the series. Very long path as the
@@ -227,12 +227,12 @@ Return long_absolute_path_test(void)
 	filename = "templates/0014_002_3.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Test #4 in the series. A very long relative path will
@@ -274,12 +274,12 @@ Return long_absolute_path_test(void)
 	filename = "templates/0014_002_4.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -288,10 +288,10 @@ Return reset_relative_path_test(void)
 {
 	INITTEST;
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
 	/*
 	 * First test in the series. Database update with a new path
@@ -306,12 +306,12 @@ Return reset_relative_path_test(void)
 	const char *filename = "templates/0014_003_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Second test in the series. The PATH variable has been removed.
@@ -327,12 +327,12 @@ Return reset_relative_path_test(void)
 	filename = "templates/0014_003_2.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Third test in the series. The PATH variable has been removed.
@@ -371,12 +371,12 @@ Return reset_relative_path_test(void)
 	filename = "templates/0014_003_3.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Test #4 in the series. The PATH variable has been removed.
@@ -419,12 +419,12 @@ Return reset_relative_path_test(void)
 	filename = "templates/0014_003_4.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -433,10 +433,10 @@ Return reset_absolute_path_test(void)
 {
 	INITTEST;
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
 	/*
 	 * First test in the series. The PATH variable has been removed.
@@ -452,12 +452,12 @@ Return reset_absolute_path_test(void)
 	const char *filename = "templates/0014_004_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Second test in the series. The PATH variable has been removed.
@@ -473,12 +473,12 @@ Return reset_absolute_path_test(void)
 	filename = "templates/0014_004_2.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Third test in the series. The PATH variable has been removed.
@@ -517,12 +517,12 @@ Return reset_absolute_path_test(void)
 	filename = "templates/0014_004_3.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	/*
 	 * Test #4 in the series. The PATH variable has been removed.
@@ -565,12 +565,12 @@ Return reset_absolute_path_test(void)
 	filename = "templates/0014_004_4.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }

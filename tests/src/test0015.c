@@ -15,22 +15,22 @@ Return test0015_1_upgrade_db(void)
 	        "cp -p tests/0015_database_v0.db .;"
 	        "${BINDIR}/precizer --database=./0015_database_v0.db tests/examples/diffs/diff1";
 
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0015_001.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",SUCCESS,false,false));
@@ -53,22 +53,22 @@ Return test0015_2_upgrade_db(void)
 	        "cp -p tests/0015_database_v0.db .;"
 	        "${BINDIR}/precizer --update --database=0015_database_v0.db tests/examples/diffs/diff1";
 
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0015_002.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -87,22 +87,22 @@ Return test0015_3_upgrade_db(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=./0015_database_v0.db tests/examples/diffs/diff1";
 
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0015_003.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",SUCCESS,false,false));
@@ -168,26 +168,26 @@ Return test0015_5_upgrade_db(void)
 	}
 
 	// Will store template content from file
-	char *pattern = NULL;
+	create(char,pattern);
 
 	// Create memory for command output
-	create_mem(mem_char,result);
+	create(char,result);
 
 	// Read template pattern from file
-	status = get_file_content(filename,&pattern);
+	status = get_file_content(filename,pattern);
 
 	// Replace template placeholder with actual value
-	ASSERT(SUCCESS == replace_placeholder(&pattern,template,replacement));
+	ASSERT(SUCCESS == replace_placeholder(pattern,template,replacement));
 
 	// Execute command and capture output
 	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
 
 	// Compare command output against modified template
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&result);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -241,22 +241,22 @@ Return test0015_7_upgrade_db(void)
 	        "cp -p tests/0015_database_v1.db .;"
 	        "${BINDIR}/precizer --update --database=0015_database_v1.db tests/examples/diffs/diff1";
 
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0015_007.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -275,22 +275,22 @@ Return test0015_8_upgrade_db(void)
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --update --database=./0015_database_v1.db tests/examples/diffs/diff1";
 
-	create_mem(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0015_008.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",SUCCESS,false,false));

@@ -14,10 +14,10 @@ Return test0019(void)
 {
 	INITTEST;
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -32,12 +32,12 @@ Return test0019(void)
 	const char *filename = "templates/0019_001.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "rm tests/examples/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt;"
@@ -48,12 +48,12 @@ Return test0019(void)
 	filename = "templates/0019_002.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "ln -s ../../../../1/AAA/BCB/CCC/a.txt tests/examples/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt;"
@@ -64,12 +64,12 @@ Return test0019(void)
 	filename = "templates/0019_003.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"

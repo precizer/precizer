@@ -1,5 +1,9 @@
 #include "precizer.h"
 
+#if 0
+#include <locale.h>
+#endif
+
 /**
  *
  * The structure Config where all runtime settings will be stored.
@@ -142,12 +146,14 @@ void init_config(void)
 	/// will force a rescan and update the checksum in the database.
 	config->watch_timestamps = false;
 
+#if 0
 	if(NULL != setlocale(LC_ALL,""))
 	{
-		slog(TRACE,"Enable UTF-8 support\n");
+		slog(TRACE,"Enable locale support\n");
 	} else {
-		slog(ERROR,"Failed to set UTF-8 locale\n");
+		slog(TRACE,"Failed to set locale\n");
 	}
+#endif
 
 	slog(TRACE,"Configuration initialized\n");
 }

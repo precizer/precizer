@@ -65,7 +65,7 @@ Return db_close(
 
 	if(SUCCESS == status)
 	{
-		slog(TRACE,"The connection to the primary database has been closed\n",sqlite3_errmsg(db));
+		slog(TRACE,"The connection to the primary database has been closed\n");
 	}
 
 	provide(status);

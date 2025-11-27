@@ -9,10 +9,10 @@ Return test0016(void)
 {
 	INITTEST;
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	// Create memory for the result
-	create_mem(mem_char,result);
+	create(char,result);
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -33,12 +33,12 @@ Return test0016(void)
 	const char *filename = "templates/0016_001_1.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	command = "export TESTING=false;cd ${TMPDIR};"
 	        "cp -p database2.db database1.db;"
@@ -51,12 +51,12 @@ Return test0016(void)
 	filename = "templates/0016_001_2.txt";
 
 	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"

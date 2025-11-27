@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER=3480000
+VER=3510000
 
 echo Creating temp dir...
 TMPDIR=$(mktemp -d)
@@ -14,7 +14,7 @@ echo Extracting...
 unzip -joqq sqlite-amalgamation-${VER}.zip
 
 echo Compiling...
-cc -c -pipe -std=c11 -fbuiltin -mrdrnd -finline-functions -flto \
+cc -c -pipe -std=c2x -fbuiltin -mrdrnd -finline-functions -flto \
  -O3 -funroll-loops -DNDEBUG -march=native \
  -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion \
  -Winit-self -Wunreachable-code -Wformat-y2k -Wformat-nonliteral \

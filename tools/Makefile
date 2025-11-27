@@ -1,6 +1,6 @@
 # Compiler and flags
 CC := gcc
-CFLAGS += -pipe -std=c11 -flto
+CFLAGS += -pipe -std=c2x -flto
 CFLAGS += -fbuiltin
 CFLAGS += -O2
 CFLAGS += -Werror
