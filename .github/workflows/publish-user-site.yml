@@ -1,0 +1,37 @@
+name: Publish user GitHub Pages site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy-user-site:
+    name: Sync site to precizer.github.io
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Pages content
+        run: |
+          rm -rf site
+          mkdir -p site
+          cp _config.yml site/
+          cp README.md site/
+          cp README.ru.md site/
+          cp -r img site/
+
+      - name: Publish to precizer.github.io
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          external_repository: precizer/precizer.github.io
+          publish_branch: main
+          publish_dir: site
+          publish_commit_message: "chore: update user pages from precizer"
+          deploy_key: ${{ secrets.USER_SITE_DEPLOY_KEY }}
