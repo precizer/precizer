@@ -139,10 +139,7 @@ Return db_specify_version(
 	}
 
 	/* Cleanup */
-	if(SUCCESS == status)
-	{
-		status = db_close(db,&db_file_modified);
-	}
+	call(db_close(db,&db_file_modified));
 
 	provide(status);
 }

@@ -67,6 +67,61 @@ static Return db_attach(
 }
 
 /**
+ * @brief Detach database by alias
+ *
+ * @param[in] db_alias Attached database alias name
+ * @return Return status code
+ */
+static Return db_detach(
+	const char *db_alias)
+{
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
+	sqlite3_stmt *stmt = NULL;
+
+	const char *sql = "DETACH DATABASE ?1;";
+
+	int rc = sqlite3_prepare_v2(config->db,sql,-1,&stmt,NULL);
+
+	if(SQLITE_OK != rc)
+	{
+		slog(ERROR,"Failed to prepare detach statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		rc = sqlite3_bind_text(stmt,1,db_alias,-1,SQLITE_STATIC);
+
+		if(SQLITE_OK != rc)
+		{
+			slog(ERROR,"Failed to bind database alias in detach (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		rc = sqlite3_step(stmt);
+
+		if(SQLITE_DONE != rc)
+		{
+			slog(ERROR,"Detach statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			status = FAILURE;
+		}
+	}
+
+	if(stmt != NULL)
+	{
+		sqlite3_finalize(stmt);
+	}
+
+	provide(status);
+}
+
+/**
  * @brief Compares changes between two databases.
  *
  * This function executes a provided SQL query to compare differences between two databases.
@@ -139,7 +194,18 @@ static Return db_changes(
 		status = FAILURE;
 	}
 
-	sqlite3_finalize(select_stmt);
+	if(select_stmt != NULL)
+	{
+		rc = sqlite3_finalize(select_stmt);
+
+		if(SQLITE_OK != rc)
+		{
+			slog(ERROR,"Failed to finalize SQLite statement (%i): %s\n",rc,sqlite3_errstr(rc));
+			status = FAILURE;
+		} else {
+			select_stmt = NULL;
+		}
+	}
 
 	provide(status);
 }
@@ -155,6 +221,9 @@ Return db_compare(void)
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
+
+	bool attached_db1 = false;
+	bool attached_db2 = false;
 
 	/* Interrupt the function smoothly */
 	/* Interrupt when Ctrl+C */
@@ -204,12 +273,22 @@ Return db_compare(void)
 	{
 		// Attache the database 1
 		status = db_attach(0,1);
+
+		if(SUCCESS == status)
+		{
+			attached_db1 = true;
+		}
 	}
 
 	if(SUCCESS == status)
 	{
 		// Attache the database 2
 		status = db_attach(1,2);
+
+		if(SUCCESS == status)
+		{
+			attached_db2 = true;
+		}
 	}
 
 	/* SQL queries for comparison */
@@ -229,23 +308,17 @@ Return db_compare(void)
 	bool the_databases_are_equal = true;
 
 	/* Compare files existence between databases */
-	if(SUCCESS == status)
-	{
-		status = db_changes(compare_A_sql,
+	run(db_changes(compare_A_sql,
 			&files_the_same,
 			&the_databases_are_equal,
 			0,
-			1);
-	}
+			1));
 
-	if(SUCCESS == status)
-	{
-		status = db_changes(compare_B_sql,
+	run(db_changes(compare_B_sql,
 			&files_the_same,
 			&the_databases_are_equal,
 			1,
-			0);
-	}
+			0));
 
 #if 0
 	// Old multiPATH solutions
@@ -344,9 +417,26 @@ Return db_compare(void)
 	}
 
 	/* Cleanup */
-	if(select_stmt != NULL)
+	if(attached_db2 == true)
 	{
-		sqlite3_finalize(select_stmt);
+		call(db_finalize(config->db,"db2",&select_stmt));
+	}
+
+	if(attached_db1 == true)
+	{
+		sqlite3_stmt *no_stmt = NULL;
+		call(db_finalize(config->db,"db1",&no_stmt));
+	}
+
+	/* Detach databases in attach order */
+	if(attached_db1 == true)
+	{
+		call(db_detach("db1"));
+	}
+
+	if(attached_db2 == true)
+	{
+		call(db_detach("db2"));
 	}
 
 	/* Output results */

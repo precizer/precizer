@@ -89,6 +89,15 @@
 		status = (func); \
 	}
 
+#define call(func) \
+	{ \
+		Return __call_status = (func); \
+		if(SUCCESS == status && SUCCESS != __call_status) \
+		{ \
+			status = __call_status; \
+		} \
+	}
+
 // PCRE2 return codes
 typedef enum
 {
@@ -448,6 +457,11 @@ void init_config(void);
 
 Return init_signals(void);
 
+Return db_finalize(
+	sqlite3 *,
+	const char *,
+	sqlite3_stmt **);
+
 Return db_close(
 	sqlite3 *,
 	const bool *);
@@ -524,6 +538,8 @@ Return db_upgrade(
 Return db_migrate_from_0_to_1(const char *);
 
 Return db_migrate_from_1_to_2(const char *);
+
+Return db_migrate_from_2_to_3(const char *);
 
 Return db_specify_version(
 	const char *,

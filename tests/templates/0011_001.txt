@@ -152,17 +152,17 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The database1.db database file is version 2
-TESTING:The database database1.db is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The database1.db database file is version 3
+TESTING:The database database1.db is on version 3 and does not require any upgrades
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
 TESTING:Starting database file database2.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database2.db has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The database2.db database file is version 2
-TESTING:The database database2.db is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The database2.db database file is version 3
+TESTING:The database database2.db is on version 3 and does not require any upgrades
 TESTING:\x1B\[1mThese files are no longer in the database1.db but still exist in the database2.db\x1B\[0m
 TESTING:path1/AAA/BCB/CCC/b.txt
 TESTING:\x1B\[1mThese files are no longer in the database2.db but still exist in the database1.db\x1B\[0m

@@ -25,9 +25,9 @@ TESTING:DB mode determined
 TESTING:Starting database file %DB_NAME% integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database %DB_NAME% has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The %DB_NAME% database file is version 2
-TESTING:The database %DB_NAME% is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The %DB_NAME% database file is version 3
+TESTING:The database %DB_NAME% is on version 3 and does not require any upgrades
 TESTING:Successfully opened database %DB_NAME%
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named %DB_NAME% is ready for operations
