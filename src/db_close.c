@@ -30,10 +30,10 @@ Return db_close(
 			 * @details Sets synchronous mode to FULL for maximum durability
 			 */
 			const char *sql =
+			        "PRAGMA journal_mode=DELETE;"
 			        "PRAGMA fsync=ON;"
 			        "PRAGMA synchronous=EXTRA;"
-			        "PRAGMA locking_mode=EXCLUSIVE;"
-			        "PRAGMA wal_checkpoint(TRUNCATE);";
+			        "PRAGMA locking_mode=EXCLUSIVE;";
 
 			if(SQLITE_OK != sqlite3_exec(db,sql,NULL,NULL,NULL))
 			{

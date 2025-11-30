@@ -101,7 +101,7 @@ int main(
 
 	// Disable journaling, flush the journal to the main database,
 	// clear the cache, and close the database
-	db_close(config->db,&config->db_primary_file_modified);
+	call(db_close(config->db,&config->db_primary_file_modified));
 
 	// Optimizing the space occupied by a database file.
 	run(db_primary_consider_vacuum());

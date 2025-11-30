@@ -1,0 +1,92 @@
+#include "precizer.h"
+
+/**
+ * @brief Finalize a prepared SQLite statement and reset its pointer
+ *
+ * Also performs WAL checkpoint and cache flush in the same way as db_close()
+ * to ensure WAL/SHM files are cleaned up when the database was modified.
+ *
+ * @param[in] db Pointer to SQLite database handle
+ * @param[in] db_alias Attached database alias name
+ * @param[in,out] stmt Pointer to prepared statement pointer to finalize
+ * @return Return status code
+ */
+Return db_finalize(
+	sqlite3      *db,
+	const char   *db_alias,
+	sqlite3_stmt **stmt)
+{
+	/** Return status
+	 *  The status that will be passed to return() before exiting
+	 *  By default, the function worked without errors
+	 */
+	Return status = SUCCESS;
+
+	if(db == NULL || db_alias == NULL || stmt == NULL)
+	{
+		slog(ERROR,"Invalid input parameters: db=%p, db_alias=%p, stmt=%p\n",db,db_alias,stmt);
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		if(*stmt != NULL)
+		{
+			int rc = sqlite3_finalize(*stmt);
+
+			if(SQLITE_OK != rc)
+			{
+				slog(ERROR,"Failed to finalize SQLite statement (%i): %s\n",rc,sqlite3_errstr(rc));
+				status = FAILURE;
+			} else {
+				*stmt = NULL;
+			}
+		}
+
+		sqlite3_stmt *active_stmt = NULL;
+
+		while((active_stmt = sqlite3_next_stmt(db,NULL)) != NULL)
+		{
+			slog(ERROR,"Attention! The program is in the process of shutting down, but there are still uncompleted SQLite statements!\n");
+			sqlite3_finalize(active_stmt);
+		}
+
+		char *sql = NULL;
+
+		if(asprintf(&sql,
+			"PRAGMA %s.journal_mode=DELETE;"
+			"PRAGMA %s.fsync=ON;"
+			"PRAGMA %s.synchronous=EXTRA;"
+			"PRAGMA %s.locking_mode=EXCLUSIVE;",
+			db_alias,
+			db_alias,
+			db_alias,
+			db_alias) == -1)
+		{
+			status = FAILURE;
+			report("Memory allocation failed for WAL checkpoint SQL");
+		}
+
+		if(SUCCESS == status)
+		{
+			if(SQLITE_OK != sqlite3_exec(db,sql,NULL,NULL,NULL))
+			{
+				slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
+				status = FAILURE;
+			}
+		}
+
+		free(sql);
+
+		if(SUCCESS == status)
+		{
+			if(SQLITE_OK != sqlite3_db_cacheflush(db))
+			{
+				slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
+				status = FAILURE;
+			}
+		}
+	}
+
+	provide(status);
+}

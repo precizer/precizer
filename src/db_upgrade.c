@@ -64,6 +64,23 @@ Return db_upgrade(
 		}
 	}
 
+	if(SUCCESS == status && *db_version < 3)
+	{
+		slog(TRACE,"Migration from version 2 to version 3 started\n");
+		status = db_migrate_from_2_to_3(db_file_path);
+
+		if(SUCCESS == status)
+		{
+			slog(TRACE,"Store the database version 3 in the metadata table\n");
+			status = db_specify_version(db_file_path,3);
+		}
+
+		if(SUCCESS == status)
+		{
+			slog(TRACE,"Migration from version 2 to version 3 completed\n");
+		}
+	}
+
 	if(SUCCESS == status)
 	{
 		slog(EVERY,"The database has been successfully upgraded\n");

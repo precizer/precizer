@@ -152,7 +152,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 	{
 		/* Set safety pragmas */
 		const char *pragmas =
-		        "PRAGMA journal_mode=WAL;"
+		        "PRAGMA journal_mode=DELETE;"
 		        "PRAGMA strict=ON;"
 		        "PRAGMA fsync=ON;"
 		        "PRAGMA synchronous=EXTRA;"
@@ -254,10 +254,10 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 				config->db_primary_file_modified = true;
 			}
 		}
-
-		/* Cleanup */
-		status = db_close(db,&db_file_modified);
 	}
+
+	/* Cleanup */
+	call(db_close(db,&config->db_primary_file_modified));
 
 	provide(status);
 }

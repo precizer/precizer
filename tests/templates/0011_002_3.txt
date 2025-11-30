@@ -28,9 +28,9 @@ TESTING:DB mode determined
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The database1.db database file is version 2
-TESTING:The database database1.db is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The database1.db database file is version 3
+TESTING:The database database1.db is on version 3 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named database1.db is ready for operations
@@ -79,9 +79,9 @@ TESTING:DB mode determined
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The database1.db database file is version 2
-TESTING:The database database1.db is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The database1.db database file is version 3
+TESTING:The database database1.db is on version 3 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named database1.db is ready for operations

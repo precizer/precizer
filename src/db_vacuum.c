@@ -96,9 +96,10 @@ Return db_vacuum(const char *db_file_path)
 			config->db_primary_file_modified = true;
 		}
 
-		/* Cleanup */
-		status = db_close(db,&db_file_modified);
 	}
+
+	/* Cleanup */
+	call(db_close(db,&db_file_modified));
 
 	provide(status);
 }
