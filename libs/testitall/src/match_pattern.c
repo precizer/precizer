@@ -8,8 +8,8 @@
  * @return SUCCESS on match, FAILURE otherwise.
  */
 Return match_pattern(
-	memory *text,
-	memory *pattern,
+	const memory *text,
+	const memory *pattern,
 	...)
 {
 	Return status = SUCCESS;

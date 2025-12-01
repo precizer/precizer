@@ -79,7 +79,7 @@ Return test0023(void)
 		const char *result = extract_relative_path(test_cases[i].path,test_cases[i].prefix);
 
 		// Compare result with expected value
-		ASSERT(SUCCESS == strcmp(result,expected));
+		ASSERT(GRACEFUL == strcmp(result,expected));
 	}
 
 	RETURN_STATUS;

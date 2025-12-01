@@ -27,7 +27,7 @@ Return prefix_path_with_apostrophe_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -59,7 +59,7 @@ Return another_prefix_path_with_apostrophe_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -97,7 +97,7 @@ static Return adding_and_comparing_with_apostrophe(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",SUCCESS,false,false));
+		"rm database1.db database2.db",GRACEFUL,false,false));
 
 	del(pattern);
 

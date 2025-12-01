@@ -32,7 +32,7 @@ Return prepare(void)
 	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT}/ && cp -apr $ORIGIN_DIR/.builds/${ENVIRONMENT}/ .builds/;"
 	        "true";
 
-	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call(command,GRACEFUL,false,false));
 
 	bool file_exists = false;
 

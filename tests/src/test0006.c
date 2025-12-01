@@ -9,7 +9,7 @@ Return test0006(void)
 {
 	INITTEST;
 
-	ASSERT(SUCCESS == external_call("echo -n",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("echo -n",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }

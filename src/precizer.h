@@ -81,23 +81,6 @@
     #define STATIC static
 #endif
 
-// Macro to call a function only if the current status is SUCCESS.
-// If the status is SUCCESS, the function's return value will be assigned to status.
-#define run(func) \
-	if(SUCCESS == status) \
-	{ \
-		status = (func); \
-	}
-
-#define call(func) \
-	{ \
-		Return __call_status = (func); \
-		if(SUCCESS == status && SUCCESS != __call_status) \
-		{ \
-			status = __call_status; \
-		} \
-	}
-
 // PCRE2 return codes
 typedef enum
 {
@@ -614,7 +597,7 @@ REGEXP regexp_match
 
 int exit_status(
 	Return,
-	char **);
+	char * const *);
 
 extern _Atomic bool global_interrupt_flag;
 

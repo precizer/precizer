@@ -35,7 +35,7 @@ static Return test0011_1_readme(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",SUCCESS,false,false));
+		"rm database1.db database2.db",GRACEFUL,false,false));
 
 	del(pattern);
 
@@ -74,7 +74,7 @@ static Return test0011_2_readme(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -par tests/examples/ tests/examples_backup;",SUCCESS,false,false));
+		"cp -par tests/examples/ tests/examples_backup;",GRACEFUL,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
@@ -205,10 +205,10 @@ static Return test0011_4_readme(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db;"
-		"rm -rf tests/examples/;"
-		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm database1.db && "
+		"rm -rf tests/examples/ && "
+		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -224,7 +224,7 @@ static Return test0011_5_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
+	const char *command = "export TESTING=true && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --maxdepth=0 tests/examples/4";
 
 	const char *filename = "templates/0011_005_1.txt";
@@ -239,20 +239,20 @@ static Return test0011_5_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
 	/* At the second stage, the --maxdepth=0 option is not used.
 	   Therefore, all files that were not previously included
 	   will be added to the database. */
 
-	command = "export TESTING=true;cd ${TMPDIR};"
+	command = "export TESTING=true && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --update tests/examples/4";
 
 	filename = "templates/0011_005_2.txt";
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));;
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -268,7 +268,7 @@ static Return test0011_6_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=false;cd ${TMPDIR};"
+	const char *command = "export TESTING=false && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --ignore=\"^diff1/1/.*\" tests/examples/diffs";
 
 	const char *filename = "templates/0011_006_1.txt";
@@ -283,14 +283,14 @@ static Return test0011_6_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
 	filename = "templates/0011_006_2.txt";
 
-	command = "export TESTING=false;cd ${TMPDIR};"
+	command = "export TESTING=false && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --update tests/examples/diffs";
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
 	RETURN_STATUS;
 }
@@ -306,7 +306,7 @@ static Return test0011_7_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=false;cd ${TMPDIR};"
+	const char *command = "export TESTING=false && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --update --db-clean-ignored"
 	        " --ignore=\"^diff1/1/.*\""
 	        " --ignore=\"^diff2/1/.*\""
@@ -324,9 +324,9 @@ static Return test0011_7_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -342,12 +342,12 @@ static Return test0011_8_readme(void)
 {
 	INITTEST;
 
-	const char *command = "cd ${TMPDIR};"
+	const char *command = "cd ${TMPDIR} && "
 	        "${BINDIR}/precizer tests/examples/diffs";
 
 	ASSERT(SUCCESS == execute_command(command,NULL,SUCCESS,true,true));
 
-	command = "export TESTING=false;cd ${TMPDIR};"
+	command = "export TESTING=false && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --update"
 	        " --db-clean-ignored"
 	        " --ignore=\"^.*/path2/.*\""
@@ -368,9 +368,9 @@ static Return test0011_8_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
