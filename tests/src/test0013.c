@@ -53,7 +53,7 @@ static Return dry_run_mode_2_test(void)
 	        "cp -pr tests/examples/ tests/examples_backup/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call(command,GRACEFUL,false,false));
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1";
@@ -168,10 +168,10 @@ static Return dry_run_mode_2_test(void)
 	del(path);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db;"
-		"rm -rf tests/examples/;"
-		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm database1.db && "
+		"rm -rf tests/examples/ && "
+		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -194,7 +194,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -pr tests/examples/ tests/examples_backup/;",SUCCESS,false,false));
+		"cp -pr tests/examples/ tests/examples_backup/;",GRACEFUL,false,false));
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
@@ -209,7 +209,7 @@ static Return no_dry_run_mode_3_test(void)
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,GRACEFUL,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -285,10 +285,10 @@ static Return no_dry_run_mode_3_test(void)
 	del(path);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db;"
-		"rm -rf tests/examples/;"
-		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm database1.db && "
+		"rm -rf tests/examples/ && "
+		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }

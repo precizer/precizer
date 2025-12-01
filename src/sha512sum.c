@@ -92,7 +92,7 @@ Return sha512sum(
 
 	if(config->dry_run == false)
 	{
-		unsigned char * buffer = data(unsigned char,file_buffer);
+		unsigned char * buffer = rawdata(file_buffer);
 
 		size_t len = 0;
 

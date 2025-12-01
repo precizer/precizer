@@ -33,11 +33,11 @@ Return test0003(void)
 			return(FAILURE);
 		}
 
-		ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+		ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 	}
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }

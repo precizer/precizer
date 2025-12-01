@@ -32,7 +32,7 @@ Return test0015_1_upgrade_db(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -103,7 +103,7 @@ Return test0015_3_upgrade_db(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -133,7 +133,7 @@ Return test0015_4_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
 	RETURN_STATUS;
 }
@@ -216,10 +216,10 @@ Return test0015_6_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -290,7 +290,7 @@ Return test0015_8_upgrade_db(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -321,10 +321,10 @@ Return test0015_9_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }
@@ -390,11 +390,10 @@ Return test0015_11_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v2.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" && rm \"${TMPDIR}/0015_database_v2.db\"",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }

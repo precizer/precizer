@@ -47,7 +47,7 @@ Return test0018_1_maxdepth_argument(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/database3.db\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/database3.db\"",GRACEFUL,false,false));
 	RETURN_STATUS;
 }
 

@@ -17,3 +17,20 @@ const char *show_status(const Return) __attribute__((const));
 	} \
          \
 	return(return_value);
+
+// Macro to call a function only if the current status is SUCCESS.
+// If the status is SUCCESS, the function's return value will be assigned to status.
+#define run(func) \
+	if(SUCCESS == status) \
+	{ \
+		status = (func); \
+	}
+
+#define call(func) \
+	{ \
+		Return __call_status = (func); \
+		if(SUCCESS == status && SUCCESS != __call_status) \
+		{ \
+			status = __call_status; \
+		} \
+	}

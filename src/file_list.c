@@ -243,11 +243,10 @@ Return file_list(const bool count_size_of_all_files)
 
 				const char *relative_path = extract_relative_path(p->fts_path,runtime_path_prefix);
 
-				/* Write all columns from DB row to the structure DBrow */
-				DBrow _dbrow;
+				/* Write all columns from DB row to the structure DBrow
+				   and clean the structure to prevent reuse */
+				DBrow _dbrow = {0};
 				DBrow *dbrow = &_dbrow;
-				// Clean the structure to prevent reuse;
-				memset(dbrow,0,sizeof(DBrow));
 
 				/* Get all file's metadata from the database */
 				if(SUCCESS == status)
@@ -439,7 +438,7 @@ Return file_list(const bool count_size_of_all_files)
 							&mdContext,
 							&wrong_file_type);
 
-						if(SUCCESS == status)
+						if(SUCCESS & status)
 						{
 							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
 							show_checksum_gracefully_interrupted(relative_path,&offset);
@@ -477,7 +476,7 @@ Return file_list(const bool count_size_of_all_files)
 				if(update_db == true)
 				{
 					/* Update record in DB */
-					if(SUCCESS == status)
+					if(SUCCESS & status)
 					{
 						status = db_update_the_record_by_id(&(dbrow->ID),
 							&offset,
@@ -496,7 +495,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				} else {
 					/* Insert to DB */
-					if(SUCCESS == status)
+					if(SUCCESS & status)
 					{
 #if 0 // Old multiPATH solution
 						status = db_insert_the_record(&path_prefix_index,
@@ -528,8 +527,6 @@ Return file_list(const bool count_size_of_all_files)
 				/**
 				 * Interrupt the loop smoothly
 				 * Interrupt when Ctrl+C
-				 * Don't write a result because sha512sum() function
-				 * has been interrupted and the sha512 contains wrong data
 				 */
 				if(global_interrupt_flag == true)
 				{

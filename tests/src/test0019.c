@@ -20,8 +20,8 @@ Return test0019(void)
 	create(char,result);
 
 	// Preparation for the test
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -pr tests/examples/ tests/examples_backup;",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"cp -pr tests/examples/ tests/examples_backup;",GRACEFUL,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "ln -s ../../../../1/AAA/BCB/CCC/a.txt tests/examples/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt;"
@@ -72,10 +72,10 @@ Return test0019(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db;"
-		"rm -rf tests/examples/;"
-		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm database1.db && "
+		"rm -rf tests/examples/ && "
+		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }

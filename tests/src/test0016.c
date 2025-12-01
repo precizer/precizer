@@ -15,18 +15,18 @@ Return test0016(void)
 	create(char,result);
 
 	// Preparation for the test
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -pr tests/examples/ tests/examples_backup;",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"cp -pr tests/examples/ tests/examples_backup;",GRACEFUL,false,false));
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
+	const char *command = "export TESTING=true && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1;"
-	        "cp -p database1.db database2.db;"
-	        "echo -n 'PWOEUNVSODNLKUHGE' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
-	        "touch tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;"
-	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt;"
+	        "cp -p database1.db database2.db && "
+	        "echo -n 'PWOEUNVSODNLKUHGE' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt && "
+	        "touch tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt && "
+	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt && "
 	        "${BINDIR}/precizer --update --database=database1.db tests/examples/diffs/diff1;"
 	        "${BINDIR}/precizer --compare database1.db database2.db;"
-	        "cp -p database2.db database1.db;"
+	        "cp -p database2.db database1.db && "
 	        "${BINDIR}/precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;"
 	        "${BINDIR}/precizer --compare database1.db database2.db";
 
@@ -40,11 +40,11 @@ Return test0016(void)
 	del(pattern);
 	del(result);
 
-	command = "export TESTING=false;cd ${TMPDIR};"
-	        "cp -p database2.db database1.db;"
+	command = "export TESTING=false && cd ${TMPDIR} && "
+	        "cp -p database2.db database1.db && "
 	        "${BINDIR}/precizer --update --database=database1.db tests/examples/diffs/diff1;"
 	        "${BINDIR}/precizer --compare database1.db database2.db;"
-	        "cp -p database2.db database1.db;"
+	        "cp -p database2.db database1.db && "
 	        "${BINDIR}/precizer --watch-timestamps --update --database=database1.db tests/examples/diffs/diff1;"
 	        "${BINDIR}/precizer --compare database1.db database2.db";
 
@@ -59,11 +59,11 @@ Return test0016(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db;"
-		"rm database2.db;"
-		"rm -rf tests/examples/;"
-		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm database1.db && "
+		"rm database2.db && "
+		"rm -rf tests/examples/ && "
+		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
 
 	RETURN_STATUS;
 }

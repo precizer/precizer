@@ -28,7 +28,7 @@ typedef unsigned char uchar;
  * @note Only compiled when SHOW_TEST is set to 1
  * @note Requires STDERR to be properly initialized
  */
-static void print_hash(unsigned char *hash)
+static void print_hash(const unsigned char *hash)
 {
 	for(int i = 0; i < SHA512_DIGEST_LENGTH; i++)
 	{
