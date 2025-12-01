@@ -8,7 +8,9 @@
  *
  * @return Return code describing operation status.
  */
-Return db_sql_wrap_string(memory *destination,const char *source)
+Return db_sql_wrap_string(
+	memory     *destination,
+	const char *source)
 {
 	/** Return status
 	 *  The status that will be passed to return() before exiting
@@ -60,12 +62,14 @@ Return db_sql_wrap_string(memory *destination,const char *source)
 	if(SUCCESS == status)
 	{
 		const size_t overhead = 3;
+
 		if(source_length > SIZE_MAX - apostrophes)
 		{
 			slog(ERROR,"sql_wrap_string overflow while adding escape budget");
 			status = FAILURE;
 		} else {
 			size_t base_length = source_length + apostrophes;
+
 			if(base_length > SIZE_MAX - overhead)
 			{
 				slog(ERROR,"sql_wrap_string overflow before allocating terminator");

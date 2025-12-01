@@ -126,7 +126,7 @@ Return file_list(const bool count_size_of_all_files)
 	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
 	char *runtime_path_prefix = NULL;
-	FTSENT const * current_file_system = child;
+	FTSENT const *current_file_system = child;
 
 #if 0 // Old multiPATH solution
 	/**

@@ -69,7 +69,7 @@
 #define XDL_ADDBITS(v,b) ((v) + ((v) >> (b)))
 #define XDL_MASKBITS(b) ((1UL << (b)) - 1)
 #define XDL_HASHLONG(v,b) \
-	(XDL_ADDBITS((unsigned long)(v),b) & XDL_MASKBITS(b))
+	(XDL_ADDBITS((unsigned long)(v),b) &XDL_MASKBITS(b))
 #define XDL_PTRFREE(p) \
 	do \
 	{ \
@@ -95,7 +95,7 @@
 	{ \
 		unsigned char const *__p = (unsigned char const *)(p); \
 		(v) = (unsigned long)__p[0] | ((unsigned long)__p[1]) << 8 | \
-		        ((unsigned long)__p[2]) << 16 | ((unsigned long)__p[3]) << 24; \
+			((unsigned long)__p[2]) << 16 | ((unsigned long)__p[3]) << 24; \
 	} while(0)
 
 typedef struct s_memallocator {

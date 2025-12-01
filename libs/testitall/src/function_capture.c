@@ -22,7 +22,7 @@
  *   6. Cleans up resources
  */
 Return function_capture(
-	void (   *func )(void),
+	void  (*func)(void),
 	memory *stdout_buffer,
 	memory *stderr_buffer)
 {

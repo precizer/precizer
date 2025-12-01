@@ -16,7 +16,7 @@
  *          in a readable way with color coding.
  */
 Return testitall(
-	Return (*func)(void),
+	Return    (*func)(void),
 	const char *function_name,
 	const char *test_description)
 {

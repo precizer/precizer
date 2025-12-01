@@ -6,7 +6,7 @@
  *
  */
 int exit_status(
-	Return status,
+	Return       status,
 	char * const *argv)
 {
 	/*
