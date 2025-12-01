@@ -80,8 +80,8 @@ char *rational_reconvert(int mode)
  *
  */
 static Return logger_show_time(
-	char       *time_string,
-	size_t      buffer_size)
+	char   *time_string,
+	size_t buffer_size)
 {
 	/** Return status
 	 *  The status that will be passed to return() before exiting
@@ -112,15 +112,15 @@ static Return logger_show_time(
 		const int milliseconds = (int)(current_time.tv_usec / 1000);
 
 		if(snprintf(time_string,
-			    buffer_size,
-			    "%04d-%02d-%02d %02d:%02d:%02d:%03d",
-			    local_time.tm_year + 1900,
-			    local_time.tm_mon + 1,
-			    local_time.tm_mday,
-			    local_time.tm_hour,
-			    local_time.tm_min,
-			    local_time.tm_sec,
-			    milliseconds) < 0)
+			buffer_size,
+			"%04d-%02d-%02d %02d:%02d:%02d:%03d",
+			local_time.tm_year + 1900,
+			local_time.tm_mon + 1,
+			local_time.tm_mday,
+			local_time.tm_hour,
+			local_time.tm_min,
+			local_time.tm_sec,
+			milliseconds) < 0)
 		{
 			time_string[0] = '\0';
 			status = FAILURE;

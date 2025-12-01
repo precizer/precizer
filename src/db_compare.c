@@ -72,8 +72,7 @@ static Return db_attach(
  * @param[in] db_alias Attached database alias name
  * @return Return status code
  */
-static Return db_detach(
-	const char *db_alias)
+static Return db_detach(const char *db_alias)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -309,16 +308,16 @@ Return db_compare(void)
 
 	/* Compare files existence between databases */
 	run(db_changes(compare_A_sql,
-			&files_the_same,
-			&the_databases_are_equal,
-			0,
-			1));
+		&files_the_same,
+		&the_databases_are_equal,
+		0,
+		1));
 
 	run(db_changes(compare_B_sql,
-			&files_the_same,
-			&the_databases_are_equal,
-			1,
-			0));
+		&files_the_same,
+		&the_databases_are_equal,
+		1,
+		0));
 
 #if 0
 	// Old multiPATH solutions

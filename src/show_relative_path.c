@@ -222,16 +222,13 @@ void show_relative_path(
 		{
 			printf("%s %s\n",relative_path,"inaccessible");
 
-		} else if(*ignored == true)
-                {
+		} else if(*ignored == true){
 			printf("%s %s\n",relative_path,"ignored & not added");
 
-		} else if(*zero_size_file == true)
-		{
+		} else if(*zero_size_file == true){
 			printf("%s %s\n",relative_path,"zero size");
 
-		} else if(*ignored == false)
-		{
+		} else if(*ignored == false){
 			printf("%s",relative_path);
 
 			if(*rehashig_from_the_beginning)

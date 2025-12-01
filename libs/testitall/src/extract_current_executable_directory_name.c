@@ -20,7 +20,9 @@
  * @param environment_size Size of this buffer in bytes
  * @return Return status code (SUCCESS on success, FAILURE on error)
  */
-Return extract_current_executable_directory_name(char *environment,size_t environment_size)
+Return extract_current_executable_directory_name(
+	char   *environment,
+	size_t environment_size)
 {
 	/** Return status
 	 *  The status that will be passed to provide() before exiting
@@ -36,52 +38,68 @@ Return extract_current_executable_directory_name(char *environment,size_t enviro
 	const char *directory_start = NULL;
 	size_t directory_length = 0U;
 
-	if(NULL == environment) {
+	if(NULL == environment)
+	{
 		status = FAILURE;
 	}
-	if(SUCCESS == status) {
-		if(0U == environment_size) {
+
+	if(SUCCESS == status)
+	{
+		if(0U == environment_size)
+		{
 			status = FAILURE;
 		}
 	}
 
-	if(SUCCESS == status) {
+	if(SUCCESS == status)
+	{
 		len = readlink("/proc/self/exe",exe_path,(size_t)PATH_MAX - 1U);
-		if(len < 0) {
+
+		if(len < 0)
+		{
 			status = FAILURE;
 		} else {
 			/* If the returned length hits the limit, the path could be truncated */
-			if(len >= (ssize_t)((size_t)PATH_MAX - 1U)) {
+			if(len >= (ssize_t)((size_t)PATH_MAX - 1U))
+			{
 				status = FAILURE;
 			}
 		}
 	}
 
-	if(SUCCESS == status) {
+	if(SUCCESS == status)
+	{
 		exe_path[len] = '\0';
 
 		/* Identify last and previous '/' */
 		walker = exe_path;
-		while('\0' != *walker) {
-			if('/' == *walker) {
+
+		while('\0' != *walker)
+		{
+			if('/' == *walker)
+			{
 				before_last_slash = last_slash;
 				last_slash = walker;
 			}
 			walker++;
 		}
 
-		if(NULL == last_slash) {
+		if(NULL == last_slash)
+		{
 			/* Should never happen for /proc/self/exe */
-			if(environment_size > 0U) {
+			if(environment_size > 0U)
+			{
 				environment[0] = '\0';
 			} else {
 				status = FAILURE;
 			}
 		} else {
 			/* Parent directory ends at last_slash */
-			if(NULL == before_last_slash) {
+			if(NULL == before_last_slash)
+			{
 				/* Path like "/binary": parent dir is "/" and has no name */
-				if(environment_size > 0U) {
+				if(environment_size > 0U)
+				{
 					environment[0] = '\0';
 				} else {
 					status = FAILURE;
@@ -91,10 +109,12 @@ Return extract_current_executable_directory_name(char *environment,size_t enviro
 				directory_start = before_last_slash + 1;
 				directory_length = (size_t)(last_slash - directory_start);
 
-				if(directory_length + 1U > environment_size) {
+				if(directory_length + 1U > environment_size)
+				{
 					status = FAILURE;
 				} else {
-					if(directory_length > 0U) {
+					if(directory_length > 0U)
+					{
 						memcpy(environment,directory_start,directory_length);
 						environment[directory_length] = '\0';
 					} else {

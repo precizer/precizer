@@ -119,7 +119,7 @@ Return set_environment_variable(
 	const char *);
 
 Return function_capture(
-	void (*func)(void),
+	void  (*func)(void),
 	memory *,
 	memory *);
 
