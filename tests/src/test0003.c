@@ -11,10 +11,10 @@ Return test0003(void)
 	INITTEST;
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"${BINDIR}/precizer --progress tests/examples/diffs/diff1",SUCCESS,false,false));
+		"${BINDIR}/precizer --progress tests/examples/diffs/diff1",COMPLETED,false,false));
 
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2",SUCCESS,false,false));
+		"${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false));
 
 	if(SUCCESS == status)
 	{
@@ -33,11 +33,11 @@ Return test0003(void)
 			return(FAILURE);
 		}
 
-		ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
+		ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
 	}
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }

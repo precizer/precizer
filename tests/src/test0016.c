@@ -16,7 +16,7 @@ Return test0016(void)
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"cp -pr tests/examples/ tests/examples_backup;",GRACEFUL,false,false));
+		"cp -pr tests/examples/ tests/examples_backup;",COMPLETED,false,false));
 
 	const char *command = "export TESTING=true && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1;"
@@ -32,7 +32,7 @@ Return test0016(void)
 
 	const char *filename = "templates/0016_001_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -50,7 +50,7 @@ Return test0016(void)
 
 	filename = "templates/0016_001_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -63,7 +63,7 @@ Return test0016(void)
 		"rm database1.db && "
 		"rm database2.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }

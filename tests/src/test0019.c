@@ -21,7 +21,7 @@ Return test0019(void)
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"cp -pr tests/examples/ tests/examples_backup;",GRACEFUL,false,false));
+		"cp -pr tests/examples/ tests/examples_backup;",COMPLETED,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "ln -s ../../../../1/AAA/BCB/CCC/a.txt tests/examples/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt;"
@@ -31,7 +31,7 @@ Return test0019(void)
 
 	const char *filename = "templates/0019_001.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -47,7 +47,7 @@ Return test0019(void)
 
 	filename = "templates/0019_002.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -63,7 +63,7 @@ Return test0019(void)
 
 	filename = "templates/0019_003.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -75,7 +75,7 @@ Return test0019(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }

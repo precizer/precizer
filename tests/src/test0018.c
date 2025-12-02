@@ -14,7 +14,7 @@ Return test0018_1_maxdepth_argument(void)
 
 	const char *filename = "templates/0018_001_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -35,7 +35,7 @@ Return test0018_1_maxdepth_argument(void)
 
 	filename = "templates/0018_001_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -47,7 +47,7 @@ Return test0018_1_maxdepth_argument(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/database3.db\"",GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/database3.db\"",COMPLETED,false,false));
 	RETURN_STATUS;
 }
 

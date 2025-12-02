@@ -12,7 +12,7 @@ static Return dry_run_mode_1_test(void)
 
 	create(char,result);
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -53,12 +53,12 @@ static Return dry_run_mode_2_test(void)
 	        "cp -pr tests/examples/ tests/examples_backup/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
 	command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
 	#if 0
 	printf("Path: %s\n",path);
@@ -78,7 +78,7 @@ static Return dry_run_mode_2_test(void)
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;" // New file
 	        "${BINDIR}/precizer --dry-run --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	printf("%s\n",getcstring(result));
@@ -98,7 +98,7 @@ static Return dry_run_mode_2_test(void)
 	        "${BINDIR}/precizer --dry-run --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -123,7 +123,7 @@ static Return dry_run_mode_2_test(void)
 	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -146,7 +146,7 @@ static Return dry_run_mode_2_test(void)
 	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\""
 	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -171,7 +171,7 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -194,11 +194,11 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -pr tests/examples/ tests/examples_backup/;",GRACEFUL,false,false));
+		"cp -pr tests/examples/ tests/examples_backup/;",COMPLETED,false,false));
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
-	ASSERT(SUCCESS == external_call(command,SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"Path: %s\n",path);
@@ -209,7 +209,7 @@ static Return no_dry_run_mode_3_test(void)
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == execute_command(command,result,GRACEFUL,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -225,7 +225,7 @@ static Return no_dry_run_mode_3_test(void)
 	        "${BINDIR}/precizer --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -247,7 +247,7 @@ static Return no_dry_run_mode_3_test(void)
 	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -267,7 +267,7 @@ static Return no_dry_run_mode_3_test(void)
 	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\""
 	        " --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -288,7 +288,7 @@ static Return no_dry_run_mode_3_test(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
