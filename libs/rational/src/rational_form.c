@@ -14,6 +14,7 @@
 const char *form(long double val)
 {
 	static char result[MAX_NUMBER_CHARACTERS];
+	result[0] = '\0';  /* Initialize buffer as empty string */
 
 	// Compare the argument passed to the parent function
 	// with zero accurate to 10 digits and output zero

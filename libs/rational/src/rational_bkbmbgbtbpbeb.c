@@ -106,6 +106,7 @@ char *bkbmbgbtbpbeb(const size_t bytes)
 {
 	// Zero out a static memory area with a string array
 	static char result[MAX_NUMBER_CHARACTERS] = {0};
+	result[0] = '\0';  /* Initialize buffer as empty string */
 
 	// If the number passed is 0 Bytes
 	if(bytes == 0ULL)

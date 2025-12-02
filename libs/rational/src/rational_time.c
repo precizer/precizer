@@ -43,6 +43,7 @@ char *seconds_to_ISOdate(time_t seconds)
 
 	// String to store converted time
 	static char str_t[sizeof "2011-10-18 07:07:09"] = "";
+	str_t[0] = '\0';  /* Initialize buffer as empty string */
 
 	// Pointer to a structure with local time
 	struct tm cur_time;
@@ -173,7 +174,8 @@ static void catdate(
 char *form_date(const long long int nanoseconds)
 {
 	// Zero out a static memory area with a string array
-	static char result[MAX_NUMBER_CHARACTERS] = {0};
+	static char result[MAX_NUMBER_CHARACTERS];
+	result[0] = '\0';  /* Initialize buffer as empty string */
 
 	// If the time passed as argument is less than one nanosecond
 	if(nanoseconds == 0LL)
