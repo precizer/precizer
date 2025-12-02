@@ -7,6 +7,11 @@ SUBDIRS  = sqlite3 rational sha512 mem xdiff testitall
 
 TOPTARGETS := all clean debug prod production portable sanitize test cosmo gcc-analyzer format
 
+# Dependencies between libraries
+mem: rational
+xdiff: rational
+testitall: mem xdiff rational
+
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
 	@$(MAKE) -s -C $@ $(MAKECMDGOALS)

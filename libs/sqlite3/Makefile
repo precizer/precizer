@@ -42,6 +42,7 @@ WFLAGS = -Wall
 WFLAGS += -Wpedantic
 WFLAGS += -Wshadow
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
+WFLAGS += -Wno-stringop-overread
 
 #
 # Project files
@@ -110,7 +111,7 @@ PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc
 
 define SQLITE_WARN_ONCE
 $(if $(SQLITE_WARNING_PRINTED),,\
-$(info SQLite library compilation has started. This process may take a considerable amount of time) \
+echo "SQLite library compilation has started. This process may take a considerable amount of time" \
 $(eval SQLITE_WARNING_PRINTED:=1))
 endef
 
