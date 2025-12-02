@@ -42,7 +42,6 @@ WFLAGS = -Wall
 WFLAGS += -Wpedantic
 WFLAGS += -Wshadow
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
-WFLAGS += -Wno-stringop-overread
 
 #
 # Project files
