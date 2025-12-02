@@ -226,6 +226,8 @@ TOPTARGETS := all
 
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal
 
+.NOTPARALLEL: prodfinal dynprodfinal portfinal banner
+
 #
 # Debug rules
 #
@@ -234,7 +236,7 @@ debug: $(DBG_LIBDIR) $(DBG_EXE) debugfinal
 debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
-$(DBG_EXE): $(DBG_OBJS)
+$(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@$(CC) $(STATIC) $(DBG_LD_PATH) $(DBG_DYNLIB) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
@@ -259,7 +261,7 @@ sanitize: $(SNTZ_LIBDIR) $(SNTZ_EXE) sanitizefinal
 sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
-$(SNTZ_EXE): $(SNTZ_OBJS)
+$(SNTZ_EXE): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@$(CC) $(SNTZ_LD_PATH) $(SNTZ_DYNLIB) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
@@ -284,7 +286,7 @@ prodfinal: $(PROD_EXE)
 	@upx --best --lzma -qqq $(EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
-$(PROD_EXE): $(PROD_OBJS)
+$(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@$(CC) $(STATIC) $(STRIP) $(PROD_LD_PATH) $(PROD_DYNLIB) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
@@ -329,7 +331,7 @@ portfinal: $(PRTB_EXE)
 	@upx --best --lzma -qqq $(EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
-$(PRTB_EXE): $(PRTB_OBJS)
+$(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@$(CC) $(STATIC) $(STRIP) $(PRTB_LD_PATH) $(PRTB_DYNLIB) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
