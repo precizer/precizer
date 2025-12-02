@@ -14,7 +14,7 @@
 /// Formatted as an enumeration
 typedef enum
 {
-	/// Excellent, great, fine, valuable, effective, proper, graceful, prime
+	/// Excellent, great, fine, valuable, proper, graceful
 	COMPLETED = 0x0000, // 0000 0000 0000 0000
 
 	/// Unsuccessful
@@ -33,7 +33,7 @@ typedef enum
 	DONOTHING = 0x0010, // 0000 0000 0001 0000
 
 	/// Graceful outcome
-	TRIUMPH   = SUCCESS | HALTED | DONOTHING  // 0x000E (0000 0000 0000 1110, decimal 14)
+	TRIUMPH   = SUCCESS | HALTED | DONOTHING  // 0x0016 (0000 0000 0001 0110, decimal 22)
 
 #if 0
 0x0020 — 0000 0000 0010 0000
