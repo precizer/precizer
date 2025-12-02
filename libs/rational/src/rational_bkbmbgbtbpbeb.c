@@ -39,8 +39,7 @@ static inline Byte tobyte(const size_t bytes)
 
 	// Initializing of the structure that will be returned
 	// from the function
-	Byte byte;
-	memset(&byte,0,sizeof(Byte));
+	Byte byte = {0};
 
 	byte.exbibytes = bytes/bytes_in_exbibyte;
 
@@ -105,10 +104,8 @@ static void catbyte(
  */
 char *bkbmbgbtbpbeb(const size_t bytes)
 {
-	static char result[MAX_NUMBER_CHARACTERS];
-
 	// Zero out a static memory area with a string array
-	memset(result,0,strlen(result) * sizeof(char));
+	static char result[MAX_NUMBER_CHARACTERS] = {0};
 
 	// If the number passed is 0 Bytes
 	if(bytes == 0ULL)

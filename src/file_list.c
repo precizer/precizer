@@ -363,9 +363,7 @@ Return file_list(const bool count_size_of_all_files)
 					}
 				}
 
-				unsigned char sha512[SHA512_DIGEST_LENGTH];
-				// Clean sha512 to prevent reuse;
-				memset(sha512,0,sizeof(sha512));
+				unsigned char sha512[SHA512_DIGEST_LENGTH] = {0};
 
 				// The file is available for reading
 				bool is_readable = false;

@@ -104,8 +104,7 @@ __attribute__((always_inline)) static inline Date asadate(const long long int na
 	const long long int ns_in_microsecond = 1000LL;
 
 	// Initializing the structure that will be returned from the function
-	Date date;
-	memset(&date,0,sizeof(Date));
+	Date date = {0};
 
 	date.years = nanoseconds/ns_in_year;
 
@@ -173,10 +172,8 @@ static void catdate(
  */
 char *form_date(const long long int nanoseconds)
 {
-	static char result[MAX_NUMBER_CHARACTERS];
-
 	// Zero out a static memory area with a string array
-	memset(result,0,strlen(result) * sizeof(char));
+	static char result[MAX_NUMBER_CHARACTERS] = {0};
 
 	// If the time passed as argument is less than one nanosecond
 	if(nanoseconds == 0LL)
