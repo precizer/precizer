@@ -374,6 +374,9 @@ clean: | clean-preproc clean-asm clean-tests
 	@test -f $(EXE) && rm $(EXE) || true
 	@echo $(EXE) cleared
 
+purge:
+	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
+
 clean-all: clean-tests clean clean-tools clean-docker
 	@$(MAKE) -C libs clean
 
