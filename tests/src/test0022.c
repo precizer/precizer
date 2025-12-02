@@ -37,7 +37,7 @@ static Return test_remove_trailing_slash(
 			{
 				status = FAILURE;
 			} else {
-				ASSERT(GRACEFUL == strcmp(buffer_view,expected));
+				ASSERT(COMPLETED == strcmp(buffer_view,expected));
 			}
 		}
 	}

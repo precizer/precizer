@@ -438,7 +438,7 @@ Return file_list(const bool count_size_of_all_files)
 							&mdContext,
 							&wrong_file_type);
 
-						if(SUCCESS & status)
+						if(TRIUMPH & status)
 						{
 							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
 							show_checksum_gracefully_interrupted(relative_path,&offset);
@@ -476,7 +476,7 @@ Return file_list(const bool count_size_of_all_files)
 				if(update_db == true)
 				{
 					/* Update record in DB */
-					if(SUCCESS & status)
+					if(TRIUMPH & status)
 					{
 						status = db_update_the_record_by_id(&(dbrow->ID),
 							&offset,
@@ -495,7 +495,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				} else {
 					/* Insert to DB */
-					if(SUCCESS & status)
+					if(TRIUMPH & status)
 					{
 #if 0 // Old multiPATH solution
 						status = db_insert_the_record(&path_prefix_index,

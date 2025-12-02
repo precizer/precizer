@@ -207,10 +207,10 @@ Return extract_current_executable_directory_name(
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
 	printf(WHITE "Total execution time: %lldns (%s)\n" RESET,_time_spent,form_date(_time_spent)); \
-	if(SUCCESS & status) \
+	if(TRIUMPH & status) \
 	{ \
 		printf(WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
-		return(GRACEFUL); \
+		return(COMPLETED); \
 	} else { \
 		printf(WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
 		return(status); \

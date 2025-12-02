@@ -22,7 +22,7 @@ static Return test0011_1_readme(void)
 	// Create memory for the result
 	create(char,result);
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	create(char,pattern);
 
@@ -35,7 +35,7 @@ static Return test0011_1_readme(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",GRACEFUL,false,false));
+		"rm database1.db database2.db",COMPLETED,false,false));
 
 	del(pattern);
 
@@ -74,7 +74,7 @@ static Return test0011_2_readme(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -par tests/examples/ tests/examples_backup;",GRACEFUL,false,false));
+		"cp -par tests/examples/ tests/examples_backup;",COMPLETED,false,false));
 
 	const char *command = "export TESTING=true;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
@@ -86,7 +86,7 @@ static Return test0011_2_readme(void)
 
 	const char *filename = "templates/0011_002_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	// Match the result against the pattern
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
@@ -117,7 +117,7 @@ static Return test0011_2_readme(void)
 
 	filename = "templates/0011_002_3.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -149,7 +149,7 @@ static Return test0011_3_readme(void)
 	const char *command = "export TESTING=false;cd ${TMPDIR};"
 	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	#if 0
 	printf("captured_result:%s",getcstring(result));
@@ -167,7 +167,7 @@ static Return test0011_3_readme(void)
 
 	const char *filename = "templates/0011_003.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -197,7 +197,7 @@ static Return test0011_4_readme(void)
 
 	const char *filename = "templates/0011_004_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -208,7 +208,7 @@ static Return test0011_4_readme(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",GRACEFUL,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -239,7 +239,7 @@ static Return test0011_5_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
 
 	/* At the second stage, the --maxdepth=0 option is not used.
 	   Therefore, all files that were not previously included
@@ -250,9 +250,9 @@ static Return test0011_5_readme(void)
 
 	filename = "templates/0011_005_2.txt";
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -283,14 +283,14 @@ static Return test0011_6_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
 
 	filename = "templates/0011_006_2.txt";
 
 	command = "export TESTING=false && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --update tests/examples/diffs";
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
 
 	RETURN_STATUS;
 }
@@ -324,9 +324,9 @@ static Return test0011_7_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -345,7 +345,7 @@ static Return test0011_8_readme(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "${BINDIR}/precizer tests/examples/diffs";
 
-	ASSERT(SUCCESS == execute_command(command,NULL,SUCCESS,true,true));
+	ASSERT(SUCCESS == execute_command(command,NULL,COMPLETED,true,true));
 
 	command = "export TESTING=false && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --update"
@@ -368,9 +368,9 @@ static Return test0011_8_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,SUCCESS));
+	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }

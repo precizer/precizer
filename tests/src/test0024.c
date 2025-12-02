@@ -18,7 +18,7 @@ Return prefix_path_with_apostrophe_test(void)
 
 	const char *filename = "templates/0024_001.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -27,7 +27,7 @@ Return prefix_path_with_apostrophe_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -50,7 +50,7 @@ Return another_prefix_path_with_apostrophe_test(void)
 
 	const char *filename = "templates/0024_002.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -59,7 +59,7 @@ Return another_prefix_path_with_apostrophe_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",GRACEFUL,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -84,7 +84,7 @@ static Return adding_and_comparing_with_apostrophe(void)
 	// Create memory for the result
 	create(char,result);
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
 
 	create(char,pattern);
 
@@ -97,7 +97,7 @@ static Return adding_and_comparing_with_apostrophe(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",GRACEFUL,false,false));
+		"rm database1.db database2.db",COMPLETED,false,false));
 
 	del(pattern);
 

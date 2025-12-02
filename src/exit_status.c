@@ -21,17 +21,18 @@ int exit_status(
 	{
 		slog(EVERY,"The %s has been interrupted smoothly. All data remain in integrity condition\n",application_file_name);
 		slog(EVERY,"Exit status » %s\n",show_status(status));
+		return((int)status);
 	} else {
-		if(SUCCESS == status)
+		if(TRIUMPH & status)
 		{
 			slog(EVERY,"The %s completed its execution without any issues\n",application_file_name);
 			slog(EVERY,"Exit status » %s\n",show_status(status));
 			slog(REGULAR,"Enjoy your life!\n");
+			return((int)COMPLETED);
 		} else {
 			slog(ERROR,"The %s process terminated unexpectedly due to an error\n",application_file_name);
 			slog(ERROR,"Exit status » %s\n",show_status(status));
+			return((int)status);
 		}
 	}
-
-	return((int)status);
 }
