@@ -60,8 +60,7 @@ Return db_determine_name(void)
 
 			config->db_file_name = NULL;
 
-			struct utsname utsname;
-			memset(&utsname,0,sizeof(utsname));
+			struct utsname utsname  = {0};
 
 			// Determine local host name
 			if(uname(&utsname) != 0)
