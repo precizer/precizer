@@ -226,8 +226,6 @@ TOPTARGETS := all
 
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal
 
-.NOTPARALLEL: prodfinal dynprodfinal portfinal banner
-
 #
 # Debug rules
 #
@@ -279,7 +277,7 @@ $(SNTZ_LIBDIR):
 # Production rules
 #
 prod: production
-production: $(PROD_LIBDIR) $(PROD_EXE) prodfinal banner
+production: $(PROD_LIBDIR) $(PROD_EXE) prodfinal .WAIT banner
 
 prodfinal: $(PROD_EXE)
 	@cp $(PROD_EXE) $(EXE)
@@ -303,7 +301,7 @@ $(PROD_LIBDIR):
 #
 # Dynamic production rules
 #
-dynamic-production: $(PROD_LIBDIR) $(DYNP_EXE) dynprodfinal banner
+dynamic-production: $(PROD_LIBDIR) $(DYNP_EXE) dynprodfinal .WAIT banner
 
 dynprodfinal: $(DYNP_EXE)
 	@cp $(DYNP_EXE) $(EXE)
@@ -324,7 +322,7 @@ $(DYNP_OBJDIR):
 #
 # Portable rules
 #
-portable: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal banner
+portable: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal .WAIT banner
 
 portfinal: $(PRTB_EXE)
 	@cp $(PRTB_EXE) $(EXE)
