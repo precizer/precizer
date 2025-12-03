@@ -236,3 +236,9 @@ Return testitall(
 	Return (*func)(void),
 	const char *,
 	const char *);
+
+Return runit(
+	const char *,
+	const int,
+	bool,
+	bool);
