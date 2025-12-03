@@ -13,8 +13,13 @@ Return test0003(void)
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
 		"${BINDIR}/precizer --progress tests/examples/diffs/diff1",COMPLETED,false,false));
 
+#if 0
 	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
 		"${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false));
+#else
+
+	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false));
+#endif
 
 	if(SUCCESS == status)
 	{
