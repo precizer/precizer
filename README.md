@@ -3,7 +3,7 @@
 # Precizer
 A Tiny, High-Performance File Integrity and Comparison Tool
 
-“A truly great program will always fit on a floppy disk. Hopefully, someone out there still remembers what those were… But it’s not about the floppies — it’s about quality software!”© :-D
+“A truly great application will always fit on a floppy disk. Hopefully, someone out there still remembers what those were… But it’s not about the floppies, it’s about quality software!” © :-D
 
 <p width="100%" height="100%">
 <img width="20%" src="img/micrometer_0.svg">
