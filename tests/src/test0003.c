@@ -18,7 +18,7 @@ Return test0003(void)
 		"${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false));
 #else
 
-	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false,false));
 #endif
 
 	if(SUCCESS == status)

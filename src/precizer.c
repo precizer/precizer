@@ -19,7 +19,6 @@ _Atomic bool global_interrupt_flag = false;
 Config _config;
 Config *config = &_config;
 
-#ifndef TESTITALL // Unit testing library
 /**
  * @mainpage
  * @brief precizer is a CLI application designed to verify the integrity of files after synchronization.
@@ -34,7 +33,11 @@ Config *config = &_config;
  * same sources over different times.
  *
  */
+#ifndef TESTITALL // Unit testing library
 int main(
+#else
+int test_main(
+#endif // TESTITALL
 	int  argc,
 	char **argv)
 {
@@ -117,4 +120,3 @@ int main(
 
 	return(exit_status(status,argv));
 }
-#endif // TESTITALL

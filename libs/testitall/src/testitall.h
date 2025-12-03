@@ -241,4 +241,5 @@ Return runit(
 	const char *,
 	const int,
 	bool,
+	bool,
 	bool);

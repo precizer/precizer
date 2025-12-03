@@ -342,10 +342,16 @@ static Return test0011_8_readme(void)
 {
 	INITTEST;
 
+#if 0
 	const char *command = "cd ${TMPDIR} && "
 	        "${BINDIR}/precizer tests/examples/diffs";
 
 	ASSERT(SUCCESS == execute_command(command,NULL,COMPLETED,true,true));
+#else
+	const char *command = NULL;
+
+	ASSERT(SUCCESS == runit("tests/examples/diffs",COMPLETED,false,false,false));
+#endif
 
 	command = "export TESTING=false && cd ${TMPDIR} && "
 	        "${BINDIR}/precizer --update"
