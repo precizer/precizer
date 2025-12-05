@@ -1,5 +1,5 @@
 /**
- * @file file_check.h
+ * @file check_file_exists.c
  * @brief File existence verification functionality
  */
 
@@ -8,12 +8,12 @@
 /**
  * @brief Checks if a file exists
  *
- * @param[in] filename    Path to the file to check
- * @param[in] file_exists True if the file exists of false if not
+ * @param[out] file_exists Pointer that will be set to true when the file exists, false otherwise
+ * @param[in]  filename    Path to the file to check
  *
  * @return Return status indicating the result of operation:
- *         - SUCCESS if finished successfully
- *         - FAILURE if any error
+ *         - SUCCESS after a successful check (even when the file is absent)
+ *         - FAILURE when filename is NULL
  */
 Return check_file_exists(
 	bool       *file_exists,

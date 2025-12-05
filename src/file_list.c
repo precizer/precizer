@@ -315,7 +315,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				/* For a file which had been changed before creation
 				   of its checksum has been already finished */
-				bool rehashig_from_the_beginning = false;
+				bool rehashing_from_the_beginning = false;
 
 				// Ignored with --ignore= or admit with --include=
 				bool ignored = false;
@@ -324,13 +324,13 @@ Return file_list(const bool count_size_of_all_files)
 				{
 					if(metadata_of_scanned_and_saved_files == IDENTICAL)
 					{
-						// Contunue hashing
+						// Continue hashing
 						offset = dbrow->saved_offset;
 						memcpy(&mdContext,&(dbrow->saved_mdContext),sizeof(SHA512_Context));
 					} else {
 						/* The SHA512 hashing of the file had not been
 						   finished previously and the file has been changed */
-						rehashig_from_the_beginning = true;
+						rehashing_from_the_beginning = true;
 					}
 				}
 
@@ -406,7 +406,7 @@ Return file_list(const bool count_size_of_all_files)
 					&stat,
 					&first_iteration,
 					&show_changes,
-					&rehashig_from_the_beginning,
+					&rehashing_from_the_beginning,
 					&ignored,
 					&at_least_one_file_was_shown,
 					&rehash,

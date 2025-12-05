@@ -15,21 +15,16 @@ typedef enum
 } Changed;
 
 /**
- * @brief Checks if the file's size, creation time, and modification time have
- *        not changed since the last crawl.
+ * @brief Compares basic file metadata fields (size, mtime, ctime).
  *
- * Compares data from the FTS library file traversal with the stat
- * structure stored in SQLite from the previous probe.
+ * @param source       First stat structure
+ * @param destination  Second stat structure
  *
- * @param source		Source file stat structure
- * @param destination	Destination file stat structure
- *
- * @return Return status:
- *         - IDENTICAL: Files are identical
- *         - FAILURE: Error in comparison or invalid parameters
+ * @return Bitmask with IDENTICAL (0) when equal or a combination of:
  *         - SIZE_CHANGED
  *         - MODIFICATION_TIME_CHANGED
- *         - CREATION_TIME_CHANGED
+ *         - CREATION_TIME_CHANGED (uses ctime/status-change time)
+ *         Returns FAILURE on invalid parameters.
  */
 static int compare_file_metadata_equivalence(
 	const struct stat *source,
@@ -168,7 +163,13 @@ Return print_stat(const struct stat *st)
 }
 
 /**
+ * @brief Reports whether two stat structures describe the same file metadata.
  *
+ * Prints both structures to STDERR when any tracked field differs.
+ *
+ * @param stat1 First stat structure
+ * @param stat2 Second stat structure
+ * @return SUCCESS when metadata matches; FAILURE otherwise
  */
 Return check_file_identity(
 	const struct stat *stat1,

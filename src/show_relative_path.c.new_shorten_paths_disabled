@@ -410,7 +410,7 @@ void show_relative_path(
 	const CmpctStat *stat,
 	bool            *first_iteration,
 	bool            *show_changes,
-	bool            *rehashig_from_the_beginning,
+	bool            *rehashing_from_the_beginning,
 	const bool      *ignored,
 	bool            *at_least_one_file_was_shown,
 	bool            *rehash,
@@ -503,7 +503,7 @@ void show_relative_path(
 			printf("%s",shorten);
 			free(shorten);
 
-			if(*rehashig_from_the_beginning)
+			if(*rehashing_from_the_beginning)
 			{
 				(void)path_shorten(&shorten,relative_path,"      ");
 				printf("%s",shorten);

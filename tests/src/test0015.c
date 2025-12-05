@@ -10,17 +10,21 @@ Return test0015_1_upgrade_db(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p tests/0015_database_v0.db .;"
-	        "${BINDIR}/precizer --database=./0015_database_v0.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p tests/0015_database_v0.db .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	const char *arguments = "--database=./0015_database_v0.db tests/examples/diffs/diff1";
 
 	create(char,result);
-
 	create(char,pattern);
 
 	const char *filename = "templates/0015_001.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,WARNING,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -48,17 +52,21 @@ Return test0015_2_upgrade_db(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p tests/0015_database_v0.db .;"
-	        "${BINDIR}/precizer --update --database=0015_database_v0.db tests/examples/diffs/diff1";
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p tests/0015_database_v0.db .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments = "--update --database=0015_database_v0.db tests/examples/diffs/diff1";
 
 	create(char,result);
-
 	create(char,pattern);
 
 	const char *filename = "templates/0015_002.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -82,16 +90,14 @@ Return test0015_3_upgrade_db(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --database=./0015_database_v0.db tests/examples/diffs/diff1";
-
 	create(char,result);
-
 	create(char,pattern);
 
 	const char *filename = "templates/0015_003.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("--update --database=./0015_database_v0.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -118,9 +124,10 @@ Return test0015_4_upgrade_db(void)
 {
 	INITTEST;
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
 	// Get the output of an external program
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer tests/examples/diffs/diff1";
+	const char *arguments = "tests/examples/diffs/diff1";
 
 	const char *filename = "templates/0015_004.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -133,7 +140,7 @@ Return test0015_4_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	RETURN_STATUS;
 }
@@ -149,10 +156,15 @@ Return test0015_5_upgrade_db(void)
 {
 	INITTEST;
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
 	// Get the output of an external program
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p tests/0015_database_v0.db .;"
-	        "${BINDIR}/precizer --compare ${DBNAME} 0015_database_v0.db";
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p tests/0015_database_v0.db .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	const char *arguments = "--compare ${DBNAME} 0015_database_v0.db";
 
 	const char *filename = "templates/0015_005.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -165,27 +177,7 @@ Return test0015_5_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	// Will store template content from file
-	create(char,pattern);
-
-	// Create memory for command output
-	create(char,result);
-
-	// Read template pattern from file
-	status = get_file_content(filename,pattern);
-
-	// Replace template placeholder with actual value
-	ASSERT(SUCCESS == replace_placeholder(pattern,template,replacement));
-
-	// Execute command and capture output
-	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
-
-	// Compare command output against modified template
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
-
-	del(pattern);
-
-	del(result);
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,WARNING));
 
 	RETURN_STATUS;
 }
@@ -201,9 +193,10 @@ Return test0015_6_upgrade_db(void)
 {
 	INITTEST;
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
 	// Get the output of an external program
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --compare --update ${DBNAME} 0015_database_v0.db";
+	const char *arguments = "--compare --update ${DBNAME} 0015_database_v0.db";
 
 	const char *filename = "templates/0015_006.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -216,7 +209,7 @@ Return test0015_6_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,false,false));
@@ -235,17 +228,21 @@ Return test0015_7_upgrade_db(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p tests/0015_database_v1.db .;"
-	        "${BINDIR}/precizer --update --database=0015_database_v1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p tests/0015_database_v1.db .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	const char *arguments = "--update --database=0015_database_v1.db tests/examples/diffs/diff1";
 
 	create(char,result);
-
 	create(char,pattern);
 
 	const char *filename = "templates/0015_007.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -269,16 +266,14 @@ Return test0015_8_upgrade_db(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --database=./0015_database_v1.db tests/examples/diffs/diff1";
-
 	create(char,result);
-
 	create(char,pattern);
 
 	const char *filename = "templates/0015_008.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("--update --database=./0015_database_v1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -305,10 +300,15 @@ Return test0015_9_upgrade_db(void)
 {
 	INITTEST;
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
 	// Get the output of an external program
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p tests/0015_database_v1.db .;"
-	        "${BINDIR}/precizer --compare --update ${DBNAME} 0015_database_v1.db";
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p tests/0015_database_v1.db .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	const char *arguments = "--compare --update ${DBNAME} 0015_database_v1.db";
 
 	const char *filename = "templates/0015_009.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -321,7 +321,7 @@ Return test0015_9_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",COMPLETED,false,false));
@@ -340,17 +340,21 @@ Return test0015_10_upgrade_db(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p tests/0015_database_v2.db .;"
-	        "${BINDIR}/precizer --update --database=0015_database_v2.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p tests/0015_database_v2.db .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	const char *arguments = "--update --database=0015_database_v2.db tests/examples/diffs/diff1";
 
 	create(char,result);
-
 	create(char,pattern);
 
-	const char *filename = "templates/0015_010.txt";
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	const char *filename = "templates/0015_010.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -374,10 +378,15 @@ Return test0015_11_upgrade_db(void)
 {
 	INITTEST;
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
 	// Get the output of an external program
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p tests/0015_database_v2.db .;"
-	        "${BINDIR}/precizer --compare --update ${DBNAME} 0015_database_v2.db";
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p tests/0015_database_v2.db .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	const char *arguments = "--compare --update ${DBNAME} 0015_database_v2.db";
 
 	const char *filename = "templates/0015_011.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -390,7 +399,7 @@ Return test0015_11_upgrade_db(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" && rm \"${TMPDIR}/0015_database_v2.db\"",COMPLETED,false,false));
@@ -402,11 +411,11 @@ Return test0015_11_upgrade_db(void)
  * Testing scenario 15
  *
  * Database upgrade testing:
- * - Upgrade a DB from version 0 to version 1 as the primary database
- * - Run the program again to verify that the database is actually at version 1
+ * - Upgrade DBs from versions 0, 1, and 2 to the current version as the primary database and verify reruns
  * - Launch the program without specifying a database to ensure that a new database is created with the correct version
- * - Run the program with the --compare parameter to compare databases when one of them has an older version — this should generate an appropriate error message
- * - Run the database comparison again using the --compare parameter, but this time with the --update option. The database should be upgraded accordingly.
+ * - Compare a current database with outdated versions (0/1/2) without --update and check for the expected errors
+ * - Compare and upgrade outdated databases (0/1/2) using the --compare and --update parameters
+ * - Verify upgraded databases version 1 and 2 directly with --update
  */
 Return test0015(void)
 {

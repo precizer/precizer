@@ -7,12 +7,11 @@ static Return dry_run_mode_1_test(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --dry-run --database=database1.db tests/examples/diffs/diff1";
-
 	create(char,result);
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("--dry-run --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -48,6 +47,7 @@ static Return dry_run_mode_2_test(void)
 	struct stat stat1;
 	struct stat stat2;
 	create(char,pattern);
+	create(char,chunk);
 
 	const char *command = "cd ${TMPDIR};"
 	        "cp -pr tests/examples/ tests/examples_backup/;";
@@ -55,10 +55,11 @@ static Return dry_run_mode_2_test(void)
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,false,false));
 
 	#if 0
 	printf("Path: %s\n",path);
@@ -72,13 +73,17 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat1));
 
-	command = "export TESTING=true;cd ${TMPDIR};"
+	command = "cd ${TMPDIR};"
 	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;" // New file
-	        "${BINDIR}/precizer --dry-run --update --database=database1.db tests/examples/diffs/diff1";
+	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	arguments = "--dry-run --update --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
 
 	#if 0
 	printf("%s\n",getcstring(result));
@@ -86,6 +91,7 @@ static Return dry_run_mode_2_test(void)
 	#endif
 
 	del(result);
+	del(chunk);
 
 	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat2));
 
@@ -94,11 +100,13 @@ static Return dry_run_mode_2_test(void)
 	// Compare against the sample. A message should be displayed indicating
 	// that the --db-clean-ignored option must be specified for permanent
 	// removal of ignored files from the database
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --dry-run --ignore=\"^1/AAA/ZAW/.*\""
-	        " --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1",
+		result,
+		COMPLETED,
+		false,
+		false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -119,11 +127,13 @@ static Return dry_run_mode_2_test(void)
 
 	// Dry Run mode permanent deletion of all ignored file
 	// references from the database
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\""
-	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1",
+		result,
+		COMPLETED,
+		false,
+		false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -142,11 +152,13 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\""
-	        " --update --dry-run --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1",
+		result,
+		COMPLETED,
+		false,
+		false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -189,8 +201,8 @@ static Return no_dry_run_mode_3_test(void)
 	create(char,path);
 	create(char,pattern);
 	const char *db_file_name = "database1.db";
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1";
+	const char *command = NULL;
+	const char *arguments = NULL;
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
@@ -198,18 +210,22 @@ static Return no_dry_run_mode_3_test(void)
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	arguments = "--database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"Path: %s\n",path);
 	#endif
 
-	command = "export TESTING=true;cd ${TMPDIR};"
+	command = "cd ${TMPDIR};"
 	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -220,12 +236,11 @@ static Return no_dry_run_mode_3_test(void)
 	// Compare against the sample. A message should be displayed indicating
 	// that the --db-clean-ignored option must be specified for permanent
 	// removal of ignored files from the database
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p database1.db database1.db.backup;"
-	        "${BINDIR}/precizer --ignore=\"^1/AAA/ZAW/.*\""
-	        " --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -p database1.db database1.db.backup;",COMPLETED,false,false));
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -242,12 +257,11 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Real live mode permanent deletion of all ignored file
 	// references from the database
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "cp -p database1.db.backup database1.db;"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\""
-	        " --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -p database1.db.backup database1.db;",COMPLETED,false,false));
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -262,12 +276,11 @@ static Return no_dry_run_mode_3_test(void)
 
 	del(result);
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "mv database1.db.backup database1.db;"
-	        "${BINDIR}/precizer --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\""
-	        " --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};mv database1.db.backup database1.db;",COMPLETED,false,false));
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	arguments = "--db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));

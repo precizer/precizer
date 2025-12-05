@@ -28,8 +28,8 @@ Return testitall(
 	long long int __start_time = cur_time_ns();
 
 	/* Clear output capture buffers to ensure clean state */
-	del(STDOUT);
-	del(STDERR);
+	call(del(STDOUT));
+	call(del(STDERR));
 
 	/* Execute the test function and capture its return status */
 	status = func();
@@ -88,7 +88,8 @@ Return testitall(
 
 	if((STDERR->length > 0) && (stderr_buffer[0] != '\0'))
 	{
-		fprintf(stdout,YELLOW "%s" RESET,stderr_buffer);
+		fprintf(stdout,RED "STDERR" WHITE " is not empty when it should be:\n" RESET);
+		fprintf(stdout,"%s",stderr_buffer);
 	}
 
 	/* Display captured stdout output */
@@ -96,13 +97,14 @@ Return testitall(
 
 	if((STDOUT->length > 0) && (stdout_buffer[0] != '\0'))
 	{
+		fprintf(stdout,BLUE "STDOUT" WHITE " is not empty when it should be:\n" RESET);
 		fprintf(stdout,"%s",stdout_buffer);
 	}
 
 	/* Cleanup: free dynamically allocated buffers */
-	del(STDOUT);
-	del(STDERR);
-	del(EXTEND);
+	call(del(STDOUT));
+	call(del(STDERR));
+	call(del(EXTEND));
 
 	return(status);
 }

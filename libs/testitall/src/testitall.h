@@ -139,6 +139,13 @@ Return match_file_template(
 	const char *,
 	const int);
 
+Return match_app_output(
+	const char *,
+	const char *,
+	const char *,
+	const char *,
+	const int);
+
 Return replace_placeholder(
 	memory *,
 	const char *,
@@ -237,9 +244,20 @@ Return testitall(
 	const char *,
 	const char *);
 
+enum run_mode
+{
+	INTERNAL_TEST = 0,
+	EXTERNAL_CALL = 1
+};
+
+extern enum run_mode run_external;
+
 Return runit(
 	const char *,
+	memory *,
 	const int,
 	bool,
-	bool,
 	bool);
+
+Return trim_trailing_eol(
+	memory *);

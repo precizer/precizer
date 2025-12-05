@@ -139,30 +139,30 @@ Return match_pattern(
 
 				if(filename != NULL)
 				{
-					echo(STDERR,"ERROR: The pattern not match!\n"
+					echo(STDERR,YELLOW "ERROR: The pattern not match!\n" RESET
 #if 0
-						"Diff:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
+						YELLOW "Diff:\n>>" RESET "%s" YELLOW "<<\n" RESET
 #endif
-						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
-						YELLOW "Compared to a pattern from the file %s:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
+						YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET
+						YELLOW "Compared to a pattern from the file %s:\n>>" RESET "%s" YELLOW "<<\n" RESET,
 #if 0
 						diff,
 #endif
 						text_view,filename,pattern_view);
 				} else {
-					echo(STDERR,"ERROR: The pattern not match!\n"
+					echo(STDERR,YELLOW "ERROR: The pattern not match!\n" RESET
 #if 0
-						"Diff:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
+						YELLOW "Diff:\n>>" RESET "%s" YELLOW "<<\n" RESET
 #endif
-						"Text:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n"
-						YELLOW "Compared to a pattern:\n" YELLOW ">>" RESET "%s" YELLOW "<<\n",
+						YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET
+						YELLOW "Compared to a pattern:\n>>" RESET "%s" YELLOW "<<\n" RESET,
 #if 0
 						diff,
 #endif
 						text_view,pattern_view);
 				}
 			} else {
-				echo(STDERR,"ERROR: pcre2_match error: %d\n",match_result);
+				echo(STDERR,YELLOW "ERROR: pcre2_match error: %d\n" RESET,match_result);
 			}
 
 			status = FAILURE;

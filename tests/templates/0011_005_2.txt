@@ -53,4 +53,5 @@ TESTING:The primary database has been vacuumed
 TESTING:The connection to the primary database has been closed
 TESTING:\x1B\[1mThe database file %DB_NAME% has been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS\z
+TESTING:Exit status » SUCCESS
+\z

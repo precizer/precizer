@@ -75,4 +75,5 @@ TESTING:Comparison mode is enabled. The primary database does not require cleanu
 TESTING:The connection to the primary database has been closed
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS\z
+TESTING:Exit status » SUCCESS
+\z

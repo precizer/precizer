@@ -32,16 +32,16 @@ Return execute_and_set_variable(
 	create(char,result);
 
 	// Execute command and capture output
-	status = execute_command(command,result,expected_return_code,false,false);
+	call(execute_command(command,result,expected_return_code,false,false));
 
 	if(SUCCESS == status)
 	{
 		// Only set environment variable if we got some output
 		if(result->length > 0)
 		{
-			const char *result_text = getcstring(result);
+			run(trim_trailing_eol(result));
 
-			status = set_environment_variable(variable,result_text);
+			run(set_environment_variable(variable,getcstring(result)));
 
 		} else {
 			// Empty output is considered a failure
@@ -51,7 +51,7 @@ Return execute_and_set_variable(
 	}
 
 	// Cleanup allocated memory
-	del(result);
+	call(del(result));
 
 	return(status);
 }

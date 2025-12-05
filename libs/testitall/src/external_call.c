@@ -11,11 +11,16 @@ memory *EXTEND = &_EXTEND;
 extern char **environ; // Environment variables used by posix_spawnp
 
 /**
- * Executes an external command and captures its stdout and stderr output.
- * @param command The shell command to execute.
- * @return Returns SUCCESS or FAILURE in case of an error.
- * @suppress_stderr Suppresses output from the STDERR buffer.
- * @suppress_stdout Suppresses output from the STDOUT buffer.
+ * Executes an external command, capturing stdout/stderr into shared buffers.
+ * @param command              Shell command to execute.
+ * @param expected_return_code Exit code the command must produce for SUCCESS.
+ * @param suppress_stderr      When true, drops captured stderr instead of treating it as an error.
+ * @param suppress_stdout      When true, drops captured stdout.
+ * @return SUCCESS if execution, capture, and exit code checks succeed; FAILURE otherwise.
+ *
+ * Side effects:
+ *  - Clears global STDOUT/STDERR buffers before running.
+ *  - Formats diagnostics into STDERR on unexpected exit codes or unsuppressed stderr.
  */
 Return external_call(
 	const char *command,
@@ -23,6 +28,10 @@ Return external_call(
 	bool       suppress_stderr,
 	bool       suppress_stdout)
 {
+	/// The status that will be passed to return() before exiting.
+	/// By default, the function worked without errors.
+	Return status = SUCCESS;
+
 	// Create pipes to capture stdout and stderr
 	int stdout_pipe[2],stderr_pipe[2];
 
@@ -221,19 +230,9 @@ Return external_call(
 			if(rt > -1)
 			{
 				// Copy str into STDERR buffer
-				if(SUCCESS == resize(STDERR,(size_t)rt + 1))
-				{
-					char *stderr_mem = data(char,STDERR);
+				run(resize(STDERR,(size_t)rt + 1));
 
-					if(stderr_mem == NULL)
-					{
-						free(str);
-						return(FAILURE);
-					}
-
-					memcpy(stderr_mem,str,(size_t)rt);
-					stderr_mem[STDERR->length - 1] = '\0';
-				}
+				run(copy_literal(STDERR,str));
 
 			} else {
 				report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);
@@ -279,19 +278,9 @@ Return external_call(
 		if(rt > -1)
 		{
 			// Copy str into STDERR buffer
-			if(SUCCESS == resize(STDERR,(size_t)rt + 1))
-			{
-				char *stderr_mem = data(char,STDERR);
+			run(resize(STDERR,(size_t)rt + 1));
 
-				if(stderr_mem == NULL)
-				{
-					free(str);
-					return(FAILURE);
-				}
-
-				memcpy(stderr_mem,str,(size_t)rt);
-				stderr_mem[STDERR->length - 1] = '\0';
-			}
+			run(copy_literal(STDERR,str));
 
 		} else {
 			report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);

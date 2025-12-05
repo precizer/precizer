@@ -7,13 +7,13 @@
 /**
  *
  * The structure Config where all runtime settings will be stored.
- * Initialization the structure elements by zerro.
+ * Initialization the structure elements by zero.
  *
  */
 void init_config(void)
 {
 
-	// Fill out with zerroes
+	// Fill out with zeroes
 	memset(config,0,sizeof(Config));
 
 	// Max available size of a path
@@ -133,6 +133,9 @@ void init_config(void)
 	{
 		// Global variable
 		rational_logger_mode = TESTING;
+	} else {
+		// Global variable, default value
+		rational_logger_mode = REGULAR;
 	}
 
 	/// This option prevents directory traversal from descending into

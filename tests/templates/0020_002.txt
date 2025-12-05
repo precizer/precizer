@@ -28,4 +28,5 @@ TESTING:DB mode determined
 TESTING:Returned db_determine_mode:\d+ status: FAILURE
 TESTING:The connection to the primary database has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\z
+ERROR:Exit status » FAILURE
+\z

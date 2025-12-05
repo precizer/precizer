@@ -155,7 +155,7 @@ void show_relative_path(
 	const CmpctStat *stat,
 	bool            *first_iteration,
 	bool            *show_changes,
-	const bool      *rehashig_from_the_beginning,
+	const bool      *rehashing_from_the_beginning,
 	const bool      *ignored,
 	bool            *at_least_one_file_was_shown,
 	const bool      *rehash,
@@ -231,7 +231,7 @@ void show_relative_path(
 		} else if(*ignored == false){
 			printf("%s",relative_path);
 
-			if(*rehashig_from_the_beginning)
+			if(*rehashing_from_the_beginning)
 			{
 				printf(" the SHA512 hashing of the file had not been finished previously, since then the file has been changed and will be rehashed from the beginning\n");
 			} else {

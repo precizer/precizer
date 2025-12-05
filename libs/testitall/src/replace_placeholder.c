@@ -133,12 +133,9 @@ Return replace_placeholder(
 		}
 	}
 
-	if(SUCCESS == status)
-	{
-		status = copy(pattern,replacement_buffer);
-	}
+	run(copy(pattern,replacement_buffer));
 
-	del(replacement_buffer);
+	call(del(replacement_buffer));
 
 	if(match_data != NULL)
 	{

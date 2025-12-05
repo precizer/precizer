@@ -20,7 +20,7 @@ typedef enum
 	/// Unsuccessful
 	FAILURE   = 0x0001, // 0000 0000 0000 0001
 
-	/// Successfull
+	/// Successful
 	SUCCESS   = 0x0002, // 0000 0000 0000 0010
 
 	/// The process has been permanently stopped

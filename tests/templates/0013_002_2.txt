@@ -61,4 +61,5 @@ TESTING:The connection to the primary database has been closed
 TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
 TESTING:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS\z
+TESTING:Exit status » SUCCESS
+\z

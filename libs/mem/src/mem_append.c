@@ -13,9 +13,15 @@ Return memory_append(
 		provide(FAILURE);
 	}
 
-	if(destination->element_size == 0 || source->element_size == 0)
+	if(destination->element_size == 0)
 	{
-		slog(ERROR,"Memory management; At least one memory structure remains uninitialized");
+		slog(ERROR,"Memory management; Destination element size is zero (uninitialized)");
+		provide(FAILURE);
+	}
+
+	if(source->element_size == 0)
+	{
+		slog(ERROR,"Memory management; Source element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 

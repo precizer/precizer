@@ -5,16 +5,15 @@ Return test0018_1_maxdepth_argument(void)
 	INITTEST;
 
 	/* File system traversal with a maximum depth of 3 */
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --maxdepth=3 --database=database3.db ${TMPDIR}/tests/examples/levels";
-
 	create(char,result);
 
 	create(char,pattern);
 
 	const char *filename = "templates/0018_001_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("--maxdepth=3 --database=database3.db ${TMPDIR}/tests/examples/levels",result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -30,12 +29,11 @@ Return test0018_1_maxdepth_argument(void)
 	#endif
 
 	/* File system traversal with unlimited depth */
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --database=database3.db ${TMPDIR}/tests/examples/levels";
-
 	filename = "templates/0018_001_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("--update --database=database3.db ${TMPDIR}/tests/examples/levels",result,COMPLETED,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 

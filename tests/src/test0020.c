@@ -9,16 +9,15 @@ Return test0020_1(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --database=nonexistent_directory/database1.db tests/examples/diffs/diff1";
-
 	create(char,result);
 
 	create(char,pattern);
 
 	const char *filename = "templates/0020_001.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("--update --database=nonexistent_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -41,16 +40,15 @@ Return test0020_2(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --database=nonexistent_database1.db tests/examples/diffs/diff1";
-
 	create(char,result);
 
 	create(char,pattern);
 
 	const char *filename = "templates/0020_002.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("--update --database=nonexistent_database1.db tests/examples/diffs/diff1",result,FAILURE,false,false));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 

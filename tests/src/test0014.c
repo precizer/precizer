@@ -8,46 +8,61 @@ Return long_relative_path_test(void)
 
 	// Create memory for the result
 	create(char,result);
+	create(char,chunk);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	/*
 	 * First test in the series. Database update with a new path
 	 * specification and the --force parameter. The new path consists
 	 * of a very long chain of nested subdirectories.
 	 */
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1;"
-	        "${BINDIR}/precizer --update --force --database=database1.db tests/examples/long;"
-	        "rm database1.db;";
+	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
 
 	const char *filename = "templates/0014_001_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=database1.db tests/examples/long";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Second test in the series. First, create a file database with a very
 	 * long subdirectory path. Then update this database using a new, short
 	 * path and the --force option.
 	 */
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/long;"
-	        "${BINDIR}/precizer --update --force --database=database1.db tests/examples/diffs/diff2;"
-	        "rm database1.db;";
+	arguments = "--database=database1.db tests/examples/long";
 
 	filename = "templates/0014_001_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=database1.db tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Third test in the series. Very long path as the
@@ -78,13 +93,13 @@ Return long_relative_path_test(void)
 
 	reset(&line);
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/long/${LONGEST_PATH};"
-	        "rm database1.db;";
+	arguments = "--database=database1.db tests/examples/long/${LONGEST_PATH}";
 
 	filename = "templates/0014_001_3.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -122,16 +137,15 @@ Return long_relative_path_test(void)
 
 	reset(&line);
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer"
-	        " --database=tests/examples/long/${LONG_PATH}/database1.db"
+	arguments = "--database=tests/examples/long/${LONG_PATH}/database1.db"
 	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
-	        " tests/examples/long;"
-	        "rm tests/examples/long/${LONG_PATH}/database1.db;";
+	        " tests/examples/long";
 
 	filename = "templates/0014_001_4.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -150,46 +164,61 @@ Return long_absolute_path_test(void)
 
 	// Create memory for the result
 	create(char,result);
+	create(char,chunk);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	/*
 	 * First test in the series. Database update with a new path
 	 * specification and the --force parameter. The new path consists
 	 * of a very long chain of nested subdirectories.
 	 */
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff1;"
-	        "${BINDIR}/precizer --update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long;"
-	        "rm ${TMPDIR}/database1.db;";
+	const char *arguments = "--database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff1";
 
 	const char *filename = "templates/0014_002_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Second test in the series. First, create a file database with a very
 	 * long subdirectory path. Then update this database using a new, short
 	 * path and the --force option.
 	 */
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long;"
-	        "${BINDIR}/precizer --update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff2;"
-	        "rm ${TMPDIR}/database1.db;";
+	arguments = "--database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long";
 
 	filename = "templates/0014_002_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Third test in the series. Very long path as the
@@ -220,13 +249,13 @@ Return long_absolute_path_test(void)
 
 	reset(&line);
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long/${LONGEST_PATH};"
-	        "rm ${TMPDIR}/database1.db;";
+	arguments = "--database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long/${LONGEST_PATH}";
 
 	filename = "templates/0014_002_3.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -264,16 +293,15 @@ Return long_absolute_path_test(void)
 
 	reset(&line);
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer"
-	        " --database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db"
+	arguments = "--database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db"
 	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
-	        " ${TMPDIR}/tests/examples/long;"
-	        "rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db;";
+	        " ${TMPDIR}/tests/examples/long";
 
 	filename = "templates/0014_002_4.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -292,26 +320,35 @@ Return reset_relative_path_test(void)
 
 	// Create memory for the result
 	create(char,result);
+	create(char,chunk);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	/*
 	 * First test in the series. Database update with a new path
 	 * specification and the --force parameter. The new path consists
 	 * of a very long chain of nested subdirectories.
 	 */
-	const char *command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/diffs/diff1;"
-	        "${BINDIR}/precizer --update --force --database=database1.db tests/examples/long;"
-	        "/bin/rm database1.db;";
+	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
 
 	const char *filename = "templates/0014_003_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=database1.db tests/examples/long";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Second test in the series. The PATH variable has been removed.
@@ -319,20 +356,26 @@ Return reset_relative_path_test(void)
 	 * long subdirectory path. Then update this database using a new, short
 	 * path and the --force option.
 	 */
-	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/long;"
-	        "${BINDIR}/precizer --update --force --database=database1.db tests/examples/diffs/diff2;"
-	        "/bin/rm database1.db;";
+	arguments = "--database=database1.db tests/examples/long";
 
 	filename = "templates/0014_003_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=database1.db tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Third test in the series. The PATH variable has been removed.
@@ -364,13 +407,13 @@ Return reset_relative_path_test(void)
 
 	reset(&line);
 
-	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=database1.db tests/examples/long/${LONGEST_PATH};"
-	        "/bin/rm database1.db;";
+	arguments = "--database=database1.db tests/examples/long/${LONGEST_PATH}";
 
 	filename = "templates/0014_003_3.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -409,16 +452,15 @@ Return reset_relative_path_test(void)
 
 	reset(&line);
 
-	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer"
-	        " --database=tests/examples/long/${LONG_PATH}/database1.db"
+	arguments = "--database=tests/examples/long/${LONG_PATH}/database1.db"
 	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
-	        " tests/examples/long;"
-	        "/bin/rm tests/examples/long/${LONG_PATH}/database1.db;";
+	        " tests/examples/long";
 
 	filename = "templates/0014_003_4.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -437,6 +479,9 @@ Return reset_absolute_path_test(void)
 
 	// Create memory for the result
 	create(char,result);
+	create(char,chunk);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	/*
 	 * First test in the series. The PATH variable has been removed.
@@ -444,20 +489,26 @@ Return reset_absolute_path_test(void)
 	 * specification and the --force parameter. The new path consists
 	 * of a very long chain of nested subdirectories.
 	 */
-	const char *command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff1;"
-	        "${BINDIR}/precizer --update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long;"
-	        "/bin/rm ${TMPDIR}/database1.db;";
+	const char *arguments = "--database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff1";
 
 	const char *filename = "templates/0014_004_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Second test in the series. The PATH variable has been removed.
@@ -465,20 +516,26 @@ Return reset_absolute_path_test(void)
 	 * long subdirectory path. Then update this database using a new, short
 	 * path and the --force option.
 	 */
-	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long;"
-	        "${BINDIR}/precizer --update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff2;"
-	        "/bin/rm ${TMPDIR}/database1.db;";
+	arguments = "--database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long";
 
 	filename = "templates/0014_004_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+	del(chunk);
 
 	/*
 	 * Third test in the series. The PATH variable has been removed.
@@ -510,13 +567,13 @@ Return reset_absolute_path_test(void)
 
 	reset(&line);
 
-	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long/${LONGEST_PATH};"
-	        "/bin/rm ${TMPDIR}/database1.db;";
+	arguments = "--database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long/${LONGEST_PATH}";
 
 	filename = "templates/0014_004_3.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -555,16 +612,15 @@ Return reset_absolute_path_test(void)
 
 	reset(&line);
 
-	command = "unset PATH;export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer"
-	        " --database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db"
+	arguments = "--database=${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db"
 	        " --ignore=\"^${LONG_PATH}/database1\\.db.*$\""
-	        " ${TMPDIR}/tests/examples/long;"
-	        "/bin/rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db;";
+	        " ${TMPDIR}/tests/examples/long";
 
 	filename = "templates/0014_004_4.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
