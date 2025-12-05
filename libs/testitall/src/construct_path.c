@@ -3,8 +3,8 @@
 /**
  * @brief Constructs full file path by combining TMPDIR environment variable with filename
  *
- * @param[in] filename Name of the file to append to TMPDIR path
- * @param[out] full_path Pointer to string pointer that will store the allocated path
+ * @param[in]  filename  Name of the file to append to TMPDIR path
+ * @param[out] full_path Managed memory buffer that will be resized to hold the constructed path
  * @return Return Status of the operation
  */
 Return construct_path(

@@ -52,4 +52,5 @@ TESTING:Comparison of %DB_NAME% and 0015_database_v0.db databases is complete
 TESTING:Returned db_compare:\d+ status: WARNING
 TESTING:The connection to the primary database has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING\z
+ERROR:Exit status » WARNING
+\z

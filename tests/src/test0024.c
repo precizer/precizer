@@ -13,12 +13,13 @@ Return prefix_path_with_apostrophe_test(void)
 	 * Checking how paths are handled when the directory name starts
 	 * with an apostrophe
 	 */
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/\\'apostrophe;";
+	const char *arguments = "--progress --database=database1.db tests/examples/\\'apostrophe";
 
 	const char *filename = "templates/0024_001.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -45,12 +46,13 @@ Return another_prefix_path_with_apostrophe_test(void)
 	 * Checking how paths are handled when the directory name ends
 	 * with an apostrophe
 	 */
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/apostrophe\\';";
+	const char *arguments = "--progress --database=database1.db tests/examples/apostrophe\\'";
 
 	const char *filename = "templates/0024_002.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -76,16 +78,28 @@ static Return adding_and_comparing_with_apostrophe(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/\\'apostrophe/\\'apostrophe/;"
-	        "${BINDIR}/precizer --progress --database=database2.db tests/examples/apostrophe\\'/\\'apostrophe/apostrophe\\'/;"
-	        "${BINDIR}/precizer --compare database1.db database2.db";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments = "--progress --database=database1.db tests/examples/\\'apostrophe/\\'apostrophe/";
 
 	// Create memory for the result
 	create(char,result);
+	create(char,chunk);
 
-	ASSERT(SUCCESS == execute_command(command,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
 
+	arguments = "--progress --database=database2.db tests/examples/apostrophe\\'/\\'apostrophe/apostrophe\\'/";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	arguments = "--compare database1.db database2.db";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	// Create memory for the result
 	create(char,pattern);
 
 	const char *filename = "templates/0024_003.txt";
@@ -100,7 +114,7 @@ static Return adding_and_comparing_with_apostrophe(void)
 		"rm database1.db database2.db",COMPLETED,false,false));
 
 	del(pattern);
-
+	del(chunk);
 	del(result);
 
 	RETURN_STATUS;

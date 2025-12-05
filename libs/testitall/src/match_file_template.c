@@ -58,8 +58,8 @@ Return match_file_template(
 	#endif
 
 	// Final cleanup
-	del(result);
-	del(pattern);
+	call(del(result));
+	call(del(pattern));
 
 	return(status);
 }

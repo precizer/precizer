@@ -10,22 +10,16 @@ Return test0003(void)
 {
 	INITTEST;
 
-	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"${BINDIR}/precizer --progress tests/examples/diffs/diff1",COMPLETED,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-#if 0
-	ASSERT(SUCCESS == external_call("export TESTING=true;cd ${TMPDIR};" \
-		"${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false));
-#else
+	ASSERT(SUCCESS == runit("--progress tests/examples/diffs/diff1",NULL,COMPLETED,false,false));
 
-	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",COMPLETED,false,false,false));
-#endif
+	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,false,false));
 
 	if(SUCCESS == status)
 	{
-		// Get the output of an external program
-		const char *command = "export TESTING=true;cd ${TMPDIR};" \
-		        "${BINDIR}/precizer --compare ${DBNAME} database2.db";
+		// Get the output of the application
+		const char *arguments = "--compare ${DBNAME} database2.db";
 
 		const char *filename = "templates/0003.txt";  // File name
 		const char *template = "%DB_NAME%";
@@ -35,10 +29,10 @@ Return test0003(void)
 		if(replacement == NULL)
 		{
 			echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-			return(FAILURE);
+			status = FAILURE;
 		}
 
-		ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,COMPLETED));
+		ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 	}
 
 	// Clean up test results

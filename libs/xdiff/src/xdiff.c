@@ -50,7 +50,7 @@ static long xdl_split(
 		 * We need to extent the diagonal "domain" by one. If the next
 		 * values exits the box boundaries we need to change it in the
 		 * opposite direction because (max - min) must be a power of two.
-		 * Also we initialize the extenal K value to -1 so that we can
+ * Also we initialize the external K value to -1 so that we can
 		 * avoid extra conditions check inside the core loop.
 		 */
 		if(fmin > dmin)
@@ -102,7 +102,7 @@ static long xdl_split(
 		 * We need to extent the diagonal "domain" by one. If the next
 		 * values exits the box boundaries we need to change it in the
 		 * opposite direction because (max - min) must be a power of two.
-		 * Also we initialize the extenal K value to -1 so that we can
+ * Also we initialize the external K value to -1 so that we can
 		 * avoid extra conditions check inside the core loop.
 		 */
 		if(bmin > dmin)
@@ -658,7 +658,7 @@ static int xdl_change_compact(
 
 		/*
 		 * Try to move back the possibly merged group of changes, to match
-		 * the recorded postion in the other file.
+		 * the recorded position in the other file.
 		 */
 		while(ixref < ix)
 		{
@@ -1298,14 +1298,14 @@ static int xdl_clean_mmatch(
 	 * proceed all the way to the extremities by causing huge
 	 * performance penalties in case of big files.
 	 */
-	if(i - s > XDL_SIMSCAN_WINDOWN)
+	if(i - s > XDL_SIMSCAN_WINDOW)
 	{
-		s = i - XDL_SIMSCAN_WINDOWN;
+		s = i - XDL_SIMSCAN_WINDOW;
 	}
 
-	if(e - i > XDL_SIMSCAN_WINDOWN)
+	if(e - i > XDL_SIMSCAN_WINDOW)
 	{
-		e = i + XDL_SIMSCAN_WINDOWN;
+		e = i + XDL_SIMSCAN_WINDOW;
 	}
 
 	/*
@@ -1366,7 +1366,7 @@ static int xdl_clean_mmatch(
 /*
  * Try to reduce the problem complexity, discard records that have no
  * matches on the other file. Also, lines that have multiple matches
- * might be potentially discarded if they happear in a run of discardable.
+	 * might be potentially discarded if they appear in a run of discardable.
  */
 static int xdl_cleanup_records(
 	xdfile_t *xdf1,

@@ -16,4 +16,5 @@ The primary database has been vacuumed
 \x1B\[1mThe database file %DB_NAME% has been modified since the program was launched\x1B\[0m
 The precizer completed its execution without any issues
 Exit status » SUCCESS
-Enjoy your life!\z
+Enjoy your life!
+\z

@@ -4,14 +4,14 @@
  * @brief Reads entire contents of a file into memory
  *
  * @param filename Path to file to read
- * @param pattern Pointer to char pointer where content will be stored
+ * @param pattern Managed memory buffer that will be resized to hold the file content
  *
  * @return Return status:
  *         SUCCESS if file was read successfully
- *         FAILURE if file couldn't be opened or read, or memory allocation failed
+ *         FAILURE if file couldn't be opened or read, memory allocation failed, or file is empty
 
- * @note Caller is responsible for freeing the allocated memory in *pattern
- * @note Function will allocate exact amount of memory needed for file content plus null terminator
+ * @note Caller is responsible for owning and later freeing the provided memory descriptor with del()
+ * @note Function resizes the buffer to the file size plus a terminating null byte
  */
 Return get_file_content(
 	const char *filename,

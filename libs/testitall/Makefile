@@ -76,7 +76,7 @@ DBG_LDLIBS = -L$(DBG_LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
-DBG_CFLAGS = -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
 DBG_LDFLAGS = -Wl,-z,defs
 
 #
@@ -105,7 +105,7 @@ PROD_LDLIBS = -L$(PROD_LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
-PROD_CFLAGS = -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
+PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -127,7 +127,7 @@ PRTB_LDLIBS = -L$(PRTB_LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
-PRTB_CFLAGS = -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
+PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -159,7 +159,7 @@ $(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@echo $@ prepared to be shared library
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(DBG_OBJDIR):
@@ -183,7 +183,7 @@ $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@echo $@ prepared to be shared library
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(SNTZ_OBJDIR):
@@ -208,7 +208,7 @@ $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@echo $@ prepared to be the shared library
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(PROD_OBJDIR):
@@ -232,7 +232,7 @@ $(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@echo $@ prepared to be the shared library
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(CFLAGS) $(WFLAGS) $(PRTB_WFLAGS) $(PRTB_CFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PRTB_WFLAGS) $(PRTB_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(PRTB_OBJDIR):

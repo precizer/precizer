@@ -270,7 +270,7 @@ Return db_compare(void)
 	/* Attach databases */
 	if(SUCCESS == status)
 	{
-		// Attache the database 1
+		// Attach the database 1
 		status = db_attach(0,1);
 
 		if(SUCCESS == status)
@@ -281,7 +281,7 @@ Return db_compare(void)
 
 	if(SUCCESS == status)
 	{
-		// Attache the database 2
+		// Attach the database 2
 		status = db_attach(1,2);
 
 		if(SUCCESS == status)

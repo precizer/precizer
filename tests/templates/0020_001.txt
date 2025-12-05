@@ -23,4 +23,5 @@ ERROR:Unable to create database file. Directory nonexistent_directory not found
 TESTING:Returned db_primary_file_validate_existence:\d+ status: FAILURE
 TESTING:The connection to the primary database has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\z
+ERROR:Exit status » FAILURE
+\z
