@@ -259,5 +259,4 @@ Return runit(
 	bool,
 	bool);
 
-Return trim_trailing_eol(
-	memory *);
+Return trim_trailing_eol(memory *);

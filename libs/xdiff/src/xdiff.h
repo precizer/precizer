@@ -100,11 +100,16 @@
 
 typedef struct s_memallocator {
 	void *priv;
-	void *(*malloc)(void *,unsigned int);
+	void *(*malloc)(
+		void *,
+		unsigned int);
 	void (*free)(
 		void *,
 		void *);
-	void *(*realloc)(void *,void *,unsigned int);
+	void *(*realloc)(
+		void *,
+		void *,
+		unsigned int);
 } memallocator_t;
 
 typedef struct s_mmblock {

@@ -79,7 +79,7 @@ static void catbyte(
 	if(bytes > 0ULL)
 	{
 		// Temporary array
-		char tmp[MAX_NUMBER_CHARACTERS];
+		char tmp[MAX_CHARACTERS];
 		// Put a number into the temporary string array
 		snprintf(tmp,sizeof(tmp),"%zu",bytes);
 		// Copy the tmp line to the end of the result line
@@ -105,7 +105,7 @@ static void catbyte(
 char *bkbmbgbtbpbeb(const size_t bytes)
 {
 	// Zero out a static memory area with a string array
-	static char result[MAX_NUMBER_CHARACTERS] = {0};
+	static char result[MAX_CHARACTERS] = {0};
 	result[0] = '\0';  /* Initialize buffer as empty string */
 
 	// If the number passed is 0 Bytes

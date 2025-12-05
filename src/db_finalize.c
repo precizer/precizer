@@ -21,6 +21,7 @@ Return db_finalize(
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
+	int rc = SQLITE_OK;
 
 	if(db == NULL || db_alias == NULL || stmt == NULL)
 	{
@@ -32,11 +33,11 @@ Return db_finalize(
 	{
 		if(*stmt != NULL)
 		{
-			int rc = sqlite3_finalize(*stmt);
+			rc = sqlite3_finalize(*stmt);
 
 			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Failed to finalize SQLite statement (%i): %s\n",rc,sqlite3_errstr(rc));
+				log_sqlite_error(db,rc,NULL,"Failed to finalize SQLite statement");
 				status = FAILURE;
 			} else {
 				*stmt = NULL;
@@ -69,9 +70,11 @@ Return db_finalize(
 
 		if(SUCCESS == status)
 		{
-			if(SQLITE_OK != sqlite3_exec(db,sql,NULL,NULL,NULL))
+			rc = sqlite3_exec(db,sql,NULL,NULL,NULL);
+
+			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
+				log_sqlite_error(db,rc,NULL,"Warning: failed to tune database integrity");
 				status = FAILURE;
 			}
 		}
@@ -80,9 +83,11 @@ Return db_finalize(
 
 		if(SUCCESS == status)
 		{
-			if(SQLITE_OK != sqlite3_db_cacheflush(db))
+			rc = sqlite3_db_cacheflush(db);
+
+			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
+				log_sqlite_error(db,rc,NULL,"Warning: failed to flush database");
 				status = FAILURE;
 			}
 		}

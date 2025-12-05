@@ -56,9 +56,11 @@ Return db_test(const char *db_file_path)
 	int sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 	/* Open database */
-	if(sqlite3_open_v2(db_file_path,&db,sqlite_open_flag,NULL))
+	int rc = sqlite3_open_v2(db_file_path,&db,sqlite_open_flag,NULL);
+
+	if(rc != SQLITE_OK)
 	{
-		slog(ERROR,"Can't open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Can't open database");
 		status = FAILURE;
 	}
 
@@ -75,11 +77,11 @@ Return db_test(const char *db_file_path)
 			slog(TRACE,"The database verification level has been set to FULL\n");
 		}
 
-		int rc = sqlite3_prepare_v2(db,sql,-1,&select_stmt,NULL);
+		rc = sqlite3_prepare_v2(db,sql,-1,&select_stmt,NULL);
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Can't prepare select statement");
 			status = FAILURE;
 		}
 	}
@@ -87,8 +89,6 @@ Return db_test(const char *db_file_path)
 	/* Execute integrity check */
 	if(SUCCESS == status)
 	{
-		int rc = 0;
-
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
 			const char *response = (const char *)sqlite3_column_text(select_stmt,0);
@@ -101,7 +101,7 @@ Return db_test(const char *db_file_path)
 
 		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Select statement didn't finish with DONE");
 			status = FAILURE;
 		}
 	}
@@ -125,9 +125,11 @@ Return db_test(const char *db_file_path)
 
 	/* Cleanup resources */
 
-	if(SQLITE_OK != sqlite3_close(db))
+	rc = sqlite3_close(db);
+
+	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Warning: failed to close database");
 		status = FAILURE;
 	}
 

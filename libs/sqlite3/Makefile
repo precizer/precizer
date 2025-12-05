@@ -242,6 +242,12 @@ clean:
 	@echo $(LIBNAME) cleared
 
 #
+# Format rules (do nothing)
+#
+format:
+	@true
+
+#
 # Print of variables
 #
 # If you want to find out the value of a makefile variable, just:

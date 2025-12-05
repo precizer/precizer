@@ -28,7 +28,7 @@ Return db_migrate_from_2_to_3(const char *db_file_path)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Failed to open database");
 		status = FAILURE;
 	}
 
@@ -44,8 +44,7 @@ Return db_migrate_from_2_to_3(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to set pragmas: %s\n",err_msg);
-			sqlite3_free(err_msg);
+			log_sqlite_error(db,rc,err_msg,"Failed to set pragmas");
 			status = FAILURE;
 		}
 	}
@@ -58,7 +57,7 @@ Return db_migrate_from_2_to_3(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to prepare journal_mode switch: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to prepare journal_mode switch");
 			status = FAILURE;
 		}
 
@@ -76,7 +75,7 @@ Return db_migrate_from_2_to_3(const char *db_file_path)
 					status = FAILURE;
 				}
 			} else {
-				slog(ERROR,"journal_mode switch did not return a row (%i): %s\n",rc,sqlite3_errmsg(db));
+				log_sqlite_error(db,rc,NULL,"journal_mode switch did not return a row");
 				status = FAILURE;
 			}
 		}
@@ -93,7 +92,7 @@ Return db_migrate_from_2_to_3(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to checkpoint WAL: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to checkpoint WAL");
 			status = FAILURE;
 		}
 	}

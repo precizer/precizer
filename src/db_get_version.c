@@ -27,6 +27,7 @@ Return db_get_version(
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
 	bool table_exists = false;
+	int rc = SQLITE_OK;
 
 	/* Validate input parameters */
 	if(db_file_path == NULL)
@@ -36,9 +37,11 @@ Return db_get_version(
 	}
 
 	/* Open database connection */
-	if(SQLITE_OK != sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READONLY,NULL))
+	rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READONLY,NULL);
+
+	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Failed to open database");
 		status = FAILURE;
 	}
 
@@ -47,9 +50,11 @@ Return db_get_version(
 	{
 		const char *check_query = "SELECT name FROM sqlite_master WHERE type='table' AND name='metadata';";
 
-		if(SQLITE_OK != sqlite3_prepare_v2(db,check_query,-1,&stmt,NULL))
+		rc = sqlite3_prepare_v2(db,check_query,-1,&stmt,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to prepare table existence check query: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to prepare table existence check query");
 			status = FAILURE;
 		}
 	}
@@ -73,9 +78,11 @@ Return db_get_version(
 	{
 		const char *version_query = "SELECT db_version FROM metadata;";
 
-		if(SQLITE_OK != sqlite3_prepare_v2(db,version_query,-1,&stmt,NULL))
+		rc = sqlite3_prepare_v2(db,version_query,-1,&stmt,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to prepare version query: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to prepare version query");
 			status = FAILURE;
 		}
 
@@ -103,9 +110,11 @@ Return db_get_version(
 
 	if(db != NULL)
 	{
-		if(SQLITE_OK != sqlite3_close(db))
+		rc = sqlite3_close(db);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Warning: failed to close database");
 			status = FAILURE;
 		}
 	}

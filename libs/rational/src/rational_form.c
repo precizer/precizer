@@ -13,7 +13,7 @@
  */
 const char *form(long double val)
 {
-	static char result[MAX_NUMBER_CHARACTERS];
+	static char result[MAX_CHARACTERS];
 	result[0] = '\0';  /* Initialize buffer as empty string */
 
 	// Compare the argument passed to the parent function

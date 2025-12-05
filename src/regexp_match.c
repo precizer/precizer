@@ -16,7 +16,7 @@ REGEXP regexp_match(
 	pcre2_code *re;
 	PCRE2_SIZE erroffset;
 	int errcode;
-	PCRE2_UCHAR8 buffer[127];
+	PCRE2_UCHAR8 buffer[MAX_CHARACTERS];
 
 	/* for pcre2_match */
 	int rc;
@@ -32,7 +32,6 @@ REGEXP regexp_match(
 	uint32_t options = 0;
 
 	pcre2_match_data *match_data;
-	uint32_t ovecsize = 128;
 
 	re = pcre2_compile(pattern,pattern_size,options,&errcode,&erroffset,NULL);
 
@@ -41,13 +40,13 @@ REGEXP regexp_match(
 		if(*showed_once == false)
 		{
 			*showed_once = true;
-			pcre2_get_error_message(errcode,buffer,127);
+			pcre2_get_error_message(errcode,buffer,MAX_CHARACTERS);
 			slog(ERROR,"PCRE2 regular expression %s has an error:%d %s\n",pattern,errcode,buffer);
 		}
 		return(REGEXP_ERROR);
 	}
 
-	match_data = pcre2_match_data_create(ovecsize,NULL);
+	match_data = pcre2_match_data_create_from_pattern(re,NULL);
 	rc = pcre2_match(re,subject,subject_size,0,options,match_data,NULL);
 
 	if(rc == 0)
@@ -55,7 +54,7 @@ REGEXP regexp_match(
 		if(*showed_once == false)
 		{
 			*showed_once = true;
-			pcre2_get_error_message(errcode,buffer,127);
+			pcre2_get_error_message(errcode,buffer,MAX_CHARACTERS);
 			slog(ERROR,"PCRE2 regular expression %s has an error: %d \"offset vector too small\"\n",pattern,rc);
 		}
 		return(REGEXP_ERROR);

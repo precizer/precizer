@@ -47,7 +47,7 @@ Return db_update_the_record_by_id(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to prepare update statement %s (%i): %s\n",update_sql,rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Failed to prepare update statement %s",update_sql);
 		status = FAILURE;
 	}
 
@@ -63,7 +63,7 @@ Return db_update_the_record_by_id(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind offset value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind offset value in update");
 			status = FAILURE;
 		}
 	}
@@ -74,7 +74,7 @@ Return db_update_the_record_by_id(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Error binding value in update");
 			status = FAILURE;
 		}
 	}
@@ -91,7 +91,7 @@ Return db_update_the_record_by_id(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind sha512 hash value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind sha512 hash value in update");
 			status = FAILURE;
 		}
 	}
@@ -103,7 +103,7 @@ Return db_update_the_record_by_id(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Error binding value in update");
 			status = FAILURE;
 		}
 	}
@@ -120,7 +120,7 @@ Return db_update_the_record_by_id(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Error binding value in update (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Error binding value in update");
 			status = FAILURE;
 		}
 	}
@@ -128,9 +128,11 @@ Return db_update_the_record_by_id(
 	/* Execute prepared statement */
 	if(SUCCESS == status)
 	{
-		if(sqlite3_step(update_stmt) != SQLITE_DONE)
+		rc = sqlite3_step(update_stmt);
+
+		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Update statement failed (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Update statement failed");
 			status = FAILURE;
 		}
 	}
@@ -139,7 +141,6 @@ Return db_update_the_record_by_id(
 	{
 		/* Reflect changes in global */
 		config->db_primary_file_modified = true;
-
 	}
 
 	sqlite3_finalize(update_stmt);

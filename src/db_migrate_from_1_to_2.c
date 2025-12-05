@@ -27,7 +27,7 @@ Return db_migrate_from_1_to_2(const char *db_file_path)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Failed to open database");
 		status = FAILURE;
 	}
 
@@ -45,8 +45,7 @@ Return db_migrate_from_1_to_2(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to set pragmas: %s\n",err_msg);
-			sqlite3_free(err_msg);
+			log_sqlite_error(db,rc,err_msg,"Failed to set pragmas");
 			status = FAILURE;
 		}
 	}

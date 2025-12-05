@@ -61,7 +61,7 @@ Return db_insert_the_record(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to prepare insert statement %s (%i): %s\n",insert_sql,rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Failed to prepare insert statement %s",insert_sql);
 		status = FAILURE;
 	}
 
@@ -77,7 +77,7 @@ Return db_insert_the_record(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind offset value (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind offset value");
 			status = FAILURE;
 		}
 	}
@@ -89,7 +89,7 @@ Return db_insert_the_record(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind relative path (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind relative path");
 			status = FAILURE;
 		}
 	}
@@ -106,7 +106,7 @@ Return db_insert_the_record(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind SHA512 checksum (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind SHA512 checksum");
 			status = FAILURE;
 		}
 	}
@@ -118,7 +118,7 @@ Return db_insert_the_record(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind file metadata (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind file metadata");
 			status = FAILURE;
 		}
 	}
@@ -135,7 +135,7 @@ Return db_insert_the_record(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind SHA512 context (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind SHA512 context");
 			status = FAILURE;
 		}
 	}
@@ -143,9 +143,11 @@ Return db_insert_the_record(
 	/* Execute prepared statement */
 	if(SUCCESS == status)
 	{
-		if(sqlite3_step(insert_stmt) != SQLITE_DONE)
+		rc = sqlite3_step(insert_stmt);
+
+		if(rc != SQLITE_DONE)
 		{
-			slog(ERROR,"Insert statement failed (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Insert statement failed");
 			status = FAILURE;
 		}
 	}

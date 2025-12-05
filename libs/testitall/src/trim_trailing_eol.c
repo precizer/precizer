@@ -13,8 +13,7 @@
  * - Removes a single \n or \r at the end if present.
  * - Does nothing for empty or very short buffers.
  */
-Return trim_trailing_eol(
-	memory *buffer)
+Return trim_trailing_eol(memory *buffer)
 {
 	Return status = SUCCESS;
 

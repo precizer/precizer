@@ -12,13 +12,12 @@
 #endif
 
 extern int test_main(
-	int argc,
+	int  argc,
 	char **argv) __attribute__((weak));
 
 enum run_mode run_external = EXTERNAL_CALL;
 
-static struct
-{
+static struct {
 	int argc;
 	char **argv;
 	int result;

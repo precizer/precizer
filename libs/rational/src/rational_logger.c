@@ -27,7 +27,7 @@ _Atomic Return global_return_status = SUCCESS;
 char *rational_reconvert(int mode)
 {
 	/* Static buffer to store the resulting string */
-	static char buffer[256];
+	static char buffer[MAX_CHARACTERS];
 	buffer[0] = '\0';  /* Initialize buffer as empty string */
 
 	/* Flag to track if we're adding the first item (for | separator) */

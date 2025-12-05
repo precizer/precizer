@@ -563,7 +563,6 @@ static Return test0007_10_libmem_multiple(void)
 	RETURN_STATUS;
 }
 
-
 /**
  * @brief Main test runner for memory management tests
  * @details Executes a series of tests to verify memory management functionality:

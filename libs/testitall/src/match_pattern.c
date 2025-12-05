@@ -64,7 +64,7 @@ Return match_pattern(
 
 		if(compiled_pattern == NULL)
 		{
-			PCRE2_UCHAR buffer[256];
+			PCRE2_UCHAR buffer[MAX_CHARACTERS];
 			pcre2_get_error_message(errornumber,buffer,sizeof(buffer));
 			echo(STDERR,"ERROR: Regex compilation error at offset %d: %s\n",
 				(int)erroroffset,buffer);
