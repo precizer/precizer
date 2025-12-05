@@ -31,7 +31,7 @@ Return db_delete_the_record_by_id(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare delete statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare delete statement");
 		status = FAILURE;
 	}
 
@@ -41,7 +41,7 @@ Return db_delete_the_record_by_id(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Error binding value in delete (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Error binding value in delete");
 			status = FAILURE;
 		}
 	}
@@ -98,7 +98,7 @@ Return db_delete_the_record_by_id(
 			}
 
 		} else {
-			slog(ERROR,"Delete statement didn't return right code %d (%i): %s\n",sql_return,rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Delete statement didn't return right code %d",sql_return);
 			status = FAILURE;
 		}
 	}

@@ -56,7 +56,7 @@ static Return db_attach(
 
 		if(rc!= SQLITE_OK)
 		{
-			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Can't execute");
 			status = FAILURE;
 		}
 	}
@@ -86,7 +86,7 @@ static Return db_detach(const char *db_alias)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to prepare detach statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Failed to prepare detach statement");
 		status = FAILURE;
 	}
 
@@ -96,7 +96,7 @@ static Return db_detach(const char *db_alias)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind database alias in detach (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind database alias in detach");
 			status = FAILURE;
 		}
 	}
@@ -107,7 +107,7 @@ static Return db_detach(const char *db_alias)
 
 		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Detach statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Detach statement didn't return DONE");
 			status = FAILURE;
 		}
 	}
@@ -152,7 +152,7 @@ static Return db_changes(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement");
 		status = FAILURE;
 	}
 
@@ -189,7 +189,7 @@ static Return db_changes(
 
 	if(SQLITE_DONE != rc)
 	{
-		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 		status = FAILURE;
 	}
 
@@ -199,7 +199,7 @@ static Return db_changes(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to finalize SQLite statement (%i): %s\n",rc,sqlite3_errstr(rc));
+			log_sqlite_error(config->db,rc,NULL,"Failed to finalize SQLite statement");
 			status = FAILURE;
 		} else {
 			select_stmt = NULL;
@@ -356,9 +356,7 @@ Return db_compare(void)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Can't prepare select statement (%i): %s\n",
-				rc,
-				sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement");
 			status = FAILURE;
 		}
 	}
@@ -408,9 +406,7 @@ Return db_compare(void)
 
 		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",
-				rc,
-				sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 			status = FAILURE;
 		}
 	}

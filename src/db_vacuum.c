@@ -40,7 +40,7 @@ Return db_vacuum(const char *db_file_path)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Failed to open database");
 		status = FAILURE;
 	}
 
@@ -66,8 +66,7 @@ Return db_vacuum(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Can't execute (%i): %s, %s\n",rc,sqlite3_errmsg(db),err_msg);
-			sqlite3_free(err_msg);
+			log_sqlite_error(db,rc,err_msg,"Can't execute vacuum");
 			status = FAILURE;
 		} else {
 			db_file_modified = true;

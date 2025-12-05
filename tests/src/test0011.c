@@ -180,7 +180,7 @@ static Return test0011_3_readme(void)
 	if(result->length > 0)
 	{
 		echo(STDERR,"ERROR: In silent mode stdout must be empty\n");
-		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET, getcstring(result));
+		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET,getcstring(result));
 		status = FAILURE;
 	}
 

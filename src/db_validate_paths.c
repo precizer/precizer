@@ -123,7 +123,7 @@ Return db_validate_paths(void)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare select statement %s (%i): %s\n",getstring(select_sql),rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",getstring(select_sql));
 		status = FAILURE;
 	}
 
@@ -145,7 +145,7 @@ Return db_validate_paths(void)
 
 				if(SQLITE_OK != rc)
 				{
-					slog(ERROR,"Can't prepare insert statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+					log_sqlite_error(config->db,rc,NULL,"Can't prepare insert statement");
 					status = FAILURE;
 				}
 
@@ -155,7 +155,7 @@ Return db_validate_paths(void)
 
 					if(SQLITE_OK != rc)
 					{
-						slog(ERROR,"Error binding value in insert (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc,NULL,"Error binding value in insert");
 						status = FAILURE;
 					}
 				}
@@ -165,7 +165,7 @@ Return db_validate_paths(void)
 					/* Execute SQL statement */
 					if(sqlite3_step(insert_stmt) != SQLITE_DONE)
 					{
-						slog(ERROR,"Insert statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc,NULL,"Insert statement didn't return DONE");
 						status = FAILURE;
 					}
 				}
@@ -176,7 +176,7 @@ Return db_validate_paths(void)
 
 		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 			status = FAILURE;
 		}
 	}
@@ -213,7 +213,7 @@ Return db_validate_paths(void)
 
 					if(SQLITE_OK != rc_stmt)
 					{
-						slog(ERROR,"Can't prepare select statement %s (%i): %s\n",sql,rc_stmt,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc_stmt,NULL,"Can't prepare select statement %s",sql);
 						status = FAILURE;
 					}
 
@@ -228,7 +228,7 @@ Return db_validate_paths(void)
 
 						if(SQLITE_DONE != rc_stmt)
 						{
-							slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc_stmt,sqlite3_errmsg(config->db));
+							log_sqlite_error(config->db,rc_stmt,NULL,"Select statement didn't finish with DONE");
 							status = FAILURE;
 						}
 					}

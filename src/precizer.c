@@ -30,8 +30,7 @@ Config *config = &_config;
  * The program identifies synchronization errors by cross-referencing
  * data and checksums from various sources. Alternatively, it can be
  * used to crawl historical changes by comparing databases from the
- * same sources over different times.
- *
+ * same sources over different times
  */
 #ifndef TESTITALL // Unit testing library
 int main(

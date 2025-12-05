@@ -39,7 +39,11 @@ Return db_init(void)
 	{
 		slog(TRACE,"Successfully opened database %s\n",config->db_file_name);
 	} else if(config->compare != true){
-		slog(ERROR,"Can't open database %s (%i): %s\n",config->db_primary_file_path,rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,
+			rc,
+			NULL,
+			"Can't open database %s",
+			config->db_primary_file_path);
 		status = FAILURE;
 	}
 
@@ -132,7 +136,7 @@ Return db_init(void)
 			{
 				slog(TRACE,"The primary database and tables have been successfully initialized\n");
 			} else {
-				slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+				log_sqlite_error(config->db,rc,NULL,"Can't execute table initialization");
 				status = FAILURE;
 			}
 		}
@@ -176,7 +180,7 @@ Return db_init(void)
 		{
 			slog(TRACE,"The primary database named %s is ready for operations\n",config->db_file_name);
 		} else {
-			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Can't execute pragma setup");
 			status = FAILURE;
 		}
 	}
@@ -193,7 +197,7 @@ Return db_init(void)
 		{
 			slog(TRACE,"The in-memory %s database successfully attached to the primary database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
 		} else {
-			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Can't execute runtime paths attach");
 			status = FAILURE;
 		}
 	}

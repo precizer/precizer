@@ -52,7 +52,7 @@ void SERP(
  * @param ... Variable arguments matching format specifiers
  * @return void
  *
- * @note Maximum message length is limited by MAX_NUMBER_CHARACTERS
+ * @note Maximum message length is limited by MAX_CHARACTERS
  *
  * @example
  *    REPORT(__FILE__, __func__, __LINE__, "Failed to allocate %d bytes", size);
@@ -66,8 +66,8 @@ void REPORT(
 	...)
 {
 	/* Buffers for message construction, zero-initialized for safety */
-	char msg_buffer[MAX_NUMBER_CHARACTERS] = {0};    /* User message buffer */
-	char final_buffer[MAX_NUMBER_CHARACTERS] = {0};  /* Complete error message */
+	char msg_buffer[MAX_CHARACTERS] = {0};    /* User message buffer */
+	char final_buffer[MAX_CHARACTERS] = {0};  /* Complete error message */
 
 	va_list args;
 	va_start(args,format);

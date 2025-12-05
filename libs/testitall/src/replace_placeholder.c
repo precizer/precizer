@@ -43,7 +43,7 @@ Return replace_placeholder(
 
 	if(re == NULL)
 	{
-		PCRE2_UCHAR err_msg[256];
+		PCRE2_UCHAR err_msg[MAX_CHARACTERS];
 		pcre2_get_error_message(err_code,err_msg,sizeof(err_msg));
 		echo(STDERR,"ERROR: PCRE2 compilation failed at offset %d: %s\n",(int)err_offset,err_msg);
 		status = FAILURE;

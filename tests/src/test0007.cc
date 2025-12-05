@@ -14,15 +14,15 @@ for(int i = 0; i < CYCLES; i++)
 
 		size_t array_size = array_length * sizeof(TYPE);
 		unsigned char *array = NULL;
-			unsigned char *temp = (unsigned char *)realloc(array,array_size);
+		unsigned char *temp = (unsigned char *)realloc(array,array_size);
 
-			if(temp == NULL)
-			{
-				echo(STDERR,"Can't allocate memory %zu bytes\n",array_size);
-				status = FAILURE;
-				continue;
-			}
-			array = temp;
+		if(temp == NULL)
+		{
+			echo(STDERR,"Can't allocate memory %zu bytes\n",array_size);
+			status = FAILURE;
+			continue;
+		}
+		array = temp;
 
 		// Fill array with random bytes
 		for(size_t j = 0; j < array_size; j++)

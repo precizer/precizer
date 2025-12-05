@@ -57,7 +57,7 @@ Return db_contains_data(void)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement");
 		status = FAILURE;
 	}
 
@@ -78,7 +78,7 @@ Return db_contains_data(void)
 		/* Check for query execution errors */
 		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 			status = FAILURE;
 		}
 	}

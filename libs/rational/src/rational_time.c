@@ -154,7 +154,7 @@ static void catdate(
 	if(number > 0LL)
 	{
 		// Temporary array
-		char tmp[MAX_NUMBER_CHARACTERS];
+		char tmp[MAX_CHARACTERS];
 		// Put a number into the temporary string array
 		snprintf(tmp,sizeof(tmp),"%lld",number);
 		// Copy the tmp line to the end of the result line
@@ -174,7 +174,7 @@ static void catdate(
 char *form_date(const long long int nanoseconds)
 {
 	// Zero out a static memory area with a string array
-	static char result[MAX_NUMBER_CHARACTERS];
+	static char result[MAX_CHARACTERS];
 	result[0] = '\0';  /* Initialize buffer as empty string */
 
 	// If the time passed as argument is less than one nanosecond

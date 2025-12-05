@@ -445,6 +445,13 @@ Return db_finalize(
 	const char *,
 	sqlite3_stmt **);
 
+void log_sqlite_error(
+	sqlite3 *,
+	int,
+	char *,
+	const char *,
+	...);
+
 Return db_close(
 	sqlite3 *,
 	const bool *);

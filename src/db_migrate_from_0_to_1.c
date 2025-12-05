@@ -16,6 +16,7 @@ static Return process_row(
 {
 	Return status = SUCCESS;
 	const struct stat *stat = {0};
+	int rc = SQLITE_OK;
 
 	/* Allocate memory for new blob data */
 	CmpctStat new_stat = {0};
@@ -44,21 +45,25 @@ static Return process_row(
 		sqlite3_stmt *update_stmt = NULL;
 		const char *update_sql = "UPDATE files SET stat = ? WHERE ID = ?";
 
-		if(SQLITE_OK != sqlite3_prepare_v2(sqlite3_db_handle(stmt),update_sql,-1,&update_stmt,NULL))
+		rc = sqlite3_prepare_v2(sqlite3_db_handle(stmt),update_sql,-1,&update_stmt,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Error preparing update statement: %s\n",sqlite3_errmsg(sqlite3_db_handle(stmt)));
+			log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error preparing update statement");
 			status = FAILURE;
 		} else {
 			/* Bind parameters */
-			if(SQLITE_OK != sqlite3_bind_blob(update_stmt,1,&new_stat,sizeof(CmpctStat),SQLITE_STATIC))
+			rc = sqlite3_bind_blob(update_stmt,1,&new_stat,sizeof(CmpctStat),SQLITE_STATIC);
+
+			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Error binding blob parameter\n");
+				log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error binding blob parameter");
 				status = FAILURE;
-			} else if(SQLITE_OK != sqlite3_bind_int64(update_stmt,2,row_id)){
-				slog(ERROR,"Error binding row ID parameter\n");
+			} else if(SQLITE_OK != (rc = sqlite3_bind_int64(update_stmt,2,row_id))){
+				log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error binding row ID parameter");
 				status = FAILURE;
-			} else if(SQLITE_DONE != sqlite3_step(update_stmt)){
-				slog(ERROR,"Error executing update statement\n");
+			} else if(SQLITE_DONE != (rc = sqlite3_step(update_stmt))){
+				log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error executing update statement");
 				status = FAILURE;
 			} else {
 				/* Changes have been made to the database. Update
@@ -84,12 +89,15 @@ static Return process_database(
 {
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
+	int rc = SQLITE_OK;
 
 	const char *select_sql = "SELECT * FROM files";
 
-	if(SQLITE_OK != sqlite3_prepare_v2(db,select_sql,-1,&stmt,NULL))
+	rc = sqlite3_prepare_v2(db,select_sql,-1,&stmt,NULL);
+
+	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Error preparing statement: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Error preparing statement");
 		status = FAILURE;
 	}
 
@@ -132,6 +140,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;
 	bool db_file_modified = false;
+	int rc = SQLITE_OK;
 
 	if(config->dry_run == true)
 	{
@@ -140,11 +149,11 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 	}
 
 	/* Open database in safe mode */
-	int rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
+	rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE|SQLITE_OPEN_FULLMUTEX,NULL);
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Failed to open database");
 		status = FAILURE;
 	}
 
@@ -162,8 +171,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to set pragmas: %s\n",err_msg);
-			sqlite3_free(err_msg);
+			log_sqlite_error(db,rc,err_msg,"Failed to set pragmas");
 			status = FAILURE;
 		}
 	}
@@ -175,8 +183,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to begin transaction: %s\n",err_msg);
-			sqlite3_free(err_msg);
+			log_sqlite_error(db,rc,err_msg,"Failed to begin transaction");
 			status = FAILURE;
 		}
 	}
@@ -188,8 +195,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to create table: %s\n",err_msg);
-			sqlite3_free(err_msg);
+			log_sqlite_error(db,rc,err_msg,"Failed to create table");
 			status = FAILURE;
 		}
 	}
@@ -217,7 +223,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 				slog(TRACE,"The transaction has been rolled back\n");
 				status = WARNING;
 			} else {
-				slog(ERROR,"Failed to rollback transaction: %s\n",err_msg);
+				log_sqlite_error(db,rc,NULL,"Failed to rollback transaction");
 				status = FAILURE;
 			}
 
@@ -227,8 +233,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 
 			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Failed to commit transaction: %s\n",err_msg);
-				sqlite3_free(err_msg);
+				log_sqlite_error(db,rc,err_msg,"Failed to commit transaction");
 				status = FAILURE;
 
 				/* Attempt rollback */

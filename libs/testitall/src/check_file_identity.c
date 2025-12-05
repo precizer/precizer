@@ -73,7 +73,7 @@ static int compare_file_metadata_equivalence(
 Return print_stat(const struct stat *st)
 {
 	Return status = SUCCESS;
-	char time_str[100];
+	char time_str[20]; /* "YYYY-MM-DD HH:MM:SS" + NUL */
 	struct tm *tm_info;
 
 	if(SUCCESS == status)
