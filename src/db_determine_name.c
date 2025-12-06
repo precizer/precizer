@@ -60,8 +60,7 @@ Return db_determine_name(void)
 
 			config->db_file_name = NULL;
 
-			struct utsname utsname;
-			memset(&utsname,0,sizeof(utsname));
+			struct utsname utsname = {0};
 
 			// Determine local host name
 			if(uname(&utsname) != 0)
@@ -103,12 +102,8 @@ Return db_determine_name(void)
 		{
 			slog(EVERY,"Primary database file name: %s\n",config->db_file_name);
 		}
-		/* Truncate the file path/name in the display
-		   output if it exceeds the length limit */
-		char *path = strdup(config->db_primary_file_path);
-		run(shorten_path(path));
-		slog(TRACE,"Primary database file path: %s\n",path);
-		free(path);
+
+		slog(TRACE,"Primary database file path: %s\n",config->db_primary_file_path);
 	}
 
 	slog(TRACE,"DB name determined\n");

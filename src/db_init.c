@@ -39,7 +39,11 @@ Return db_init(void)
 	{
 		slog(TRACE,"Successfully opened database %s\n",config->db_file_name);
 	} else if(config->compare != true){
-		slog(ERROR,"Can't open database %s (%i): %s\n",config->db_primary_file_path,rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,
+			rc,
+			NULL,
+			"Can't open database %s",
+			config->db_primary_file_path);
 		status = FAILURE;
 	}
 
@@ -77,8 +81,7 @@ Return db_init(void)
 #if 0 // Frozen multiPATH feature
 			const char *sql =
 			        "PRAGMA foreign_keys=OFF;"
-			        "PRAGMA journal_mode=WAL;"          // Enable Write-Ahead Logging (WAL) mode for better concurrency
-			        "PRAGMA wal_autocheckpoint=10240"   // Set WAL checkpoint to trigger every 10240 pages (4KB each = 40MB)
+			        "PRAGMA journal_mode=DELETE;"        // Use DELETE journal to avoid WAL artifacts
 			        "PRAGMA page_size=4096;"            // Set page size to 4KB (default, but explicit for clarity)
 			        "PRAGMA cache_size=-8192;"          // Use 8MB of memory for caching (negative value = KB)
 			        "PRAGMA synchronous=NORMAL;"        // Balance speed and safety (NORMAL = fsync only for checkpoints)
@@ -105,8 +108,7 @@ Return db_init(void)
 			/* Full runtime path is stored in the table 'paths' */
 			const char *sql =
 			        "PRAGMA foreign_keys=OFF;"
-			        "PRAGMA journal_mode=WAL;"          // Enable Write-Ahead Logging (WAL) mode for better concurrency
-			        "PRAGMA wal_autocheckpoint=10240;"  // Set WAL checkpoint to trigger every 1024 pages (4KB each = 40MB)
+			        "PRAGMA journal_mode=DELETE;"        // Use DELETE journal to avoid WAL artifacts
 			        "PRAGMA page_size=4096;"            // Set page size to 4KB (default, but explicit for clarity)
 			        "PRAGMA cache_size=-8192;"          // Use 8MB of memory for caching (negative value = KB)
 			        "PRAGMA synchronous=NORMAL;"        // Balance speed and safety (NORMAL = fsync only for checkpoints)
@@ -134,7 +136,7 @@ Return db_init(void)
 			{
 				slog(TRACE,"The primary database and tables have been successfully initialized\n");
 			} else {
-				slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+				log_sqlite_error(config->db,rc,NULL,"Can't execute table initialization");
 				status = FAILURE;
 			}
 		}
@@ -151,23 +153,23 @@ Return db_init(void)
 		{
 			// Read-only mode
 			pragma_sql =
-			        "PRAGMA synchronous=OFF;"
+			        "PRAGMA synchronous=OFF;"            // Disable fsync to speed up read-only access
 			        "PRAGMA cache_size=-8192;"           // Increased cache to 8MB
-			        "PRAGMA temp_store=MEMORY;"
+			        "PRAGMA temp_store=MEMORY;"          // Keep temporary data in RAM
 			        "PRAGMA mmap_size=30000000000;"      // Using memory-mapped I/O
-			        "PRAGMA page_size=4096;"
-			        "PRAGMA locking_mode=EXCLUSIVE;"
-			        "PRAGMA strict=ON;";
+			        "PRAGMA page_size=4096;"             // Set page size to 4KB (default, but explicit for clarity)
+			        "PRAGMA locking_mode=EXCLUSIVE;"     // Hold exclusive locks for the session
+			        "PRAGMA strict=ON;";                  // Enforce STRICT table schema validation
 		} else {
 			// Read-write mode
 			pragma_sql =
-			        "PRAGMA journal_mode=WAL; "          // Enable Write-Ahead Logging (WAL) mode for better concurrency
-			        "PRAGMA wal_autocheckpoint=10240; "  // Set WAL checkpoint to trigger every 10240 pages (4KB each = 40MB)
+			        "PRAGMA journal_mode=DELETE; "       // Use DELETE journal
 			        "PRAGMA page_size=4096; "            // Set page size to 4KB (default, but explicit for clarity)
 			        "PRAGMA cache_size=-8192; "          // Use 8MB of memory for caching (negative value = KB)
 			        "PRAGMA synchronous=NORMAL; "        // Balance speed and safety (NORMAL = fsync only for checkpoints)
 			        "PRAGMA temp_store=MEMORY; "         // Store temporary tables in memory (not on disk)
 			        "PRAGMA strict=ON;"                  // Enforce STRICT table schema validation
+			        "PRAGMA locking_mode=EXCLUSIVE;"     // Hold exclusive locks for the session
 			        "PRAGMA fsync=OFF;";                 // Disables fsync() for faster writes but risks data loss on crash
 		}
 
@@ -178,7 +180,7 @@ Return db_init(void)
 		{
 			slog(TRACE,"The primary database named %s is ready for operations\n",config->db_file_name);
 		} else {
-			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Can't execute pragma setup");
 			status = FAILURE;
 		}
 	}
@@ -195,7 +197,7 @@ Return db_init(void)
 		{
 			slog(TRACE,"The in-memory %s database successfully attached to the primary database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
 		} else {
-			slog(ERROR,"Can't execute (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Can't execute runtime paths attach");
 			status = FAILURE;
 		}
 	}

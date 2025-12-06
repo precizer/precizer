@@ -63,4 +63,5 @@ path2/AAA/ZAW/D/e/f/b_file.txt
 Comparison of database1.db and database2.db databases is complete
 The precizer completed its execution without any issues
 Exit status » SUCCESS
-Enjoy your life!\z
+Enjoy your life!
+\z

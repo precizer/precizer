@@ -1,6 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
-TESTING:rational_logger_mode=TESTING
+\ATESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
 TESTING:argument:db_file_name=database1.db
@@ -56,7 +54,6 @@ TESTING:The connection to the primary database has been closed
 TESTING:\x1B\[1mThe brand-new primary database database1.db was created and modified since the program started \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Exit status » SUCCESS
-TESTING:Enable UTF-8 support
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/long
@@ -87,9 +84,9 @@ TESTING:DB mode determined
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The database1.db database file is version 2
-TESTING:The database database1.db is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The database1.db database file is version 3
+TESTING:The database database1.db is on version 3 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named database1.db is ready for operations
@@ -152,4 +149,5 @@ TESTING:The primary database has been vacuumed
 TESTING:The connection to the primary database has been closed
 TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS\z
+TESTING:Exit status » SUCCESS
+\z

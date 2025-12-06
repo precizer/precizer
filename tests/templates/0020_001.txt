@@ -1,5 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
+\ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=nonexistent_directory/database1.db
@@ -24,4 +23,5 @@ ERROR:Unable to create database file. Directory nonexistent_directory not found
 TESTING:Returned db_primary_file_validate_existence:\d+ status: FAILURE
 TESTING:The connection to the primary database has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\z
+ERROR:Exit status » FAILURE
+\z

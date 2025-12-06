@@ -9,25 +9,24 @@ Return test0020_1(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --database=nonexistent_directory/database1.db tests/examples/diffs/diff1";
+	create(char,result);
 
-	MSTRUCT(mem_char,result);
-
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0020_001.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == runit("--update --database=nonexistent_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,false,false));
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -41,25 +40,24 @@ Return test0020_2(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --database=nonexistent_database1.db tests/examples/diffs/diff1";
+	create(char,result);
 
-	MSTRUCT(mem_char,result);
-
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0020_002.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,FAILURE,false,false));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == runit("--update --database=nonexistent_database1.db tests/examples/diffs/diff1",result,FAILURE,false,false));
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }

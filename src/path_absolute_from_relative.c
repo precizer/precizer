@@ -44,6 +44,7 @@ Return path_absolute_from_relative(
 
 	} else {
 		// The provided path is indeed relative!
+		// running_dir_size already counts the trailing '\0'; +1 adds space for '/' and the new terminator.
 		len = (size_t)config->running_dir_size + (size_t)*path_size + 1;
 		*absolute_path = (char *)malloc(len);
 

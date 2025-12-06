@@ -1,5 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
+\ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=%DB_NAME%, database2.db
 TESTING:argument:db_file_paths=%DB_NAME%, database2.db
@@ -31,17 +30,17 @@ TESTING:The path %DB_NAME% is exists and it is a file
 TESTING:Starting database file %DB_NAME% integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database %DB_NAME% has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The %DB_NAME% database file is version 2
-TESTING:The database %DB_NAME% is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The %DB_NAME% database file is version 3
+TESTING:The database %DB_NAME% is on version 3 and does not require any upgrades
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
 TESTING:Starting database file database2.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database2.db has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The database2.db database file is version 2
-TESTING:The database database2.db is on version 2 and does not require any upgrades
+TESTING:Version number 3 found in database
+TESTING:The database2.db database file is version 3
+TESTING:The database database2.db is on version 3 and does not require any upgrades
 TESTING:\x1B\[1mThese files are no longer in the %DB_NAME% but still exist in the database2.db\x1B\[0m
 TESTING:path1/AAA/BCB/CCC/b.txt
 TESTING:\x1B\[1mThese files are no longer in the database2.db but still exist in the %DB_NAME%\x1B\[0m
@@ -58,4 +57,5 @@ TESTING:Comparison mode is enabled. The primary database does not require cleanu
 TESTING:The connection to the primary database has been closed
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS\z
+TESTING:Exit status » SUCCESS
+\z

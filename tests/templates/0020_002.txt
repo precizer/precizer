@@ -1,5 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
+\ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=nonexistent_database1.db
@@ -29,4 +28,5 @@ TESTING:DB mode determined
 TESTING:Returned db_determine_mode:\d+ status: FAILURE
 TESTING:The connection to the primary database has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\z
+ERROR:Exit status » FAILURE
+\z

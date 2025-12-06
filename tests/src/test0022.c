@@ -15,22 +15,34 @@ static Return test_remove_trailing_slash(
 {
 	INITTEST;
 
+	create(char,temp_buffer);
 	size_t len = strlen(input) + 1; // +1 for null terminator
-	char *buffer = malloc(len);
 
-	if(!buffer)
+	ASSERT(SUCCESS == resize(temp_buffer,len));
+
+	if(SUCCESS == status)
 	{
-		report("Memory allocation failed with bytes %zu",len);
-		return(FAILURE);
+		char *buffer_data = data(char,temp_buffer);
+
+		if(buffer_data == NULL)
+		{
+			status = FAILURE;
+		} else {
+			memcpy(buffer_data,input,len);
+			remove_trailing_slash(buffer_data);
+
+			const char *buffer_view = cdata(char,temp_buffer);
+
+			if(buffer_view == NULL)
+			{
+				status = FAILURE;
+			} else {
+				ASSERT(COMPLETED == strcmp(buffer_view,expected));
+			}
+		}
 	}
 
-	strcpy(buffer,input); // Copy input string to buffer
-
-	remove_trailing_slash(buffer);
-
-	ASSERT(SUCCESS == strcmp(buffer,expected));
-
-	free(buffer);
+	del(temp_buffer);
 
 	return(status);
 }
@@ -47,7 +59,7 @@ Return test0022(void)
 {
 	INITTEST;
 
-	struct {
+	static const struct {
 		const char *input;
 		const char *expected;
 	} test_cases[] = {

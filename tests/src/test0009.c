@@ -93,16 +93,16 @@ Return test0009(void)
 {
 	INITTEST;
 
-	MSTRUCT(mem_char,captured_stdout);
-	MSTRUCT(mem_char,captured_stderr);
+	create(char,captured_stdout);
+	create(char,captured_stderr);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	ASSERT(SUCCESS == function_capture(slog_test,captured_stdout,captured_stderr));
 
 	#if 0
-	printf("captured_stderr:%s",captured_stderr->mem);
-	printf("captured_stdout:%s",captured_stdout->mem);
+	printf("captured_stderr:%s",getcstring(captured_stderr));
+	printf("captured_stdout:%s",getcstring(captured_stdout));
 	#endif
 
 	if(captured_stderr->length > 0)
@@ -111,15 +111,15 @@ Return test0009(void)
 		status = FAILURE;
 	}
 
-	ASSERT(SUCCESS == get_file_content("templates/0009.txt",&pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0009.txt",pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(captured_stdout->mem,pattern));
+	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern));
 
-	reset(&pattern);
+	del(pattern);
 
-	del_char(&captured_stdout);
-	del_char(&captured_stderr);
+	del(captured_stdout);
+	del(captured_stderr);
 
 	RETURN_STATUS;
 }

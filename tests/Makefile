@@ -5,8 +5,7 @@ EXE=testitall
 # Compiler flags
 #
 
-# Stop the build on any errors -Werror
-CFLAGS += -pipe -std=c11 -finline-functions
+CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 # The definition used to disable the main() function
 # of the tested application
@@ -17,8 +16,9 @@ STATIC = -static
 SRC = src
 PRZRSRC = ../src
 BUILDS = ../.builds
-BUILEXE = $(BUILDS)/$(EXE)
-LIBS = testitall mem sha512 rational sqlite xdiff
+BUILDEXE = $(BUILDS)/$(EXE)
+BUILDEXEDIR = $(dir $(BUILDEXE))
+LIBS = testitall mem sha512 rational sqlite3 xdiff
 
 # Extra libs for linking
 LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
@@ -30,26 +30,34 @@ ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
 LDFLAGS += -pthread
 endif
 
-# Additional include headers of external libraries
-INCPATH += $(foreach d,$(LIBS),-I../libs/$d)
+# Additional include paths for external libraries
+INCPATH += $(foreach d,$(LIBS),-I../libs/$d/src/)
 ## Source files of precizer project
 INCPATH += -I$(PRZRSRC)
 
-# Additional check flags. Must have!
-WFLAGS += -Wall -Wpedantic
-WFLAGS += -Wextra -Wshadow
+# Detect whether we're using GCC
+GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
+
+# Warning flags for additional checks
+WFLAGS += -Wall # Enable common warning set
+WFLAGS += -Wpedantic
+WFLAGS += -Wshadow
+WFLAGS += -Wextra
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
 WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
 WFLAGS += -Wfloat-equal -Wundef
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
-WFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
-WFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
-# If not clang, then these options are for gcc
-ifneq ($(CC), clang)
+# Extra warnings enabled only for GCC
+ifneq ($(GCC),)
 WFLAGS += -Wlogical-op
+WFLAGS += -Wsuggest-attribute=const
+WFLAGS += -Wsuggest-attribute=pure
+WFLAGS += -Wsuggest-attribute=noreturn
+WFLAGS += -Wsuggest-attribute=format
+WFLAGS += -Wmissing-format-attribute
 endif
 
 #
@@ -69,137 +77,134 @@ PRZROBJS = $(PRZRSRCS:.c=.o)
 # Coverage build settings
 #
 COV = coverage
-COVDIR = $(BUILEXE)/$(COV)
-COVEXE = $(COVDIR)/$(EXE)
-COVOBJDIR = $(COVDIR)/obj
-COVREPORTDIR = $(COVOBJDIR)/../report/
-COVOBJS = $(addprefix $(COVOBJDIR)/, $(notdir $(OBJS)))
-COVPRZROBJS = $(addprefix $(COVOBJDIR)/, $(notdir $(PRZROBJS)))
-COVCFLAGS += -g -O0 -fprofile-arcs -ftest-coverage
-COVLDFLAGS += -lgcov --coverage
+COV_DIR = $(BUILDEXE)/$(COV)
+COV_EXE = $(COV_DIR)/$(EXE)
+COV_OBJDIR = $(COV_DIR)/obj
+COV_REPORTDIR = $(COV_OBJDIR)/../report/
+COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
+COV_PRZROBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(PRZROBJS)))
+COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage
+COV_LDFLAGS += -lgcov --coverage
 
 #
 # Sanitize build settings
 #
-STZ = sanitize
-STZDIR = $(BUILEXE)/$(STZ)
-STZEXE = $(STZDIR)/$(EXE)
-STZMAIN = $(EXE)
-STZOBJDIR = $(STZDIR)/obj
-STZOBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(OBJS)))
-STZPRZROBJS = $(addprefix $(STZOBJDIR)/, $(notdir $(PRZROBJS)))
-STZCFLAGS += $(DBGCFLAGS)
-STZCFLAGS += -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
+STNZ = sanitize
+STNZ_DIR = $(BUILDEXE)/$(STNZ)
+STNZ_EXE = $(STNZ_DIR)/$(EXE)
+STNZ_OBJDIR = $(STNZ_DIR)/obj
+STNZ_OBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(OBJS)))
+STNZ_PRZROBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(PRZROBJS)))
+STNZ_LIBDIR = $(BUILDEXEDIR)$(STNZ)/libs
+STNZ_LIBS = -L$(STNZ_LIBDIR)
+STNZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(STNZ_LIBDIR),-rpath,\$$ORIGIN/../../$(STNZ_LIBDIR)
+SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
+SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 
 #
 # Debug build settings
 #
 DBG = debug
-DBGDIR = $(BUILEXE)/$(DBG)
-DBGEXE = $(DBGDIR)/$(EXE)
-DBGMAIN = $(EXE)
-DBGOBJDIR = $(DBGDIR)/obj
-DBGOBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(OBJS)))
-DBGPRZROBJS = $(addprefix $(DBGOBJDIR)/, $(notdir $(PRZROBJS)))
-DBGLIBDIR = $(BUILEXE:$(EXE)=)$(DBG)/libs
-DBGLIBS = -L$(DBGLIBDIR)
-DBGDYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBGLIBDIR),-rpath,\$$ORIGIN/../../$(DBGLIBDIR)
-DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
+DBG_DIR = $(BUILDEXE)/$(DBG)
+DBG_EXE = $(DBG_DIR)/$(EXE)
+DBG_OBJDIR = $(DBG_DIR)/obj
+DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
+DBG_PRZROBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(PRZROBJS)))
+DBG_LIBDIR = $(BUILDEXEDIR)$(DBG)/libs
+DBG_LIBS = -L$(DBG_LIBDIR)
+DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
+DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
-.PHONY: all clean debug sanitize coverage run coverage-report coverage-html format
+.PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 
 # Default build
-all: tests
+all: sanitize
 
-run: run-debug
+test: sanitize
 
-tests: tests-debug
+tests: test
 
-tests-debug: hugetestfile debug run-debug
-
-tests-sanitize: hugetestfile sanitize run-sanitize
+run: sanitize
 
 #
 # Coverage rules
 #
-coverage: $(COVEXE)
+coverage: $(COV_EXE)
 
-$(COVEXE): $(COVOBJS) $(COVPRZROBJS)
-	@$(CC) $(CFLAGS) $(COVCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(COVEXE) $^ $(LDFLAGS) $(COVLDFLAGS)
+$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-debug
+	@$(CC) $(DBG_LIBS) $(COV_LDFLAGS) $(DBG_DYNLIB) -o $(COV_EXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(COVOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COVOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(COVCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
+	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(COVOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COVOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(COVCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(COV_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
+	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(COVOBJDIR):
-	@mkdir -p "$(COVOBJDIR)"
+$(COV_OBJDIR):
+	@mkdir -p "$(COV_OBJDIR)"
 
 coverage-report: coverage
 	@echo "Generating coverage report..."
-	./$(COVEXE)
-	@echo "Coverage report generated. Check .gcov files"
+	./$(COV_EXE)
+	@echo "Coverage run finished. Inspect .gcda/.gcno outputs for details"
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --directory $(COVOBJDIR) --output-file $(COVOBJDIR)/coverage.info
-	@genhtml $(COVOBJDIR)/coverage.info --output-directory $(COVREPORTDIR)
-	@echo "HTML coverage report generated in $(COVREPORTDIR) directory"
+	@lcov --capture --directory $(COV_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
+	@genhtml $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
+	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
 #
 # Sanitize rules
 #
-sanitize: hugetestfile $(STZEXE)
-	@$(MAKE) -s -C ../ $@
+precizer-sanitize:
+	@$(MAKE) -s -C ../ sanitize
 
-run-sanitize: sanitize
-	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STZEXE)
+sanitize: hugetestfile $(STNZ_EXE)
+	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STNZ_EXE)
 
-$(STZEXE): $(STZOBJS) $(STZPRZROBJS)
-	@$(CC) $(CFLAGS) $(STZCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) -o $(STZEXE) $^ $(LDFLAGS)
+$(STNZ_EXE): $(STNZ_OBJS) $(STNZ_PRZROBJS) | precizer-sanitize
+	@$(CC) $(STNZ_LIBS) $(SNTZ_LDFLAGS) $(STNZ_DYNLIB) -o $(STNZ_EXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(STZOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STZOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(STNZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STNZ_OBJDIR)
+	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(STZOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STZOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(STNZ_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STNZ_OBJDIR)
+	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(STZOBJDIR):
-	@mkdir -p "$(STZOBJDIR)"
+$(STNZ_OBJDIR):
+	@mkdir -p "$(STNZ_OBJDIR)"
 
 #
 # Debug rules
 #
-debug: hugetestfile $(DBGEXE) $(DBGMAIN)
+precizer-debug:
+	@$(MAKE) -s -C ../ debug
 
-run-debug: debug
-	@./$(DBGMAIN)
+debug: hugetestfile $(DBG_EXE)
+	@./$(DBG_EXE)
 
-$(DBGMAIN): $(DBGEXE)
-	@cp $(DBGEXE) $(DBGMAIN)
-	@echo "$(DBGMAIN) copied"
-
-$(DBGEXE): $(DBGOBJS) $(DBGPRZROBJS)
-	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBS) $(DBGDYNLIB) $(WFLAGS) $(STATIC) -o $(DBGEXE) $^ $(LDFLAGS)
+$(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug
+	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) -o $(DBG_EXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
 
-$(DBGOBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBGOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
+	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(DBGOBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBGOBJDIR)
-	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
-	@echo $<" compiled."
+$(DBG_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
+	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo $<" compiled"
 
-$(DBGOBJDIR):
-	@mkdir -p "$(DBGOBJDIR)"
+$(DBG_OBJDIR):
+	@mkdir -p "$(DBG_OBJDIR)"
 
 HUGETESTFILE = examples/huge/hugetestfile
 HUGETESTDIR := $(dir $(HUGETESTFILE))
@@ -218,33 +223,33 @@ $(HUGETESTFILE):
 format:
 	@echo "Formatting source files..."
 	@for file in $(SRCS) $(HDRS) $(TMPLTS); do \
-		echo "Formatting $$file"; \
-		uncrustify -c ../Uncrustify.cfg --replace --no-backup $$file; \
+	    echo "Formatting $$file"; \
+	    uncrustify -c ../Uncrustify.cfg --replace --no-backup $$file; \
 	done
 	@echo "All files formatted."
 
 clean:
 	@rm -f $(HUGETESTFILE)
-	@rm -f $(STZMAIN) $(STZEXE) $(DBGEXE) $(COVEXE)
-	@rm -f $(DBGOBJS) $(DBGPRZROBJS)
-	@rm -f $(STZOBJS) $(STZPRZROBJS)
-	@rm -f $(COVOBJS) $(COVPRZROBJS)
+	@rm -f $(STNZ_EXE) $(DBG_EXE) $(COV_EXE)
+	@rm -f $(DBG_OBJS) $(DBG_PRZROBJS)
+	@rm -f $(STNZ_OBJS) $(STNZ_PRZROBJS)
+	@rm -f $(COV_OBJS) $(COV_PRZROBJS)
 
-	@test -d $(DBGLIBDIR) && rm -d $(DBGLIBDIR) 2>/dev/null || true
-	@test -d $(DBGOBJDIR) && rm -d $(DBGOBJDIR) 2>/dev/null || true
-	@test -d $(DBGDIR) && rm -d $(DBGDIR) 2>/dev/null || true
+	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
+	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
+	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 
-	@test -d $(STZOBJDIR) && rm -d $(STZOBJDIR) 2>/dev/null || true
-	@test -d $(STZDIR) && rm -d $(STZDIR) 2>/dev/null || true
+	@test -d $(STNZ_OBJDIR) && rm -d $(STNZ_OBJDIR) 2>/dev/null || true
+	@test -d $(STNZ_DIR) && rm -d $(STNZ_DIR) 2>/dev/null || true
 
-	@rm -f $(COVOBJDIR)/*.gcno $(COVOBJDIR)/*.gcda $(COVOBJDIR)/*.gcov $(COVOBJDIR)/coverage.info
-	@rm -rf $(COVREPORTDIR)
-	@test -d $(COVOBJDIR) && rm -d $(COVOBJDIR) 2>/dev/null || true
-	@test -d $(COVDIR) && rm -d $(COVDIR) 2>/dev/null || true
+	@rm -f $(COV_OBJDIR)/*.gcno $(COV_OBJDIR)/*.gcda $(COV_OBJDIR)/*.gcov $(COV_OBJDIR)/coverage.info
+	@rm -rf $(COV_REPORTDIR)
+	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
+	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
 
-	@test -d $(BUILEXE) && rm -d $(BUILEXE) 2>/dev/null || true
+	@test -d $(BUILDEXE) && rm -d $(BUILDEXE) 2>/dev/null || true
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
-	@echo $(EXE) cleared.
+	@echo $(EXE) cleared
 
 # Optional preprocessor files
 %.i:%.c
@@ -256,9 +261,15 @@ clean:
 #	@sed -i '/^ *$//d' $@.h
 
 #
-# Print of variables
+# Printing variables
 #
-print-% : ; @echo $* = $($*)
+# If you want to find out the value of a makefile variable, just:
+# make print-VARIABLE
+# and it will return:
+# VARIABLE = the_value_of_the_variable
+#
+print-%:
+	@echo '$* = $($*)'
 
 #
 # GCC Static Analysis
@@ -268,4 +279,4 @@ gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
 cppcheck:
-	cppcheck --enable=all --platform=unix64 --std=c11 -q --force -i libs -i tests --inconclusive ./src
+	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force $(INCPATH) --inconclusive ./src

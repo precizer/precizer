@@ -32,7 +32,7 @@
  * - SQLite preparation and execution errors
  * - Path mismatch detection
  *
- * @return Return Status code indicating operation result:
+ * @provide Return Status code indicating operation result:
  *         - SUCCESS (0): Paths are valid or force flag is used
  *         - FAILURE (1): Path mismatch detected without force flag
  *                       or database operation error occurred
@@ -60,78 +60,70 @@ Return db_validate_paths(void)
 	sqlite3_stmt *insert_stmt = NULL;
 	int rc = 0;
 
-	char *select_sql = NULL;
 	bool paths_are_equal = true;
+
+	create(char,select_sql);
 
 	// Create the SQL request
 	if(config->paths[0] != NULL)
 	{
 		char const *sql_1 = "SELECT ID FROM paths WHERE prefix NOT IN (";
-		size_t size = strlen(sql_1) + 1;
-		select_sql = (char *)calloc(size,sizeof(char));
 
-		if(select_sql == NULL)
+		status = concat_literal(select_sql,sql_1);
+
+		if(SUCCESS != status)
 		{
-			report("Memory allocation failed, requested size: %zu bytes",size * sizeof(char));
-			return(FAILURE);
+			del(select_sql);
+			provide(status);
 		}
-
-		strcat(select_sql,sql_1);
 
 		for(int i = 0; config->paths[i]; i++)
 		{
-			// Not the last
-			if(config->paths[i+1] != 0)
-			{
-				// Size of comma
-				size += 1;
-			}
-			char *prefix = config->paths[i];
-			size += strlen(prefix) + 2;  // Length of the line and two chars like '
-			char *tmp = (char *)realloc(select_sql,size);
+			create(char,path);
 
-			if(NULL == tmp)
-			{
-				report("Memory allocation failed, requested size: %zu bytes",size);
-				free(select_sql);
-				return(FAILURE);
-			} else {
-				select_sql = tmp;
-			}
-			strcat(select_sql,"'");
-			strcat(select_sql,prefix);
-			strcat(select_sql,"'");
+			run(db_sql_wrap_string(path,config->paths[i]));
 
-			// Not the last
-			if(config->paths[i+1] != 0)
+			run(concat_literal(select_sql,getcstring(path)));
+
+			del(path);
+
+			if(SUCCESS != status)
 			{
-				// Add comma
-				strcat(select_sql,",");
+				del(select_sql);
+				provide(status);
+			}
+
+			// Not the last path in the array
+			if(config->paths[i + 1] != 0)
+			{
+				/* Concatenate with the comma character "," */
+				status = concat_literal(select_sql,",");
+
+				if(SUCCESS != status)
+				{
+					del(select_sql);
+					provide(status);
+				}
 			}
 		}
 
-		// Close the string that contains SQL request
-		char const *sql_2 = ");";
-		size += strlen(sql_2);
-		char *tmp = (char *)realloc(select_sql,size);
+		/* Close the string that contains SQL request */
 
-		if(NULL == tmp)
+		/* Concatenate with the ");" characters */
+		status = concat_literal(select_sql,");");
+
+		if(SUCCESS != status)
 		{
-			report("Memory allocation failed, requested size: %zu bytes",size);
-			free(select_sql);
-			return(FAILURE);
-		} else {
-			select_sql = tmp;
+			del(select_sql);
+			provide(status);
 		}
-
-		strcat(select_sql,sql_2);
 	}
 
-	rc = sqlite3_prepare_v2(config->db,select_sql,-1,&select_stmt,NULL);
+	rc = sqlite3_prepare_v2(config->db,getstring(select_sql),-1,&select_stmt,NULL);
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare select statement %s (%i): %s\n",select_sql,rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",getstring(select_sql));
 		status = FAILURE;
 	}
 
@@ -153,7 +145,7 @@ Return db_validate_paths(void)
 
 				if(SQLITE_OK != rc)
 				{
-					slog(ERROR,"Can't prepare insert statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+					log_sqlite_error(config->db,rc,NULL,"Can't prepare insert statement");
 					status = FAILURE;
 				}
 
@@ -163,7 +155,7 @@ Return db_validate_paths(void)
 
 					if(SQLITE_OK != rc)
 					{
-						slog(ERROR,"Error binding value in insert (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc,NULL,"Error binding value in insert");
 						status = FAILURE;
 					}
 				}
@@ -173,7 +165,7 @@ Return db_validate_paths(void)
 					/* Execute SQL statement */
 					if(sqlite3_step(insert_stmt) != SQLITE_DONE)
 					{
-						slog(ERROR,"Insert statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc,NULL,"Insert statement didn't return DONE");
 						status = FAILURE;
 					}
 				}
@@ -184,12 +176,12 @@ Return db_validate_paths(void)
 
 		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 			status = FAILURE;
 		}
 	}
 
-	free(select_sql);
+	del(select_sql);
 
 	sqlite3_finalize(select_stmt);
 
@@ -221,7 +213,7 @@ Return db_validate_paths(void)
 
 					if(SQLITE_OK != rc_stmt)
 					{
-						slog(ERROR,"Can't prepare select statement %s (%i): %s\n",sql,rc_stmt,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc_stmt,NULL,"Can't prepare select statement %s",sql);
 						status = FAILURE;
 					}
 
@@ -231,19 +223,12 @@ Return db_validate_paths(void)
 						{
 							const char *prefix = (const char *)sqlite3_column_text(stmt,0);
 
-							/* Truncate the file path/name in the display output if it exceeds the length limit */
-							char *path = strdup(prefix);
-
-							(void)shorten_path(path);
-
-							printf("%s\n",path);
-
-							free(path);
+							printf("%s\n",prefix);
 						}
 
 						if(SQLITE_DONE != rc_stmt)
 						{
-							slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc_stmt,sqlite3_errmsg(config->db));
+							log_sqlite_error(config->db,rc_stmt,NULL,"Select statement didn't finish with DONE");
 							status = FAILURE;
 						}
 					}
@@ -259,14 +244,7 @@ Return db_validate_paths(void)
 
 						for(int i = 0; config->paths[i]; i++)
 						{
-							/* Truncate the file path/name in the display output if it exceeds the length limit */
-							char *path = strdup(config->paths[i]);
-
-							(void)shorten_path(path);
-
-							printf("%s\n",path);
-
-							free(path);
+							printf("%s\n",config->paths[i]);
 						}
 					}
 				} else {
@@ -279,5 +257,5 @@ Return db_validate_paths(void)
 		}
 	}
 
-	return(status);
+	provide(status);
 }

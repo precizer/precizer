@@ -5,12 +5,12 @@
  *
  */
 static void display_status(
-	size_t     *count_dirs,
-	size_t     *count_files,
-	size_t     *count_symlnks,
-	size_t     *total_size_in_bytes,
-	const bool *count_size_of_all_files,
-	const bool *at_least_one_file_was_shown)
+	size_t       *count_dirs,
+	size_t       *count_files,
+	size_t       *count_symlnks,
+	size_t const *total_size_in_bytes,
+	const bool   *count_size_of_all_files,
+	const bool   *at_least_one_file_was_shown)
 {
 	size_t total_items = *count_dirs + *count_files + *count_symlnks;
 
@@ -106,8 +106,7 @@ Return file_list(const bool count_size_of_all_files)
 	{
 		slog(ERROR,"fts_open() error\n");
 		fts_close(file_systems);
-		status = FAILURE;
-		provide(status);
+		provide(FAILURE);
 	}
 
 	// Initialize the file systems using as many argv[] components as possible
@@ -127,7 +126,7 @@ Return file_list(const bool count_size_of_all_files)
 	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
 	char *runtime_path_prefix = NULL;
-	FTSENT *current_file_system = child;
+	FTSENT const *current_file_system = child;
 
 #if 0 // Old multiPATH solution
 	/**
@@ -150,6 +149,19 @@ Return file_list(const bool count_size_of_all_files)
 	}
 
 	bool continue_the_loop = true;
+
+	// Allocate space for a memory structure
+	create(unsigned char,file_buffer);
+
+	if(count_size_of_all_files == false)
+	{
+		status = resize(file_buffer,file_buffer_memory());
+
+		if(SUCCESS != status)
+		{
+			provide(status);
+		}
+	}
 
 	while((p = fts_read(file_systems)) != NULL && continue_the_loop == true)
 	{
@@ -231,11 +243,10 @@ Return file_list(const bool count_size_of_all_files)
 
 				const char *relative_path = extract_relative_path(p->fts_path,runtime_path_prefix);
 
-				/* Write all columns from DB row to the structure DBrow */
-				DBrow _dbrow;
+				/* Write all columns from DB row to the structure DBrow
+				   and clean the structure to prevent reuse */
+				DBrow _dbrow = {0};
 				DBrow *dbrow = &_dbrow;
-				// Clean the structure to prevent reuse;
-				memset(dbrow,0,sizeof(DBrow));
 
 				/* Get all file's metadata from the database */
 				if(SUCCESS == status)
@@ -304,7 +315,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				/* For a file which had been changed before creation
 				   of its checksum has been already finished */
-				bool rehashig_from_the_beginning = false;
+				bool rehashing_from_the_beginning = false;
 
 				// Ignored with --ignore= or admit with --include=
 				bool ignored = false;
@@ -313,13 +324,13 @@ Return file_list(const bool count_size_of_all_files)
 				{
 					if(metadata_of_scanned_and_saved_files == IDENTICAL)
 					{
-						// Contunue hashing
+						// Continue hashing
 						offset = dbrow->saved_offset;
 						memcpy(&mdContext,&(dbrow->saved_mdContext),sizeof(SHA512_Context));
 					} else {
 						/* The SHA512 hashing of the file had not been
 						   finished previously and the file has been changed */
-						rehashig_from_the_beginning = true;
+						rehashing_from_the_beginning = true;
 					}
 				}
 
@@ -352,9 +363,7 @@ Return file_list(const bool count_size_of_all_files)
 					}
 				}
 
-				unsigned char sha512[SHA512_DIGEST_LENGTH];
-				// Clean sha512 to prevent reuse;
-				memset(sha512,0,sizeof(sha512));
+				unsigned char sha512[SHA512_DIGEST_LENGTH] = {0};
 
 				// The file is available for reading
 				bool is_readable = false;
@@ -397,7 +406,7 @@ Return file_list(const bool count_size_of_all_files)
 					&stat,
 					&first_iteration,
 					&show_changes,
-					&rehashig_from_the_beginning,
+					&rehashing_from_the_beginning,
 					&ignored,
 					&at_least_one_file_was_shown,
 					&rehash,
@@ -421,12 +430,13 @@ Return file_list(const bool count_size_of_all_files)
 					{
 						status = sha512sum(p->fts_path,
 							&p->fts_pathlen,
+							file_buffer,
 							sha512,
 							&offset,
 							&mdContext,
 							&wrong_file_type);
 
-						if(SUCCESS == status)
+						if(TRIUMPH & status)
 						{
 							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
 							show_checksum_gracefully_interrupted(relative_path,&offset);
@@ -464,7 +474,7 @@ Return file_list(const bool count_size_of_all_files)
 				if(update_db == true)
 				{
 					/* Update record in DB */
-					if(SUCCESS == status)
+					if(TRIUMPH & status)
 					{
 						status = db_update_the_record_by_id(&(dbrow->ID),
 							&offset,
@@ -483,12 +493,13 @@ Return file_list(const bool count_size_of_all_files)
 
 				} else {
 					/* Insert to DB */
-					if(SUCCESS == status)
+					if(TRIUMPH & status)
 					{
 #if 0 // Old multiPATH solution
 						status = db_insert_the_record(&path_prefix_index,
 							relative_path,
-							&offset,sha512,
+							&offset,
+							sha512,
 							&stat,
 							&mdContext,
 							&zero_size_file,
@@ -514,8 +525,6 @@ Return file_list(const bool count_size_of_all_files)
 				/**
 				 * Interrupt the loop smoothly
 				 * Interrupt when Ctrl+C
-				 * Don't write a result because sha512sum() function
-				 * has been interrupted and the sha512 contains wrong data
 				 */
 				if(global_interrupt_flag == true)
 				{
@@ -530,6 +539,8 @@ Return file_list(const bool count_size_of_all_files)
 				break;
 		}
 	}
+
+	del(file_buffer);
 
 	free(runtime_path_prefix);
 

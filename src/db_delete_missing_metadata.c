@@ -56,7 +56,7 @@ Return db_delete_missing_metadata(void)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare select statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement");
 		status = FAILURE;
 	}
 
@@ -155,7 +155,7 @@ Return db_delete_missing_metadata(void)
 	{
 		if(global_interrupt_flag == false)
 		{
-			slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 			status = FAILURE;
 		}
 	}

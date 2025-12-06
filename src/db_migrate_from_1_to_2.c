@@ -27,7 +27,7 @@ Return db_migrate_from_1_to_2(const char *db_file_path)
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Failed to open database");
 		status = FAILURE;
 	}
 
@@ -35,7 +35,7 @@ Return db_migrate_from_1_to_2(const char *db_file_path)
 	{
 		/* Set safety pragmas */
 		const char *pragmas =
-		        "PRAGMA journal_mode=WAL;"
+		        "PRAGMA journal_mode=DELETE;"
 		        "PRAGMA strict=ON;"
 		        "PRAGMA fsync=ON;"
 		        "PRAGMA synchronous=EXTRA;"
@@ -45,8 +45,7 @@ Return db_migrate_from_1_to_2(const char *db_file_path)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to set pragmas: %s\n",err_msg);
-			sqlite3_free(err_msg);
+			log_sqlite_error(db,rc,err_msg,"Failed to set pragmas");
 			status = FAILURE;
 		}
 	}
@@ -65,10 +64,10 @@ Return db_migrate_from_1_to_2(const char *db_file_path)
 			   this in the global variable value. */
 			config->db_primary_file_modified = true;
 		}
-
-		/* Cleanup */
-		status = db_close(db,&config->db_primary_file_modified);
 	}
+
+	/* Cleanup */
+	call(db_close(db,&config->db_primary_file_modified));
 
 	provide(status);
 }
