@@ -1,13 +1,18 @@
-[<img src="img/i18n-icon.svg"> Link to the Russian language README page](README.ru.md)
+[<img src=".html/img/i18n-icon.svg"> Link to the Russian language README page](README.ru.md)
 
 # Precizer
 A Tiny, High-Performance File Integrity and Comparison Tool
 
-“A truly great application will always fit on a floppy disk. Hopefully, someone out there still remembers what those were… But it’s not about the floppies, it’s about quality software!” © :-D
+“A truly great application will always fit on a floppy disk. Hopefully, someone out there still remembers what those were… But it’s not about the floppies, it’s about quality software!”<sup>©</sup> :-D
 
 <p width="100%" height="100%">
-<img width="20%" src="img/micrometer_0.svg">
+<img width="20%" src=".html/img/micrometer_0.svg">
 </p>
+
+<a href=".code_coverage_report/">
+  <img src=".html/img/unit-coverage.svg" height="20" alt="Unit-Tests Code Coverage" />
+  Unit-Tests Code Coverage Report
+</a>
 
 ## TL;DR
 
