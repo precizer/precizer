@@ -315,23 +315,23 @@ precizer --progress --database=database2.db tests/examples/diffs/diff2
 precizer --compare database1.db database2.db
 ```
 
-<sup>The comparison of database1.db and database2.db databases is starting…
-Starting database file database1.db integrity check…
-Database database1.db has been verified and is in good condition
-Starting database file database2.db integrity check…
-Database database2.db has been verified and is in good condition
-**These files are no longer in the database1.db but still exist in the database2.db**
-path1/AAA/BCB/CCC/b.txt
-**These files are no longer in the database2.db but still exist in the database1.db**
-path2/AAA/ZAW/D/e/f/b_file.txt
-**The SHA512 checksums of these files do not match between database1.db and database2.db**
-2/AAA/BBB/CZC/a.txt
-3/AAA/BBB/CCC/a.txt
-4/AAA/BBB/CCC/a.txt
-path1/AAA/ZAW/D/e/f/b_file.txt
-path2/AAA/BCB/CCC/a.txt
-Comparison of database1.db and database2.db databases is complete
-The precizer completed its execution without any issues
+<sub>The comparison of database1.db and database2.db databases is starting…  
+Starting database file database1.db integrity check…  
+Database database1.db has been verified and is in good condition  
+Starting database file database2.db integrity check…  
+Database database2.db has been verified and is in good condition  
+**These files are no longer in the database1.db but still exist in the database2.db**  
+path1/AAA/BCB/CCC/b.txt  
+**These files are no longer in the database2.db but still exist in the database1.db**  
+path2/AAA/ZAW/D/e/f/b_file.txt  
+**The SHA512 checksums of these files do not match between database1.db and database2.db**  
+2/AAA/BBB/CZC/a.txt  
+3/AAA/BBB/CCC/a.txt  
+4/AAA/BBB/CCC/a.txt  
+path1/AAA/ZAW/D/e/f/b_file.txt  
+path2/AAA/BCB/CCC/a.txt  
+Comparison of database1.db and database2.db databases is complete  
+The precizer completed its execution without any issues  
 </sub>
 
 ### Example 2
@@ -343,8 +343,8 @@ Let’s run the previous example again. First attempt. Warning message.
 precizer --progress --database=database1.db tests/examples/diffs/diff1
 ```
 
-<sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.
-ERROR: The precizer process terminated unexpectedly due to an error
+<sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.  
+ERROR: The precizer process terminated unexpectedly due to an error  
 </sub>
 
 The **--update** parameter must be included. This parameter is required to protect the database from data loss caused by accidental execution.
@@ -353,13 +353,13 @@ The **--update** parameter must be included. This parameter is required to prote
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
 
-<sub>Primary database file name: database1.db
-Starting database file database1.db integrity check…
-Database database1.db has been verified and is in good condition
-File system traversal initiated to calculate file count and storage usage
-Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
-**The database file database1.db has NOT been modified since the program was launched**
-The precizer completed its execution without any issues
+<sub>Primary database file name: database1.db  
+Starting database file database1.db integrity check…  
+Database database1.db has been verified and is in good condition  
+File system traversal initiated to calculate file count and storage usage  
+Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+**The database file database1.db has NOT been modified since the program was launched**  
+The precizer completed its execution without any issues  
 </sub>
 
 Now let's make some adjustments:
@@ -382,24 +382,24 @@ And run **precizer** again, this time with the `--update` parameter:
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
 
-<sub>Primary database file name: database1.db
-Starting database file database1.db integrity check…
-Database database1.db has been verified and is in good condition
-File system traversal initiated to calculate file count and storage usage
-Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
-The **--update** option has been used, so the information about files will be updated against the database database1.db
-File traversal started
-**These files have been added or changed and those changes will be reflected against the DB database1.db:**
-1/AAA/BCB/CCC/a.txt changed size & ctime & mtime rehashed
-1/AAA/BCB/CCC/c.txt added
-File traversal complete
-Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
-**These files are no longer exist or ignored and will be deleted against the DB database1.db:**
-path2/AAA/ZAW/D/e/f/b_file.txt
-Start vacuuming the primary database…
-The primary database has been vacuumed
-**The database file database1.db has been modified since the program was launched**
-The precizer completed its execution without any issues
+<sub>Primary database file name: database1.db  
+Starting database file database1.db integrity check…  
+Database database1.db has been verified and is in good condition  
+File system traversal initiated to calculate file count and storage usage  
+Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+The **--update** option has been used, so the information about files will be updated against the database database1.db  
+File traversal started  
+**These files have been added or changed and those changes will be reflected against the DB database1.db:**  
+1/AAA/BCB/CCC/a.txt changed size & ctime & mtime rehashed  
+1/AAA/BCB/CCC/c.txt added  
+File traversal complete  
+Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+**These files are no longer exist or ignored and will be deleted against the DB database1.db:**  
+path2/AAA/ZAW/D/e/f/b_file.txt  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database file database1.db has been modified since the program was launched**  
+The precizer completed its execution without any issues  
 </sub>
 
 Every time **precizer** runs, it traverses the file system and then checks whether a record for a specific file already exists in the database. In other words, the program prioritizes the current state of the file system on disk.
@@ -431,48 +431,48 @@ Let's add the **--verbose** parameter to the previous example:
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
 ```
 
-<sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE
-2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed
-2025-01-25 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments
-2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/examples/diffs/diff1 exists
-2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory
-2025-01-25 09:55:59:821 src/detect_paths.c:036:detect_paths:Paths detected
-2025-01-25 09:55:59:821 src/init_signals.c:034:init_signals:Set signal SIGUSR2 OK:pid:604770
-2025-01-25 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770
-2025-01-25 09:55:59:821 src/init_signals.c:052:init_signals:Set signal SIGTERM OK:pid:604770
-2025-01-25 09:55:59:821 src/init_signals.c:055:init_signals:Signals initialized
-2025-01-25 09:55:59:821 src/determine_running_dir.c:018:determine_running_dir:Current directory: /tmp
-2025-01-25 09:55:59:821 src/db_determine_name.c:099:db_determine_name:Primary database file name: database1.db
-2025-01-25 09:55:59:821 src/db_determine_name.c:105:db_determine_name:Primary database file path: database1.db
-2025-01-25 09:55:59:821 src/db_determine_name.c:109:db_determine_name:DB name determined
-2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path . exists
-2025-01-25 09:55:59:821 src/file_availability.c:053:file_availability:The path . is exists and it is a directory
-2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path database1.db exists
-2025-01-25 09:55:59:821 src/file_availability.c:044:file_availability:The path database1.db is exists and it is a file
-2025-01-25 09:55:59:821 src/db_determine_mode.c:128:db_determine_mode:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-2025-01-25 09:55:59:821 src/db_determine_mode.c:129:db_determine_mode:Final value for config->db_initialize_tables: false
-2025-01-25 09:55:59:821 src/db_determine_mode.c:131:db_determine_mode:DB mode determined
-2025-01-25 09:55:59:821 src/db_test.c:061:db_test:Starting database file database1.db integrity check…
-2025-01-25 09:55:59:821 src/db_test.c:082:db_test:The database verification level has been set to FULL
-2025-01-25 09:55:59:821 src/db_test.c:126:db_test:Database database1.db has been verified and is in good condition
-2025-01-25 09:55:59:822 src/db_get_version.c:087:db_get_version:Version number 1 found in database
-2025-01-25 09:55:59:822 src/db_check_version.c:032:db_check_version:The database1.db database file is version 1
-2025-01-25 09:55:59:822 src/db_check_version.c:061:db_check_version:The database database1.db is on version 1 and does not require any upgrades
-2025-01-25 09:55:59:822 src/db_init.c:030:db_init:Successfully opened database database1.db
-2025-01-25 09:55:59:822 src/db_init.c:118:db_init:The primary database and tables have NOT been initialized
-2025-01-25 09:55:59:822 src/db_init.c:150:db_init:The primary database named database1.db is ready for operations
-2025-01-25 09:55:59:822 src/db_init.c:167:db_init:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
-2025-01-25 09:55:59:822 src/db_init.c:174:db_init:Database initialization process completed
-2025-01-25 09:55:59:822 src/db_compare.c:136:db_compare:Database comparison mode is not enabled. Skipping comparison
-2025-01-25 09:55:59:822 src/db_contains_data.c:086:db_contains_data:The database database1.db has already been created previously
-2025-01-25 09:55:59:822 src/db_validate_paths.c:192:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
-2025-01-25 09:55:59:822 src/file_list.c:143:file_list:File system traversal initiated to calculate file count and storage usage
-2025-01-25 09:55:59:823 src/file_list.c:038:show_status:Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
-2025-01-25 09:55:59:825 src/db_get_version.c:087:db_get_version:Version number 1 found in database
-2025-01-25 09:55:59:825 src/db_consider_vacuum_primary.c:025:db_consider_vacuum_primary:No changes were made. The primary database doesn't require vacuuming
-2025-01-25 09:55:59:825 src/status_of_changes.c:049:status_of_changes:**The database file database1.db has NOT been modified since the program was launched**
-2025-01-25 09:55:59:825 src/exit_status.c:027:exit_status:The precizer completed its execution without any issues
+<sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
+paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
+2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
+2025-01-25 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments  
+2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/examples/diffs/diff1 exists  
+2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory  
+2025-01-25 09:55:59:821 src/detect_paths.c:036:detect_paths:Paths detected  
+2025-01-25 09:55:59:821 src/init_signals.c:034:init_signals:Set signal SIGUSR2 OK:pid:604770  
+2025-01-25 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770  
+2025-01-25 09:55:59:821 src/init_signals.c:052:init_signals:Set signal SIGTERM OK:pid:604770  
+2025-01-25 09:55:59:821 src/init_signals.c:055:init_signals:Signals initialized  
+2025-01-25 09:55:59:821 src/determine_running_dir.c:018:determine_running_dir:Current directory: /tmp  
+2025-01-25 09:55:59:821 src/db_determine_name.c:099:db_determine_name:Primary database file name: database1.db  
+2025-01-25 09:55:59:821 src/db_determine_name.c:105:db_determine_name:Primary database file path: database1.db  
+2025-01-25 09:55:59:821 src/db_determine_name.c:109:db_determine_name:DB name determined  
+2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path . exists  
+2025-01-25 09:55:59:821 src/file_availability.c:053:file_availability:The path . is exists and it is a directory  
+2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path database1.db exists  
+2025-01-25 09:55:59:821 src/file_availability.c:044:file_availability:The path database1.db is exists and it is a file  
+2025-01-25 09:55:59:821 src/db_determine_mode.c:128:db_determine_mode:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE  
+2025-01-25 09:55:59:821 src/db_determine_mode.c:129:db_determine_mode:Final value for config->db_initialize_tables: false  
+2025-01-25 09:55:59:821 src/db_determine_mode.c:131:db_determine_mode:DB mode determined  
+2025-01-25 09:55:59:821 src/db_test.c:061:db_test:Starting database file database1.db integrity check…  
+2025-01-25 09:55:59:821 src/db_test.c:082:db_test:The database verification level has been set to FULL  
+2025-01-25 09:55:59:821 src/db_test.c:126:db_test:Database database1.db has been verified and is in good condition  
+2025-01-25 09:55:59:822 src/db_get_version.c:087:db_get_version:Version number 1 found in database  
+2025-01-25 09:55:59:822 src/db_check_version.c:032:db_check_version:The database1.db database file is version 1  
+2025-01-25 09:55:59:822 src/db_check_version.c:061:db_check_version:The database database1.db is on version 1 and does not require any upgrades  
+2025-01-25 09:55:59:822 src/db_init.c:030:db_init:Successfully opened database database1.db  
+2025-01-25 09:55:59:822 src/db_init.c:118:db_init:The primary database and tables have NOT been initialized  
+2025-01-25 09:55:59:822 src/db_init.c:150:db_init:The primary database named database1.db is ready for operations  
+2025-01-25 09:55:59:822 src/db_init.c:167:db_init:The in-memory runtime_paths_id database successfully attached to the primary database database1.db  
+2025-01-25 09:55:59:822 src/db_init.c:174:db_init:Database initialization process completed  
+2025-01-25 09:55:59:822 src/db_compare.c:136:db_compare:Database comparison mode is not enabled. Skipping comparison  
+2025-01-25 09:55:59:822 src/db_contains_data.c:086:db_contains_data:The database database1.db has already been created previously  
+2025-01-25 09:55:59:822 src/db_validate_paths.c:192:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical  
+2025-01-25 09:55:59:822 src/file_list.c:143:file_list:File system traversal initiated to calculate file count and storage usage  
+2025-01-25 09:55:59:823 src/file_list.c:038:show_status:Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
+2025-01-25 09:55:59:825 src/db_get_version.c:087:db_get_version:Version number 1 found in database  
+2025-01-25 09:55:59:825 src/db_consider_vacuum_primary.c:025:db_consider_vacuum_primary:No changes were made. The primary database doesn't require vacuuming  
+2025-01-25 09:55:59:825 src/status_of_changes.c:049:status_of_changes:**The database file database1.db has NOT been modified since the program was launched**  
+2025-01-25 09:55:59:825 src/exit_status.c:027:exit_status:The precizer completed its execution without any issues  
 </sub>
 
 ### Example 5
@@ -499,19 +499,19 @@ The `--maxdepth=0` parameter completely disables recursion.
 precizer --maxdepth=0 tests/examples/4
 ```
 
-<sub>Primary database file name: myhost.db
-The path myhost.db doesn't exist or it is not a file
-The primary DB file not yet exists. Brand new database will be created
-Recursion depth limited to: 0
-File traversal started
-**These files will be added against the myhost.db database:**
-sss.txt
-File traversal complete
-Total size: 2B, total items: 5, dirs: 4, files: 1, symlnks: 0
-Start vacuuming the primary database…
-The primary database has been vacuumed
-**The database myhost.db has been modified since the last check (files were added, removed, or updated)**
-The precizer completed its execution without any issues
+<sub>Primary database file name: myhost.db  
+The path myhost.db doesn't exist or it is not a file  
+The primary DB file not yet exists. Brand new database will be created  
+Recursion depth limited to: 0  
+File traversal started  
+**These files will be added against the myhost.db database:**  
+sss.txt  
+File traversal complete  
+Total size: 2B, total items: 5, dirs: 4, files: 1, symlnks: 0  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database myhost.db has been modified since the last check (files were added, removed, or updated)**  
+The precizer completed its execution without any issues  
 </sub>
 
 ### Example 6
@@ -562,42 +562,42 @@ precizer --ignore="^diff1/1/.*" tests/examples/diffs
 
 In this example, the initial traversal path is `./tests/examples/diffs`, and the generated ignore path is `./tests/examples/diffs/diff1/1/` along with all its subdirectories (`/*`).
 
-<sub>Primary database file name: myhost.db
-The path myhost.db doesn't exist or it is not a file
-The primary DB file not yet exists. Brand new database will be created
-File traversal started
-**These files will be added against the myhost.db database:**
-diff1/1/AAA/BCB/CCC/a.txt **ignored & not added**
-diff1/1/AAA/ZAW/A/b/c/a_file.txt **ignored & not added**
-diff1/1/AAA/ZAW/D/e/f/b_file.txt **ignored & not added**
-diff1/2/AAA/BBB/CZC/a.txt
-diff1/3/AAA/BBB/CCC/a.txt
-diff1/4/AAA/BBB/CCC/a.txt
-diff1/path1/AAA/BCB/CCC/a.txt
-diff1/path1/AAA/ZAW/A/b/c/a_file.txt
-diff1/path1/AAA/ZAW/D/e/f/b_file.txt
-diff1/path2/AAA/BCB/CCC/a.txt
-diff1/path2/AAA/ZAW/A/b/c/a_file.txt
-diff1/path2/AAA/ZAW/D/e/f/b_file.txt
-diff2/1/AAA/BCB/CCC/a.txt
-diff2/1/AAA/ZAW/A/b/c/a_file.txt
-diff2/1/AAA/ZAW/D/e/f/b_file.txt
-diff2/2/AAA/BBB/CZC/a.txt
-diff2/3/AAA/BBB/CCC/a.txt
-diff2/4/AAA/BBB/CCC/a.txt
-diff2/path1/AAA/BCB/CCC/a.txt
-diff2/path1/AAA/BCB/CCC/b.txt
-diff2/path1/AAA/ZAW/A/b/c/a_file.txt
-diff2/path1/AAA/ZAW/D/e/f/b_file.txt
-diff2/path2/AAA/BCB/CCC/a.txt
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt
-File traversal complete
-Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0
-Start vacuuming the primary database…
-The primary database has been vacuumed
-**The database myhost.db has been modified since the last check (files were added, removed, or updated)**
-The precizer completed its execution without any issues
-Enjoy your life!
+<sub>Primary database file name: myhost.db  
+The path myhost.db doesn't exist or it is not a file  
+The primary DB file not yet exists. Brand new database will be created  
+File traversal started  
+**These files will be added against the myhost.db database:**  
+diff1/1/AAA/BCB/CCC/a.txt **ignored & not added**  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt **ignored & not added**  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt **ignored & not added**  
+diff1/2/AAA/BBB/CZC/a.txt  
+diff1/3/AAA/BBB/CCC/a.txt  
+diff1/4/AAA/BBB/CCC/a.txt  
+diff1/path1/AAA/BCB/CCC/a.txt  
+diff1/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path1/AAA/ZAW/D/e/f/b_file.txt  
+diff1/path2/AAA/BCB/CCC/a.txt  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt  
+diff2/1/AAA/BCB/CCC/a.txt  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/2/AAA/BBB/CZC/a.txt  
+diff2/3/AAA/BBB/CCC/a.txt  
+diff2/4/AAA/BBB/CCC/a.txt  
+diff2/path1/AAA/BCB/CCC/a.txt  
+diff2/path1/AAA/BCB/CCC/b.txt  
+diff2/path1/AAA/ZAW/A/b/c/a_file.txt  
+diff2/path1/AAA/ZAW/D/e/f/b_file.txt  
+diff2/path2/AAA/BCB/CCC/a.txt  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt  
+File traversal complete  
+Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database myhost.db has been modified since the last check (files were added, removed, or updated)**  
+The precizer completed its execution without any issues  
+Enjoy your life!  
 </sub>
 
 Let's repeat the same example, but this time without the `--ignore` option to include the three previously ignored files:
@@ -606,21 +606,21 @@ Let's repeat the same example, but this time without the `--ignore` option to in
 precizer --update tests/examples/diffs
 ```
 
-<sub>Primary database file name: myhost.db
-Starting database file myhost.db integrity check…
-Database myhost.db has been verified and is in good condition
-The **--update** option has been used, so the information about files will be updated against the database myhost.db
-File traversal started
-**These files have been added or changed and those changes will be reflected against the DB myhost.db:**
-diff1/1/AAA/BCB/CCC/a.txt add
-diff1/1/AAA/ZAW/A/b/c/a_file.txt add
-diff1/1/AAA/ZAW/D/e/f/b_file.txt add
-File traversal complete
-Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0
-Start vacuuming the primary database…
-The primary database has been vacuumed
-**The database file myhost.db has been modified since the program was launched**
-The precizer completed its execution without any issues
+<sub>Primary database file name: myhost.db  
+Starting database file myhost.db integrity check…  
+Database myhost.db has been verified and is in good condition  
+The **--update** option has been used, so the information about files will be updated against the database myhost.db  
+File traversal started  
+**These files have been added or changed and those changes will be reflected against the DB myhost.db:**  
+diff1/1/AAA/BCB/CCC/a.txt add  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt add  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt add  
+File traversal complete  
+Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database file myhost.db has been modified since the program was launched**  
+The precizer completed its execution without any issues  
 </sub>
 
 ### Example 7
@@ -646,21 +646,21 @@ precizer \
     tests/examples/diffs
 ```
 
-<sub>Primary database file name: myhost.db
-Starting database file myhost.db integrity check…
-Database myhost.db has been verified and is in good condition
-The **--update** option has been used, so the information about files will be deleted against the database myhost.db
-**These files are no longer exist or ignored and will be deleted against the DB myhost.db:**
-diff1/1/AAA/BCB/CCC/a.txt **clean ignored**
-diff1/1/AAA/ZAW/A/b/c/a_file.txt **clean ignored**
-diff1/1/AAA/ZAW/D/e/f/b_file.txt **clean ignored**
-diff2/1/AAA/BCB/CCC/a.txt **clean ignored**
-diff2/1/AAA/ZAW/A/b/c/a_file.txt **clean ignored**
-diff2/1/AAA/ZAW/D/e/f/b_file.txt **clean ignored**
-Start vacuuming the primary database…
-The primary database has been vacuumed
-**The database file myhost.db has been modified since the program was launched**
-The precizer completed its execution without any issues
+<sub>Primary database file name: myhost.db  
+Starting database file myhost.db integrity check…  
+Database myhost.db has been verified and is in good condition  
+The **--update** option has been used, so the information about files will be deleted against the database myhost.db  
+**These files are no longer exist or ignored and will be deleted against the DB myhost.db:**  
+diff1/1/AAA/BCB/CCC/a.txt **clean ignored**  
+diff1/1/AAA/ZAW/A/b/c/a_file.txt **clean ignored**  
+diff1/1/AAA/ZAW/D/e/f/b_file.txt **clean ignored**  
+diff2/1/AAA/BCB/CCC/a.txt **clean ignored**  
+diff2/1/AAA/ZAW/A/b/c/a_file.txt **clean ignored**  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt **clean ignored**  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database file myhost.db has been modified since the program was launched**  
+The precizer completed its execution without any issues  
 </sub>
 
 ### Example 8
@@ -698,25 +698,25 @@ precizer --update --db-clean-ignored \
 	tests/examples/diffs
 ```
 
-<sub>Primary database file name: myhost.db
-Starting database file myhost.db integrity check…
-Database myhost.db has been verified and is in good condition
-The **--update** option has been used, so the information about files will be deleted against the database myhost.db
-**These files are no longer exist or ignored and will be deleted against the DB myhost.db:**
-diff1/path2/AAA/BCB/CCC/a.txt clean ignored
-diff1/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored
-diff1/path2/AAA/ZAW/D/e/f/b_file.txt clean ignored
-diff2/1/AAA/BCB/CCC/a.txt clean ignored
-diff2/1/AAA/ZAW/D/e/f/b_file.txt clean ignored
-diff2/2/AAA/BBB/CZC/a.txt clean ignored
-diff2/3/AAA/BBB/CCC/a.txt clean ignored
-diff2/4/AAA/BBB/CCC/a.txt clean ignored
-diff2/path1/AAA/BCB/CCC/a.txt clean ignored
-diff2/path1/AAA/BCB/CCC/b.txt clean ignored
-diff2/path2/AAA/BCB/CCC/a.txt clean ignored
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored
-Start vacuuming the primary database…
-The primary database has been vacuumed
-**The database file myhost.db has been modified since the program was launched**
-The precizer completed its execution without any issues
+<sub>Primary database file name: myhost.db  
+Starting database file myhost.db integrity check…  
+Database myhost.db has been verified and is in good condition  
+The **--update** option has been used, so the information about files will be deleted against the database myhost.db  
+**These files are no longer exist or ignored and will be deleted against the DB myhost.db:**  
+diff1/path2/AAA/BCB/CCC/a.txt clean ignored  
+diff1/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored  
+diff1/path2/AAA/ZAW/D/e/f/b_file.txt clean ignored  
+diff2/1/AAA/BCB/CCC/a.txt clean ignored  
+diff2/1/AAA/ZAW/D/e/f/b_file.txt clean ignored  
+diff2/2/AAA/BBB/CZC/a.txt clean ignored  
+diff2/3/AAA/BBB/CCC/a.txt clean ignored  
+diff2/4/AAA/BBB/CCC/a.txt clean ignored  
+diff2/path1/AAA/BCB/CCC/a.txt clean ignored  
+diff2/path1/AAA/BCB/CCC/b.txt clean ignored  
+diff2/path2/AAA/BCB/CCC/a.txt clean ignored  
+diff2/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored  
+Start vacuuming the primary database…  
+The primary database has been vacuumed  
+**The database file myhost.db has been modified since the program was launched**  
+The precizer completed its execution without any issues  
 </sub>
