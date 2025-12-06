@@ -10,9 +10,21 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == execute_and_set_variable("TMPDIR","mktemp -d /tmp/precizer.XXXXXXXXXXXXXXXXXX",0));
 
-	char environment[PATH_MAX];
+	char environment[PATH_MAX] = {0};
 
 	run(extract_current_executable_directory_name(environment,sizeof(environment)));
+
+	/**
+	 * When the code coverage target from the Makefile is run,
+	 * the runtime environment needs to be "debug", because
+	 * coverage has to execute a binary with debug symbols and
+	 * there is no need to build a separate binary in addition
+	 * to the already compiled debug one
+	*/
+	if(strcmp(environment, "coverage") == 0) {
+		/* Replace to "debug" */
+		strncpy(environment, "debug", PATH_MAX - 1);
+	}
 
 	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",environment));
 
