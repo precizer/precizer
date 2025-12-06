@@ -9,10 +9,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 <img width="20%" src=".html/img/micrometer_0.svg">
 </p>
 
-<a href=".code_coverage_report/">
-  <img src=".html/img/unit-coverage.svg" height="20" alt="Unit-Tests Code Coverage" />
-  Unit-Tests Code Coverage Report
-</a>
+<a href=".code_coverage_report/"><img src=".html/img/system-coverage.svg" height="20" alt="System-Tests Code Coverage" /><img src=".html/img/unit-coverage.svg" height="20" alt="Unit-Tests Code Coverage" /></br>Code Coverage Report</a>
 
 ## TL;DR
 
