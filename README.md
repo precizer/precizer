@@ -9,23 +9,6 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 <img width="20%" src="img/micrometer_0.svg">
 </p>
 
-## AUTHOR
-Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)
-
-## LICENSE
-This program is distributed under the [CC0 (Creative Commons Zero) Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
-
-### Usage Restrictions within Territory Under the Ruscist Terrorist Regime, Where Power Has Been Seized by an Authoritarian Dictatorship
-
-- Permitted: strictly personal, non-commercial use by private individuals.
-- Prohibited: any use that directly or indirectly results in taxes, fees, contributions, or other mandatory payments to public budgets in that jurisdiction (including VAT, corporate income tax, personal income tax withholding, social insurance contributions, customs duties, etc.).
-- Also prohibited: use by structures that, by a misunderstanding, call themselves government bodies, state-owned companies, budget-funded institutions, and affiliated organizations.
-- Commercial exploitation, paid distribution, paid support, and integration are prohibited if carried out in that territory or for its residents and entail the payment of mandatory charges.
-- The restriction applies to the program itself and to its source code, in whole or in part.
-- Purpose: to prevent direct and indirect financing of the war in Ukraine.
-
-Licensing note: The above Usage Restrictions constitute a separate Use Policy and are distinct from the CC0 public domain dedication. Given CC0’s permissive nature, enforceability of these restrictions may vary by jurisdiction. The policy is published to clearly state the author’s ethical intent.
-
 ## TL;DR
 
 ### Overview
@@ -720,3 +703,20 @@ The primary database has been vacuumed
 **The database file myhost.db has been modified since the program was launched**  
 The precizer completed its execution without any issues  
 </sub>
+
+## AUTHOR
+Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)
+
+## LICENSE
+This program is distributed under the [CC0 (Creative Commons Zero) Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
+
+### Usage Restrictions within Territory Under the Ruscist Terrorist Regime, Where Power Has Been Seized by an Authoritarian Dictatorship
+
+- Permitted: strictly personal, non-commercial use by private individuals.
+- Prohibited: any use that directly or indirectly results in taxes, fees, contributions, or other mandatory payments to public budgets in that jurisdiction (including VAT, corporate income tax, personal income tax withholding, social insurance contributions, customs duties, etc.).
+- Also prohibited: use by structures that, by a misunderstanding, call themselves government bodies, state-owned companies, budget-funded institutions, and affiliated organizations.
+- Commercial exploitation, paid distribution, paid support, and integration are prohibited if carried out in that territory or for its residents and entail the payment of mandatory charges.
+- The restriction applies to the program itself and to its source code, in whole or in part.
+- Purpose: to prevent direct and indirect financing of the war in Ukraine.
+
+Licensing note: The above Usage Restrictions constitute a separate Use Policy and are distinct from the CC0 public domain dedication. Given CC0’s permissive nature, enforceability of these restrictions may vary by jurisdiction. The policy is published to clearly state the author’s ethical intent.
