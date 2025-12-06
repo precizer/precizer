@@ -1,4 +1,4 @@
-[<img src="img/i18n-icon.svg"> Russian language README file](README.ru.md)
+[<img src="img/i18n-icon.svg"> Link to the Russian language README page](README.ru.md)
 
 # Precizer
 A Tiny, High-Performance File Integrity and Comparison Tool
