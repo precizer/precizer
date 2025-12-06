@@ -1,4 +1,4 @@
-[<img src="img/i18n-icon.svg"> English language README file](README.md)
+[<img src="img/i18n-icon.svg"> Link to the English language README page](README.md)
 
 # Precizer
 Крошечное, высокопроизводительное приложение для проверки целостности файлов
