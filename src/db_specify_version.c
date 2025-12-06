@@ -25,6 +25,7 @@ Return db_specify_version(
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
 	bool db_file_modified = false;
+	int rc = SQLITE_OK;
 
 	/* Validate input parameters */
 	if(db_file_path == NULL)
@@ -46,18 +47,22 @@ Return db_specify_version(
 	}
 
 	/* Open database connection */
-	if(SQLITE_OK != sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE,NULL))
+	rc = sqlite3_open_v2(db_file_path,&db,SQLITE_OPEN_READWRITE,NULL);
+
+	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Failed to open database: %s\n",sqlite3_errmsg(db));
+		log_sqlite_error(db,rc,NULL,"Failed to open database");
 		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
 	{
 		/* Begin transaction */
-		if(SQLITE_OK != sqlite3_exec(db,"BEGIN TRANSACTION",NULL,NULL,NULL))
+		rc = sqlite3_exec(db,"BEGIN TRANSACTION",NULL,NULL,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to begin transaction: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to begin transaction");
 			status = FAILURE;
 		}
 	}
@@ -65,9 +70,11 @@ Return db_specify_version(
 	if(SUCCESS == status)
 	{
 		/* Remove all from the table */
-		if(SQLITE_OK != sqlite3_exec(db,"DELETE FROM metadata;",NULL,NULL,NULL))
+		rc = sqlite3_exec(db,"DELETE FROM metadata;",NULL,NULL,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to remove all from the table: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to remove all from the table");
 			status = FAILURE;
 		}
 	}
@@ -75,9 +82,11 @@ Return db_specify_version(
 	/* Insert version number */
 	if(SUCCESS == status)
 	{
-		if(SQLITE_OK != sqlite3_prepare_v2(db,"INSERT INTO metadata (db_version) VALUES(?);",-1,&stmt,NULL))
+		rc = sqlite3_prepare_v2(db,"INSERT INTO metadata (db_version) VALUES(?);",-1,&stmt,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to prepare insert query: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to prepare insert query");
 			status = FAILURE;
 		} else {
 			slog(TRACE,"The database version %d has been successfully stored in the DB\n",version);
@@ -86,18 +95,22 @@ Return db_specify_version(
 
 	if(SUCCESS == status)
 	{
-		if(SQLITE_OK != sqlite3_bind_int(stmt,1,version))
+		rc = sqlite3_bind_int(stmt,1,version);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to bind version number: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to bind version number");
 			status = FAILURE;
 		}
 	}
 
 	if(SUCCESS == status)
 	{
-		if(SQLITE_DONE != sqlite3_step(stmt))
+		rc = sqlite3_step(stmt);
+
+		if(SQLITE_DONE != rc)
 		{
-			slog(ERROR,"Failed to execute insert query: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to execute insert query");
 			status = FAILURE;
 		}
 	}
@@ -105,9 +118,11 @@ Return db_specify_version(
 	if(SUCCESS == status)
 	{
 		/* Commit transaction */
-		if(SQLITE_OK != sqlite3_exec(db,"COMMIT",NULL,NULL,NULL))
+		rc = sqlite3_exec(db,"COMMIT",NULL,NULL,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Failed to commit transaction: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to commit transaction");
 			status = FAILURE;
 		} else {
 			db_file_modified = true;
@@ -124,11 +139,13 @@ Return db_specify_version(
 	if(SUCCESS != status)
 	{
 		/* Attempt rollback */
-		if(SQLITE_OK == sqlite3_exec(db,"ROLLBACK",NULL,NULL,NULL))
+		rc = sqlite3_exec(db,"ROLLBACK",NULL,NULL,NULL);
+
+		if(SQLITE_OK == rc)
 		{
 			slog(TRACE,"The transaction has been rolled back\n");
 		} else {
-			slog(ERROR,"Failed to rollback transaction: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Failed to rollback transaction");
 		}
 	}
 
@@ -139,10 +156,7 @@ Return db_specify_version(
 	}
 
 	/* Cleanup */
-	if(SUCCESS == status)
-	{
-		status = db_close(db,&db_file_modified);
-	}
+	call(db_close(db,&db_file_modified));
 
 	provide(status);
 }

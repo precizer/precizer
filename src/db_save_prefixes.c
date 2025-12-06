@@ -76,7 +76,7 @@ Return db_save_prefixes(void)
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Can't prepare delete statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Can't prepare delete statement");
 			status = FAILURE;
 		}
 
@@ -85,7 +85,7 @@ Return db_save_prefixes(void)
 			/* Execute SQL statement */
 			if(sqlite3_step(delete_stmt) != SQLITE_DONE)
 			{
-				slog(ERROR,"Delete statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+				log_sqlite_error(config->db,rc,NULL,"Delete statement didn't return DONE");
 				status = FAILURE;
 			}
 		}
@@ -120,7 +120,7 @@ Return db_save_prefixes(void)
 
 			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Can't prepare select statement %s (%i): %s\n",select_sql,rc,sqlite3_errmsg(config->db));
+				log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",select_sql);
 				status = FAILURE;
 			}
 
@@ -130,7 +130,7 @@ Return db_save_prefixes(void)
 
 				if(SQLITE_OK != rc)
 				{
-					slog(ERROR,"Error binding value in select (%i): %s\n",rc,sqlite3_errmsg(config->db));
+					log_sqlite_error(config->db,rc,NULL,"Error binding value in select");
 					status = FAILURE;
 				}
 			}
@@ -158,7 +158,7 @@ Return db_save_prefixes(void)
 
 				if(SQLITE_OK != rc)
 				{
-					slog(ERROR,"Can't prepare insert statement %s (%i): %s\n",insert_sql,rc,sqlite3_errmsg(config->db));
+					log_sqlite_error(config->db,rc,NULL,"Can't prepare insert statement %s",insert_sql);
 					status = FAILURE;
 				}
 
@@ -168,7 +168,7 @@ Return db_save_prefixes(void)
 
 					if(SQLITE_OK != rc)
 					{
-						slog(ERROR,"Error binding value in insert (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc,NULL,"Error binding value in insert");
 						status = FAILURE;
 					}
 				}
@@ -178,7 +178,7 @@ Return db_save_prefixes(void)
 				{
 					if(sqlite3_step(insert_stmt) != SQLITE_DONE)
 					{
-						slog(ERROR,"Insert statement didn't return DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+						log_sqlite_error(config->db,rc,NULL,"Insert statement didn't return DONE");
 						status = FAILURE;
 					}
 				}

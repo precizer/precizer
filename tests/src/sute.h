@@ -4,9 +4,9 @@
 #include <string.h>
 #include <stdatomic.h>
 #include "testitall.h"
+#include "precizer.h"
 #include "mem.h"
 #include "xdiff.h"
-#include "precizer.h"
 
 Return test0001(void);
 Return test0002(void);
@@ -32,6 +32,11 @@ Return test0021(void);
 Return test0022(void);
 Return test0023(void);
 Return test0024(void);
+Return test0025(void);
+Return test0026(void);
+
+Return comprehensive_system_testing(void);
+Return comprehensive_unit_testing(void);
 
 Return prepare(void);
 Return finish(void);

@@ -14,32 +14,43 @@ static Return test0011_1_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1;"
-	        "${BINDIR}/precizer --progress --database=database2.db tests/examples/diffs/diff2;"
-	        "${BINDIR}/precizer --compare database1.db database2.db";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	create(char,result);
+	create(char,chunk);
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
 
-	char *pattern = NULL;
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--progress --database=database2.db tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	arguments = "--compare database1.db database2.db";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	create(char,pattern);
 
 	const char *filename = "templates/0011_001.txt";
 
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",SUCCESS,false,false));
+		"rm database1.db database2.db",COMPLETED,false,false));
 
-	reset(&pattern);
-
-	del_char(&result);
+	del(pattern);
+	del(chunk);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -74,55 +85,70 @@ static Return test0011_2_readme(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -par tests/examples/ tests/examples_backup;",SUCCESS,false,false));
+		"cp -par tests/examples/ tests/examples_backup;",COMPLETED,false,false));
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
+	const char *command = NULL;
 
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	create(char,pattern);
 
 	const char *filename = "templates/0011_002_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --progress --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
 
 	filename = "templates/0011_002_2.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,WARNING,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == runit(arguments,result,WARNING,false,false));
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --progress --database=database1.db tests/examples/diffs/diff1;"
+	create(char,chunk);
+
+	arguments = "--update --progress --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	command = "cd ${TMPDIR};"
 	        "echo -n '  ' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
 	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
-	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt;"
-	        "${BINDIR}/precizer --update --progress --database=database1.db tests/examples/diffs/diff1";
+	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	filename = "templates/0011_002_3.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
+	del(chunk);
 
 	// Don't clean up test results to use on the next test
 
@@ -143,20 +169,35 @@ static Return test0011_3_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1;";
-
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	create(char,result);
 
-	// Stdout output should be 0 characters
-	ASSERT(result->length == 0);
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
+	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
 
-	del_char(&result);
+	// Verify that silent mode produced no stdout after command execution
+	if(result->length > 0)
+	{
+		echo(STDERR,"ERROR: In silent mode stdout must be empty\n");
+		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET,getcstring(result));
+		status = FAILURE;
+	}
 
-	// Don't clean up test results to use on the next test
+	call(del(result));
+
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *filename = "templates/0011_003.txt";
+
+	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
 
 	RETURN_STATUS;
 }
@@ -171,28 +212,27 @@ static Return test0011_4_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=false;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1";
-
 	// Create memory for the result
-	MSTRUCT(mem_char,result);
+	create(char,result);
 
-	char *pattern = NULL;
+	create(char,pattern);
 
 	const char *filename = "templates/0011_004_1.txt";
 
-	ASSERT(SUCCESS == execute_command(command,result,SUCCESS,false,false));
-	ASSERT(SUCCESS == get_file_content(filename,&pattern));
-	ASSERT(SUCCESS == match_pattern(result->mem,pattern,filename));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	ASSERT(SUCCESS == runit("--verbose --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	reset(&pattern);
-	del_char(&result);
+	del(pattern);
+	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db;"
-		"rm -rf tests/examples/;"
-		"mv tests/examples_backup/ tests/examples/",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm database1.db && "
+		"rm -rf tests/examples/ && "
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -208,8 +248,9 @@ static Return test0011_5_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --maxdepth=0 tests/examples/4";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments = "--maxdepth=0 tests/examples/4";
 
 	const char *filename = "templates/0011_005_1.txt";
 
@@ -223,20 +264,19 @@ static Return test0011_5_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	/* At the second stage, the --maxdepth=0 option is not used.
 	   Therefore, all files that were not previously included
 	   will be added to the database. */
 
-	command = "export TESTING=true;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update tests/examples/4";
+	arguments = "--update tests/examples/4";
 
 	filename = "templates/0011_005_2.txt";
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));;
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -252,8 +292,9 @@ static Return test0011_6_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=false;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --ignore=\"^diff1/1/.*\" tests/examples/diffs";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--ignore=\"^diff1/1/.*\" tests/examples/diffs";
 
 	const char *filename = "templates/0011_006_1.txt";
 
@@ -267,14 +308,13 @@ static Return test0011_6_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	filename = "templates/0011_006_2.txt";
 
-	command = "export TESTING=false;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update tests/examples/diffs";
+	arguments = "--update tests/examples/diffs";
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	RETURN_STATUS;
 }
@@ -290,8 +330,12 @@ static Return test0011_7_readme(void)
 {
 	INITTEST;
 
-	const char *command = "export TESTING=false;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update --db-clean-ignored --ignore=\"^diff1/1/.*\" --ignore=\"^diff2/1/.*\" tests/examples/diffs";
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--update --db-clean-ignored"
+	        " --ignore=\"^diff1/1/.*\""
+	        " --ignore=\"^diff2/1/.*\""
+	        " tests/examples/diffs";
 
 	const char *filename = "templates/0011_007.txt";
 
@@ -305,9 +349,9 @@ static Return test0011_7_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }
@@ -323,16 +367,21 @@ static Return test0011_8_readme(void)
 {
 	INITTEST;
 
-	const char *command = "cd ${TMPDIR};"
-	        "${BINDIR}/precizer tests/examples/diffs";
+	const char *arguments = NULL;
 
-	ASSERT(SUCCESS == execute_command(command,NULL,SUCCESS,true,true));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	command = "export TESTING=false;cd ${TMPDIR};"
-	        "${BINDIR}/precizer --update"
-	        " --db-clean-ignored --ignore=\"^.*/path2/.*\""
-	        " --ignore=\"^diff2/.*\" --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
-	        " --include=\"^diff2/path1/AAA/ZAW/.*\" tests/examples/diffs";
+	ASSERT(SUCCESS == runit("tests/examples/diffs",NULL,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	arguments = "--update"
+	        " --db-clean-ignored"
+	        " --ignore=\"^.*/path2/.*\""
+	        " --ignore=\"^diff2/.*\""
+	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
+	        " --include=\"^diff2/path1/AAA/ZAW/.*\""
+	        " tests/examples/diffs";
 
 	const char *filename = "templates/0011_008.txt";
 
@@ -346,9 +395,9 @@ static Return test0011_8_readme(void)
 		return(FAILURE);
 	}
 
-	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",SUCCESS,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
 
 	RETURN_STATUS;
 }

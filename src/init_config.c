@@ -1,15 +1,19 @@
 #include "precizer.h"
 
+#if 0
+#include <locale.h>
+#endif
+
 /**
  *
  * The structure Config where all runtime settings will be stored.
- * Initialization the structure elements by zerro.
+ * Initialization the structure elements by zero.
  *
  */
 void init_config(void)
 {
 
-	// Fill out with zerroes
+	// Fill out with zeroes
 	memset(config,0,sizeof(Config));
 
 	// Max available size of a path
@@ -129,6 +133,9 @@ void init_config(void)
 	{
 		// Global variable
 		rational_logger_mode = TESTING;
+	} else {
+		// Global variable, default value
+		rational_logger_mode = REGULAR;
 	}
 
 	/// This option prevents directory traversal from descending into
@@ -142,12 +149,14 @@ void init_config(void)
 	/// will force a rescan and update the checksum in the database.
 	config->watch_timestamps = false;
 
+#if 0
 	if(NULL != setlocale(LC_ALL,""))
 	{
-		slog(TRACE,"Enable UTF-8 support\n");
+		slog(TRACE,"Enable locale support\n");
 	} else {
-		slog(ERROR,"Failed to set UTF-8 locale\n");
+		slog(TRACE,"Failed to set locale\n");
 	}
+#endif
 
 	slog(TRACE,"Configuration initialized\n");
 }

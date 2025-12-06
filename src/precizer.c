@@ -15,13 +15,10 @@
 // Atomic variable is very fast and will be called very often
 _Atomic bool global_interrupt_flag = false;
 
-_Atomic Return global_return_status = SUCCESS;
-
 // The global structure Config where all runtime settings will be stored
 Config _config;
 Config *config = &_config;
 
-#ifndef TESTITALL // Unit testing library
 /**
  * @mainpage
  * @brief precizer is a CLI application designed to verify the integrity of files after synchronization.
@@ -33,14 +30,16 @@ Config *config = &_config;
  * The program identifies synchronization errors by cross-referencing
  * data and checksums from various sources. Alternatively, it can be
  * used to crawl historical changes by comparing databases from the
- * same sources over different times.
- *
+ * same sources over different times
  */
+#ifndef TESTITALL // Unit testing library
 int main(
+#else
+int test_main(
+#endif // TESTITALL
 	int  argc,
 	char **argv)
 {
-
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
@@ -73,7 +72,7 @@ int main(
 	run(db_determine_mode());
 
 	// Primary database file integrity check
-	run(primary_db_file_test());
+	run(db_primary_file_test());
 
 	// Initialize SQLite database
 	run(db_init());
@@ -104,7 +103,7 @@ int main(
 
 	// Disable journaling, flush the journal to the main database,
 	// clear the cache, and close the database
-	db_close(config->db,&config->db_primary_file_modified);
+	call(db_close(config->db,&config->db_primary_file_modified));
 
 	// Optimizing the space occupied by a database file.
 	run(db_primary_consider_vacuum());
@@ -120,4 +119,3 @@ int main(
 
 	return(exit_status(status,argv));
 }
-#endif // TESTITALL

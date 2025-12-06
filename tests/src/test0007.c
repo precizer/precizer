@@ -6,6 +6,14 @@
 #include <time.h>
 #include "sha512.h"
 
+#ifndef ullint
+typedef unsigned long long int ullint;
+#endif
+
+#ifndef uchar
+typedef unsigned char uchar;
+#endif
+
 #define CYCLES 10
 #define SHOW_TEST 0 /* Change to 1 to print out debug details */
 
@@ -20,7 +28,7 @@
  * @note Only compiled when SHOW_TEST is set to 1
  * @note Requires STDERR to be properly initialized
  */
-static void print_hash(unsigned char *hash)
+static void print_hash(const unsigned char *hash)
 {
 	for(int i = 0; i < SHA512_DIGEST_LENGTH; i++)
 	{
@@ -33,7 +41,7 @@ static void print_hash(unsigned char *hash)
 /**
  * @brief Tests copying of empty memory unsigned long long int structures
  * @details Verifies that copying an empty memory structure works correctly
- *         by creating two ullint memory structures and copying one to another
+ *         by creating two unsigned long long int memory structures and copying one to another
  *
  * @return Return enum indicating success or failure of the test
  * @retval SUCCESS if test passed
@@ -44,16 +52,16 @@ static Return test0007_1_libmem(void)
 	INITTEST;
 
 	// Allocate memory for the structure int
-	MSTRUCT(mem_ullint,test0_0);
-	MSTRUCT(mem_ullint,test0_1);
+	create(unsigned long long int,test0_0);
+	create(unsigned long long int,test0_1);
 
-	// Create and copy of an ullint memory arrays
-	ASSERT(SUCCESS == realloc_ullint(test0_0,0));
-	ASSERT(SUCCESS == copy_ullint(test0_1,test0_0));
+	// Create and copy of an unsigned long long int memory arrays
+	ASSERT(SUCCESS == resize(test0_0,0));
+	ASSERT(SUCCESS == copy(test0_1,test0_0));
 
 	// Cleanup
-	ASSERT(SUCCESS == del_ullint(&test0_0));
-	ASSERT(SUCCESS == del_ullint(&test0_1));
+	ASSERT(SUCCESS == del(test0_0));
+	ASSERT(SUCCESS == del(test0_1));
 
 	RETURN_STATUS;
 }
@@ -108,23 +116,35 @@ static Return test0007_2_libmem(void)
 	#endif
 
 	// Allocate memory for the structure int
-	MSTRUCT(mem_int,test1);
+	create(int,test1);
 
 	// Create an int memory
-	calloc_int(test1,array_length);
+	ASSERT(SUCCESS == resize(test1,array_length,ZERO_NEW_MEMORY));
 
-	// Test memeory edges
-	memcpy(test1->mem,int_array,test1->length * sizeof(test1->mem[0]));
+	// Test memory edges
+	int *test1_data = data(int,test1);
+	ASSERT(test1_data != NULL);
+
+	if(test1_data != NULL)
+	{
+		memcpy(test1_data,int_array,test1->length * test1->element_size);
+	}
 
 	// Calculate hash of copied data
 	sha512_init(&ctx);
-	sha512_update(&ctx,(const unsigned char *)test1->mem,
-		test1->length * sizeof(test1->mem[0]));
+	const int *test1_view = cdata(int,test1);
+	ASSERT(test1_view != NULL);
+
+	if(test1_view != NULL)
+	{
+		sha512_update(&ctx,(const unsigned char *)test1_view,
+			test1->length * test1->element_size);
+	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
 	echo(STDERR,"Test 1 Array size: %zu bytes\n",
-		test1->length * sizeof(test1->mem[0]));
+		test1->length * test1->element_size);
 	echo(STDERR,"Test 1 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -137,7 +157,7 @@ static Return test0007_2_libmem(void)
 	}
 
 	// Cleanup int array
-	del_int(&test1);
+	del(test1);
 	reset(&int_array);
 
 	RETURN_STATUS;
@@ -164,6 +184,13 @@ static Return test0007_3_libmem(void)
 	size_t array_length = 512;
 	size_t array_size = array_length * sizeof(char);
 	unsigned char *char_array = (unsigned char *)calloc(array_length,sizeof(char));
+	ASSERT(char_array != NULL);
+
+	if(char_array == NULL)
+	{
+		status = FAILURE;
+		RETURN_STATUS;
+	}
 
 	// Fill array with random bytes
 	for(size_t i = 0; i < array_size; i++)
@@ -186,23 +213,35 @@ static Return test0007_3_libmem(void)
 	#endif
 
 	// Test managed memory structure
-	MSTRUCT(mem_char,test2);
+	create(char,test2);
 
-	// Create an char memory
-	realloc_char(test2,array_length);
+	// Create a char memory
+	ASSERT(SUCCESS == resize(test2,array_length));
 
-	// Test memeory edges
-	memcpy(test2->mem,char_array,test2->length * sizeof(test2->mem[0]));
+	// Test memory edges
+	char *test2_data = data(char,test2);
+	ASSERT(test2_data != NULL);
+
+	if(test2_data != NULL)
+	{
+		memcpy(test2_data,char_array,test2->length * test2->element_size);
+	}
 
 	// Calculate hash of copied data
 	sha512_init(&ctx);
-	sha512_update(&ctx,(const unsigned char *)test2->mem,
-		test2->length * sizeof(test2->mem[0]));
+	const char *test2_view = cdata(char,test2);
+	ASSERT(test2_view != NULL);
+
+	if(test2_view != NULL)
+	{
+		sha512_update(&ctx,(const unsigned char *)test2_view,
+			test2->length * test2->element_size);
+	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
 	echo(STDERR,"Test 2 array size: %zu bytes\n",
-		test2->length * sizeof(test2->mem[0]));
+		test2->length * test2->element_size);
 	echo(STDERR,"Test 2 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -215,7 +254,7 @@ static Return test0007_3_libmem(void)
 	}
 
 	// Cleanup char array
-	del_char(&test2);
+	del(test2);
 	reset(&char_array);
 
 	RETURN_STATUS;
@@ -240,6 +279,8 @@ static Return test0007_4_5_6_libmem(void)
 	unsigned char hash_1[SHA512_DIGEST_LENGTH];
 	unsigned char hash_2[SHA512_DIGEST_LENGTH];
 	uint64_t random = 0;
+	unsigned long long int *test_data = NULL;
+	const unsigned long long int *test_view = NULL;
 
 	// TEST 4: Large allocation
 	size_t array_length = 4096;
@@ -273,22 +314,34 @@ static Return test0007_4_5_6_libmem(void)
 	#endif
 
 	// Allocate memory for the structure unsigned long long int
-	MSTRUCT(mem_ullint,test);
+	create(unsigned long long int,test);
 
 	// Create an unsigned long long int memory
-	realloc_ullint(test,array_length);
+	ASSERT(SUCCESS == resize(test,array_length));
 
-	// Test memeory edges
-	memcpy(test->mem,ullint_array,test->length * sizeof(test->mem[0]));
+	// Test memory edges
+	test_data = data(unsigned long long int,test);
+	ASSERT(test_data != NULL);
+
+	if(test_data != NULL)
+	{
+		memcpy(test_data,ullint_array,test->length * test->element_size);
+	}
 
 	// Calculate SHA-512 hash
 	sha512_init(&ctx);
-	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
+	test_view = cdata(unsigned long long int,test);
+	ASSERT(test_view != NULL);
+
+	if(test_view != NULL)
+	{
+		sha512_update(&ctx,(const unsigned char *)test_view,test->length * test->element_size);
+	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
 	// Print array summary and hash
-	echo(STDERR,"Test 4 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
+	echo(STDERR,"Test 4 array size: %zu bytes\n",test->length * test->element_size);
 	echo(STDERR,"Test 4 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -330,19 +383,30 @@ static Return test0007_4_5_6_libmem(void)
 	#endif
 
 	// Create an unsigned long long int memory
-	realloc_ullint(test,array_length);
+	ASSERT(SUCCESS == resize(test,array_length));
 
-	// Test memeory edges
-	memcpy(test->mem,ullint_array,test->length * sizeof(test->mem[0]));
+	test_data = data(unsigned long long int,test);
+	ASSERT(test_data != NULL);
+
+	if(test_data != NULL)
+	{
+		memcpy(test_data,ullint_array,test->length * test->element_size);
+	}
 
 	// Calculate SHA-512 hash
 	sha512_init(&ctx);
-	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
+	test_view = cdata(unsigned long long int,test);
+	ASSERT(test_view != NULL);
+
+	if(test_view != NULL)
+	{
+		sha512_update(&ctx,(const unsigned char *)test_view,test->length * test->element_size);
+	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
 	// Print array summary and hash
-	echo(STDERR,"Test 5 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
+	echo(STDERR,"Test 5 array size: %zu bytes\n",test->length * test->element_size);
 	echo(STDERR,"Test 5 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -386,19 +450,30 @@ static Return test0007_4_5_6_libmem(void)
 	#endif
 
 	// Create an unsigned long long int memory
-	realloc_ullint(test,array_length,true);
+	ASSERT(SUCCESS == resize(test,array_length));
 
-	// Test memeory edges
-	memcpy(test->mem,ullint_array,test->length * sizeof(test->mem[0]));
+	test_data = data(unsigned long long int,test);
+	ASSERT(test_data != NULL);
+
+	if(test_data != NULL)
+	{
+		memcpy(test_data,ullint_array,test->length * test->element_size);
+	}
 
 	// Calculate SHA-512 hash
 	sha512_init(&ctx);
-	sha512_update(&ctx,(const unsigned char *)test->mem,test->length * sizeof(test->mem[0]));
+	test_view = cdata(unsigned long long int,test);
+	ASSERT(test_view != NULL);
+
+	if(test_view != NULL)
+	{
+		sha512_update(&ctx,(const unsigned char *)test_view,test->length * test->element_size);
+	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
 	// Print array summary and hash
-	echo(STDERR,"Test 6 array size: %zu bytes\n",test->length * sizeof(test->mem[0]));
+	echo(STDERR,"Test 6 array size: %zu bytes\n",test->length * test->element_size);
 	echo(STDERR,"Test 6 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -410,7 +485,7 @@ static Return test0007_4_5_6_libmem(void)
 	}
 
 	// free an empty unsigned long long int array
-	del_ullint(&test);
+	del(test);
 	reset(&ullint_array);
 
 	#if SHOW_TEST
@@ -421,7 +496,7 @@ static Return test0007_4_5_6_libmem(void)
 }
 
 /**
- * @brief Multiple tests with ullint type and different array sizes
+ * @brief Multiple tests with unsigned long long int type and different array sizes
  *
  */
 static Return test0007_7_libmem_multiple(void)
@@ -455,7 +530,7 @@ static Return test0007_8_libmem_multiple(void)
 }
 
 /**
- * @brief Multiple tests with char type and different array sizes
+ * @brief Multiple tests with int type and different array sizes
  *
  */
 static Return test0007_9_libmem_multiple(void)
@@ -465,6 +540,23 @@ static Return test0007_9_libmem_multiple(void)
 	SLOWTEST;
 
 	#define TYPE int
+	#include "test0007.cc"
+	#undef TYPE
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Multiple tests with undigned char type and different array sizes
+ *
+ */
+static Return test0007_10_libmem_multiple(void)
+{
+	INITTEST;
+
+	SLOWTEST;
+
+	#define TYPE uchar
 	#include "test0007.cc"
 	#undef TYPE
 
@@ -494,6 +586,7 @@ Return test0007(void)
 	TEST(test0007_7_libmem_multiple,"libmem generate multiple tests unsigned long long int type…");
 	TEST(test0007_8_libmem_multiple,"libmem generate multiple tests char type…");
 	TEST(test0007_9_libmem_multiple,"libmem generate multiple tests int type…");
+	TEST(test0007_10_libmem_multiple,"libmem generate multiple tests unsigned char type…");
 
 	RETURN_STATUS;
 }

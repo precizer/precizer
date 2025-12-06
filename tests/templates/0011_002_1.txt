@@ -1,5 +1,4 @@
-\ATESTING:Enable UTF-8 support
-TESTING:Configuration initialized
+\ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
@@ -36,6 +35,7 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File system traversal initiated to calculate file count and storage usage
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Bytes that can be allocated for the file buffer: \d+.*$
 TESTING:File traversal started
 TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
 1/AAA/BCB/CCC/a.txt
@@ -58,4 +58,5 @@ TESTING:The primary database has been vacuumed
 TESTING:The connection to the primary database has been closed
 TESTING:\x1B\[1mThe brand-new primary database database1.db was created and modified since the program started \(files were added, removed, or updated\)\x1B\[0m
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS\z
+TESTING:Exit status » SUCCESS
+\z

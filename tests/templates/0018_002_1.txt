@@ -11,9 +11,9 @@
 \+TESTING:Starting database file database3.db integrity check…
 \+TESTING:The database verification level has been set to FULL
 \+TESTING:Database database3.db has been verified and is in good condition
-\+TESTING:Version number 2 found in database
-\+TESTING:The database3.db database file is version 2
-\+TESTING:The database database3.db is on version 2 and does not require any upgrades
+\+TESTING:Version number 3 found in database
+\+TESTING:The database3.db database file is version 3
+\+TESTING:The database database3.db is on version 3 and does not require any upgrades
 -TESTING:The primary database and tables have been successfully initialized
 \+TESTING:The primary database and tables do not require initialization
 -TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments

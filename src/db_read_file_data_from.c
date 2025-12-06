@@ -30,7 +30,7 @@ Return db_read_file_data_from(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare select statement %s (%i): %s\n",select_sql,rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",select_sql);
 		status = FAILURE;
 	}
 
@@ -39,7 +39,7 @@ Return db_read_file_data_from(
 
 	if(SQLITE_OK != rc)
 	{
-		printf("Error binding value in select (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Error binding value in select");
 		status = FAILURE;
 	}
 #endif
@@ -47,7 +47,7 @@ Return db_read_file_data_from(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Error binding value in select (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Error binding value in select");
 		status = FAILURE;
 	}
 
@@ -80,7 +80,7 @@ Return db_read_file_data_from(
 
 	if(SQLITE_DONE != rc)
 	{
-		slog(ERROR,"Select statement didn't finish with DONE (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 		status = FAILURE;
 	}
 	sqlite3_finalize(select_stmt);

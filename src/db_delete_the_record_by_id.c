@@ -31,7 +31,7 @@ Return db_delete_the_record_by_id(
 
 	if(SQLITE_OK != rc)
 	{
-		slog(ERROR,"Can't prepare delete statement (%i): %s\n",rc,sqlite3_errmsg(config->db));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare delete statement");
 		status = FAILURE;
 	}
 
@@ -41,7 +41,7 @@ Return db_delete_the_record_by_id(
 
 		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Error binding value in delete (%i): %s\n",rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Error binding value in delete");
 			status = FAILURE;
 		}
 	}
@@ -87,25 +87,18 @@ Return db_delete_the_record_by_id(
 				slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
 			}
 
-			/* Truncate the file path/name in the display output if it exceeds the length limit */
-			char *shorten_relative_path = strdup(relative_path);
-
-			status = shorten_path(shorten_relative_path);
-
 			if(!(rational_logger_mode & SILENT))
 			{
 				if(*clean_ignored == true)
 				{
-					printf("%s clean ignored\n",shorten_relative_path);
+					printf("%s %s\n",relative_path,"clean ignored");
 				} else {
-					printf("%s\n",shorten_relative_path);
+					printf("%s\n",relative_path);
 				}
 			}
 
-			free(shorten_relative_path);
-
 		} else {
-			slog(ERROR,"Delete statement didn't return right code %d (%i): %s\n",sql_return,rc,sqlite3_errmsg(config->db));
+			log_sqlite_error(config->db,rc,NULL,"Delete statement didn't return right code %d",sql_return);
 			status = FAILURE;
 		}
 	}

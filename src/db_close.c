@@ -10,6 +10,7 @@ Return db_close(
 	const bool *db_file_modified)
 {
 	Return status = SUCCESS;
+	int rc = SQLITE_OK;
 
 	/* Cleanup and close previously used DB */
 	if(db != NULL)
@@ -30,14 +31,16 @@ Return db_close(
 			 * @details Sets synchronous mode to FULL for maximum durability
 			 */
 			const char *sql =
+			        "PRAGMA journal_mode=DELETE;"
 			        "PRAGMA fsync=ON;"
 			        "PRAGMA synchronous=EXTRA;"
-			        "PRAGMA locking_mode=EXCLUSIVE;"
-			        "PRAGMA wal_checkpoint(TRUNCATE);";
+			        "PRAGMA locking_mode=EXCLUSIVE;";
 
-			if(SQLITE_OK != sqlite3_exec(db,sql,NULL,NULL,NULL))
+			rc = sqlite3_exec(db,sql,NULL,NULL,NULL);
+
+			if(SQLITE_OK != rc)
 			{
-				slog(ERROR,"Warning: failed to tune database integrity: %s\n",sqlite3_errmsg(db));
+				log_sqlite_error(db,rc,NULL,"Warning: failed to tune database integrity");
 				status = FAILURE;
 			}
 		}
@@ -46,9 +49,11 @@ Return db_close(
 		 * @brief Force cache flush to disk for data persistence
 		 * @note This is the first approach to ensure data integrity
 		 */
-		if(SQLITE_OK != sqlite3_db_cacheflush(db))
+		rc = sqlite3_db_cacheflush(db);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Warning: failed to flush database: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Warning: failed to flush database");
 			status = FAILURE;
 		}
 
@@ -56,16 +61,18 @@ Return db_close(
 		 * @brief Close database connection and cleanup resources
 		 * @note Must be called to prevent resource leaks
 		 */
-		if(SQLITE_OK != sqlite3_close(db))
+		rc = sqlite3_close(db);
+
+		if(SQLITE_OK != rc)
 		{
-			slog(ERROR,"Warning: failed to close database: %s\n",sqlite3_errmsg(db));
+			log_sqlite_error(db,rc,NULL,"Warning: failed to close database");
 			status = FAILURE;
 		}
 	}
 
 	if(SUCCESS == status)
 	{
-		slog(TRACE,"The connection to the primary database has been closed\n",sqlite3_errmsg(db));
+		slog(TRACE,"The connection to the primary database has been closed\n");
 	}
 
 	provide(status);

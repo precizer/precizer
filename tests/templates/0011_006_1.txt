@@ -34,4 +34,5 @@ The primary database has been vacuumed
 \x1B\[1mThe brand-new primary database %DB_NAME% was created and modified since the program started \(files were added, removed, or updated\)\x1B\[0m
 The precizer completed its execution without any issues
 Exit status » SUCCESS
-Enjoy your life!\z
+Enjoy your life!
+\z
