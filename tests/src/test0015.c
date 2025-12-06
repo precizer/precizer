@@ -408,6 +408,61 @@ Return test0015_11_upgrade_db(void)
 }
 
 /**
+ * Create a fresh database inside tests/examples/diffs/ with the UTF-8 name
+ * "Это новая база данных.db" and ensure the app can read/write it despite
+ * spaces and non-ASCII characters.
+ * Then compare it against the legacy database
+ * "0027 это база данных с пробелами и символами UTF-8 версии v3.db" that was
+ * produced by a well-tested older release. If the files and checksums match,
+ * the current checksum calculation is considered compatible with the legacy
+ * algorithm.
+ */
+Return test0015_12_checksum_compare(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command = "cd ${TMPDIR} && "
+	        "cp -p \"$ORIGIN_DIR/tests/templates/0027 это база данных с пробелами и символами UTF-8 версии v3.db\" .";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	create(char,pattern);
+	create(char,result);
+	create(char,chunk);
+
+	const char *arguments = "--database=\"Это новая база данных.db\" tests/examples/diffs/";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == copy(result,chunk));
+
+	arguments = "--compare \"Это новая база данных.db\" \"0027 это база данных с пробелами и символами UTF-8 версии v3.db\"";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == concat_strings(result,chunk));
+
+	const char *filename = "templates/0015_012.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	// Match the result against the pattern
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	// Clean to use it iteratively
+	del(pattern);
+	del(result);
+	del(chunk);
+
+	// Clean up test results
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm \"${TMPDIR}/Это новая база данных.db\" \"${TMPDIR}/0027 это база данных с пробелами и символами UTF-8 версии v3.db\"",
+		COMPLETED,false,false));
+
+	RETURN_STATUS;
+}
+
+/**
  * Testing scenario 15
  *
  * Database upgrade testing:
@@ -432,6 +487,7 @@ Return test0015(void)
 	TEST(test0015_9_upgrade_db,"Upgrading from 1 to the last version using the --compare and --update…");
 	TEST(test0015_10_upgrade_db,"Upgrade a DB from v2 to the current version as the primary database…");
 	TEST(test0015_11_upgrade_db,"Upgrading from 2 to the last version using the --compare and --update…");
+	TEST(test0015_12_checksum_compare,"Create and compare DBs with UTF-8 names and checksums from legacy DB…");
 
 	RETURN_STATUS;
 }
