@@ -3,6 +3,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
 TESTING:argument:db_file_name=database1.db
+TESTING:argument:start-device-only=yes
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -61,6 +62,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
 TESTING:argument:db_file_name=database1.db
+TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:Arguments parsed
 TESTING:Checking directory paths provided as arguments
@@ -83,7 +85,7 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting database file database1.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database database1.db has been verified and is in good condition
 TESTING:Version number 3 found in database
 TESTING:The database1.db database file is version 3

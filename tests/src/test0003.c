@@ -6,7 +6,7 @@
  * Does it really comply with to the "hostname.db" template
  *
  */
-Return test0003(void)
+Return test0003_1(void)
 {
 	INITTEST;
 
@@ -16,27 +16,61 @@ Return test0003(void)
 
 	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,false,false));
 
-	if(SUCCESS == status)
-	{
-		// Get the output of the application
-		const char *arguments = "--compare ${DBNAME} database2.db";
+	// Get the output of the application
+	const char *arguments = "--compare ${DBNAME} database2.db";
 
-		const char *filename = "templates/0003.txt";  // File name
-		const char *template = "%DB_NAME%";
+	const char *filename = "templates/0003_001.txt";  // File name
+	const char *template = "%DB_NAME%";
 
-		const char *replacement = getenv("DBNAME");  // Database name
+	const char *replacement = getenv("DBNAME");  // Database name
 
-		if(replacement == NULL)
-		{
-			echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-			status = FAILURE;
-		}
+	ASSERT(replacement != NULL);
 
-		ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
-	}
+	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",COMPLETED,false,false));
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * Running the application with no arguments at all
+ *
+ */
+Return test0003_2(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+
+	const char *filename = "templates/0003_002.txt";
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit("",result,COMPLETED,false,false));
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	// Match the result against the pattern
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	// Clean to use it iteratively
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+
+}
+
+Return test0003(void)
+{
+	INITTEST;
+
+	TEST(test0003_1,"Comply default DB name to \"hostname.db\" template…");
+//	TEST(test0003_2,"Running the application with no arguments at all…");
 
 	RETURN_STATUS;
 }

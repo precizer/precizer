@@ -258,11 +258,7 @@ static Return test0011_5_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -302,11 +298,7 @@ static Return test0011_6_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -343,11 +335,7 @@ static Return test0011_7_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -389,11 +377,7 @@ static Return test0011_8_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 

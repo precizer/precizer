@@ -16,12 +16,8 @@ for(int i = 0; i < CYCLES; i++)
 		unsigned char *array = NULL;
 		unsigned char *temp = (unsigned char *)realloc(array,array_size);
 
-		if(temp == NULL)
-		{
-			echo(STDERR,"Can't allocate memory %zu bytes\n",array_size);
-			status = FAILURE;
-			continue;
-		}
+		ASSERT(temp != NULL);
+
 		array = temp;
 
 		// Fill array with random bytes
@@ -76,11 +72,7 @@ for(int i = 0; i < CYCLES; i++)
 		print_hash(hash_2);
 		#endif
 
-		if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
-		{
-			echo(STDERR,"Test %d:%d fail\n",i,k);
-			status = FAILURE;
-		}
+		ASSERT(0 == memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH));
 
 		reset(&array);
 	}

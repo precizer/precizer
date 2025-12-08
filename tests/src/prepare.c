@@ -58,12 +58,9 @@ Return prepare(void)
 
 	del(path);
 
-	if(file_exists == true)
-	{
-		ASSERT(SUCCESS == execute_and_set_variable("BINDIR","echo \"${TMPDIR}/\"",0));
-	} else {
-		provide(FAILURE);
-	}
+	ASSERT(file_exists == true);
+
+	ASSERT(SUCCESS == execute_and_set_variable("BINDIR","echo \"${TMPDIR}/\"",0));
 
 	/* Enable UTF-8 */
 	ASSERT(SUCCESS == set_environment_variable("LC_ALL","C.UTF-8"));

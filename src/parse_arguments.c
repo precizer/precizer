@@ -10,39 +10,40 @@ const char *argp_program_version = APP_NAME " " APP_VERSION;
 
 /* Program documentation. */
 static char doc[] =
-        BOLD "precizer" RESET " is a CLI application for verifying file integrity after synchronization. The program recursively traverses directories, creates a database of files with their checksums, and performs comparisons.\n"
-        "\n"
-        BOLD "precizer" RESET " is optimized for large-scale file systems. It detects synchronization errors by cross-referencing data and checksums from different sources. It can also track historical changes by comparing databases from the same sources across different time periods.\n"
-        "\n"
-        "Glory to Ukraine!\n"
-        "\vSIMPLE EXAMPLE\n"
-        "\n"
-        "Consider two hosts with large disks containing identical content mounted at /mnt1 and /mnt2 respectively. The task is to verify content identity and identify any differences.\n"
-        "\n"
-        "1. Run the program on the first machine with host name, for example “host1”:\n"
-        "\n"
-        "precizer --progress /mnt1\n"
-        "\n"
-        "The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n"
-        "\n"
-        "2. Run the program on a second machine with a host name, for example host2:\n"
-        "\n"
-        "precizer --progress /mnt2\n"
-        "\n"
-        "As a result, the host2.db database will be created in the current directory.\n"
-        "\n"
-        "3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:\n"
-        "\n"
-        "precizer --compare host1.db host2.db\n"
-        "\n"
-        "The following information will be displayed on the screen:\n"
-        "\n"
-        "* Which files are missing on “host1” but present on “host2” and vice versa.\n"
-        "* For which files, present on both hosts, the checksums do NOT match.\n"
-        "\n"
-        "Note that precizer writes only relative paths to the database. The example file “/mnt1/abc/def/aaa.txt” will be written to the database as “abc/def/aaa.txt” without /mnt1. The same thing will happen with the file “/mnt2/abc/def/aaa.txt”. Despite different mount points and different sources the files can be compared with each other under the same names “abc/def/aaa.txt” with the corresponding checksums.\n"
-        "\n"
-        "All other technical details could be found in README file of the project";
+    "\n" APP_NAME " " APP_VERSION " — verify file checksums at scale\n\n"
+    BOLD APP_NAME RESET " is a lightweight and blazing-fast CLI application designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program recursively traverses directories, generating a database of files and their checksums for quick and efficient comparisons.\n"
+    "\n"
+    "Built for both embedded platforms and large-scale clustered mainframes, " BOLD APP_NAME RESET " helps detect synchronization errors by comparing files and their checksums across different sources. It can also be used to analyze historical changes by comparing databases generated at different points in time from the same source.\n"
+    "\n"
+    "Glory to Ukraine!\n"
+    "\vSIMPLE EXAMPLE\n"
+    "\n"
+    "Consider two hosts with large disks containing identical content mounted at /mnt1 and /mnt2 respectively. The task is to verify content identity and identify any differences.\n"
+    "\n"
+    "1. Run the program on the first machine with host name, for example “host1”:\n"
+    "\n"
+    APP_NAME " --progress /mnt1\n"
+    "\n"
+    "The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n"
+    "\n"
+    "2. Run the program on a second machine with a host name, for example host2:\n"
+    "\n"
+    APP_NAME " --progress /mnt2\n"
+    "\n"
+    "As a result, the host2.db database will be created in the current directory.\n"
+    "\n"
+    "3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:\n"
+    "\n"
+    APP_NAME " --compare host1.db host2.db\n"
+    "\n"
+    "The following information will be displayed on the screen:\n"
+    "\n"
+    "* Which files are missing on “host1” but present on “host2” and vice versa.\n"
+    "* For which files, present on both hosts, the checksums do NOT match.\n"
+    "\n"
+    "Note that " APP_NAME " writes only relative paths to the database. The example file “/mnt1/abc/def/aaa.txt” will be written to the database as “abc/def/aaa.txt” without /mnt1. The same thing will happen with the file “/mnt2/abc/def/aaa.txt”. Despite different mount points and different sources the files can be compared with each other under the same names “abc/def/aaa.txt” with the corresponding checksums.\n"
+    "\n"
+    "All other technical details could be found in README file of the project";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "PATH";
@@ -50,18 +51,31 @@ static char args_doc[] = "PATH";
 /* The options we understand. */
 static struct argp_option options[] = {
 	{ 0,0,0,0,"Build database options:",2},
-	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions could be used to specify a pattern to ignore files or directories. Attention! All paths for the regular expression must be  specified as relative. To understand what a relative path looks like, just run traverses without the " BOLD "--ignore" RESET " option and look how the terminal will display relative paths that are written to the database.\n" \
-	 "\nExamples:\n" \
-	 "\n" BOLD "--ignore=\"diff2/1/.*\" tests/examples/diffs" RESET "\n" \
-	 "\n" \
-	 "In this example, the starting path for the traversing " \
-	 "is ./tests/examples/diffs and the relative path to ignore will " \
-	 "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/.*).\n" \
-	 "\n" \
-	 "Multiple regular expressions for ignore could be specified using " \
-	 "many " BOLD "--ignore" RESET " options at once:\n" \
-	 "\n" \
-	 BOLD "--ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",0 },
+	{"lock-checksum",'k',"PCRE2_REGEXP",0,"Relative path to be treated as immutable archival data. PCRE2 regular expressions can be used to "
+         "select files or directories whose checksums are written once to the database and never updated "
+         "again. If no matching files exist in the database yet, their entries and checksums will still be "
+         "created normally when they are scanned for the first time. All paths for the regular expression "
+         "must be specified as relative, the same way as for the "
+         BOLD "--ignore" RESET " option. For these entries, the "
+         BOLD "--update" RESET " option will not recalculate checksums; any difference in file size, timestamps, or content will "
+         "always be reported as data corruption instead of a reason to generate a new checksum. Multiple "
+         "regular expressions can be specified using multiple "
+         BOLD "--lock-checksum" RESET " options.\n"
+         "Example:\n"
+         BOLD APP_NAME " --update --lock-checksum=\"^archive/2077/.*\" /mnt/storage" RESET "\n",0},
+	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions could be used to specify "
+         "a pattern to ignore files or directories. Attention! All paths for the regular expression must be specified as relative. To understand what a relative path looks like, just run traverses without the "
+         BOLD "--ignore" RESET " option and look how the terminal will display "
+         "relative paths that are written to the database.\n"
+         "Example:\n"
+         BOLD APP_NAME " --ignore=\"^diff2/1/.*\" tests/examples/diffs" RESET "\n"
+         "In this example, the starting path for the traversing "
+         "is ./tests/examples/diffs and the relative path to ignore will "
+         "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/.*).\n"
+         "Multiple regular expressions for ignore could be specified using many "
+         BOLD "--ignore" RESET " options at once.\n"
+         "Example:\n"
+         BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",0 },
 	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",0 },
 	{"db-clean-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-clean-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",0},
 	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.\n",0},
@@ -73,7 +87,7 @@ static struct argp_option options[] = {
 	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname.\n",0 },
 	{"check-level",'l',"FULL|QUICK",0,"Select database validation level: 'quick' for basic structure check, 'full' (default) for comprehensive integrity verification.\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
-	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD " --compare database1.db database2.db" RESET "\n",0 },
+	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n",0 },
 	{ 0,0,0,0,"Visualizations options:\n",-1},
 	{"silent",'s',0,0,"Don't produce any output. The option will not affect " BOLD "--compare" RESET,0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
@@ -87,9 +101,6 @@ static error_t parse_opt(
 	char              *arg,
 	struct argp_state *state)
 {
-	/* Get the input argument from argp_parse, which we
-	   know is a pointer to our arguments structure. */
-	//struct arguments *arguments = state->input;
 	char *ptr = NULL;
 	long int argument_value = -1;
 
@@ -400,6 +411,11 @@ Return parse_arguments(
 			slog(TESTING,"argument:dry-run=%s\n",config->dry_run ? "yes" : "no");
 		}
 
+		if(config->start_device_only)
+		{
+			slog(TESTING,"argument:start-device-only=%s\n",config->start_device_only ? "yes" : "no");
+		}
+
 	} else {
 
 		// Verbose but NOT silent
@@ -475,7 +491,7 @@ Return parse_arguments(
 				printf("; ");
 			}
 
-			printf("verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, check-level=%s, rational_logger_mode=%s",
+			printf("verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
 				config->verbose ? "yes" : "no",
 				config->maxdepth,
 				config->force ? "yes" : "no",
@@ -485,6 +501,7 @@ Return parse_arguments(
 				config->compare ? "yes" : "no",
 				config->db_clean_ignored ? "yes" : "no",
 				config->dry_run ? "yes" : "no",
+				config->start_device_only ? "yes" : "no",
 				config->db_check_level == QUICK ? "QUICK" : "FULL",
 				rational_reconvert(rational_logger_mode));
 			printf("\n");

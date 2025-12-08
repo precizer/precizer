@@ -224,7 +224,7 @@ PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage
 
 #
 # Debug rules
@@ -406,6 +406,9 @@ test: tests
 tests: tests-sanitize
 tests-sanitize: sanitize
 	@$(MAKE) -s -C $(TESTDIR) sanitize
+
+coverage: debug
+	@$(MAKE) -s -C $(TESTDIR) coverage
 
 tests-debug: debug
 	@$(MAKE) -s -C $(TESTDIR) debug

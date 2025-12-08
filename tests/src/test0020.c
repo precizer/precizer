@@ -178,7 +178,7 @@ Return test0020_5(void)
 
 /**
  *
- *
+ * Attempt to change the primary path in the database
  *
  */
 Return test0020_6(void)
@@ -210,7 +210,7 @@ Return test0020_6(void)
 
 /**
  *
- *
+ * Replace the primary path in the database
  *
  */
 Return test0020_7(void)
@@ -250,8 +250,8 @@ Return test0020(void)
 	TEST(test0020_3,"DB creation in write protected directory…")
 	TEST(test0020_4,"Attempt to open DB with write protected database file…")
 	TEST(test0020_5,"Attempt to update DB with --update when database file is write protected…")
-	TEST(test0020_6,"…")
-	TEST(test0020_7,"…")
+	TEST(test0020_6,"Attempt to change the primary path in the database…")
+	TEST(test0020_7,"Replace the primary path in the database…")
 
 	RETURN_STATUS;
 }

@@ -130,7 +130,7 @@ run: sanitize
 #
 # Coverage rules
 #
-coverage: $(COV_EXE)
+coverage: coverage-html
 
 $(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-debug
 	@$(CC) $(DBG_LIBS) $(COV_LDFLAGS) $(DBG_DYNLIB) -o $(COV_EXE) $^ $(LDFLAGS)
@@ -147,7 +147,7 @@ $(COV_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 $(COV_OBJDIR):
 	@mkdir -p "$(COV_OBJDIR)"
 
-coverage-report: coverage
+coverage-report: $(COV_EXE)
 	@echo "Generating coverage report..."
 	./$(COV_EXE)
 	@echo "Coverage run finished. Inspect .gcda/.gcno outputs for details"
