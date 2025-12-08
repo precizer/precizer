@@ -134,11 +134,7 @@ Return test0015_4_upgrade_db(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -171,11 +167,7 @@ Return test0015_5_upgrade_db(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,WARNING));
 
@@ -203,11 +195,7 @@ Return test0015_6_upgrade_db(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -315,11 +303,7 @@ Return test0015_9_upgrade_db(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -393,11 +377,7 @@ Return test0015_11_upgrade_db(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -413,9 +393,9 @@ Return test0015_11_upgrade_db(void)
  * spaces and non-ASCII characters.
  * Then compare it against the legacy database
  * "0027 это база данных с пробелами и символами UTF-8 версии v3.db" that was
- * produced by a well-tested older release. If the files and checksums match,
- * the current checksum calculation is considered compatible with the legacy
- * algorithm.
+ * produced by a well-tested older release when upgraded to the version 3.
+ * If the files and checksums match, the current checksum calculation is
+ * considered compatible with the legacy well-tested algorithm.
  */
 Return test0015_12_checksum_compare(void)
 {

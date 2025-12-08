@@ -42,10 +42,10 @@ Return runit(
 	 */
 	Return status = SUCCESS;
 
-	// Arguments string to parse and forward into test_main.
+	// Arguments string to parse and forward into test_main
 	const char *safe_arguments = arguments;
 
-	if(NULL == safe_arguments)
+	if(NULL == safe_arguments || safe_arguments[0] == '\0')
 	{
 		safe_arguments = "";
 	}
@@ -177,7 +177,6 @@ Return runit(
 
 		run(function_capture(test_main_wrapper,STDOUT,STDERR));
 
-#if 1
 		if(SUCCESS == status)
 		{
 			int exit_code = test_main_context.result;
@@ -267,7 +266,6 @@ Return runit(
 				}
 			}
 		}
-#endif
 	}
 
 	// Restore original working directory if changed.

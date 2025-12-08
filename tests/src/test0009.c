@@ -105,11 +105,7 @@ Return test0009(void)
 	printf("captured_stdout:%s",getcstring(captured_stdout));
 	#endif
 
-	if(captured_stderr->length > 0)
-	{
-		echo(STDERR,"ERROR: Stderr buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
-		status = FAILURE;
-	}
+	ASSERT(captured_stderr->length == 0);
 
 	ASSERT(SUCCESS == get_file_content("templates/0009.txt",pattern));
 

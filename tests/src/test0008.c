@@ -30,11 +30,7 @@ Return test0008(void)
 	printf("captured_stdout:%s\n",getcstring(captured_stdout));
 	#endif
 
-	if(captured_stdout->length > 0)
-	{
-		echo(STDERR,"ERROR: Stdout buffer is not empty. It contains characters: %zu\n",captured_stdout->length);
-		status = FAILURE;
-	}
+	ASSERT(captured_stdout->length == 0);
 
 	ASSERT(SUCCESS == get_file_content("templates/0008.txt",pattern));
 

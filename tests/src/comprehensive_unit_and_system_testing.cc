@@ -1,8 +1,10 @@
 
-TEST(test0003,"Comply default DB name to \"hostname.db\" template…");
+TEST(test0003,"Basic application tests for argument parsing…");
 TEST(test0011,"User's Manual and examples from README test set…");
 TEST(test0013,"Dry Run mode testing…");
-//	TEST(test0014,"Short, long, relative and absolute paths…");
+#if 0
+TEST(test0014,"Short, long, relative and absolute paths…");
+#endif
 TEST(test0015,"Database upgrade testing…");
 TEST(test0016,"--watch-timestamps argument testing…");
 TEST(test0018,"--maxdepth argument testing…");

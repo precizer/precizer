@@ -23,7 +23,7 @@ Return test0016(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--start-device-only --database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -p database1.db database2.db",COMPLETED,false,false));
@@ -32,7 +32,7 @@ Return test0016(void)
 		"touch tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt && "
 		"rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt",COMPLETED,false,false));
 
-	ASSERT(SUCCESS == runit("--update --database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--update --check-level=QUICK --database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	ASSERT(SUCCESS == runit("--compare database1.db database2.db",chunk,COMPLETED,false,false));
