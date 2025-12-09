@@ -23,14 +23,13 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
 
-      - name: Build project
+      - name: Build project (x64)
         run: |
           make portable
           zip --junk-paths precizer_v${{ env.VERSION }}.zip precizer
 
-      - name: Run tests
+      - name: Run tests (x64)
         run: make tests
-
 
       - name: Create GitHub Release with gh CLI
         id: create_release
@@ -41,3 +40,32 @@ jobs:
             --title "v${{ github.ref_name }}" \
             --notes "${{ env.BODY }}" \
             --draft
+
+  build_arm64:
+    name: Build & attach arm64 artifact
+    runs-on: ubuntu-24.04-arm
+    needs: build
+    env:
+      GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
+
+      - name: Build project (arm64)
+        run: |
+          make portable
+          zip --junk-paths precizer_arm64_v${{ env.VERSION }}.zip precizer
+
+      - name: Run tests (arm64)
+        run: make tests
+
+      - name: Upload arm64 artifact to existing release
+        run: |
+          gh release upload ${{ github.ref_name }} precizer_arm64_v${{ env.VERSION }}.zip --clobber
