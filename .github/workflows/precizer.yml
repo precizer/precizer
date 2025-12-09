@@ -6,8 +6,13 @@ on:
       - "*.*.*"
 
 jobs:
-  build_linux_x86_64:
+  get_tag_info:
+    name: Get annotated tag message
     runs-on: ubuntu-24.04
+
+    outputs:
+      version: ${{ steps.tag_message.outputs.version }}
+      body: ${{ steps.tag_message.outputs.body }}
 
     steps:
       - name: Checkout repository
@@ -17,8 +22,29 @@ jobs:
         id: tag_message
         run: |
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          echo "BODY=$(git tag -l --format='%(contents)' ${{ github.ref_name }})" >> $GITHUB_ENV
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+          VERSION="${GITHUB_REF#refs/tags/}"
+
+          {
+            echo "version=$VERSION"
+            echo 'body<<EOF'
+            git tag -l --format='%(contents)' "$VERSION"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+
+  build_linux_x86_64:
+    name: Build & release Linux x86_64
+    runs-on: ubuntu-24.04
+    needs: get_tag_info
+
+    env:
+      VERSION: ${{ needs.get_tag_info.outputs.version }}
+      BODY: ${{ needs.get_tag_info.outputs.body }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
@@ -32,25 +58,27 @@ jobs:
         run: make tests
 
       - name: Create GitHub Release with gh CLI
-        id: create_release
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} precizer_linux_x86_64_v${{ env.VERSION }}.zip \
+          gh release create ${{ github.ref_name }} \
+            "precizer_linux_x86_64_v${{ env.VERSION }}.zip#Linux x86_64 static portable binary (single executable)" \
             --title "v${{ github.ref_name }}" \
             --notes "${{ env.BODY }}" \
             --draft
 
+
   build_linux_arm64:
-    name: Build & attach Linux arm64 artifact
+    name: Build & attach Linux arm64
     runs-on: ubuntu-24.04-arm
+    needs: get_tag_info
+
+    env:
+      VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
@@ -63,27 +91,37 @@ jobs:
       - name: Run tests (Linux arm64)
         run: make tests
 
-      - name: Upload Linux arm64 artifact to existing release
+      - name: Upload Linux arm64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release upload ${{ github.ref_name }} precizer_linux_arm64_v${{ env.VERSION }}.zip --clobber
+          gh release upload ${{ github.ref_name }} \
+            "precizer_linux_arm64_v${{ env.VERSION }}.zip#Linux arm64 static portable binary (single executable)" \
+            --clobber
+
 
   build_macos_arm64:
-    name: Build & attach macOS arm64 artifact
+    name: Build & attach macOS arm64
     runs-on: macos-latest
+    needs: get_tag_info
+
+    env:
+      VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (exclude tests/examples/long)
         uses: actions/checkout@v4
-
-      - name: Set version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        with:
+          fetch-depth: 0
+          sparse-checkout: |
+            /*
+            !/tests/examples/long/
+          sparse-checkout-cone-mode: false
 
       - name: Install dependencies
         run: |
           brew update
-          brew install pcre2 upx llvm || true
+          brew install pcre2 llvm upx gh || true
 
       - name: Build project (macOS arm64)
         run: |
@@ -93,8 +131,10 @@ jobs:
       - name: Run tests (macOS arm64)
         run: make tests
 
-      - name: Upload macOS arm64 artifact to existing release
+      - name: Upload macOS arm64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release upload ${{ github.ref_name }} precizer_macos_arm64_v${{ env.VERSION }}.zip --clobber
+          gh release upload ${{ github.ref_name }} \
+            "precizer_macos_arm64_v${{ env.VERSION }}.zip#macOS arm64 binary" \
+            --clobber
