@@ -6,7 +6,7 @@ on:
       - "*.*.*"
 
 jobs:
-  build:
+  build_linux_x86_64:
     runs-on: ubuntu-24.04
 
     steps:
@@ -23,12 +23,12 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
 
-      - name: Build project (x64)
+      - name: Build project (Linux x86_64)
         run: |
           make portable
-          zip --junk-paths precizer_v${{ env.VERSION }}.zip precizer
+          zip --junk-paths precizer_linux_x86_64_v${{ env.VERSION }}.zip precizer
 
-      - name: Run tests (x64)
+      - name: Run tests (Linux x86_64)
         run: make tests
 
       - name: Create GitHub Release with gh CLI
@@ -36,17 +36,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} precizer_v${{ env.VERSION }}.zip \
+          gh release create ${{ github.ref_name }} precizer_linux_x86_64_v${{ env.VERSION }}.zip \
             --title "v${{ github.ref_name }}" \
             --notes "${{ env.BODY }}" \
             --draft
 
-  build_arm64:
-    name: Build & attach arm64 artifact
+  build_linux_arm64:
+    name: Build & attach Linux arm64 artifact
     runs-on: ubuntu-24.04-arm
     needs: build
-    env:
-      GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
     steps:
       - name: Checkout repository
@@ -58,14 +56,47 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
 
-      - name: Build project (arm64)
+      - name: Build project (Linux arm64)
         run: |
           make portable
-          zip --junk-paths precizer_arm64_v${{ env.VERSION }}.zip precizer
+          zip --junk-paths precizer_linux_arm64_v${{ env.VERSION }}.zip precizer
 
-      - name: Run tests (arm64)
+      - name: Run tests (Linux arm64)
         run: make tests
 
-      - name: Upload arm64 artifact to existing release
+      - name: Upload Linux arm64 artifact to existing release
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release upload ${{ github.ref_name }} precizer_arm64_v${{ env.VERSION }}.zip --clobber
+          gh release upload ${{ github.ref_name }} precizer_linux_arm64_v${{ env.VERSION }}.zip --clobber
+
+  build_macos_arm64:
+    name: Build & attach macOS arm64 artifact
+    runs-on: macos-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install pcre2 upx llvm || true
+
+      - name: Build project (macOS arm64)
+        run: |
+          make portable
+          zip --junk-paths precizer_macos_arm64_v${{ env.VERSION }}.zip precizer
+
+      - name: Run tests (macOS arm64)
+        run: make tests
+
+      - name: Upload macOS arm64 artifact to existing release
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} precizer_macos_arm64_v${{ env.VERSION }}.zip --clobber
