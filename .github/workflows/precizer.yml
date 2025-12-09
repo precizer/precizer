@@ -50,9 +50,9 @@ jobs:
 
       - name: Build project (Linux x86_64)
         run: |
-          ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
           make portable
           zip --junk-paths precizer_linux_x86_64_v${{ env.VERSION }}.zip precizer
+          ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_v${{ env.VERSION }}.zip
 
       - name: Run tests (Linux x86_64)
@@ -85,9 +85,9 @@ jobs:
 
       - name: Build project (Linux arm64)
         run: |
-          ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           make portable
           zip --junk-paths precizer_linux_arm64_v${{ env.VERSION }}.zip precizer
+          ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_arm64_v${{ env.VERSION }}.zip
 
       - name: Run tests (Linux arm64)
