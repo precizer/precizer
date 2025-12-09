@@ -32,7 +32,6 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
-
   build_linux_x86_64:
     name: Build & release Linux x86_64
     runs-on: ubuntu-24.04
@@ -67,7 +66,6 @@ jobs:
             --notes "${{ env.BODY }}" \
             --draft
 
-
   build_linux_arm64:
     name: Build & attach Linux arm64
     runs-on: ubuntu-24.04-arm
@@ -99,42 +97,41 @@ jobs:
             "precizer_linux_arm64_v${{ env.VERSION }}.zip#Linux arm64 static portable binary (single executable)" \
             --clobber
 
-
-  build_macos_arm64:
-    name: Build & attach macOS arm64
-    runs-on: macos-latest
-    needs: get_tag_info
-
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-
-    steps:
-      - name: Checkout repository (exclude tests/examples/long)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          sparse-checkout: |
-            /*
-            !/tests/examples/long/
-          sparse-checkout-cone-mode: false
-
-      - name: Install dependencies
-        run: |
-          brew update
-          brew install pcre2 llvm upx gh || true
-
-      - name: Build project (macOS arm64)
-        run: |
-          make portable
-          zip --junk-paths precizer_macos_arm64_v${{ env.VERSION }}.zip precizer
-
-      - name: Run tests (macOS arm64)
-        run: make tests
-
-      - name: Upload macOS arm64 asset
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-        run: |
-          gh release upload ${{ github.ref_name }} \
-            "precizer_macos_arm64_v${{ env.VERSION }}.zip#macOS arm64 binary" \
-            --clobber
+#  build_macos_arm64:
+#    name: Build & attach macOS arm64
+#    runs-on: macos-latest
+#    needs: get_tag_info
+#
+#    env:
+#      VERSION: ${{ needs.get_tag_info.outputs.version }}
+#
+#    steps:
+#      - name: Checkout repository (exclude tests/examples/long)
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#          sparse-checkout: |
+#            /*
+#            !/tests/examples/long/
+#          sparse-checkout-cone-mode: false
+#
+#      - name: Install dependencies
+#        run: |
+#          brew update
+#          brew install pcre2 llvm upx gh || true
+#
+#      - name: Build project (macOS arm64)
+#        run: |
+#          make portable
+#          zip --junk-paths precizer_macos_arm64_v${{ env.VERSION }}.zip precizer
+#
+#      - name: Run tests (macOS arm64)
+#        run: make tests
+#
+#      - name: Upload macOS arm64 asset
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+#        run: |
+#          gh release upload ${{ github.ref_name }} \
+#            "precizer_macos_arm64_v${{ env.VERSION }}.zip#macOS arm64 binary" \
+#            --clobber
