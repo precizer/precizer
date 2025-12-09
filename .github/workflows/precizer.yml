@@ -50,8 +50,10 @@ jobs:
 
       - name: Build project (Linux x86_64)
         run: |
+          ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
           make portable
           zip --junk-paths precizer_linux_x86_64_v${{ env.VERSION }}.zip precizer
+          echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_v${{ env.VERSION }}.zip
 
       - name: Run tests (Linux x86_64)
         run: make tests
@@ -61,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release create ${{ github.ref_name }} \
-            "precizer_linux_x86_64_v${{ env.VERSION }}.zip#Linux x86_64 static portable binary (single executable)" \
+            "precizer_linux_x86_64_v${{ env.VERSION }}.zip" \
             --title "v${{ github.ref_name }}" \
             --notes "${{ env.BODY }}" \
             --draft
@@ -83,8 +85,10 @@ jobs:
 
       - name: Build project (Linux arm64)
         run: |
+          ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           make portable
-          zip --junk-paths precizer_linux_arm64_v${{ env.VERSION }}.zip precizer
+          zip --junk-paths precizer_linux_x86_64_v${{ env.VERSION }}.zip precizer
+          echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_v${{ env.VERSION }}.zip
 
       - name: Run tests (Linux arm64)
         run: make tests
@@ -94,7 +98,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
-            "precizer_linux_arm64_v${{ env.VERSION }}.zip#Linux arm64 static portable binary (single executable)" \
+            "precizer_linux_arm64_v${{ env.VERSION }}.zip" \
             --clobber
 
 #  build_macos_arm64:
