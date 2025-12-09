@@ -44,7 +44,6 @@ jobs:
   build_linux_arm64:
     name: Build & attach Linux arm64 artifact
     runs-on: ubuntu-24.04-arm
-    needs: build
 
     steps:
       - name: Checkout repository
@@ -73,7 +72,6 @@ jobs:
   build_macos_arm64:
     name: Build & attach macOS arm64 artifact
     runs-on: macos-latest
-    needs: build
 
     steps:
       - name: Checkout repository
