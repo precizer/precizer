@@ -135,6 +135,7 @@ DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
 ifeq ($(UNAME_S),Darwin)
 DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
+DYNAMIC_INCPATH += $(shell pkg-config --cflags argp)
 endif
 
 # Default build
