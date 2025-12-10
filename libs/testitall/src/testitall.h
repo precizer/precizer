@@ -221,7 +221,7 @@ Return extract_current_executable_directory_name(
 		return(COMPLETED); \
 	} else { \
 		printf(WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
-		return(status); \
+		return((int)status); \
 	}
 
 // Initializes a test. Defines the return value as SUCCESS or FAILURE.

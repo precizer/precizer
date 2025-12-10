@@ -114,7 +114,7 @@ SNTZ_LIBDIR = $(BUILDEXEDIR)$(SNTZ)/libs
 SNTZ_LIBS = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/../../$(SNTZ_LIBDIR)
 ifeq ($(UNAME_S),Darwin)
-SNTZ_DYNLIB = -Wl,-rpath,@executable_path,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/../../$(SNTZ_LIBDIR)
+SNTZ_DYNLIB = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/../../$(SNTZ_LIBDIR)
 endif
 SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
@@ -137,7 +137,7 @@ DBG_LIBDIR = $(BUILDEXEDIR)$(DBG)/libs
 DBG_LIBS = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
 ifeq ($(UNAME_S),Darwin)
-DBG_DYNLIB = -Wl,-rpath,@executable_path,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
+DBG_DYNLIB = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
 endif
 
 DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
