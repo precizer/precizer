@@ -133,12 +133,13 @@ endif
 # Additional include headers of external libraries
 DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
+
 ifeq ($(UNAME_S),Darwin)
 DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
 # argp lib
 DYNAMIC_INCPATH += -I/opt/homebrew/include
 LDPATH += -L/opt/homebrew/lib
-LDLIBS += -largp -lfts
+LDLIBS += -largp
 endif
 
 # Default build
