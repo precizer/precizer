@@ -440,7 +440,7 @@ clean-all-dockers:
 test: tests
 tests: tests-sanitize
 tests-sanitize: sanitize
-	@$(MAKE) -s -C $(TESTDIR) sanitize
+	@$(MAKE) -d -C $(TESTDIR) sanitize
 
 coverage: debug
 	@$(MAKE) -s -C $(TESTDIR) coverage
