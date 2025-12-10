@@ -142,8 +142,10 @@ INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
 
 ifeq ($(UNAME_S),Darwin)
 DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
+INCPATH += $(shell pkg-config --cflags libpcre2-8)
 # argp lib
 DYNAMIC_INCPATH += -I/opt/homebrew/include
+INCPATH += -I/opt/homebrew/include
 LDPATH += -L/opt/homebrew/lib
 LDLIBS += -largp
 endif
