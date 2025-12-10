@@ -104,15 +104,18 @@ COV_LDFLAGS += -lgcov --coverage
 #
 # Sanitize build settings
 #
-STNZ = sanitize
-STNZ_DIR = $(BUILDEXE)/$(STNZ)
-STNZ_EXE = $(STNZ_DIR)/$(EXE)
-STNZ_OBJDIR = $(STNZ_DIR)/obj
-STNZ_OBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(OBJS)))
-STNZ_PRZROBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(PRZROBJS)))
-STNZ_LIBDIR = $(BUILDEXEDIR)$(STNZ)/libs
-STNZ_LIBS = -L$(STNZ_LIBDIR) $(LDPATH)
-STNZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(STNZ_LIBDIR),-rpath,\$$ORIGIN/../../$(STNZ_LIBDIR)
+SNTZ = sanitize
+SNTZ_DIR = $(BUILDEXE)/$(SNTZ)
+SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
+SNTZ_OBJDIR = $(SNTZ_DIR)/obj
+SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
+SNTZ_PRZROBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(PRZROBJS)))
+SNTZ_LIBDIR = $(BUILDEXEDIR)$(SNTZ)/libs
+SNTZ_LIBS = -L$(SNTZ_LIBDIR) $(LDPATH)
+SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/../../$(SNTZ_LIBDIR)
+ifeq ($(UNAME_S),Darwin)
+SNTZ_DYNLIB = -Wl,-rpath,@executable_path,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/../../$(SNTZ_LIBDIR)
+endif
 SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
@@ -133,6 +136,10 @@ DBG_PRZROBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(PRZROBJS)))
 DBG_LIBDIR = $(BUILDEXEDIR)$(DBG)/libs
 DBG_LIBS = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
+ifeq ($(UNAME_S),Darwin)
+DBG_DYNLIB = -Wl,-rpath,@executable_path,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
+endif
+
 DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
@@ -183,23 +190,23 @@ coverage-html: coverage-report
 precizer-sanitize:
 	@$(MAKE) -s -C ../ sanitize
 
-sanitize: hugetestfile $(STNZ_EXE)
-	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STNZ_EXE)
+sanitize: hugetestfile $(SNTZ_EXE)
+	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
-$(STNZ_EXE): $(STNZ_OBJS) $(STNZ_PRZROBJS) | precizer-sanitize
-	@$(CC) $(STNZ_LIBS) $(SNTZ_LDFLAGS) $(STNZ_DYNLIB) -o $(STNZ_EXE) $^ $(LDLIBS)
+$(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize
+	@$(CC) $(SNTZ_LIBS) $(SNTZ_LDFLAGS) $(SNTZ_DYNLIB) -o $(SNTZ_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
-$(STNZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STNZ_OBJDIR)
+$(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled"
 
-$(STNZ_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STNZ_OBJDIR)
+$(SNTZ_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled"
 
-$(STNZ_OBJDIR):
-	@mkdir -p "$(STNZ_OBJDIR)"
+$(SNTZ_OBJDIR):
+	@mkdir -p "$(SNTZ_OBJDIR)"
 
 #
 # Debug rules
@@ -249,17 +256,17 @@ format:
 
 clean:
 	@rm -f $(HUGETESTFILE)
-	@rm -f $(STNZ_EXE) $(DBG_EXE) $(COV_EXE)
+	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(COV_EXE)
 	@rm -f $(DBG_OBJS) $(DBG_PRZROBJS)
-	@rm -f $(STNZ_OBJS) $(STNZ_PRZROBJS)
+	@rm -f $(SNTZ_OBJS) $(SNTZ_PRZROBJS)
 	@rm -f $(COV_OBJS) $(COV_PRZROBJS)
 
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 
-	@test -d $(STNZ_OBJDIR) && rm -d $(STNZ_OBJDIR) 2>/dev/null || true
-	@test -d $(STNZ_DIR) && rm -d $(STNZ_DIR) 2>/dev/null || true
+	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
+	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
 
 	@rm -f $(COV_OBJDIR)/*.gcno $(COV_OBJDIR)/*.gcda $(COV_OBJDIR)/*.gcov $(COV_OBJDIR)/coverage.info
 	@rm -rf $(COV_REPORTDIR)

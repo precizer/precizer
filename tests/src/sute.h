@@ -1,10 +1,9 @@
-#define _GNU_SOURCE
+#include "precizer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdatomic.h>
 #include "testitall.h"
-#include "precizer.h"
 #include "mem.h"
 #include "xdiff.h"
 
