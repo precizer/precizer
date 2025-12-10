@@ -135,7 +135,9 @@ DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
 ifeq ($(UNAME_S),Darwin)
 DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
-DYNAMIC_INCPATH += $(shell pkg-config --cflags argp)
+# argp lib
+DYNAMIC_INCPATH += -I/opt/homebrew/include
+LDPATH += -L/opt/homebrew/lib
 endif
 
 # Default build
@@ -165,7 +167,7 @@ ASM = $(SRCS:.c=.asm)
 DBG_DIR = $(BUILDDIR)/debug
 DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_DIR)/obj
-DBG_LD_PATH = -L$(DBG_LIBDIR)
+DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
@@ -186,7 +188,7 @@ endif
 SNTZ_DIR = $(BUILDDIR)/sanitize
 SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
-SNTZ_LD_PATH = -L$(SNTZ_LIBDIR)
+SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
 SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
@@ -204,7 +206,7 @@ endif
 PROD_DIR = $(BUILDDIR)/production
 PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_DIR)/obj
-PROD_LD_PATH = -L$(PROD_LIBDIR)
+PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
@@ -219,7 +221,7 @@ endif
 #
 DYNP_DIR = $(BUILDDIR)/dynamic-production
 DYNP_OBJDIR = $(DYNP_DIR)/obj
-DYNP_LD_PATH = -L$(PROD_LIBDIR)
+DYNP_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 DYNP_EXE = $(DYNP_DIR)/$(EXE)
 DYNP_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
@@ -234,7 +236,7 @@ DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 PRTB_DIR = $(BUILDDIR)/portable
 PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_DIR)/obj
-PRTB_LD_PATH = -L$(PRTB_LIBDIR)
+PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTB_LIBDIR),-rpath,\$$ORIGIN/libs
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
@@ -258,7 +260,7 @@ debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 $(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) $(STATIC) $(DBG_LD_PATH) $(DBG_DYNLIB) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_DYNLIB) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
@@ -283,7 +285,7 @@ sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
 $(SNTZ_EXE): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) $(SNTZ_LD_PATH) $(SNTZ_DYNLIB) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_DYNLIB) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
@@ -308,7 +310,7 @@ prodfinal: $(PROD_EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LD_PATH) $(PROD_DYNLIB) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_DYNLIB) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
@@ -332,7 +334,7 @@ dynprodfinal: $(DYNP_EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 $(DYNP_EXE): $(DYNP_OBJS)
-	@$(CC) $(STRIP) $(DYNP_LD_PATH) $(DYNP_DYNLIB) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_DYNLIB) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@echo "$@ linked"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
@@ -353,7 +355,7 @@ portfinal: $(PRTB_EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PRTB_LD_PATH) $(PRTB_DYNLIB) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PRTB_LDPATH) $(PRTB_DYNLIB) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
@@ -529,7 +531,7 @@ massif: debug
 SPARSE=sparse
 SPARSE_FLAGS=-Wsparse-all -nostdinc
 sparse-analyzer:
-	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(DBG_CFLAGS) $(DBG_LD_PATH) $(WFLAGS) $(src);)
+	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(DBG_CFLAGS) $(DBG_LDPATH) $(WFLAGS) $(src);)
 
 clang-analyzer: CC = clang-20
 clang-analyzer: SCAN-BUILD = scan-build-20
