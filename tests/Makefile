@@ -11,9 +11,16 @@ CFLAGS += -fbuiltin
 # of the tested application
 CFLAGS += -DTESTITALL
 
-STRIP = -s
-STATIC = -static
+UNAME_S := $(shell uname -s)
+
 SRC = src
+STRIP = -s
+STATIC = -static -static-libgcc -Wl,--gc-sections
+ifeq ($(UNAME_S),Darwin)
+STRIP =
+STATIC =
+endif
+
 PRZRSRC = ../src
 BUILDS = ../.builds
 BUILDEXE = $(BUILDS)/$(EXE)
@@ -101,6 +108,10 @@ STNZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(STNZ_LIBDIR),-rpath,\$$ORI
 SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
+ifeq ($(UNAME_S),Darwin)
+SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
+SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
+endif
 
 #
 # Debug build settings

@@ -126,8 +126,8 @@ jobs:
 
       - name: Build project (macOS arm64)
         run: |
-          make portable
-          ZIP_COMMENT="macOS arm64 static portable binary (single executable)"
+          make dynamic-production
+          ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_arm64_v${{ env.VERSION }}.zip
           zip --junk-paths precizer_macos_arm64_v${{ env.VERSION }}.zip precizer
 
