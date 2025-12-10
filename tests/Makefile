@@ -41,6 +41,9 @@ endif
 INCPATH += $(foreach d,$(LIBS),-I../libs/$d/src/)
 ## Source files of precizer project
 INCPATH += -I$(PRZRSRC)
+ifeq ($(UNAME_S),Darwin)
+INCPATH += $(shell pkg-config --cflags libpcre2-8)
+endif
 
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
