@@ -119,6 +119,14 @@ Return set_environment_variable(
 	const char *,
 	const char *);
 
+Return get_origin_dir(
+	char *,
+	size_t);
+
+Return create_tmpdir(
+	char *,
+	size_t);
+
 Return function_capture(
 	void  (*func)(void),
 	memory *,

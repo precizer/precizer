@@ -6,13 +6,17 @@ Return prepare(void)
 
 	const char *command = NULL;
 
-	ASSERT(SUCCESS == execute_and_set_variable("ORIGIN_DIR","readlink -f ${PWD}/..",0));
+	char path[PATH_MAX] = {0};
 
-	ASSERT(SUCCESS == execute_and_set_variable("TMPDIR","mktemp -d /tmp/precizer.XXXXXXXXXXXXXXXXXX",0));
+	ASSERT(SUCCESS == get_origin_dir(path,sizeof(path)));
 
-	char environment[PATH_MAX] = {0};
+	ASSERT(SUCCESS == set_environment_variable("ORIGIN_DIR",path));
 
-	run(extract_current_executable_directory_name(environment,sizeof(environment)));
+	ASSERT(SUCCESS == create_tmpdir(path, sizeof(path)));
+
+	ASSERT(SUCCESS == set_environment_variable("TMPDIR",path));
+
+	ASSERT(SUCCESS == extract_current_executable_directory_name(path,sizeof(path)));
 
 	/**
 	 * When the code coverage target from the Makefile is run,
@@ -21,12 +25,12 @@ Return prepare(void)
 	 * there is no need to build a separate binary in addition
 	 * to the already compiled debug one
 	*/
-	if(strcmp(environment, "coverage") == 0) {
+	if(strcmp(path, "coverage") == 0) {
 		/* Replace to "debug" */
-		strncpy(environment, "debug", PATH_MAX - 1);
+		strncpy(path, "debug", PATH_MAX - 1);
 	}
 
-	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",environment));
+	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",path));
 
 	ASSERT(SUCCESS == execute_and_set_variable("DBNAME","echo \"$(hostname).db\"",0));
 
@@ -48,15 +52,15 @@ Return prepare(void)
 
 	bool file_exists = false;
 
-	create(char,path);
+	create(char,absolute_path);
 
 	const char *filename = "precizer";
 
-	ASSERT(SUCCESS == construct_path(filename,path));
+	ASSERT(SUCCESS == construct_path(filename,absolute_path));
 
-	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(path)));
+	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(absolute_path)));
 
-	del(path);
+	del(absolute_path);
 
 	ASSERT(file_exists == true);
 
