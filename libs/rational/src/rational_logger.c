@@ -136,7 +136,7 @@ static Return logger_show_time(
  * and name of the function that generated the message itself
  *
  */
-__attribute__((format(printf,5,6)))   //Without this we shall get warning
+__attribute__((format(printf,5,6))) // Without this we will get warning
 void rational_logger(
 	const char        level,
 	const char *const filename,
