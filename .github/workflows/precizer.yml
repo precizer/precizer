@@ -109,14 +109,14 @@ jobs:
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
 
-    - name: Checkout repository (exclude tests/examples/long)
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        sparse-checkout-cone-mode: false
-        sparse-checkout: |
-          /*
-          !tests/examples/long/**
+      - name: Checkout repository (exclude tests/examples/long)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !tests/examples/long/**
 
       - name: Install dependencies
         run: |
