@@ -169,7 +169,8 @@ all: debug production portable
 # Debug rules
 #
 memtest: debug
-test: debug
+tests: test
+test: sanitize
 debug: $(DBG_SO) $(DBG_STAT)
 
 $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
@@ -198,14 +199,14 @@ sanitize: $(SNTZ_SO) $(SNTZ_STAT)
 
 $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@ar rcs $@ $+
-	@echo $@ prepared to be static library
+	@echo $@ prepared to be the static library
 
 $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDLIBS) -o $@ $^ $(LDLIBS)
-	@echo $@ prepared to be shared library
+	@echo $@ prepared to be the shared library
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(SNTZ_OBJDIR):
