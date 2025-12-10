@@ -8,34 +8,11 @@
 #ifndef _PRECIZER_H
 #define _PRECIZER_H
 
-/*
- *
- *
- * Defining control macros for system libraries
- *
- *
- */
-
-// Need for strdup(), clock_gettime()
-// Have to be at the beginning of the file
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
-// Request POSIX.1-2008 interfaces (pathconf, clock_gettime, snprintf, etc.)
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200809L
-#endif
-
-// Enable full libc surface on macOS even when POSIX macros are set
-#if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
-#define _DARWIN_C_SOURCE 1
-#endif
-
-// 64bit File Systems
-#ifndef __USE_FILE_OFFSET64
-#define __USE_FILE_OFFSET64 1
-#endif
+/// Included libraries from "libs" subdir
+#include "rational.h"
+#include "sha512.h"
+#include "mem.h"
+#include "sqlite3.h"
 
 /*
  *
@@ -77,12 +54,6 @@
 
 /* Parse arguments with argp library */
 #include <argp.h>
-
-/// Included libraries from "libs" subdir
-#include "rational.h"
-#include "sha512.h"
-#include "mem.h"
-#include "sqlite3.h"
 
 #define SQL_DRY_RUN_MODE ((int)-1)
 
