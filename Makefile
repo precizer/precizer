@@ -138,6 +138,7 @@ DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
 # argp lib
 DYNAMIC_INCPATH += -I/opt/homebrew/include
 LDPATH += -L/opt/homebrew/lib
+LDLIBS += -largp -lfts
 endif
 
 # Default build
