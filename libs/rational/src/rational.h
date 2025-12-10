@@ -31,6 +31,12 @@
 #define _DARWIN_C_SOURCE 1
 #endif
 
+#if defined(__APPLE__)
+#define st_atim st_atimespec
+#define st_mtim st_mtimespec
+#define st_ctim st_ctimespec
+#endif
+
 // 64bit File Systems
 #ifndef __USE_FILE_OFFSET64
 #define __USE_FILE_OFFSET64 1

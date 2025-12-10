@@ -27,12 +27,6 @@
 #include <time.h>
 #include <sys/time.h>
 
-#if defined(__APPLE__)
-#define st_atim st_atimespec
-#define st_mtim st_mtimespec
-#define st_ctim st_ctimespec
-#endif
-
 // Functions for string manipulation.
 #include <string.h>
 
