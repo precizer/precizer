@@ -122,7 +122,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install llvm upx|| true
+          brew install llvm upx argp-standalone || true
 
       - name: Build project (macOS arm64)
         run: |
