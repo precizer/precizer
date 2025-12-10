@@ -206,7 +206,7 @@ $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@echo $@ prepared to be the shared library
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(SNTZ_OBJDIR):
