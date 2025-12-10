@@ -122,14 +122,14 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install llvm upx argp-standalone || true
+          brew install llvm argp-standalone || true
 
       - name: Build project (macOS arm64)
         run: |
-          make -d dynamic-production
-          ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
-          echo "$ZIP_COMMENT" | zip -z precizer_linux_arm64_v${{ env.VERSION }}.zip
+          make dynamic-production
           zip --junk-paths precizer_macos_arm64_v${{ env.VERSION }}.zip precizer
+          ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
+          echo "$ZIP_COMMENT" | zip -z precizer_macos_arm64_v${{ env.VERSION }}.zip
 
       - name: Run tests (macOS arm64)
         run: make tests
