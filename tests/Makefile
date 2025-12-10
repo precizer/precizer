@@ -28,21 +28,26 @@ BUILDEXEDIR = $(dir $(BUILDEXE))
 LIBS = testitall mem sha512 rational sqlite3 xdiff
 
 # Extra libs for linking
-LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
 
 # For old gcc versions
 GCC_VERSION := $(shell gcc -dumpversion)
 # Checking if the GCC version is less than 10
 ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
-LDFLAGS += -pthread
+LDLIBS += -pthread
 endif
 
 # Additional include paths for external libraries
 INCPATH += $(foreach d,$(LIBS),-I../libs/$d/src/)
 ## Source files of precizer project
 INCPATH += -I$(PRZRSRC)
+
 ifeq ($(UNAME_S),Darwin)
 INCPATH += $(shell pkg-config --cflags libpcre2-8)
+# argp lib
+INCPATH += -I/opt/homebrew/include
+LDPATH += -L/opt/homebrew/lib
+LDLIBS += -largp
 endif
 
 # Detect whether we're using GCC
@@ -106,7 +111,7 @@ STNZ_OBJDIR = $(STNZ_DIR)/obj
 STNZ_OBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(OBJS)))
 STNZ_PRZROBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(PRZROBJS)))
 STNZ_LIBDIR = $(BUILDEXEDIR)$(STNZ)/libs
-STNZ_LIBS = -L$(STNZ_LIBDIR)
+STNZ_LIBS = -L$(STNZ_LIBDIR) $(LDPATH)
 STNZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(STNZ_LIBDIR),-rpath,\$$ORIGIN/../../$(STNZ_LIBDIR)
 SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
@@ -126,7 +131,7 @@ DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_PRZROBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(PRZROBJS)))
 DBG_LIBDIR = $(BUILDEXEDIR)$(DBG)/libs
-DBG_LIBS = -L$(DBG_LIBDIR)
+DBG_LIBS = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
 DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
@@ -147,7 +152,7 @@ run: sanitize
 coverage: coverage-html
 
 $(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-debug
-	@$(CC) $(DBG_LIBS) $(COV_LDFLAGS) $(DBG_DYNLIB) -o $(COV_EXE) $^ $(LDFLAGS)
+	@$(CC) $(DBG_LIBS) $(COV_LDFLAGS) $(DBG_DYNLIB) -o $(COV_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
@@ -182,7 +187,7 @@ sanitize: hugetestfile $(STNZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STNZ_EXE)
 
 $(STNZ_EXE): $(STNZ_OBJS) $(STNZ_PRZROBJS) | precizer-sanitize
-	@$(CC) $(STNZ_LIBS) $(SNTZ_LDFLAGS) $(STNZ_DYNLIB) -o $(STNZ_EXE) $^ $(LDFLAGS)
+	@$(CC) $(STNZ_LIBS) $(SNTZ_LDFLAGS) $(STNZ_DYNLIB) -o $(STNZ_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(STNZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STNZ_OBJDIR)
@@ -206,7 +211,7 @@ debug: hugetestfile $(DBG_EXE)
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug
-	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) -o $(DBG_EXE) $^ $(LDFLAGS)
+	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) -o $(DBG_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
