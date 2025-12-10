@@ -122,10 +122,11 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install pcre2 llvm upx gh || true
+          brew install pcre2 llvm upx gh pkg-config || true
 
       - name: Build project (macOS arm64)
         run: |
+          pkg-config --cflags --libs libpcre2-8
           make dynamic-production
           ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_arm64_v${{ env.VERSION }}.zip
