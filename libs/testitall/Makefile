@@ -88,7 +88,7 @@ DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
 DBG_LDFLAGS = -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-DBG_LDFLAGS =
+DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
 endif
 
 #
@@ -105,9 +105,10 @@ SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
 SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
 SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
+SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup
 endif
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
-SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS += $(SNTZ_OPTIONS)
 
 #
 # Production build settings
@@ -123,7 +124,7 @@ PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
 PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x
+PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -148,7 +149,7 @@ PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
