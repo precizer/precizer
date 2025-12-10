@@ -134,7 +134,7 @@ endif
 INTERNAL_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
 ifeq ($(UNAME_S),Darwin)
-INCPATH +=  $(shell pkg-config --cflags libpcre2-8)
+INTERNAL_INCPATH += $(shell pkg-config --cflags libpcre2-8)
 endif
 
 # Default build
