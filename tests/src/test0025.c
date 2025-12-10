@@ -12,7 +12,12 @@ long testitall_sysconf(int name)
 {
 	switch(name)
 	{
+#ifdef _SC_AVPHYS_PAGES
 		case _SC_AVPHYS_PAGES:
+#elif defined(_SC_PHYS_PAGES)
+		// Fallback for platforms without _SC_AVPHYS_PAGES — use total pages
+		case _SC_PHYS_PAGES:
+#endif
 			return mock_avphys_pages;
 		case _SC_PAGESIZE:
 			return mock_page_size;
