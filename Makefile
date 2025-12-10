@@ -131,10 +131,10 @@ LDLIBS += -pthread
 endif
 
 # Additional include headers of external libraries
-INTERNAL_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
+DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
 ifeq ($(UNAME_S),Darwin)
-INTERNAL_INCPATH += $(shell pkg-config --cflags libpcre2-8)
+DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
 endif
 
 # Default build
@@ -335,7 +335,7 @@ $(DYNP_EXE): $(DYNP_OBJS)
 	@echo "$@ linked"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
-	@$(CC) -c $(INTERNAL_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
+	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
 	@echo "$< compiled"
 
 $(DYNP_OBJDIR):
@@ -507,7 +507,7 @@ gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
 cppcheck:
-	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs -i tests $(INTERNAL_INCPATH) --inconclusive .
+	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs -i tests $(DYNAMIC_INCPATH) --inconclusive .
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
