@@ -229,7 +229,7 @@ $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@echo $@ prepared to be the shared library
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
-	$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(PROD_OBJDIR):
