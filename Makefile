@@ -83,6 +83,12 @@ STRIP =
 STATIC =
 endif
 
+# UPX compression (disabled on macOS; UPX не пакует Mach-O arm64)
+UPX ?= upx --best --lzma -qqq
+ifeq ($(UNAME_S),Darwin)
+UPX = true
+endif
+
 # Warning flags for additional checks
 WFLAGS += -Werror # Stop the build on any errors
 WFLAGS += -Wall
@@ -308,7 +314,7 @@ production: $(PROD_LIBDIR) $(PROD_EXE) prodfinal banner
 
 prodfinal: $(PROD_EXE)
 	@cp $(PROD_EXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
+	@$(UPX) $(EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
@@ -332,7 +338,7 @@ dynamic-production: $(PROD_LIBDIR) $(DYNP_EXE) dynprodfinal banner
 
 dynprodfinal: $(DYNP_EXE)
 	@cp $(DYNP_EXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
+	@$(UPX) $(EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 $(DYNP_EXE): $(DYNP_OBJS)
@@ -353,7 +359,7 @@ portable: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal banner
 
 portfinal: $(PRTB_EXE)
 	@cp $(PRTB_EXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
+	@$(UPX) $(EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
