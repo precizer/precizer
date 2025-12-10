@@ -14,7 +14,7 @@ testitall: mem xdiff rational
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
-	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
+	@$(MAKE) -d -C $@ $(MAKECMDGOALS)
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS) warning
 
