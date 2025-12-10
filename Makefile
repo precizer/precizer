@@ -68,14 +68,20 @@ ifneq (, $(findstring alpine, $(SYS)))
 LDLIBS += -largp -lfts
 endif
 
+UNAME_S := $(shell uname -s)
+
 # Detect whether we're using GCC (covers names like arm-linux-gnu-gcc)
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
 
-STATIC = -static -static-libgcc -Wl,--gc-sections
 SRC = src
 STRIP = -s
+STATIC = -static -static-libgcc -Wl,--gc-sections
+ifeq ($(UNAME_S),Darwin)
+STRIP =
+STATIC =
+endif
 
 # Warning flags for additional checks
 WFLAGS += -Werror # Stop the build on any errors
@@ -161,6 +167,9 @@ DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGI
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
 DBG_LDFLAGS = -Wl,--as-needed
+ifeq ($(UNAME_S),Darwin)
+DBG_LDFLAGS =
+endif
 # Activation of the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
@@ -180,6 +189,10 @@ SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
+ifeq ($(UNAME_S),Darwin)
+SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
+SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
+endif
 
 #
 # Production build settings
@@ -193,6 +206,9 @@ PROD_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORI
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
 PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+ifeq ($(UNAME_S),Darwin)
+PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x
+endif
 
 #
 # Dynamic production build settings
@@ -220,6 +236,9 @@ PRTB_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTB_LIBDIR),-rpath,\$$ORI
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+ifeq ($(UNAME_S),Darwin)
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x
+endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
