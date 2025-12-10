@@ -67,6 +67,10 @@ LIBS = rational mem xdiff
 # Additional include paths for external libraries
 INCPATH += -I$(SRC_DIR)
 INCPATH += $(foreach d,$(LIBS),-I../$d/src/)
+ifeq ($(UNAME_S),Darwin)
+INCPATH +=  $(shell pkg-config --cflags libpcre2-8)
+endif
+
 LDLIBS = $(foreach l,$(LIBS),-l$(l))
 LDLIBS += -lpcre2-8
 
@@ -225,7 +229,7 @@ $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@echo $@ prepared to be the shared library
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(PROD_OBJDIR):
