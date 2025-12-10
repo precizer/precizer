@@ -133,6 +133,9 @@ endif
 # Additional include headers of external libraries
 INTERNAL_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
+ifeq ($(UNAME_S),Darwin)
+INCPATH +=  $(shell pkg-config --cflags libpcre2-8)
+endif
 
 # Default build
 all: production
