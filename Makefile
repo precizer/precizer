@@ -179,7 +179,10 @@ DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
-DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
+DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
+ifeq ($(UNAME_S),Darwin)
+DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
+endif
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
 DBG_LDFLAGS = -Wl,--as-needed
@@ -200,7 +203,10 @@ SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
-SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+ifeq ($(UNAME_S),Darwin)
+SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
+endif
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
@@ -218,7 +224,10 @@ PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_DIR)/obj
 PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
-PROD_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
+PROD_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
+ifeq ($(UNAME_S),Darwin)
+PROD_RPATH = -Wl,-rpath,@executable_path/$(PROD_LIBDIR),-rpath,@executable_path/libs
+endif
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
 PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
@@ -233,7 +242,10 @@ DYNP_DIR = $(BUILDDIR)/dynamic-production
 DYNP_OBJDIR = $(DYNP_DIR)/obj
 DYNP_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 DYNP_EXE = $(DYNP_DIR)/$(EXE)
-DYNP_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
+DYNP_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
+ifeq ($(UNAME_S),Darwin)
+DYNP_RPATH = -Wl,-rpath,@executable_path/$(PROD_LIBDIR),-rpath,@executable_path/libs
+endif
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
 DYNP_CFLAGS = $(PROD_CFLAGS)
 DYNP_LDFLAGS = $(PROD_LDFLAGS)
@@ -248,7 +260,10 @@ PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_DIR)/obj
 PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
-PRTB_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTB_LIBDIR),-rpath,\$$ORIGIN/libs
+PRTB_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTB_LIBDIR),-rpath,\$$ORIGIN/libs
+ifeq ($(UNAME_S),Darwin)
+PRTB_RPATH = -Wl,-rpath,@executable_path/$(PRTB_LIBDIR),-rpath,@executable_path/libs
+endif
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
@@ -270,7 +285,7 @@ debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 $(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_DYNLIB) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_RPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
@@ -295,7 +310,7 @@ sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
 $(SNTZ_EXE): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_DYNLIB) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
@@ -320,7 +335,7 @@ prodfinal: $(PROD_EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_DYNLIB) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_RPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
@@ -344,7 +359,7 @@ dynprodfinal: $(DYNP_EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 $(DYNP_EXE): $(DYNP_OBJS)
-	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_DYNLIB) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_RPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@echo "$@ linked"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
@@ -365,7 +380,7 @@ portfinal: $(PRTB_EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PRTB_LDPATH) $(PRTB_DYNLIB) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PRTB_LDPATH) $(PRTB_RPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
