@@ -250,7 +250,7 @@ static Return test0011_5_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && ls -la && ls -la tests && ls -la tests/examples/ && pwd",SUCCESS,false,false));
+//	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && ls -la && ls -la tests && ls -la tests/examples/ && pwd",SUCCESS,false,false));
 
 	const char *arguments = "--maxdepth=0 tests/examples/4";
 
