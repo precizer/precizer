@@ -2,6 +2,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
 
 /** @brief Extract the last directory name from the directory containing the executable
  *
@@ -53,6 +56,25 @@ Return extract_current_executable_directory_name(
 
 	if(SUCCESS == status)
 	{
+#if defined(__APPLE__)
+		uint32_t bufsize = (uint32_t)sizeof(exe_path);
+
+		/* _NSGetExecutablePath returns 0 on success, else sets required size. */
+		if(0 != _NSGetExecutablePath(exe_path,&bufsize))
+		{
+			status = FAILURE;
+		} else {
+			char resolved[PATH_MAX];
+			if(NULL == realpath(exe_path,resolved))
+			{
+				status = FAILURE;
+			} else {
+				strncpy(exe_path,resolved,sizeof(exe_path) - 1U);
+				exe_path[sizeof(exe_path) - 1U] = '\0';
+				len = (ssize_t)strlen(exe_path);
+			}
+		}
+#else
 		len = readlink("/proc/self/exe",exe_path,(size_t)PATH_MAX - 1U);
 
 		if(len < 0)
@@ -65,6 +87,7 @@ Return extract_current_executable_directory_name(
 				status = FAILURE;
 			}
 		}
+#endif
 	}
 
 	if(SUCCESS == status)
