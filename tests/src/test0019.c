@@ -21,7 +21,7 @@ Return test0019(void)
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"cp -pr tests/examples/ tests/examples_backup;",COMPLETED,false,false));
+		"cp -a tests/examples/ tests/examples_backup;",COMPLETED,false,false));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 

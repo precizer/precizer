@@ -66,7 +66,7 @@ static Return test0011_1_readme(void)
  * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
- * cp -par tests/examples/ tests/examples_backup
+ * cp -a tests/examples/ tests/examples_backup
  * # Modify a file
  * echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
  * # Add a new file
@@ -85,7 +85,7 @@ static Return test0011_2_readme(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -par tests/examples/ tests/examples_backup;",COMPLETED,false,false));
+		"cp -a tests/examples/ tests/examples_backup;",COMPLETED,false,false));
 
 	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
 	const char *command = NULL;

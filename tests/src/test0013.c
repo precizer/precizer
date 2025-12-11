@@ -50,7 +50,7 @@ static Return dry_run_mode_2_test(void)
 	create(char,chunk);
 
 	const char *command = "cd ${TMPDIR};"
-	        "cp -pr tests/examples/ tests/examples_backup/;";
+	        "cp -a tests/examples/ tests/examples_backup/;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
@@ -206,7 +206,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -pr tests/examples/ tests/examples_backup/;",COMPLETED,false,false));
+		"cp -a tests/examples/ tests/examples_backup/;",COMPLETED,false,false));
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
@@ -236,7 +236,7 @@ static Return no_dry_run_mode_3_test(void)
 	// Compare against the sample. A message should be displayed indicating
 	// that the --db-clean-ignored option must be specified for permanent
 	// removal of ignored files from the database
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -p database1.db database1.db.backup;",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db database1.db.backup;",COMPLETED,false,false));
 
 	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
 
@@ -257,7 +257,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Real live mode permanent deletion of all ignored file
 	// references from the database
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -p database1.db.backup database1.db;",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db.backup database1.db;",COMPLETED,false,false));
 
 	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
 

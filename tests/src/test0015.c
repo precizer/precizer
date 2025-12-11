@@ -13,7 +13,7 @@ Return test0015_1_upgrade_db(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p tests/0015_database_v0.db .";
+	        "cp -a tests/0015_database_v0.db .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -53,7 +53,7 @@ Return test0015_2_upgrade_db(void)
 	INITTEST;
 
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p tests/0015_database_v0.db .";
+	        "cp -a tests/0015_database_v0.db .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -156,7 +156,7 @@ Return test0015_5_upgrade_db(void)
 
 	// Get the output of an external program
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p tests/0015_database_v0.db .";
+	        "cp -a tests/0015_database_v0.db .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -219,7 +219,7 @@ Return test0015_7_upgrade_db(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p tests/0015_database_v1.db .";
+	        "cp -a tests/0015_database_v1.db .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -292,7 +292,7 @@ Return test0015_9_upgrade_db(void)
 
 	// Get the output of an external program
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p tests/0015_database_v1.db .";
+	        "cp -a tests/0015_database_v1.db .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -327,7 +327,7 @@ Return test0015_10_upgrade_db(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p tests/0015_database_v2.db .";
+	        "cp -a tests/0015_database_v2.db .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -366,7 +366,7 @@ Return test0015_11_upgrade_db(void)
 
 	// Get the output of an external program
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p tests/0015_database_v2.db .";
+	        "cp -a tests/0015_database_v2.db .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -404,7 +404,7 @@ Return test0015_12_checksum_compare(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR} && "
-	        "cp -p \"$ORIGIN_DIR/tests/templates/0027 это база данных с пробелами и символами UTF-8 версии v3.db\" .";
+	        "cp -a \"$ORIGIN_DIR/tests/templates/0027 это база данных с пробелами и символами UTF-8 версии v3.db\" .";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
