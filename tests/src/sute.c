@@ -24,7 +24,9 @@ int main(void)
 
 	HEADER("Unit Testing of precizer's functions");
 	TEST(test0012,"add_string_to_array() test set…");
-//	TEST(test0021,"Native international UTF8 encoding test set…");
+#if 0
+	TEST(test0021,"Native international UTF8 encoding test set…");
+#endif
 	TEST(test0022,"remove_trailing_slash() test set…");
 	TEST(test0023,"extract_relative_path() test set…");
 	TEST(test0025,"file_buffer_memory() test set…");

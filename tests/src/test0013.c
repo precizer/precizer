@@ -386,7 +386,7 @@ Return test0013(void)
 	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
-//	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
+	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
 	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
 	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
 
