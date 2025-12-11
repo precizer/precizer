@@ -5,6 +5,80 @@
 
 #include "precizer.h"
 
+#define STAT64_SIZE 144
+#define STAT64_ST_SIZE_OFF 48
+#define STAT64_ST_MTIM_OFF 88
+#define STAT64_ST_CTIM_OFF 104
+
+static Return cmpct_stat_is_sane(const CmpctStat *stat)
+{
+	if(NULL == stat)
+	{
+		return(FAILURE);
+	}
+
+	if(stat->mtim_tv_nsec < 0 || stat->mtim_tv_nsec > 999999999)
+	{
+		return(FAILURE);
+	}
+
+	if(stat->ctim_tv_nsec < 0 || stat->ctim_tv_nsec > 999999999)
+	{
+		return(FAILURE);
+	}
+
+	if(stat->st_size < 0)
+	{
+		return(FAILURE);
+	}
+
+	const time_t max_ts = (time_t)32503680000; // Year 3000 upper bound
+
+	if(stat->mtim_tv_sec < 0 || stat->mtim_tv_sec > max_ts)
+	{
+		return(FAILURE);
+	}
+
+	if(stat->ctim_tv_sec < 0 || stat->ctim_tv_sec > max_ts)
+	{
+		return(FAILURE);
+	}
+
+	return(SUCCESS);
+}
+
+static Return populate_from_glibc_stat_blob(
+	const void   *blob,
+	const int    blob_size,
+	CmpctStat    *new_stat)
+{
+	if(blob_size < STAT64_SIZE)
+	{
+		return(FAILURE);
+	}
+
+	const unsigned char *b = (const unsigned char *)blob;
+	int64_t st_size = 0;
+	int64_t mtim_sec = 0;
+	int64_t mtim_nsec = 0;
+	int64_t ctim_sec = 0;
+	int64_t ctim_nsec = 0;
+
+	memcpy(&st_size,b + STAT64_ST_SIZE_OFF,sizeof(st_size));
+	memcpy(&mtim_sec,b + STAT64_ST_MTIM_OFF,sizeof(mtim_sec));
+	memcpy(&mtim_nsec,b + STAT64_ST_MTIM_OFF + sizeof(int64_t),sizeof(mtim_nsec));
+	memcpy(&ctim_sec,b + STAT64_ST_CTIM_OFF,sizeof(ctim_sec));
+	memcpy(&ctim_nsec,b + STAT64_ST_CTIM_OFF + sizeof(int64_t),sizeof(ctim_nsec));
+
+	new_stat->st_size = (off_t)st_size;
+	new_stat->mtim_tv_sec = (time_t)mtim_sec;
+	new_stat->mtim_tv_nsec = (long)mtim_nsec;
+	new_stat->ctim_tv_sec = (time_t)ctim_sec;
+	new_stat->ctim_tv_nsec = (long)ctim_nsec;
+
+	return(cmpct_stat_is_sane(new_stat));
+}
+
 /**
  * @brief Process single row from SQLite result
  * @param stmt Prepared statement with current row
@@ -23,6 +97,7 @@ static Return process_row(
 
 	/* Get blob data from the 'stat' column (column index 4) */
 	stat = sqlite3_column_blob(stmt,4);
+	int blob_size = sqlite3_column_bytes(stmt,4);
 
 	if(NULL == stat)
 	{
@@ -30,10 +105,11 @@ static Return process_row(
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	run(populate_from_glibc_stat_blob(stat,blob_size,&new_stat));
+
+	if(SUCCESS != status)
 	{
-		/* Copying essential elements from the old structure to the new one */
-		status = stat_copy(stat,&new_stat);
+		slog(ERROR,"Failed to convert legacy stat blob (len=%d) into compact stat\n",blob_size);
 	}
 
 	if(SUCCESS == status)
