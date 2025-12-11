@@ -82,7 +82,7 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
-	arguments = "--debug --dry-run --update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--verbose --dry-run --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == copy(result,chunk));
