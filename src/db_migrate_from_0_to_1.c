@@ -10,6 +10,14 @@
 #define STAT64_ST_MTIM_OFF 88
 #define STAT64_ST_CTIM_OFF 104
 
+/**
+ * @brief Validate sanity of a compact stat structure.
+ *
+ * Checks timestamp ranges (0..999999999 for nsec, reasonable sec), and non-negative size.
+ *
+ * @param stat Pointer to compact stat to validate.
+ * @return SUCCESS if fields look sane, FAILURE otherwise.
+ */
 static Return cmpct_stat_is_sane(const CmpctStat *stat)
 {
 	if(NULL == stat)
@@ -47,6 +55,17 @@ static Return cmpct_stat_is_sane(const CmpctStat *stat)
 	return(SUCCESS);
 }
 
+/**
+ * @brief Convert a glibc/Linux stat blob into a compact stat.
+ *
+ * The blob format corresponds to 64-bit glibc stat layout (144 bytes) used in legacy DB v0.
+ * Extracts st_size, st_mtim, st_ctim by fixed offsets and fills CmpctStat.
+ *
+ * @param blob Pointer to raw blob data.
+ * @param blob_size Size of the blob in bytes.
+ * @param new_stat Output compact stat structure.
+ * @return SUCCESS on successful conversion and sanity check, FAILURE otherwise.
+ */
 static Return populate_from_glibc_stat_blob(
 	const void   *blob,
 	const int    blob_size,
@@ -156,7 +175,7 @@ static Return process_row(
 
 /**
  * @brief Process all rows in the database
- * @param db_path Path to SQLite database file
+ * @param db Path to SQLite database file
  * @return Operation status
  */
 static Return process_database(
