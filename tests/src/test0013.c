@@ -82,7 +82,7 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
-	arguments = "--dry-run --update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--debug --dry-run --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == copy(result,chunk));
@@ -386,7 +386,7 @@ Return test0013(void)
 	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
-//	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
+	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
 	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
 	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
 
