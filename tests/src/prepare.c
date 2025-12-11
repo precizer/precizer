@@ -41,7 +41,7 @@ Return prepare(void)
 	        "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TESTDIRS}/../;"
 	        "cp -a $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
 	        "cp -a $ORIGIN_DIR/tests/examples/4/ ${TESTDIRS}/../;"
-	        "cp -a $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
+	        "test -d $ORIGIN_DIR/tests/examples/long/ && cp -a $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
 	        "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TESTDIRS}/../../;"
 	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer .;"
 	        "mkdir -p .builds/${ENVIRONMENT}/;"
