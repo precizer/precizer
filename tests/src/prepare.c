@@ -37,15 +37,15 @@ Return prepare(void)
 	command = "export TESTDIRS=${TMPDIR}/tests/examples/diffs/;"
 	        "mkdir -p ${TESTDIRS};"
 	        "cd ${TMPDIR};"
-	        "cp -apr $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
-	        "cp -apr $ORIGIN_DIR/tests/examples/*apos* ${TESTDIRS}/../;"
-	        "cp -apr $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
-	        "cp -apr $ORIGIN_DIR/tests/examples/4/ ${TESTDIRS}/../;"
-	        "cp -apr $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
-	        "cp -apr $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TESTDIRS}/../../;"
-	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -apr $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer .;"
+	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
+	        "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TESTDIRS}/../;"
+	        "cp -a $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
+	        "cp -a $ORIGIN_DIR/tests/examples/4/ ${TESTDIRS}/../;"
+	        "cp -a $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
+	        "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TESTDIRS}/../../;"
+	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer .;"
 	        "mkdir -p .builds/${ENVIRONMENT}/;"
-	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT}/ && cp -apr $ORIGIN_DIR/.builds/${ENVIRONMENT}/ .builds/;"
+	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT}/ && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/ .builds/;"
 	        "true";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
