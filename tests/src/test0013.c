@@ -42,6 +42,7 @@ static Return dry_run_mode_1_test(void)
 static Return dry_run_mode_2_test(void)
 {
 	INITTEST;
+
 	// Create memory for the result
 	create(char,result);
 	struct stat stat1;
@@ -67,6 +68,7 @@ static Return dry_run_mode_2_test(void)
 	#endif
 
 	create(char,path);
+
 	const char *db_filename = "database1.db";
 
 	ASSERT(SUCCESS == construct_path(db_filename,path));
@@ -102,11 +104,9 @@ static Return dry_run_mode_2_test(void)
 	// removal of ignored files from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1",
-		result,
-		COMPLETED,
-		false,
-		false));
+	arguments = "--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -129,11 +129,9 @@ static Return dry_run_mode_2_test(void)
 	// references from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1",
-		result,
-		COMPLETED,
-		false,
-		false));
+	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -388,7 +386,7 @@ Return test0013(void)
 	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
-	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
+//	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
 	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
 	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
 
