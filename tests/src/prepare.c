@@ -41,7 +41,7 @@ Return prepare(void)
 	command = "mkdir -p ${TMPDIR}/tests/examples/diffs/;"
 	          "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TMPDIR}/tests/examples/diffs/;"
 	          "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TMPDIR}/tests/examples/;"
-	          "cp -a $ORIGIN_DIR/tests/examples/levels/ ${TMPDIR}/tests/examples/;"
+	          "cp -a $ORIGIN_DIR/tests/examples/levels ${TMPDIR}/tests/examples/;"
 	          "cp -a $ORIGIN_DIR/tests/examples/4 ${TMPDIR}/tests/examples/;"
 	          "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TMPDIR}/tests/;"
 	          "mkdir -p ${TMPDIR}/.builds/${ENVIRONMENT}/;"
