@@ -47,7 +47,7 @@ Return prepare(void)
 	          "mkdir -p ${TMPDIR}/.builds/${ENVIRONMENT}/;"
 	          "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT}/ && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/ ${TMPDIR}/.builds/;"
 	          "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
-	          "false";
+	          "true";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
