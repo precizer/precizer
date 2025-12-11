@@ -91,7 +91,6 @@ Return file_list(const bool count_size_of_all_files)
 
 	FTS *file_systems = NULL;
 	FTSENT *p = NULL;
-	FTSENT *child = NULL;
 
 	int fts_options = FTS_PHYSICAL;
 
@@ -109,25 +108,12 @@ Return file_list(const bool count_size_of_all_files)
 		provide(FAILURE);
 	}
 
-	// Initialize the file systems using as many argv[] components as possible
-	child = fts_children(file_systems,0);
-
-	if(child == NULL)
-	{
-		// No files to traverse
-		fts_close(file_systems);
-		slog(ERROR,"fts_children() error\n");
-		provide(status);
-	}
-
 	/*
 	 * Determine the absolute path prefix.
 	 * We are only interested in relative paths in the database.
 	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
 	char *runtime_path_prefix = NULL;
-	FTSENT const *current_file_system = child;
-
 #if 0 // Old multiPATH solution
 	/**
 	 * Index of the path prefix
@@ -175,9 +161,9 @@ Return file_list(const bool count_size_of_all_files)
 		if(count_size_of_all_files == false)
 		{
 			/* Get absolute path prefix from FTSENT structure and current runtime path */
-			if(p == current_file_system)
+			if(p->fts_level == FTS_ROOTLEVEL)
 			{
-				size_t new_size = (size_t)(current_file_system->fts_pathlen + 1) * sizeof(char);
+				size_t new_size = (size_t)(p->fts_pathlen + 1) * sizeof(char);
 
 				// All below run once per new path prefix
 				char *tmp = (char *)realloc(runtime_path_prefix,new_size);
@@ -192,13 +178,10 @@ Return file_list(const bool count_size_of_all_files)
 				}
 
 				// Remember temporary string in long-lasting variable
-				strcpy(runtime_path_prefix,current_file_system->fts_path);
+				strcpy(runtime_path_prefix,p->fts_path);
 
 				// Remove unnecessary trailing slash at the end of the directory path
 				remove_trailing_slash(runtime_path_prefix);
-
-				// The next
-				current_file_system = current_file_system->fts_link;
 
 #if 0 // Old multiPATH solution
 
