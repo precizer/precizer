@@ -16,6 +16,8 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TMPDIR",path));
 
+	ASSERT(SUCCESS == set_environment_variable("BINDIR",path));
+
 	ASSERT(SUCCESS == extract_current_executable_directory_name(path,sizeof(path)));
 
 	/**
@@ -32,21 +34,25 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",path));
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
 	ASSERT(SUCCESS == execute_and_set_variable("DBNAME","echo \"$(hostname).db\"",0));
 
-	command = "export TESTDIRS=${TMPDIR}/tests/examples/diffs/;"
-	        "mkdir -p ${TESTDIRS};"
-	        "cd ${TMPDIR};"
-	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TESTDIRS};"
-	        "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TESTDIRS}/../;"
-	        "cp -a $ORIGIN_DIR/tests/examples/levels/ ${TESTDIRS}/../;"
-	        "cp -a $ORIGIN_DIR/tests/examples/4/ ${TESTDIRS}/../;"
-	        "test -d $ORIGIN_DIR/tests/examples/long/ && cp -a $ORIGIN_DIR/tests/examples/long/ ${TESTDIRS}/../;"
-	        "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TESTDIRS}/../../;"
-	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer .;"
-	        "mkdir -p .builds/${ENVIRONMENT}/;"
-	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT}/ && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/ .builds/;"
-	        "true";
+	command = "mkdir -p ${TMPDIR}/tests/examples/diffs/;"
+	          "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TMPDIR}/tests/examples/diffs/;"
+	          "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TMPDIR}/tests/examples/;"
+	          "cp -a $ORIGIN_DIR/tests/examples/levels/ ${TMPDIR}/tests/examples/;"
+	          "cp -a $ORIGIN_DIR/tests/examples/4/ ${TMPDIR}/tests/examples/;"
+	          "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TMPDIR}/tests/;"
+	          "mkdir -p ${TMPDIR}/.builds/${ENVIRONMENT}/;"
+	          "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT}/ && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/ ${TMPDIR}/.builds/;"
+	          "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
+	          "true";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+
+	command = "test -d $ORIGIN_DIR/tests/examples/long/ && cp -a $ORIGIN_DIR/tests/examples/long/ ${TMPDIR}/tests/examples/;"
+	          "true";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
@@ -64,13 +70,12 @@ Return prepare(void)
 
 	ASSERT(file_exists == true);
 
-	ASSERT(SUCCESS == execute_and_set_variable("BINDIR","echo \"${TMPDIR}/\"",0));
 
 	/* Enable UTF-8 */
+#if 0
 	ASSERT(SUCCESS == set_environment_variable("LC_ALL","C.UTF-8"));
 	ASSERT(SUCCESS == set_environment_variable("LANG","C.UTF-8"));
-
-	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+#endif
 
 	return(status);
 }
