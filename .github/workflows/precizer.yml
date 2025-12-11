@@ -139,5 +139,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
-            "precizer_macos_arm64_v${{ env.VERSION }}.zip#macOS arm64 binary" \
+            "precizer_macos_arm64_v${{ env.VERSION }}.zip" \
             --clobber
