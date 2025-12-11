@@ -41,14 +41,14 @@ Return prepare(void)
 	command = "mkdir -p ${TMPDIR}/tests/examples/diffs/;"
 	          "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TMPDIR}/tests/examples/diffs/;"
 	          "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TMPDIR}/tests/examples/;"
-	          "cp -a $ORIGIN_DIR/tests/examples/levels ${TMPDIR}/tests/examples/; ls -laR ${TMPDIR}/tests/examples/levels;"
+	          "cp -a $ORIGIN_DIR/tests/examples/levels ${TMPDIR}/tests/examples/;"
 	          "cp -a $ORIGIN_DIR/tests/examples/4 ${TMPDIR}/tests/examples/;"
 	          "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TMPDIR}/tests/;"
 	          "mkdir -p ${TMPDIR}/.builds;"
 	          "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT} && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT} ${TMPDIR}/.builds/;"
 	          "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
 	          "test -d $ORIGIN_DIR/tests/examples/long && cp -a $ORIGIN_DIR/tests/examples/long ${TMPDIR}/tests/examples/;"
-	          "false";
+	          "true";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
