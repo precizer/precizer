@@ -17,7 +17,7 @@ Return test0016(void)
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"cp -pr tests/examples/ tests/examples_backup;",COMPLETED,false,false));
+		"cp -a tests/examples/ tests/examples_backup;",COMPLETED,false,false));
 
 	const char *filename = "templates/0016_001_1.txt";
 
@@ -26,7 +26,7 @@ Return test0016(void)
 	ASSERT(SUCCESS == runit("--start-device-only --database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -p database1.db database2.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -a database1.db database2.db",COMPLETED,false,false));
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"echo -n 'PWOEUNVSODNLKUHGE' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt && "
 		"touch tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt && "
@@ -38,7 +38,7 @@ Return test0016(void)
 	ASSERT(SUCCESS == runit("--compare database1.db database2.db",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -p database2.db database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -a database2.db database1.db",COMPLETED,false,false));
 
 	ASSERT(SUCCESS == runit("--watch-timestamps --update --database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
@@ -57,7 +57,7 @@ Return test0016(void)
 	filename = "templates/0016_001_2.txt";
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -p database2.db database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -a database2.db database1.db",COMPLETED,false,false));
 
 	ASSERT(SUCCESS == runit("--update --database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == copy(result,chunk));
@@ -65,7 +65,7 @@ Return test0016(void)
 	ASSERT(SUCCESS == runit("--compare database1.db database2.db",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -p database2.db database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && cp -a database2.db database1.db",COMPLETED,false,false));
 
 	ASSERT(SUCCESS == runit("--watch-timestamps --update --database=database1.db tests/examples/diffs/diff1",chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
