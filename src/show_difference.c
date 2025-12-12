@@ -2,11 +2,11 @@
 
 Return show_difference(
 	int changes,
-	const CmpctStat *source,
-	const CmpctStat *destination)
+	const CmpctStat *before,
+	const CmpctStat *after)
 {
 	/* Validate input parameters */
-	if(NULL == source || NULL == destination)
+	if(NULL == before || NULL == after)
 	{
 		return(FAILURE);
 	}
@@ -45,7 +45,7 @@ Return show_difference(
 				printf(" & ");
 			}
 			printf("%s",flags[i]);
-			show_metadata(i,destination,source);
+			show_metadata(i,before,after);
 			flags_found++;
 		}
 	}
