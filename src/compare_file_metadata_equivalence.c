@@ -27,30 +27,27 @@ int compare_file_metadata_equivalence(
 		return(COMPARE_FAILED);
 	}
 
-	int result = IDENTICAL;
+	int changes = IDENTICAL;
 
 	/* Size of file, in bytes.  */
 	if(source->st_size != destination->st_size)
 	{
-		result |= SIZE_CHANGED;
-
+		changes |= SIZE_CHANGED;
 	}
 
 	/* Modified timestamp */
 	if(!(source->mtim_tv_sec == destination->mtim_tv_sec &&
 	        source->mtim_tv_nsec == destination->mtim_tv_nsec))
 	{
-		result |= MODIFICATION_TIME_CHANGED;
-
+		changes |= MODIFICATION_TIME_CHANGED;
 	}
 
 	/* Time of last status change  */
 	if(!(source->ctim_tv_sec == destination->ctim_tv_sec &&
 	        source->ctim_tv_nsec == destination->ctim_tv_nsec))
 	{
-		result |= CREATION_TIME_CHANGED;
-
+		changes |= CREATION_TIME_CHANGED;
 	}
 
-	return(result);
+	return(changes);
 }

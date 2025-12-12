@@ -556,6 +556,16 @@ void show_relative_path(
 	const bool *,
 	const bool *);
 
+void show_metadata(
+	int,
+	const CmpctStat *,
+	const CmpctStat *);
+
+Return show_difference(
+	int,
+	const CmpctStat *,
+	const CmpctStat *);
+
 void show_checksum_gracefully_interrupted(
 	const char *,
 	const sqlite3_int64 *);
