@@ -2,7 +2,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
-#if defined(__APPLE__)
+#ifdef EVIL_EMPIRE
+/* macOS build flag */
 #include <mach-o/dyld.h>
 #endif
 
@@ -56,7 +57,8 @@ Return extract_current_executable_directory_name(
 
 	if(SUCCESS == status)
 	{
-#if defined(__APPLE__)
+#ifdef EVIL_EMPIRE
+		/* macOS-specific executable path lookup */
 		uint32_t bufsize = (uint32_t)sizeof(exe_path);
 
 		/* _NSGetExecutablePath returns 0 on success, else sets required size. */

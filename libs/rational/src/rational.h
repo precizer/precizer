@@ -27,11 +27,10 @@
 #endif
 
 // Enable full libc surface on macOS even when POSIX macros are set
-#if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
+#ifdef EVIL_EMPIRE
+#ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1
 #endif
-
-#if defined(__APPLE__)
 #define st_atim st_atimespec
 #define st_mtim st_mtimespec
 #define st_ctim st_ctimespec
