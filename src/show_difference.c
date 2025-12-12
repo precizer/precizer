@@ -45,7 +45,7 @@ Return show_difference(
 				printf(" & ");
 			}
 			printf("%s",flags[i]);
-			show_metadata(i,source,destination);
+			show_metadata(i,destination,source);
 			flags_found++;
 		}
 	}
