@@ -9,7 +9,7 @@ typedef enum
 	IDENTICAL                 = 0x00, // 00000
 	NOT_EQUAL                 = 0x01, // 00001
 	SIZE_CHANGED              = 0x02, // 00010
-	CREATION_TIME_CHANGED     = 0x04, // 00100
+	STATUS_CHANGED_TIME       = 0x04, // 00100
 	MODIFICATION_TIME_CHANGED = 0x08, // 01000
 	COMPARE_FAILED            = 0x10  // 10000
 
@@ -24,7 +24,7 @@ typedef enum
  * @return Bitmask with IDENTICAL (0) when equal or a combination of:
  *         - SIZE_CHANGED
  *         - MODIFICATION_TIME_CHANGED
- *         - CREATION_TIME_CHANGED (uses ctime/status-change time)
+ *         - STATUS_CHANGED_TIME (uses ctime/status-change time)
  *         Returns FAILURE on invalid parameters.
  */
 static int compare_file_metadata_equivalence(
@@ -58,7 +58,7 @@ static int compare_file_metadata_equivalence(
 	if(!(source->st_ctim.tv_sec == destination->st_ctim.tv_sec &&
 	        source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
 	{
-		changes |= CREATION_TIME_CHANGED;
+		changes |= STATUS_CHANGED_TIME;
 
 	}
 

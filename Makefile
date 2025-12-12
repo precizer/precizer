@@ -70,6 +70,11 @@ endif
 
 UNAME_S := $(shell uname -s)
 
+# macOS-specific code
+ifeq ($(UNAME_S),Darwin)
+CFLAGS += -DEVIL_EMPIRE_OS
+endif
+
 # Detect whether we're using GCC (covers names like arm-linux-gnu-gcc)
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 

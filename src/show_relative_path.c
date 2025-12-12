@@ -18,7 +18,7 @@ static void print_flag_combinations(
 		"size","ctime","mtime"
 	};
 	const int flag_values[] = {
-		SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED
+		SIZE_CHANGED,STATUS_CHANGED_TIME,MODIFICATION_TIME_CHANGED
 	};
 	const int flag_count = 3;
 	unsigned int flags_found = 0;
