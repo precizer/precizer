@@ -51,7 +51,8 @@ static Return dry_run_mode_2_test(void)
 	create(char,chunk);
 
 	const char *command = "cd ${TMPDIR};"
-	        "cp -a tests/examples/ tests/examples_backup/;";
+	        "mv tests/examples/ tests/examples_backup/;";
+	        "cp -a tests/examples_backup/ tests/examples/;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
@@ -84,7 +85,7 @@ static Return dry_run_mode_2_test(void)
 
 	arguments = "--verbose --dry-run --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,WARNING,false,false));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	#if 0

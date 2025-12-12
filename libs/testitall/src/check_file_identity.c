@@ -6,11 +6,12 @@
  */
 typedef enum
 {
-	IDENTICAL                 = 0x00,// 0000
-	NOT_EQUAL                 = 0x01,// 0001
-	SIZE_CHANGED              = 0x02,// 010
-	CREATION_TIME_CHANGED     = 0x04,// 0100
-	MODIFICATION_TIME_CHANGED = 0x08 // 1000
+	IDENTICAL                 = 0x00, // 00000
+	NOT_EQUAL                 = 0x01, // 00001
+	SIZE_CHANGED              = 0x02, // 00010
+	CREATION_TIME_CHANGED     = 0x04, // 00100
+	MODIFICATION_TIME_CHANGED = 0x08, // 01000
+	COMPARE_FAILED            = 0x10  // 10000
 
 } Changed;
 
@@ -33,15 +34,15 @@ static int compare_file_metadata_equivalence(
 	/* Validate input parameters */
 	if(NULL == source || NULL == destination)
 	{
-		return(FAILURE);
+		return(COMPARE_FAILED);
 	}
 
-	int result = IDENTICAL;
+	int changes = IDENTICAL;
 
 	/* Size of file, in bytes.  */
 	if(source->st_size != destination->st_size)
 	{
-		result |= SIZE_CHANGED;
+		changes |= SIZE_CHANGED;
 
 	}
 
@@ -49,7 +50,7 @@ static int compare_file_metadata_equivalence(
 	if(!(source->st_mtim.tv_sec == destination->st_mtim.tv_sec &&
 	        source->st_mtim.tv_nsec == destination->st_mtim.tv_nsec))
 	{
-		result |= MODIFICATION_TIME_CHANGED;
+		changes |= MODIFICATION_TIME_CHANGED;
 
 	}
 
@@ -57,11 +58,11 @@ static int compare_file_metadata_equivalence(
 	if(!(source->st_ctim.tv_sec == destination->st_ctim.tv_sec &&
 	        source->st_ctim.tv_nsec == destination->st_ctim.tv_nsec))
 	{
-		result |= CREATION_TIME_CHANGED;
+		changes |= CREATION_TIME_CHANGED;
 
 	}
 
-	return(result);
+	return(changes);
 }
 
 /**
