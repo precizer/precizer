@@ -28,7 +28,7 @@ TESTING:Starting database file write_protected_database1.db integrity check…
 ERROR:Can't open database .*: unable to open database file
 TESTING:Returned db_test:148 status: FAILURE
 TESTING:Returned db_primary_file_test:\d+ status: FAILURE
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » FAILURE
 \z

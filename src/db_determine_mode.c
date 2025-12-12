@@ -81,8 +81,8 @@ Return db_determine_mode(void)
 	// The new DB file does NOT need to be created
 	if(config->compare == true)
 	{
-		// In-memory database enabled
-		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
+		// Compare mode should not modify any database
+		config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 	} else if(config->update == true){
 		if(config->db_primary_file_exists == false)

@@ -39,7 +39,7 @@ paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_buffer_memory.c:\d+:file_buffer_memory:Bytes that can be allocated for the file buffer: \d+.*$
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Missing file search completed
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The connection to the primary database has been closed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_primary_consider_vacuum.c:\d+:db_primary_consider_vacuum:No changes were made. The primary database doesn't require vacuuming
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_changes.c:\d+:db_check_changes:\x1B\[1mThe database file database1.db has NOT been modified since the program was launched\x1B\[0m
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status.c:\d+:exit_status:The precizer completed its execution without any issues

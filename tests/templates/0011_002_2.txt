@@ -38,7 +38,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db was previously created and already contains data with files and their checksums. Use the \x1B\[1m--update\x1B\[0m option only when you are certain that the database needs to be updated and when file information \(including changes, deletions, and additions\) should be synchronized with the database.
 TESTING:Returned db_contains_data:\d+ status: WARNING
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » WARNING
 \z

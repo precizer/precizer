@@ -16,13 +16,12 @@ TESTING:Primary database file path: :memory:
 TESTING:DB name determined
 TESTING:Verify that the path . exists
 TESTING:The path . is exists and it is a directory
-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Successfully opened database DisposableDB
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named DisposableDB is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
 TESTING:Database initialization process completed
 TESTING:The comparison of %DB_NAME% and 0015_database_v0.db databases is starting…
 TESTING:Verify that the path %DB_NAME% exists
@@ -50,7 +49,7 @@ TESTING:Returned db_check_version:\d+ status: WARNING
 TESTING:Returned db_test:\d+ status: WARNING
 TESTING:Comparison of %DB_NAME% and 0015_database_v0.db databases is complete
 TESTING:Returned db_compare:\d+ status: WARNING
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » WARNING
 \z
