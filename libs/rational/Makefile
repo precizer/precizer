@@ -5,6 +5,11 @@ BUILDDIR = ../../.builds
 
 UNAME_S := $(shell uname -s)
 
+# macOS-specific code
+ifeq ($(UNAME_S),Darwin)
+CFLAGS += -DEVIL_EMPIRE
+endif
+
 #
 # Compiler flags
 #
