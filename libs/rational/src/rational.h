@@ -27,7 +27,7 @@
 #endif
 
 // Enable full libc surface on macOS even when POSIX macros are set
-#ifdef EVIL_EMPIRE
+#ifdef EVIL_EMPIRE_OS
 #ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1
 #endif

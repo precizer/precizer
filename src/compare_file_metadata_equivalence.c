@@ -15,7 +15,7 @@
  *         - FAILURE: Error in comparison or invalid parameters
  *         - SIZE_CHANGED
  *         - MODIFICATION_TIME_CHANGED
- *         - CREATION_TIME_CHANGED
+ *         - STATUS_CHANGED_TIME
  */
 int compare_file_metadata_equivalence(
 	const CmpctStat *source,
@@ -46,7 +46,7 @@ int compare_file_metadata_equivalence(
 	if(!(source->ctim_tv_sec == destination->ctim_tv_sec &&
 	        source->ctim_tv_nsec == destination->ctim_tv_nsec))
 	{
-		changes |= CREATION_TIME_CHANGED;
+		changes |= STATUS_CHANGED_TIME;
 	}
 
 	return(changes);

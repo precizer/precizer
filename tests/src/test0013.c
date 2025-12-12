@@ -387,7 +387,7 @@ Return test0013(void)
 	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
-#ifndef EVIL_EMPIRE
+#ifndef EVIL_EMPIRE_OS
 /* Doesn't work on macOS yet */
 	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
 #endif

@@ -99,7 +99,7 @@ typedef enum
 	IDENTICAL                 = 0x00, // 00000
 	NOT_EQUAL                 = 0x01, // 00001
 	SIZE_CHANGED              = 0x02, // 00010
-	CREATION_TIME_CHANGED     = 0x04, // 00100
+	STATUS_CHANGED_TIME       = 0x04, // 00100
 	MODIFICATION_TIME_CHANGED = 0x08, // 01000
 	COMPARE_FAILED            = 0x10  // 10000
 

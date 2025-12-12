@@ -21,7 +21,7 @@ Return show_difference(
 	};
 
 	const int flag_values[] = {
-		SIZE_CHANGED,CREATION_TIME_CHANGED,MODIFICATION_TIME_CHANGED
+		SIZE_CHANGED,STATUS_CHANGED_TIME,MODIFICATION_TIME_CHANGED
 	};
 
 	const int flag_count = 3;

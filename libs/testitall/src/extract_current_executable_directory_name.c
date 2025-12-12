@@ -2,8 +2,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
-#ifdef EVIL_EMPIRE
 /* macOS build flag */
+#ifdef EVIL_EMPIRE_OS
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE 1
+#endif
 #include <mach-o/dyld.h>
 #endif
 
@@ -57,7 +60,8 @@ Return extract_current_executable_directory_name(
 
 	if(SUCCESS == status)
 	{
-#ifdef EVIL_EMPIRE
+/* macOS build flag */
+#ifdef EVIL_EMPIRE_OS
 		/* macOS-specific executable path lookup */
 		uint32_t bufsize = (uint32_t)sizeof(exe_path);
 
