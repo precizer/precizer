@@ -55,10 +55,10 @@ TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted a
 path2/AAA/ZAW/A/b/c/a_file.txt clean ignored
 path2/AAA/ZAW/D/e/f/b_file.txt clean ignored
 TESTING:Missing file search completed
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Exit status » SUCCESS

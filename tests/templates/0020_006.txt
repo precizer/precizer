@@ -42,7 +42,7 @@ TESTING:Paths saved in the database:
 tests/examples/diffs/diff1
 TESTING:Use the \x1B\[1m--force\x1B\[0m option only when the PATHS stored in the database need to be updated. Warning: If this option is used incorrectly, file and checksum information in the database may be lost or completely replaced with different values.
 TESTING:Returned db_validate_paths:260 status: WARNING
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » WARNING
 \z

@@ -52,10 +52,10 @@ TESTING:If the information about ignored files should be removed from the databa
 TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
 2/AAA/BBB/CZC/a.txt
 TESTING:Missing file search completed
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
 TESTING:The precizer completed its execution without any issues
 TESTING:Exit status » SUCCESS

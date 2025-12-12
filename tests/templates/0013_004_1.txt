@@ -4,6 +4,6 @@
 -TESTING:\\x1B\\\[1mThe database file database1.db has NOT been modified since the program was launched\\x1B\\\[0m
 \+TESTING:Start vacuuming the primary database…
 \+TESTING:The primary database has been vacuumed
-\+TESTING:The connection to the primary database has been closed
+\+TESTING:The database connection has been closed
 \+TESTING:\\x1B\\\[1mThe database file database1.db has been modified since the program was launched\\x1B\\\[0m
 \z

@@ -72,7 +72,7 @@ Return db_close(
 
 	if(SUCCESS == status)
 	{
-		slog(TRACE,"The connection to the primary database has been closed\n");
+		slog(TRACE,"The database connection has been closed\n");
 	}
 
 	provide(status);
