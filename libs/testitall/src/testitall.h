@@ -6,9 +6,12 @@
 #define TESTITALL
 #endif
 
-// Required for strdup(), clock_gettime().
-// Must be placed at the beginning of the file.
 #define _GNU_SOURCE
+#ifdef EVIL_EMPIRE_OS
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE 1
+#endif
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +32,7 @@
 
 // Functions for string manipulation.
 #include <string.h>
+#include <strings.h>
 
 // librational library.
 #include "rational.h"
