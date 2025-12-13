@@ -81,12 +81,8 @@ GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 EXE = precizer
 
 SRC = src
-STRIP = -s
+STRIP = -Wl,-s
 STATIC = -static -static-libgcc -Wl,--gc-sections
-ifeq ($(UNAME_S),Darwin)
-STRIP =
-STATIC =
-endif
 
 # UPX compression (disabled on macOS; UPX не пакует Mach-O arm64)
 UPX ?= upx --best --lzma -qqq
@@ -184,10 +180,6 @@ DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
-DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
-ifeq ($(UNAME_S),Darwin)
-DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
-endif
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
 DBG_LDFLAGS = -Wl,--as-needed
@@ -278,7 +270,7 @@ debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 $(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_RPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
