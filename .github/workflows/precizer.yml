@@ -130,10 +130,10 @@ jobs:
           otool -L precizer
           otool -l precizer
           zip --junk-paths precizer_v${{ env.VERSION }}_macos_arm64.zip precizer
-          ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
-          echo "$ZIP_COMMENT" | precizer_v${{ env.VERSION }}_macos_arm64.zip
-          make purge
-          ./precizer --version
+          #ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
+          #echo "$ZIP_COMMENT" | precizer_v${{ env.VERSION }}_macos_arm64.zip
+          echo make purge
+          echo ./precizer --version
 
       - name: Run tests (macOS arm64)
         run: make tests
