@@ -133,7 +133,7 @@ jobs:
           ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_macos_arm64_v${{ env.VERSION }}.zip
           make purge
-         ./precizer --version
+          ./precizer --version
 
       - name: Run tests (macOS arm64)
         run: make tests
