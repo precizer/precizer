@@ -13,6 +13,11 @@ CFLAGS += -DTESTITALL
 
 UNAME_S := $(shell uname -s)
 
+# macOS-specific code
+ifeq ($(UNAME_S),Darwin)
+CFLAGS += -DEVIL_EMPIRE_OS
+endif
+
 SRC = src
 STRIP = -s
 STATIC = -static -static-libgcc -Wl,--gc-sections
