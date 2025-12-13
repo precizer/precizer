@@ -81,6 +81,11 @@ GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 EXE = precizer
 
 SRC = src
+LN_STRIP = -Wl,-s
+ifeq ($(UNAME_S),Darwin)
+LN_STRIP =
+endif
+
 STATIC = -static -static-libgcc -Wl,--gc-sections
 
 # UPX compression (disabled on macOS; UPX не пакует Mach-O arm64)
@@ -319,7 +324,7 @@ prodfinal: $(PROD_EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) $(STATIC) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(LN_STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@$(STRIP) -x $(PROD_EXE)
 	@echo "$@ linked"
 
@@ -344,7 +349,7 @@ dynprodfinal: $(DYNP_EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 $(DYNP_EXE): $(DYNP_OBJS)
-	@$(CC) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@$(CC) $(LN_STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@$(STRIP) -x $(DYNP_EXE)
 	@echo "$@ linked"
 
@@ -366,7 +371,7 @@ portfinal: $(PRTB_EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(LN_STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@$(STRIP) -x $(PRTB_EXE)
 	@echo "$@ linked"
 
