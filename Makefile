@@ -233,7 +233,7 @@ endif
 #
 DYNP_DIR = $(BUILDDIR)/dynamic-production
 DYNP_OBJDIR = $(DYNP_DIR)/obj
-DYNP_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
+DYNP_LDPATH = $(LDPATH)
 DYNP_EXE = $(DYNP_DIR)/$(EXE)
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
 DYNP_CFLAGS = $(PROD_CFLAGS)
@@ -344,7 +344,7 @@ dynprodfinal: $(DYNP_EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 $(DYNP_EXE): $(DYNP_OBJS)
-	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@echo "$@ linked"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
