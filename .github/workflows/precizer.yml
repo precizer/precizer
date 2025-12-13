@@ -51,6 +51,8 @@ jobs:
       - name: Build project (Linux x86_64)
         run: |
           make portable
+          ldd .builds/portable/precizer
+          readelf -d .builds/portable/precizer
           zip --junk-paths precizer_linux_x86_64_v${{ env.VERSION }}.zip precizer
           ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_v${{ env.VERSION }}.zip
@@ -86,6 +88,8 @@ jobs:
       - name: Build project (Linux arm64)
         run: |
           make portable
+          ldd .builds/portable/precizer
+          readelf -d .builds/portable/precizer
           zip --junk-paths precizer_linux_arm64_v${{ env.VERSION }}.zip precizer
           ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_arm64_v${{ env.VERSION }}.zip
@@ -129,7 +133,6 @@ jobs:
           make dynamic-production
           otool -L precizer
           otool -l precizer
-          dyld_info -dependents precizer
           zip --junk-paths precizer_macos_arm64_v${{ env.VERSION }}.zip precizer
           ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_macos_arm64_v${{ env.VERSION }}.zip
