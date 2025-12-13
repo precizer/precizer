@@ -122,7 +122,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install llvm argp-standalone sqlite || true
+          brew install llvm argp-standalone || true
 
       - name: Build project (macOS arm64)
         run: |
@@ -132,6 +132,8 @@ jobs:
           zip --junk-paths precizer_macos_arm64_v${{ env.VERSION }}.zip precizer
           ZIP_COMMENT="macOS arm64 dynamic loadable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_macos_arm64_v${{ env.VERSION }}.zip
+          make purge
+         ./precizer --version
 
       - name: Run tests (macOS arm64)
         run: make tests
