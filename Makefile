@@ -146,8 +146,8 @@ DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
 
 ifeq ($(UNAME_S),Darwin)
-DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
-INCPATH += $(shell pkg-config --cflags libpcre2-8)
+#DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
+#INCPATH += $(shell pkg-config --cflags libpcre2-8)
 # argp lib
 DYNAMIC_INCPATH += -I/opt/homebrew/include
 INCPATH += -I/opt/homebrew/include
@@ -229,10 +229,6 @@ PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_DIR)/obj
 PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
-PROD_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
-ifeq ($(UNAME_S),Darwin)
-PROD_RPATH = -Wl,-rpath,@executable_path/$(PROD_LIBDIR),-rpath,@executable_path/libs
-endif
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
 PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
@@ -247,10 +243,6 @@ DYNP_DIR = $(BUILDDIR)/dynamic-production
 DYNP_OBJDIR = $(DYNP_DIR)/obj
 DYNP_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 DYNP_EXE = $(DYNP_DIR)/$(EXE)
-DYNP_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
-ifeq ($(UNAME_S),Darwin)
-DYNP_RPATH = -Wl,-rpath,@executable_path/$(PROD_LIBDIR),-rpath,@executable_path/libs
-endif
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
 DYNP_CFLAGS = $(PROD_CFLAGS)
 DYNP_LDFLAGS = $(PROD_LDFLAGS)
@@ -265,10 +257,6 @@ PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_DIR)/obj
 PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
-PRTB_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTB_LIBDIR),-rpath,\$$ORIGIN/libs
-ifeq ($(UNAME_S),Darwin)
-PRTB_RPATH = -Wl,-rpath,@executable_path/$(PRTB_LIBDIR),-rpath,@executable_path/libs
-endif
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
@@ -340,7 +328,7 @@ prodfinal: $(PROD_EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_RPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
@@ -364,7 +352,7 @@ dynprodfinal: $(DYNP_EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 $(DYNP_EXE): $(DYNP_OBJS)
-	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_RPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@echo "$@ linked"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
@@ -385,7 +373,7 @@ portfinal: $(PRTB_EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PRTB_LDPATH) $(PRTB_RPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
