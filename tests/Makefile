@@ -19,12 +19,7 @@ CFLAGS += -DEVIL_EMPIRE_OS
 endif
 
 SRC = src
-STRIP = -s
 STATIC = -static -static-libgcc -Wl,--gc-sections
-ifeq ($(UNAME_S),Darwin)
-STRIP =
-STATIC =
-endif
 
 PRZRSRC = ../src
 BUILDS = ../.builds
