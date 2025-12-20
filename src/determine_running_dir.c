@@ -12,7 +12,7 @@ Return determine_running_dir(void)
 	cwd = get_current_dir_name();
 #else
 	// Portable fallback for platforms without get_current_dir_name (e.g., macOS)
-	cwd = getcwd(NULL, 0);
+	cwd = getcwd(NULL,0);
 #endif
 
 	if(cwd != NULL)

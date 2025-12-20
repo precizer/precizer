@@ -1,78 +1,73 @@
-\ATESTING:Configuration initialized
-TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/diffs/diff1
-TESTING:argument:database=0015_database_v2.db
-TESTING:argument:db_file_name=0015_database_v2.db
-TESTING:argument:update=yes
-TESTING:Arguments parsed
-TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
-TESTING:Set signal SIGUSR2 OK:pid:\d+
-TESTING:Set signal SIGINT OK:pid:\d+
-TESTING:Set signal SIGTERM OK:pid:\d+
-TESTING:Signals initialized
-TESTING:Current directory: .*$
-TESTING:Primary database file name: 0015_database_v2.db
-TESTING:Primary database file path: 0015_database_v2.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path 0015_database_v2.db exists
-TESTING:The path 0015_database_v2.db is exists and it is a file
-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-TESTING:Final value for config->db_initialize_tables: false
-TESTING:DB mode determined
-TESTING:Starting database file 0015_database_v2.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database 0015_database_v2.db has been verified and is in good condition
-TESTING:Version number 2 found in database
-TESTING:The 0015_database_v2.db database file is version 2
-TESTING:The database 0015_database_v2.db file has an outdated version 2 and requires updating to the version 3
-TESTING:Caution! The update will be performed in transaction mode for database safety
-TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
-TESTING:Migration from version 2 to version 3 started
-TESTING:The database connection has been closed
-TESTING:Store the database version 3 in the metadata table
-TESTING:The database version 3 has been successfully stored in the DB
-TESTING:The database connection has been closed
-TESTING:Migration from version 2 to version 3 completed
-TESTING:The database has been successfully upgraded
-TESTING:The primary database doesn't need to be vacuumed during updates
-TESTING:Successfully opened database 0015_database_v2.db
-TESTING:The primary database and tables do not require initialization
-TESTING:The primary database named 0015_database_v2.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database 0015_database_v2.db
-TESTING:Database initialization process completed
-TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The database 0015_database_v2.db has already been created previously
-TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+.*$
-TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database 0015_database_v2.db
-TESTING:File traversal started
-TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB 0015_database_v2.db:\x1B\[0m
-1/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash$
-1/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
-1/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
-2/AAA/BBB/CZC/a.txt updated ctime was:.+ no rehash$
-3/AAA/BBB/CCC/a.txt updated ctime was:.+ no rehash$
-4/AAA/BBB/CCC/a.txt updated ctime was:.+ no rehash$
-path1/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash$
-path1/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
-path1/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
-path2/AAA/BCB/CCC/a.txt updated ctime was:.+ no rehash$
-path2/AAA/ZAW/A/b/c/a_file.txt updated ctime was:.+ no rehash$
-path2/AAA/ZAW/D/e/f/b_file.txt updated ctime was:.+ no rehash$
-TESTING:File traversal complete
-TESTING:Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
-TESTING:Searching for files that no longer exist on the file system…
-TESTING:Missing file search completed
-TESTING:The database connection has been closed
-TESTING:Start vacuuming the primary database…
-TESTING:The primary database has been vacuumed
-TESTING:The database connection has been closed
-TESTING:\x1B\[1mThe database file 0015_database_v2.db has been modified since the program was launched\x1B\[0m
-TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS
-\z
+\A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
+paths=tests/examples/diffs/diff1; database=0015_database_v2.db; db_file_name=0015_database_v2.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=no; compare=no, db-clean-ignored=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments.c:\d+:parse_arguments:Arguments parsed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/detect_paths.c:\d+:detect_paths:Checking directory paths provided as arguments
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:Verify that the path tests/examples/diffs/diff1 exists
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/detect_paths.c:\d+:detect_paths:Paths detected
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals.c:\d+:init_signals:Set signal SIGUSR2 OK:pid:\d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals.c:\d+:init_signals:Set signal SIGINT OK:pid:\d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals.c:\d+:init_signals:Set signal SIGTERM OK:pid:\d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals.c:\d+:init_signals:Signals initialized
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/determine_running_dir.c:\d+:determine_running_dir:Current directory: [^\r\n]*
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_name.c:\d+:db_determine_name:Primary database file name: 0015_database_v2.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_name.c:\d+:db_determine_name:Primary database file path: 0015_database_v2.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_name.c:\d+:db_determine_name:DB name determined
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:Verify that the path . exists
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:The path . is exists and it is a directory
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:Verify that the path 0015_database_v2.db exists
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:The path 0015_database_v2.db is exists and it is a file
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode.c:\d+:db_determine_mode:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode.c:\d+:db_determine_mode:Final value for config->db_initialize_tables: false
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode.c:\d+:db_determine_mode:DB mode determined
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_test.c:\d+:db_test:Starting database file 0015_database_v2.db integrity check…
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_test.c:\d+:db_test:The database verification level has been set to FULL
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_test.c:\d+:db_test:Database 0015_database_v2.db has been verified and is in good condition
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_get_version.c:\d+:db_get_version:Version number \d+ found in database
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version.c:\d+:db_check_version:The 0015_database_v2.db database file is version \d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:The database 0015_database_v2.db file has an outdated version \d+ and requires updating to the version \d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Caution! The update will be performed in transaction mode for database safety
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version \d+ to version \d+ started
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Store the database version \d+ in the metadata table
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_specify_version.c:\d+:db_specify_version:The database version \d+ has been successfully stored in the DB
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version \d+ to version \d+ completed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:The database has been successfully upgraded
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version.c:\d+:db_check_version:The primary database doesn't need to be vacuumed during updates
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:Successfully opened database 0015_database_v2.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The primary database and tables do not require initialization
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The primary database named 0015_database_v2.db is ready for operations
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The in-memory runtime_paths_id database successfully attached to the primary database 0015_database_v2.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:Database initialization process completed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_compare.c:\d+:db_compare:Database comparison mode is not enabled. Skipping comparison
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_contains_data.c:\d+:db_contains_data:The database 0015_database_v2.db has already been created previously
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_validate_paths.c:\d+:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_buffer_memory.c:\d+:file_buffer_memory:Bytes that can be allocated for the file buffer: \d+.*
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_relative_path.c:\d+:show_relative_path:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database 0015_database_v2.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_relative_path.c:\d+:show_relative_path:File traversal started
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_relative_path.c:\d+:show_relative_path:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB 0015_database_v2.db:(?:\x1B\[[0-9;]*m)*
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/BCB/CCC/a.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/ZAW/A/b/c/a_file.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/ZAW/D/e/f/b_file.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 2/AAA/BBB/CZC/a.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 3/AAA/BBB/CCC/a.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 4/AAA/BBB/CCC/a.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} path1/AAA/BCB/CCC/a.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} path1/AAA/ZAW/A/b/c/a_file.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} path1/AAA/ZAW/D/e/f/b_file.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} path2/AAA/BCB/CCC/a.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} path2/AAA/ZAW/A/b/c/a_file.txt
+update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} path2/AAA/ZAW/D/e/f/b_file.txt
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_list.c:\d+:display_statistics:File traversal complete
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_list.c:\d+:display_statistics:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Missing file search completed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_vacuum.c:\d+:db_vacuum:Start vacuuming the primary database…
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_vacuum.c:\d+:db_vacuum:The primary database has been vacuumed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_changes.c:\d+:db_check_changes:(?:\x1B\[[0-9;]*m)*The database file 0015_database_v2.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status.c:\d+:exit_status:The precizer completed its execution without any issues
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status.c:\d+:exit_status:Exit status » SUCCESS\Z

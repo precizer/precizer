@@ -67,9 +67,9 @@ static Return cmpct_stat_is_sane(const CmpctStat *stat)
  * @return SUCCESS on successful conversion and sanity check, FAILURE otherwise.
  */
 static Return populate_from_glibc_stat_blob(
-	const void   *blob,
-	const int    blob_size,
-	CmpctStat    *new_stat)
+	const void *blob,
+	const int  blob_size,
+	CmpctStat  *new_stat)
 {
 	if(blob_size < STAT64_SIZE)
 	{

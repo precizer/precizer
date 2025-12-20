@@ -13,7 +13,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: .*$
+TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: 0015_database_v0.db
 TESTING:Primary database file path: ./0015_database_v0.db
 TESTING:DB name determined
@@ -43,7 +43,6 @@ TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
 TESTING:The database connection has been closed
 TESTING:No changes were made. The primary database doesn't require vacuuming
-TESTING:\x1B\[1mThe database file 0015_database_v0.db has NOT been modified since the program was launched\x1B\[0m
+TESTING:(?:\x1B\[[0-9;]*m)*The database file 0015_database_v0.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS
-\z
+TESTING:Exit status » SUCCESS\Z

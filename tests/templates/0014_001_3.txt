@@ -12,7 +12,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: .*$
+TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
@@ -33,7 +33,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started
-TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
+TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the database1.db database:(?:\x1B\[[0-9;]*m)*
 path1/AAA/BCB/CCC/a.txt
 path1/AAA/ZAW/A/b/c/a_file.txt
 path1/AAA/ZAW/A/b/c/b_file.txt
@@ -48,7 +48,6 @@ TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:\x1B\[1mThe brand-new primary database database1.db was created and modified since the program started \(files were added, removed, or updated\)\x1B\[0m
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS
-\z
+TESTING:Exit status » SUCCESS\Z

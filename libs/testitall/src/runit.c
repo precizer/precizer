@@ -235,10 +235,10 @@ Return runit(
 					const char *stdout_view = getcstring(STDOUT);
 					int rt = asprintf(&str,
 						YELLOW "ERROR: Unexpected exit code!" RESET "\n"
-						YELLOW "Internal call:\n" YELLOW ">>" RESET "precizer %s" YELLOW "<<" RESET "\n"
-						YELLOW "Exited with code " RESET "%d " YELLOW "but expected " RESET "%d\n"
-						YELLOW "Stderr output:\n>>" RESET "%s" YELLOW "<<" RESET "\n"
-						YELLOW "Stdout output:\n>>" RESET "%s" YELLOW "<<" RESET "\n",
+						YELLOW "Internal call:" RESET "\n" YELLOW ">>" RESET "precizer %s" YELLOW "<<" RESET "\n"
+						YELLOW "Exited with code " RESET "%d" YELLOW " but expected " RESET "%d\n"
+						YELLOW "Stderr output:" RESET "\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
+						YELLOW "Stdout output:" RESET "\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
 						safe_arguments,
 						exit_code,
 						expected_return_code,

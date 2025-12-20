@@ -101,7 +101,7 @@ jobs:
             "precizer_v${{ env.VERSION }}_linux_aarch64_portable.zip" \
             --clobber
 
-  build_macos_arm64:
+  build_evil_empire_os_arm64:
     name: Build & attach macOS arm64
     runs-on: macos-latest
     needs: get_tag_info

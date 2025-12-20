@@ -36,6 +36,7 @@ int main(void)
 	TEST(comprehensive_unit_testing,"Comprehensive Unit testing…");
 
 	HEADER("System Testing of precizer");
+	TEST(test0027,"--lock-checksum option testing…");
 	TEST(comprehensive_system_testing,"Comprehensive System testing…");
 
 	HEADER("Clean results");

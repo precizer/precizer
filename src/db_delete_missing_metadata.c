@@ -98,9 +98,9 @@ Return db_delete_missing_metadata(void)
 				// Don't show extra messages
 				bool showed_once = true;
 
-				Include response = include(relative_path,&showed_once);
+				Include match_include_response = match_include_pattern(relative_path,&showed_once);
 
-				if(DO_NOT_INCLUDE == response)
+				if(DO_NOT_INCLUDE == match_include_response)
 				{
 					/*
 					 *
@@ -108,17 +108,17 @@ Return db_delete_missing_metadata(void)
 					 *
 					 */
 
-					Ignore result = ignore(relative_path,&showed_once);
+					Ignore match_ignore_response = match_ignore_pattern(relative_path,&showed_once);
 
-					if(IGNORE == result)
+					if(IGNORE == match_ignore_response)
 					{
 						clean_ignored = true;
 
-					} else if(FAIL_REGEXP_IGNORE == result){
+					} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
 						status = FAILURE;
 					}
 
-				} else if(FAIL_REGEXP_INCLUDE == response){
+				} else if(FAIL_REGEXP_INCLUDE == match_include_response){
 					status = FAILURE;
 					break;
 				}

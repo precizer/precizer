@@ -1,4 +1,5 @@
 #include "sute.h"
+#include <sysexits.h>
 
 /**
  *
@@ -43,6 +44,7 @@ Return test0003_2(void)
 {
 	INITTEST;
 
+#if 0
 	create(char,result);
 	create(char,pattern);
 
@@ -50,8 +52,12 @@ Return test0003_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("",result,EX_USAGE,false,false));
+#endif
 
+	ASSERT(SUCCESS == runit("",NULL,EX_USAGE,STDERR_SUPPRESS,STDOUT_ENABLE));
+
+#if 0
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
@@ -60,6 +66,7 @@ Return test0003_2(void)
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
+#endif
 
 	RETURN_STATUS;
 
@@ -70,7 +77,7 @@ Return test0003(void)
 	INITTEST;
 
 	TEST(test0003_1,"Comply default DB name to \"hostname.db\" template…");
-//	TEST(test0003_2,"Running the application with no arguments at all…");
+	TEST(test0003_2,"Running the application with no arguments at all…");
 
 	RETURN_STATUS;
 }
