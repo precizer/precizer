@@ -17,7 +17,7 @@
  *         - MODIFICATION_TIME_CHANGED
  *         - STATUS_CHANGED_TIME
  */
-int compare_file_metadata_equivalence(
+Changed compare_file_metadata_equivalence(
 	const CmpctStat *source,
 	const CmpctStat *destination)
 {
@@ -27,7 +27,7 @@ int compare_file_metadata_equivalence(
 		return(COMPARE_FAILED);
 	}
 
-	int changes = IDENTICAL;
+	Changed changes = IDENTICAL;
 
 	/* Size of file, in bytes.  */
 	if(source->st_size != destination->st_size)

@@ -560,7 +560,7 @@ Return stat_copy(
 	const struct stat *,
 	CmpctStat *);
 
-int compare_file_metadata_equivalence(
+Changed compare_file_metadata_equivalence(
 	const CmpctStat *,
 	const CmpctStat *) __attribute__ ((pure));
 
