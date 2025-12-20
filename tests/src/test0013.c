@@ -153,7 +153,7 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1",
+	ASSERT(SUCCESS == runit("--watch-timestamps --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1",
 		result,
 		COMPLETED,
 		false,
@@ -277,7 +277,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};mv database1.db.backup database1.db;",COMPLETED,false,false));
 
-	arguments = "--db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--watch-timestamps --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
 
@@ -387,10 +387,7 @@ Return test0013(void)
 	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
-#ifndef EVIL_EMPIRE_OS
-/* Doesn't work on macOS yet */
 	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
-#endif
 	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
 	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
 

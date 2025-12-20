@@ -20,15 +20,14 @@
 -TESTING:Recursion depth limited to: 3
 \+TESTING:The database database3.db has already been created previously
 \+TESTING:The paths written against the database and the paths passed as arguments are completely identical
-\+TESTING:The \\x1B\\\[1m--update\\x1B\\\[0m option has been used, so the information about files will be updated against the database database3.db
--TESTING:\\x1B\\\[1mThese files will be added against the database3.db database:\\x1B\\\[0m
--1/2/3/ccc.txt
--1/2/bbb.txt
--1/aaa.txt
-\+TESTING:\\x1B\\\[1mThese files have been added or changed and those changes will be reflected against the DB database3.db:\\x1B\\\[0m
-\+1/2/3/4/ddd.txt add
+\+TESTING:The \Q(?:\x1B\[[0-9;]*m)*\E--update\Q(?:\x1B\[[0-9;]*m)*\E option has been used, so the information about files will be updated against the database database3.db
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThese files will be added against the database3.db database:\Q(?:\x1B\[[0-9;]*m)*\E
+-add 1/2/3/ccc.txt
+-add 1/2/bbb.txt
+-add 1/aaa.txt
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThese files were added or changed on disk and will be reflected against the DB database3.db:\Q(?:\x1B\[[0-9;]*m)*\E
+\+add 1/2/3/4/ddd.txt
 \+TESTING:Searching for files that no longer exist on the file system…
 \+TESTING:Missing file search completed
--TESTING:\\x1B\\\[1mThe brand-new primary database database3.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\\x1B\\\[0m
-\+TESTING:\\x1B\\\[1mThe database file database3.db has been modified since the program was launched\\x1B\\\[0m
-\z
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database3.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe database file database3.db has been modified since the program was launched\Q(?:\x1B\[[0-9;]*m)*\E\Z

@@ -179,7 +179,7 @@ static Return db_changes(
 
 		if(relative_path != NULL)
 		{
-			slog(EVERY,"%s\n",relative_path);
+			slog(EVERY|UNDECOR,"%s\n",relative_path);
 		} else {
 			slog(ERROR,"General database error!\n");
 			status = FAILURE;
@@ -396,7 +396,7 @@ Return db_compare(void)
 
 			if(relative_path != NULL)
 			{
-				slog(EVERY,"%s\n",relative_path);
+				slog(EVERY|UNDECOR,"%s\n",relative_path);
 			} else {
 				slog(ERROR,"General database error!\n");
 				status = FAILURE;

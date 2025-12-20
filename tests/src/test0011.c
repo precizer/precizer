@@ -138,6 +138,8 @@ static Return test0011_2_readme(void)
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
 
+	arguments = "--watch-timestamps --update --progress --database=database1.db tests/examples/diffs/diff1";
+
 	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
@@ -249,8 +251,6 @@ static Return test0011_5_readme(void)
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-//	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && ls -la && ls -la tests && ls -la tests/examples/ && pwd",SUCCESS,false,false));
 
 	const char *arguments = "--maxdepth=0 tests/examples/4";
 

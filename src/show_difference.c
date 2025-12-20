@@ -1,7 +1,28 @@
 #include "precizer.h"
 
+/**
+ * @brief Retrieve a const pointer to a flag descriptor by index.
+ *
+ * Uses the mem helper to obtain a typed readonly view of the @ref Flags array and
+ * performs bounds checking. Returns NULL if the descriptor is missing, type
+ * verification fails, or the index is out of range.
+ */
+static const Flags *lookup(
+	const memory *flags,
+	size_t        index)
+{
+	const Flags *flags_data = cdata(Flags,flags);
+
+	if(flags_data == NULL || index >= flags->length)
+	{
+		return(NULL);
+	}
+
+	return(&flags_data[index]);
+}
+
 Return show_difference(
-	int changes,
+	Changed         change_flags_mask,
 	const CmpctStat *before,
 	const CmpctStat *after)
 {
@@ -11,27 +32,42 @@ Return show_difference(
 		return(FAILURE);
 	}
 
-	if(changes == IDENTICAL)
+	if(change_flags_mask == IDENTICAL)
 	{
 		return(SUCCESS);
 	}
 
-	const char *flags[] = {
-		"size","ctime","mtime"
-	};
+	Return status = SUCCESS;
 
-	const int flag_values[] = {
-		SIZE_CHANGED,STATUS_CHANGED_TIME,MODIFICATION_TIME_CHANGED
-	};
+	create(Flags,flags);
+	call(resize(flags,3));
 
-	const int flag_count = 3;
+	Flags *flags_data = data(Flags,flags);
+
+	if(flags_data == NULL)
+	{
+		del(flags);
+		provide(FAILURE);
+	}
+
+	flags_data[0] = (Flags){SIZE_CHANGED,"size"};
+	flags_data[1] = (Flags){STATUS_CHANGED_TIME,"ctime"};
+	flags_data[2] = (Flags){MODIFICATION_TIME_CHANGED,"mtime"};
+
 	unsigned int flags_found = 0;
 	bool first_word = true;
 
 	/* Check each flag */
-	for(int i = 0; i < flag_count; i++)
+	for(size_t i = 0; i < flags->length; i++)
 	{
-		if(changes & flag_values[i])
+		const Flags *flag = lookup(flags,i);
+
+		if(flag == NULL)
+		{
+			break;
+		}
+
+		if(((unsigned int)change_flags_mask & (unsigned int)flag->flag_value) != 0u)
 		{
 			if(first_word == true)
 			{
@@ -44,11 +80,13 @@ Return show_difference(
 			{
 				printf(" & ");
 			}
-			printf("%s",flags[i]);
-			show_metadata(i,before,after);
+			printf("%s",flag->flag_name);
+			show_metadata(flag->flag_value,before,after);
 			flags_found++;
 		}
 	}
+
+	del(flags);
 
 	if(flags_found > 0)
 	{

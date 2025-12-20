@@ -116,6 +116,10 @@ void init_config(void)
 	// The string array of PCRE2 regular expressions
 	config->include = NULL;
 
+	// Relative paths whose checksums must never be recalculated
+	// after the initial write. PCRE2 regular expressions.
+	config->lock_checksum = NULL;
+
 	// Perform a trial run with no changes made
 	config->dry_run = false;
 

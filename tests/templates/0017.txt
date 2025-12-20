@@ -63,5 +63,4 @@ Number: 1567
 Base: 10	Converted String: 1567
 Base: 2		Converted String: 11000011111
 Base: 8		Converted String: 3037
-Base: 16	Converted String: 61F
-\z
+Base: 16	Converted String: 61F\Z

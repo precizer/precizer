@@ -88,7 +88,7 @@ endif
 
 STATIC = -static -static-libgcc -Wl,--gc-sections
 
-# UPX compression (disabled on macOS; UPX не пакует Mach-O arm64)
+# UPX compression (disabled on macOS)
 UPX ?= upx --best --lzma -qqq
 ifeq ($(UNAME_S),Darwin)
 UPX = true

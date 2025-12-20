@@ -32,6 +32,16 @@ Return stat_copy(
 
 	/* Copying essential elements from the stat structure to the new one */
 	destination->st_size = source->st_size;
+
+	/*
+	 * Evil Empire OS uses `st_*timespec` fields instead of `st_*tim`.
+	 * Map the member names so we can keep the Linux-oriented copy code.
+	 */
+	#ifdef EVIL_EMPIRE_OS
+	#define st_mtim st_mtimespec
+	#define st_ctim st_ctimespec
+	#endif
+
 	destination->mtim_tv_sec = source->st_mtim.tv_sec;
 	destination->mtim_tv_nsec = source->st_mtim.tv_nsec;
 	destination->ctim_tv_sec = source->st_ctim.tv_sec;

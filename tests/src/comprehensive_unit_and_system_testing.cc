@@ -11,3 +11,4 @@ TEST(test0018,"--maxdepth argument testing…");
 TEST(test0019,"Symlink operations…");
 TEST(test0020,"DB creation attempts with missing components…");
 TEST(test0024,"Paths with apostrophe test…");
+TEST(test0027,"--lock-checksum option testing…");

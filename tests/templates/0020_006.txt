@@ -13,7 +13,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: .*$
+TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database1.db
 TESTING:Primary database file path: database1.db
 TESTING:DB name determined
@@ -40,9 +40,8 @@ TESTING:The database database1.db has already been created previously
 TESTING:The paths passed as arguments differ from those saved in the database. File paths and checksum information may be lost!
 TESTING:Paths saved in the database:
 tests/examples/diffs/diff1
-TESTING:Use the \x1B\[1m--force\x1B\[0m option only when the PATHS stored in the database need to be updated. Warning: If this option is used incorrectly, file and checksum information in the database may be lost or completely replaced with different values.
+TESTING:Use the (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option only when the PATHS stored in the database need to be updated. Warning: If this option is used incorrectly, file and checksum information in the database may be lost or completely replaced with different values.
 TESTING:Returned db_validate_paths:260 status: WARNING
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING
-\z
+ERROR:Exit status » WARNING\Z

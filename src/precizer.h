@@ -90,6 +90,15 @@ typedef enum
 
 } Include;
 
+// Return codes for Lock Checksum function
+typedef enum
+{
+	DO_NOT_LOCK_CHECKSUM,     // The actual value is 0
+	LOCK_CHECKSUM,            // The actual value is 1
+	FAIL_REGEXP_LOCK_CHECKSUM // The actual value is 2
+
+} LockChecksum;
+
 /*
  * Modification bits
  *
@@ -143,6 +152,16 @@ typedef enum
  * Declaration of structures
  *
  */
+
+/**
+ * @brief Named change-flag descriptor for human-readable output.
+ *
+ * Maps a change bitmask value from @ref Changed to its printable name.
+ */
+typedef struct Flags {
+	Changed flag_value;
+	const char *flag_name;
+} Flags;
 
 /**
  * @brief Compact file metadata structure
@@ -331,6 +350,10 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **include;
 
+	/// Relative paths whose checksums must never be recalculated
+	/// after the initial write. PCRE2 regular expressions.
+	char **lock_checksum;
+
 	/// Dry Run Mode Specification
 	/// When operating in Dry Run mode, the system performs validation
 	/// and simulates execution without making any actual changes
@@ -403,6 +426,10 @@ void remove_trailing_slash(char *);
 const char *extract_relative_path(
 	const char *,
 	const char *) __attribute__ ((pure));
+
+LockChecksum match_checksum_lock_pattern(
+	const char *,
+	bool *);
 
 Return path_absolute_from_relative(
 	char **,
@@ -543,11 +570,13 @@ Return parse_arguments(
 
 void show_relative_path(
 	const char *,
-	const int *,
+	const Changed *,
 	const DBrow *,
 	const CmpctStat *,
 	bool *,
-	bool *,
+	const bool *,
+	const bool *,
+	const bool *,
 	const bool *,
 	const bool *,
 	bool *,
@@ -557,12 +586,12 @@ void show_relative_path(
 	const bool *);
 
 void show_metadata(
-	int,
+	Changed,
 	const CmpctStat *,
 	const CmpctStat *);
 
 Return show_difference(
-	int,
+	Changed,
 	const CmpctStat *,
 	const CmpctStat *);
 
@@ -580,11 +609,11 @@ FileAvailability file_availability(
 
 Return detect_paths(void);
 
-Ignore ignore(
+Ignore match_ignore_pattern(
 	const char *,
 	bool *);
 
-Include include(
+Include match_include_pattern(
 	const char *,
 	bool *);
 

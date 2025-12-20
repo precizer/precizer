@@ -10,7 +10,7 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: .*$
+TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: .*$
 TESTING:DB name determined
@@ -33,5 +33,4 @@ TESTING:Comparison of write_protected_database1.db and database2.db databases is
 TESTING:Returned db_compare:\d+ status: FAILURE
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE
-\z
+ERROR:Exit status » FAILURE\Z

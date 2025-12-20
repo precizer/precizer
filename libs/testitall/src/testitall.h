@@ -263,6 +263,18 @@ enum run_mode
 	EXTERNAL_CALL = 1
 };
 
+enum stdout_policy_t
+{
+	STDOUT_ENABLE   = 0,
+	STDOUT_SUPPRESS = 1
+};
+
+enum stderr_policy_t
+{
+	STDERR_ENABLE   = 0,
+	STDERR_SUPPRESS = 1
+};
+
 extern enum run_mode run_external;
 
 Return runit(

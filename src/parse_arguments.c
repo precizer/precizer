@@ -1,4 +1,9 @@
 #include "precizer.h"
+#include <sysexits.h>
+
+#ifdef TESTITALL
+static bool missing_arguments = false;
+#endif
 
 /**
  *
@@ -10,40 +15,40 @@ const char *argp_program_version = APP_NAME " " APP_VERSION;
 
 /* Program documentation. */
 static char doc[] =
-    "\n" APP_NAME " " APP_VERSION " — verify file checksums at scale\n\n"
-    BOLD APP_NAME RESET " is a lightweight and blazing-fast CLI application designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program recursively traverses directories, generating a database of files and their checksums for quick and efficient comparisons.\n"
-    "\n"
-    "Built for both embedded platforms and large-scale clustered mainframes, " BOLD APP_NAME RESET " helps detect synchronization errors by comparing files and their checksums across different sources. It can also be used to analyze historical changes by comparing databases generated at different points in time from the same source.\n"
-    "\n"
-    "Glory to Ukraine!\n"
-    "\vSIMPLE EXAMPLE\n"
-    "\n"
-    "Consider two hosts with large disks containing identical content mounted at /mnt1 and /mnt2 respectively. The task is to verify content identity and identify any differences.\n"
-    "\n"
-    "1. Run the program on the first machine with host name, for example “host1”:\n"
-    "\n"
-    APP_NAME " --progress /mnt1\n"
-    "\n"
-    "The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n"
-    "\n"
-    "2. Run the program on a second machine with a host name, for example host2:\n"
-    "\n"
-    APP_NAME " --progress /mnt2\n"
-    "\n"
-    "As a result, the host2.db database will be created in the current directory.\n"
-    "\n"
-    "3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:\n"
-    "\n"
-    APP_NAME " --compare host1.db host2.db\n"
-    "\n"
-    "The following information will be displayed on the screen:\n"
-    "\n"
-    "* Which files are missing on “host1” but present on “host2” and vice versa.\n"
-    "* For which files, present on both hosts, the checksums do NOT match.\n"
-    "\n"
-    "Note that " APP_NAME " writes only relative paths to the database. The example file “/mnt1/abc/def/aaa.txt” will be written to the database as “abc/def/aaa.txt” without /mnt1. The same thing will happen with the file “/mnt2/abc/def/aaa.txt”. Despite different mount points and different sources the files can be compared with each other under the same names “abc/def/aaa.txt” with the corresponding checksums.\n"
-    "\n"
-    "All other technical details could be found in README file of the project";
+        "\n" APP_NAME " " APP_VERSION " — verify file checksums at scale\n\n"
+        BOLD APP_NAME RESET " is a lightweight and blazing-fast CLI application designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program recursively traverses directories, generating a database of files and their checksums for quick and efficient comparisons.\n"
+        "\n"
+        "Built for both embedded platforms and large-scale clustered mainframes, " BOLD APP_NAME RESET " helps detect synchronization errors by comparing files and their checksums across different sources. It can also be used to analyze historical changes by comparing databases generated at different points in time from the same source.\n"
+        "\n"
+        "Glory to Ukraine!\n"
+        "\vSIMPLE EXAMPLE\n"
+        "\n"
+        "Consider two hosts with large disks containing identical content mounted at /mnt1 and /mnt2 respectively. The task is to verify content identity and identify any differences.\n"
+        "\n"
+        "1. Run the program on the first machine with host name, for example “host1”:\n"
+        "\n"
+        APP_NAME " --progress /mnt1\n"
+        "\n"
+        "The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n"
+        "\n"
+        "2. Run the program on a second machine with a host name, for example host2:\n"
+        "\n"
+        APP_NAME " --progress /mnt2\n"
+        "\n"
+        "As a result, the host2.db database will be created in the current directory.\n"
+        "\n"
+        "3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:\n"
+        "\n"
+        APP_NAME " --compare host1.db host2.db\n"
+        "\n"
+        "The following information will be displayed on the screen:\n"
+        "\n"
+        "* Which files are missing on “host1” but present on “host2” and vice versa.\n"
+        "* For which files, present on both hosts, the checksums do NOT match.\n"
+        "\n"
+        "Note that " APP_NAME " writes only relative paths to the database. The example file “/mnt1/abc/def/aaa.txt” will be written to the database as “abc/def/aaa.txt” without /mnt1. The same thing will happen with the file “/mnt2/abc/def/aaa.txt”. Despite different mount points and different sources the files can be compared with each other under the same names “abc/def/aaa.txt” with the corresponding checksums.\n"
+        "\n"
+        "All other technical details could be found in README file of the project";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "PATH";
@@ -52,30 +57,30 @@ static char args_doc[] = "PATH";
 static struct argp_option options[] = {
 	{ 0,0,0,0,"Build database options:",2},
 	{"lock-checksum",'k',"PCRE2_REGEXP",0,"Relative path to be treated as immutable archival data. PCRE2 regular expressions can be used to "
-         "select files or directories whose checksums are written once to the database and never updated "
-         "again. If no matching files exist in the database yet, their entries and checksums will still be "
-         "created normally when they are scanned for the first time. All paths for the regular expression "
-         "must be specified as relative, the same way as for the "
-         BOLD "--ignore" RESET " option. For these entries, the "
-         BOLD "--update" RESET " option will not recalculate checksums; any difference in file size, timestamps, or content will "
-         "always be reported as data corruption instead of a reason to generate a new checksum. Multiple "
-         "regular expressions can be specified using multiple "
-         BOLD "--lock-checksum" RESET " options.\n"
-         "Example:\n"
-         BOLD APP_NAME " --update --lock-checksum=\"^archive/2077/.*\" /mnt/storage" RESET "\n",0},
+	 "select files or directories whose checksums are written once to the database and never updated "
+	 "again. If no matching files exist in the database yet, their entries and checksums will still be "
+	 "created normally when they are scanned for the first time. All paths for the regular expression "
+	 "must be specified as relative, the same way as for the "
+	 BOLD "--ignore" RESET " option. For these entries, the "
+	 BOLD "--update" RESET " option will not recalculate checksums; any difference in file size, timestamps, or content will "
+	 "always be reported as data corruption instead of a reason to generate a new checksum. Multiple "
+	 "regular expressions can be specified using multiple "
+	 BOLD "--lock-checksum" RESET " options.\n"
+	 "Example:\n"
+	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2077/.*\" /mnt/storage" RESET "\n",0},
 	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions could be used to specify "
-         "a pattern to ignore files or directories. Attention! All paths for the regular expression must be specified as relative. To understand what a relative path looks like, just run traverses without the "
-         BOLD "--ignore" RESET " option and look how the terminal will display "
-         "relative paths that are written to the database.\n"
-         "Example:\n"
-         BOLD APP_NAME " --ignore=\"^diff2/1/.*\" tests/examples/diffs" RESET "\n"
-         "In this example, the starting path for the traversing "
-         "is ./tests/examples/diffs and the relative path to ignore will "
-         "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/.*).\n"
-         "Multiple regular expressions for ignore could be specified using many "
-         BOLD "--ignore" RESET " options at once.\n"
-         "Example:\n"
-         BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",0 },
+	 "a pattern to ignore files or directories. Attention! All paths for the regular expression must be specified as relative. To understand what a relative path looks like, just run traverses without the "
+	 BOLD "--ignore" RESET " option and look how the terminal will display "
+	 "relative paths that are written to the database.\n"
+	 "Example:\n"
+	 BOLD APP_NAME " --ignore=\"^diff2/1/.*\" tests/examples/diffs" RESET "\n"
+	 "In this example, the starting path for the traversing "
+	 "is ./tests/examples/diffs and the relative path to ignore will "
+	 "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/.*).\n"
+	 "Multiple regular expressions for ignore could be specified using many "
+	 BOLD "--ignore" RESET " options at once.\n"
+	 "Example:\n"
+	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",0 },
 	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",0 },
 	{"db-clean-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-clean-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",0},
 	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.\n",0},
@@ -136,6 +141,9 @@ static error_t parse_opt(
 		case 'i':
 			(void)add_string_to_array(&config->include,arg);
 			break;
+		case 'k':
+			(void)add_string_to_array(&config->lock_checksum,arg);
+			break;
 		case 'c':
 			config->compare = true;
 			break;
@@ -191,7 +199,14 @@ static error_t parse_opt(
 			config->verbose = true;
 			break;
 		case ARGP_KEY_NO_ARGS:
+#ifdef TESTITALL
+			missing_arguments = true;
+			state->flags |= ARGP_NO_EXIT;
 			argp_usage(state);
+			return(EX_USAGE);
+#else
+			argp_usage(state);
+#endif
 			break;
 		case ARGP_KEY_ARG:
 			config->paths = &state->argv[state->next - 1];
@@ -231,9 +246,27 @@ Return parse_arguments(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+#ifdef TESTITALL
+	missing_arguments = false;
+#endif
+
 	/* Parse our arguments; every option seen by parse_opt will be
 	   reflected in arguments. */
-	argp_parse(&argp,argc,argv,0,0,0);
+	argp_parse(&argp,argc,argv,
+
+#ifdef TESTITALL
+	ARGP_NO_EXIT,
+#else
+	0,
+#endif
+	0,0);
+
+#ifdef TESTITALL
+	if(true == missing_arguments)
+	{
+		status = (Return)EX_USAGE;
+	}
+#endif
 
 	if(config->paths != NULL)
 	{
@@ -357,6 +390,18 @@ Return parse_arguments(
 			for(int i = 0; config->include[i] != NULL; ++i)
 			{
 				printf(i == 0 ? "%s" : ", %s",config->include[i]);
+			}
+			printf("\n");
+		}
+
+		if(config->lock_checksum != NULL)
+		{
+			slog(TESTING,"argument:lock-checksum=");
+
+			// Print the contents of the string array
+			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
+			{
+				printf(i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
 			}
 			printf("\n");
 		}
@@ -487,6 +532,18 @@ Return parse_arguments(
 				for(int i = 0; config->include[i] != NULL; ++i)
 				{
 					printf(i == 0 ? "%s" : ", %s",config->include[i]);
+				}
+				printf("; ");
+			}
+
+			if(config->lock_checksum != NULL)
+			{
+				printf("lock-checksum=");
+
+				// Print the contents of the string array
+				for(int i = 0; config->lock_checksum[i] != NULL; ++i)
+				{
+					printf(i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
 				}
 				printf("; ");
 			}
