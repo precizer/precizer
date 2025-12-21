@@ -32,8 +32,7 @@ Return runit(
 	const char *arguments,
 	memory     *result,
 	const int  expected_return_code,
-	bool       suppress_stderr,
-	bool       suppress_stdout)
+	unsigned int buffer_policy)
 {
 	// Base status for the whole sequence; subsequent steps update it on errors.
 	/** @var Return status
@@ -44,6 +43,8 @@ Return runit(
 
 	// Arguments string to parse and forward into test_main
 	const char *safe_arguments = arguments;
+	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
+	const bool suppress_stderr = (buffer_policy & STDERR_SUPPRESS) != 0U;
 
 	if(NULL == safe_arguments || safe_arguments[0] == '\0')
 	{
@@ -66,7 +67,7 @@ Return runit(
 			status = FAILURE;
 
 		} else {
-			run(execute_command(command,result,expected_return_code,suppress_stderr,suppress_stdout));
+			run(execute_command(command,result,expected_return_code,buffer_policy));
 		}
 
 		provide(status);

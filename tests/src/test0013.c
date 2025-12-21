@@ -11,7 +11,7 @@ static Return dry_run_mode_1_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--dry-run --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--dry-run --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -55,13 +55,13 @@ static Return dry_run_mode_2_test(void)
 	        "cp -a tests/examples_backup/ tests/examples/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	printf("Path: %s\n",path);
@@ -81,11 +81,11 @@ static Return dry_run_mode_2_test(void)
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--dry-run --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	#if 0
@@ -107,7 +107,7 @@ static Return dry_run_mode_2_test(void)
 
 	arguments = "--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -132,7 +132,7 @@ static Return dry_run_mode_2_test(void)
 
 	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -155,9 +155,7 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == runit("--watch-timestamps --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1",
 		result,
-		COMPLETED,
-		false,
-		false));
+		COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -182,7 +180,7 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -205,7 +203,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -a tests/examples/ tests/examples_backup/;",COMPLETED,false,false));
+		"cp -a tests/examples/ tests/examples_backup/;",COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
@@ -213,7 +211,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	arguments = "--database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"Path: %s\n",path);
@@ -224,7 +222,7 @@ static Return no_dry_run_mode_3_test(void)
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -235,11 +233,11 @@ static Return no_dry_run_mode_3_test(void)
 	// Compare against the sample. A message should be displayed indicating
 	// that the --db-clean-ignored option must be specified for permanent
 	// removal of ignored files from the database
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db database1.db.backup;",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db database1.db.backup;",COMPLETED,ALLOW_BOTH));
 
 	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -256,11 +254,11 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Real live mode permanent deletion of all ignored file
 	// references from the database
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db.backup database1.db;",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db.backup database1.db;",COMPLETED,ALLOW_BOTH));
 
 	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -275,11 +273,11 @@ static Return no_dry_run_mode_3_test(void)
 
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};mv database1.db.backup database1.db;",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR};mv database1.db.backup database1.db;",COMPLETED,ALLOW_BOTH));
 
 	arguments = "--watch-timestamps --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -300,7 +298,7 @@ static Return no_dry_run_mode_3_test(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

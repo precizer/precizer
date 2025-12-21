@@ -15,7 +15,7 @@ Return test0015_1_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v0.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=./0015_database_v0.db tests/examples/diffs/diff1";
 
@@ -24,7 +24,7 @@ Return test0015_1_upgrade_db(void)
 
 	const char *filename = "templates/0015_001.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,WARNING,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,WARNING,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -36,7 +36,7 @@ Return test0015_1_upgrade_db(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -55,7 +55,7 @@ Return test0015_2_1_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v0.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -66,7 +66,7 @@ Return test0015_2_1_upgrade_db(void)
 
 	const char *filename = "templates/0015_002_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -74,7 +74,7 @@ Return test0015_2_1_upgrade_db(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,ALLOW_BOTH));
 
 	// Clean to use it iteratively
 	del(pattern);
@@ -97,7 +97,7 @@ Return test0015_2_2_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v0.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -108,7 +108,7 @@ Return test0015_2_2_upgrade_db(void)
 
 	const char *filename = "templates/0015_002_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -139,7 +139,7 @@ Return test0015_3_upgrade_db(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--update --database=./0015_database_v0.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--update --database=./0015_database_v0.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -151,7 +151,7 @@ Return test0015_3_upgrade_db(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -200,7 +200,7 @@ Return test0015_5_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v0.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--compare ${DBNAME} 0015_database_v0.db";
 
@@ -242,7 +242,7 @@ Return test0015_6_upgrade_db(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v0.db\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -263,7 +263,7 @@ Return test0015_7_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v1.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--update --database=0015_database_v1.db tests/examples/diffs/diff1";
 
@@ -272,7 +272,7 @@ Return test0015_7_upgrade_db(void)
 
 	const char *filename = "templates/0015_007.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -303,7 +303,7 @@ Return test0015_8_upgrade_db(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--update --database=./0015_database_v1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--update --database=./0015_database_v1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -315,7 +315,7 @@ Return test0015_8_upgrade_db(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -336,7 +336,7 @@ Return test0015_9_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v1.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--compare --update ${DBNAME} 0015_database_v1.db";
 
@@ -350,7 +350,7 @@ Return test0015_9_upgrade_db(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/0015_database_v1.db\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -371,14 +371,14 @@ Return test0015_10_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v2.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--update --database=0015_database_v2.db --verbose tests/examples/diffs/diff1";
 
 	create(char,result);
 	create(char,pattern);
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0015_010.txt";
 
@@ -410,7 +410,7 @@ Return test0015_11_upgrade_db(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a tests/0015_database_v2.db .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--compare --update ${DBNAME} 0015_database_v2.db";
 
@@ -424,7 +424,7 @@ Return test0015_11_upgrade_db(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" && rm \"${TMPDIR}/0015_database_v2.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" && rm \"${TMPDIR}/0015_database_v2.db\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -448,7 +448,7 @@ Return test0015_12_checksum_compare(void)
 	const char *command = "cd ${TMPDIR} && "
 	        "cp -a \"$ORIGIN_DIR/tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db\" .";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	create(char,pattern);
 	create(char,result);
@@ -456,12 +456,12 @@ Return test0015_12_checksum_compare(void)
 
 	const char *arguments = "--database=\"Это новая база данных.db\" tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--compare \"Это новая база данных.db\" \"0015_database_v3 это база данных с пробелами и символами UTF-8.db\"";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	const char *filename = "templates/0015_012.txt";
@@ -479,7 +479,7 @@ Return test0015_12_checksum_compare(void)
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm \"${TMPDIR}/Это новая база данных.db\" \"${TMPDIR}/0015_database_v3 это база данных с пробелами и символами UTF-8.db\"",
-		COMPLETED,false,false));
+		COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
