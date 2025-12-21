@@ -15,8 +15,10 @@ extern char **environ; // Environment variables used by posix_spawnp
  * Executes an external command, capturing stdout/stderr into shared buffers.
  * @param command              Shell command to execute.
  * @param expected_return_code Exit code the command must produce for SUCCESS.
- * @param suppress_stderr      When true, drops captured stderr instead of treating it as an error.
- * @param suppress_stdout      When true, drops captured stdout.
+ * @param buffer_policy        Bitmask controlling stdout/stderr handling.
+ *                             Use STDOUT_SUPPRESS/STDERR_SUPPRESS to drop buffers,
+ *                             STDOUT_ENABLE/STDERR_ENABLE to document enabled streams,
+ *                             and their combinations like ALLOW_BOTH.
  * @return SUCCESS if execution, capture, and exit code checks succeed; FAILURE otherwise.
  *
  * Side effects:
@@ -26,12 +28,13 @@ extern char **environ; // Environment variables used by posix_spawnp
 Return external_call(
 	const char *command,
 	const int  expected_return_code,
-	bool       suppress_stderr,
-	bool       suppress_stdout)
+	unsigned int buffer_policy)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
+	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
+	const bool suppress_stderr = (buffer_policy & STDERR_SUPPRESS) != 0U;
 
 	// Create pipes to capture stdout and stderr
 	int stdout_pipe[2],stderr_pipe[2];

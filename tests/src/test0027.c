@@ -17,13 +17,13 @@ static Return test0027_1_lock_checksum(void)
 	        "cp -a tests/examples_backup/ tests/examples/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--database=lock.db --lock-checksum=\"^diff1/1/.*\" --lock-checksum=\"^diff2/path1/.*\" tests/examples/diffs";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0027_001_1.txt";
 
@@ -31,7 +31,7 @@ static Return test0027_1_lock_checksum(void)
 
 	arguments = "--update --database=lock.db --lock-checksum=\"^diff1/1/.*\" --lock-checksum=\"^diff2/path1/.*\" tests/examples/diffs";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	filename = "templates/0027_001_2.txt";
 
@@ -49,11 +49,11 @@ static Return test0027_1_lock_checksum(void)
 		"echo 'changed' >> tests/examples/diffs/diff2/3/AAA/BBB/CCC/a.txt;"
 		"touch tests/examples/diffs/diff2/2/AAA/BBB/CZC/a.txt";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--progress --update --database=lock.db --lock-checksum=\"^diff1/1/.*\" --lock-checksum=\"^diff2/path1/.*\" tests/examples/diffs";
 
-	ASSERT(SUCCESS == runit(arguments,result,WARNING,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,WARNING,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -63,7 +63,7 @@ static Return test0027_1_lock_checksum(void)
 		"rm -rf tests/examples/ && "
 		"mv tests/examples_backup/ tests/examples/";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	del(result);
 	del(pattern);

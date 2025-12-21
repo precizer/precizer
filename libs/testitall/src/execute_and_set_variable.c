@@ -32,7 +32,7 @@ Return execute_and_set_variable(
 	create(char,result);
 
 	// Execute command and capture output
-	call(execute_command(command,result,expected_return_code,false,false));
+	call(execute_command(command,result,expected_return_code,ALLOW_BOTH));
 
 	if(SUCCESS == status)
 	{

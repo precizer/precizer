@@ -99,8 +99,7 @@ extern memory *EXTEND;
 Return external_call(
 	const char *,
 	const int,
-	bool,
-	bool);
+	unsigned int);
 
 void echo(
 	memory *,
@@ -111,8 +110,7 @@ Return execute_command(
 	const char *,
 	memory *,
 	const int,
-	bool,
-	bool);
+	unsigned int);
 
 Return execute_and_set_variable(
 	const char *,
@@ -263,16 +261,14 @@ enum run_mode
 	EXTERNAL_CALL = 1
 };
 
-enum stdout_policy_t
+enum buffer_policy_t
 {
-	STDOUT_ENABLE   = 0,
-	STDOUT_SUPPRESS = 1
-};
-
-enum stderr_policy_t
-{
-	STDERR_ENABLE   = 0,
-	STDERR_SUPPRESS = 1
+	STDOUT_ENABLE         = 1U << 0,
+	STDOUT_SUPPRESS       = 1U << 1,
+	STDERR_ENABLE         = 1U << 2,
+	STDERR_SUPPRESS       = 1U << 3,
+	ALLOW_BOTH    = STDOUT_ENABLE|STDERR_ENABLE,
+	SUPPRESS_BOTH_BUFFERS = STDOUT_SUPPRESS|STDERR_SUPPRESS
 };
 
 extern enum run_mode run_external;
@@ -281,7 +277,6 @@ Return runit(
 	const char *,
 	memory *,
 	const int,
-	bool,
-	bool);
+	unsigned int);
 
 Return trim_trailing_eol(memory *);

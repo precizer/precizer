@@ -13,9 +13,9 @@ Return test0003_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--progress tests/examples/diffs/diff1",NULL,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--progress tests/examples/diffs/diff1",NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,ALLOW_BOTH));
 
 	// Get the output of the application
 	const char *arguments = "--compare ${DBNAME} database2.db";
@@ -30,7 +30,7 @@ Return test0003_1(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -52,10 +52,10 @@ Return test0003_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("",result,EX_USAGE,false,false));
+	ASSERT(SUCCESS == runit("",result,EX_USAGE,ALLOW_BOTH));
 #endif
 
-	ASSERT(SUCCESS == runit("",NULL,EX_USAGE,STDERR_SUPPRESS,STDOUT_ENABLE));
+	ASSERT(SUCCESS == runit("",NULL,EX_USAGE,STDERR_SUPPRESS));
 
 #if 0
 	ASSERT(SUCCESS == get_file_content(filename,pattern));

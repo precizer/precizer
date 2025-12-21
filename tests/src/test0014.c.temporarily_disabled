@@ -21,15 +21,15 @@ Return long_relative_path_test(void)
 
 	const char *filename = "templates/0014_001_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db tests/examples/long";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -47,15 +47,15 @@ Return long_relative_path_test(void)
 
 	filename = "templates/0014_001_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db tests/examples/diffs/diff2";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -97,9 +97,9 @@ Return long_relative_path_test(void)
 
 	filename = "templates/0014_001_3.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -143,9 +143,9 @@ Return long_relative_path_test(void)
 
 	filename = "templates/0014_001_4.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -177,15 +177,15 @@ Return long_absolute_path_test(void)
 
 	const char *filename = "templates/0014_002_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -203,15 +203,15 @@ Return long_absolute_path_test(void)
 
 	filename = "templates/0014_002_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff2";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -253,9 +253,9 @@ Return long_absolute_path_test(void)
 
 	filename = "templates/0014_002_3.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -299,9 +299,9 @@ Return long_absolute_path_test(void)
 
 	filename = "templates/0014_002_4.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -333,15 +333,15 @@ Return reset_relative_path_test(void)
 
 	const char *filename = "templates/0014_003_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db tests/examples/long";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -360,15 +360,15 @@ Return reset_relative_path_test(void)
 
 	filename = "templates/0014_003_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db tests/examples/diffs/diff2";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -411,9 +411,9 @@ Return reset_relative_path_test(void)
 
 	filename = "templates/0014_003_3.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -458,9 +458,9 @@ Return reset_relative_path_test(void)
 
 	filename = "templates/0014_003_4.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -493,15 +493,15 @@ Return reset_absolute_path_test(void)
 
 	const char *filename = "templates/0014_004_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/long";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -520,15 +520,15 @@ Return reset_absolute_path_test(void)
 
 	filename = "templates/0014_004_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db ${TMPDIR}/tests/examples/diffs/diff2";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -571,9 +571,9 @@ Return reset_absolute_path_test(void)
 
 	filename = "templates/0014_004_3.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -618,9 +618,9 @@ Return reset_absolute_path_test(void)
 
 	filename = "templates/0014_004_4.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && /bin/rm ${TMPDIR}/tests/examples/long/${LONG_PATH}/database1.db",COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
