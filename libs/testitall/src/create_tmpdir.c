@@ -13,7 +13,9 @@
  * @param path_size Size of the destination buffer in bytes (e.g., sizeof(path)).
  * @return SUCCESS on success, FAILURE on error or insufficient space.
  */
-Return create_tmpdir(char *path, size_t path_size)
+Return create_tmpdir(
+	char   *path,
+	size_t path_size)
 {
 	static bool seeded = false;
 	const char *charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -36,6 +38,7 @@ Return create_tmpdir(char *path, size_t path_size)
 	if(false == seeded)
 	{
 		struct timespec ts;
+
 		if(0 == clock_gettime(CLOCK_REALTIME,&ts))
 		{
 			srand((unsigned int)(ts.tv_nsec ^ ts.tv_sec ^ (unsigned int)getpid()));

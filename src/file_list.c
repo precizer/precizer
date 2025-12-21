@@ -258,8 +258,8 @@ Return file_list(const bool count_size_of_all_files)
 				}
 
 				bool unchanged_and_complete = dbrow->relative_path_already_in_db == true
-				     && metadata_of_scanned_and_saved_files == IDENTICAL
-					 && dbrow->saved_offset == 0;
+				        && metadata_of_scanned_and_saved_files == IDENTICAL
+				        && dbrow->saved_offset == 0;
 
 				if(unchanged_and_complete == true)
 				{
@@ -268,10 +268,10 @@ Return file_list(const bool count_size_of_all_files)
 				}
 
 				bool timestamps_only_changed = dbrow->relative_path_already_in_db == true
-					 && metadata_of_scanned_and_saved_files != IDENTICAL
-					 && config->watch_timestamps == false
-					 && !(metadata_of_scanned_and_saved_files & SIZE_CHANGED)
-					 && dbrow->saved_offset == 0;
+				        && metadata_of_scanned_and_saved_files != IDENTICAL
+				        && config->watch_timestamps == false
+				        && !(metadata_of_scanned_and_saved_files & SIZE_CHANGED)
+				        && dbrow->saved_offset == 0;
 
 				// Decision whether to rehash the file contents using
 				// the SHA512 algorithm. Defaults to Yes, rehash"
@@ -305,10 +305,10 @@ Return file_list(const bool count_size_of_all_files)
 				bool rehashing_from_the_beginning = false;
 
 				bool can_resume_partial_hash = dbrow->saved_offset > 0
-					 && metadata_of_scanned_and_saved_files == IDENTICAL;
+				        && metadata_of_scanned_and_saved_files == IDENTICAL;
 
 				bool partial_hash_invalidated = dbrow->saved_offset > 0
-					 && metadata_of_scanned_and_saved_files != IDENTICAL;
+				        && metadata_of_scanned_and_saved_files != IDENTICAL;
 
 				if(can_resume_partial_hash == true)
 				{
@@ -387,7 +387,7 @@ Return file_list(const bool count_size_of_all_files)
 					status = FAILURE;
 					continue_the_loop = false;
 					break;
-				} else if (INCLUDE == match_include_response){
+				} else if(INCLUDE == match_include_response){
 					include = true;
 				}
 
@@ -399,9 +399,9 @@ Return file_list(const bool count_size_of_all_files)
 
 				// Path is checksum-locked, already stored, and its hash was fully calculated previously
 				bool lock_checksum_violation = locked_checksum_file == true
-					 && dbrow->relative_path_already_in_db == true
-					 && dbrow->saved_offset == 0
-					 && metadata_of_scanned_and_saved_files != IDENTICAL;
+				        && dbrow->relative_path_already_in_db == true
+				        && dbrow->saved_offset == 0
+				        && metadata_of_scanned_and_saved_files != IDENTICAL;
 
 				// Print out of a file name and its changes
 				show_relative_path(relative_path,
@@ -444,12 +444,12 @@ Return file_list(const bool count_size_of_all_files)
 				if(rehash == true)
 				{
 					run(sha512sum(p->fts_path,
-							&p->fts_pathlen,
-							file_buffer,
-							sha512,
-							&offset,
-							&mdContext,
-							&wrong_file_type));
+						&p->fts_pathlen,
+						file_buffer,
+						sha512,
+						&offset,
+						&mdContext,
+						&wrong_file_type));
 
 					if(TRIUMPH & status)
 					{
@@ -457,9 +457,9 @@ Return file_list(const bool count_size_of_all_files)
 						if(offset > 0 && global_interrupt_flag == true)
 						{
 							slog(EVERY,"SHA512 checksum for the file %s has been"
-									" gracefully interrupted at byte: %s\n",
-									relative_path,
-									bkbmbgbtbpbeb((size_t)offset));
+								" gracefully interrupted at byte: %s\n",
+								relative_path,
+								bkbmbgbtbpbeb((size_t)offset));
 						}
 
 					} else {
@@ -476,10 +476,10 @@ Return file_list(const bool count_size_of_all_files)
 					/* Update in DB */
 
 					bool should_update_db = dbrow->relative_path_already_in_db == true
-						 && locked_checksum_file == false
-						 && (offset > dbrow->saved_offset
-						     || (dbrow->saved_offset > 0 && offset == 0)
-						     || metadata_of_scanned_and_saved_files != IDENTICAL);
+					        && locked_checksum_file == false
+					        && (offset > dbrow->saved_offset
+					        || (dbrow->saved_offset > 0 && offset == 0)
+					        || metadata_of_scanned_and_saved_files != IDENTICAL);
 
 					if(should_update_db == true)
 					{

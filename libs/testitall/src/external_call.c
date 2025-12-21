@@ -26,8 +26,8 @@ extern char **environ; // Environment variables used by posix_spawnp
  *  - Formats diagnostics into STDERR on unexpected exit codes or unsuppressed stderr.
  */
 Return external_call(
-	const char *command,
-	const int  expected_return_code,
+	const char   *command,
+	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
 	/// The status that will be passed to return() before exiting.

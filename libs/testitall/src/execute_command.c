@@ -23,9 +23,9 @@
  *          copies any captured stdout into the provided buffer, and then frees the shared buffer.
  */
 Return execute_command(
-	const char *command,
-	memory     *result,
-	const int  expected_return_code,
+	const char   *command,
+	memory       *result,
+	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
 	/// The status that will be passed to return() before exiting.

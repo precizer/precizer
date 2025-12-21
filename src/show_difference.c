@@ -9,7 +9,7 @@
  */
 static const Flags *lookup(
 	const memory *flags,
-	size_t        index)
+	size_t       index)
 {
 	const Flags *flags_data = cdata(Flags,flags);
 

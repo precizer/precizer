@@ -27,7 +27,9 @@ static void remove_trailing_slash_local(char *path)
  * @param path_size Size of the destination buffer in bytes (e.g., sizeof(path)).
  * @return SUCCESS on success, FAILURE on error or insufficient space.
  */
-Return get_origin_dir(char *path, size_t path_size)
+Return get_origin_dir(
+	char   *path,
+	size_t path_size)
 {
 	if(NULL == path || 0U == path_size)
 	{
