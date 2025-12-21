@@ -33,6 +33,7 @@ Return db_check_changes(void)
 			slog(EVERY,BOLD "The database file %s has been modified since the program was launched" RESET "\n",config->db_file_name);
 		} else {
 			slog(ERROR,"Internal error: The database file %s has changed, but according to the global variable tracking modification status, this should not have happened!\n",config->db_file_name);
+
 			if(!(rational_logger_mode & SILENT))
 			{
 				show_difference(changes,&before,&after);

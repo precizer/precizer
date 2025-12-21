@@ -76,11 +76,10 @@ Return test0020_3(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR} && "
-	                "mkdir write_protected_directory && "
-	                "chmod a-rwx write_protected_directory";
+	        "mkdir write_protected_directory && "
+	        "chmod a-rwx write_protected_directory";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
-
 
 	const char *filename = "templates/0020_003.txt";
 
@@ -121,7 +120,7 @@ Return test0020_4(void)
 	ASSERT(SUCCESS == runit("--database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *command = "cd ${TMPDIR} && "
-	                "chmod a-rwx write_protected_database1.db";
+	        "chmod a-rwx write_protected_database1.db";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 

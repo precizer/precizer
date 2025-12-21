@@ -44,10 +44,10 @@ static Return test0027_1_lock_checksum(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	command = "cd ${TMPDIR};"
-		"echo 'corrupted' >> tests/examples/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt;"
-		"echo 'corrupted' >> tests/examples/diffs/diff2/path1/AAA/BCB/CCC/b.txt;"
-		"echo 'changed' >> tests/examples/diffs/diff2/3/AAA/BBB/CCC/a.txt;"
-		"touch tests/examples/diffs/diff2/2/AAA/BBB/CZC/a.txt";
+	        "echo 'corrupted' >> tests/examples/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt;"
+	        "echo 'corrupted' >> tests/examples/diffs/diff2/path1/AAA/BCB/CCC/b.txt;"
+	        "echo 'changed' >> tests/examples/diffs/diff2/3/AAA/BBB/CCC/a.txt;"
+	        "touch tests/examples/diffs/diff2/2/AAA/BBB/CZC/a.txt";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
@@ -59,9 +59,9 @@ static Return test0027_1_lock_checksum(void)
 
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
-		"rm lock.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/";
+	        "rm lock.db && "
+	        "rm -rf tests/examples/ && "
+	        "mv tests/examples_backup/ tests/examples/";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 

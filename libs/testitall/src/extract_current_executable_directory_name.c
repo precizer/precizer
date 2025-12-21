@@ -71,6 +71,7 @@ Return extract_current_executable_directory_name(
 			status = FAILURE;
 		} else {
 			char resolved[PATH_MAX];
+
 			if(NULL == realpath(exe_path,resolved))
 			{
 				status = FAILURE;

@@ -29,9 +29,9 @@ static void test_main_wrapper(void)
 }
 
 Return runit(
-	const char *arguments,
-	memory     *result,
-	const int  expected_return_code,
+	const char   *arguments,
+	memory       *result,
+	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
 	// Base status for the whole sequence; subsequent steps update it on errors.

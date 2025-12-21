@@ -12,7 +12,7 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == set_environment_variable("ORIGIN_DIR",path));
 
-	ASSERT(SUCCESS == create_tmpdir(path, sizeof(path)));
+	ASSERT(SUCCESS == create_tmpdir(path,sizeof(path)));
 
 	ASSERT(SUCCESS == set_environment_variable("TMPDIR",path));
 
@@ -26,10 +26,11 @@ Return prepare(void)
 	 * coverage has to execute a binary with debug symbols and
 	 * there is no need to build a separate binary in addition
 	 * to the already compiled debug one
-	*/
-	if(strcmp(path, "coverage") == 0) {
+	 */
+	if(strcmp(path,"coverage") == 0)
+	{
 		/* Replace to "debug" */
-		strncpy(path, "debug", PATH_MAX - 1);
+		strncpy(path,"debug",PATH_MAX - 1);
 	}
 
 	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",path));
@@ -39,16 +40,16 @@ Return prepare(void)
 	ASSERT(SUCCESS == execute_and_set_variable("DBNAME","echo \"$(hostname).db\"",0));
 
 	command = "mkdir -p ${TMPDIR}/tests/examples/diffs/;"
-	          "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TMPDIR}/tests/examples/diffs/;"
-	          "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TMPDIR}/tests/examples/;"
-	          "cp -a $ORIGIN_DIR/tests/examples/levels ${TMPDIR}/tests/examples/;"
-	          "cp -a $ORIGIN_DIR/tests/examples/4 ${TMPDIR}/tests/examples/;"
-	          "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TMPDIR}/tests/;"
-	          "mkdir -p ${TMPDIR}/.builds;"
-	          "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT} && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT} ${TMPDIR}/.builds/;"
-	          "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
-	          "test -d $ORIGIN_DIR/tests/examples/long && cp -a $ORIGIN_DIR/tests/examples/long ${TMPDIR}/tests/examples/;"
-	          "true";
+	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TMPDIR}/tests/examples/diffs/;"
+	        "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TMPDIR}/tests/examples/;"
+	        "cp -a $ORIGIN_DIR/tests/examples/levels ${TMPDIR}/tests/examples/;"
+	        "cp -a $ORIGIN_DIR/tests/examples/4 ${TMPDIR}/tests/examples/;"
+	        "cp -a $ORIGIN_DIR/tests/templates/0015_database_v*.db ${TMPDIR}/tests/;"
+	        "mkdir -p ${TMPDIR}/.builds;"
+	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT} && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT} ${TMPDIR}/.builds/;"
+	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
+	        "test -d $ORIGIN_DIR/tests/examples/long && cp -a $ORIGIN_DIR/tests/examples/long ${TMPDIR}/tests/examples/;"
+	        "true";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
@@ -65,7 +66,6 @@ Return prepare(void)
 	del(absolute_path);
 
 	ASSERT(file_exists == true);
-
 
 	/* Enable UTF-8 */
 #if 0
