@@ -2,7 +2,7 @@
 
 /**
  *
- *
+ * Empty test example
  *
  */
 Return test0002(void)
