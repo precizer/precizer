@@ -437,7 +437,7 @@ Return db_compare(void)
 	/* Output results */
 	if(SUCCESS == status)
 	{
-		if(files_the_same == true)
+		if(files_the_same == true && checksums == true)
 		{
 			slog(EVERY,BOLD "All files are identical against %s and %s" RESET "\n",
 				config->db_file_names[0],

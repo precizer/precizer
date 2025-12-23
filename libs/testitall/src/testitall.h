@@ -61,7 +61,7 @@
  *
  * @example
  * // Example usage:
- * HEADER("Preparations\n");
+ * HEADER("Preparations");
  */
 #define HEADER(msg) \
 	if(SUCCESS == status) \
@@ -210,6 +210,13 @@ Return extract_current_executable_directory_name(
 		status = testitall(func, #func,desc); \
 	}
 
+#define SUTE(func,desc) \
+	if(SUCCESS == status) \
+	{ \
+		show_subheader = true; \
+		status = testitall(func, #func,desc); \
+	}
+
 #define EXEC(func,desc) \
 	status = testitall(func, #func,desc);
 
@@ -287,3 +294,5 @@ Return runit(
 	unsigned int);
 
 Return trim_trailing_eol(memory *);
+
+extern bool show_subheader;

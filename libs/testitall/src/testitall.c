@@ -1,5 +1,7 @@
 #include "testitall.h"
 
+bool show_subheader = false;
+
 /**
  * @brief Main testing framework function that executes and evaluates test cases
  *
@@ -30,6 +32,12 @@ Return testitall(
 	/* Clear output capture buffers to ensure clean state */
 	call(del(STDOUT));
 	call(del(STDERR));
+
+	if(show_subheader == true)
+	{
+		printf(BLUE " » %s" RESET "\n",test_description);
+		show_subheader = false;
+	}
 
 	/* Execute the test function and capture its return status */
 	status = func();
