@@ -186,15 +186,28 @@ DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
-DBG_LDFLAGS = -Wl,--as-needed
+DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
 ifeq ($(UNAME_S),Darwin)
-DBG_LDFLAGS =
+DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
 endif
 # Activation of the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
 # is supported by visualization tools like kcachegrind.
 #DBG_CFLAGS += -pg
+
+#
+# Coverage build settings
+#
+COV = coverage
+COV_DIR = $(BUILDDIR)/$(COV)
+COV_LIBDIR = $(COV_DIR)/libs
+COV_OBJDIR = $(COV_DIR)/obj
+COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
+COV_EXE = $(COV_DIR)/$(EXE)
+COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG
+COV_LDFLAGS =  -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -264,6 +277,7 @@ endif
 TOPTARGETS := all
 
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable build-docker build-docker-portable copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc coveragefinal precizer-coverage print-%
 
 #
 # Debug rules
@@ -286,6 +300,32 @@ $(DBG_OBJDIR):
 
 $(DBG_LIBDIR):
 	@$(MAKE) -s -C libs debug
+
+#
+# Coverage rules
+#
+coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal | test-coverage
+precizer-coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal
+
+coveragefinal: $(COV_EXE)
+	@echo "The application has been built and is located: $(COV_EXE)"
+
+$(COV_EXE): $(COV_OBJS) | $(COV_LIBDIR)
+	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@echo "$@ linked"
+
+$(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
+	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
+	@echo "$< compiled"
+
+$(COV_OBJDIR):
+	@mkdir -p $(COV_OBJDIR)
+
+$(COV_LIBDIR):
+	@$(MAKE) -s -C libs coverage
+
+test-coverage:
+	@$(MAKE) -s -C $(TESTDIR) coverage
 
 #
 # Sanitize rules
@@ -387,12 +427,16 @@ $(PRTB_LIBDIR):
 
 clean: | clean-preproc clean-asm clean-tests
 	@rm -f *.out.* doc
-	@rm -f $(DBG_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
-	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
+	@rm -f $(DBG_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
+	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
 
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
+
+	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
+	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
+	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
@@ -448,9 +492,6 @@ test: tests
 tests: tests-sanitize
 tests-sanitize: sanitize
 	@$(MAKE) -s -C $(TESTDIR) sanitize
-
-coverage: debug
-	@$(MAKE) -s -C $(TESTDIR) coverage
 
 tests-debug: debug
 	@$(MAKE) -s -C $(TESTDIR) debug

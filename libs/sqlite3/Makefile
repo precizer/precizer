@@ -75,6 +75,18 @@ DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
 endif
 
 #
+# Coverage build settings
+#
+COV = coverage
+COV_DIR = $(BUILDDIR)/$(COV)
+COV_LIBDIR = $(COV_DIR)/libs
+COV_OBJDIR = $(COV_DIR)/obj
+COV_SO = $(COV_LIBDIR)/$(SO)
+COV_STAT = $(COV_LIBDIR)/$(STATLIB)
+COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
+COV_CFLAGS = $(CFLAGS) -g -O0 -fno-omit-frame-pointer -DDEBUG
+
+#
 # Sanitize build settings
 #
 SNTZ = sanitize
@@ -125,6 +137,7 @@ PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_
 endif
 
 .PHONY: all clean debug production prod portable sanitize
+.PHONY: coverage memtest tests test format print-%
 
 define SQLITE_WARN_ONCE
 $(if $(SQLITE_WARNING_PRINTED),,\
@@ -160,6 +173,30 @@ $(DBG_OBJDIR):
 	@mkdir -p "$@"
 
 $(DBG_LIBDIR):
+	@mkdir -p "$@"
+
+#
+# Coverage rules
+#
+coverage: $(COV_SO) $(COV_STAT)
+
+$(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
+	@ar rcs $@ $+
+	@echo $@ prepared to be static library
+
+$(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
+	@$(CC) -shared -o $@ $^
+	@echo $@ prepared to be shared library
+
+$(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
+	@$(call SQLITE_WARN_ONCE)
+	@$(CC) -c -fPIC $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo "$(notdir $<) compiled"
+
+$(COV_OBJDIR):
+	@mkdir -p "$@"
+
+$(COV_LIBDIR):
 	@mkdir -p "$@"
 
 #
@@ -239,11 +276,16 @@ clean:
 	@rm -rf $(PROD_SO) $(PROD_STAT) $(PROD_OBJS)
 	@rm -rf $(PRTB_SO) $(PRTB_STAT) $(PRTB_OBJS)
 	@rm -rf $(DBG_SO) $(DBG_STAT) $(DBG_OBJS)
+	@rm -rf $(COV_SO) $(COV_STAT) $(COV_OBJS)
 	@rm -rf $(SNTZ_SO) $(SNTZ_STAT) $(SNTZ_OBJS)
 
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
+
+	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
+	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
+	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
 
 	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true

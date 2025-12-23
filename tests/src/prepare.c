@@ -20,19 +20,6 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == extract_current_executable_directory_name(path,sizeof(path)));
 
-	/**
-	 * When the code coverage target from the Makefile is run,
-	 * the runtime environment needs to be "debug", because
-	 * coverage has to execute a binary with debug symbols and
-	 * there is no need to build a separate binary in addition
-	 * to the already compiled debug one
-	 */
-	if(strcmp(path,"coverage") == 0)
-	{
-		/* Replace to "debug" */
-		strncpy(path,"debug",PATH_MAX - 1);
-	}
-
 	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",path));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
