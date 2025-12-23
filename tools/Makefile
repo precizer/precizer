@@ -60,4 +60,4 @@ help:
 	@echo "  help   - show this help message"
 
 # Declare phony targets
-.PHONY: all clean help
+.PHONY: all clean help format

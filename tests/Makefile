@@ -84,7 +84,6 @@ HDRS = $(wildcard $(SRC)/*.h)
 PRZRHDRS = $(wildcard $(PRZRSRC)/*.h)
 ALLHDRS = $(HDRS) $(PRZRHDRS)
 OBJS = $(SRCS:.c=.o)
-
 PRZRSRCS = $(wildcard $(PRZRSRC)/*.c)
 PRZROBJS = $(PRZRSRCS:.c=.o)
 
@@ -97,6 +96,14 @@ COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJDIR = $(COV_DIR)/obj
 COV_REPORTDIR = $(COV_OBJDIR)/../report/
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
+COV_LIBDIR = $(BUILDEXEDIR)$(COV)/libs
+COV_LIBSOBJ = $(BUILDEXEDIR)$(COV)/obj
+COV_LIBS = -L$(COV_LIBDIR) $(LDPATH)
+COV_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(COV_LIBDIR),-rpath,\$$ORIGIN/../../$(COV_LIBDIR)
+ifeq ($(UNAME_S),Darwin)
+COV_DYNLIB = -Wl,-rpath,@executable_path/$(COV_LIBDIR),-rpath,@executable_path/../../$(COV_LIBDIR)
+endif
+
 COV_PRZROBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(PRZROBJS)))
 COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage
 COV_LDFLAGS += -lgcov --coverage
@@ -143,6 +150,7 @@ endif
 DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
+.PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge gcc-analyzer cppcheck print-%
 
 # Default build
 all: sanitize
@@ -156,10 +164,13 @@ run: sanitize
 #
 # Coverage rules
 #
+precizer-coverage:
+	@$(MAKE) -s -C ../ precizer-coverage
+
 coverage: coverage-html
 
-$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-debug
-	@$(CC) $(DBG_LIBS) $(COV_LDFLAGS) $(DBG_DYNLIB) -o $(COV_EXE) $^ $(LDLIBS)
+$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage
+	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) -o $(COV_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
@@ -180,7 +191,7 @@ coverage-report: $(COV_EXE)
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --directory $(COV_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
+	@lcov --capture --directory $(COV_OBJDIR) --directory $(COV_LIBSOBJ) --output-file $(COV_OBJDIR)/coverage.info
 	@genhtml $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
@@ -276,6 +287,9 @@ clean:
 	@test -d $(BUILDEXE) && rm -d $(BUILDEXE) 2>/dev/null || true
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
 	@echo $(EXE) cleared
+
+purge:
+	@$(MAKE) -s -C ../ purge
 
 # Optional preprocessor files
 %.i:%.c
