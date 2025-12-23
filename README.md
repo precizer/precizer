@@ -706,6 +706,48 @@ The primary database has been vacuumed
 The precizer completed its execution without any issues  
 </sub>
 
+### Example 9
+Protecting immutable archives with `--lock-checksum`
+
+Use `--lock-checksum` for archival folders whose contents must never be rewritten. It accepts PCRE2 regular expressions for **relative** paths (same format as `--ignore`). Paths matching any lock pattern are written to the database once. After that their checksums are not recalculated, even with `--update`. Any later change in size, or in timestamps when `--watch-timestamps` is enabled, is treated as data corruption and reported instead of updating the record. You can provide multiple patterns by repeating the option.
+
+```sh
+precizer \
+  --lock-checksum="^archive/2024/.*" \
+  --lock-checksum="^snapshots/monthly/.*" \
+  /mnt/storage
+```
+
+On subsequent runs, keep the same lock patterns while refreshing the database:
+
+```sh
+precizer --update --lock-checksum="^archive/2024/.*" /mnt/storage
+```
+
+Files outside the lock patterns follow normal update rules. For entries locked via `--lock-checksum`, any drift becomes visible immediately.
+
+### Example 10
+Deep verification of locked data with `--rehash-locked`
+
+The `--rehash-locked` option works only together with `--lock-checksum`. When it is enabled, every file that matches a lock pattern and already exists in the database is read again, its SHA512 checksum is recomputed, and the result is compared against the stored checksum. This provides an explicit integrity sweep for immutable archives at the cost of extra disk I/O. The option ignores whether `--watch-timestamps` is enabled or not. If the recalculated checksum and recorded size match, the file is considered consistent; if its timestamps on disk differ from the database, the ctime/mtime fields in the database are updated with the new values.
+
+```sh
+precizer --update \
+  --lock-checksum="^archive/2024/.*" \
+  --rehash-locked \
+  /mnt/storage
+```
+
+To illustrate how `--watch-timestamps` and `--rehash-locked` interact, consider the following cases:
+
+1. **File size mismatch.** When the size stored in the database differs from the on-disk size, the file is reported as having a corrupted checksum regardless of `--watch-timestamps` or `--rehash-locked`. Rehashing a file with a different size is meaningless because the checksum cannot match anyway.
+2. **Size and timestamps match; `--watch-timestamps` enabled.** The file is fully consistent; it is not flagged and does not appear in the change report. `precizer` finishes with the `SUCCESS` status.
+3. **Size matches, timestamps differ; `--watch-timestamps` enabled while `--rehash-locked` is omitted.** The file is flagged as “checksum violated” and `precizer` finishes with the `WARNING` status.
+4. **Size matches, timestamps differ; neither `--watch-timestamps` nor `--rehash-locked` is used.** The file is **not** flagged, and the program exits with `SUCCESS`.
+5. **Both `--watch-timestamps` and `--rehash-locked` are enabled.** Only the checksum and the size stored in the database matter. If both match, the file remains consistent and no warning is produced. If the on-disk timestamps changed, the new values are saved to the database even though the checksum stayed the same.
+
+A practical workflow is to run a quick daily scan without `--rehash-locked` (and even without `--watch-timestamps` if timestamp drift is acceptable) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to force checksum-level verification of the frozen data set.
+
 ## AUTHOR
 Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)
 
