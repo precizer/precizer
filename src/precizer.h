@@ -63,6 +63,15 @@
     #define STATIC static
 #endif
 
+/*
+ * Evil Empire OS uses `st_*timespec` fields instead of `st_*tim`.
+ * Map the member names so we can keep the Linux-oriented copy code.
+ */
+#ifdef EVIL_EMPIRE_OS
+#define st_mtim st_mtimespec
+#define st_ctim st_ctimespec
+#endif
+
 // PCRE2 return codes
 typedef enum
 {

@@ -11,6 +11,12 @@
 #ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1
 #endif
+/*
+ * Evil Empire OS uses `st_*timespec` fields instead of `st_*tim`.
+ * Map the member names so we can keep the Linux-oriented copy code.
+ */
+#define st_mtim st_mtimespec
+#define st_ctim st_ctimespec
 #endif
 
 #include <stdio.h>
