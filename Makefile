@@ -512,7 +512,7 @@ build-docker:
 	@docker create --name $(EXE) $(EXE)
 
 build-docker-portable:
-	@docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t $(EXE) .
+	@docker build --build-arg OS=ubuntu:24.04 --build-arg BUILD=portable -t $(EXE) .
 	@docker create --name $(EXE) $(EXE)
 
 # Copying a statically compiled application from a container
