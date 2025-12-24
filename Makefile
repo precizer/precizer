@@ -277,7 +277,7 @@ endif
 TOPTARGETS := all
 
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage
-.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable build-docker build-docker-portable copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc coveragefinal precizer-coverage print-%
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable build-docker build-docker-portable copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc coveragefinal precizer-coverage print-%
 
 #
 # Debug rules
@@ -478,7 +478,11 @@ clean-asm:
 
 # Clean the built container
 clean-docker:
-	@docker rm -f $(EXE) > /dev/null 2>&1
+	@docker rm -f $(EXE) > /dev/null 2>&1 || true
+
+clean-docker-image:
+	@docker image rm -f $(EXE) > /dev/null 2>&1 || true
+	@docker image prune -f > /dev/null 2>&1 || true
 	@echo Docker image $(EXE) cleared
 
 clean-all-dockers:
@@ -499,8 +503,8 @@ tests-debug: debug
 #
 # Build and test within Docker container
 #
-docker: build-docker run-docker copy-from-docker clean-docker
-docker-portable: build-docker-portable run-docker copy-from-docker clean-docker
+docker: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+docker-portable: build-docker-portable run-docker copy-from-docker clean-docker clean-docker-image
 
 # Build image and create application container
 build-docker:
