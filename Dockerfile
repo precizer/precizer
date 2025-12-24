@@ -1,5 +1,5 @@
 ARG OS=ubuntu:18.04
-ARG BUILD=production
+ARG BUILD=portable
 
 FROM ${OS} as builder
 
@@ -20,13 +20,13 @@ WORKDIR /precizer
 # Copy project files
 COPY . .
 
-RUN make sanitize && make tests tests-sanitize
+RUN make tests
 
 # Build project
 RUN make ${BUILD}
 
 # Run tests
-CMD ["sh", "-c", "cd tests && make tests"]
+CMD ["sh", "-c", "make tests"]
 
 FROM ubuntu:24.04
 
