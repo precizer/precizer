@@ -1,0 +1,24 @@
+ARG BUILD=production
+FROM ubuntu:24.04 AS ubuntu
+
+ARG BUILD
+ENV BUILD=${BUILD}
+
+RUN set -eux; \
+    apt-get update; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      gcc make \
+      llvm llvm-dev \
+      libpcre2-dev \
+      upx-ucl; \
+    rm -rf /var/lib/apt/lists/*;
+
+WORKDIR /precizer
+
+COPY . /precizer
+RUN useradd -m builder && chown -R builder:builder /precizer
+
+USER builder
+RUN make ${BUILD}
+
+CMD ["sh", "-c", "make tests"]
