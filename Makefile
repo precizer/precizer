@@ -488,7 +488,7 @@ tests-debug: debug
 # Build and test within Docker container
 #
 
-# gentoo | ubuntu
+# gentoo | ubuntu | arch | ...
 DOCKER_OS ?= gentoo
 
 # production | portable
@@ -532,21 +532,23 @@ clean-all-dockers:
 	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1 || true
 	@echo All docker images cleared
 
-docker: DOCKER_OS=gentoo
-docker: DOCKER_BUILD=production
-docker: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+# Generic Docker targets: use any .docker/Dockerfile.<os>
+# Requires .docker/Dockerfile.<os> to exist.
+# Examples:
+#   make docker-arch
+#   make docker-alpine-portable
+#   make docker-gentoo-dynamic-production
+docker-%: DOCKER_OS=$*
+docker-%: DOCKER_BUILD=production
+docker-%: build-docker run-docker copy-from-docker clean-docker clean-docker-image
 
-docker-portable: DOCKER_OS=gentoo
-docker-portable: DOCKER_BUILD=portable
-docker-portable: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+docker-%-dynamic-production: DOCKER_OS=$*
+docker-%-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-%-dynamic-production: build-docker run-docker copy-from-docker clean-docker clean-docker-image
 
-docker-ubuntu: DOCKER_OS=ubuntu
-docker-ubuntu: DOCKER_BUILD=production
-docker-ubuntu: build-docker run-docker copy-from-docker clean-docker clean-docker-image
-
-docker-ubuntu-portable: DOCKER_OS=ubuntu
-docker-ubuntu-portable: DOCKER_BUILD=portable
-docker-ubuntu-portable: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+docker-%-portable: DOCKER_OS=$*
+docker-%-portable: DOCKER_BUILD=portable
+docker-%-portable: build-docker run-docker copy-from-docker clean-docker clean-docker-image
 
 #
 # Format rules
