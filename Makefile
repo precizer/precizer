@@ -476,22 +476,6 @@ clean-preproc:
 clean-asm:
 	@rm -rf $(ASM)
 
-# Clean the built container
-clean-docker:
-	@docker rm -f $(EXE) > /dev/null 2>&1 || true
-
-clean-docker-image:
-	@docker image rm -f $(EXE) > /dev/null 2>&1 || true
-	@docker image prune -f > /dev/null 2>&1 || true
-	@echo Docker image $(EXE) cleared
-
-clean-all-dockers:
-	@docker image prune -f > /dev/null 2>&1
-	@docker image prune -af > /dev/null 2>&1
-	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1
-	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1
-	@echo All docker images cleared
-
 test: tests
 tests: tests-sanitize
 tests-sanitize: sanitize
@@ -503,30 +487,66 @@ tests-debug: debug
 #
 # Build and test within Docker container
 #
-docker: build-docker run-docker copy-from-docker clean-docker clean-docker-image
-docker-portable: build-docker-portable run-docker copy-from-docker clean-docker clean-docker-image
+
+# gentoo | ubuntu
+DOCKER_OS ?= gentoo
+
+# production | portable
+DOCKER_BUILD ?= production
+
+DOCKER_IMAGE = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)
+DOCKER_CONTAINER = $(EXE)
 
 # Build image and create application container
 build-docker:
-	@docker build -t $(EXE) .
-	@docker create --name $(EXE) $(EXE)
+	@docker build -f .docker/Dockerfile.$(DOCKER_OS) --build-arg BUILD=$(DOCKER_BUILD) -t $(DOCKER_IMAGE) .
+	@docker rm -f $(DOCKER_CONTAINER) > /dev/null 2>&1 || true
+	@docker create --name $(DOCKER_CONTAINER) $(DOCKER_IMAGE)
 
-build-docker-portable:
-	@docker build --build-arg OS=ubuntu:24.04 --build-arg BUILD=portable -t $(EXE) .
-	@docker create --name $(EXE) $(EXE)
+# Run the application within the built container
+run-docker:
+	@docker run -it --rm $(DOCKER_IMAGE)
 
 # Copying a statically compiled application from a container
 # to the current directory on the system
 copy-from-docker:
 	@docker cp $(EXE):/$(EXE)/$(EXE) $(EXE)
 
-# Run the application within the built container
-run-docker:
-	@docker run --rm $(EXE)
-
 # Run it 1000 times
 tests-in-docker: build-docker
-	i=1; while [ $$i -le 1000 ]; do docker run --rm $(EXE) || break; i=$$((i + 1)); done
+	i=1; while [ $$i -le 1000 ]; do docker -f .docker/Dockerfile.$(DOCKER_OS) run -it --rm $(DOCKER_IMAGE) || break; i=$$((i + 1)); done
+
+# Clean the built container
+clean-docker:
+	@docker rm -f $(DOCKER_CONTAINER) > /dev/null 2>&1 || true
+
+clean-docker-image:
+	@docker image rm -f $(DOCKER_IMAGE) > /dev/null 2>&1 || true
+	@docker image prune -f > /dev/null 2>&1 || true
+	@echo Docker image $(EXE) cleared
+
+clean-all-dockers:
+	@docker image prune -f > /dev/null 2>&1 || true
+	@docker image prune -af > /dev/null 2>&1 || true
+	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1 || true
+	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1 || true
+	@echo All docker images cleared
+
+docker: DOCKER_OS=gentoo
+docker: DOCKER_BUILD=production
+docker: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+
+docker-portable: DOCKER_OS=gentoo
+docker-portable: DOCKER_BUILD=portable
+docker-portable: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+
+docker-ubuntu: DOCKER_OS=ubuntu
+docker-ubuntu: DOCKER_BUILD=production
+docker-ubuntu: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+
+docker-ubuntu-portable: DOCKER_OS=ubuntu
+docker-ubuntu-portable: DOCKER_BUILD=portable
+docker-ubuntu-portable: build-docker run-docker copy-from-docker clean-docker clean-docker-image
 
 #
 # Format rules
