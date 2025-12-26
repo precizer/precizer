@@ -5,7 +5,7 @@ ARG BUILD
 ENV BUILD=${BUILD}
 
 RUN set -eux; \
-     apk add --no-cache build-base llvm pcre2-dev upx
+     apk add --no-cache build-base llvm pcre2-dev fts-dev argp-standalone upx
 
 WORKDIR /precizer
 
@@ -15,4 +15,4 @@ RUN adduser -D builder && chown -R builder:builder /precizer
 USER builder
 RUN make ${BUILD}
 
-CMD ["sh", "-c", "make tests"]
+CMD ["sh", "-c", "make tests-debug"]

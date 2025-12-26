@@ -170,7 +170,7 @@ test: sanitize
 debug: $(DBG_SO) $(DBG_STAT)
 
 $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be static library
 
 $(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR)
@@ -193,7 +193,7 @@ $(DBG_LIBDIR):
 coverage: $(COV_SO) $(COV_STAT)
 
 $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be static library
 
 $(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
@@ -216,7 +216,7 @@ $(COV_LIBDIR):
 sanitize: $(SNTZ_SO) $(SNTZ_STAT)
 
 $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be the static library
 
 $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
@@ -240,7 +240,7 @@ prod: production
 production: $(PROD_SO) $(PROD_STAT)
 
 $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be the static library
 
 $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
@@ -263,7 +263,7 @@ $(PROD_LIBDIR):
 portable: $(PRTB_SO) $(PRTB_STAT)
 
 $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be the static library
 
 $(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR)

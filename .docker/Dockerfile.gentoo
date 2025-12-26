@@ -9,7 +9,7 @@ RUN (emerge-webrsync || emerge --sync); \
     echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/pcre2; \
     emerge --ask=n \
       dev-libs/libpcre2 \
-      sys-devel/llvm \
+      llvm-core/llvm \
       app-arch/upx; \
     emerge --depclean
 
@@ -19,6 +19,6 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
-RUN make ${BUILD}
+RUN PATH=/usr/lib/llvm/20/bin/:${PATH}; make ${BUILD}
 
-CMD ["sh", "-c", "make tests"]
+CMD ["sh", "-c", "PATH=/usr/lib/llvm/20/bin/:${PATH}; make tests"]
