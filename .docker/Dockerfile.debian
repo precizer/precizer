@@ -1,5 +1,5 @@
 ARG BUILD=production
-FROM debian:bookworm-slim AS debian
+FROM debian:trixie-slim AS debian
 
 ARG BUILD
 ENV BUILD=${BUILD}
@@ -7,13 +7,17 @@ ENV BUILD=${BUILD}
 RUN set -eux; \
       apt-get update; \
       DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      gcc \
+      gcc-13 \
       make \
       llvm \
       llvm-dev \
       libpcre2-dev \
-    upx-ucl;
-    rm -rf /var/lib/apt/lists/*;
+      libsqlite3-dev \
+      upx-ucl; \
+    rm -rf /var/lib/apt/lists/*; \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 \
+      --slave /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-13 \
+      --slave /usr/bin/gcc-nm gcc-nm /usr/bin/gcc-nm-13;
 
 WORKDIR /precizer
 
@@ -21,6 +25,6 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
-RUN make ${BUILD}
+RUN CC=gcc-13 AR=gcc-ar-13 make ${BUILD}
 
-CMD ["sh", "-c", "make tests"]
+CMD ["sh", "-c", "CC=gcc-13 AR=gcc-ar-13 make tests"]

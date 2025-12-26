@@ -538,17 +538,79 @@ clean-all-dockers:
 #   make docker-arch
 #   make docker-alpine-portable
 #   make docker-gentoo-dynamic-production
-docker-%: DOCKER_OS=$*
-docker-%: DOCKER_BUILD=production
-docker-%: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+docker: docker-ubuntu
 
-docker-%-dynamic-production: DOCKER_OS=$*
-docker-%-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-%-dynamic-production: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+docker-start-build: build-docker run-docker copy-from-docker clean-docker clean-docker-image
 
-docker-%-portable: DOCKER_OS=$*
-docker-%-portable: DOCKER_BUILD=portable
-docker-%-portable: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+docker-ubuntu: docker-ubuntu-production
+
+docker-ubuntu-portable: DOCKER_OS=ubuntu
+docker-ubuntu-portable: DOCKER_BUILD=portable
+docker-ubuntu-portable: docker-start-build
+
+docker-ubuntu-production: DOCKER_OS=ubuntu
+docker-ubuntu-production: DOCKER_BUILD=production
+docker-ubuntu-production: docker-start-build
+
+docker-ubuntu-dynamic-production: DOCKER_OS=ubuntu
+docker-ubuntu-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-ubuntu-dynamic-production: docker-start-build
+
+docker-debian: docker-debian-production
+
+docker-debian-portable: DOCKER_OS=debian
+docker-debian-portable: DOCKER_BUILD=portable
+docker-debian-portable: docker-start-build
+
+docker-debian-production: DOCKER_OS=debian
+docker-debian-production: DOCKER_BUILD=production
+docker-debian-production: docker-start-build
+
+docker-debian-dynamic-production: DOCKER_OS=debian
+docker-debian-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-debian-dynamic-production: docker-start-build
+
+docker-gentoo: docker-gentoo-production
+
+docker-gentoo-portable: DOCKER_OS=gentoo
+docker-gentoo-portable: DOCKER_BUILD=portable
+docker-gentoo-portable: docker-start-build
+
+docker-gentoo-production: DOCKER_OS=gentoo
+docker-gentoo-production: DOCKER_BUILD=production
+docker-gentoo-production: docker-start-build
+
+docker-gentoo-dynamic-production: DOCKER_OS=gentoo
+docker-gentoo-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-gentoo-dynamic-production: docker-start-build
+
+docker-arch: docker-arch-production
+
+docker-arch-portable: DOCKER_OS=arch
+docker-arch-portable: DOCKER_BUILD=portable
+docker-arch-portable: docker-start-build
+
+docker-arch-production: DOCKER_OS=arch
+docker-arch-production: DOCKER_BUILD=production
+docker-arch-production: docker-start-build
+
+docker-arch-dynamic-production: DOCKER_OS=arch
+docker-arch-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-arch-dynamic-production: docker-start-build
+
+docker-alpine: docker-alpine-production
+
+docker-alpine-portable: DOCKER_OS=alpine
+docker-alpine-portable: DOCKER_BUILD=portable
+docker-alpine-portable: docker-start-build
+
+docker-alpine-production: DOCKER_OS=alpine
+docker-alpine-production: DOCKER_BUILD=production
+docker-alpine-production: docker-start-build
+
+docker-alpine-dynamic-production: DOCKER_OS=alpine
+docker-alpine-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-alpine-dynamic-production: docker-start-build
 
 #
 # Format rules

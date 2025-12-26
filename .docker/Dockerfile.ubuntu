@@ -10,6 +10,7 @@ RUN set -eux; \
       gcc make \
       llvm llvm-dev \
       libpcre2-dev \
+      libsqlite3-dev \
       upx-ucl; \
     rm -rf /var/lib/apt/lists/*;
 
