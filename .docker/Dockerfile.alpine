@@ -1,11 +1,11 @@
 ARG BUILD=production
-FROM alpine:3.20 AS alpine
+FROM alpine:edge AS alpine
 
 ARG BUILD
 ENV BUILD=${BUILD}
 
 RUN set -eux; \
-     apk add --no-cache build-base llvm pcre2-dev fts-dev argp-standalone upx
+     apk add --no-cache build-base llvm pcre2-dev pcre2-static fts-dev argp-standalone upx
 
 WORKDIR /precizer
 
