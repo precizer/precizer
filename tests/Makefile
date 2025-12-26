@@ -30,6 +30,12 @@ LIBS = testitall mem sha512 rational sqlite3 xdiff
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
 
+SYS := $(shell gcc -dumpmachine)
+ifneq (, $(findstring alpine, $(SYS)))
+# Alpine Linux uses external libraries
+LDLIBS += -largp -lfts
+endif
+
 # For old gcc versions
 GCC_VERSION := $(shell gcc -dumpversion)
 # Checking if the GCC version is less than 10
