@@ -417,7 +417,7 @@ Return file_list(const bool);
 
 Return sha512sum(
 	const char *,
-	const short unsigned int *,
+	const size_t,
 	memory *,
 	unsigned char *,
 	sqlite3_int64 *,
@@ -443,11 +443,11 @@ LockChecksum match_checksum_lock_pattern(
 Return path_absolute_from_relative(
 	char **,
 	const char *,
-	const short unsigned int *);
+	const size_t);
 
 Return file_check_access(
 	const char *,
-	const short unsigned int *,
+	const size_t,
 	bool *);
 
 void notify_quit_handler(int);

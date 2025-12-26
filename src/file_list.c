@@ -327,7 +327,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				/* Check file access */
 				status = file_check_access(p->fts_path,
-					&p->fts_pathlen,
+					(size_t)p->fts_pathlen,
 					&is_readable);
 
 				if(SUCCESS != status)
@@ -444,7 +444,7 @@ Return file_list(const bool count_size_of_all_files)
 				if(rehash == true)
 				{
 					run(sha512sum(p->fts_path,
-						&p->fts_pathlen,
+						(size_t)p->fts_pathlen,
 						file_buffer,
 						sha512,
 						&offset,

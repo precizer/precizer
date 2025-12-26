@@ -11,9 +11,9 @@
  * @param path_size Size of the relative path string.
  */
 Return path_absolute_from_relative(
-	char                     **absolute_path,
-	const char               *path,
-	const short unsigned int *path_size)
+	char         **absolute_path,
+	const char   *path,
+	const size_t path_size)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -27,10 +27,10 @@ Return path_absolute_from_relative(
 	}
 
 	// Allocate memory for the absolute path (base dir + '/' + relative path + null terminator)
-	if(*path_size > 0 && path[0] == '/')
+	if(path_size > 0 && path[0] == '/')
 	{
 		// The provided path is actually absolute!
-		len = (size_t)*path_size + 1;
+		len = path_size + 1;
 		*absolute_path = (char *)malloc(len);
 
 		if(*absolute_path == NULL)
@@ -45,7 +45,7 @@ Return path_absolute_from_relative(
 	} else {
 		// The provided path is indeed relative!
 		// running_dir_size already counts the trailing '\0'; +1 adds space for '/' and the new terminator.
-		len = (size_t)config->running_dir_size + (size_t)*path_size + 1;
+		len = (size_t)config->running_dir_size + path_size + 1;
 		*absolute_path = (char *)malloc(len);
 
 		if(*absolute_path == NULL)

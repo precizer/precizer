@@ -6,13 +6,13 @@
  *
  */
 Return sha512sum(
-	const char               *path,
-	const short unsigned int *path_size,
-	memory                   *file_buffer,
-	unsigned char            *sha512,
-	sqlite3_int64            *offset,
-	SHA512_Context           *mdContext,
-	bool                     *wrong_file_type)
+	const char     *path,
+	const size_t   path_size,
+	memory         *file_buffer,
+	unsigned char  *sha512,
+	sqlite3_int64  *offset,
+	SHA512_Context *mdContext,
+	bool           *wrong_file_type)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
