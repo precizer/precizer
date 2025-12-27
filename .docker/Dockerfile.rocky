@@ -6,14 +6,23 @@ ENV BUILD=${BUILD}
 
 RUN set -eux; \
     dnf -y update; \
+    dnf -y install dnf-plugins-core; \
+    dnf config-manager --set-enabled crb; \
+    dnf -y install epel-release; \
+    dnf -y install gcc-toolset-15-gcc; \
+    dnf -y install gcc-toolset-15-libubsan-devel; \
+    dnf -y install gcc-toolset-15-libasan-devel; \
+    dnf -y makecache; \
     dnf -y install \
     gcc \
     make \
-    llvm
-    llvm-devel
-    pcre2-devel
-    upx;
-  dnf -y clean all;
+    llvm \
+    glibc-devel glibc-static \
+    llvm-devel \
+    pcre2 pcre2-devel \
+    upx; \
+    dnf -y --enablerepo=devel install pcre2-static; \
+  dnf -y clean all; \
   rm -rf /var/cache/dnf
 
 WORKDIR /precizer
@@ -22,6 +31,6 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
-RUN make ${BUILD}
+RUN scl enable gcc-toolset-15 -- make ${BUILD}
 
-CMD ["sh", "-c", "make tests"]
+CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make tests"]
