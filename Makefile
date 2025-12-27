@@ -540,6 +540,10 @@ clean-all-dockers:
 #   make docker-gentoo-dynamic-production
 docker: docker-ubuntu
 
+docker-portable: docker-ubuntu-portable
+
+docker-dynamic-production: docker-ubuntu-dynamic-production
+
 docker-start-build: build-docker run-docker copy-from-docker clean-docker clean-docker-image
 
 docker-ubuntu: docker-ubuntu-production
@@ -611,6 +615,20 @@ docker-alpine-production: docker-start-build
 docker-alpine-dynamic-production: DOCKER_OS=alpine
 docker-alpine-dynamic-production: DOCKER_BUILD=dynamic-production
 docker-alpine-dynamic-production: docker-start-build
+
+docker-rocky: docker-rocky-production
+
+docker-rocky-portable: DOCKER_OS=rocky
+docker-rocky-portable: DOCKER_BUILD=portable
+docker-rocky-portable: docker-start-build
+
+docker-rocky-production: DOCKER_OS=rocky
+docker-rocky-production: DOCKER_BUILD=production
+docker-rocky-production: docker-start-build
+
+docker-rocky-dynamic-production: DOCKER_OS=rocky
+docker-rocky-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-rocky-dynamic-production: docker-start-build
 
 #
 # Format rules
