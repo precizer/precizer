@@ -18,7 +18,7 @@ Return test0003_1(void)
 	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,ALLOW_BOTH));
 
 	// Get the output of the application
-	const char *arguments = "--compare ${DBNAME} database2.db";
+	const char *arguments = "--compare $DBNAME database2.db";
 
 	const char *filename = "templates/0003_001.txt";  // File name
 	const char *template = "%DB_NAME%";

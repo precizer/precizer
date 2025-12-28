@@ -13,7 +13,7 @@ Return test0018_1_maxdepth_argument(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--maxdepth=3 --database=database3.db ${TMPDIR}/tests/examples/levels",result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--maxdepth=3 --database=database3.db $TMPDIR/tests/examples/levels",result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -33,7 +33,7 @@ Return test0018_1_maxdepth_argument(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--update --database=database3.db ${TMPDIR}/tests/examples/levels",result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--update --database=database3.db $TMPDIR/tests/examples/levels",result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
