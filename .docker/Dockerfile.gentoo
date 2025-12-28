@@ -19,6 +19,7 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
-RUN PATH=/usr/lib/llvm/20/bin/:${PATH}; make ${BUILD}
 
-CMD ["sh", "-c", "PATH=/usr/lib/llvm/20/bin/:${PATH}; make tests"]
+RUN make ${BUILD}
+
+CMD ["sh", "-c", "export PATH=\"$(ls -d /usr/lib/llvm/[0-9]*/bin 2>/dev/null):$PATH\"; echo $PATH; make tests"]
