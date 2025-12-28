@@ -171,9 +171,9 @@ HDRS = $(wildcard $(SRC_DIR)/*.h)
 
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
-PREPROC = $(SRCS:.c=.i) # Preproc files http://www.viva64.com/en/t/0076/
+PREPROC = $(SRCS:.c=.i) # Preprocessed files http://www.viva64.com/en/t/0076/
 PREPROC += $(SRCS:.c=.i.h)
-# Asm
+# Assembly
 ASM = $(SRCS:.c=.asm)
 
 #
@@ -190,7 +190,7 @@ DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
 endif
-# Activation of the Gprof profiler.
+# Activate the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
 # is supported by visualization tools like kcachegrind.
@@ -275,8 +275,8 @@ endif
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage
-.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable build-docker build-docker-portable copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc coveragefinal precizer-coverage print-%
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
 
 #
 # Debug rules
@@ -484,164 +484,138 @@ tests-debug: debug
 	@$(MAKE) -s -C $(TESTDIR) debug
 
 #
-# Build and test within Docker container
+# Build and test within a Docker container
 #
 
-# gentoo | ubuntu | arch | ...
-DOCKER_OS ?= gentoo
+# Defaults for high-level docker targets
+DOCKER_DEFAULT_OS    ?= gentoo
+DOCKER_DEFAULT_BUILD ?= production
 
-# production | portable
-DOCKER_BUILD ?= production
+# You can override these:
+#   make docker-export-alpine-portable
+#   make docker-run-ubuntu-dynamic-production
+#   make docker-arch                  (build defaults to production)
+DOCKER_OS    ?= $(DOCKER_DEFAULT_OS)
+DOCKER_BUILD ?= $(DOCKER_DEFAULT_BUILD)
 
-DOCKER_IMAGE = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)
-DOCKER_CONTAINER = $(EXE)
+DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)
+# Make the container name unique per OS/build to avoid clobbering
+DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)
 
-# Build image and create application container
+DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
+DOCKER_CREATE_FLAGS  ?= -it
+DOCKER_RUN_FLAGS     ?= -it
+DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
+
+.PHONY: build-docker create-docker start-docker copy-from-docker
+.PHONY: docker-export docker-run docker-all docker docker-% docker-export-% docker-run-%
+.PHONY: clean-docker clean-docker-image clean-all-docker tests-in-docker
+
+# Build the image
 build-docker:
-	@docker build -f .docker/Dockerfile.$(DOCKER_OS) --build-arg BUILD=$(DOCKER_BUILD) -t $(DOCKER_IMAGE) .
-	@docker rm -f $(DOCKER_CONTAINER) > /dev/null 2>&1 || true
-	@docker create --name $(DOCKER_CONTAINER) $(DOCKER_IMAGE)
+	@test -f "$(DOCKERFILE)" || { echo "No Dockerfile: $(DOCKERFILE)"; exit 2; }
+	@docker build -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" -t "$(DOCKER_IMAGE)" .
 
-# Run the application within the built container
-run-docker:
-	@docker run -it --rm $(DOCKER_IMAGE)
+# Create a named container from the image (same container will be used for run+copy)
+create-docker:
+	@docker rm -f "$(DOCKER_CONTAINER)" > /dev/null 2>&1 || true
+	@docker create $(DOCKER_CREATE_FLAGS) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
 
-# Copying a statically compiled application from a container
-# to the current directory on the system
+# Start the created container and attach to it
+# Note: this runs the image's default CMD/ENTRYPOINT
+start-docker:
+	@docker start -ai "$(DOCKER_CONTAINER)"
+
+# Copy the built artifact out of the container
 copy-from-docker:
-	@docker cp $(EXE):/$(EXE)/$(EXE) $(EXE)
+	@docker cp "$(DOCKER_CONTAINER):$(DOCKER_ARTIFACT_PATH)" "$(EXE)"
 
-# Run it 1000 times
-tests-in-docker: build-docker
-	i=1; while [ $$i -le 1000 ]; do docker -f .docker/Dockerfile.$(DOCKER_OS) run -it --rm $(DOCKER_IMAGE) || break; i=$$((i + 1)); done
-
-# Clean the built container
+# Remove the container
 clean-docker:
-	@docker rm -f $(DOCKER_CONTAINER) > /dev/null 2>&1 || true
+	@docker rm -f "$(DOCKER_CONTAINER)" > /dev/null 2>&1 || true
 
+# Remove the image (and prune dangling layers)
 clean-docker-image:
-	@docker image rm -f $(DOCKER_IMAGE) > /dev/null 2>&1 || true
+	@docker image rm -f "$(DOCKER_IMAGE)" > /dev/null 2>&1 || true
 	@docker image prune -f > /dev/null 2>&1 || true
-	@echo Docker image $(EXE) cleared
+	@echo Docker image $(DOCKER_IMAGE) cleared
 
-clean-all-dockers:
+clean-all-docker:
 	@docker image prune -f > /dev/null 2>&1 || true
 	@docker image prune -af > /dev/null 2>&1 || true
 	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1 || true
 	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1 || true
 	@echo All docker images cleared
 
-# Generic Docker targets: use any .docker/Dockerfile.<os>
-# Requires .docker/Dockerfile.<os> to exist.
-# Examples:
-#   make docker-arch
-#   make docker-alpine-portable
-#   make docker-gentoo-dynamic-production
-docker: docker-ubuntu
+#
+# Ordered pipelines (guaranteed sequence)
+#
 
-docker-portable: docker-ubuntu-portable
+# Build -> Create -> Copy -> Clean container -> Clean image
+docker-export:
+	@$(MAKE) build-docker
+	@$(MAKE) create-docker
+	@$(MAKE) copy-from-docker
+	@$(MAKE) clean-docker
+	@$(MAKE) clean-docker-image
 
-docker-dynamic-production: docker-ubuntu-dynamic-production
+# Build -> Create -> Run (attach) -> Clean container -> Clean image
+docker-run:
+	@$(MAKE) build-docker
+	@$(MAKE) create-docker
+	@$(MAKE) start-docker
+	@$(MAKE) clean-docker
+	@$(MAKE) clean-docker-image
 
-docker-start-build: build-docker run-docker copy-from-docker clean-docker clean-docker-image
+# Build -> Create -> Run -> Copy -> Clean container -> Clean image
+docker-all:
+	@$(MAKE) build-docker
+	@$(MAKE) create-docker
+	@$(MAKE) start-docker
+	@$(MAKE) copy-from-docker
+	@$(MAKE) clean-docker
+	@$(MAKE) clean-docker-image
 
-docker-ubuntu: docker-ubuntu-production
+# Run the image in a fresh throwaway container 1000 times (build once, then run many)
+tests-in-docker: build-docker
+	@i=1; while [ $$i -le 1000 ]; do \
+		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || break; \
+		i=$$((i + 1)); \
+	done
 
-docker-ubuntu-portable: DOCKER_OS=ubuntu
-docker-ubuntu-portable: DOCKER_BUILD=portable
-docker-ubuntu-portable: docker-start-build
+#
+# Generic docker targets (parsing using make functions only)
+#
+# Supported:
+#   make docker                           -> docker-export (defaults)
+#   make docker-arch                      -> docker-all for arch + default build
+#   make docker-ubuntu-dynamic-production -> docker-all
+#   make docker-export-alpine-portable    -> docker-export
+#   make docker-run-gentoo-production     -> docker-run
+#
 
-docker-ubuntu-production: DOCKER_OS=ubuntu
-docker-ubuntu-production: DOCKER_BUILD=production
-docker-ubuntu-production: docker-start-build
+docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
 
-docker-ubuntu-dynamic-production: DOCKER_OS=ubuntu
-docker-ubuntu-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-ubuntu-dynamic-production: docker-start-build
+# $1 = "ubuntu" or "ubuntu-dynamic-production"
+docker_os_from_target    = $(firstword $(subst -, ,$1))
+docker_build_from_target = $(if $(findstring -,$1),$(patsubst $(call docker_os_from_target,$1)-%,%,$1),$(DOCKER_DEFAULT_BUILD))
 
-docker-debian: docker-debian-production
+# Default "docker-<os>[-<build>]" does the full pipeline (run + copy + cleanup)
+docker-%:
+	@$(MAKE) docker-all \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
 
-docker-debian-portable: DOCKER_OS=debian
-docker-debian-portable: DOCKER_BUILD=portable
-docker-debian-portable: docker-start-build
+# Explicit pipelines
+docker-export-%:
+	@$(MAKE) docker-export \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
 
-docker-debian-production: DOCKER_OS=debian
-docker-debian-production: DOCKER_BUILD=production
-docker-debian-production: docker-start-build
-
-docker-debian-dynamic-production: DOCKER_OS=debian
-docker-debian-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-debian-dynamic-production: docker-start-build
-
-docker-gentoo: docker-gentoo-production
-
-docker-gentoo-portable: DOCKER_OS=gentoo
-docker-gentoo-portable: DOCKER_BUILD=portable
-docker-gentoo-portable: docker-start-build
-
-docker-gentoo-production: DOCKER_OS=gentoo
-docker-gentoo-production: DOCKER_BUILD=production
-docker-gentoo-production: docker-start-build
-
-docker-gentoo-dynamic-production: DOCKER_OS=gentoo
-docker-gentoo-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-gentoo-dynamic-production: docker-start-build
-
-docker-arch: docker-arch-production
-
-docker-arch-portable: DOCKER_OS=arch
-docker-arch-portable: DOCKER_BUILD=portable
-docker-arch-portable: docker-start-build
-
-docker-arch-production: DOCKER_OS=arch
-docker-arch-production: DOCKER_BUILD=production
-docker-arch-production: docker-start-build
-
-docker-arch-dynamic-production: DOCKER_OS=arch
-docker-arch-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-arch-dynamic-production: docker-start-build
-
-docker-alpine: docker-alpine-production
-
-docker-alpine-portable: DOCKER_OS=alpine
-docker-alpine-portable: DOCKER_BUILD=portable
-docker-alpine-portable: docker-start-build
-
-docker-alpine-production: DOCKER_OS=alpine
-docker-alpine-production: DOCKER_BUILD=production
-docker-alpine-production: docker-start-build
-
-docker-alpine-dynamic-production: DOCKER_OS=alpine
-docker-alpine-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-alpine-dynamic-production: docker-start-build
-
-docker-rocky: docker-rocky-production
-
-docker-rocky-portable: DOCKER_OS=rocky
-docker-rocky-portable: DOCKER_BUILD=portable
-docker-rocky-portable: docker-start-build
-
-docker-rocky-production: DOCKER_OS=rocky
-docker-rocky-production: DOCKER_BUILD=production
-docker-rocky-production: docker-start-build
-
-docker-rocky-dynamic-production: DOCKER_OS=rocky
-docker-rocky-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-rocky-dynamic-production: docker-start-build
-
-docker-almalinux: docker-almalinux-production
-
-docker-almalinux-portable: DOCKER_OS=almalinux
-docker-almalinux-portable: DOCKER_BUILD=portable
-docker-almalinux-portable: docker-start-build
-
-docker-almalinux-production: DOCKER_OS=almalinux
-docker-almalinux-production: DOCKER_BUILD=production
-docker-almalinux-production: docker-start-build
-
-docker-almalinux-dynamic-production: DOCKER_OS=almalinux
-docker-almalinux-dynamic-production: DOCKER_BUILD=dynamic-production
-docker-almalinux-dynamic-production: docker-start-build
+docker-run-%:
+	@$(MAKE) docker-run \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
 
 #
 # Format rules
@@ -649,8 +623,8 @@ docker-almalinux-dynamic-production: docker-start-build
 format:
 	@echo "Formatting source files..."
 	@for file in $(SRCS) $(HDRS); do \
-	    echo "Formatting $$file"; \
-	    uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
+		echo "Formatting $$file"; \
+		uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
 	done
 	@echo "All files formatted."
 
@@ -664,7 +638,7 @@ format:
 	@sed -i 's/[ \t]*\# [[:digit:]]\+ \".*//g' $@.h
 #	@sed -i '/^ *$//d' $@.h
 
-# Optional Assembler files
+# Optional assembler files
 %.asm:%.c
 	@rm -f $@
 	@$(CC) -S -C $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) $(PROD_LDFLAGS) -o $@ $(LDLIBS) $<
@@ -675,7 +649,7 @@ format:
 
 remake: clean all
 
-# Static analysers and sanitizers
+# Static analyzers and sanitizers
 analyze: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
 
 #
@@ -746,12 +720,12 @@ banner:
 	@printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 
 #
-# Print of variables
+# Print variables
 #
-# If you want to find out the value of a makefile variable, just:
-#make print-VARIABLE
-# and it will return:
-#VARIABLE = the_value_of_the_variable
+# If you want to find out the value of a makefile variable:
+#   make print-VARIABLE
+# Output:
+#   VARIABLE = the_value_of_the_variable
 #
 print-%:
 	@echo '$* = $($*)'

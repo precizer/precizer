@@ -15,4 +15,5 @@ RUN adduser -D builder && chown -R builder:builder /precizer
 USER builder
 RUN make ${BUILD}
 
+# musl doesn't have working sanitizer at all, that's why:
 CMD ["sh", "-c", "make tests-debug"]
