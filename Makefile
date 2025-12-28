@@ -222,12 +222,11 @@ ifeq ($(UNAME_S),Darwin)
 SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
 endif
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
-SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
+SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
-SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
 endif
 
 #

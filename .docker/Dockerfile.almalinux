@@ -20,10 +20,10 @@ RUN set -eux; \
       llvm \
       llvm-devel \
       sqlite sqlite-devel \
-      glibc-devel glibc-static \
+      glibc-devel \
       pcre2 pcre2-devel \
       upx; \
-    dnf -y --enablerepo=devel install pcre2-static; \
+    dnf -y --enablerepo=devel install pcre2-static glibc-static; \
     dnf -y clean all; \
     rm -rf /var/cache/dnf
 

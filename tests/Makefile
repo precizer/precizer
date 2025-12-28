@@ -129,12 +129,11 @@ SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORI
 ifeq ($(UNAME_S),Darwin)
 SNTZ_DYNLIB = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/../../$(SNTZ_LIBDIR)
 endif
-SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
+SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
-SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
 endif
 
 #
