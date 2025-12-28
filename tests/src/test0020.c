@@ -96,7 +96,7 @@ Return test0020_3(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && chmod a+rwx write_protected_directory && rm -df write_protected_directory",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && chmod a+rwx write_protected_directory && rm -rf write_protected_directory",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

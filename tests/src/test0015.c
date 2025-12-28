@@ -202,7 +202,7 @@ Return test0015_5_upgrade_db(void)
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	const char *arguments = "--compare ${DBNAME} 0015_database_v0.db";
+	const char *arguments = "--compare $DBNAME 0015_database_v0.db";
 
 	const char *filename = "templates/0015_005.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -230,7 +230,7 @@ Return test0015_6_upgrade_db(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	// Get the output of an external program
-	const char *arguments = "--compare --update ${DBNAME} 0015_database_v0.db";
+	const char *arguments = "--compare --update $DBNAME 0015_database_v0.db";
 
 	const char *filename = "templates/0015_006.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -338,7 +338,7 @@ Return test0015_9_upgrade_db(void)
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	const char *arguments = "--compare --update ${DBNAME} 0015_database_v1.db";
+	const char *arguments = "--compare --update $DBNAME 0015_database_v1.db";
 
 	const char *filename = "templates/0015_009.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -412,7 +412,7 @@ Return test0015_11_upgrade_db(void)
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	const char *arguments = "--compare --update ${DBNAME} 0015_database_v2.db";
+	const char *arguments = "--compare --update $DBNAME 0015_database_v2.db";
 
 	const char *filename = "templates/0015_011.txt";  // File name
 	const char *template = "%DB_NAME%";
