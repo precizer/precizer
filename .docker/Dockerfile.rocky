@@ -17,6 +17,7 @@ RUN set -eux; \
     gcc \
     make \
     llvm \
+    sqlite sqlite-devel \
     glibc-devel glibc-static \
     llvm-devel \
     pcre2 pcre2-devel \

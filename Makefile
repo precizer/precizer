@@ -630,6 +630,20 @@ docker-rocky-dynamic-production: DOCKER_OS=rocky
 docker-rocky-dynamic-production: DOCKER_BUILD=dynamic-production
 docker-rocky-dynamic-production: docker-start-build
 
+docker-almalinux: docker-almalinux-production
+
+docker-almalinux-portable: DOCKER_OS=almalinux
+docker-almalinux-portable: DOCKER_BUILD=portable
+docker-almalinux-portable: docker-start-build
+
+docker-almalinux-production: DOCKER_OS=almalinux
+docker-almalinux-production: DOCKER_BUILD=production
+docker-almalinux-production: docker-start-build
+
+docker-almalinux-dynamic-production: DOCKER_OS=almalinux
+docker-almalinux-dynamic-production: DOCKER_BUILD=dynamic-production
+docker-almalinux-dynamic-production: docker-start-build
+
 #
 # Format rules
 #
