@@ -99,9 +99,8 @@ SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
-SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
-ifeq ($(UNAME_S),Darwin)
 SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
+ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO)
 endif
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)

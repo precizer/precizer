@@ -5,7 +5,7 @@ ARG BUILD
 ENV BUILD=${BUILD}
 
 RUN set -eux; \
-     pacman -Syu --noconfirm --needed base-devel gcc-libs llvm pcre2 upx; \
+     pacman -Syu --noconfirm --needed base-devel gcc-libs sqlite llvm pcre2 upx inetutils; \
      pacman -Scc --noconfirm
 
 WORKDIR /precizer
