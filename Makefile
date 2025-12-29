@@ -277,7 +277,7 @@ TOPTARGETS := all
 
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
-.PHONY: docker-matrix docker-matrix-% clean-docker-os-% print-docker-oses
+.PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
 # Debug rules
@@ -654,18 +654,18 @@ docker-run-%:
 #   debug
 #
 # The list is controlled by DOCKER_MATRIX_BUILDS and can be overridden:
-#   make DOCKER_MATRIX_BUILDS="production sanitize" docker-matrix
+#   make DOCKER_MATRIX_BUILDS="production sanitize" docker-check-every-os
 #
 # Main commands
 # -------------
 # 1) Run the full matrix for all OSes found in .docker:
-#      make docker-matrix
+#      make docker-check-every-os
 #
 # 2) Run the matrix for a single OS (example: ubuntu):
-#      make docker-matrix-ubuntu
+#      make docker-check-os-ubuntu
 #
 # 3) Run only specific build flavors:
-#      make DOCKER_MATRIX_BUILDS="portable production" docker-matrix
+#      make DOCKER_MATRIX_BUILDS="portable production" docker-check-every-os
 #
 # 4) Cleanup Docker artifacts for a single OS (containers/images for all flavors):
 #      make clean-docker-os-ubuntu
@@ -706,7 +706,7 @@ print-docker-oses:
 	@echo "$(DOCKER_OSES)"
 
 # Run matrix for all OSes found
-docker-matrix:
+docker-check-every-os:
 	@set -e; \
 	if [ -z "$(DOCKER_OSES)" ]; then \
 		echo "No .docker/Dockerfile.* found"; \
@@ -716,11 +716,11 @@ docker-matrix:
 		echo "=============================="; \
 		echo " Docker matrix for: $$os"; \
 		echo "=============================="; \
-		$(MAKE) docker-matrix-$$os; \
+		$(MAKE) docker-check-os-$$os; \
 	done
 
 # Run all build variants for a single OS, then cleanup images/containers for this OS
-docker-matrix-%:
+docker-check-os-%:
 	@set -e; \
 	os="$*"; \
 	for b in $(DOCKER_MATRIX_BUILDS); do \
