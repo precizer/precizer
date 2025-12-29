@@ -277,6 +277,7 @@ TOPTARGETS := all
 
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
+.PHONY: docker-matrix docker-matrix-% clean-docker-os-% print-docker-oses
 
 #
 # Debug rules
@@ -627,8 +628,7 @@ docker-run-%:
 # flavor (portable/production/…).
 #
 # This helps ensure the project can be built and tested across multiple Linux
-# distributions and build configurations (static, dynamic, sanitizer, debug).
-#
+# distributions and build configurations (static, dynamic, debug).
 #
 # How the OS list is discovered
 # -----------------------------
@@ -651,12 +651,10 @@ docker-run-%:
 #   portable
 #   production
 #   dynamic-production
-#   sanitize
 #   debug
 #
 # The list is controlled by DOCKER_MATRIX_BUILDS and can be overridden:
 #   make DOCKER_MATRIX_BUILDS="production sanitize" docker-matrix
-#
 #
 # Main commands
 # -------------
@@ -678,12 +676,10 @@ docker-run-%:
 #   make docker-<os>-portable
 #   make docker-<os>-production
 #   make docker-<os>-dynamic-production
-#   make docker-<os>-sanitize
 #   make docker-<os>-debug
 #
 # These targets already exist in this Makefile and use the docker-all pipeline:
 #   build image -> create container -> run (tests) -> copy artifact -> cleanup
-#
 #
 # Cleanup behavior
 # ----------------
@@ -693,7 +689,6 @@ docker-run-%:
 # - docker image prune -f is executed (dangling layers)
 #
 # This is intentional to keep the workspace clean and runs reproducible.
-#
 #
 # Notes
 # -----
@@ -705,9 +700,7 @@ DOCKER_DOCKERFILES := $(wildcard .docker/Dockerfile.*)
 DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERFILES))))
 
 # Build variants to run per OS (order matters)
-DOCKER_MATRIX_BUILDS ?= portable production dynamic-production sanitize debug
-
-.PHONY: docker-matrix docker-matrix-% clean-docker-os-% print-docker-oses
+DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug
 
 print-docker-oses:
 	@echo "$(DOCKER_OSES)"
@@ -732,7 +725,7 @@ docker-matrix-%:
 	os="$*"; \
 	for b in $(DOCKER_MATRIX_BUILDS); do \
 		echo "---- $$os / $$b ----"; \
-		$(MAKE) docker-$$os-$$b; \
+		$(MAKE) docker-run-$$os-$$b; \
 	done; \
 	$(MAKE) clean-docker-os-$$os
 

@@ -12,6 +12,7 @@ RUN set -eux; \
     dnf -y install almalinux-release-devel; \
     dnf -y makecache; \
     dnf -y install \
+      which \
       gcc-toolset-15-gcc \
       gcc-toolset-15-libubsan-devel \
       gcc-toolset-15-libasan-devel \
