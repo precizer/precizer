@@ -593,7 +593,6 @@ tests-in-docker: build-docker
 #   make docker-export-alpine-portable    -> docker-export
 #   make docker-run-gentoo-production     -> docker-run
 #
-
 docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
 
 # $1 = "ubuntu" or "ubuntu-dynamic-production"
@@ -616,6 +615,139 @@ docker-run-%:
 	@$(MAKE) docker-run \
 	DOCKER_OS=$(call docker_os_from_target,$*) \
 	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
+#
+# Docker matrix build & test: run all build variants
+# for each OS found in .docker/
+#
+# Purpose
+# -------
+# These targets automatically discover all Dockerfiles in the .docker directory
+# and run build+tests inside Docker containers for every supported OS and build
+# flavor (portable/production/…).
+#
+# This helps ensure the project can be built and tested across multiple Linux
+# distributions and build configurations (static, dynamic, sanitizer, debug).
+#
+#
+# How the OS list is discovered
+# -----------------------------
+# Put Dockerfiles under:
+#   .docker/Dockerfile.<os>
+#
+# Example:
+#   .docker/Dockerfile.ubuntu
+#   .docker/Dockerfile.debian
+#   .docker/Dockerfile.alpine
+#
+# Make extracts "<os>" from those filenames and forms DOCKER_OSES automatically.
+#
+# To print the detected OS list:
+#   make print-docker-oses
+#
+# Which build flavors run per OS
+# ------------------------------
+# By default, each OS runs the following targets (in this order):
+#   portable
+#   production
+#   dynamic-production
+#   sanitize
+#   debug
+#
+# The list is controlled by DOCKER_MATRIX_BUILDS and can be overridden:
+#   make DOCKER_MATRIX_BUILDS="production sanitize" docker-matrix
+#
+#
+# Main commands
+# -------------
+# 1) Run the full matrix for all OSes found in .docker:
+#      make docker-matrix
+#
+# 2) Run the matrix for a single OS (example: ubuntu):
+#      make docker-matrix-ubuntu
+#
+# 3) Run only specific build flavors:
+#      make DOCKER_MATRIX_BUILDS="portable production" docker-matrix
+#
+# 4) Cleanup Docker artifacts for a single OS (containers/images for all flavors):
+#      make clean-docker-os-ubuntu
+#
+# What runs inside the loop
+# -------------------------
+# For each OS "<os>", the following commands are executed:
+#   make docker-<os>-portable
+#   make docker-<os>-production
+#   make docker-<os>-dynamic-production
+#   make docker-<os>-sanitize
+#   make docker-<os>-debug
+#
+# These targets already exist in this Makefile and use the docker-all pipeline:
+#   build image -> create container -> run (tests) -> copy artifact -> cleanup
+#
+#
+# Cleanup behavior
+# ----------------
+# After all build flavors complete for a given OS, cleanup is performed:
+# - Containers removed:  $(EXE)-<os>-<build>
+# - Images removed:      $(EXE):<os>-<build>
+# - docker image prune -f is executed (dangling layers)
+#
+# This is intentional to keep the workspace clean and runs reproducible.
+#
+#
+# Notes
+# -----
+# - Requires Docker installed and usable by the current user (docker build/run).
+# - If any build/test step fails, the matrix stops immediately and exits non-zero.
+
+# Find OS list from .docker/Dockerfile.<os>
+DOCKER_DOCKERFILES := $(wildcard .docker/Dockerfile.*)
+DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERFILES))))
+
+# Build variants to run per OS (order matters)
+DOCKER_MATRIX_BUILDS ?= portable production dynamic-production sanitize debug
+
+.PHONY: docker-matrix docker-matrix-% clean-docker-os-% print-docker-oses
+
+print-docker-oses:
+	@echo "$(DOCKER_OSES)"
+
+# Run matrix for all OSes found
+docker-matrix:
+	@set -e; \
+	if [ -z "$(DOCKER_OSES)" ]; then \
+		echo "No .docker/Dockerfile.* found"; \
+		exit 2; \
+	fi; \
+	for os in $(DOCKER_OSES); do \
+		echo "=============================="; \
+		echo " Docker matrix for: $$os"; \
+		echo "=============================="; \
+		$(MAKE) docker-matrix-$$os; \
+	done
+
+# Run all build variants for a single OS, then cleanup images/containers for this OS
+docker-matrix-%:
+	@set -e; \
+	os="$*"; \
+	for b in $(DOCKER_MATRIX_BUILDS); do \
+		echo "---- $$os / $$b ----"; \
+		$(MAKE) docker-$$os-$$b; \
+	done; \
+	$(MAKE) clean-docker-os-$$os
+
+# Cleanup all images/containers for a single OS (for all build variants)
+clean-docker-os-%:
+	@set -e; \
+	os="$*"; \
+	for b in $(DOCKER_MATRIX_BUILDS); do \
+		# containers are named: $(EXE)-<os>-<build> (per your DOCKER_CONTAINER logic) \
+		docker rm -f "$(EXE)-$$os-$$b" >/dev/null 2>&1 || true; \
+		# images are tagged: $(EXE):<os>-<build> (per your DOCKER_IMAGE logic) \
+		docker image rm -f "$(EXE):$$os-$$b" >/dev/null 2>&1 || true; \
+	done; \
+	docker image prune -f >/dev/null 2>&1 || true; \
+	echo "Docker artifacts for $$os cleared"
 
 #
 # Format rules
