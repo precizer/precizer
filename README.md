@@ -5,9 +5,9 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 “A truly great application will always fit on a floppy disk. Hopefully, someone out there still remembers what those were… But it’s not about the floppies, it’s about quality software!”<sup>©</sup> :-D
 
-<p width="100%" height="100%">
-<img width="20%" src="/img/micrometer_0.svg">
-</p>
+<p><a class="btn" href="https://github.com/precizer/precizer/releases/latest">Download (stable release)</a></p>
+
+<p width="100%" height="100%"><img width="20%" src="/img/micrometer_0.svg"></p>
 
 <a href="/.code_coverage_report/"><img src="/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /></br><img src="/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
 
