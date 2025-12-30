@@ -5,17 +5,6 @@
 
 «По-настоящему хорошая программа всегда поместится на дискету. Есть надежда, что кто-то всё ещё помнит, что это такое… Речь идёт не о дискетах, а о качественных программах!»<sup>©</sup> :-D
 
-<p width="100%" height="100%">
-<img width="20%" src="/img/micrometer_0.svg">
-</p>
-
-<a href="/.code_coverage_report/">
-  <img src="/img/unit-coverage.svg" height="20" alt="Unit-Tests Code Coverage" />
-  Unit-Tests Code Coverage Report
-</a>
-
-<p><a class="btn" href="https://github.com/precizer/precizer/releases/latest">Download (stable release)</a></p>
-
 <p width="100%" height="100%"><img width="20%" src="/img/micrometer_0.svg"></p>
 
 <a href="/.code_coverage_report/"><img src="/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /><br><img src="/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
