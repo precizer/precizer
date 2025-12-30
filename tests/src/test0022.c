@@ -24,21 +24,19 @@ static Return test_remove_trailing_slash(
 	{
 		char *buffer_data = data(char,temp_buffer);
 
-		if(buffer_data == NULL)
+		ASSERT(buffer_data != NULL);
+
+		if(SUCCESS == status)
 		{
-			status = FAILURE;
-		} else {
 			memcpy(buffer_data,input,len);
+
 			remove_trailing_slash(buffer_data);
 
 			const char *buffer_view = cdata(char,temp_buffer);
 
-			if(buffer_view == NULL)
-			{
-				status = FAILURE;
-			} else {
-				ASSERT(COMPLETED == strcmp(buffer_view,expected));
-			}
+			ASSERT(buffer_view != NULL);
+
+			ASSERT(COMPLETED == strcmp(buffer_view,expected));
 		}
 	}
 

@@ -68,11 +68,11 @@ Return db_close(
 			log_sqlite_error(db,rc,NULL,"Warning: failed to close database");
 			status = FAILURE;
 		}
-	}
 
-	if(SUCCESS == status)
-	{
-		slog(TRACE,"The connection to the primary database has been closed\n");
+		if(SUCCESS == status)
+		{
+			slog(TRACE,"The database connection has been closed\n");
+		}
 	}
 
 	provide(status);

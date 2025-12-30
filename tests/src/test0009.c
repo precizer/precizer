@@ -12,6 +12,9 @@ static void slog_test(void)
 	printf("%s\n",rational_convert(VERBOSE|TESTING));
 	printf("%s\n",rational_convert(REGULAR|VERBOSE|TESTING));
 	printf("%s\n",rational_convert(ERROR));
+	printf("%s\n",rational_convert(UNDECOR));
+	printf("%s\n",rational_convert(EVERY|UNDECOR));
+	printf("%s\n",rational_convert(ERROR|UNDECOR));
 
 	/* Test REGULAR mode combinations */
 	rational_logger_mode = REGULAR;
@@ -84,6 +87,28 @@ static void slog_test(void)
 	printf("34. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
 	printf("35. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
 	printf("36.  Must print:");   slog(ERROR,"true"); printf("\n");
+
+	/*
+	 * Test UNDECOR flag: suppress logger prefixes (TESTING:, time/file/line/func, ERROR:)
+	 * The output between the '|' markers should contain only the message payload.
+	 */
+
+	rational_logger_mode = EVERY|ERROR;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("37. Must print no prefixes:|"); slog(EVERY|UNDECOR,"true"); printf("|\n");
+	printf("38. Must print no ERROR prefix:|"); slog(ERROR|UNDECOR,"true"); printf("|\n");
+
+	rational_logger_mode = VERBOSE;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("39. Must print no time/file/line/func:|"); slog(VERBOSE|UNDECOR,"true"); printf("|\n");
+
+	rational_logger_mode = TESTING;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("40. Must print no TESTING prefix:|"); slog(TESTING|UNDECOR,"true"); printf("|\n");
+
+	rational_logger_mode = REGULAR;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("41. Must not print (VERBOSE not enabled):|"); slog(VERBOSE|UNDECOR,"but printed!"); printf("|\n");
 }
 /**
  * All available combinations of slog options
@@ -105,11 +130,7 @@ Return test0009(void)
 	printf("captured_stdout:%s",getcstring(captured_stdout));
 	#endif
 
-	if(captured_stderr->length > 0)
-	{
-		echo(STDERR,"ERROR: Stderr buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
-		status = FAILURE;
-	}
+	ASSERT(captured_stderr->length == 0);
 
 	ASSERT(SUCCESS == get_file_content("templates/0009.txt",pattern));
 

@@ -15,9 +15,9 @@
  *         - FAILURE: Error in comparison or invalid parameters
  *         - SIZE_CHANGED
  *         - MODIFICATION_TIME_CHANGED
- *         - CREATION_TIME_CHANGED
+ *         - STATUS_CHANGED_TIME
  */
-int compare_file_metadata_equivalence(
+Changed compare_file_metadata_equivalence(
 	const CmpctStat *source,
 	const CmpctStat *destination)
 {
@@ -27,30 +27,27 @@ int compare_file_metadata_equivalence(
 		return(COMPARE_FAILED);
 	}
 
-	int result = IDENTICAL;
+	Changed changes = IDENTICAL;
 
 	/* Size of file, in bytes.  */
 	if(source->st_size != destination->st_size)
 	{
-		result |= SIZE_CHANGED;
-
+		changes |= SIZE_CHANGED;
 	}
 
 	/* Modified timestamp */
 	if(!(source->mtim_tv_sec == destination->mtim_tv_sec &&
 	        source->mtim_tv_nsec == destination->mtim_tv_nsec))
 	{
-		result |= MODIFICATION_TIME_CHANGED;
-
+		changes |= MODIFICATION_TIME_CHANGED;
 	}
 
 	/* Time of last status change  */
 	if(!(source->ctim_tv_sec == destination->ctim_tv_sec &&
 	        source->ctim_tv_nsec == destination->ctim_tv_nsec))
 	{
-		result |= CREATION_TIME_CHANGED;
-
+		changes |= STATUS_CHANGED_TIME;
 	}
 
-	return(result);
+	return(changes);
 }

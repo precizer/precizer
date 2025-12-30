@@ -22,17 +22,17 @@ static Return test0011_1_readme(void)
 
 	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--progress --database=database2.db tests/examples/diffs/diff2";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	create(char,pattern);
@@ -46,7 +46,7 @@ static Return test0011_1_readme(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",COMPLETED,false,false));
+		"rm database1.db database2.db",COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
 	del(chunk);
@@ -66,7 +66,7 @@ static Return test0011_1_readme(void)
  * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
- * cp -par tests/examples/ tests/examples_backup
+ * cp -a tests/examples/ tests/examples_backup
  * # Modify a file
  * echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
  * # Add a new file
@@ -85,7 +85,7 @@ static Return test0011_2_readme(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -par tests/examples/ tests/examples_backup;",COMPLETED,false,false));
+		"cp -a tests/examples/ tests/examples_backup;",COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
 	const char *command = NULL;
@@ -99,7 +99,7 @@ static Return test0011_2_readme(void)
 
 	const char *filename = "templates/0011_002_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -114,7 +114,7 @@ static Return test0011_2_readme(void)
 
 	filename = "templates/0011_002_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,WARNING,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,WARNING,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -128,7 +128,7 @@ static Return test0011_2_readme(void)
 
 	arguments = "--update --progress --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	command = "cd ${TMPDIR};"
@@ -136,9 +136,11 @@ static Return test0011_2_readme(void)
 	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
 	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,false,false));
+	arguments = "--watch-timestamps --update --progress --database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	filename = "templates/0011_002_3.txt";
@@ -174,7 +176,7 @@ static Return test0011_3_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
 
 	// Verify that silent mode produced no stdout after command execution
 	if(result->length > 0)
@@ -192,7 +194,7 @@ static Return test0011_3_readme(void)
 
 	const char *filename = "templates/0011_003.txt";
 
-	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -221,7 +223,7 @@ static Return test0011_4_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == runit("--verbose --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("--verbose --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -232,7 +234,7 @@ static Return test0011_4_readme(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,false,false));
+		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -258,11 +260,7 @@ static Return test0011_5_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -276,7 +274,7 @@ static Return test0011_5_readme(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -302,11 +300,7 @@ static Return test0011_6_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -343,15 +337,11 @@ static Return test0011_7_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -371,7 +361,7 @@ static Return test0011_8_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("tests/examples/diffs",NULL,COMPLETED,false,false));
+	ASSERT(SUCCESS == runit("tests/examples/diffs",NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -389,15 +379,11 @@ static Return test0011_8_readme(void)
 
 	const char *replacement = getenv("DBNAME");  // Database name
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable DBNAME is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,false,false));
+	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

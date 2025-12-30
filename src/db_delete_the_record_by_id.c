@@ -87,14 +87,11 @@ Return db_delete_the_record_by_id(
 				slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
 			}
 
-			if(!(rational_logger_mode & SILENT))
+			if(*clean_ignored == true)
 			{
-				if(*clean_ignored == true)
-				{
-					printf("%s %s\n",relative_path,"clean ignored");
-				} else {
-					printf("%s\n",relative_path);
-				}
+				slog(EVERY|UNDECOR,"clean ignored %s\n",relative_path);
+			} else {
+				slog(EVERY|UNDECOR,"%s\n",relative_path);
 			}
 
 		} else {

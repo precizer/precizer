@@ -25,11 +25,7 @@ Return test0010(void)
 
 	const char *replacement = getenv("REPLACEMENT");  // Get variable value
 
-	if(replacement == NULL)
-	{
-		echo(STDERR,"ERROR: The environment variable REPLACEMENT is not set\n");
-		return(FAILURE);
-	}
+	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_file_template(command,filename,template,replacement,0));
 

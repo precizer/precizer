@@ -187,18 +187,21 @@ Return db_init(void)
 
 	if(SUCCESS == status)
 	{
-		const char *db_runtime_paths = "ATTACH DATABASE ':memory:' AS " DB_RUNTIME_PATHS_ID ";"
-		        "CREATE TABLE if not exists runtime_paths_id.the_path_id_does_not_exists"
-		        "(path_id INTEGER UNIQUE NOT NULL);";
-
-		rc = sqlite3_exec(config->db,db_runtime_paths,NULL,NULL,NULL);
-
-		if(rc == SQLITE_OK)
+		if(config->compare != true)
 		{
-			slog(TRACE,"The in-memory %s database successfully attached to the primary database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
-		} else {
-			log_sqlite_error(config->db,rc,NULL,"Can't execute runtime paths attach");
-			status = FAILURE;
+			const char *db_runtime_paths = "ATTACH DATABASE ':memory:' AS " DB_RUNTIME_PATHS_ID ";"
+			        "CREATE TABLE if not exists runtime_paths_id.the_path_id_does_not_exists"
+			        "(path_id INTEGER UNIQUE NOT NULL);";
+
+			rc = sqlite3_exec(config->db,db_runtime_paths,NULL,NULL,NULL);
+
+			if(rc == SQLITE_OK)
+			{
+				slog(TRACE,"The in-memory %s database successfully attached to the primary database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
+			} else {
+				log_sqlite_error(config->db,rc,NULL,"Can't execute runtime paths attach");
+				status = FAILURE;
+			}
 		}
 	}
 

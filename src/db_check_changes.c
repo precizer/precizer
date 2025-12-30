@@ -24,13 +24,20 @@ Return db_check_changes(void)
 	stat_copy(&config->db_file_stat,&before);
 	stat_copy(&db_current_stat,&after);
 
-	if(IDENTICAL != compare_file_metadata_equivalence(&before,&after))
+	Changed changes = compare_file_metadata_equivalence(&before,&after);
+
+	if(IDENTICAL != changes)
 	{
 		if(config->db_primary_file_modified == true)
 		{
 			slog(EVERY,BOLD "The database file %s has been modified since the program was launched" RESET "\n",config->db_file_name);
 		} else {
 			slog(ERROR,"Internal error: The database file %s has changed, but according to the global variable tracking modification status, this should not have happened!\n",config->db_file_name);
+
+			if(!(rational_logger_mode & SILENT))
+			{
+				show_difference(changes,&before,&after);
+			}
 			status = WARNING;
 		}
 	} else {

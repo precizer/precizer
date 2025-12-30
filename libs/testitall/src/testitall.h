@@ -6,9 +6,19 @@
 #define TESTITALL
 #endif
 
-// Required for strdup(), clock_gettime().
-// Must be placed at the beginning of the file.
 #define _GNU_SOURCE
+#ifdef EVIL_EMPIRE_OS
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE 1
+#endif
+/*
+ * Evil Empire OS uses `st_*timespec` fields instead of `st_*tim`.
+ * Map the member names so we can keep the Linux-oriented copy code.
+ */
+#define st_mtim st_mtimespec
+#define st_ctim st_ctimespec
+#define st_atim st_atimespec
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +27,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 #define PCRE2_STATIC
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
@@ -28,6 +39,7 @@
 
 // Functions for string manipulation.
 #include <string.h>
+#include <strings.h>
 
 // librational library.
 #include "rational.h"
@@ -49,7 +61,7 @@
  *
  * @example
  * // Example usage:
- * HEADER("Preparations\n");
+ * HEADER("Preparations");
  */
 #define HEADER(msg) \
 	if(SUCCESS == status) \
@@ -94,8 +106,7 @@ extern memory *EXTEND;
 Return external_call(
 	const char *,
 	const int,
-	bool,
-	bool);
+	unsigned int);
 
 void echo(
 	memory *,
@@ -106,8 +117,7 @@ Return execute_command(
 	const char *,
 	memory *,
 	const int,
-	bool,
-	bool);
+	unsigned int);
 
 Return execute_and_set_variable(
 	const char *,
@@ -117,6 +127,14 @@ Return execute_and_set_variable(
 Return set_environment_variable(
 	const char *,
 	const char *);
+
+Return get_origin_dir(
+	char *,
+	size_t);
+
+Return create_tmpdir(
+	char *,
+	size_t);
 
 Return function_capture(
 	void  (*func)(void),
@@ -192,6 +210,13 @@ Return extract_current_executable_directory_name(
 		status = testitall(func, #func,desc); \
 	}
 
+#define SUTE(func,desc) \
+	if(SUCCESS == status) \
+	{ \
+		show_subheader = true; \
+		status = testitall(func, #func,desc); \
+	}
+
 #define EXEC(func,desc) \
 	status = testitall(func, #func,desc);
 
@@ -220,7 +245,7 @@ Return extract_current_executable_directory_name(
 		return(COMPLETED); \
 	} else { \
 		printf(WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
-		return(status); \
+		return((int)status); \
 	}
 
 // Initializes a test. Defines the return value as SUCCESS or FAILURE.
@@ -250,13 +275,24 @@ enum run_mode
 	EXTERNAL_CALL = 1
 };
 
+enum buffer_policy_t
+{
+	STDOUT_ENABLE         = 1U << 0,
+	STDOUT_SUPPRESS       = 1U << 1,
+	STDERR_ENABLE         = 1U << 2,
+	STDERR_SUPPRESS       = 1U << 3,
+	ALLOW_BOTH    = STDOUT_ENABLE|STDERR_ENABLE,
+	SUPPRESS_BOTH_BUFFERS = STDOUT_SUPPRESS|STDERR_SUPPRESS
+};
+
 extern enum run_mode run_external;
 
 Return runit(
 	const char *,
 	memory *,
 	const int,
-	bool,
-	bool);
+	unsigned int);
 
 Return trim_trailing_eol(memory *);
+
+extern bool show_subheader;

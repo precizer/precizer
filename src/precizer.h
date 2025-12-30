@@ -8,23 +8,11 @@
 #ifndef _PRECIZER_H
 #define _PRECIZER_H
 
-/*
- *
- *
- * Defining control macros for system libraries
- *
- *
- */
-
-// Need for strdup(), clock_gettime()
-// Have to be at the beginning of the file
-#define _GNU_SOURCE
-
-// Need for pathconf()
-#define _POSIX_SOURCE 1
-
-// 64bit File Systems
-#define __USE_FILE_OFFSET64 1
+/// Included libraries from "libs" subdir
+#include "rational.h"
+#include "sha512.h"
+#include "mem.h"
+#include "sqlite3.h"
 
 /*
  *
@@ -67,18 +55,21 @@
 /* Parse arguments with argp library */
 #include <argp.h>
 
-/// Included libraries from "libs" subdir
-#include "rational.h"
-#include "sha512.h"
-#include "mem.h"
-#include "sqlite3.h"
-
 #define SQL_DRY_RUN_MODE ((int)-1)
 
 #ifdef TESTITALL
     #define STATIC
 #else
     #define STATIC static
+#endif
+
+/*
+ * Evil Empire OS uses `st_*timespec` fields instead of `st_*tim`.
+ * Map the member names so we can keep the Linux-oriented copy code.
+ */
+#ifdef EVIL_EMPIRE_OS
+#define st_mtim st_mtimespec
+#define st_ctim st_ctimespec
 #endif
 
 // PCRE2 return codes
@@ -108,6 +99,15 @@ typedef enum
 
 } Include;
 
+// Return codes for Lock Checksum function
+typedef enum
+{
+	DO_NOT_LOCK_CHECKSUM,     // The actual value is 0
+	LOCK_CHECKSUM,            // The actual value is 1
+	FAIL_REGEXP_LOCK_CHECKSUM // The actual value is 2
+
+} LockChecksum;
+
 /*
  * Modification bits
  *
@@ -117,7 +117,7 @@ typedef enum
 	IDENTICAL                 = 0x00, // 00000
 	NOT_EQUAL                 = 0x01, // 00001
 	SIZE_CHANGED              = 0x02, // 00010
-	CREATION_TIME_CHANGED     = 0x04, // 00100
+	STATUS_CHANGED_TIME       = 0x04, // 00100
 	MODIFICATION_TIME_CHANGED = 0x08, // 01000
 	COMPARE_FAILED            = 0x10  // 10000
 
@@ -161,6 +161,16 @@ typedef enum
  * Declaration of structures
  *
  */
+
+/**
+ * @brief Named change-flag descriptor for human-readable output.
+ *
+ * Maps a change bitmask value from @ref Changed to its printable name.
+ */
+typedef struct Flags {
+	Changed flag_value;
+	const char *flag_name;
+} Flags;
 
 /**
  * @brief Compact file metadata structure
@@ -349,6 +359,10 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **include;
 
+	/// Relative paths whose checksums must never be recalculated
+	/// after the initial write. PCRE2 regular expressions.
+	char **lock_checksum;
+
 	/// Dry Run Mode Specification
 	/// When operating in Dry Run mode, the system performs validation
 	/// and simulates execution without making any actual changes
@@ -403,7 +417,7 @@ Return file_list(const bool);
 
 Return sha512sum(
 	const char *,
-	const short unsigned int *,
+	const size_t,
 	memory *,
 	unsigned char *,
 	sqlite3_int64 *,
@@ -422,14 +436,18 @@ const char *extract_relative_path(
 	const char *,
 	const char *) __attribute__ ((pure));
 
+LockChecksum match_checksum_lock_pattern(
+	const char *,
+	bool *);
+
 Return path_absolute_from_relative(
 	char **,
 	const char *,
-	const short unsigned int *);
+	const size_t);
 
 Return file_check_access(
 	const char *,
-	const short unsigned int *,
+	const size_t,
 	bool *);
 
 void notify_quit_handler(int);
@@ -551,7 +569,7 @@ Return stat_copy(
 	const struct stat *,
 	CmpctStat *);
 
-int compare_file_metadata_equivalence(
+Changed compare_file_metadata_equivalence(
 	const CmpctStat *,
 	const CmpctStat *) __attribute__ ((pure));
 
@@ -561,11 +579,13 @@ Return parse_arguments(
 
 void show_relative_path(
 	const char *,
-	const int *,
+	const Changed *,
 	const DBrow *,
 	const CmpctStat *,
 	bool *,
-	bool *,
+	const bool *,
+	const bool *,
+	const bool *,
 	const bool *,
 	const bool *,
 	bool *,
@@ -573,6 +593,16 @@ void show_relative_path(
 	const bool *,
 	const bool *,
 	const bool *);
+
+void show_metadata(
+	Changed,
+	const CmpctStat *,
+	const CmpctStat *);
+
+Return show_difference(
+	Changed,
+	const CmpctStat *,
+	const CmpctStat *);
 
 void show_checksum_gracefully_interrupted(
 	const char *,
@@ -588,11 +618,11 @@ FileAvailability file_availability(
 
 Return detect_paths(void);
 
-Ignore ignore(
+Ignore match_ignore_pattern(
 	const char *,
 	bool *);
 
-Include include(
+Include match_include_pattern(
 	const char *,
 	bool *);
 

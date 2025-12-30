@@ -7,7 +7,7 @@
  * expressions passed as arguments with --include=
  *
  */
-Include include(
+Include match_include_pattern(
 	const char *relative_path,
 	bool       *include_showed_once)
 {

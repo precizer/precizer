@@ -29,11 +29,10 @@ static void test_main_wrapper(void)
 }
 
 Return runit(
-	const char *arguments,
-	memory     *result,
-	const int  expected_return_code,
-	bool       suppress_stderr,
-	bool       suppress_stdout)
+	const char   *arguments,
+	memory       *result,
+	const int    expected_return_code,
+	unsigned int buffer_policy)
 {
 	// Base status for the whole sequence; subsequent steps update it on errors.
 	/** @var Return status
@@ -42,10 +41,12 @@ Return runit(
 	 */
 	Return status = SUCCESS;
 
-	// Arguments string to parse and forward into test_main.
+	// Arguments string to parse and forward into test_main
 	const char *safe_arguments = arguments;
+	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
+	const bool suppress_stderr = (buffer_policy & STDERR_SUPPRESS) != 0U;
 
-	if(NULL == safe_arguments)
+	if(NULL == safe_arguments || safe_arguments[0] == '\0')
 	{
 		safe_arguments = "";
 	}
@@ -66,7 +67,7 @@ Return runit(
 			status = FAILURE;
 
 		} else {
-			run(execute_command(command,result,expected_return_code,suppress_stderr,suppress_stdout));
+			run(execute_command(command,result,expected_return_code,buffer_policy));
 		}
 
 		provide(status);
@@ -177,7 +178,6 @@ Return runit(
 
 		run(function_capture(test_main_wrapper,STDOUT,STDERR));
 
-#if 1
 		if(SUCCESS == status)
 		{
 			int exit_code = test_main_context.result;
@@ -236,10 +236,10 @@ Return runit(
 					const char *stdout_view = getcstring(STDOUT);
 					int rt = asprintf(&str,
 						YELLOW "ERROR: Unexpected exit code!" RESET "\n"
-						YELLOW "Internal call:\n" YELLOW ">>" RESET "precizer %s" YELLOW "<<" RESET "\n"
-						YELLOW "Exited with code " RESET "%d " YELLOW "but expected " RESET "%d\n"
-						YELLOW "Stderr output:\n>>" RESET "%s" YELLOW "<<" RESET "\n"
-						YELLOW "Stdout output:\n>>" RESET "%s" YELLOW "<<" RESET "\n",
+						YELLOW "Internal call:" RESET "\n" YELLOW ">>" RESET "precizer %s" YELLOW "<<" RESET "\n"
+						YELLOW "Exited with code " RESET "%d" YELLOW " but expected " RESET "%d\n"
+						YELLOW "Stderr output:" RESET "\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
+						YELLOW "Stdout output:" RESET "\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
 						safe_arguments,
 						exit_code,
 						expected_return_code,
@@ -267,7 +267,6 @@ Return runit(
 				}
 			}
 		}
-#endif
 	}
 
 	// Restore original working directory if changed.

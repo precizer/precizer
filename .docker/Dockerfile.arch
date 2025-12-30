@@ -1,0 +1,19 @@
+ARG BUILD=production
+FROM archlinux:latest AS arch
+
+ARG BUILD
+ENV BUILD=${BUILD}
+
+RUN set -eux; \
+     pacman -Syu --noconfirm --needed base-devel gcc-libs sqlite llvm pcre2 upx inetutils; \
+     pacman -Scc --noconfirm
+
+WORKDIR /precizer
+
+COPY . /precizer
+RUN useradd -m builder && chown -R builder:builder /precizer
+
+USER builder
+RUN make ${BUILD}
+
+CMD ["sh", "-c", "make tests"]

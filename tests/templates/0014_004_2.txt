@@ -33,7 +33,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started
-TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B\[0m
+TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the database1.db database:(?:\x1B\[[0-9;]*m)*
 длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a.txt
 длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file.txt
 длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file.txt
@@ -60,11 +60,11 @@ TESTING:\x1B\[1mThese files will be added against the database1.db database:\x1B
 длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
-TESTING:The connection to the primary database has been closed
-TESTING:\x1B\[1mThe brand-new primary database database1.db was created and modified since the program started \(files were added, removed, or updated\)\x1B\[0m
+TESTING:The database connection has been closed
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed its execution without any issues
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialized
@@ -110,11 +110,11 @@ TESTING:The database database1.db has already been created previously
 TESTING:The paths passed as arguments differ from those saved in the database. File paths and checksum information may be lost!
 TESTING:Paths saved in the database:
 /.*/tests/examples/long
-TESTING:The \x1B\[1m--force\x1B\[0m option has been used, so the following paths will be written to the database1.db:
+TESTING:The (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option has been used, so the following paths will be written to the database1.db:
 ^/.*/examples/diffs/diff2
-TESTING:The \x1B\[1m--update\x1B\[0m option has been used, so the information about files will be updated against the database database1.db
+TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
-TESTING:\x1B\[1mThese files have been added or changed and those changes will be reflected against the DB database1.db:\x1B\[0m
+TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 1/AAA/BCB/CCC/a.txt add
 1/AAA/ZAW/A/b/c/a_file.txt add
 1/AAA/ZAW/D/e/f/b_file.txt add
@@ -130,7 +130,7 @@ path2/AAA/ZAW/A/b/c/a_file.txt add
 TESTING:File traversal complete
 TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Searching for files that no longer exist on the file system…
-TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted against the DB database1.db:\x1B\[0m
+TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer exist or ignored and will be deleted against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a.txt
 длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file.txt
 длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file.txt
@@ -156,11 +156,10 @@ TESTING:\x1B\[1mThese files are no longer exist or ignored and will be deleted a
 длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file.txt
 длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:Missing file search completed
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
-TESTING:The connection to the primary database has been closed
-TESTING:\x1B\[1mThe database file database1.db has been modified since the program was launched\x1B\[0m
+TESTING:The database connection has been closed
+TESTING:(?:\x1B\[[0-9;]*m)*The database file database1.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed its execution without any issues
-TESTING:Exit status » SUCCESS
-\z
+TESTING:Exit status » SUCCESS\Z

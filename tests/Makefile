@@ -11,9 +11,16 @@ CFLAGS += -fbuiltin
 # of the tested application
 CFLAGS += -DTESTITALL
 
-STRIP = -s
-STATIC = -static
+UNAME_S := $(shell uname -s)
+
+# macOS-specific code
+ifeq ($(UNAME_S),Darwin)
+CFLAGS += -DEVIL_EMPIRE_OS
+endif
+
 SRC = src
+STATIC = -static -static-libgcc -Wl,--gc-sections
+
 PRZRSRC = ../src
 BUILDS = ../.builds
 BUILDEXE = $(BUILDS)/$(EXE)
@@ -21,19 +28,33 @@ BUILDEXEDIR = $(dir $(BUILDEXE))
 LIBS = testitall mem sha512 rational sqlite3 xdiff
 
 # Extra libs for linking
-LDFLAGS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+
+SYS := $(shell gcc -dumpmachine)
+ifneq (, $(findstring alpine, $(SYS)))
+# Alpine Linux uses external libraries
+LDLIBS += -largp -lfts
+endif
 
 # For old gcc versions
 GCC_VERSION := $(shell gcc -dumpversion)
 # Checking if the GCC version is less than 10
 ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
-LDFLAGS += -pthread
+LDLIBS += -pthread
 endif
 
 # Additional include paths for external libraries
 INCPATH += $(foreach d,$(LIBS),-I../libs/$d/src/)
 ## Source files of precizer project
 INCPATH += -I$(PRZRSRC)
+
+ifeq ($(UNAME_S),Darwin)
+INCPATH += $(shell pkg-config --cflags libpcre2-8)
+# argp lib
+INCPATH += -I/opt/homebrew/include
+LDPATH += -L/opt/homebrew/lib
+LDLIBS += -largp
+endif
 
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
@@ -69,7 +90,6 @@ HDRS = $(wildcard $(SRC)/*.h)
 PRZRHDRS = $(wildcard $(PRZRSRC)/*.h)
 ALLHDRS = $(HDRS) $(PRZRHDRS)
 OBJS = $(SRCS:.c=.o)
-
 PRZRSRCS = $(wildcard $(PRZRSRC)/*.c)
 PRZROBJS = $(PRZRSRCS:.c=.o)
 
@@ -82,6 +102,14 @@ COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJDIR = $(COV_DIR)/obj
 COV_REPORTDIR = $(COV_OBJDIR)/../report/
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
+COV_LIBDIR = $(BUILDEXEDIR)$(COV)/libs
+COV_LIBSOBJ = $(BUILDEXEDIR)$(COV)/obj
+COV_LIBS = -L$(COV_LIBDIR) $(LDPATH)
+COV_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(COV_LIBDIR),-rpath,\$$ORIGIN/../../$(COV_LIBDIR)
+ifeq ($(UNAME_S),Darwin)
+COV_DYNLIB = -Wl,-rpath,@executable_path/$(COV_LIBDIR),-rpath,@executable_path/../../$(COV_LIBDIR)
+endif
+
 COV_PRZROBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(PRZROBJS)))
 COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage
 COV_LDFLAGS += -lgcov --coverage
@@ -89,18 +117,24 @@ COV_LDFLAGS += -lgcov --coverage
 #
 # Sanitize build settings
 #
-STNZ = sanitize
-STNZ_DIR = $(BUILDEXE)/$(STNZ)
-STNZ_EXE = $(STNZ_DIR)/$(EXE)
-STNZ_OBJDIR = $(STNZ_DIR)/obj
-STNZ_OBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(OBJS)))
-STNZ_PRZROBJS = $(addprefix $(STNZ_OBJDIR)/, $(notdir $(PRZROBJS)))
-STNZ_LIBDIR = $(BUILDEXEDIR)$(STNZ)/libs
-STNZ_LIBS = -L$(STNZ_LIBDIR)
-STNZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(STNZ_LIBDIR),-rpath,\$$ORIGIN/../../$(STNZ_LIBDIR)
-SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
+SNTZ = sanitize
+SNTZ_DIR = $(BUILDEXE)/$(SNTZ)
+SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
+SNTZ_OBJDIR = $(SNTZ_DIR)/obj
+SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
+SNTZ_PRZROBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(PRZROBJS)))
+SNTZ_LIBDIR = $(BUILDEXEDIR)$(SNTZ)/libs
+SNTZ_LIBS = -L$(SNTZ_LIBDIR) $(LDPATH)
+SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/../../$(SNTZ_LIBDIR)
+ifeq ($(UNAME_S),Darwin)
+SNTZ_DYNLIB = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/../../$(SNTZ_LIBDIR)
+endif
+SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
+ifeq ($(UNAME_S),Darwin)
+SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+endif
 
 #
 # Debug build settings
@@ -112,11 +146,16 @@ DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_PRZROBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(PRZROBJS)))
 DBG_LIBDIR = $(BUILDEXEDIR)$(DBG)/libs
-DBG_LIBS = -L$(DBG_LIBDIR)
+DBG_LIBS = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
+ifeq ($(UNAME_S),Darwin)
+DBG_DYNLIB = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
+endif
+
 DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
+.PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge gcc-analyzer cppcheck print-%
 
 # Default build
 all: sanitize
@@ -130,10 +169,13 @@ run: sanitize
 #
 # Coverage rules
 #
-coverage: $(COV_EXE)
+precizer-coverage:
+	@$(MAKE) -s -C ../ precizer-coverage
 
-$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-debug
-	@$(CC) $(DBG_LIBS) $(COV_LDFLAGS) $(DBG_DYNLIB) -o $(COV_EXE) $^ $(LDFLAGS)
+coverage: coverage-html
+
+$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage
+	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) -o $(COV_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
@@ -147,14 +189,14 @@ $(COV_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 $(COV_OBJDIR):
 	@mkdir -p "$(COV_OBJDIR)"
 
-coverage-report: coverage
+coverage-report: $(COV_EXE)
 	@echo "Generating coverage report..."
 	./$(COV_EXE)
 	@echo "Coverage run finished. Inspect .gcda/.gcno outputs for details"
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --directory $(COV_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
+	@lcov --capture --directory $(COV_OBJDIR) --directory $(COV_LIBSOBJ) --output-file $(COV_OBJDIR)/coverage.info
 	@genhtml $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
@@ -164,23 +206,23 @@ coverage-html: coverage-report
 precizer-sanitize:
 	@$(MAKE) -s -C ../ sanitize
 
-sanitize: hugetestfile $(STNZ_EXE)
-	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(STNZ_EXE)
+sanitize: hugetestfile $(SNTZ_EXE)
+	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
-$(STNZ_EXE): $(STNZ_OBJS) $(STNZ_PRZROBJS) | precizer-sanitize
-	@$(CC) $(STNZ_LIBS) $(SNTZ_LDFLAGS) $(STNZ_DYNLIB) -o $(STNZ_EXE) $^ $(LDFLAGS)
+$(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize
+	@$(CC) $(SNTZ_LIBS) $(SNTZ_LDFLAGS) $(SNTZ_DYNLIB) -o $(SNTZ_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
-$(STNZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STNZ_OBJDIR)
+$(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled"
 
-$(STNZ_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(STNZ_OBJDIR)
+$(SNTZ_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled"
 
-$(STNZ_OBJDIR):
-	@mkdir -p "$(STNZ_OBJDIR)"
+$(SNTZ_OBJDIR):
+	@mkdir -p "$(SNTZ_OBJDIR)"
 
 #
 # Debug rules
@@ -192,7 +234,7 @@ debug: hugetestfile $(DBG_EXE)
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug
-	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) -o $(DBG_EXE) $^ $(LDFLAGS)
+	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) -o $(DBG_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
@@ -230,17 +272,17 @@ format:
 
 clean:
 	@rm -f $(HUGETESTFILE)
-	@rm -f $(STNZ_EXE) $(DBG_EXE) $(COV_EXE)
+	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(COV_EXE)
 	@rm -f $(DBG_OBJS) $(DBG_PRZROBJS)
-	@rm -f $(STNZ_OBJS) $(STNZ_PRZROBJS)
+	@rm -f $(SNTZ_OBJS) $(SNTZ_PRZROBJS)
 	@rm -f $(COV_OBJS) $(COV_PRZROBJS)
 
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 
-	@test -d $(STNZ_OBJDIR) && rm -d $(STNZ_OBJDIR) 2>/dev/null || true
-	@test -d $(STNZ_DIR) && rm -d $(STNZ_DIR) 2>/dev/null || true
+	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
+	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
 
 	@rm -f $(COV_OBJDIR)/*.gcno $(COV_OBJDIR)/*.gcda $(COV_OBJDIR)/*.gcov $(COV_OBJDIR)/coverage.info
 	@rm -rf $(COV_REPORTDIR)
@@ -250,6 +292,9 @@ clean:
 	@test -d $(BUILDEXE) && rm -d $(BUILDEXE) 2>/dev/null || true
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
 	@echo $(EXE) cleared
+
+purge:
+	@$(MAKE) -s -C ../ purge
 
 # Optional preprocessor files
 %.i:%.c
