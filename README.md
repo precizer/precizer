@@ -11,6 +11,8 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 <a href=".code_coverage_report/"><img src=".html/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /></br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
 
+[![Precizer](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
+
 ## TL;DR
 
 ### Overview
