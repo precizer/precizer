@@ -1,5 +1,7 @@
 #include "testitall.h"
 
+bool show_subheader = false;
+
 /**
  * @brief Main testing framework function that executes and evaluates test cases
  *
@@ -30,6 +32,12 @@ Return testitall(
 	/* Clear output capture buffers to ensure clean state */
 	call(del(STDOUT));
 	call(del(STDERR));
+
+	if(show_subheader == true)
+	{
+		printf(BLUE " » %s" RESET "\n",test_description);
+		show_subheader = false;
+	}
 
 	/* Execute the test function and capture its return status */
 	status = func();
@@ -88,7 +96,7 @@ Return testitall(
 
 	if((STDERR->length > 0) && (stderr_buffer[0] != '\0'))
 	{
-		fprintf(stdout,RED "STDERR" WHITE " is not empty when it should be:\n" RESET);
+		fprintf(stdout,RED "STDERR" RESET " " WHITE "is not empty when it should be:\n" RESET);
 		fprintf(stdout,"%s",stderr_buffer);
 	}
 
@@ -97,7 +105,7 @@ Return testitall(
 
 	if((STDOUT->length > 0) && (stdout_buffer[0] != '\0'))
 	{
-		fprintf(stdout,BLUE "STDOUT" WHITE " is not empty when it should be:\n" RESET);
+		fprintf(stdout,BLUE "STDOUT" RESET " " WHITE "is not empty when it should be:\n" RESET);
 		fprintf(stdout,"%s",stdout_buffer);
 	}
 

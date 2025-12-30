@@ -49,7 +49,7 @@ Return match_app_output(
 	ASSERT(SUCCESS == replace_placeholder(pattern,template,replacement));
 
 	// Execute the application and capture output
-	ASSERT(SUCCESS == runit(arguments,result,expected_return_code,false,false));
+	ASSERT(SUCCESS == runit(arguments,result,expected_return_code,ALLOW_BOTH));
 
 	// Compare application output against modified template
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));

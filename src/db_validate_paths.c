@@ -248,7 +248,7 @@ Return db_validate_paths(void)
 						}
 					}
 				} else {
-					slog(EVERY,"Use the" BOLD " --force" RESET " option only when the PATHS stored in the database need"
+					slog(EVERY,"Use the " BOLD "--force" RESET " option only when the PATHS stored in the database need"
 						" to be updated. Warning: If this option is used incorrectly, file and checksum information"
 						" in the database may be lost or completely replaced with different values.\n");
 					status = WARNING;

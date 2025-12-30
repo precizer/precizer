@@ -45,6 +45,7 @@ char *rational_reconvert(int mode)
 		{TESTING,"TESTING"},
 		{ERROR,"ERROR"},
 		{SILENT,"SILENT"},
+		{UNDECOR,"UNDECOR"},
 		{0,NULL}   /* Terminator element */
 	};
 
@@ -136,7 +137,7 @@ static Return logger_show_time(
  * and name of the function that generated the message itself
  *
  */
-__attribute__((format(printf,5,6)))   //Without this we shall get warning
+__attribute__((format(printf,5,6))) // Without this we will get warning
 void rational_logger(
 	const char        level,
 	const char *const filename,
@@ -151,13 +152,13 @@ void rational_logger(
 		return;
 	}
 
-	if(level & TESTING && rational_logger_mode & TESTING)
+	if(!(level & UNDECOR) && (level & TESTING) && (rational_logger_mode & TESTING))
 	{
 		// Print out the word "TESTING:"
 		printf("TESTING:");
 	}
 
-	if(level & (VERBOSE|ERROR) && rational_logger_mode & VERBOSE)
+	if(!(level & UNDECOR) && (level & (VERBOSE|ERROR)) && (rational_logger_mode & VERBOSE))
 	{
 		char time_string[sizeof "2011-10-18 07:07:09:000"];
 		(void)logger_show_time(time_string,sizeof(time_string));
@@ -175,12 +176,12 @@ void rational_logger(
 		printf("%s:",funcname);
 	}
 
-	if(level & ERROR && rational_logger_mode & (REGULAR | ERROR))
+	if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (REGULAR | ERROR)))
 	{
 		// Print out error prefix
 		printf("ERROR: ");
 
-	} else if(level & ERROR && rational_logger_mode & (TESTING | VERBOSE)){
+	} else if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (TESTING | VERBOSE))){
 		// Print out the word "ERROR:"
 		printf("ERROR:");
 	}
@@ -216,7 +217,7 @@ void rational_logger(
 	}
 }
 
-#if 0
+#ifdef TEST
 /**
  * @file test_slog.c
  * @brief Complete test suite for log functionality
@@ -233,6 +234,9 @@ int main(void)
 	printf("%s\n",rational_convert(VERBOSE|TESTING));
 	printf("%s\n",rational_convert(REGULAR|VERBOSE|TESTING));
 	printf("%s\n",rational_convert(ERROR));
+	printf("%s\n",rational_convert(UNDECOR));
+	printf("%s\n",rational_convert(EVERY|UNDECOR));
+	printf("%s\n",rational_convert(ERROR|UNDECOR));
 
 	/* Test REGULAR mode combinations */
 	rational_logger_mode = REGULAR;
@@ -305,6 +309,28 @@ int main(void)
 	printf("34. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
 	printf("35. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
 	printf("36.  Must print:");   slog(ERROR,"true"); printf("\n");
+
+	/*
+	 * Test UNDECOR flag: suppress logger prefixes (TESTING:, time/file/line/func, ERROR:)
+	 * The output between the '|' markers should contain only the message payload.
+	 */
+
+	rational_logger_mode = EVERY|ERROR;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("37. Must print no prefixes:|"); slog(EVERY|UNDECOR,"true"); printf("|\n");
+	printf("38. Must print no ERROR prefix:|"); slog(ERROR|UNDECOR,"true"); printf("|\n");
+
+	rational_logger_mode = VERBOSE;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("39. Must print no time/file/line/func:|"); slog(VERBOSE|UNDECOR,"true"); printf("|\n");
+
+	rational_logger_mode = TESTING;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("40. Must print no TESTING prefix:|"); slog(TESTING|UNDECOR,"true"); printf("|\n");
+
+	rational_logger_mode = REGULAR;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("41. Must not print (VERBOSE not enabled):|"); slog(VERBOSE|UNDECOR,"but printed!"); printf("|\n");
 
 	return 0;
 }

@@ -16,9 +16,9 @@
  * @return SUCCESS if function executed correctly, otherwise an error code.
  */
 Return file_check_access(
-	const char               *path,
-	const short unsigned int *path_size,
-	bool                     *is_readable)
+	const char   *path,
+	const size_t path_size,
+	bool         *is_readable)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.

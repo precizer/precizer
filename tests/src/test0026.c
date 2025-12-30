@@ -29,7 +29,7 @@ Return test0026(void)
 		bool readable = false;
 		short unsigned int len = (short unsigned int)strlen(abs_path);
 
-		Return rc = file_check_access(abs_path,&len,&readable);
+		Return rc = file_check_access(abs_path,len,&readable);
 		ASSERT(rc == SUCCESS);
 		ASSERT(readable == true);
 
@@ -57,7 +57,7 @@ Return test0026(void)
 		bool readable = false;
 		short unsigned int len = (short unsigned int)strlen(relative_name);
 
-		Return rc = file_check_access(relative_name,&len,&readable);
+		Return rc = file_check_access(relative_name,len,&readable);
 
 		free(config->running_dir);
 		config->running_dir = prev_dir;
@@ -78,7 +78,7 @@ Return test0026(void)
 		bool readable = true;
 		short unsigned int len = (short unsigned int)strlen(missing_path);
 
-		Return rc = file_check_access(missing_path,&len,&readable);
+		Return rc = file_check_access(missing_path,len,&readable);
 
 		ASSERT(rc == SUCCESS);
 		ASSERT(readable == false);

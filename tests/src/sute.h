@@ -1,10 +1,9 @@
-#define _GNU_SOURCE
+#include "precizer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdatomic.h>
 #include "testitall.h"
-#include "precizer.h"
 #include "mem.h"
 #include "xdiff.h"
 
@@ -34,6 +33,8 @@ Return test0023(void);
 Return test0024(void);
 Return test0025(void);
 Return test0026(void);
+Return test0027(void);
+Return test0028(void);
 
 Return comprehensive_system_testing(void);
 Return comprehensive_unit_testing(void);

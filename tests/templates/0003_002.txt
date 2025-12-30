@@ -1,0 +1,4 @@
+\ATESTING:Configuration initialized
+TESTING:Returned parse_arguments:321 status: UNKNOWN
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » UNKNOWN\Z

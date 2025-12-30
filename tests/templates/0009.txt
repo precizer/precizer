@@ -8,6 +8,9 @@ REGULAR\|TESTING
 VERBOSE\|TESTING
 REGULAR\|VERBOSE\|TESTING
 ERROR
+UNDECOR
+EVERY\|UNDECOR
+ERROR\|UNDECOR
 Mode: REGULAR
 1.  Must print:true
 2. Won't print:
@@ -53,4 +56,12 @@ Mode: ERROR
 34. Won't print:
 35. Won't print:
 36.  Must print:ERROR: true
-\z
+Mode: REGULAR \| VERBOSE \| TESTING \| ERROR
+37. Must print no prefixes:\|true\|
+38. Must print no ERROR prefix:\|true\|
+Mode: VERBOSE
+39. Must print no time\/file\/line\/func:\|true\|
+Mode: TESTING
+40. Must print no TESTING prefix:\|true\|
+Mode: REGULAR
+41. Must not print \(VERBOSE not enabled\):\|\|\Z

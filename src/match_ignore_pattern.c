@@ -7,7 +7,7 @@
  * expressions passed as arguments with --ignore=
  *
  */
-Ignore ignore(
+Ignore match_ignore_pattern(
 	const char *relative_path,
 	bool       *ignore_showed_once)
 {

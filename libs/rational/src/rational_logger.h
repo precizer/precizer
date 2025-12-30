@@ -22,18 +22,21 @@ extern _Atomic Return global_return_status;
  * VERBOSE — printf() only when verbose mode has been determined.
  * TESTING — for testing purposes
  * ERROR   — error message only. Will be shown when any of the above modes are engaged
+ * UNDECOR — suppress logging prefixes (time/file/line/func and mode labels) for this call
+ *           (abbreviation of "UNDECORATED")
  * SILENT  — disable all output
  *
  */
 typedef enum
 {
-	REGULAR = 0x01,  // 00001
-	VERBOSE = 0x02,  // 00010
-	TESTING = 0x04,  // 00100
-	TRACE   = 0x06,  // 00110 = VERBOSE|TESTING
-	EVERY   = 0x07,  // 00111 = REGULAR|VERBOSE|TESTING
-	ERROR   = 0x08,  // 01000
-	SILENT  = 0x10   // 10000
+	REGULAR = 0x01, // 000001
+	VERBOSE = 0x02, // 000010
+	TESTING = 0x04, // 000100
+	TRACE   = 0x06, // 000110 = VERBOSE|TESTING
+	EVERY   = 0x07, // 000111 = REGULAR|VERBOSE|TESTING
+	ERROR   = 0x08, // 001000
+	SILENT  = 0x10, // 010000
+	UNDECOR = 0x20  // 100000
 
 } LOGMODES;
 

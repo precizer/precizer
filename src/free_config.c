@@ -48,4 +48,7 @@ void free_config(void)
 
 	// Free memory of string array
 	free_str_array((config)->include);
+
+	// Free memory of string array
+	free_str_array((config)->lock_checksum);
 }

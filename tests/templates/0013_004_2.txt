@@ -1,9 +1,8 @@
 \A-TESTING:argument:dry-run=yes
 -TESTING:Dry Run mode is enabled. The primary database must not be modified
 -TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
--TESTING:\\x1B\\\[1mThe database file database1.db has NOT been modified since the program was launched\\x1B\\\[0m
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe database file database1.db has NOT been modified since the program was launched\Q(?:\x1B\[[0-9;]*m)*\E
 \+TESTING:Start vacuuming the primary database…
 \+TESTING:The primary database has been vacuumed
-\+TESTING:The connection to the primary database has been closed
-\+TESTING:\\x1B\\\[1mThe database file database1.db has been modified since the program was launched\\x1B\\\[0m
-\z
+\+TESTING:The database connection has been closed
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe database file database1.db has been modified since the program was launched\Q(?:\x1B\[[0-9;]*m)*\E\Z

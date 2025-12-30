@@ -1,0 +1,25 @@
+ARG BUILD=production
+FROM gentoo/stage3:latest AS gentoo
+
+ARG BUILD
+ENV BUILD=${BUILD}
+
+# deps: gcc, make, llvm, pcre2 (static), upx, useradd
+RUN (emerge-webrsync || emerge --sync); \
+    echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/pcre2; \
+    emerge --ask=n \
+      dev-libs/libpcre2 \
+      llvm-core/llvm \
+      app-arch/upx; \
+    emerge --depclean
+
+WORKDIR /precizer
+
+COPY . /precizer
+RUN useradd -m builder && chown -R builder:builder /precizer
+
+USER builder
+
+RUN make ${BUILD}
+
+CMD ["sh", "-c", "export PATH=\"$(ls -d /usr/lib/llvm/[0-9]*/bin 2>/dev/null):$PATH\"; echo $PATH; make tests"]

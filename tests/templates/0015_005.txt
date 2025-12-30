@@ -10,19 +10,18 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: .*$
+TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
 TESTING:DB name determined
 TESTING:Verify that the path . exists
 TESTING:The path . is exists and it is a directory
-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Successfully opened database DisposableDB
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named DisposableDB is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database DisposableDB
 TESTING:Database initialization process completed
 TESTING:The comparison of %DB_NAME% and 0015_database_v0.db databases is starting…
 TESTING:Verify that the path %DB_NAME% exists
@@ -43,14 +42,13 @@ TESTING:The 0015_database_v0.db database file is version 0
 TESTING:The database 0015_database_v0.db file has an outdated version 0 and requires updating to the version 3
 TESTING:Caution! The update will be performed in transaction mode for database safety
 TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
-ERROR:Program execution cannot continue. Database update required. Use the \x1B\[1m--update\x1B\[0m flag to perform this action
+ERROR:Program execution cannot continue. Database update required. Use the (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* flag to perform this action
 TESTING:Returned db_upgrade:\d+ status: WARNING
 ERROR:Database 0015_database_v0.db upgrade failed
 TESTING:Returned db_check_version:\d+ status: WARNING
 TESTING:Returned db_test:\d+ status: WARNING
 TESTING:Comparison of %DB_NAME% and 0015_database_v0.db databases is complete
 TESTING:Returned db_compare:\d+ status: WARNING
-TESTING:The connection to the primary database has been closed
+TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING
-\z
+ERROR:Exit status » WARNING\Z

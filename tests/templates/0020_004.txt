@@ -1,0 +1,36 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=write_protected_database1.db, database2.db
+TESTING:argument:db_file_paths=write_protected_database1.db, database2.db
+TESTING:argument:db_file_names=write_protected_database1.db, database2.db
+TESTING:argument:compare=yes
+TESTING:Arguments parsed
+TESTING:Comparing databases. Directory path verification is not required
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: DisposableDB
+TESTING:Primary database file path: .*$
+TESTING:DB name determined
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Successfully opened database DisposableDB
+TESTING:The primary database and tables do not require initialization
+TESTING:The primary database named DisposableDB is ready for operations
+TESTING:Database initialization process completed
+TESTING:The comparison of write_protected_database1.db and database2.db databases is starting…
+TESTING:Verify that the path write_protected_database1.db exists
+TESTING:The path write_protected_database1.db is exists and it is a file
+TESTING:Starting database file write_protected_database1.db integrity check…
+ERROR:Can't open database .* unable to open database file
+TESTING:Returned db_test:\d+ status: FAILURE
+TESTING:Comparison of write_protected_database1.db and database2.db databases is complete
+TESTING:Returned db_compare:\d+ status: FAILURE
+TESTING:The database connection has been closed
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » FAILURE\Z

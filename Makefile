@@ -68,14 +68,31 @@ ifneq (, $(findstring alpine, $(SYS)))
 LDLIBS += -largp -lfts
 endif
 
+UNAME_S := $(shell uname -s)
+
+# macOS-specific code
+ifeq ($(UNAME_S),Darwin)
+CFLAGS += -DEVIL_EMPIRE_OS
+endif
+
 # Detect whether we're using GCC (covers names like arm-linux-gnu-gcc)
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
 
-STATIC = -static -static-libgcc -Wl,--gc-sections
 SRC = src
-STRIP = -s
+STRIP = -Wl,-s
+ifeq ($(UNAME_S),Darwin)
+STRIP =
+endif
+
+STATIC = -static -static-libgcc -Wl,--gc-sections
+
+# UPX compression (disabled on macOS)
+UPX ?= upx --best --lzma -qqq
+ifeq ($(UNAME_S),Darwin)
+UPX = true
+endif
 
 # Warning flags for additional checks
 WFLAGS += -Werror # Stop the build on any errors
@@ -125,8 +142,18 @@ LDLIBS += -pthread
 endif
 
 # Additional include headers of external libraries
-INTERNAL_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
+DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
+
+ifeq ($(UNAME_S),Darwin)
+#DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
+#INCPATH += $(shell pkg-config --cflags libpcre2-8)
+# argp lib
+DYNAMIC_INCPATH += -I/opt/homebrew/include
+INCPATH += -I/opt/homebrew/include
+LDPATH += -L/opt/homebrew/lib
+LDLIBS += -largp
+endif
 
 # Default build
 all: production
@@ -144,9 +171,9 @@ HDRS = $(wildcard $(SRC_DIR)/*.h)
 
 # Exclude a file
 OBJS = $(SRCS:.c=.o)
-PREPROC = $(SRCS:.c=.i) # Preproc files http://www.viva64.com/en/t/0076/
+PREPROC = $(SRCS:.c=.i) # Preprocessed files http://www.viva64.com/en/t/0076/
 PREPROC += $(SRCS:.c=.i.h)
-# Asm
+# Assembly
 ASM = $(SRCS:.c=.asm)
 
 #
@@ -155,17 +182,32 @@ ASM = $(SRCS:.c=.asm)
 DBG_DIR = $(BUILDDIR)/debug
 DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_DIR)/obj
-DBG_LD_PATH = -L$(DBG_LIBDIR)
+DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
-DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
-DBG_LDFLAGS = -Wl,--as-needed
-# Activation of the Gprof profiler.
+DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
+ifeq ($(UNAME_S),Darwin)
+DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
+endif
+# Activate the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
 # is supported by visualization tools like kcachegrind.
 #DBG_CFLAGS += -pg
+
+#
+# Coverage build settings
+#
+COV = coverage
+COV_DIR = $(BUILDDIR)/$(COV)
+COV_LIBDIR = $(COV_DIR)/libs
+COV_OBJDIR = $(COV_DIR)/obj
+COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
+COV_EXE = $(COV_DIR)/$(EXE)
+COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG
+COV_LDFLAGS =  -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -173,13 +215,19 @@ DBG_LDFLAGS = -Wl,--as-needed
 SNTZ_DIR = $(BUILDDIR)/sanitize
 SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
-SNTZ_LD_PATH = -L$(SNTZ_LIBDIR)
+SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
-SNTZ_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+ifeq ($(UNAME_S),Darwin)
+SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
+endif
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
-SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan -fno-omit-frame-pointer
+SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
+ifeq ($(UNAME_S),Darwin)
+SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+endif
 
 #
 # Production build settings
@@ -187,21 +235,22 @@ SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 PROD_DIR = $(BUILDDIR)/production
 PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_DIR)/obj
-PROD_LD_PATH = -L$(PROD_LIBDIR)
+PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
-PROD_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
 PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+ifeq ($(UNAME_S),Darwin)
+PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x
+endif
 
 #
 # Dynamic production build settings
 #
 DYNP_DIR = $(BUILDDIR)/dynamic-production
 DYNP_OBJDIR = $(DYNP_DIR)/obj
-DYNP_LD_PATH = -L$(PROD_LIBDIR)
+DYNP_LDPATH = $(LDPATH)
 DYNP_EXE = $(DYNP_DIR)/$(EXE)
-DYNP_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PROD_LIBDIR),-rpath,\$$ORIGIN/libs
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
 DYNP_CFLAGS = $(PROD_CFLAGS)
 DYNP_LDFLAGS = $(PROD_LDFLAGS)
@@ -214,17 +263,21 @@ DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 PRTB_DIR = $(BUILDDIR)/portable
 PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_DIR)/obj
-PRTB_LD_PATH = -L$(PRTB_LIBDIR)
+PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
-PRTB_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(PRTB_LIBDIR),-rpath,\$$ORIGIN/libs
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+ifeq ($(UNAME_S),Darwin)
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x
+endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
+.PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
 # Debug rules
@@ -235,7 +288,7 @@ debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 $(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) $(STATIC) $(DBG_LD_PATH) $(DBG_DYNLIB) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
@@ -249,6 +302,32 @@ $(DBG_LIBDIR):
 	@$(MAKE) -s -C libs debug
 
 #
+# Coverage rules
+#
+coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal | test-coverage
+precizer-coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal
+
+coveragefinal: $(COV_EXE)
+	@echo "The application has been built and is located: $(COV_EXE)"
+
+$(COV_EXE): $(COV_OBJS) | $(COV_LIBDIR)
+	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@echo "$@ linked"
+
+$(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
+	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
+	@echo "$< compiled"
+
+$(COV_OBJDIR):
+	@mkdir -p $(COV_OBJDIR)
+
+$(COV_LIBDIR):
+	@$(MAKE) -s -C libs coverage
+
+test-coverage:
+	@$(MAKE) -s -C $(TESTDIR) coverage
+
+#
 # Sanitize rules
 #
 run: sanitize
@@ -260,7 +339,7 @@ sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
 $(SNTZ_EXE): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) $(SNTZ_LD_PATH) $(SNTZ_DYNLIB) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@echo "$@ linked"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
@@ -281,11 +360,12 @@ production: $(PROD_LIBDIR) $(PROD_EXE) prodfinal banner
 
 prodfinal: $(PROD_EXE)
 	@cp $(PROD_EXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
+	@$(UPX) $(EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LD_PATH) $(PROD_DYNLIB) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@strip -x $(PROD_EXE)
 	@echo "$@ linked"
 
 $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
@@ -305,15 +385,16 @@ dynamic-production: $(PROD_LIBDIR) $(DYNP_EXE) dynprodfinal banner
 
 dynprodfinal: $(DYNP_EXE)
 	@cp $(DYNP_EXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
+	@$(UPX) $(EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 $(DYNP_EXE): $(DYNP_OBJS)
-	@$(CC) $(STRIP) $(DYNP_LD_PATH) $(DYNP_DYNLIB) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@strip -x $(DYNP_EXE)
 	@echo "$@ linked"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
-	@$(CC) -c $(INTERNAL_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
+	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
 	@echo "$< compiled"
 
 $(DYNP_OBJDIR):
@@ -326,11 +407,12 @@ portable: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal banner
 
 portfinal: $(PRTB_EXE)
 	@cp $(PRTB_EXE) $(EXE)
-	@upx --best --lzma -qqq $(EXE)
+	@$(UPX) $(EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PRTB_LD_PATH) $(PRTB_DYNLIB) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+	@strip -x $(PRTB_EXE)
 	@echo "$@ linked"
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
@@ -345,12 +427,16 @@ $(PRTB_LIBDIR):
 
 clean: | clean-preproc clean-asm clean-tests
 	@rm -f *.out.* doc
-	@rm -f $(DBG_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
-	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
+	@rm -f $(DBG_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
+	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
 
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
+
+	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
+	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
+	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
@@ -390,18 +476,6 @@ clean-preproc:
 clean-asm:
 	@rm -rf $(ASM)
 
-# Clean the built container
-clean-docker:
-	@docker rm -f $(EXE) > /dev/null 2>&1
-	@echo Docker image $(EXE) cleared
-
-clean-all-dockers:
-	@docker image prune -f > /dev/null 2>&1
-	@docker image prune -af > /dev/null 2>&1
-	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1
-	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1
-	@echo All docker images cleared
-
 test: tests
 tests: tests-sanitize
 tests-sanitize: sanitize
@@ -411,32 +485,262 @@ tests-debug: debug
 	@$(MAKE) -s -C $(TESTDIR) debug
 
 #
-# Build and test within Docker container
+# Build and test within a Docker container
 #
-docker: build-docker run-docker copy-from-docker clean-docker
-docker-portable: build-docker-portable run-docker copy-from-docker clean-docker
 
-# Build image and create application container
+# Defaults for high-level docker targets
+DOCKER_DEFAULT_OS    ?= gentoo
+DOCKER_DEFAULT_BUILD ?= production
+
+# You can override these:
+#   make docker-export-alpine-portable
+#   make docker-run-ubuntu-dynamic-production
+#   make docker-arch                  (build defaults to production)
+DOCKER_OS    ?= $(DOCKER_DEFAULT_OS)
+DOCKER_BUILD ?= $(DOCKER_DEFAULT_BUILD)
+
+DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)
+# Make the container name unique per OS/build to avoid clobbering
+DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)
+
+DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
+DOCKER_CREATE_FLAGS  ?= -it
+DOCKER_RUN_FLAGS     ?= -it
+DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
+
+.PHONY: build-docker create-docker start-docker copy-from-docker
+.PHONY: docker-export docker-run docker-all docker docker-% docker-export-% docker-run-%
+.PHONY: clean-docker clean-docker-image clean-all-docker tests-in-docker
+
+# Build the image
 build-docker:
-	@docker build -t $(EXE) .
-	@docker create --name $(EXE) $(EXE)
+	@test -f "$(DOCKERFILE)" || { echo "No Dockerfile: $(DOCKERFILE)"; exit 2; }
+	@docker build -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" -t "$(DOCKER_IMAGE)" .
 
-build-docker-portable:
-	@docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t $(EXE) .
-	@docker create --name $(EXE) $(EXE)
+# Create a named container from the image (same container will be used for run+copy)
+create-docker:
+	@docker rm -f "$(DOCKER_CONTAINER)" > /dev/null 2>&1 || true
+	@docker create $(DOCKER_CREATE_FLAGS) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
 
-# Copying a statically compiled application from a container
-# to the current directory on the system
+# Start the created container and attach to it
+# Note: this runs the image's default CMD/ENTRYPOINT
+start-docker:
+	@docker start -ai "$(DOCKER_CONTAINER)"
+
+# Copy the built artifact out of the container
 copy-from-docker:
-	@docker cp $(EXE):/$(EXE)/$(EXE) $(EXE)
+	@docker cp "$(DOCKER_CONTAINER):$(DOCKER_ARTIFACT_PATH)" "$(EXE)"
 
-# Run the application within the built container
-run-docker:
-	@docker run --rm $(EXE)
+# Remove the container
+clean-docker:
+	@docker rm -f "$(DOCKER_CONTAINER)" > /dev/null 2>&1 || true
 
-# Run it 1000 times
+# Remove the image (and prune dangling layers)
+clean-docker-image:
+	@docker image rm -f "$(DOCKER_IMAGE)" > /dev/null 2>&1 || true
+	@docker image prune -f > /dev/null 2>&1 || true
+	@echo Docker image $(DOCKER_IMAGE) cleared
+
+clean-all-docker:
+	@docker image prune -f > /dev/null 2>&1 || true
+	@docker image prune -af > /dev/null 2>&1 || true
+	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1 || true
+	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1 || true
+	@echo All docker images cleared
+
+#
+# Ordered pipelines (guaranteed sequence)
+#
+
+# Build -> Create -> Copy -> Clean container -> Clean image
+docker-export:
+	@$(MAKE) build-docker
+	@$(MAKE) create-docker
+	@$(MAKE) copy-from-docker
+	@$(MAKE) clean-docker
+	@$(MAKE) clean-docker-image
+
+# Build -> Create -> Run (attach) -> Clean container -> Clean image
+docker-run:
+	@$(MAKE) build-docker
+	@$(MAKE) create-docker
+	@$(MAKE) start-docker
+	@$(MAKE) clean-docker
+	@$(MAKE) clean-docker-image
+
+# Build -> Create -> Run -> Copy -> Clean container -> Clean image
+docker-all:
+	@$(MAKE) build-docker
+	@$(MAKE) create-docker
+	@$(MAKE) start-docker
+	@$(MAKE) copy-from-docker
+	@$(MAKE) clean-docker
+	@$(MAKE) clean-docker-image
+
+# Run the image in a fresh throwaway container 1000 times (build once, then run many)
 tests-in-docker: build-docker
-	i=1; while [ $$i -le 1000 ]; do docker run --rm $(EXE) || break; i=$$((i + 1)); done
+	@i=1; while [ $$i -le 1000 ]; do \
+		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || break; \
+		i=$$((i + 1)); \
+	done
+
+#
+# Generic docker targets (parsing using make functions only)
+#
+# Supported:
+#   make docker                           -> docker-export (defaults)
+#   make docker-arch                      -> docker-all for arch + default build
+#   make docker-ubuntu-dynamic-production -> docker-all
+#   make docker-export-alpine-portable    -> docker-export
+#   make docker-run-gentoo-production     -> docker-run
+#
+docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
+
+# $1 = "ubuntu" or "ubuntu-dynamic-production"
+docker_os_from_target    = $(firstword $(subst -, ,$1))
+docker_build_from_target = $(if $(findstring -,$1),$(patsubst $(call docker_os_from_target,$1)-%,%,$1),$(DOCKER_DEFAULT_BUILD))
+
+# Default "docker-<os>[-<build>]" does the full pipeline (run + copy + cleanup)
+docker-%:
+	@$(MAKE) docker-all \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
+# Explicit pipelines
+docker-export-%:
+	@$(MAKE) docker-export \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
+docker-run-%:
+	@$(MAKE) docker-run \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
+#
+# Docker matrix build & test: run all build variants
+# for each OS found in .docker/
+#
+# Purpose
+# -------
+# These targets automatically discover all Dockerfiles in the .docker directory
+# and run build+tests inside Docker containers for every supported OS and build
+# flavor (portable/production/…).
+#
+# This helps ensure the project can be built and tested across multiple Linux
+# distributions and build configurations (static, dynamic, debug).
+#
+# How the OS list is discovered
+# -----------------------------
+# Put Dockerfiles under:
+#   .docker/Dockerfile.<os>
+#
+# Example:
+#   .docker/Dockerfile.ubuntu
+#   .docker/Dockerfile.debian
+#   .docker/Dockerfile.alpine
+#
+# Make extracts "<os>" from those filenames and forms DOCKER_OSES automatically.
+#
+# To print the detected OS list:
+#   make print-docker-oses
+#
+# Which build flavors run per OS
+# ------------------------------
+# By default, each OS runs the following targets (in this order):
+#   portable
+#   production
+#   dynamic-production
+#   debug
+#
+# The list is controlled by DOCKER_MATRIX_BUILDS and can be overridden:
+#   make DOCKER_MATRIX_BUILDS="production sanitize" docker-check-every-os
+#
+# Main commands
+# -------------
+# 1) Run the full matrix for all OSes found in .docker:
+#      make docker-check-every-os
+#
+# 2) Run the matrix for a single OS (example: ubuntu):
+#      make docker-check-os-ubuntu
+#
+# 3) Run only specific build flavors:
+#      make DOCKER_MATRIX_BUILDS="portable production" docker-check-every-os
+#
+# 4) Cleanup Docker artifacts for a single OS (containers/images for all flavors):
+#      make clean-docker-os-ubuntu
+#
+# What runs inside the loop
+# -------------------------
+# For each OS "<os>", the following commands are executed:
+#   make docker-<os>-portable
+#   make docker-<os>-production
+#   make docker-<os>-dynamic-production
+#   make docker-<os>-debug
+#
+# These targets already exist in this Makefile and use the docker-all pipeline:
+#   build image -> create container -> run (tests) -> copy artifact -> cleanup
+#
+# Cleanup behavior
+# ----------------
+# After all build flavors complete for a given OS, cleanup is performed:
+# - Containers removed:  $(EXE)-<os>-<build>
+# - Images removed:      $(EXE):<os>-<build>
+# - docker image prune -f is executed (dangling layers)
+#
+# This is intentional to keep the workspace clean and runs reproducible.
+#
+# Notes
+# -----
+# - Requires Docker installed and usable by the current user (docker build/run).
+# - If any build/test step fails, the matrix stops immediately and exits non-zero.
+
+# Find OS list from .docker/Dockerfile.<os>
+DOCKER_DOCKERFILES := $(wildcard .docker/Dockerfile.*)
+DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERFILES))))
+
+# Build variants to run per OS (order matters)
+DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug
+
+print-docker-oses:
+	@echo "$(DOCKER_OSES)"
+
+# Run matrix for all OSes found
+docker-check-every-os:
+	@set -e; \
+	if [ -z "$(DOCKER_OSES)" ]; then \
+		echo "No .docker/Dockerfile.* found"; \
+		exit 2; \
+	fi; \
+	for os in $(DOCKER_OSES); do \
+		echo "=============================="; \
+		echo " Docker matrix for: $$os"; \
+		echo "=============================="; \
+		$(MAKE) docker-check-os-$$os; \
+	done
+
+# Run all build variants for a single OS, then cleanup images/containers for this OS
+docker-check-os-%:
+	@set -e; \
+	os="$*"; \
+	for b in $(DOCKER_MATRIX_BUILDS); do \
+		echo "---- $$os / $$b ----"; \
+		$(MAKE) docker-run-$$os-$$b; \
+	done; \
+	$(MAKE) clean-docker-os-$$os
+
+# Cleanup all images/containers for a single OS (for all build variants)
+clean-docker-os-%:
+	@set -e; \
+	os="$*"; \
+	for b in $(DOCKER_MATRIX_BUILDS); do \
+		# containers are named: $(EXE)-<os>-<build> (per your DOCKER_CONTAINER logic) \
+		docker rm -f "$(EXE)-$$os-$$b" >/dev/null 2>&1 || true; \
+		# images are tagged: $(EXE):<os>-<build> (per your DOCKER_IMAGE logic) \
+		docker image rm -f "$(EXE):$$os-$$b" >/dev/null 2>&1 || true; \
+	done; \
+	docker image prune -f >/dev/null 2>&1 || true; \
+	echo "Docker artifacts for $$os cleared"
 
 #
 # Format rules
@@ -444,8 +748,8 @@ tests-in-docker: build-docker
 format:
 	@echo "Formatting source files..."
 	@for file in $(SRCS) $(HDRS); do \
-	    echo "Formatting $$file"; \
-	    uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
+		echo "Formatting $$file"; \
+		uncrustify -c Uncrustify.cfg --replace --no-backup $$file; \
 	done
 	@echo "All files formatted."
 
@@ -459,7 +763,7 @@ format:
 	@sed -i 's/[ \t]*\# [[:digit:]]\+ \".*//g' $@.h
 #	@sed -i '/^ *$//d' $@.h
 
-# Optional Assembler files
+# Optional assembler files
 %.asm:%.c
 	@rm -f $@
 	@$(CC) -S -C $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) $(PROD_LDFLAGS) -o $@ $(LDLIBS) $<
@@ -470,7 +774,7 @@ format:
 
 remake: clean all
 
-# Static analysers and sanitizers
+# Static analyzers and sanitizers
 analyze: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
 
 #
@@ -482,7 +786,7 @@ gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
 cppcheck:
-	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs -i tests $(INTERNAL_INCPATH) --inconclusive .
+	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs -i tests $(DYNAMIC_INCPATH) --inconclusive .
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
@@ -503,7 +807,7 @@ massif: debug
 SPARSE=sparse
 SPARSE_FLAGS=-Wsparse-all -nostdinc
 sparse-analyzer:
-	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(DBG_CFLAGS) $(DBG_LD_PATH) $(WFLAGS) $(src);)
+	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(DBG_CFLAGS) $(DBG_LDPATH) $(WFLAGS) $(src);)
 
 clang-analyzer: CC = clang-20
 clang-analyzer: SCAN-BUILD = scan-build-20
@@ -541,12 +845,12 @@ banner:
 	@printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 
 #
-# Print of variables
+# Print variables
 #
-# If you want to find out the value of a makefile variable, just:
-#make print-VARIABLE
-# and it will return:
-#VARIABLE = the_value_of_the_variable
+# If you want to find out the value of a makefile variable:
+#   make print-VARIABLE
+# Output:
+#   VARIABLE = the_value_of_the_variable
 #
 print-%:
 	@echo '$* = $($*)'

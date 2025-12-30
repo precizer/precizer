@@ -17,13 +17,26 @@
 
 // Need for strdup(), clock_gettime()
 // Have to be at the beginning of the file
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
-// Need for pathconf()
-#define _POSIX_SOURCE 1
+// Request POSIX.1-2008 interfaces (pathconf, clock_gettime, snprintf, etc.)
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+// Enable full libc surface on macOS even when POSIX macros are set
+#ifdef EVIL_EMPIRE_OS
+#ifndef _DARWIN_C_SOURCE
+#define _DARWIN_C_SOURCE 1
+#endif
+#endif
 
 // 64bit File Systems
+#ifndef __USE_FILE_OFFSET64
 #define __USE_FILE_OFFSET64 1
+#endif
 
 /*
  *

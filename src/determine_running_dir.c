@@ -6,7 +6,14 @@
  */
 Return determine_running_dir(void)
 {
-	char *cwd = get_current_dir_name();
+	char *cwd = NULL;
+
+#if defined(__GLIBC__)
+	cwd = get_current_dir_name();
+#else
+	// Portable fallback for platforms without get_current_dir_name (e.g., macOS)
+	cwd = getcwd(NULL,0);
+#endif
 
 	if(cwd != NULL)
 	{

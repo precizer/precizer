@@ -150,11 +150,7 @@ static Return test0007_2_libmem(void)
 	#endif
 
 	// Verify data integrity
-	if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
-	{
-		echo(STDERR,"Test 1 fail\n");
-		status = FAILURE;
-	}
+	ASSERT(0 == memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH));
 
 	// Cleanup int array
 	del(test1);
@@ -346,11 +342,7 @@ static Return test0007_4_5_6_libmem(void)
 	print_hash(hash_2);
 	#endif
 
-	if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
-	{
-		echo(STDERR,"Test 4 fail\n");
-		status = FAILURE;
-	}
+	ASSERT(0 == memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH));
 
 	/**
 	 * @brief TEST 5 verifies correct memory reallocation with size reduction
@@ -411,11 +403,7 @@ static Return test0007_4_5_6_libmem(void)
 	print_hash(hash_2);
 	#endif
 
-	if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
-	{
-		echo(STDERR,"Test 5 fail\n");
-		status = FAILURE;
-	}
+	ASSERT(0 == memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH));
 
 	/**
 	 * @brief TEST 6 validates memory cleanup and deallocation
@@ -478,11 +466,7 @@ static Return test0007_4_5_6_libmem(void)
 	print_hash(hash_2);
 	#endif
 
-	if(0 != memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH))
-	{
-		echo(STDERR,"Test 6 fail\n");
-		status = FAILURE;
-	}
+	ASSERT(0 == memcmp(hash_1,hash_2,(size_t)SHA512_DIGEST_LENGTH));
 
 	// free an empty unsigned long long int array
 	del(test);

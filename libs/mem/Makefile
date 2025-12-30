@@ -3,6 +3,8 @@ LIBNAME=libmem
 
 BUILDDIR = ../../.builds
 
+UNAME_S := $(shell uname -s)
+
 #
 # Compiler flags
 #
@@ -16,6 +18,9 @@ STATLIB = $(LIBNAME).a
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 STRIP = -s
+ifeq ($(UNAME_S),Darwin)
+STRIP =
+endif
 
 # Warning flags for additional checks
 WFLAGS += -Wall
@@ -74,7 +79,24 @@ DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
-DBG_LDFLAGS = -Wl,-z,defs
+DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
+ifeq ($(UNAME_S),Darwin)
+DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
+endif
+
+#
+# Coverage build settings
+#
+COV = coverage
+COV_DIR = $(BUILDDIR)/$(COV)
+COV_LIBDIR = $(COV_DIR)/libs
+COV_OBJDIR = $(COV_DIR)/obj
+COV_LDLIBS = -L$(COV_LIBDIR)
+COV_SO = $(COV_LIBDIR)/$(SO)
+COV_STAT = $(COV_LIBDIR)/$(STATLIB)
+COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG
+COV_LDFLAGS += -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -87,9 +109,12 @@ SNTZ_LDLIBS = -L$(SNTZ_LIBDIR)
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
-SNTZ_OPTIONS = -fsanitize=address,undefined -static-libasan
+SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
+ifeq ($(UNAME_S),Darwin)
+SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO)
+endif
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
-SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS += $(SNTZ_OPTIONS)
 
 #
 # Production build settings
@@ -104,6 +129,9 @@ PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
 PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+ifeq ($(UNAME_S),Darwin)
+PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
+endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 PROD_WFLAGS += -Wsuggest-attribute=const
@@ -126,6 +154,9 @@ PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+ifeq ($(UNAME_S),Darwin)
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
+endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 PRTB_WFLAGS += -Wsuggest-attribute=const
@@ -136,6 +167,7 @@ PRTB_WFLAGS += -Wmissing-format-attribute
 endif
 
 .PHONY: all clean debug production prod portable sanitize format gcc-analyzer example
+.PHONY: coverage memtest tests test cppcheck clang-analyzer print-%
 
 # Default build
 all: debug production portable
@@ -144,11 +176,12 @@ all: debug production portable
 # Debug rules
 #
 memtest: debug
-test: debug
+tests: test
+test: sanitize
 debug: $(DBG_SO) $(DBG_STAT)
 
 $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be static library
 
 $(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR)
@@ -167,20 +200,44 @@ $(DBG_LIBDIR):
 	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) debug;)
 
 #
+# Coverage rules
+#
+coverage: $(COV_SO) $(COV_STAT)
+
+$(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
+	@$(AR) rcs $@ $+
+	@echo $@ prepared to be static library
+
+$(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
+	@$(CC) -shared $(COV_LDFLAGS) $(COV_LDLIBS) -o $@ $^ $(LDLIBS)
+	@echo $@ prepared to be shared library
+
+$(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
+	@$(CC) -c -fPIC $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo "$(notdir $<) compiled"
+
+$(COV_OBJDIR):
+	@mkdir -p "$@"
+
+$(COV_LIBDIR):
+	@mkdir -p "$@"
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) coverage;)
+
+#
 # Sanitize rules
 #
 sanitize: $(SNTZ_SO) $(SNTZ_STAT)
 
 $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@ar rcs $@ $+
-	@echo $@ prepared to be static library
+	@$(AR) rcs $@ $+
+	@echo $@ prepared to be the static library
 
 $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDLIBS) -o $@ $^ $(LDLIBS)
-	@echo $@ prepared to be shared library
+	@echo $@ prepared to be the shared library
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled"
 
 $(SNTZ_OBJDIR):
@@ -197,7 +254,7 @@ prod: production
 production: $(PROD_SO) $(PROD_STAT)
 
 $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be the static library
 
 $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
@@ -221,7 +278,7 @@ $(PROD_LIBDIR):
 portable: $(PRTB_SO) $(PRTB_STAT)
 
 $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@ar rcs $@ $+
+	@$(AR) rcs $@ $+
 	@echo $@ prepared to be the static library
 
 $(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR)
@@ -244,11 +301,16 @@ clean:
 	@rm -rf $(PROD_SO) $(PROD_STAT) $(PROD_OBJS)
 	@rm -rf $(PRTB_SO) $(PRTB_STAT) $(PRTB_OBJS)
 	@rm -rf $(DBG_SO) $(DBG_STAT) $(DBG_OBJS)
+	@rm -rf $(COV_SO) $(COV_STAT) $(COV_OBJS)
 	@rm -rf $(SNTZ_SO) $(SNTZ_STAT) $(SNTZ_OBJS)
 
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
+
+	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
+	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
+	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
 
 	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true

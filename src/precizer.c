@@ -34,11 +34,13 @@ Config *config = &_config;
  */
 #ifndef TESTITALL // Unit testing library
 int main(
-#else
-int test_main(
-#endif // TESTITALL
 	int  argc,
 	char **argv)
+#else
+int test_main(
+	int  argc,
+	char **argv)
+#endif // TESTITALL
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.

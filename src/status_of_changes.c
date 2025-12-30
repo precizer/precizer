@@ -24,7 +24,7 @@ Return status_of_changes(void)
 			{
 				slog(EVERY,BOLD "Nothing has changed in the primary database since the program was launched (no files were added, updated, or deleted)" RESET "\n");
 			} else {
-				slog(EVERY,BOLD "The brand-new primary database %s was created and modified since the program started (files were added, removed, or updated)" RESET "\n",config->db_file_name);
+				slog(EVERY,BOLD "The brand-new primary database file %s was created and modified since the program started (files were added, removed, or updated)" RESET "\n",config->db_file_name);
 			}
 		}
 	}
