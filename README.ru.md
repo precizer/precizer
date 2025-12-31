@@ -11,8 +11,6 @@
 
 [![Precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
 
-{:toc}
-
 ## КРАТКО
 
 ### Обзор
