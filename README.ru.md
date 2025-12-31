@@ -131,7 +131,7 @@ abc/def/aaa.txt
   * Там же на GitHub можно [опубликовать багрепорт или feature request ](https://github.com/precizer/precizer/issues/new).
 * При возникновении сложностей при использовании программы можно задать вопрос на ru.stackoverflow.com используя тег **precizer**. Автор следит за такими вопросами и будет рад помочь в решении проблем любой сложности.
 
-## [DOWNLOAD](https://github.com/precizer/precizer/releases)
+## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
 
 Download **Linux_x86_64/Linux_aarch64/macOS_arm64** Executables:
 
