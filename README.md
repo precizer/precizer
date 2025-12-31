@@ -11,6 +11,8 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 [![Precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
 
+{:toc}
+
 ## TL;DR
 
 ### Overview
