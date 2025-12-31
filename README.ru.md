@@ -1,4 +1,4 @@
-[<img src=".html/img/i18n-icon.svg"> Link to the English language README page](/)
+[<img src=".html/img/i18n-icon.svg"> Link to the English language README page](README.md)
 
 # Precizer — проверка контрольных сумм файлов в любом масштабе
 Крошечное, высокопроизводительное приложение для проверки целостности файлов

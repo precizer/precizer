@@ -1,4 +1,4 @@
-[<img src=".html/img/i18n-icon.svg"> Link to the Russian language README page](/ru/)
+[<img src=".html/img/i18n-icon.svg"> Link to the Russian language README page](README.ru.md)
 
 # Precizer — verify file checksums at scale
 A Tiny, High-Performance File Integrity and Comparison Tool
