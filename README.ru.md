@@ -135,7 +135,7 @@ abc/def/aaa.txt
 
 Download **Linux_x86_64/Linux_aarch64/macOS_arm64** Executables:
 
-[https://github.com/precizer/precizer/releases](https://github.com/precizer/precizer/releases)
+[https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/)
 
 Пакеты содержат исполняемые бинарные файлы в архиве zip. Linux версии статически слинкованы и поэтому не привязаны к какому-либо определённому дистрибутиву. Для запуска и использования не требуется ни каких внешних динамически подгружаемых библиотек.
 
@@ -145,7 +145,7 @@ Download **Linux_x86_64/Linux_aarch64/macOS_arm64** Executables:
 
 ### Готовое портируемое решение
 
-Полностью готовое к работе решение [можно скачать по этой ссылке](https://github.com/precizer/precizer/releases).
+Полностью готовое к работе решение [можно скачать по этой ссылке](https://github.com/precizer/precizer/releases/latest/).
 
 #### Технические подробности portable сборки
 
