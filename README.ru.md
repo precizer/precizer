@@ -1,13 +1,13 @@
-[<img src="/img/i18n-icon.svg"> Link to the English language README page](/)
+[<img src=".html/img/i18n-icon.svg"> Link to the English language README page](/)
 
 # Precizer — проверка контрольных сумм файлов в любом масштабе
 Крошечное, высокопроизводительное приложение для проверки целостности файлов
 
 «По-настоящему хорошая программа всегда поместится на дискету. Есть надежда, что кто-то всё ещё помнит, что это такое… Речь идёт не о дискетах, а о качественных программах!»<sup>©</sup> :-D
 
-<p width="100%" height="100%"><img width="20%" src="/img/micrometer_0.svg"></p>
+<p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-<a href="/.code_coverage_report/"><img src="/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /><br><img src="/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
+<a href="/.code_coverage_report/"><img src=".html/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
 
 [![Precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
 
