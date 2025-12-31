@@ -3,8 +3,8 @@
      height="20"
      viewBox="0 0 230 20"
      role="img"
-     aria-label="System Tests Coverage: 95.9%">
-  <title>System Tests Coverage: 95.9%</title>
+     aria-label="System Tests Coverage: 93.6%">
+  <title>System Tests Coverage: 93.6%</title>
   <linearGradient id="s" x2="0" y2="100%">
     <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
     <stop offset="1" stop-opacity=".1"/>
@@ -16,6 +16,6 @@
      font-family="Verdana,Geneva,DejaVu Sans,sans-serif"
      font-size="11">
     <text x="90" y="14">System Tests Coverage</text>
-    <text x="205" y="14">95.9%</text>
+    <text x="205" y="14">93.6%</text>
   </g>
 </svg>
