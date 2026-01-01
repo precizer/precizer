@@ -82,11 +82,15 @@ EXE = precizer
 
 SRC = src
 STRIP = -Wl,-s
+STRIP_MSG = "-strip"
+STATIC = -static -static-libgcc -Wl,--gc-sections
+STATIC_MSG = "with -static"
 ifeq ($(UNAME_S),Darwin)
 STRIP =
+STATIC =
+STATIC_MSG =
+STRIP_MSG =
 endif
-
-STATIC = -static -static-libgcc -Wl,--gc-sections
 
 # UPX compression (disabled on macOS)
 UPX ?= upx --best --lzma -qqq
@@ -238,7 +242,8 @@ PROD_OBJDIR = $(PROD_DIR)/obj
 PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
-PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
+PROD_CPU = -O3 -march=native
+PROD_CFLAGS = $(CFLAGS) -flto=auto $(PROD_CPU) -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x
@@ -289,7 +294,7 @@ debugfinal: $(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked"
+	@echo "$@ linked $(STATIC_MSG)"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
@@ -312,7 +317,7 @@ coveragefinal: $(COV_EXE)
 
 $(COV_EXE): $(COV_OBJS) | $(COV_LIBDIR)
 	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked"
+	@echo "$@ linked $(STATIC_MSG)"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
@@ -366,11 +371,11 @@ prodfinal: $(PROD_EXE)
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@strip -x $(PROD_EXE)
-	@echo "$@ linked"
+	@echo "$@ linked $(STATIC_MSG) $(STRIP_MSG)"
 
 $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with $(PROD_CPU)"
 
 $(PROD_OBJDIR):
 	@mkdir -p $(PROD_OBJDIR)
@@ -413,7 +418,7 @@ portfinal: $(PRTB_EXE)
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@strip -x $(PRTB_EXE)
-	@echo "$@ linked"
+	@echo "$@ linked $(STATIC_MSG) $(STRIP_MSG)"
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
