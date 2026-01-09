@@ -6,7 +6,7 @@ ENV BUILD=${BUILD}
 
 # deps: gcc, make, llvm, pcre2 (static), upx, useradd
 RUN (emerge-webrsync || emerge --sync); \
-    echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/pcre2; \
+    echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2; \
     emerge --ask=n \
       dev-libs/libpcre2 \
       llvm-core/llvm \

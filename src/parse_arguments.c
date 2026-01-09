@@ -68,7 +68,7 @@ static struct argp_option options[] = {
 	 BOLD "--lock-checksum" RESET " options.\n"
 	 "Example:\n"
 	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2077/.*\" /mnt/storage" RESET "\n",0},
-	{"rehash-locked",0,0,0,"Force a full SHA512 rehash for every file that is already stored "
+	{"rehash-locked",'h',0,0,"Force a full SHA512 rehash for every file that is already stored "
 	 "in the database and protected by any "
 	 BOLD "--lock-checksum" RESET " pattern. "
 	 "This option must always be used together with "
@@ -161,6 +161,9 @@ static error_t parse_opt(
 			break;
 		case 'k':
 			(void)add_string_to_array(&config->lock_checksum,arg);
+			break;
+		case 'h':
+			config->rehash_locked = true;
 			break;
 		case 'c':
 			config->compare = true;
@@ -444,6 +447,11 @@ Return parse_arguments(
 			slog(TESTING,"argument:watch-timestamps=%s\n",config->watch_timestamps ? "yes" : "no");
 		}
 
+		if(config->rehash_locked == true)
+		{
+			slog(TESTING,"argument:rehash-locked=%s\n",config->rehash_locked ? "yes" : "no");
+		}
+
 		if(config->force)
 		{
 			slog(TESTING,"argument:force=%s\n",config->force ? "yes" : "no");
@@ -566,12 +574,13 @@ Return parse_arguments(
 				printf("; ");
 			}
 
-			printf("verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+			printf("verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
 				config->verbose ? "yes" : "no",
 				config->maxdepth,
 				config->force ? "yes" : "no",
 				config->update ? "yes" : "no",
 				config->watch_timestamps ? "yes" : "no",
+				config->rehash_locked ? "yes" : "no",
 				config->progress ? "yes" : "no",
 				config->compare ? "yes" : "no",
 				config->db_clean_ignored ? "yes" : "no",

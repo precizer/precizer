@@ -120,6 +120,9 @@ void init_config(void)
 	// after the initial write. PCRE2 regular expressions.
 	config->lock_checksum = NULL;
 
+	// Force a full rehash for checksum-locked entries
+	config->rehash_locked = false;
+
 	// Perform a trial run with no changes made
 	config->dry_run = false;
 

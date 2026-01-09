@@ -31,7 +31,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:Recursion depth limited to: \d+$
-TESTING:Bytes that can be allocated for the file buffer: \d+.*$
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the %DB_NAME% database:(?:\x1B\[[0-9;]*m)*
 add sss.txt
