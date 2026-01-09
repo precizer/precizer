@@ -38,7 +38,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database 0015_database_v1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+.*$
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
 TESTING:The database connection has been closed

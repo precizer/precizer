@@ -363,6 +363,10 @@ typedef struct {
 	/// after the initial write. PCRE2 regular expressions.
 	char **lock_checksum;
 
+	/// Force full checksum verification for entries protected by
+	/// --lock-checksum during an update run
+	bool rehash_locked;
+
 	/// Dry Run Mode Specification
 	/// When operating in Dry Run mode, the system performs validation
 	/// and simulates execution without making any actual changes
