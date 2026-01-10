@@ -1,0 +1,119 @@
+(?s)\ASCENARIO1
+TESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=lock_s1\.db
+TESTING:argument:db_file_name=lock_s1\.db
+TESTING:argument:lock-checksum=\^path1/.*
+TESTING:argument:progress=yes
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: lock_s1\.db
+TESTING:Primary database file path: lock_s1\.db
+TESTING:DB name determined
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path lock_s1\.db exists
+TESTING:The path lock_s1\.db doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:The primary database file was just created and doesn't require verification
+TESTING:Successfully opened database lock_s1\.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named lock_s1\.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database lock_s1\.db
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
+TESTING:File system traversal initiated to calculate file count and storage usage
+TESTING:Total size: \d+B, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Bytes that can be allocated for the file buffer: \d+MiB \d+KiB \d+B
+TESTING:File traversal started
+TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the lock_s1\.db database:(?:\x1B\[[0-9;]*m)*
+add 1/AAA/BCB/CCC/a\.txt
+add 1/AAA/ZAW/A/b/c/a_file\.txt
+add 1/AAA/ZAW/D/e/f/b_file\.txt
+add 2/AAA/BBB/CZC/a\.txt
+add 3/AAA/BBB/CCC/a\.txt
+add 4/AAA/BBB/CCC/a\.txt
+lock checksum path1/AAA/BCB/CCC/a\.txt
+lock checksum path1/AAA/ZAW/A/b/c/a_file\.txt
+lock checksum path1/AAA/ZAW/D/e/f/b_file\.txt
+add path2/AAA/BCB/CCC/a\.txt
+add path2/AAA/ZAW/A/b/c/a_file\.txt
+add path2/AAA/ZAW/D/e/f/b_file\.txt
+TESTING:File traversal complete
+TESTING:Total size: \d+B, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:The database connection has been closed
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
+TESTING:The database connection has been closed
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file lock_s1\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+TESTING:The precizer completed its execution without any issues
+TESTING:Exit status » SUCCESS
+TESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=lock_s1\.db
+TESTING:argument:db_file_name=lock_s1\.db
+TESTING:argument:lock-checksum=\^path1/.*
+TESTING:argument:rehash-locked=yes
+TESTING:argument:update=yes
+TESTING:Arguments parsed
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: lock_s1\.db
+TESTING:Primary database file path: lock_s1\.db
+TESTING:DB name determined
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path lock_s1\.db exists
+TESTING:The path lock_s1\.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Starting database file lock_s1\.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database lock_s1\.db has been verified and is in good condition
+TESTING:Version number 3 found in database
+TESTING:The lock_s1\.db database file is version 3
+TESTING:The database lock_s1\.db is on version 3 and does not require any upgrades
+TESTING:Successfully opened database lock_s1\.db
+TESTING:The primary database and tables do not require initialization
+TESTING:The primary database named lock_s1\.db is ready for operations
+TESTING:The in-memory runtime_paths_id database successfully attached to the primary database lock_s1\.db
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The database lock_s1\.db has already been created previously
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:Bytes that can be allocated for the file buffer: \d+MiB \d+KiB \d+B
+TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database lock_s1\.db
+TESTING:File traversal started
+TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB lock_s1\.db:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* path1/AAA/BCB/CCC/a\.txt
+rehash locked path1/AAA/ZAW/A/b/c/a_file\.txt
+rehash locked path1/AAA/ZAW/D/e/f/b_file\.txt
+TESTING:File traversal complete
+TESTING:Total size: \d+B, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+ERROR:(?:\x1B\[[0-9;]*m)*Caution! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
+TESTING:Returned file_list:\d+ status: WARNING
+TESTING:The database connection has been closed
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » WARNING\s*
