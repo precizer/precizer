@@ -35,9 +35,10 @@ Return db_delete_the_record_by_id(
 
 		FileAccessStatus access_status = file_check_access(absolute_path,(size_t)length);
 
+		free(absolute_path);
+
 		if(access_status == FILE_ACCESS_ERROR)
 		{
-			free(absolute_path);
 			return(FAILURE);
 		}
 
@@ -46,6 +47,7 @@ Return db_delete_the_record_by_id(
 			inaccessible_delete = true;
 
 		} else if(access_status == FILE_ACCESS_ALLOWED){
+
 			return(SUCCESS);
 		}
 	}
@@ -137,8 +139,6 @@ Return db_delete_the_record_by_id(
 	}
 
 	sqlite3_finalize(delete_stmt);
-
-	free(absolute_path);
 
 	provide(status);
 }
