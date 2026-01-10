@@ -1,4 +1,5 @@
 #include "precizer.h"
+#include <errno.h>
 
 /**
  * @brief Checks if a file is accessible for reading.
@@ -9,40 +10,61 @@
  *
  * @param[in] path Pointer to the file path string.
  * @param[in] path_size Pointer to the length of the path string.
- * @param[out] is_readable Pointer to a boolean variable that will be set to:
- *              - true if the file is readable,
- *              - false if the file is not readable.
  *
- * @return SUCCESS if function executed correctly, otherwise an error code.
+ * @return FileAccessStatus indicating accessibility, denial, or error.
  */
-Return file_check_access(
-	const char   *path,
-	const size_t path_size,
-	bool         *is_readable)
+static FileAccessStatus classify_access_errno(int err)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
-	Return status = SUCCESS;
+	if(err == ENOENT || err == ENOTDIR)
+	{
+		return(FILE_ACCESS_NOT_FOUND);
+	}
+
+	if(err == EACCES || err == EPERM)
+	{
+		return(FILE_ACCESS_DENIED);
+	}
+
+	return(FILE_ACCESS_ERROR);
+}
+
+FileAccessStatus file_check_access(
+	const char   *path,
+	const size_t path_size)
+{
 
 	if(access(path,R_OK) == 0)
 	{
-		*is_readable = true;
+		return(FILE_ACCESS_ALLOWED);
 
 	} else {
+		int first_err = errno;
+
 		char *absolute_path = NULL;
-		status = path_absolute_from_relative(&absolute_path,path,path_size);
+
+		Return status = path_absolute_from_relative(&absolute_path,path,path_size);
+
+		FileAccessStatus access_status = FILE_ACCESS_ERROR;
 
 		if(SUCCESS == status)
 		{
 			if(access(absolute_path,R_OK) == 0)
 			{
-				*is_readable = true;
+				access_status = FILE_ACCESS_ALLOWED;
 			} else {
-				*is_readable = false;
+				access_status = classify_access_errno(errno);
 			}
+		} else {
+			access_status = FILE_ACCESS_ERROR;
 		}
-		free(absolute_path);
-	}
 
-	provide(status);
+		free(absolute_path);
+		if(access_status != FILE_ACCESS_ERROR)
+		{
+			return(access_status);
+		}
+
+		// Fallback to classification from initial relative check if absolute path failed to resolve
+		return(classify_access_errno(first_err));
+	}
 }

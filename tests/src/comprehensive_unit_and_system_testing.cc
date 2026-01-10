@@ -12,4 +12,5 @@ TEST(test0019,"Symlink operations…");
 SUTE(test0020,"DB creation attempts with missing components…");
 SUTE(test0024,"Paths with apostrophe test…");
 SUTE(test0027,"--lock-checksum option testing…");
-SUTE(test0028,"Testing the --compare mode across different types of responses…");
+SUTE(test0028,"--compare mode across different types of responses…");
+SUTE(test0029,"Testing show_relative_path() function's printouts…");
