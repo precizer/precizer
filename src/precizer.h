@@ -449,10 +449,25 @@ Return path_absolute_from_relative(
 	const char *,
 	const size_t);
 
-Return file_check_access(
+/**
+ * @brief Result of checking accessibility for a given path.
+ *
+ * FILE_ACCESS_ALLOWED    — path is readable (direct or resolved absolute check).
+ * FILE_ACCESS_DENIED     — path exists but is not readable (or resolved path is not readable).
+ * FILE_ACCESS_NOT_FOUND  — path or one of its components does not exist.
+ * FILE_ACCESS_ERROR      — unable to complete access check (e.g., failed to resolve absolute path).
+ */
+typedef enum FileAccessStatus
+{
+	FILE_ACCESS_ALLOWED = 0,
+	FILE_ACCESS_DENIED,
+	FILE_ACCESS_NOT_FOUND,
+	FILE_ACCESS_ERROR
+} FileAccessStatus;
+
+FileAccessStatus file_check_access(
 	const char *,
-	const size_t,
-	bool *);
+	const size_t);
 
 void notify_quit_handler(int);
 
@@ -488,6 +503,7 @@ Return db_delete_the_record_by_id(
 	sqlite_int64 *,
 	bool *,
 	const bool *,
+	const char *,
 	const char *);
 
 Return db_init(void);

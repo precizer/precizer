@@ -10,11 +10,45 @@ Return db_delete_the_record_by_id(
 	sqlite_int64 *ID,
 	bool         *first_iteration,
 	const bool   *clean_ignored,
-	const char   *relative_path)
+	const char   *relative_path,
+	const char   *runtime_path_prefix)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
+
+	// Indicates removal due to missing or unreadable path
+	bool inaccessible_delete = false;
+
+	char *absolute_path = NULL;
+
+	if(clean_ignored != NULL && *clean_ignored == false
+	        && runtime_path_prefix != NULL && relative_path != NULL)
+	{
+		int length = asprintf(&absolute_path,"%s/%s",runtime_path_prefix,relative_path);
+
+		if(length == -1)
+		{
+			free(absolute_path);
+			return(FAILURE);
+		}
+
+		FileAccessStatus access_status = file_check_access(absolute_path,(size_t)length);
+
+		if(access_status == FILE_ACCESS_ERROR)
+		{
+			free(absolute_path);
+			return(FAILURE);
+		}
+
+		if(access_status == FILE_ACCESS_DENIED || access_status == FILE_ACCESS_NOT_FOUND)
+		{
+			inaccessible_delete = true;
+
+		} else if(access_status == FILE_ACCESS_ALLOWED){
+			return(SUCCESS);
+		}
+	}
 
 	sqlite3_stmt *delete_stmt = NULL;
 	int rc = 0;
@@ -90,6 +124,8 @@ Return db_delete_the_record_by_id(
 			if(*clean_ignored == true)
 			{
 				slog(EVERY|UNDECOR,"clean ignored %s\n",relative_path);
+			} else if(inaccessible_delete == true){
+				slog(EVERY|UNDECOR,"%s %s\n","inaccessible",relative_path);
 			} else {
 				slog(EVERY|UNDECOR,"%s\n",relative_path);
 			}
@@ -101,6 +137,8 @@ Return db_delete_the_record_by_id(
 	}
 
 	sqlite3_finalize(delete_stmt);
+
+	free(absolute_path);
 
 	provide(status);
 }

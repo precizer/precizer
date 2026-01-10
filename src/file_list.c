@@ -363,18 +363,20 @@ Return file_list(const bool count_size_of_all_files)
 				}
 
 				// The file is available for reading
-				bool is_readable = false;
+				FileAccessStatus access_status = FILE_ACCESS_DENIED;
 
 				/* Check file access */
-				status = file_check_access(p->fts_path,
-					(size_t)p->fts_pathlen,
-					&is_readable);
+				access_status = file_check_access(p->fts_path,
+					(size_t)p->fts_pathlen);
 
-				if(SUCCESS != status)
+				if(access_status == FILE_ACCESS_ERROR)
 				{
+					status = FAILURE;
 					continue_the_loop = false;
 					break;
 				}
+
+				bool is_readable = (access_status == FILE_ACCESS_ALLOWED);
 
 				// Marks zero-length files to avoid unnecessary hashing
 				bool zero_size_file = false;

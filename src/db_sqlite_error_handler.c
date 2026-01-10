@@ -1,6 +1,4 @@
 #include "precizer.h"
-#include <stdarg.h>
-#include <stdio.h>
 
 __attribute__((format(printf,4,5)))   // Without this we will get warning
 void log_sqlite_error(
