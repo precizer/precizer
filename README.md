@@ -7,7 +7,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-<a href="https://precizer.github.io/.code_coverage_report/"><img src=".html/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
 
 [![Precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
 
@@ -15,7 +15,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 ### Overview
 
-**precizer** is a lightweight and blazing-fast command-line application written entirely in pure C. It is designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program recursively traverses directories, generating a database of files and their checksums for quick and efficient comparisons.
+**precizer** is a lightweight and blazing-fast command-line application written entirely in pure C. It is designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program walks directory trees, generating a database of files and their checksums for quick and efficient comparisons.
 
 Built for both embedded platforms and large-scale clustered mainframes, **precizer** helps detect synchronization errors by comparing files and their checksums across different sources. It can also be used to analyze historical changes by comparing databases generated at different points in time from the same source.
 
@@ -29,7 +29,7 @@ Consider a scenario where two machines have large mounted volumes at `/mnt1` and
 precizer --progress /mnt1
 ```
 
-This command recursively traverses all directories under `/mnt1`, creating a database file `host1.db` in the current directory. The `--progress` flag provides real-time progress updates, displaying the total traversed space and the number of processed files.
+This command traverses the directory tree under `/mnt1`, creating a database file `host1.db` in the current directory. The `--progress` flag provides real-time progress updates, displaying the total traversed space and the number of processed files.
 
 2. Run **precizer** on the second machine (e.g., hostname `host2`):
 
@@ -124,168 +124,191 @@ Let’s analyze this issue with the following scenario:
 * The `--help` option is designed to be as detailed as possible, specifically to assist users who may not have advanced technical knowledge.
 * You can reach out to the author via:
   * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
-  * You can also [report a bug on GitHub](https://github.com/precizer/precizer/issues/new).
-* If you run into issues while using the program, feel free to ask a question on [stackoverflow.com](https://stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and will be happy to help with troubleshooting any problems.
+  * You can also [open a bug report or a feature request on GitHub](https://github.com/precizer/precizer/issues/new).
+* If you run into issues while using the program, feel free to ask a question on [ru.stackoverflow.com](https://ru.stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and will be happy to help with troubleshooting any problems.
+
+## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
+
+Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
+
+* Linux x86_64
+* Linux aarch64
+* macOS arm64
+
+The release packages contain portable executables in a zip archive.
+
+### Technical details of the portable build
+
+* The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.
+* The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. To use it, extract the file from the archive and run it.
+* Static linking is not supported on macOS, so to run the downloaded application you need to ensure the following libraries are available on your system: sqlite3, pcre2, argp and fts.
 
 ## BUILD & INSTALLATION
-
-### Prebuilt Portable Version
-
-A fully ready-to-use version [can be downloaded here](https://github.com/precizer/precizer/releases).
-
-#### Technical Details of the Portable Build
-
-The prebuilt version is a statically linked ELF binary that can be run immediately on nearly any x64 Linux distribution.
-
-The binary is automatically built using GitHub's CI/CD pipeline, then compressed with [UPX (an executable file packer)](https://upx.github.io).
-
-The final self-extracting compressed binary is then placed inside a zip archive for easier downloading.
-
-To use it, simply extract the zip file and run the executable.
 
 ### Packaging for Distributions
 
 * The author has set up an automated build system using GitHub Workflows and will continue maintaining new versions.
-* However, the author is **not** willing to personally package and maintain **precizer** for _all_ existing operating system distributions.
-* If you are eager to create a package for a specific distribution but encounter significant challenges adapting the code, the author will gladly provide assistance in optimizing the program for that distribution or package manager. Contact details can be found in the [“Questions & Bug Reports”](#questions--bug-reports) section.
+* The author is **not** willing to personally package and maintain **precizer** for _all_ existing operating system distributions.
+* If you are eager to create a package for a specific distribution and run into major challenges adapting the code, the author will be glad to help with supporting the initiative and optimizing the program for your distro or package manager. Contact details can be found in the [“Questions & Bug Reports”](#questions--bug-reports) section.
+
+### Building with Docker
+
+Building the program is already supported via Docker. Several tuned platforms are prepared and can be selected as the build distribution. Successfully tested distros:
+
+* Almalinux
+* Alpine
+* Arch
+* Debian
+* Gentoo
+* Rocky
+* Ubuntu
+
+You can review the configuration details and installed libraries in the corresponding Dockerfiles under `.docker/`.
+
+To build, use a make target of the form `docker-<distro>-<build>` (for example `debian` and `dynamic-production`).
+
+```sh
+make docker-gentoo-production
+```
+
+This builds a production binary using the Gentoo Docker container.
+
+```sh
+make docker-ubuntu-production
+```
+
+This builds the same `production` target using Ubuntu.
+
+After the build completes, an executable `precizer` appears in the project directory (built inside the container). The main benefit of using Docker is that you don’t need to install a full build toolchain, libraries, and their dependencies on your host system: just run Docker and get the binary. Next you need to choose which kind of binary you want. If in doubt, start with `make portable`. All available build variants are described below.
 
 ### Manual Build
 
-The build process produces a statically linked ELF binary with no external dependencies. This self-contained executable can run on nearly any modern Linux distribution.
-
-Most required libraries are embedded into the binary, and by default, the program is built as a static executable. This approach enhances portability and eliminates dependency issues. Thanks to this setup, compiling the program on most modern platforms is straightforward — just follow these steps:
-
-1. Install build and compile tools on Linux
-
-#### Arch Linux
+#### Preparation
 
 ```sh
-sudo pacman -S --noconfirm base-devel
-```
-
-#### Debian/Ubuntu Linux
-
-```sh
-sudo apt -y install build-essential
-```
-
-#### Alpine Linux
-
-```sh
-sudo apk add --update build-base fts-dev argp-standalone
-```
-
-#### Gentoo Linux
-
-```sh
-sudo emerge --ask dev-libs/libpcre2
-
-```
-
-2. Get the source code
-
-```sh
-git clone https://github.com/precizer/precizer.git
+git clone --depth=1 https://github.com/precizer/precizer.git
 cd precizer
 ```
 
-3. Build the project
-
-```sh
-make
-```
-
-4. Copy the compiled **precizer** binary to any directory listed in the system's `$PATH` to enable quick execution.
-
-5. Clean up
-
-```sh
-# Remove build artifacts
-make clean
-
-# Remove all build files, including compiled libraries
-make clean-all
-```
-
-6. Update
-
-```sh
-git pull
-make
-
-# Then proceed to step 4.
-```
-
-### Building a Portable Version
-
-Repeat steps 1. and 2. Instead of step 3, run:
+#### Portable binary
 
 ```sh
 make portable
 ```
 
-### Building with Docker
+The result is a single statically linked, self-extracting compressed UPX ELF file with no dynamic dependencies. It contains the whole program and can be run on almost any modern Linux distribution. Simply copy this file to any platform of the same architecture (x64/arm/etc).
 
-If you prefer not to install additional packages on your system, you can use a preconfigured Docker-based build environment.
+The program is optimized for **maximum portability**.
 
-To build the project, all you need is a working installation of Docker.
+Compilation and linking flags: `-static -O2 -mtune=generic`
 
-Running the simple `make docker` command:
+Docker alternative:
 
 ```sh
-git clone https://github.com/precizer/precizer.git
-cd precizer
-make docker
+make docker-ubuntu-portable
 ```
 
-will generate a compiled `precizer` binary in the current directory. You can either run it from there or move it to a directory listed in `$PATH`.
+or replace `-ubuntu-` with any distro from the list above.
 
-If `make` is not installed, you can still build the application inside a container with these commands:
+#### Single binary optimized for your local CPU
 
 ```sh
-git clone https://github.com/precizer/precizer.git
-cd precizer
-docker build -t precizer .
-docker create --name precizer precizer
-docker cp precizer:/precizer/precizer precizer
-docker rm -f precizer
+make production
 ```
 
-This will produce a statically linked ELF binary in the current directory.
+The result is a statically linked, self-extracting compressed UPX ELF file tuned for your local CPU. It contains the whole program, can be run on the local machine, and will use the maximum available CPU features.
 
-If you run into compatibility issues with the compiled binary across different systems, you can try increasing its portability:
+The program is optimized for **maximum possible performance on local hardware**.
+
+Compilation and linking flags: `-static -O3 -march=native`
+
+Docker alternative:
 
 ```sh
-git clone https://github.com/precizer/precizer.git
-cd precizer
-make docker-portable
+make docker-ubuntu-production
 ```
-or
+
+or replace `-ubuntu-` with any distro from the list above.
+
+#### Dynamically linked binary optimized for your local CPU
 
 ```sh
-git clone https://github.com/precizer/precizer.git
-cd precizer
-docker build --build-arg OS=ubuntu:18.04 --build-arg BUILD=portable -t precizer .
-docker create --name precizer precizer
-docker cp precizer:/precizer/precizer precizer
-docker rm -f precizer
+make dynamic-production
+```
+
+The result is an ELF executable of about **50 kilobytes**. It is tuned for the local CPU and dynamically linked against libraries installed on the system; it is also self-extracting and UPX-compressed. It can be built and run on the local machine if libraries such as sqlite3, pcre2, argp and fts are installed.
+
+The binary is optimized for **maximum performance and minimal size**.
+
+Compilation flags: `-O3 -march=native`
+
+Docker alternative:
+
+```sh
+make docker-ubuntu-dynamic-production
+```
+
+or replace `-ubuntu-` with any distro from the list above.
+
+#### Installation
+
+Just copy the resulting **precizer** executable to any location listed in the `$PATH` environment variable for quick invocation.
+
+#### Build dependencies for specific OS
+
+Install build and compile tools on Linux
+
+#### Arch Linux
+
+```sh
+sudo pacman -S --noconfirm base-devel gcc-libs sqlite pcre2 upx
+```
+
+#### Ubuntu/Debian Linux
+
+```sh
+sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
+```
+
+#### Alpine Linux
+
+```sh
+sudo apk add --update build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
+```
+
+#### Almalinux/Rocky Linux
+
+```sh
+sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static
+```
+
+#### Gentoo Linux
+
+```sh
+echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2;
+emerge dev-libs/libpcre2 app-arch/upx
+```
+
+#### Clean up
+
+##### Remove all build artifacts
+
+```sh
+make purge
 ```
 
 ## USAGE EXAMPLES
 
-### Running Tests
+### Tests
 
-To evaluate the program’s capabilities, you can use the test sets available in the `tests/examples/` directory within the source code.
+To evaluate the program’s capabilities, you can use the test sets from the `tests/examples/` directory in the source tree.
 
-Run tests with the following commands:
+Run tests:
 
 ```sh
 git clone https://github.com/precizer/precizer.git
 cd precizer
-make debug
-cd tests/
-make debug
-./testitall
+make tests
 ```
 
 ### Example 1
@@ -612,7 +635,7 @@ The precizer completed its execution without any issues
 
 Continuation of the Previous Example [Example 6](#example-6).
 
-Multiple regular expressions for ignoring files can be specified simultaneously using the `--ignore` option.
+Multiple regular expressions for ignoring files can be specified simultaneously by repeating the `--ignore` option.
 
 The database will be cleaned of references to files matching the regular expressions provided via the `--ignore` arguments: `"diff1/1/.*"` and `"diff2/1/.*"`.
 
@@ -724,7 +747,7 @@ On subsequent runs, keep the same lock patterns while refreshing the database:
 precizer --update --lock-checksum="^archive/2024/.*" /mnt/storage
 ```
 
-Files outside the lock patterns follow normal update rules. For entries locked via `--lock-checksum`, any drift becomes visible immediately.
+Files outside the lock patterns follow normal update rules. For entries locked via `--lock-checksum`, any drift becomes visible immediately and `precizer` exits with a non-zero status.
 
 ### Example 10
 Deep verification of locked data with `--rehash-locked`
@@ -762,5 +785,3 @@ This program is distributed under the [CC0 (Creative Commons Zero) Public Domain
 - Commercial exploitation, paid distribution, paid support, and integration are prohibited if carried out in that territory or for its residents and entail the payment of mandatory charges.
 - The restriction applies to the program itself and to its source code, in whole or in part.
 - Purpose: to prevent direct and indirect financing of the war in Ukraine.
-
-Licensing note: The above Usage Restrictions constitute a separate Use Policy and are distinct from the CC0 public domain dedication. Given CC0’s permissive nature, enforceability of these restrictions may vary by jurisdiction. The policy is published to clearly state the author’s ethical intent.

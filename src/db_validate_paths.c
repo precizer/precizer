@@ -223,7 +223,7 @@ Return db_validate_paths(void)
 						{
 							const char *prefix = (const char *)sqlite3_column_text(stmt,0);
 
-							printf("%s\n",prefix);
+							slog(EVERY|UNDECOR,"%s\n",prefix);
 						}
 
 						if(SQLITE_DONE != rc_stmt)
@@ -244,7 +244,7 @@ Return db_validate_paths(void)
 
 						for(int i = 0; config->paths[i]; i++)
 						{
-							printf("%s\n",config->paths[i]);
+							slog(EVERY|UNDECOR,"%s\n",config->paths[i]);
 						}
 					}
 				} else {

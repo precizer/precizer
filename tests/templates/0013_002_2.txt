@@ -7,7 +7,7 @@ TESTING:argument:ignore=\^1/AAA/ZAW/\.\*
 TESTING:argument:update=yes
 TESTING:argument:db-clean-ignored=yes
 TESTING:argument:dry-run=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
@@ -41,7 +41,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+.*$
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database1.db
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database1.db:(?:\x1B\[[0-9;]*m)*
@@ -55,7 +55,7 @@ TESTING:The (?:\x1B\[[0-9;]*m)*--db-clean-ignored(?:\x1B\[[0-9;]*m)* option has 
 TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer exist or ignored and will be deleted against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 clean ignored 1/AAA/ZAW/A/b/c/a_file.txt
 clean ignored 1/AAA/ZAW/D/e/f/b_file.txt
-2/AAA/BBB/CZC/a.txt
+no longer exists 2/AAA/BBB/CZC/a.txt
 TESTING:Missing file search completed
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming

@@ -4,7 +4,7 @@ TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=./0015_database_v0.db
 TESTING:argument:db_file_name=0015_database_v0.db
 TESTING:argument:update=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
@@ -38,7 +38,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database 0015_database_v0.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+.*$
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
 TESTING:The database connection has been closed

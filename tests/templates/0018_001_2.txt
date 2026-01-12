@@ -4,7 +4,7 @@ TESTING:argument:paths=/.+/tests/examples/levels
 TESTING:argument:database=database3.db
 TESTING:argument:db_file_name=database3.db
 TESTING:argument:update=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path /.+/tests/examples/levels exists
 TESTING:The path /.+/tests/examples/levels is exists and it is a directory
@@ -38,7 +38,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database3.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+.*$
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database3.db
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database3.db:(?:\x1B\[[0-9;]*m)*

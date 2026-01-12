@@ -49,7 +49,7 @@ Return db_determine_name(void)
 				}
 			}
 		} else {
-			slog(ERROR,"General failure. config->db_primary_file_path should be NULL in this case");
+			slog(ERROR,"General failure. config->db_primary_file_path should be NULL in this case\n");
 			status = FAILURE;
 		}
 

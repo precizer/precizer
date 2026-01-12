@@ -79,7 +79,7 @@ static void print_changes(
 
 			slog(EVERY|UNDECOR,"%s",flag->flag_name);
 
-			show_metadata(flag->flag_value,&dbrow->saved_stat,stat);
+			show_metadata(EVERY,flag->flag_value,&dbrow->saved_stat,stat);
 
 			flags_found++;
 		}
@@ -236,9 +236,27 @@ void show_relative_path(
 
 		} else if(*rehash == true){
 
-			if(dbrow->saved_offset > 0)
+			if(*rehashing_from_the_beginning == true)
 			{
+				slog(EVERY|UNDECOR,"rehash from the beginning");
+
+				print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+
+				slog(EVERY|UNDECOR," %s\n",relative_path);
+
+			} else if(dbrow->saved_offset > 0){
 				slog(EVERY|UNDECOR,"continue to rehash from %s %s\n",bkbmbgbtbpbeb((const size_t)dbrow->saved_offset),relative_path);
+
+			} else if(*locked_checksum_file == true){
+
+				slog(EVERY|UNDECOR,"rehash locked");
+
+				if(*metadata_of_scanned_and_saved_files != IDENTICAL)
+				{
+					print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+				}
+
+				slog(EVERY|UNDECOR," %s\n",relative_path);
 
 			} else {
 
@@ -248,14 +266,6 @@ void show_relative_path(
 
 				slog(EVERY|UNDECOR," %s\n",relative_path);
 			}
-
-		} else if(*rehashing_from_the_beginning){
-
-			/*
-			 * The SHA512 hashing of the file had not been finished previously
-			 * since then the file has been changed and will be rehashed from the beginning
-			 */
-			slog(EVERY|UNDECOR,"rehash from the beginning %s\n",relative_path);
 
 		} else {
 			slog(EVERY|UNDECOR,"update stat");
