@@ -6,7 +6,7 @@ TESTING:argument:db_file_name=database1.db
 TESTING:argument:ignore=\^1/AAA/ZAW/\.\*
 TESTING:argument:update=yes
 TESTING:argument:dry-run=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
@@ -52,7 +52,7 @@ TESTING:Searching for files that no longer exist on the file system…
 TESTING:Dry Run mode is enabled. The primary database must not be modified
 TESTING:If the information about ignored files should be removed from the database the (?:\x1B\[[0-9;]*m)*--db-clean-ignored(?:\x1B\[[0-9;]*m)* option must be specified. This is special protection against accidental deletion of information from the database
 TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer exist or ignored and will be deleted against the DB database1.db:(?:\x1B\[[0-9;]*m)*
-2/AAA/BBB/CZC/a.txt
+no longer exists 2/AAA/BBB/CZC/a.txt
 TESTING:Missing file search completed
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming

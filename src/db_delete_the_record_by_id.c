@@ -18,7 +18,9 @@ Return db_delete_the_record_by_id(
 	Return status = SUCCESS;
 
 	// Indicates removal due to missing or unreadable path
-	bool inaccessible_delete = false;
+	bool inaccessible = false;
+
+	bool file_not_found = false;
 
 	char *absolute_path = NULL;
 
@@ -42,12 +44,18 @@ Return db_delete_the_record_by_id(
 			return(FAILURE);
 		}
 
-		if(access_status == FILE_ACCESS_DENIED || access_status == FILE_ACCESS_NOT_FOUND)
+		if(access_status == FILE_NOT_FOUND)
 		{
-			inaccessible_delete = true;
+			file_not_found = true;
+
+		} else if(access_status == FILE_ACCESS_DENIED){
+
+			inaccessible = true;
 
 		} else if(access_status == FILE_ACCESS_ALLOWED){
 
+			/* The file remains available.
+			   Keep file references in the database! */
 			return(SUCCESS);
 		}
 	}
@@ -126,13 +134,22 @@ Return db_delete_the_record_by_id(
 			if(*clean_ignored == true)
 			{
 				slog(EVERY|UNDECOR,"clean ignored %s\n",relative_path);
-			} else if(inaccessible_delete == true){
-				slog(EVERY|UNDECOR,"%s %s\n","inaccessible",relative_path);
+
+			} else if(inaccessible == true){
+
+				slog(EVERY|UNDECOR,"inaccessible %s\n",relative_path);
+
+			} else if(file_not_found == true){
+
+				slog(EVERY|UNDECOR,"no longer exists %s\n",relative_path);
+
 			} else {
-				slog(EVERY|UNDECOR,"%s\n",relative_path);
+
+				slog(ERROR,"An unexpected error that should never occur for %s\n",relative_path);
 			}
 
 		} else {
+
 			log_sqlite_error(config->db,rc,NULL,"Delete statement didn't return right code %d",sql_return);
 			status = FAILURE;
 		}

@@ -4,7 +4,7 @@ TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=nonexistent_database1.db
 TESTING:argument:db_file_name=nonexistent_database1.db
 TESTING:argument:update=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory

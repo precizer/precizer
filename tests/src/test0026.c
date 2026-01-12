@@ -9,7 +9,7 @@
  * @details
  * - Verifies readable absolute paths are detected immediately.
  * - Verifies relative paths are resolved via config->running_dir and marked readable.
- * - Verifies missing files return FILE_ACCESS_NOT_FOUND without errors.
+ * - Verifies missing files return FILE_NOT_FOUND without errors.
  * - Verifies unreadable paths return FILE_ACCESS_DENIED.
  */
 Return test0026(void)
@@ -75,7 +75,7 @@ Return test0026(void)
 		const size_t len = strlen(missing_path);
 		FileAccessStatus rc = file_check_access(missing_path,len);
 
-		ASSERT(rc == FILE_ACCESS_NOT_FOUND);
+		ASSERT(rc == FILE_NOT_FOUND);
 	}
 
 	/* Unreadable path (directory without permissions) should report denied */

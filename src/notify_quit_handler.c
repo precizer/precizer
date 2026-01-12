@@ -9,22 +9,22 @@
  */
 void notify_quit_handler(int sig)
 {
-	printf("Notify quit!\n");
+	slog(EVERY,"Notify quit!\n");
 
 	atomic_store(&global_interrupt_flag,true);
 
 	atomic_store(&global_return_status,HALTED);
 
-	printf("The global return status and exit flag has been set to %s\n",show_status(global_return_status));
+	slog(EVERY,"The global return status and exit flag has been set to %s\n",show_status(global_return_status));
 
 	if(sig==SIGTERM)
 	{
-		printf("Terminating the application. Please wait while the database will be closed smoothly…\n");
+		slog(EVERY,"Terminating the application. Please wait while the database will be closed smoothly…\n");
 	}
 
 	if(sig==SIGINT)
 	{
-		printf("Interrupting the application. Please wait while the database will be closed smoothly…\n");
+		slog(EVERY,"Interrupting the application. Please wait while the database will be closed smoothly…\n");
 	}
 
 	/// Enable key echo in terminal

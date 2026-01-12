@@ -10,48 +10,48 @@ static Return test0030_1_test(void)
 	INITTEST;
 
 	create(char,result);
-	create(char,chunk);
 	create(char,pattern);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;"
-	        "rm -f lock_s1.db;";
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_literal(result,"SCENARIO1\n"));
-
 	ASSERT(SUCCESS == runit("--database=lock_s1.db --progress " \
 		"--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1",
-		chunk,
+		result,
 		COMPLETED,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	const char *filename = "templates/0030_001_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("printf 'pad' >> " TARGET_FILE,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == runit("--update --rehash-locked " \
 		"--lock-checksum=\"^path1/.*\" --database=lock_s1.db tests/examples/diffs/diff1",
-		chunk,
+		result,
 		WARNING,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	filename = "templates/0030_001_2.txt";
 
-	ASSERT(SUCCESS == get_file_content("templates/0030_001.txt",pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,"templates/0030_001.txt"));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm -f lock_s1.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
-	del(chunk);
 	del(result);
 
 	RETURN_STATUS;
@@ -65,48 +65,49 @@ static Return test0030_2_test(void)
 	INITTEST;
 
 	create(char,result);
-	create(char,chunk);
 	create(char,pattern);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;"
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
 	        "rm -f lock_s2.db;";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_literal(result,"SCENARIO2\n"));
-
 	ASSERT(SUCCESS == runit("--database=lock_s2.db --progress " \
 		"--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1",
-		chunk,
+		result,
 		COMPLETED,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	const char *filename = "templates/0030_002_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("touch -m " TARGET_FILE,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == runit("--update --watch-timestamps " \
 		"--lock-checksum=\"^path1/.*\" --database=lock_s2.db tests/examples/diffs/diff1",
-		chunk,
+		result,
 		WARNING,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	filename = "templates/0030_002_2.txt";
 
-	ASSERT(SUCCESS == get_file_content("templates/0030_002.txt",pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,"templates/0030_002.txt"));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm -f lock_s2.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
-	del(chunk);
 	del(result);
 
 	RETURN_STATUS;
@@ -120,48 +121,49 @@ static Return test0030_3_test(void)
 	INITTEST;
 
 	create(char,result);
-	create(char,chunk);
 	create(char,pattern);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;"
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
 	        "rm -f lock_s3.db;";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_literal(result,"SCENARIO3\n"));
-
 	ASSERT(SUCCESS == runit("--database=lock_s3.db --progress " \
 		"--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1",
-		chunk,
+		result,
 		COMPLETED,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	const char *filename = "templates/0030_003_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("touch -m " TARGET_FILE,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == runit("--update " \
 		"--lock-checksum=\"^path1/.*\" --database=lock_s3.db tests/examples/diffs/diff1",
-		chunk,
+		result,
 		COMPLETED,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	filename = "templates/0030_003_2.txt";
 
-	ASSERT(SUCCESS == get_file_content("templates/0030_003.txt",pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,"templates/0030_003.txt"));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm -f lock_s3.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
-	del(chunk);
 	del(result);
 
 	RETURN_STATUS;
@@ -175,48 +177,49 @@ static Return test0030_4_test(void)
 	INITTEST;
 
 	create(char,result);
-	create(char,chunk);
 	create(char,pattern);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;"
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
 	        "rm -f lock_s4.db;";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_literal(result,"SCENARIO4\n"));
-
 	ASSERT(SUCCESS == runit("--database=lock_s4.db --progress " \
 		"--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1",
-		chunk,
+		result,
 		COMPLETED,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	const char *filename = "templates/0030_004_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("touch -m " TARGET_FILE,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == runit("--update --watch-timestamps --rehash-locked " \
 		"--lock-checksum=\"^path1/.*\" --database=lock_s4.db tests/examples/diffs/diff1",
-		chunk,
+		result,
 		COMPLETED,
 		ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	filename = "templates/0030_004_2.txt";
 
-	ASSERT(SUCCESS == get_file_content("templates/0030_004.txt",pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,"templates/0030_004.txt"));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm -f lock_s4.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
-	del(chunk);
 	del(result);
 
 	RETURN_STATUS;

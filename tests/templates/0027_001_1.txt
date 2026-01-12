@@ -4,7 +4,7 @@ TESTING:argument:paths=tests/examples/diffs
 TESTING:argument:database=lock.db
 TESTING:argument:db_file_name=lock.db
 TESTING:argument:lock-checksum=\Q^diff1/1/.*, ^diff2/path1/.*\E
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs exists
 TESTING:The path tests/examples/diffs is exists and it is a directory

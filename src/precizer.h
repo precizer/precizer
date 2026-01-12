@@ -454,14 +454,14 @@ Return path_absolute_from_relative(
  *
  * FILE_ACCESS_ALLOWED    — path is readable (direct or resolved absolute check).
  * FILE_ACCESS_DENIED     — path exists but is not readable (or resolved path is not readable).
- * FILE_ACCESS_NOT_FOUND  — path or one of its components does not exist.
+ * FILE_NOT_FOUND         — path or one of its components does not exist.
  * FILE_ACCESS_ERROR      — unable to complete access check (e.g., failed to resolve absolute path).
  */
 typedef enum FileAccessStatus
 {
 	FILE_ACCESS_ALLOWED = 0,
 	FILE_ACCESS_DENIED,
-	FILE_ACCESS_NOT_FOUND,
+	FILE_NOT_FOUND,
 	FILE_ACCESS_ERROR
 } FileAccessStatus;
 
@@ -615,6 +615,7 @@ void show_relative_path(
 	const bool *);
 
 void show_metadata(
+	LOGMODES,
 	Changed,
 	const CmpctStat *,
 	const CmpctStat *);
@@ -629,6 +630,11 @@ void show_checksum_gracefully_interrupted(
 	const sqlite3_int64 *);
 
 Return status_of_changes(void);
+
+Return verify_directory_access(
+	FTS *,
+	FTSENT *,
+	const char *);
 
 Return db_check_changes(void);
 
