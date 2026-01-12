@@ -100,7 +100,7 @@ Return file_list(const bool count_size_of_all_files)
 	bool at_least_one_file_was_shown = false;
 
 	// Signals integrity issues for locked files
-	bool lock_checksum_detected = false;
+	bool lock_checksum_violation_detected = false;
 
 	FTS *file_systems = NULL;
 	FTSENT *p = NULL;
@@ -501,7 +501,7 @@ Return file_list(const bool count_size_of_all_files)
 				   blocks rehash/DB update and flags corruption */
 				if(lock_checksum_violation == true)
 				{
-					lock_checksum_detected = true;
+					lock_checksum_violation_detected = true;
 					break;
 				}
 
@@ -553,7 +553,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				if(locked_checksum_mismatch == true)
 				{
-					lock_checksum_detected = true;
+					lock_checksum_violation_detected = true;
 					slog(EVERY|UNDECOR,RED "checksum locked, data corruption detected" RESET " %s\n",relative_path);
 					break;
 				}
@@ -659,10 +659,14 @@ Return file_list(const bool count_size_of_all_files)
 			&at_least_one_file_was_shown);
 	}
 
-	if(lock_checksum_detected == true)
+	if(lock_checksum_violation_detected == true)
 	{
 		slog(ERROR,BOLD "Caution! Data corruption detected for checksum-locked file!" RESET "\n");
-		status = WARNING;
+
+		if(SUCCESS == status)
+		{
+			status = WARNING;
+		}
 	}
 
 	provide(status);
