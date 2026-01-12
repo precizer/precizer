@@ -344,7 +344,7 @@ Return parse_arguments(
 		provide(status);
 	}
 
-	if(rational_logger_mode & TESTING)
+	/* Testing mode */
 	{
 		slog(TESTING,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
 
@@ -354,9 +354,9 @@ Return parse_arguments(
 
 			for(int i = 0; config->paths[i]; i++)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->paths[i]);
+				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->paths[i]);
 			}
-			printf("\n");
+			slog(TESTING|UNDECOR,"\n");
 		}
 
 		if(config->db_primary_file_path != NULL)
@@ -375,9 +375,9 @@ Return parse_arguments(
 
 			for(int i = 0; config->db_file_paths[i]; i++)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->db_file_paths[i]);
+				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_paths[i]);
 			}
-			printf("\n");
+			slog(TESTING|UNDECOR,"\n");
 		}
 
 		if(config->db_file_names != NULL)
@@ -386,9 +386,9 @@ Return parse_arguments(
 
 			for(int i = 0; config->db_file_names[i]; i++)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->db_file_names[i]);
+				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_names[i]);
 			}
-			printf("\n");
+			slog(TESTING|UNDECOR,"\n");
 		}
 
 		if(config->ignore != NULL)
@@ -398,9 +398,9 @@ Return parse_arguments(
 			// Print the contents of the string array
 			for(int i = 0; config->ignore[i] != NULL; ++i)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->ignore[i]);
+				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
 			}
-			printf("\n");
+			slog(TESTING|UNDECOR,"\n");
 		}
 
 		if(config->include != NULL)
@@ -410,9 +410,9 @@ Return parse_arguments(
 			// Print the contents of the string array
 			for(int i = 0; config->include[i] != NULL; ++i)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->include[i]);
+				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
 			}
-			printf("\n");
+			slog(TESTING|UNDECOR,"\n");
 		}
 
 		if(config->lock_checksum != NULL)
@@ -422,9 +422,9 @@ Return parse_arguments(
 			// Print the contents of the string array
 			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
 			{
-				printf(i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
+				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
 			}
-			printf("\n");
+			slog(TESTING|UNDECOR,"\n");
 		}
 
 		if(config->db_check_level != FULL)
@@ -487,112 +487,110 @@ Return parse_arguments(
 			slog(TESTING,"argument:start-device-only=%s\n",config->start_device_only ? "yes" : "no");
 		}
 
-	} else {
-
-		// Verbose but NOT silent
-		if((rational_logger_mode & VERBOSE) && !(rational_logger_mode & SILENT))
-		{
-			slog(VERBOSE,"Configuration: ");
-			printf("rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
-
-			if(config->paths != NULL)
-			{
-				printf("paths=");
-
-				for(int i = 0; config->paths[i]; i++)
-				{
-					printf(i == 0 ? "%s" : ", %s",config->paths[i]);
-				}
-				printf("; ");
-			}
-
-			if(config->db_primary_file_path != NULL)
-			{
-				printf("database=%s; ",config->db_primary_file_path);
-			}
-
-			if(config->db_file_name != NULL)
-			{
-				printf("db_file_name=%s; ",config->db_file_name);
-			}
-
-			if(config->db_file_paths != NULL)
-			{
-				printf("db_file_paths=");
-
-				for(int i = 0; config->db_file_paths[i]; i++)
-				{
-					printf(i == 0 ? "%s" : ", %s",config->db_file_paths[i]);
-				}
-				printf("; ");
-			}
-
-			if(config->db_file_names != NULL)
-			{
-				printf("db_file_names=");
-
-				for(int i = 0; config->db_file_names[i]; i++)
-				{
-					printf(i == 0 ? "%s" : ", %s",config->db_file_names[i]);
-				}
-				printf("; ");
-			}
-
-			if(config->ignore != NULL)
-			{
-				printf("ignore=");
-
-				// Print the contents of the string array
-				for(int i = 0; config->ignore[i] != NULL; ++i)
-				{
-					printf(i == 0 ? "%s" : ", %s",config->ignore[i]);
-				}
-				printf("; ");
-			}
-
-			if(config->include != NULL)
-			{
-				printf("include=");
-
-				// Print the contents of the string array
-				for(int i = 0; config->include[i] != NULL; ++i)
-				{
-					printf(i == 0 ? "%s" : ", %s",config->include[i]);
-				}
-				printf("; ");
-			}
-
-			if(config->lock_checksum != NULL)
-			{
-				printf("lock-checksum=");
-
-				// Print the contents of the string array
-				for(int i = 0; config->lock_checksum[i] != NULL; ++i)
-				{
-					printf(i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
-				}
-				printf("; ");
-			}
-
-			printf("verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
-				config->verbose ? "yes" : "no",
-				config->maxdepth,
-				config->force ? "yes" : "no",
-				config->update ? "yes" : "no",
-				config->watch_timestamps ? "yes" : "no",
-				config->rehash_locked ? "yes" : "no",
-				config->progress ? "yes" : "no",
-				config->compare ? "yes" : "no",
-				config->db_clean_ignored ? "yes" : "no",
-				config->dry_run ? "yes" : "no",
-				config->start_device_only ? "yes" : "no",
-				config->db_check_level == QUICK ? "QUICK" : "FULL",
-				rational_reconvert(rational_logger_mode));
-			printf("\n");
-		}
 	}
 
-	slog(TRACE,"Arguments parsed\n");
+	/* Verbose mode */
+	{
+		slog(VERBOSE,"Configuration: ");
+		slog(VERBOSE|UNDECOR,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
+
+		if(config->paths != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"paths=");
+
+			for(int i = 0; config->paths[i]; i++)
+			{
+				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->paths[i]);
+			}
+			slog(VERBOSE|UNDECOR,"; ");
+		}
+
+		if(config->db_primary_file_path != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"database=%s; ",config->db_primary_file_path);
+		}
+
+		if(config->db_file_name != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"db_file_name=%s; ",config->db_file_name);
+		}
+
+		if(config->db_file_paths != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"db_file_paths=");
+
+			for(int i = 0; config->db_file_paths[i]; i++)
+			{
+				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_paths[i]);
+			}
+			slog(VERBOSE|UNDECOR,"; ");
+		}
+
+		if(config->db_file_names != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"db_file_names=");
+
+			for(int i = 0; config->db_file_names[i]; i++)
+			{
+				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_names[i]);
+			}
+			slog(VERBOSE|UNDECOR,"; ");
+		}
+
+		if(config->ignore != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"ignore=");
+
+			// Print the contents of the string array
+			for(int i = 0; config->ignore[i] != NULL; ++i)
+			{
+				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
+			}
+			slog(VERBOSE|UNDECOR,"; ");
+		}
+
+		if(config->include != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"include=");
+
+			// Print the contents of the string array
+			for(int i = 0; config->include[i] != NULL; ++i)
+			{
+				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
+			}
+			slog(VERBOSE|UNDECOR,"; ");
+		}
+
+		if(config->lock_checksum != NULL)
+		{
+			slog(VERBOSE|UNDECOR,"lock-checksum=");
+
+			// Print the contents of the string array
+			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
+			{
+				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
+			}
+			slog(VERBOSE|UNDECOR,"; ");
+		}
+
+		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+			config->verbose ? "yes" : "no",
+			config->maxdepth,
+			config->force ? "yes" : "no",
+			config->update ? "yes" : "no",
+			config->watch_timestamps ? "yes" : "no",
+			config->rehash_locked ? "yes" : "no",
+			config->progress ? "yes" : "no",
+			config->compare ? "yes" : "no",
+			config->db_clean_ignored ? "yes" : "no",
+			config->dry_run ? "yes" : "no",
+			config->start_device_only ? "yes" : "no",
+			config->db_check_level == QUICK ? "QUICK" : "FULL",
+			rational_reconvert(rational_logger_mode));
+		slog(VERBOSE|UNDECOR,"\n");
+	}
+
+	slog(TRACE,"Argument parsing is complete\n");
 
 	provide(status);
 }

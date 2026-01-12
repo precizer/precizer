@@ -79,7 +79,7 @@ static void print_changes(
 
 			slog(EVERY|UNDECOR,"%s",flag->flag_name);
 
-			show_metadata(flag->flag_value,&dbrow->saved_stat,stat);
+			show_metadata(EVERY,flag->flag_value,&dbrow->saved_stat,stat);
 
 			flags_found++;
 		}

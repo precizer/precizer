@@ -34,8 +34,8 @@ static Return test0029_1_test(void)
 	}
 
 	command = "cd ${TMPDIR};"
-	        "chmod a-rx tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Change file permitions
-	        "chmod a-rx tests/examples/diffs/diff1/2/AAA/BBB/CZC;"; // Change directory permitions
+	        "chmod 000 tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Change file permitions
+	        "chmod 000 tests/examples/diffs/diff1/2/AAA/BBB/CZC;"; // Change directory permitions
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
@@ -56,6 +56,7 @@ static Return test0029_1_test(void)
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
+		"chmod -R a+rwX tests/examples/ && "
 		"rm -rf tests/examples/ && "
 		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
 

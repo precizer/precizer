@@ -3,7 +3,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=Это новая база данных.db
 TESTING:argument:db_file_name=Это новая база данных.db
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
@@ -62,7 +62,7 @@ TESTING:argument:paths=Это новая база данных.db, 0015_database
 TESTING:argument:db_file_paths=Это новая база данных.db, 0015_database_v3 это база данных с пробелами и символами UTF-8.db
 TESTING:argument:db_file_names=Это новая база данных.db, 0015_database_v3 это база данных с пробелами и символами UTF-8.db
 TESTING:argument:compare=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+

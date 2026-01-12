@@ -4,7 +4,7 @@ TESTING:argument:paths=write_protected_database1.db, database2.db
 TESTING:argument:db_file_paths=write_protected_database1.db, database2.db
 TESTING:argument:db_file_names=write_protected_database1.db, database2.db
 TESTING:argument:compare=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+

@@ -4,7 +4,7 @@ TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1.db
 TESTING:argument:db_file_name=database1.db
 TESTING:argument:progress=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
@@ -65,7 +65,7 @@ TESTING:argument:paths=tests/examples/diffs/diff2
 TESTING:argument:database=database2.db
 TESTING:argument:db_file_name=database2.db
 TESTING:argument:progress=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff2 exists
 TESTING:The path tests/examples/diffs/diff2 is exists and it is a directory
@@ -126,7 +126,7 @@ TESTING:argument:paths=database1.db, database2.db
 TESTING:argument:db_file_paths=database1.db, database2.db
 TESTING:argument:db_file_names=database1.db, database2.db
 TESTING:argument:compare=yes
-TESTING:Arguments parsed
+TESTING:Argument parsing is complete
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+

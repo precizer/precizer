@@ -215,8 +215,16 @@ Return file_list(const bool count_size_of_all_files)
 		switch(p->fts_info)
 		{
 			case FTS_D:
+			{
+				if(SUCCESS != verify_directory_access(file_systems,p,runtime_root))
+				{
+					status = FAILURE;
+					continue_the_loop = false;
+					break;
+				}
 				count_dirs++;
 				break;
+			}
 			case FTS_F:
 			{
 				// Limit recursion to the depth determined in config->maxdepth
@@ -285,7 +293,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				if(FAIL_REGEXP_LOCK_CHECKSUM == lock_checksum_response)
 				{
-					slog(ERROR,"Fail lock-checksum REGEXP for a string: %s",relative_path);
+					slog(ERROR,"Fail lock-checksum REGEXP for a string: %s\n",relative_path);
 					status = FAILURE;
 					continue_the_loop = false;
 					break;
@@ -422,14 +430,14 @@ Return file_list(const bool count_size_of_all_files)
 						ignore = true;
 
 					} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
-						slog(ERROR,"Fail ignore REGEXP for a string: %s",relative_path);
+						slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
 						status = FAILURE;
 						continue_the_loop = false;
 						break;
 					}
 
 				} else if(FAIL_REGEXP_INCLUDE == match_include_response){
-					slog(ERROR,"Fail include REGEXP for a string: %s",relative_path);
+					slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
 					status = FAILURE;
 					continue_the_loop = false;
 					break;
