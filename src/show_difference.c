@@ -71,27 +71,27 @@ Return show_difference(
 		{
 			if(first_word == true)
 			{
-				printf("Database file details: ");
+				slog(ERROR,"Database file details: ");
 				first_word = false;
 			}
 
 			/* Add separator if not the first flag */
 			if(flags_found > 0)
 			{
-				printf(" & ");
+				slog(ERROR|UNDECOR," & ");
 			}
-			printf("%s",flag->flag_name);
-			show_metadata(flag->flag_value,before,after);
+			slog(ERROR|UNDECOR,"%s",flag->flag_name);
+			show_metadata(ERROR,flag->flag_value,before,after);
 			flags_found++;
 		}
 	}
 
-	del(flags);
-
 	if(flags_found > 0)
 	{
-		printf("\n");
+		slog(ERROR|UNDECOR,"\n");
 	}
+
+	del(flags);
 
 	return(SUCCESS);
 }

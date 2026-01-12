@@ -20,13 +20,13 @@ Return db_sql_wrap_string(
 
 	if(destination == NULL || source == NULL)
 	{
-		slog(ERROR,"sql_wrap_string arguments must be non-NULL");
+		slog(ERROR,"sql_wrap_string arguments must be non-NULL\n");
 		status = FAILURE;
 	}
 
 	if(SUCCESS == status && destination->element_size != sizeof(char))
 	{
-		slog(ERROR,"sql_wrap_string requires byte-sized destination descriptor");
+		slog(ERROR,"sql_wrap_string requires byte-sized destination descriptor\n");
 		status = FAILURE;
 	}
 
@@ -47,7 +47,7 @@ Return db_sql_wrap_string(
 			{
 				if(apostrophes == SIZE_MAX)
 				{
-					slog(ERROR,"sql_wrap_string apostrophe counter overflow");
+					slog(ERROR,"sql_wrap_string apostrophe counter overflow\n");
 					status = FAILURE;
 					break;
 				}
@@ -65,14 +65,14 @@ Return db_sql_wrap_string(
 
 		if(source_length > SIZE_MAX - apostrophes)
 		{
-			slog(ERROR,"sql_wrap_string overflow while adding escape budget");
+			slog(ERROR,"sql_wrap_string overflow while adding escape budget\n");
 			status = FAILURE;
 		} else {
 			size_t base_length = source_length + apostrophes;
 
 			if(base_length > SIZE_MAX - overhead)
 			{
-				slog(ERROR,"sql_wrap_string overflow before allocating terminator");
+				slog(ERROR,"sql_wrap_string overflow before allocating terminator\n");
 				status = FAILURE;
 			} else {
 				required_elements = base_length + overhead;
@@ -88,7 +88,7 @@ Return db_sql_wrap_string(
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"sql_wrap_string destination pointer is NULL after resize");
+			slog(ERROR,"sql_wrap_string destination pointer is NULL after resize\n");
 			status = FAILURE;
 		} else {
 			size_t write_index = 0;

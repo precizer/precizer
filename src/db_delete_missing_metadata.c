@@ -41,6 +41,7 @@ Return db_delete_missing_metadata(void)
 		slog(TRACE,"Dry Run mode is enabled. The primary database must not be modified\n");
 	}
 
+	// Print deletion banners only once per run
 	bool first_iteration = true;
 
 	sqlite3_stmt *select_stmt = NULL;
@@ -70,13 +71,10 @@ Return db_delete_missing_metadata(void)
 		}
 
 		sqlite_int64 ID = sqlite3_column_int64(select_stmt,0);
-		const char *runtime_path_prefix = NULL;
-		runtime_path_prefix = (const char *)sqlite3_column_text(select_stmt,1);
-		const char *relative_path = NULL;
-		relative_path = (const char *)sqlite3_column_text(select_stmt,2);
-		char *absolute_path = NULL;
+		const char *runtime_path_prefix = (const char *)sqlite3_column_text(select_stmt,1);
+		const char *relative_path = (const char *)sqlite3_column_text(select_stmt,2);
 
-		bool path_was_removed_from_db = false;
+		// Marks deletions triggered by --db-clean-ignored
 		bool clean_ignored = false;
 
 		if(runtime_path_prefix != NULL && relative_path != NULL)
@@ -123,32 +121,22 @@ Return db_delete_missing_metadata(void)
 					break;
 				}
 			}
+		}
 
-			if(strlen(runtime_path_prefix) > 0 && strlen(relative_path) > 0)
+		// Decide on deletion; access check and messaging handled inside db_delete_the_record_by_id
+		if(clean_ignored == true || relative_path != NULL)
+		{
+			status = db_delete_the_record_by_id(&ID,
+				&first_iteration,
+				&clean_ignored,
+				relative_path,
+				runtime_path_prefix);
+
+			if(SUCCESS != status)
 			{
-				int length = asprintf(&absolute_path,"%s/%s",runtime_path_prefix,relative_path);
-
-				if(length == -1)
-				{
-					slog(ERROR,"Generating the absolute path failed\n");
-					status = FAILURE;
-					break;
-				}
-			} else {
-				slog(ERROR,"A zero-length path has been found\n");
-				status = FAILURE;
 				break;
 			}
-		} else {
-			path_was_removed_from_db = true;
 		}
-
-		if(clean_ignored == true || path_was_removed_from_db == true || (absolute_path != NULL && access(absolute_path,F_OK) != 0))
-		{
-			status = db_delete_the_record_by_id(&ID,&first_iteration,&clean_ignored,relative_path);
-		}
-
-		free(absolute_path);
 	}
 
 	if(SQLITE_DONE != rc)

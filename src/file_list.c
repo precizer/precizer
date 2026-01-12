@@ -83,11 +83,23 @@ Return file_list(const bool count_size_of_all_files)
 
 	// Flags that reflect the presence of any changes
 	// since the last research
+
+	// Print traversal/update banners only once
 	bool first_iteration = true;
+
+	// Prevent duplicate --ignore info messages
 	bool ignore_showed_once = false;
+
+	// Prevent duplicate --include info messages
 	bool include_showed_once = false;
+
+	// Prevent duplicate lock-checksum info messages
 	bool lock_checksum_showed_once = false;
+
+	// Track whether any output was produced
 	bool at_least_one_file_was_shown = false;
+
+	// Signals integrity issues for locked files
 	bool lock_checksum_detected = false;
 
 	FTS *file_systems = NULL;
@@ -203,8 +215,16 @@ Return file_list(const bool count_size_of_all_files)
 		switch(p->fts_info)
 		{
 			case FTS_D:
+			{
+				if(SUCCESS != verify_directory_access(file_systems,p,runtime_root))
+				{
+					status = FAILURE;
+					continue_the_loop = false;
+					break;
+				}
 				count_dirs++;
 				break;
+			}
 			case FTS_F:
 			{
 				// Limit recursion to the depth determined in config->maxdepth
@@ -245,33 +265,68 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
+				const bool path_known = dbrow->relative_path_already_in_db == true;
+
+				const bool has_saved_offset = dbrow->saved_offset > 0;
+
 				// Validate if size, creation and modification time of a
 				// file has not changed since last scanning.
 				// Default value is:
 				Changed metadata_of_scanned_and_saved_files = NOT_EQUAL;
 
-				if(dbrow->relative_path_already_in_db == true)
+				// Tracks if the current relative path already has a DB entry
+				if(path_known == true)
 				{
 					// Validate if size, creation and modification time of a
 					// file has not changed since last scanning.
 					metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),&stat);
 				}
 
-				bool unchanged_and_complete = dbrow->relative_path_already_in_db == true
-				        && metadata_of_scanned_and_saved_files == IDENTICAL
-				        && dbrow->saved_offset == 0;
+				const bool metadata_identical = metadata_of_scanned_and_saved_files == IDENTICAL;
 
-				if(unchanged_and_complete == true)
+				const bool metadata_changed = metadata_identical == false;
+
+				// Flag that marks files matched by the checksum lock pattern
+				bool locked_checksum_file = false;
+
+				LockChecksum lock_checksum_response = match_checksum_lock_pattern(relative_path,&lock_checksum_showed_once);
+
+				if(FAIL_REGEXP_LOCK_CHECKSUM == lock_checksum_response)
+				{
+					slog(ERROR,"Fail lock-checksum REGEXP for a string: %s\n",relative_path);
+					status = FAILURE;
+					continue_the_loop = false;
+					break;
+				} else if(LOCK_CHECKSUM == lock_checksum_response){
+					locked_checksum_file = true;
+				}
+
+				// Indicates that the checksum-locked file has already been fully hashed and recorded
+				bool lock_checksum_ready = locked_checksum_file == true
+				        && path_known == true
+				        && has_saved_offset == false;
+
+				// Used to skip files whose metadata and checksum are already up to date
+				bool unchanged_and_complete = path_known == true
+				        && metadata_identical == true
+				        && has_saved_offset == false;
+
+				if(unchanged_and_complete == true && !(config->rehash_locked == true && lock_checksum_ready == true))
 				{
 					// Relative path already in DB and doesn't require any change
 					break;
 				}
 
-				bool timestamps_only_changed = dbrow->relative_path_already_in_db == true
-				        && metadata_of_scanned_and_saved_files != IDENTICAL
+				// Derived flags to qualify the type of metadata change
+				bool size_changed = (metadata_of_scanned_and_saved_files & SIZE_CHANGED) != 0;
+
+				bool timestamps_changed = (metadata_of_scanned_and_saved_files & (STATUS_CHANGED_TIME | MODIFICATION_TIME_CHANGED)) != 0;
+
+				bool timestamps_only_changed = path_known == true
+				        && metadata_changed == true
 				        && config->watch_timestamps == false
-				        && !(metadata_of_scanned_and_saved_files & SIZE_CHANGED)
-				        && dbrow->saved_offset == 0;
+				        && size_changed == false
+				        && has_saved_offset == false;
 
 				// Decision whether to rehash the file contents using
 				// the SHA512 algorithm. Defaults to Yes, rehash"
@@ -283,18 +338,9 @@ Return file_list(const bool count_size_of_all_files)
 					rehash = false;
 				}
 
-				bool locked_checksum_file = false;
-
-				LockChecksum lock_checksum_response = match_checksum_lock_pattern(relative_path,&lock_checksum_showed_once);
-
-				if(FAIL_REGEXP_LOCK_CHECKSUM == lock_checksum_response)
+				if(lock_checksum_ready == true && config->rehash_locked == true)
 				{
-					slog(ERROR,"Fail lock-checksum REGEXP for a string: %s",relative_path);
-					status = FAILURE;
-					continue_the_loop = false;
-					break;
-				} else if(LOCK_CHECKSUM == lock_checksum_response){
-					locked_checksum_file = true;
+					rehash = true;
 				}
 
 				sqlite3_int64 offset = 0;           // Offset bytes
@@ -304,11 +350,13 @@ Return file_list(const bool count_size_of_all_files)
 				   of its checksum has been already finished */
 				bool rehashing_from_the_beginning = false;
 
-				bool can_resume_partial_hash = dbrow->saved_offset > 0
-				        && metadata_of_scanned_and_saved_files == IDENTICAL;
+				// Can we resume hashing from a previous partial state?
+				bool can_resume_partial_hash = has_saved_offset == true
+				        && metadata_changed == false;
 
-				bool partial_hash_invalidated = dbrow->saved_offset > 0
-				        && metadata_of_scanned_and_saved_files != IDENTICAL;
+				// Indicates that a previous partial hash is now invalid and must restart
+				bool partial_hash_invalidated = has_saved_offset == true
+				        && metadata_changed == true;
 
 				if(can_resume_partial_hash == true)
 				{
@@ -323,22 +371,27 @@ Return file_list(const bool count_size_of_all_files)
 				}
 
 				// The file is available for reading
-				bool is_readable = false;
+				FileAccessStatus access_status = FILE_ACCESS_DENIED;
 
 				/* Check file access */
-				status = file_check_access(p->fts_path,
-					(size_t)p->fts_pathlen,
-					&is_readable);
+				access_status = file_check_access(p->fts_path,
+					(size_t)p->fts_pathlen);
 
-				if(SUCCESS != status)
+				if(access_status == FILE_ACCESS_ERROR)
 				{
+					status = FAILURE;
 					continue_the_loop = false;
 					break;
 				}
 
+				bool is_readable = (access_status == FILE_ACCESS_ALLOWED);
+
+				// Marks zero-length files to avoid unnecessary hashing
 				bool zero_size_file = false;
 
 				/**
+				 * Indicates files that cannot be read/seeks (e.g. sysfs)
+			 	 *
 				 * On some special file systems (such as /sys, which has
 				 * the SYSFS_MAGIC constant == 0x62656572), standard
 				 * file operations like fopen, fseek, and lseek
@@ -356,6 +409,7 @@ Return file_list(const bool count_size_of_all_files)
 					rehash = false;
 				}
 
+				// Captures files explicitly skipped or forced by regexp filters
 				// Ignored with --ignore= or admitted with --include=
 				bool ignore = false;
 
@@ -376,14 +430,14 @@ Return file_list(const bool count_size_of_all_files)
 						ignore = true;
 
 					} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
-						slog(ERROR,"Fail ignore REGEXP for a string: %s",relative_path);
+						slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
 						status = FAILURE;
 						continue_the_loop = false;
 						break;
 					}
 
 				} else if(FAIL_REGEXP_INCLUDE == match_include_response){
-					slog(ERROR,"Fail include REGEXP for a string: %s",relative_path);
+					slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
 					status = FAILURE;
 					continue_the_loop = false;
 					break;
@@ -392,16 +446,29 @@ Return file_list(const bool count_size_of_all_files)
 				}
 
 				// Ensure checksum-locked files are tracked even if matched by ignore pattern
-				if(ignore == true && locked_checksum_file == true && dbrow->relative_path_already_in_db == false)
+				if(ignore == true && locked_checksum_file == true && path_known == false)
 				{
 					ignore = false;
 				}
 
-				// Path is checksum-locked, already stored, and its hash was fully calculated previously
-				bool lock_checksum_violation = locked_checksum_file == true
-				        && dbrow->relative_path_already_in_db == true
-				        && dbrow->saved_offset == 0
-				        && metadata_of_scanned_and_saved_files != IDENTICAL;
+				// Locked checksum files must not diverge once sealed
+				bool lock_checksum_violation = lock_checksum_ready == true
+				        && (size_changed == true
+				        || (config->watch_timestamps == true
+				        && config->rehash_locked == false
+				        && timestamps_changed == true));
+
+				// Timestamps drift on a locked file may be ignored depending on config
+				bool locked_timestamp_drift_only = lock_checksum_ready == true
+				        && config->watch_timestamps == false
+				        && config->rehash_locked == false
+				        && timestamps_changed == true
+				        && size_changed == false;
+
+				if(locked_timestamp_drift_only == true)
+				{
+					break;
+				}
 
 				// Print out of a file name and its changes
 				show_relative_path(relative_path,
@@ -471,15 +538,38 @@ Return file_list(const bool count_size_of_all_files)
 					memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
 				}
 
-				if(dbrow->relative_path_already_in_db == true)
+				bool locked_checksum_mismatch = false; // Detects corruption when rehashing locked files
+
+				if(config->rehash_locked == true && lock_checksum_ready == true
+				        && rehash == true && (TRIUMPH & status)
+				        && wrong_file_type == false && zero_size_file == false
+				        && offset == 0)
+				{
+					if(memcmp(sha512,dbrow->sha512,SHA512_DIGEST_LENGTH) != 0)
+					{
+						locked_checksum_mismatch = true;
+					}
+				}
+
+				if(locked_checksum_mismatch == true)
+				{
+					lock_checksum_detected = true;
+					slog(EVERY|UNDECOR,RED "checksum locked, data corruption detected" RESET " %s\n",relative_path);
+					break;
+				}
+
+				if(path_known == true)
 				{
 					/* Update in DB */
 
-					bool should_update_db = dbrow->relative_path_already_in_db == true
-					        && locked_checksum_file == false
+					bool allow_locked_update = lock_checksum_violation == false
+					        && (locked_checksum_file == false || config->rehash_locked == true);
+
+					bool should_update_db = path_known == true
+					        && allow_locked_update == true
 					        && (offset > dbrow->saved_offset
-					        || (dbrow->saved_offset > 0 && offset == 0)
-					        || metadata_of_scanned_and_saved_files != IDENTICAL);
+					        || (has_saved_offset == true && offset == 0)
+					        || metadata_changed == true);
 
 					if(should_update_db == true)
 					{

@@ -10,11 +10,55 @@ Return db_delete_the_record_by_id(
 	sqlite_int64 *ID,
 	bool         *first_iteration,
 	const bool   *clean_ignored,
-	const char   *relative_path)
+	const char   *relative_path,
+	const char   *runtime_path_prefix)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
+
+	// Indicates removal due to missing or unreadable path
+	bool inaccessible = false;
+
+	bool file_not_found = false;
+
+	char *absolute_path = NULL;
+
+	if(clean_ignored != NULL && *clean_ignored == false
+	        && runtime_path_prefix != NULL && relative_path != NULL)
+	{
+		int length = asprintf(&absolute_path,"%s/%s",runtime_path_prefix,relative_path);
+
+		if(length == -1)
+		{
+			free(absolute_path);
+			return(FAILURE);
+		}
+
+		FileAccessStatus access_status = file_check_access(absolute_path,(size_t)length);
+
+		free(absolute_path);
+
+		if(access_status == FILE_ACCESS_ERROR)
+		{
+			return(FAILURE);
+		}
+
+		if(access_status == FILE_NOT_FOUND)
+		{
+			file_not_found = true;
+
+		} else if(access_status == FILE_ACCESS_DENIED){
+
+			inaccessible = true;
+
+		} else if(access_status == FILE_ACCESS_ALLOWED){
+
+			/* The file remains available.
+			   Keep file references in the database! */
+			return(SUCCESS);
+		}
+	}
 
 	sqlite3_stmt *delete_stmt = NULL;
 	int rc = 0;
@@ -90,11 +134,22 @@ Return db_delete_the_record_by_id(
 			if(*clean_ignored == true)
 			{
 				slog(EVERY|UNDECOR,"clean ignored %s\n",relative_path);
+
+			} else if(inaccessible == true){
+
+				slog(EVERY|UNDECOR,"inaccessible %s\n",relative_path);
+
+			} else if(file_not_found == true){
+
+				slog(EVERY|UNDECOR,"no longer exists %s\n",relative_path);
+
 			} else {
-				slog(EVERY|UNDECOR,"%s\n",relative_path);
+
+				slog(ERROR,"An unexpected error that should never occur for %s\n",relative_path);
 			}
 
 		} else {
+
 			log_sqlite_error(config->db,rc,NULL,"Delete statement didn't return right code %d",sql_return);
 			status = FAILURE;
 		}
