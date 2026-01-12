@@ -55,7 +55,7 @@ static char args_doc[] = "PATH";
 
 /* The options we understand. */
 static struct argp_option options[] = {
-	{ 0,0,0,0,"Build database options:",2},
+	{ 0,0,0,0,"Protecting immutable archives with:",3},
 	{"lock-checksum",'k',"PCRE2_REGEXP",0,"Relative path to be treated as immutable archival data. PCRE2 regular expressions can be used to "
 	 "select files or directories whose checksums are written once to the database and never updated "
 	 "again. If no matching files exist in the database yet, their entries and checksums will still be "
@@ -68,7 +68,7 @@ static struct argp_option options[] = {
 	 BOLD "--lock-checksum" RESET " options.\n"
 	 "Example:\n"
 	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2077/.*\" /mnt/storage" RESET "\n",0},
-	{"rehash-locked",'h',0,0,"Force a full SHA512 rehash for every file that is already stored "
+	{"rehash-locked",'r',0,0,"Force a full SHA512 rehash for every file that is already stored "
 	 "in the database and protected by any "
 	 BOLD "--lock-checksum" RESET " pattern. "
 	 "This option must always be used together with "
@@ -86,6 +86,7 @@ static struct argp_option options[] = {
 	 "reported as corrupted just like any other locked entry.\n"
 	 "Example:\n"
 	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2024/.*\" --rehash-locked /mnt/storage" RESET "\n",0},
+	{ 0,0,0,0,"Build database options:",2},
 	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions could be used to specify "
 	 "a pattern to ignore files or directories. Attention! All paths for the regular expression must be specified as relative. To understand what a relative path looks like, just run traverses without the "
 	 BOLD "--ignore" RESET " option and look how the terminal will display "
@@ -162,7 +163,7 @@ static error_t parse_opt(
 		case 'k':
 			(void)add_string_to_array(&config->lock_checksum,arg);
 			break;
-		case 'h':
+		case 'r':
 			config->rehash_locked = true;
 			break;
 		case 'c':
