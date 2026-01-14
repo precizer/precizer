@@ -83,12 +83,14 @@ static Return test0011_2_readme(void)
 {
 	INITTEST;
 
+	const char *command = "cd ${TMPDIR};"
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -a tests/examples/ tests/examples_backup;",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
-	const char *command = NULL;
 
 	// Create memory for the result
 	create(char,result);
@@ -233,8 +235,8 @@ static Return test0011_4_readme(void)
 
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

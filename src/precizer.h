@@ -329,6 +329,11 @@ typedef struct {
 	/// deletion of information from the database.
 	bool db_clean_ignored;
 
+	/// Allow dropping database records for files that are inaccessible
+	/// (permission denied). Disabled by default to avoid accidental loss
+	/// when access rights temporarily change.
+	bool db_drop_inaccessible;
+
 	/// Select database validation level: 'quick' for basic
 	/// structure check, 'full' for comprehensive
 	/// integrity verification

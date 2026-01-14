@@ -2,8 +2,8 @@
 Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
 Searching for files that no longer exist on the file system…
-The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be deleted against the database %DB_NAME%
-(?:\x1B\[[0-9;]*m)*These files are no longer exist or ignored and will be deleted against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the file records will be dropped from the database %DB_NAME%
+(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 clean ignored diff1/1/AAA/BCB/CCC/a.txt
 clean ignored diff1/1/AAA/ZAW/A/b/c/a_file.txt
 clean ignored diff1/1/AAA/ZAW/D/e/f/b_file.txt

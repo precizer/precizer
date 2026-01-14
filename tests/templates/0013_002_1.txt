@@ -51,7 +51,7 @@ TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Dry Run mode is enabled. The primary database must not be modified
 TESTING:If the information about ignored files should be removed from the database the (?:\x1B\[[0-9;]*m)*--db-clean-ignored(?:\x1B\[[0-9;]*m)* option must be specified. This is special protection against accidental deletion of information from the database
-TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer exist or ignored and will be deleted against the DB database1.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1.db:(?:\x1B\[[0-9;]*m)*
 no longer exists 2/AAA/BBB/CZC/a.txt
 TESTING:Missing file search completed
 TESTING:The database connection has been closed

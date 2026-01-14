@@ -13,8 +13,8 @@ static Return test0027_1_lock_checksum(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;";
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
@@ -60,8 +60,8 @@ static Return test0027_1_lock_checksum(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm lock.db && "
-	        "rm -rf tests/examples/ && "
-	        "mv tests/examples_backup/ tests/examples/";
+	        "rm -rf tests/examples/diffs/ && "
+	        "mv tests/examples_backup/ tests/examples/diffs/";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 

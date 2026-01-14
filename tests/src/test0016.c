@@ -15,9 +15,12 @@ Return test0016(void)
 	create(char,result);
 	create(char,chunk);
 
+	const char *command = "cd ${TMPDIR};"
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+
 	// Preparation for the test
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"cp -a tests/examples/ tests/examples_backup;",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0016_001_1.txt";
 
@@ -85,8 +88,8 @@ Return test0016(void)
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
 		"rm database2.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

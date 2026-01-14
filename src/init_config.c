@@ -6,8 +6,8 @@
 
 /**
  *
- * The structure Config where all runtime settings will be stored.
- * Initialization the structure elements by zero.
+ * Initialize the Config structure that stores runtime settings.
+ * Start with zeroed memory and then apply explicit defaults.
  *
  */
 void init_config(void)
@@ -86,6 +86,10 @@ void init_config(void)
 	// This is special protection against accidental
 	// deletion of information from the database.
 	config->db_clean_ignored = false;
+
+	// Allow dropping database records for inaccessible files
+	// (permission denied). Disabled by default.
+	config->db_drop_inaccessible = false;
 
 	/// Select database validation level: 'quick' for basic
 	/// structure check, 'full' (default) for comprehensive

@@ -2,8 +2,10 @@
 
 /**
  *
- * This function remove information about a specific
- * file from the database by its unique db ID
+ * Drop a file record from the database by its unique ID.
+ * Records are dropped only for ignored paths, missing files, or inaccessible
+ * paths when --drop-inaccessible is enabled; accessible paths remain.
+ * In --dry-run mode, the database is not modified.
  *
  */
 Return db_delete_the_record_by_id(
@@ -50,7 +52,17 @@ Return db_delete_the_record_by_id(
 
 		} else if(access_status == FILE_ACCESS_DENIED){
 
-			inaccessible = true;
+			if(config->db_drop_inaccessible == true)
+			{
+				inaccessible = true;
+
+			} else {
+
+				slog(EVERY|UNDECOR,"kept inaccessible %s\n",relative_path);
+
+				return(SUCCESS);
+
+			}
 
 		} else if(access_status == FILE_ACCESS_ALLOWED){
 
@@ -119,7 +131,7 @@ Return db_delete_the_record_by_id(
 
 				if(config->the_update_warning_has_already_been_shown == false)
 				{
-					slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be deleted against the database %s\n",config->db_file_name);
+					slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the file records will be dropped from the database %s\n",config->db_file_name);
 				}
 
 				/* Reflect changes in global */
@@ -128,7 +140,12 @@ Return db_delete_the_record_by_id(
 					config->db_primary_file_modified = true;
 				}
 
-				slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
+				if(config->db_drop_inaccessible)
+				{
+					slog(EVERY,BOLD "Dropping DB records for missing, inaccessible, or ignored paths in %s:" RESET "\n",config->db_file_name);
+				} else {
+					slog(EVERY,BOLD "Dropping DB records for missing or ignored paths in %s:" RESET "\n",config->db_file_name);
+				}
 			}
 
 			if(*clean_ignored == true)
@@ -137,7 +154,7 @@ Return db_delete_the_record_by_id(
 
 			} else if(inaccessible == true){
 
-				slog(EVERY|UNDECOR,"inaccessible %s\n",relative_path);
+				slog(EVERY|UNDECOR,"drop due to inaccessible %s\n",relative_path);
 
 			} else if(file_not_found == true){
 
