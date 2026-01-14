@@ -108,6 +108,7 @@ Let’s analyze this issue with the following scenario:
 * If the program is intentionally or accidentally stopped, there is no need to worry about losing progress. All results are fully preserved and can be used in subsequent runs.
 * The checksum calculations rely on a reliable and fast SHA512 algorithm, which completely eliminates collisions even when analyzing a single massive file. If there are two identical large files differing by just one byte, SHA512 will detect it, and their checksums will be different—something that cannot be guaranteed with simpler hash functions like SHA1 or CRC32.
 * The algorithms in precizer are designed to make it easy to keep the database up to date without having to recalculate everything from scratch. Simply run the program with the `--update` parameter, and new files will be added to the database, while entries for deleted files will be removed. If a file has been modified and its size has changed, its SHA512 checksum will be recalculated and updated in the database.
+* During `--update`, entries for missing files are removed, but records for inaccessible files (permission denied) are kept by default. This protection exists because permissions can temporarily change (ownership, ACLs, transient mount issues), and dropping records in that state would silently erase valid database history. Using `--drop-inaccessible` with `--update` is intended only when those database records must be dropped.
 * There is an option to consider not only the file size when updating the database but also the file’s creation or modification timestamps. This means that any change in file metadata will trigger an SHA512 checksum recalculation and update in the database. For example, if a file’s ctime changes but its size remains the same, the checksum will NOT be recalculated if only the `--update` parameter is used. To force checksum recalculation for such files `--watch-timestamps` should be added. This option is disabled by default because ctime (like mtime) can change frequently due to commands like `chmod` or `chown`, even when the file’s content remains the same.
 * precizer can be used as a security monitoring tool, detecting unauthorized file modifications where contents might have changed while metadata remains untouched.
 * The program never modifies, deletes, moves, or copies any files or directories it processes. All it does is list files, compute their checksums, and update them in the database. All changes are strictly confined to the database.
@@ -770,6 +771,17 @@ To illustrate how `--watch-timestamps` and `--rehash-locked` interact, consider 
 5. **Both `--watch-timestamps` and `--rehash-locked` are enabled.** Only the checksum and the size stored in the database matter. If both match, the file remains consistent and no warning is produced. If the on-disk timestamps changed, the new values are saved to the database even though the checksum stayed the same.
 
 A practical workflow is to run a quick daily scan without `--rehash-locked` (and even without `--watch-timestamps` if timestamp drift is acceptable) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to force checksum-level verification of the frozen data set.
+
+### Example 11
+Dropping inaccessible records with `--drop-inaccessible`
+
+By default, when a file is inaccessible because of permission errors, its database record is preserved during `--update` to prevent accidental data loss. Dropping such records requires `--drop-inaccessible`:
+
+```sh
+precizer --update --drop-inaccessible /mnt/storage
+```
+
+<sub>drop due to inaccessible archive/secret.bin</sub>
 
 ## AUTHOR
 Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)

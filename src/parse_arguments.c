@@ -7,7 +7,7 @@ static bool missing_arguments = false;
 
 /**
  *
- * @brief Parse arguments with argp lib
+ * @brief Parse command-line arguments with the argp library.
  *
  */
 
@@ -102,6 +102,9 @@ static struct argp_option options[] = {
 	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",0 },
 	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",0 },
 	{"db-clean-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-clean-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",0},
+	{"drop-inaccessible",'X',0,0,"Allow dropping database records for files that are inaccessible due to permission errors. By default, such paths are reported as \"inaccessible\" and their DB records are kept to avoid accidental loss when permissions change. This option is effective only with " BOLD "--update" RESET ".\n"
+	 "Example:\n"
+	 BOLD APP_NAME " --update --drop-inaccessible /mnt/storage" RESET "\n",0},
 	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.\n",0},
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.\n",0},
 	{"dry-run",'n',0,0,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET "\n",0},
@@ -175,6 +178,9 @@ static error_t parse_opt(
 		case 'C':
 			config->db_clean_ignored = true;
 			break;
+		case 'X':
+			config->db_drop_inaccessible = true;
+			break;
 		case 'm':
 			argument_value = strtol(arg,&ptr,10);
 
@@ -246,6 +252,16 @@ static error_t parse_opt(
 				}
 			} else if(state->arg_num > 1){
 				slog(TRACE,"Caution: multiple PATH arguments received. Multipath mode activated. It’s important to note that when comparison mode is enabled, the ORDER of the paths must be identical for the database comparison to work correctly. Number of paths: %d\n",state->arg_num);
+			}
+
+			if(config->db_drop_inaccessible == true && config->update == false)
+			{
+				argp_failure(state,0,0,"WARNING: --drop-inaccessible has no effect without --update; records for inaccessible paths will be kept in the database");
+			}
+
+			if(config->rehash_locked == true && config->lock_checksum == NULL)
+			{
+				argp_failure(state,0,0,"WARNING: --rehash-locked has no effect without --lock-checksum");
 			}
 			break;
 		default:
@@ -478,6 +494,11 @@ Return parse_arguments(
 			slog(TESTING,"argument:db-clean-ignored=%s\n",config->db_clean_ignored ? "yes" : "no");
 		}
 
+		if(config->db_drop_inaccessible)
+		{
+			slog(TESTING,"argument:drop-inaccessible=%s\n",config->db_drop_inaccessible ? "yes" : "no");
+		}
+
 		if(config->dry_run)
 		{
 			slog(TESTING,"argument:dry-run=%s\n",config->dry_run ? "yes" : "no");
@@ -574,7 +595,7 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
-		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
 			config->verbose ? "yes" : "no",
 			config->maxdepth,
 			config->force ? "yes" : "no",
@@ -584,6 +605,7 @@ Return parse_arguments(
 			config->progress ? "yes" : "no",
 			config->compare ? "yes" : "no",
 			config->db_clean_ignored ? "yes" : "no",
+			config->db_drop_inaccessible ? "yes" : "no",
 			config->dry_run ? "yes" : "no",
 			config->start_device_only ? "yes" : "no",
 			config->db_check_level == QUICK ? "QUICK" : "FULL",

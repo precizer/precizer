@@ -51,8 +51,8 @@ static Return dry_run_mode_2_test(void)
 	create(char,chunk);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;";
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
@@ -179,8 +179,8 @@ static Return dry_run_mode_2_test(void)
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -203,7 +203,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -a tests/examples/ tests/examples_backup/;",COMPLETED,ALLOW_BOTH));
+		"cp -a tests/examples/diffs/ tests/examples_backup/;",COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
@@ -297,8 +297,8 @@ static Return no_dry_run_mode_3_test(void)
 	// Clean up test results
 	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
 		"rm database1.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
