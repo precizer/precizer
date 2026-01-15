@@ -47,7 +47,8 @@ static Return test0027_1_lock_checksum(void)
 	        "echo 'corrupted' >> tests/examples/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt;"
 	        "echo 'corrupted' >> tests/examples/diffs/diff2/path1/AAA/BCB/CCC/b.txt;"
 	        "echo 'changed' >> tests/examples/diffs/diff2/3/AAA/BBB/CCC/a.txt;"
-	        "touch tests/examples/diffs/diff2/2/AAA/BBB/CZC/a.txt";
+	        "touch tests/examples/diffs/diff2/2/AAA/BBB/CZC/a.txt;"
+	        "cp lock.db lock1.db";
 
 	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
 
@@ -57,9 +58,21 @@ static Return test0027_1_lock_checksum(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	arguments = "--progress --update --database=lock1.db --lock-checksum=\"^diff1/1/.*\" --lock-checksum=\"^diff2/path1/.*\" tests/examples/diffs";
+
+	ASSERT(SUCCESS == runit(arguments,result,WARNING,ALLOW_BOTH));
+
+	filename = "templates/0027_001_4.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
-	        "rm lock.db && "
+	        "rm lock.db lock1.db && "
 	        "rm -rf tests/examples/diffs/ && "
 	        "mv tests/examples_backup/ tests/examples/diffs/";
 

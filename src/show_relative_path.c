@@ -25,15 +25,18 @@ static const Flags *lookup(
  * @brief Prints combinations of change flags for a file.
  *
  * This function evaluates a bitmask of change flags and prints the corresponding descriptions
- * (e.g., "size", "ctime", "mtime") along with their metadata differences. It also indicates
- * whether the file will be rehashed.
+ * (e.g., "size", "ctime", "mtime") along with their metadata differences. The output uses
+ * the provided logger level, mirroring show_metadata behavior.
  *
  */
 static void print_changes(
+	LOGMODES        level,
 	Changed         change_flags_mask,
 	const DBrow     *dbrow,
 	const CmpctStat *stat)
 {
+	const char log_level = (char)(level | UNDECOR);
+
 	if(!((rational_logger_mode & VERBOSE) || config->watch_timestamps == true))
 	{
 		return;
@@ -72,14 +75,14 @@ static void print_changes(
 			/* Add separator if not the first flag */
 			if(flags_found > 0)
 			{
-				slog(EVERY|UNDECOR," & ");
+				slog(log_level," & ");
 			} else {
-				slog(EVERY|UNDECOR," changed ");
+				slog(log_level," changed ");
 			}
 
-			slog(EVERY|UNDECOR,"%s",flag->flag_name);
+			slog(log_level,"%s",flag->flag_name);
 
-			show_metadata(EVERY,flag->flag_value,&dbrow->saved_stat,stat);
+			show_metadata(level,flag->flag_value,&dbrow->saved_stat,stat);
 
 			flags_found++;
 		}
@@ -214,23 +217,23 @@ void show_relative_path(
 
 			slog(EVERY|UNDECOR,"update included");
 
-			print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
 
 			slog(EVERY|UNDECOR," %s\n",relative_path);
 
 		} else if(*lock_checksum_violation == true){
 
-			slog(EVERY|UNDECOR,RED "checksum locked, data corruption detected" RESET);
+			slog(EVERY|UNDECOR|REMEMBER,RED "checksum locked, data corruption detected" RESET);
 
-			print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY|REMEMBER,*metadata_of_scanned_and_saved_files,dbrow,stat);
 
-			slog(EVERY|UNDECOR," %s\n",relative_path);
+			slog(EVERY|UNDECOR|REMEMBER," %s\n",relative_path);
 
 		} else if(*zero_size_file == true){
 
 			slog(EVERY|UNDECOR,"update as empty");
 
-			print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
 
 			slog(EVERY|UNDECOR," %s\n",relative_path);
 
@@ -240,7 +243,7 @@ void show_relative_path(
 			{
 				slog(EVERY|UNDECOR,"rehash from the beginning");
 
-				print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+				print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
 
 				slog(EVERY|UNDECOR," %s\n",relative_path);
 
@@ -253,7 +256,7 @@ void show_relative_path(
 
 				if(*metadata_of_scanned_and_saved_files != IDENTICAL)
 				{
-					print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+					print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
 				}
 
 				slog(EVERY|UNDECOR," %s\n",relative_path);
@@ -262,7 +265,7 @@ void show_relative_path(
 
 				slog(EVERY|UNDECOR,"update & rehash");
 
-				print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+				print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
 
 				slog(EVERY|UNDECOR," %s\n",relative_path);
 			}
@@ -270,7 +273,7 @@ void show_relative_path(
 		} else {
 			slog(EVERY|UNDECOR,"update stat");
 
-			print_changes(*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
 
 			slog(EVERY|UNDECOR," %s\n",relative_path);
 		}
