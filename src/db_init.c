@@ -187,6 +187,22 @@ Return db_init(void)
 
 	if(SUCCESS == status)
 	{
+		const char *remember_history_sql =
+		        "CREATE TEMP TABLE IF NOT EXISTS remember_history ("
+		        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+		        "message TEXT NOT NULL"
+		        ");";
+
+		rc = sqlite3_exec(config->db,remember_history_sql,NULL,NULL,NULL);
+
+		if(rc != SQLITE_OK)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Can't create TEMP remember_history table");
+		}
+	}
+
+	if(SUCCESS == status)
+	{
 		if(config->compare != true)
 		{
 			const char *db_runtime_paths = "ATTACH DATABASE ':memory:' AS " DB_RUNTIME_PATHS_ID ";"

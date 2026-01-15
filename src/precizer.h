@@ -636,6 +636,12 @@ void show_checksum_gracefully_interrupted(
 
 Return status_of_changes(void);
 
+/**
+ * @brief Print remembered warning and error lines captured during the run
+ *        (only when --progress is enabled).
+ */
+Return show_remembered_messages(void);
+
 Return verify_directory_access(
 	FTS *,
 	FTSENT *,

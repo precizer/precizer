@@ -85,7 +85,7 @@ Return test0020_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--database=write_protected_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--database=write_protected_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,STDERR_SUPPRESS));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 

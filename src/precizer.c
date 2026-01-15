@@ -103,6 +103,9 @@ int test_main(
 	// no longer exist.
 	run(db_delete_missing_metadata());
 
+	// Print remembered warning and error lines if --progress is enabled.
+	call(show_remembered_messages());
+
 	// Disable journaling, flush the journal to the main database,
 	// clear the cache, and close the database
 	call(db_close(config->db,&config->db_primary_file_modified));

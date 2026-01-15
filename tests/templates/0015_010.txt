@@ -26,7 +26,7 @@ paths=tests/examples/diffs/diff1; database=0015_database_v2.db; db_file_name=001
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_get_version.c:\d+:db_get_version:Version number \d+ found in database
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version.c:\d+:db_check_version:The 0015_database_v2.db database file is version \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:The database 0015_database_v2.db file has an outdated version \d+ and requires updating to the version \d+
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Caution! The update will be performed in transaction mode for database safety
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Warning! The update will be performed in transaction mode for database safety
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version \d+ to version \d+ started
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed

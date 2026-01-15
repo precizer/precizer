@@ -150,11 +150,11 @@ Return db_delete_the_record_by_id(
 
 			if(*clean_ignored == true)
 			{
-				slog(EVERY|UNDECOR,"clean ignored %s\n",relative_path);
+				slog(EVERY|UNDECOR|REMEMBER,"clean ignored %s\n",relative_path);
 
 			} else if(inaccessible == true){
 
-				slog(EVERY|UNDECOR,"drop due to inaccessible %s\n",relative_path);
+				slog(EVERY|UNDECOR|REMEMBER,"drop due to inaccessible %s\n",relative_path);
 
 			} else if(file_not_found == true){
 

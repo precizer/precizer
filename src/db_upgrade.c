@@ -19,7 +19,7 @@ Return db_upgrade(
 	Return status = SUCCESS;
 
 	slog(EVERY,"The database %s file has an outdated version %d and requires updating to the version %d\n",db_file_name,*db_version,CURRENT_DB_VERSION);
-	slog(EVERY,"Caution! The update will be performed in transaction mode for database safety\n");
+	slog(EVERY,"Warning! The update will be performed in transaction mode for database safety\n");
 	slog(EVERY,"Caution! After the update, the database file will not work correctly with old versions of %s. "
 		"Please update all copies of the application that will use the new database version!\n",APP_NAME);
 

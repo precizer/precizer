@@ -661,7 +661,7 @@ Return file_list(const bool count_size_of_all_files)
 
 	if(lock_checksum_violation_detected == true)
 	{
-		slog(ERROR,BOLD "Caution! Data corruption detected for checksum-locked file!" RESET "\n");
+		slog(EVERY,BOLD "Warning! Data corruption detected for checksum-locked file!" RESET "\n");
 
 		if(SUCCESS == status)
 		{
