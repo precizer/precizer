@@ -85,7 +85,7 @@ Return test0020_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--database=write_protected_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,STDERR_SUPPRESS));
+	ASSERT(SUCCESS == runit("--database=write_protected_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -117,6 +117,7 @@ Return test0020_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	ASSERT(SUCCESS == runit("--database=write_protected_database1.db tests/examples/diffs/diff1",NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == runit("--database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *command = "cd ${TMPDIR} && "
@@ -193,6 +194,7 @@ Return test0020_6(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	ASSERT(SUCCESS == runit("--database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == runit("--update --database=database1.db tests/examples/diffs/diff2",result,WARNING,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));

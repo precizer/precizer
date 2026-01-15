@@ -1,77 +1,13 @@
-TODO:
+TODO
 
-* mimalloc?
+If you want to join the project and contribute, here are the improvements you can focus on:
 
-* Verify that all asprintf, realloc, malloc and other memory
-  handling functions report memory allocation errors as follows:
-  report("Memory allocation failed, requested size: %zu bytes",size);
-  Check syntax! Is \n needed at the end of report() or not?
+1. Parallelize filesystem traversal using pthreads. Add a new CLI flag that lets the user specify the number of threads used to read data from multiple files concurrently. In this mode, each file’s hash must be computed in its own thread and therefore on its own CPU core (the OS should handle core scheduling). One file per thread, one core per file. This should achieve the maximum possible performance on storage that supports fast parallel access.
 
-* Check all strdup() return values for errors (there are many instances).
+2. Add support for additional algorithms besides SHA512. SHA512 is fast and works well, but it does not support parallelism. The main algorithms of interest due to their speed and ability to parallelize are:
+	a) XXH3 128 bit
+	b) BLAKE3
 
-* Symlinks are currently ignored. Details in test0019. Need to add
-  symlink processing. Do they have their own size? Does it change
-  when the target changes?
+3. Parallelize checksum computation for a single file using algorithms that support parallel hashing.
 
-* Integration of the xxHash library using the XXH3_128bits algorithm
-  for high-performance hashing as a multi-threaded implementation.
-  Here's the concept: The file is read in a single thread.
-  Each read data chunk (for example, 1 megabyte) is divided
-  among multiple threads, with the number of threads matching
-  the available CPU cores. Each portion is hashed independently,
-  then the results are aggregated before moving on to read the
-  next block from the file.
-  
-* Replaced the current extremely slow algorithm for filling arrays with random data used in testing.
-
-* Add completion messages at the end of each significant code block
-  Like in detect_paths.c ending: slog(TRACE,"Paths detected\n");
-
-* The --ignore mode isn't functioning properly when --compare is enabled.
-
-* Revert to the multipath version, but keep this capability undocumented.
-
-* For preliminary scans with --progress and --update flags, implement database traversal to show immediate statistics on affected files:
-  - Number of files to be deleted
-  - Number of files to be added
-  - Number of files to be modified
-
-* Implement testing for interruption handling:
-  - Test interruption of large file scanning
-  - Test interruption of sha512 hashing process on large files
-
-* Create tests combining ignore and dry-run flags, don't forget about --include
-  - It would be good to repeat all tests from README with dry-run and ignore options
-
-* Testing: Verify that --silent suppresses all output regardless of other options
-  - Add this option to EVERY test! This could help identify messages that aren't being
-    properly suppressed in --silent mode
-
-* Review English language correctness in all message strings
-
-* Implement fuzzing tests
-
-* Design system tests to exercise all conditional report messages
-
-* Add usage hints for --db-clean-ignored option when used with --ignore and --update
-
-* Add verification that specified options work only with --compare
-
-* Add --onlyAnotB option
-* Add --onlyBnotA option
-* Add --onlySHAdiffs option
-
-* Unit tests with code coverage
-
-* Document all code
-
-* Create man documentation
-
-* Create flatpak and AppImage packages, note that author will assist with package creation for any OS if developers encounter difficulties
-	https://unix.stackexchange.com/questions/740712/does-flatpak-support-command-line-applications
-
-* Post program information on opennet
-
-* Subscribe to precizer tag on Stack Overflow, create tag if needed and follow it
-
-* ALL DONE
+How it should work: imagine a large file. The program reads blocks of the file sequentially into an in memory buffer. If 10 CPU cores are available, the buffer is split into 10 parts and each part is hashed concurrently on different cores. Once hashing of the current buffer is finished, the next chunk of the file is read into the same buffer and the hashing step repeats. This approach uses all available CPU resources for checksumming while keeping disk IO single threaded, so it won’t degrade filesystem performance on slower storage. One file at a time for reading (no parallel reads), with many threads for checksum computation (CPU parallelism enabled).
