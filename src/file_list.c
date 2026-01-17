@@ -554,7 +554,7 @@ Return file_list(const bool count_size_of_all_files)
 				if(locked_checksum_mismatch == true)
 				{
 					lock_checksum_violation_detected = true;
-					slog(EVERY|UNDECOR,RED "checksum locked, data corruption detected" RESET " %s\n",relative_path);
+					slog(EVERY|UNDECOR,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
 					break;
 				}
 
