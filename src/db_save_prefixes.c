@@ -70,7 +70,7 @@ Return db_save_prefixes(void)
 		/* Delete previous records in the table  */
 		sqlite3_stmt *delete_stmt = NULL;
 
-		const char *delete_sql = "DELETE FROM paths WHERE ID IN (SELECT path_id FROM runtime_paths_id.the_path_id_does_not_exists);";
+		const char *delete_sql = "DELETE FROM paths WHERE ID IN (SELECT path_id FROM the_path_id_does_not_exists);";
 
 		int rc = sqlite3_prepare_v2(config->db,delete_sql,-1,&delete_stmt,NULL);
 

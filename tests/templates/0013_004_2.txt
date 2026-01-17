@@ -1,4 +1,6 @@
 \A-TESTING:argument:dry-run=yes
+-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
+\+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 -TESTING:Dry Run mode is enabled. The primary database must not be modified
 -TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
 -TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe database file database1.db has NOT been modified since the program was launched\Q(?:\x1B\[[0-9;]*m)*\E

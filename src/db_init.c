@@ -1,5 +1,4 @@
 #include "precizer.h"
-#define DB_RUNTIME_PATHS_ID "runtime_paths_id"
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
@@ -149,7 +148,7 @@ Return db_init(void)
 		// Tune the DB performance
 		const char *pragma_sql = NULL;
 
-		if(config->compare == true || config->dry_run == true)
+		if(config->sqlite_open_flag == SQLITE_OPEN_READONLY)
 		{
 			// Read-only mode
 			pragma_sql =
@@ -157,14 +156,12 @@ Return db_init(void)
 			        "PRAGMA cache_size=-8192;"           // Increased cache to 8MB
 			        "PRAGMA temp_store=MEMORY;"          // Keep temporary data in RAM
 			        "PRAGMA mmap_size=30000000000;"      // Using memory-mapped I/O
-			        "PRAGMA page_size=4096;"             // Set page size to 4KB (default, but explicit for clarity)
 			        "PRAGMA locking_mode=EXCLUSIVE;"     // Hold exclusive locks for the session
 			        "PRAGMA strict=ON;";                  // Enforce STRICT table schema validation
 		} else {
 			// Read-write mode
 			pragma_sql =
 			        "PRAGMA journal_mode=DELETE; "       // Use DELETE journal
-			        "PRAGMA page_size=4096; "            // Set page size to 4KB (default, but explicit for clarity)
 			        "PRAGMA cache_size=-8192; "          // Use 8MB of memory for caching (negative value = KB)
 			        "PRAGMA synchronous=NORMAL; "        // Balance speed and safety (NORMAL = fsync only for checkpoints)
 			        "PRAGMA temp_store=MEMORY; "         // Store temporary tables in memory (not on disk)
@@ -205,17 +202,17 @@ Return db_init(void)
 	{
 		if(config->compare != true)
 		{
-			const char *db_runtime_paths = "ATTACH DATABASE ':memory:' AS " DB_RUNTIME_PATHS_ID ";"
-			        "CREATE TABLE if not exists runtime_paths_id.the_path_id_does_not_exists"
+			const char *db_runtime_paths =
+			        "CREATE TEMP TABLE IF NOT EXISTS the_path_id_does_not_exists"
 			        "(path_id INTEGER UNIQUE NOT NULL);";
 
 			rc = sqlite3_exec(config->db,db_runtime_paths,NULL,NULL,NULL);
 
 			if(rc == SQLITE_OK)
 			{
-				slog(TRACE,"The in-memory %s database successfully attached to the primary database %s\n",DB_RUNTIME_PATHS_ID,config->db_file_name);
+				slog(TRACE,"The TEMP table the_path_id_does_not_exists is ready for runtime checks\n");
 			} else {
-				log_sqlite_error(config->db,rc,NULL,"Can't execute runtime paths attach");
+				log_sqlite_error(config->db,rc,NULL,"Can't create runtime TEMP table");
 				status = FAILURE;
 			}
 		}

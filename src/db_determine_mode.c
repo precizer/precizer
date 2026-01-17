@@ -131,6 +131,9 @@ Return db_determine_mode(void)
 
 				// In-memory special flag
 				config->sqlite_open_flag = SQL_DRY_RUN_MODE;
+			} else {
+				// Keep the primary database read-only in Dry Run mode
+				config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 			}
 		}
 	}
