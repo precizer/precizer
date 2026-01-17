@@ -132,6 +132,7 @@ static Return logger_show_time(
 	return(status);
 }
 
+__attribute__((format(printf,3,0)))
 static void logger_line_append_va(
 	char **line,
 	int *line_len,
@@ -166,6 +167,7 @@ static void logger_line_append_va(
 	*line_len = (int)new_len;
 }
 
+__attribute__((format(printf,3,4)))
 static void logger_line_append(
 	char **line,
 	int *line_len,
@@ -178,6 +180,7 @@ static void logger_line_append(
 	va_end(args);
 }
 
+__attribute__((format(printf,7,0)))
 void logger_line(
 	char              **line,
 	int               *line_len,
