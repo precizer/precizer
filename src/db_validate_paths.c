@@ -139,7 +139,7 @@ Return db_validate_paths(void)
 			{
 				paths_are_equal = false;
 
-				const char *insert_sql = "INSERT INTO runtime_paths_id.the_path_id_does_not_exists (path_id) VALUES (?1);";
+				const char *insert_sql = "INSERT INTO the_path_id_does_not_exists (path_id) VALUES (?1);";
 
 				rc = sqlite3_prepare_v2(config->db,insert_sql,-1,&insert_stmt,NULL);
 
