@@ -603,21 +603,24 @@ Return parse_arguments(
 	char **);
 
 void show_relative_path(
-	const char *,
-	const Changed *,
 	const DBrow *,
+	const char *,
 	const CmpctStat *,
 	bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *,
 	bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *);
+	const Changed,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const sqlite3_int64,
+	const bool,
+	const bool,
+	const bool,
+	const bool);
 
 void show_metadata(
 	LOGMODES,

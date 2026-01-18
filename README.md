@@ -87,7 +87,7 @@ This approach makes sense because the primary data center and the *Disaster Reco
 
 Tools like `rsync` allow both types of synchronization — *metadata-based* and *byte-by-byte* — but they have one *major drawback*: *state is not preserved between sessions*.
 
-Let’s analyze this issue with the following scenario:
+The following scenario illustrates the issue:
 
 * Given: Server "A" and Server "B" (Primary Data Center and Disaster Recovery)
 * Some files have been modified on Server "A".
@@ -119,15 +119,15 @@ Let’s analyze this issue with the following scenario:
 * Regular expression support is provided by PCRE2.
 * The program is safe to use with an enormous number of files, directories, and deeply nested subdirectories. Thanks to the FTS library, recursion is avoided, preventing stack overflows even with extreme levels of nesting.
 * Due to its compact and portable codebase, the program can be used even on specialized devices like NAS systems, embedded platforms, or IoT devices.
-* Use [DB Browser for SQLite](https://sqlitebrowser.org) if you want to explore the contents of the database created by **precizer**.
+* The database contents created by **precizer** can be explored with [DB Browser for SQLite](https://sqlitebrowser.org).
 
 ## QUESTIONS & BUG REPORTS
 
 * The `--help` option is designed to be as detailed as possible, specifically to assist users who may not have advanced technical knowledge.
-* You can reach out to the author via:
+* Author contact options:
   * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
-  * You can also [open a bug report or a feature request on GitHub](https://github.com/precizer/precizer/issues/new).
-* If you run into issues while using the program, feel free to ask a question on [ru.stackoverflow.com](https://ru.stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and will be happy to help with troubleshooting any problems.
+  * [Bug reports and feature requests](https://github.com/precizer/precizer/issues/new).
+* If issues arise while using the program, questions can be posted on [ru.stackoverflow.com](https://ru.stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and helps with troubleshooting any problems.
 
 ## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
 
@@ -142,8 +142,8 @@ The release packages contain portable executables in a zip archive.
 ### Technical details of the portable build
 
 * The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.
-* The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. To use it, extract the file from the archive and run it.
-* Static linking is not supported on macOS, so to run the downloaded application you need to ensure the following libraries are available on your system: sqlite3, pcre2, argp and fts.
+* The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. The file can be extracted from the archive and run directly.
+* Static linking is not supported on macOS, so running the downloaded application requires the following libraries to be available on the system: sqlite3, pcre2, argp and fts.
 
 ## BUILD & INSTALLATION
 
@@ -151,7 +151,7 @@ The release packages contain portable executables in a zip archive.
 
 * The author has set up an automated build system using GitHub Workflows and will continue maintaining new versions.
 * The author is **not** willing to personally package and maintain **precizer** for _all_ existing operating system distributions.
-* If you are eager to create a package for a specific distribution and run into major challenges adapting the code, the author will be glad to help with supporting the initiative and optimizing the program for your distro or package manager. Contact details can be found in the [“Questions & Bug Reports”](#questions--bug-reports) section.
+* If packaging for a specific distribution encounters major challenges adapting the code, the author can help with supporting the initiative and optimizing the program for the target distro or package manager. Contact details are in the [“Questions & Bug Reports”](#questions--bug-reports) section.
 
 ### Building with Docker
 
@@ -165,9 +165,9 @@ Building the program is already supported via Docker. Several tuned platforms ar
 * Rocky
 * Ubuntu
 
-You can review the configuration details and installed libraries in the corresponding Dockerfiles under `.docker/`.
+Configuration details and installed libraries are listed in the corresponding Dockerfiles under `.docker/`.
 
-To build, use a make target of the form `docker-<distro>-<build>` (for example `debian` and `dynamic-production`).
+Build targets use the form `docker-<distro>-<build>` (for example `debian` and `dynamic-production`).
 
 ```sh
 make docker-gentoo-production
@@ -181,7 +181,7 @@ make docker-ubuntu-production
 
 This builds the same `production` target using Ubuntu.
 
-After the build completes, an executable `precizer` appears in the project directory (built inside the container). The main benefit of using Docker is that you don’t need to install a full build toolchain, libraries, and their dependencies on your host system: just run Docker and get the binary. Next you need to choose which kind of binary you want. If in doubt, start with `make portable`. All available build variants are described below.
+After the build completes, an executable `precizer` appears in the project directory (built inside the container). The main benefit of using Docker is that a full build toolchain, libraries, and their dependencies are not required on the host system; running Docker yields the binary. The next step is choosing the binary variant. When in doubt, `make portable` is a good starting point. All available build variants are described below.
 
 ### Manual Build
 
@@ -198,7 +198,7 @@ cd precizer
 make portable
 ```
 
-The result is a single statically linked, self-extracting compressed UPX ELF file with no dynamic dependencies. It contains the whole program and can be run on almost any modern Linux distribution. Simply copy this file to any platform of the same architecture (x64/arm/etc).
+The result is a single statically linked, self-extracting compressed UPX ELF file with no dynamic dependencies. It contains the whole program and can be run on almost any modern Linux distribution. The file can be copied to any platform of the same architecture (x64/arm/etc).
 
 The program is optimized for **maximum portability**.
 
@@ -212,13 +212,13 @@ make docker-ubuntu-portable
 
 or replace `-ubuntu-` with any distro from the list above.
 
-#### Single binary optimized for your local CPU
+#### Single binary optimized for the local CPU
 
 ```sh
 make production
 ```
 
-The result is a statically linked, self-extracting compressed UPX ELF file tuned for your local CPU. It contains the whole program, can be run on the local machine, and will use the maximum available CPU features.
+The result is a statically linked, self-extracting compressed UPX ELF file tuned for the local CPU. It contains the whole program, can be run on the local machine, and will use the maximum available CPU features.
 
 The program is optimized for **maximum possible performance on local hardware**.
 
@@ -232,7 +232,7 @@ make docker-ubuntu-production
 
 or replace `-ubuntu-` with any distro from the list above.
 
-#### Dynamically linked binary optimized for your local CPU
+#### Dynamically linked binary optimized for the local CPU
 
 ```sh
 make dynamic-production
@@ -251,6 +251,18 @@ make docker-ubuntu-dynamic-production
 ```
 
 or replace `-ubuntu-` with any distro from the list above.
+
+#### Tests
+
+The test sets in the `tests/examples/` directory can be used to evaluate the program’s capabilities.
+
+Test execution:
+
+```sh
+git clone https://github.com/precizer/precizer.git
+cd precizer
+make tests
+```
 
 #### Installation
 
@@ -301,18 +313,6 @@ make purge
 
 ## USAGE EXAMPLES
 
-### Tests
-
-To evaluate the program’s capabilities, you can use the test sets from the `tests/examples/` directory in the source tree.
-
-Run tests:
-
-```sh
-git clone https://github.com/precizer/precizer.git
-cd precizer
-make tests
-```
-
 ### Example 1
 
 Add files to two databases and compare them with each other:
@@ -347,13 +347,13 @@ The precizer completed its execution without any issues
 ### Example 2
 Database Update
 
-Let’s run the previous example again. First attempt. Warning message.
+The previous example is run again. First attempt. Warning message.
 
 ```sh
 precizer --progress --database=database1.db tests/examples/diffs/diff1
 ```
 
-<sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.  
+<sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when it is certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.  
 ERROR: The precizer process terminated unexpectedly due to an error  
 </sub>
 
@@ -372,7 +372,7 @@ Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
 The precizer completed its execution without any issues  
 </sub>
 
-Now let's make some adjustments:
+Make the following adjustments:
 
 ```sh
 # Modify a file
@@ -386,7 +386,7 @@ rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
 
 ```
 
-And run **precizer** again, this time with the `--update` parameter:
+Run **precizer** again with the `--update` parameter:
 
 ```sh
 precizer --update --progress --database=database1.db tests/examples/diffs/diff1
@@ -424,7 +424,7 @@ Any new, deleted, or modified files between application runs will be processed a
 
 Using the `--silent` mode. When this mode is enabled, the program does not produce any output on the screen. This is useful when **precizer** is used in scripts.
 
-Let's add the **--silent** parameter to the previous example:
+Add the **--silent** parameter to the previous example:
 
 ```sh
 precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
@@ -435,7 +435,7 @@ As a result, nothing will be displayed on the screen.
 ### Example 4
 Additional Information in `--verbose` mode. This mode can be useful for debugging.
 
-Let's add the **--verbose** parameter to the previous example:
+Add the **--verbose** parameter to the previous example:
 
 ```sh
 precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
@@ -526,11 +526,11 @@ The precizer completed its execution without any issues
 
 ### Example 6
 
-Example of a Path to Ignore. To specify a pattern for ignoring files or directories, you can use PCRE2 regular expressions. **Note:** All paths in the regular expression must be specified as **relative**.
+Example of a Path to Ignore. To specify a pattern for ignoring files or directories, PCRE2 regular expressions can be used. **Note:** All paths in the regular expression must be specified as **relative**.
 
-You can test and validate PCRE2 regular expressions using [https://regex101.com/](https://regex101.com/).
+PCRE2 regular expressions can be tested and validated using [https://regex101.com/](https://regex101.com/).
 
-To understand how a relative path looks, simply run a directory traversal without the `--ignore` option and check how the terminal displays the relative paths recorded in the database:
+To illustrate how a relative path looks, run a directory traversal without the `--ignore` option and check how the terminal displays the relative paths recorded in the database:
 
 ```sh
 % tree -L 3 tests/examples/diffs
@@ -607,10 +607,10 @@ Start vacuuming the primary database…
 The primary database has been vacuumed  
 **The database myhost.db has been modified since the last check (files were added, removed, or updated)**  
 The precizer completed its execution without any issues  
-Enjoy your life!  
+Enjoy life!  
 </sub>
 
-Let's repeat the same example, but this time without the `--ignore` option to include the three previously ignored files:
+Repeat the same example, but this time without the `--ignore` option to include the three previously ignored files:
 
 ```sh
 precizer --update tests/examples/diffs
@@ -686,11 +686,11 @@ rm -i "${HOST}.db"
 precizer tests/examples/diffs
 ```
 
-Let's complicate things by using regular expressions.
+This variant uses regular expressions.
 
 PCRE2 regular expressions for relative paths that need to be included. The specified relative paths will be included even if they were excluded using one or more `--ignore` parameters. Multiple regular expressions can be specified using `--include`.
 
-To check and test PCRE2 regular expressions, you can use [https://regex101.com/](https://regex101.com/).
+PCRE2 regular expressions can be checked and tested using [https://regex101.com/](https://regex101.com/).
 
 The DB will be cleaned of references to files matching the regular expressions provided in the `--ignore` arguments: `"^.*/path2/.*"` and `"diff2/.*"`, but paths matching the patterns in `--include` will remain in the database.
 
@@ -743,13 +743,17 @@ precizer \
   /mnt/storage
 ```
 
-On subsequent runs, keep the same lock patterns while refreshing the database:
+On subsequent runs, the same lock patterns must be preserved while refreshing the database:
 
 ```sh
-precizer --update --lock-checksum="^archive/2024/.*" /mnt/storage
+precizer \
+  --update \
+  --lock-checksum="^archive/2024/.*" \
+  --lock-checksum="^snapshots/monthly/.*" \
+  /mnt/storage
 ```
 
-Files outside the lock patterns follow normal update rules. For entries locked via `--lock-checksum`, any drift becomes visible immediately and `precizer` exits with a non-zero status.
+Files outside the lock patterns follow normal update rules. For entries locked via `--lock-checksum`, any drift becomes visible immediately and `precizer` exits with a non-zero status, which can be used in scripts.
 
 ### Example 10
 Deep verification of locked data with `--rehash-locked`
@@ -763,13 +767,13 @@ precizer --update \
   /mnt/storage
 ```
 
-To illustrate how `--watch-timestamps` and `--rehash-locked` interact, consider the following cases:
+The following cases illustrate how `--lock-checksum`, `--watch-timestamps`, and `--rehash-locked` interact:
 
-1. **File size mismatch.** When the size stored in the database differs from the on-disk size, the file is reported as having a corrupted checksum regardless of `--watch-timestamps` or `--rehash-locked`. Rehashing a file with a different size is meaningless because the checksum cannot match anyway.
-2. **Size and timestamps match; `--watch-timestamps` enabled.** The file is fully consistent; it is not flagged and does not appear in the change report. `precizer` finishes with the `SUCCESS` status.
-3. **Size matches, timestamps differ; `--watch-timestamps` enabled while `--rehash-locked` is omitted.** The file is flagged as “checksum violated” and `precizer` finishes with the `WARNING` status.
-4. **Size matches, timestamps differ; neither `--watch-timestamps` nor `--rehash-locked` is used.** The file is **not** flagged, and the program exits with `SUCCESS`.
-5. **Both `--watch-timestamps` and `--rehash-locked` are enabled.** Only the checksum and the size stored in the database matter. If both match, the file remains consistent and no warning is produced. If the on-disk timestamps changed, the new values are saved to the database even though the checksum stayed the same.
+1. **File size mismatch.** If the size stored in the database differs from the on-disk size, the file is flagged as a “locked checksum violation” regardless of `--watch-timestamps` and `--rehash-locked`. Rehashing a file with a different size is meaningless because the checksum cannot match anyway.
+2. **File size matches; neither `--watch-timestamps` nor `--rehash-locked` is used.** Other values, such as SHA512 and timestamps, are not considered; the file is treated as fully consistent and `precizer` finishes with the `SUCCESS` status.
+3. **Size and timestamps match; `--watch-timestamps` is enabled and `--rehash-locked` is omitted.** The file is treated as fully consistent, does not appear in the output, and `precizer` finishes with the `SUCCESS` status.
+4. **Size matches, timestamps differ; `--watch-timestamps` is enabled and `--rehash-locked` is omitted.** The file is flagged as a “locked checksum violation” only due to timestamp drift, and `precizer` finishes with the `WARNING` status.
+5. **Size matches; `--rehash-locked` is enabled.** Only the checksum and the size stored in the database matter. If both match, the file is considered consistent. If the on-disk timestamps changed, the new ctime/mtime values are saved to the database regardless of whether `--watch-timestamps` was used.
 
 A practical workflow is to run a quick daily scan without `--rehash-locked` (and even without `--watch-timestamps` if timestamp drift is acceptable) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to force checksum-level verification of the frozen data set.
 
@@ -783,6 +787,8 @@ precizer --update --drop-inaccessible /mnt/storage
 ```
 
 <sub>drop due to inaccessible archive/secret.bin</sub>
+
+Note: this example applies only to files that have a record in the database but are truly inaccessible on disk for some reason. This can happen due to incorrect `chmod`/`chown` permissions or an incorrectly mounted volume. WARNING: if the file (or even its path) is actually deleted, not just temporarily inaccessible, then updating the database with `--update` will remove its record unconditionally — no extra options are needed.
 
 ## AUTHOR
 Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)

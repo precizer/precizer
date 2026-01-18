@@ -470,22 +470,81 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
+				// Buffer for current file SHA512 digest
+				unsigned char sha512[SHA512_DIGEST_LENGTH] = {0};
+
+				bool hash_failed = false;
+				bool hash_interrupted = false;
+				bool locked_checksum_mismatch = false; // Detects corruption when rehashing locked files
+
+				bool should_process = is_readable == true
+				        && ignore == false
+				        && lock_checksum_violation == false;
+
+				if(should_process == true)
+				{
+					if(rehash == true)
+					{
+						run(sha512sum(p->fts_path,
+							(size_t)p->fts_pathlen,
+							file_buffer,
+							sha512,
+							&offset,
+							&mdContext,
+							&wrong_file_type));
+
+						if(TRIUMPH & status)
+						{
+							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
+							if(offset > 0 && global_interrupt_flag == true)
+							{
+								hash_interrupted = true;
+							}
+
+						} else {
+							continue_the_loop = false;
+							hash_failed = true;
+						}
+
+					} else {
+						memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
+					}
+
+					if(hash_failed == false
+					        && config->rehash_locked == true
+					        && lock_checksum_ready == true
+					        && rehash == true
+					        && (TRIUMPH & status)
+					        && wrong_file_type == false
+					        && zero_size_file == false
+					        && offset == 0)
+					{
+						if(memcmp(sha512,dbrow->sha512,SHA512_DIGEST_LENGTH) != 0)
+						{
+							locked_checksum_mismatch = true;
+						}
+					}
+				}
+
 				// Print out of a file name and its changes
-				show_relative_path(relative_path,
-					&metadata_of_scanned_and_saved_files,
-					dbrow,
+				show_relative_path(dbrow,
+					relative_path,
 					&stat,
 					&first_iteration,
-					&rehashing_from_the_beginning,
-					&ignore,
-					&include,
-					&locked_checksum_file,
-					&lock_checksum_violation,
 					&at_least_one_file_was_shown,
-					&rehash,
-					&count_size_of_all_files,
-					&is_readable,
-					&zero_size_file);
+					metadata_of_scanned_and_saved_files,
+					rehashing_from_the_beginning,
+					ignore,
+					include,
+					locked_checksum_file,
+					lock_checksum_violation,
+					locked_checksum_mismatch,
+					hash_interrupted,
+					offset,
+					rehash,
+					count_size_of_all_files,
+					is_readable,
+					zero_size_file);
 
 				if(is_readable != true)
 				{
@@ -505,56 +564,14 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
-				// Buffer for current file SHA512 digest
-				unsigned char sha512[SHA512_DIGEST_LENGTH] = {0};
-
-				if(rehash == true)
+				if(hash_failed == true)
 				{
-					run(sha512sum(p->fts_path,
-						(size_t)p->fts_pathlen,
-						file_buffer,
-						sha512,
-						&offset,
-						&mdContext,
-						&wrong_file_type));
-
-					if(TRIUMPH & status)
-					{
-						/* If the sha512sum has been interrupted smoothly when Ctrl+C */
-						if(offset > 0 && global_interrupt_flag == true)
-						{
-							slog(EVERY,"SHA512 checksum for the file %s has been"
-								" gracefully interrupted at byte: %s\n",
-								relative_path,
-								bkbmbgbtbpbeb((size_t)offset));
-						}
-
-					} else {
-						continue_the_loop = false;
-						break;
-					}
-
-				} else {
-					memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
-				}
-
-				bool locked_checksum_mismatch = false; // Detects corruption when rehashing locked files
-
-				if(config->rehash_locked == true && lock_checksum_ready == true
-				        && rehash == true && (TRIUMPH & status)
-				        && wrong_file_type == false && zero_size_file == false
-				        && offset == 0)
-				{
-					if(memcmp(sha512,dbrow->sha512,SHA512_DIGEST_LENGTH) != 0)
-					{
-						locked_checksum_mismatch = true;
-					}
+					break;
 				}
 
 				if(locked_checksum_mismatch == true)
 				{
 					lock_checksum_violation_detected = true;
-					slog(EVERY|UNDECOR,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
 					break;
 				}
 
