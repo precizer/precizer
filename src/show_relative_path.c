@@ -100,21 +100,24 @@ static void print_changes(
  *
  */
 void show_relative_path(
-	const char      *relative_path,
-	const Changed   *metadata_of_scanned_and_saved_files,
 	const DBrow     *dbrow,
+	const char      *relative_path,
 	const CmpctStat *stat,
 	bool            *first_iteration,
-	const bool      *rehashing_from_the_beginning,
-	const bool      *ignore,
-	const bool      *include,
-	const bool      *locked_checksum_file,
-	const bool      *lock_checksum_violation,
 	bool            *at_least_one_file_was_shown,
-	const bool      *rehash,
-	const bool      *count_size_of_all_files,
-	const bool      *is_readable,
-	const bool      *zero_size_file)
+	const Changed   metadata_of_scanned_and_saved_files,
+	const bool      rehashing_from_the_beginning,
+	const bool      ignore,
+	const bool      include,
+	const bool      locked_checksum_file,
+	const bool      lock_checksum_violation,
+	const bool      locked_checksum_mismatch,
+	const bool      hash_interrupted,
+	const sqlite3_int64 checksum_offset,
+	const bool      rehash,
+	const bool      count_size_of_all_files,
+	const bool      is_readable,
+	const bool      zero_size_file)
 {
 	bool show_traversal_started = false;
 	bool show_update_warning = false;
@@ -125,7 +128,7 @@ void show_relative_path(
 	{
 		*first_iteration = false;
 
-		if(*count_size_of_all_files == false)
+		if(count_size_of_all_files == false)
 		{
 			show_traversal_started = true;
 		}
@@ -174,7 +177,7 @@ void show_relative_path(
 
 	/* Prefixes */
 
-	if(*is_readable == false)
+	if(is_readable == false)
 	{
 		slog(EVERY|UNDECOR,"%s %s\n","inaccessible",relative_path);
 
@@ -184,19 +187,19 @@ void show_relative_path(
 
 		/* Add new */
 
-		if(*ignore == true)
+		if(ignore == true)
 		{
 			slog(EVERY|UNDECOR,"%s %s\n","ignore & do not add",relative_path);
 
-		} else if(*include == true){
+		} else if(include == true){
 
 			slog(EVERY|UNDECOR,"%s %s\n","add included",relative_path);
 
-		} else if(*locked_checksum_file == true){
+		} else if(locked_checksum_file == true){
 
 			slog(EVERY|UNDECOR,"%s %s\n","lock checksum",relative_path);
 
-		} else if(*zero_size_file == true){
+		} else if(zero_size_file == true){
 
 			slog(EVERY|UNDECOR,"%s %s\n","add as empty",relative_path);
 
@@ -209,54 +212,58 @@ void show_relative_path(
 
 		/* Update existing */
 
-		if(*ignore == true)
+		if(ignore == true)
 		{
 			slog(EVERY|UNDECOR,"ignored & do not update %s\n",relative_path);
 
-		} else if(*include == true){
+		} else if(locked_checksum_mismatch == true){
+
+			slog(EVERY|UNDECOR,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
+
+		} else if(include == true){
 
 			slog(EVERY|UNDECOR,"update included");
 
-			print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
 
 			slog(EVERY|UNDECOR," %s\n",relative_path);
 
-		} else if(*lock_checksum_violation == true){
+		} else if(lock_checksum_violation == true){
 
 			slog(EVERY|UNDECOR|REMEMBER,RED "checksum locked, data corruption detected" RESET);
 
-			print_changes(EVERY|REMEMBER,*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY|REMEMBER,metadata_of_scanned_and_saved_files,dbrow,stat);
 
 			slog(EVERY|UNDECOR|REMEMBER," %s\n",relative_path);
 
-		} else if(*zero_size_file == true){
+		} else if(zero_size_file == true){
 
 			slog(EVERY|UNDECOR,"update as empty");
 
-			print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
 
 			slog(EVERY|UNDECOR," %s\n",relative_path);
 
-		} else if(*rehash == true){
+		} else if(rehash == true){
 
-			if(*rehashing_from_the_beginning == true)
+			if(rehashing_from_the_beginning == true)
 			{
 				slog(EVERY|UNDECOR,"rehash from the beginning");
 
-				print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
+				print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
 
 				slog(EVERY|UNDECOR," %s\n",relative_path);
 
 			} else if(dbrow->saved_offset > 0){
 				slog(EVERY|UNDECOR,"continue to rehash from %s %s\n",bkbmbgbtbpbeb((const size_t)dbrow->saved_offset),relative_path);
 
-			} else if(*locked_checksum_file == true){
+			} else if(locked_checksum_file == true){
 
 				slog(EVERY|UNDECOR,"rehash locked");
 
-				if(*metadata_of_scanned_and_saved_files != IDENTICAL)
+				if(metadata_of_scanned_and_saved_files != IDENTICAL)
 				{
-					print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
+					print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
 				}
 
 				slog(EVERY|UNDECOR," %s\n",relative_path);
@@ -265,7 +272,7 @@ void show_relative_path(
 
 				slog(EVERY|UNDECOR,"update & rehash");
 
-				print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
+				print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
 
 				slog(EVERY|UNDECOR," %s\n",relative_path);
 			}
@@ -273,9 +280,17 @@ void show_relative_path(
 		} else {
 			slog(EVERY|UNDECOR,"update stat");
 
-			print_changes(EVERY,*metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
 
 			slog(EVERY|UNDECOR," %s\n",relative_path);
 		}
+	}
+
+	if(hash_interrupted == true)
+	{
+		slog(EVERY,"SHA512 checksum for the file %s has been"
+			" gracefully interrupted at byte: %s\n",
+			relative_path,
+			bkbmbgbtbpbeb((size_t)checksum_offset));
 	}
 }

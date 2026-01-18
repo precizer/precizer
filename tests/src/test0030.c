@@ -139,7 +139,8 @@ static Return tamper_locked_file_bytes(
 }
 
 /**
- * Size change with locked checksums should raise a warning during update.
+ * README example: size differs -> WARNING, independent of
+ * --watch-timestamps or --rehash-locked.
  */
 static Return test0030_1_test(void)
 {
@@ -194,7 +195,8 @@ static Return test0030_1_test(void)
 }
 
 /**
- * Timestamp drift with --watch-timestamps produces a warning for locked entries.
+ * README example: timestamps differ, --watch-timestamps enabled,
+ * --rehash-locked disabled -> WARNING.
  */
 static Return test0030_2_test(void)
 {
@@ -250,7 +252,8 @@ static Return test0030_2_test(void)
 }
 
 /**
- * Timestamp drift without --watch-timestamps should complete successfully.
+ * README example: size matches, --watch-timestamps disabled,
+ * --rehash-locked disabled -> SUCCESS (timestamps ignored).
  */
 static Return test0030_3_test(void)
 {
@@ -306,7 +309,8 @@ static Return test0030_3_test(void)
 }
 
 /**
- * Rehashing locked files while watching timestamps should still succeed.
+ * README example: --rehash-locked decides consistency; when the
+ * checksum matches, result is SUCCESS regardless of --watch-timestamps.
  */
 static Return test0030_4_test(void)
 {
@@ -362,7 +366,8 @@ static Return test0030_4_test(void)
 }
 
 /**
- * Tampering with a locked checksum in the DB should trigger a warning during rehash.
+ * README example extension: rehash compares computed checksum with
+ * the stored one; a mismatch should trigger WARNING. Simulate by modifying the DB.
  */
 static Return test0030_5_test(void)
 {
@@ -421,7 +426,8 @@ static Return test0030_5_test(void)
 }
 
 /**
- * Locked content change without DB tampering should trigger a warning during rehash.
+ * README example extension: on-disk content change with
+ * --rehash-locked should trigger WARNING.
  */
 static Return test0030_6_test(void)
 {
@@ -477,7 +483,8 @@ static Return test0030_6_test(void)
 }
 
 /**
- * Locked content change with --watch-timestamps should trigger a warning during rehash.
+ * Same as test0030_6 but with --watch-timestamps; per README example, this option
+ * does not change the --rehash-locked outcome.
  */
 static Return test0030_7_test(void)
 {
@@ -533,8 +540,63 @@ static Return test0030_7_test(void)
 }
 
 /**
+ * README example: size and timestamps match,
+ * --watch-timestamps enabled, --rehash-locked disabled -> SUCCESS.
+ */
+static Return test0030_8_test(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command = "cd ${TMPDIR};"
+	        "mv tests/examples/diffs/ tests/examples_backup/;"
+	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "rm -f lock_s8.db;";
+
+	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == runit("--database=lock_s8.db --progress " \
+		"--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1",
+		result,
+		COMPLETED,
+		ALLOW_BOTH));
+
+	const char *filename = "templates/0030_008_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == runit("--update --watch-timestamps " \
+		"--lock-checksum=\"^path1/.*\" --database=lock_s8.db tests/examples/diffs/diff1",
+		result,
+		COMPLETED,
+		ALLOW_BOTH));
+
+	filename = "templates/0030_008_2.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
+		"rm -f lock_s8.db && "
+		"rm -rf tests/examples/diffs/ && "
+		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
  *
- * Example 10: scenarios with --lock-checksum, --rehash-locked, and --watch-timestamps
+ * README example: scenarios with --lock-checksum, --rehash-locked, and --watch-timestamps
  *
  */
 Return test0030(void)
@@ -547,7 +609,8 @@ Return test0030(void)
 	TEST(test0030_4_test,"Timestamp drift with --watch-timestamps and --rehash-locked completes successfully…");
 	TEST(test0030_5_test,"Locked checksum mismatch in DB triggers a warning…");
 	TEST(test0030_6_test,"Locked file content change triggers a warning…");
-//	TEST(test0030_7_test,"Locked file content change with --watch-timestamps triggers a warning…");
+	TEST(test0030_7_test,"Locked file content change with --watch-timestamps triggers a warning…");
+	TEST(test0030_8_test,"No changes with --watch-timestamps completes successfully…");
 
 	RETURN_STATUS;
 }
