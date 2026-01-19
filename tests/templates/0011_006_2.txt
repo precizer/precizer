@@ -1,9 +1,9 @@
 \APrimary database file name: %DB_NAME%
 Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
-The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database %DB_NAME%
+Update mode enabled for DB %DB_NAME%
 File traversal started
-(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 add diff1/1/AAA/BCB/CCC/a.txt
 add diff1/1/AAA/ZAW/A/b/c/a_file.txt
 add diff1/1/AAA/ZAW/D/e/f/b_file.txt

@@ -173,7 +173,7 @@ typedef struct Flags {
 } Flags;
 
 /**
- * @brief Compact file metadata structure
+ * @brief Compact Stat file metadata structure
  *
  * Contains essential file metadata including size and timestamps.
  * Provides high precision timing using separate second and nanosecond fields.
@@ -224,7 +224,8 @@ typedef struct {
 	/* DB row ID */
 	sqlite3_int64 ID;
 
-	/* Metadata of a file (man 2 stat) */
+	/* Compact Stat
+	   Metadata of a file (man 2 stat) */
 	CmpctStat saved_stat;
 
 	/* SHA512 metadata */
@@ -468,6 +469,7 @@ typedef enum FileAccessStatus
 	FILE_ACCESS_DENIED,
 	FILE_NOT_FOUND,
 	FILE_ACCESS_ERROR
+
 } FileAccessStatus;
 
 FileAccessStatus file_check_access(
@@ -617,6 +619,8 @@ void show_relative_path(
 	const bool,
 	const bool,
 	const sqlite3_int64,
+	const bool,
+	const bool,
 	const bool,
 	const bool,
 	const bool,

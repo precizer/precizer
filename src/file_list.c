@@ -391,7 +391,7 @@ Return file_list(const bool count_size_of_all_files)
 
 				/**
 				 * Indicates files that cannot be read/seeks (e.g. sysfs)
-			 	 *
+				 *
 				 * On some special file systems (such as /sys, which has
 				 * the SYSFS_MAGIC constant == 0x62656572), standard
 				 * file operations like fopen, fseek, and lseek
@@ -526,61 +526,34 @@ Return file_list(const bool count_size_of_all_files)
 					}
 				}
 
-				// Print out of a file name and its changes
-				show_relative_path(dbrow,
-					relative_path,
-					&stat,
-					&first_iteration,
-					&at_least_one_file_was_shown,
-					metadata_of_scanned_and_saved_files,
-					rehashing_from_the_beginning,
-					ignore,
-					include,
-					locked_checksum_file,
-					lock_checksum_violation,
-					locked_checksum_mismatch,
-					hash_interrupted,
-					offset,
-					rehash,
-					count_size_of_all_files,
-					is_readable,
-					zero_size_file);
+				bool db_inserted = false;
+				bool db_updated = false;
+				bool show_log = false;
+				bool break_after_log = false;
 
-				if(is_readable != true)
+				if(is_readable != true
+				        || ignore == true
+				        || lock_checksum_violation == true
+				        || hash_failed == true
+				        || locked_checksum_mismatch == true)
 				{
-					break;
-				}
+					show_log = true;
+					break_after_log = true;
 
-				if(ignore == true)
-				{
-					break;
-				}
+					/* When a checksum-locked file changed;
+					   blocks rehash/DB update and flags corruption */
+					if(lock_checksum_violation == true || locked_checksum_mismatch == true)
+					{
+						lock_checksum_violation_detected = true;
+					}
 
-				/* When a checksum-locked file changed;
-				   blocks rehash/DB update and flags corruption */
-				if(lock_checksum_violation == true)
-				{
-					lock_checksum_violation_detected = true;
-					break;
-				}
-
-				if(hash_failed == true)
-				{
-					break;
-				}
-
-				if(locked_checksum_mismatch == true)
-				{
-					lock_checksum_violation_detected = true;
-					break;
-				}
-
-				if(path_known == true)
-				{
+				} else if(path_known == true){
 					/* Update in DB */
 
 					bool allow_locked_update = lock_checksum_violation == false
-					        && (locked_checksum_file == false || config->rehash_locked == true);
+					        && (locked_checksum_file == false
+					        || config->rehash_locked == true
+					        || has_saved_offset == true);
 
 					bool should_update_db = path_known == true
 					        && allow_locked_update == true
@@ -606,9 +579,11 @@ Return file_list(const bool count_size_of_all_files)
 								continue_the_loop = false;
 								break;
 							}
+							db_updated = true;
 						}
 					}
 
+					show_log = true;
 				} else {
 
 					/* Insert into DB */
@@ -638,7 +613,40 @@ Return file_list(const bool count_size_of_all_files)
 							continue_the_loop = false;
 							break;
 						}
+						db_inserted = true;
 					}
+
+					show_log = true;
+				}
+
+				if(show_log == true)
+				{
+					// Print out of a file name and its changes
+					show_relative_path(dbrow,
+						relative_path,
+						&stat,
+						&first_iteration,
+						&at_least_one_file_was_shown,
+						metadata_of_scanned_and_saved_files,
+						rehashing_from_the_beginning,
+						ignore,
+						include,
+						locked_checksum_file,
+						lock_checksum_violation,
+						locked_checksum_mismatch,
+						hash_interrupted,
+						offset,
+						rehash,
+						count_size_of_all_files,
+						is_readable,
+						zero_size_file,
+						db_inserted,
+						db_updated);
+				}
+
+				if(break_after_log == true)
+				{
+					break;
 				}
 
 				/**

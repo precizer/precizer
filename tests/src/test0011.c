@@ -401,14 +401,16 @@ Return test0011(void)
 	/// By default, the function worked without errors.
 	INITTEST;
 
-	TEST(test0011_1_readme,"README example 1 Adding and comparing…");
-	TEST(test0011_2_readme,"README example 2 Updating the data in DB…");
-	TEST(test0011_3_readme,"README example 3 --silent mode…");
-	TEST(test0011_4_readme,"README example 4 --verbose mode…");
-	TEST(test0011_5_readme,"README example 5 Disable recursion with --maxdepth…");
-	TEST(test0011_6_readme,"README example 6 Relative path to ignore with --ignore…");
-	TEST(test0011_7_readme,"README example 7 Multiple regexp for ignoring…");
-	TEST(test0011_8_readme,"README example 8 The --ignore option(s) together with --include…");
+	TEST(test0011_1_readme,"README Example 1 Adding and comparing…");
+	TEST(test0011_2_readme,"README Example 2 Updating the data in DB…");
+	TEST(test0011_3_readme,"README Example 3 --silent mode…");
+	TEST(test0011_4_readme,"README Example 4 --verbose mode…");
+	TEST(test0011_5_readme,"README Example 5 Disable recursion with --maxdepth…");
+	TEST(test0011_6_readme,"README Example 6 Relative path to ignore with --ignore…");
+	TEST(test0011_7_readme,"README Example 7 Multiple regexp for ignoring…");
+	TEST(test0011_8_readme,"README Example 8 The --ignore option(s) together with --include…");
+	SUTE(test0030,"README Examples 9 & 10: --lock-checksum with --rehash-locked and --watch-timestamps…");
+	SUTE(test0029,"README Example 11: Testing how the application behaves with inaccessible files…");
 
 	RETURN_STATUS;
 }

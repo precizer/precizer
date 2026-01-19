@@ -21,7 +21,7 @@ Return show_remembered_messages(void)
 
 	sqlite3_stmt *stmt = NULL;
 	const char *select_sql =
-		"SELECT message FROM temp.remember_history ORDER BY id;";
+	        "SELECT message FROM temp.remember_history ORDER BY id;";
 
 	int rc = sqlite3_prepare_v2(config->db,select_sql,-1,&stmt,NULL);
 

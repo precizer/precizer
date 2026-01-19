@@ -44,9 +44,9 @@ tests/examples/diffs/diff1
 TESTING:The (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option has been used, so the following paths will be written to the database1.db:
 tests/examples/diffs/diff2
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database1.db
+TESTING:Update mode enabled for DB database1.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database1.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 update stat 1/AAA/BCB/CCC/a.txt
 update stat 1/AAA/ZAW/A/b/c/a_file.txt
 update stat 1/AAA/ZAW/D/e/f/b_file.txt
