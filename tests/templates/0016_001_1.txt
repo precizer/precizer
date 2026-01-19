@@ -35,7 +35,7 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the database1.db database:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 add 1/AAA/BCB/CCC/a.txt
 add 1/AAA/ZAW/A/b/c/a_file.txt
 add 1/AAA/ZAW/D/e/f/b_file.txt
@@ -99,9 +99,9 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database1.db
+TESTING:Update mode enabled for DB database1.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database1.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 update & rehash 1/AAA/BCB/CCC/a.txt
 update stat 2/AAA/BBB/CZC/a.txt
 TESTING:File traversal complete
@@ -212,9 +212,9 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database1.db
+TESTING:Update mode enabled for DB database1.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database1.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 update & rehash changed size was:\d+.*, now:\d+.* ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/BCB/CCC/a.txt
 update & rehash changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 2/AAA/BBB/CZC/a.txt
 TESTING:File traversal complete

@@ -39,9 +39,9 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database1.db
+TESTING:Update mode enabled for DB database1.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database1.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 inaccessible 1/AAA/ZAW/D/e/f/b_file.txt
 inaccessible 2/AAA/BBB/CZC
 TESTING:File traversal complete

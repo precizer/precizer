@@ -13,7 +13,7 @@
  */
 void rational_remember(
 	const char *message,
-	const int line_len)
+	const int  line_len)
 {
 	if(message == NULL)
 	{
@@ -30,8 +30,8 @@ void rational_remember(
 	bool append_to_last = false;
 
 	const char *select_sql =
-		"SELECT id, message FROM temp.remember_history "
-		"ORDER BY id DESC LIMIT 1;";
+	        "SELECT id, message FROM temp.remember_history "
+	        "ORDER BY id DESC LIMIT 1;";
 
 	int rc = sqlite3_prepare_v2(config->db,select_sql,-1,&stmt,NULL);
 
@@ -61,8 +61,8 @@ void rational_remember(
 	if(append_to_last)
 	{
 		const char *update_sql =
-			"UPDATE temp.remember_history "
-			"SET message = message || ?1 WHERE id = ?2;";
+		        "UPDATE temp.remember_history "
+		        "SET message = message || ?1 WHERE id = ?2;";
 
 		rc = sqlite3_prepare_v2(config->db,update_sql,-1,&stmt,NULL);
 
@@ -94,7 +94,7 @@ void rational_remember(
 		}
 	} else {
 		const char *insert_sql =
-			"INSERT INTO temp.remember_history (message) VALUES (?1);";
+		        "INSERT INTO temp.remember_history (message) VALUES (?1);";
 
 		rc = sqlite3_prepare_v2(config->db,insert_sql,-1,&stmt,NULL);
 

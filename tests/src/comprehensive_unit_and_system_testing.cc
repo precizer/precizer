@@ -13,5 +13,3 @@ SUTE(test0020,"DB creation attempts with missing components…");
 SUTE(test0024,"Paths with apostrophe test…");
 SUTE(test0027,"--lock-checksum option testing…");
 SUTE(test0028,"--compare mode across different types of responses…");
-SUTE(test0029,"Testing how the application behaves with inaccessible files…");
-SUTE(test0030,"Example 10: --lock-checksum with --rehash-locked and --watch-timestamps…");

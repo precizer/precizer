@@ -13,6 +13,7 @@ static Return tamper_locked_checksum(
 	sqlite3_stmt *stmt = NULL;
 	const char *sql = "UPDATE files SET sha512 = (substr(sha512,1,2) || X'BEEF' || substr(sha512,5)) "
 	                  "WHERE relative_path = ?1;";
+
 	create(char,db_path);
 
 	if(SUCCESS == status && (db_filename == NULL || relative_path == NULL))
@@ -139,7 +140,7 @@ static Return tamper_locked_file_bytes(
 }
 
 /**
- * README example: size differs -> WARNING, independent of
+ * README --lock-checksum example: size differs -> WARNING, independent of
  * --watch-timestamps or --rehash-locked.
  */
 static Return test0030_1_test(void)
@@ -195,7 +196,7 @@ static Return test0030_1_test(void)
 }
 
 /**
- * README example: timestamps differ, --watch-timestamps enabled,
+ * README --lock-checksum example: timestamps differ, --watch-timestamps enabled,
  * --rehash-locked disabled -> WARNING.
  */
 static Return test0030_2_test(void)
@@ -252,7 +253,7 @@ static Return test0030_2_test(void)
 }
 
 /**
- * README example: size matches, --watch-timestamps disabled,
+ * README --lock-checksum example: size matches, --watch-timestamps disabled,
  * --rehash-locked disabled -> SUCCESS (timestamps ignored).
  */
 static Return test0030_3_test(void)
@@ -309,7 +310,7 @@ static Return test0030_3_test(void)
 }
 
 /**
- * README example: --rehash-locked decides consistency; when the
+ * README --lock-checksum example: --rehash-locked decides consistency; when the
  * checksum matches, result is SUCCESS regardless of --watch-timestamps.
  */
 static Return test0030_4_test(void)
@@ -366,7 +367,7 @@ static Return test0030_4_test(void)
 }
 
 /**
- * README example extension: rehash compares computed checksum with
+ * README --lock-checksum example extension: rehash compares computed checksum with
  * the stored one; a mismatch should trigger WARNING. Simulate by modifying the DB.
  */
 static Return test0030_5_test(void)
@@ -426,7 +427,7 @@ static Return test0030_5_test(void)
 }
 
 /**
- * README example extension: on-disk content change with
+ * README --lock-checksum example extension: on-disk content change with
  * --rehash-locked should trigger WARNING.
  */
 static Return test0030_6_test(void)
@@ -540,7 +541,7 @@ static Return test0030_7_test(void)
 }
 
 /**
- * README example: size and timestamps match,
+ * README --lock-checksum example: size and timestamps match,
  * --watch-timestamps enabled, --rehash-locked disabled -> SUCCESS.
  */
 static Return test0030_8_test(void)
@@ -596,7 +597,8 @@ static Return test0030_8_test(void)
 
 /**
  *
- * README example: scenarios with --lock-checksum, --rehash-locked, and --watch-timestamps
+ * README --lock-checksum examples.
+ * Scenarios with --lock-checksum, --rehash-locked, and --watch-timestamps
  *
  */
 Return test0030(void)
