@@ -106,8 +106,7 @@ static Return test0007_2_libmem(void)
 
 	#if SHOW_TEST
 	// Print array summary and hash
-	echo(STDERR,"Test 1 array size: %zu bytes, array_length=%zu, sizeof(int)=%zu bytes\n",
-		array_size,array_length,sizeof(int));
+	echo(STDERR,"Test 1 array size: %zu bytes, array_length=%zu, sizeof(int)=%zu bytes\n",array_size,array_length,sizeof(int));
 	echo(STDERR,"Test 1 SHA-512 hash: ");
 	print_hash(hash_1);
 	#endif
@@ -134,14 +133,12 @@ static Return test0007_2_libmem(void)
 
 	if(test1_view != NULL)
 	{
-		sha512_update(&ctx,(const unsigned char *)test1_view,
-			test1->length * test1->element_size);
+		sha512_update(&ctx,(const unsigned char *)test1_view,test1->length * test1->element_size);
 	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
-	echo(STDERR,"Test 1 Array size: %zu bytes\n",
-		test1->length * test1->element_size);
+	echo(STDERR,"Test 1 Array size: %zu bytes\n",test1->length * test1->element_size);
 	echo(STDERR,"Test 1 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -199,8 +196,7 @@ static Return test0007_3_libmem(void)
 	sha512_final(&ctx,hash_1);
 
 	#if SHOW_TEST
-	echo(STDERR,"Test 2 array size: %zu bytes, array_length=%zu, sizeof(char)=%zu bytes\n",
-		array_size,array_length,sizeof(char));
+	echo(STDERR,"Test 2 array size: %zu bytes, array_length=%zu, sizeof(char)=%zu bytes\n",array_size,array_length,sizeof(char));
 	echo(STDERR,"Test 2 SHA-512 hash: ");
 	print_hash(hash_1);
 	#endif
@@ -227,14 +223,12 @@ static Return test0007_3_libmem(void)
 
 	if(test2_view != NULL)
 	{
-		sha512_update(&ctx,(const unsigned char *)test2_view,
-			test2->length * test2->element_size);
+		sha512_update(&ctx,(const unsigned char *)test2_view,test2->length * test2->element_size);
 	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
-	echo(STDERR,"Test 2 array size: %zu bytes\n",
-		test2->length * test2->element_size);
+	echo(STDERR,"Test 2 array size: %zu bytes\n",test2->length * test2->element_size);
 	echo(STDERR,"Test 2 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -278,8 +272,7 @@ static Return test0007_4_5_6_libmem(void)
 	// TEST 4: Large allocation
 	size_t array_length = 4096;
 	size_t array_size = array_length * sizeof(unsigned long long int);
-	unsigned char *ullint_array = (unsigned char *)calloc(array_length,
-		sizeof(unsigned long long int));
+	unsigned char *ullint_array = (unsigned char *)calloc(array_length,sizeof(unsigned long long int));
 
 	if(ullint_array == NULL)
 	{

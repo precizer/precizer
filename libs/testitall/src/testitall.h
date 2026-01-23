@@ -105,6 +105,8 @@ extern memory *EXTEND;
 
 Return external_call(
 	const char *,
+	memory *,
+	memory *,
 	const int,
 	unsigned int);
 
@@ -115,6 +117,7 @@ void echo(
 
 Return execute_command(
 	const char *,
+	memory *,
 	memory *,
 	const int,
 	unsigned int);
@@ -275,12 +278,23 @@ enum run_mode
 	EXTERNAL_CALL = 1
 };
 
-enum buffer_policy_t
+/**
+ * @brief Bitmask flags for stdout/stderr capture.
+ *
+ * Flags are ORed together:
+ * - STDOUT_SUPPRESS: drop captured stdout.
+ * - STDERR_SUPPRESS: drop captured stderr and do not fail on it.
+ * - STDERR_ALLOW: keep stderr without failing; wins over STDERR_SUPPRESS.
+ * - STDOUT_ENABLE/STDERR_ENABLE and ALLOW_BOTH are informational only.
+ * - SUPPRESS_BOTH_BUFFERS is STDOUT_SUPPRESS|STDERR_SUPPRESS.
+ */
+enum capture_policy
 {
 	STDOUT_ENABLE         = 1U << 0,
 	STDOUT_SUPPRESS       = 1U << 1,
 	STDERR_ENABLE         = 1U << 2,
 	STDERR_SUPPRESS       = 1U << 3,
+	STDERR_ALLOW          = 1U << 4,
 	ALLOW_BOTH            = STDOUT_ENABLE|STDERR_ENABLE,
 	SUPPRESS_BOTH_BUFFERS = STDOUT_SUPPRESS|STDERR_SUPPRESS
 };
@@ -289,6 +303,7 @@ extern enum run_mode run_external;
 
 Return runit(
 	const char *,
+	memory *,
 	memory *,
 	const int,
 	unsigned int);

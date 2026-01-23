@@ -1,5 +1,4 @@
 #include "testitall.h"
-#include <sysexits.h>
 
 // Global buffers for captured output streams
 memory _STDOUT = {sizeof(char),0,0,NULL};
@@ -13,19 +12,14 @@ extern char **environ; // Environment variables used by posix_spawnp
 
 /**
  * Executes an external command, capturing stdout/stderr into shared buffers.
- * @param command              Shell command to execute.
+ * @param command Shell command to execute.
  * @param expected_return_code Exit code the command must produce for SUCCESS.
- * @param buffer_policy        Bitmask controlling stdout/stderr handling.
- *                             Use STDOUT_SUPPRESS/STDERR_SUPPRESS to drop buffers,
- *                             STDOUT_ENABLE/STDERR_ENABLE to document enabled streams,
- *                             and their combinations like ALLOW_BOTH.
- * @return SUCCESS if execution, capture, and exit code checks succeed; FAILURE otherwise.
+ * @param buffer_policy Bitmask controlling stdout/stderr handling (see capture_policy).
+ * @return SUCCESS when the command runs and exit code matches; FAILURE otherwise.
  *
- * Side effects:
- *  - Clears global STDOUT/STDERR buffers before running.
- *  - Formats diagnostics into STDERR on unexpected exit codes or unsuppressed stderr.
+ * On exit-code mismatch, STDERR is replaced with an error report.
  */
-Return external_call(
+static Return external_call_impl(
 	const char   *command,
 	const int    expected_return_code,
 	unsigned int buffer_policy)
@@ -35,6 +29,7 @@ Return external_call(
 	Return status = SUCCESS;
 	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
 	const bool suppress_stderr = (buffer_policy & STDERR_SUPPRESS) != 0U;
+	const bool allow_stderr    = (buffer_policy & STDERR_ALLOW) != 0U;
 
 	// Create pipes to capture stdout and stderr
 	int stdout_pipe[2],stderr_pipe[2];
@@ -44,11 +39,6 @@ Return external_call(
 		serp("Error creating pipe");
 		return(FAILURE);
 	}
-
-	// Clear data from previous usage
-	del(STDERR);
-	// Clear data from previous usage
-	del(STDOUT);
 
 	// Initialize spawn file actions and attributes
 	posix_spawn_file_actions_t actions;
@@ -202,7 +192,6 @@ Return external_call(
 
 	// Wait for the child process to finish and capture its exit status
 	int return_code;
-	bool allow_stderr = (expected_return_code == EX_USAGE);
 
 	if(waitpid(pid,&return_code,0) == -1)
 	{
@@ -214,68 +203,7 @@ Return external_call(
 	close(stdout_pipe[0]); // Close the read end of the pipe
 	close(stderr_pipe[0]);
 
-	if(STDERR->length > 0)
-	{
-		if(allow_stderr == true)
-		{
-			if(STDOUT->length == 0 && STDOUT->data == NULL)
-			{
-				run(copy(STDOUT,STDERR));
-
-			} else {
-				run(concat_strings(STDOUT,STDERR));
-			}
-
-			// Clear STDERR to avoid warning reports
-			del(STDERR);
-
-		} else {
-			// Suppress the output from the STDERR buffer if needed
-			if(suppress_stderr == true)
-			{
-				// Suppress the output from the STDERR buffer
-				del(STDERR);
-
-			} else {
-				// Format stderr output
-				char *str;
-				const char *stderr_view = getcstring(STDERR);
-				int rt = asprintf(&str, \
-					YELLOW "Warning! STDERR buffer is not empty!\n"
-					"External command call:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
-					"Stderr output:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
-					command,stderr_view);
-
-				if(rt > -1)
-				{
-					// Copy str into STDERR buffer
-					run(resize(STDERR,(size_t)rt + 1));
-
-					run(copy_literal(STDERR,str));
-
-				} else {
-					report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);
-				}
-
-				free(str);
-
-				return(FAILURE);
-			}
-		}
-	}
-
-	if(STDOUT->length > 0)
-	{
-		// Suppress the output from the STDOUT buffer if needed
-		if(suppress_stdout == true)
-		{
-			// Suppress the output from the STDOUT buffer
-			del(STDOUT);
-
-		}
-	}
-
-	// Check the exit status of the child process
+	// Check the exit status of the child process first
 	if(expected_return_code != exit_code)
 	{
 		// Format stderr output
@@ -311,5 +239,93 @@ Return external_call(
 		return(FAILURE);
 	}
 
+	if(STDERR->length > 0)
+	{
+		if(allow_stderr == true)
+		{
+			// Keep STDERR contents without failing
+		} else if(suppress_stderr == true) {
+			// Suppress the output from the STDERR buffer
+			del(STDERR);
+
+		} else {
+			// Format stderr output
+			char *str;
+			const char *stderr_view = getcstring(STDERR);
+			int rt = asprintf(&str, \
+				YELLOW "Warning! STDERR buffer is not empty!\n"
+				"External command call:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
+				"Stderr output:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
+				command,stderr_view);
+
+			if(rt > -1)
+			{
+				// Copy str into STDERR buffer
+				run(resize(STDERR,(size_t)rt + 1));
+
+				run(copy_literal(STDERR,str));
+
+			} else {
+				report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);
+			}
+
+			free(str);
+
+			return(FAILURE);
+		}
+	}
+
+	if(STDOUT->length > 0)
+	{
+		// Suppress the output from the STDOUT buffer if needed
+		if(suppress_stdout == true)
+		{
+			// Suppress the output from the STDOUT buffer
+			del(STDOUT);
+
+		}
+	}
+
 	return(SUCCESS);
+}
+
+/**
+ * @brief Execute a shell command and copy captured output into caller buffers.
+ *
+ * Clears shared STDOUT/STDERR, runs external_call_impl(), then copies captured
+ * output into stdout_result/stderr_result when provided. If STDERR_ALLOW is set
+ * and the call succeeds, shared STDERR is cleared.
+ */
+Return external_call(
+	const char   *command,
+	memory       *stdout_result,
+	memory       *stderr_result,
+	const int    expected_return_code,
+	unsigned int buffer_policy)
+{
+	Return status = SUCCESS;
+	const bool allow_stderr = (buffer_policy & STDERR_ALLOW) != 0U;
+
+	// Clear data from previous usage
+	call(del(STDOUT));
+	call(del(STDERR));
+
+	run(external_call_impl(command,expected_return_code,buffer_policy));
+
+	if(NULL != stdout_result && STDOUT->length > 0U)
+	{
+		call(copy(stdout_result,STDOUT));
+	}
+
+	if(NULL != stderr_result && STDERR->length > 0U)
+	{
+		call(copy(stderr_result,STDERR));
+	}
+
+	if(SUCCESS == status && true == allow_stderr)
+	{
+		call(del(STDERR));
+	}
+
+	return(status);
 }

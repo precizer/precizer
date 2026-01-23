@@ -24,7 +24,7 @@ Return test0019(void)
 	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for the test
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -33,13 +33,13 @@ Return test0019(void)
 	        "ln -s ../../../../AAA/ZAW/D/e/f tests/examples/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f && "
 	        "ln -s /to/nowhere tests/examples/diffs/diff1/path1/AAA/ZAW/A/b/broken_symlink";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
 
 	const char *filename = "templates/0019_001.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -52,13 +52,13 @@ Return test0019(void)
 	        "rm tests/examples/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f && "
 	        "rm tests/examples/diffs/diff1/path1/AAA/ZAW/A/b/broken_symlink";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--update --database=database1.db tests/examples/diffs/diff1";
 
 	filename = "templates/0019_002.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -71,13 +71,13 @@ Return test0019(void)
 	        "ln -s ../../../../AAA/ZAW/D/e/f tests/examples/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f && "
 	        "ln -s /to/nowhere tests/examples/diffs/diff1/path1/AAA/ZAW/A/b/broken_symlink";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--update --database=database1.db tests/examples/diffs/diff1";
 
 	filename = "templates/0019_003.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -86,10 +86,12 @@ Return test0019(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db && "
-		"rm -rf tests/examples/diffs/ && "
-		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "rm database1.db && "
+	        "rm -rf tests/examples/diffs/ && "
+	        "mv tests/examples_backup/ tests/examples/diffs/";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
