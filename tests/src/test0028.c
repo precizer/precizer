@@ -16,13 +16,13 @@ static Return test0028_1_test(void)
 	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -38,11 +38,11 @@ static Return test0028_1_test(void)
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -57,7 +57,7 @@ static Return test0028_1_test(void)
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0028_001.txt";
 
@@ -68,10 +68,12 @@ static Return test0028_1_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db database2.db && "
-		"rm -rf tests/examples/diffs/ && "
-		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "rm database1.db database2.db && "
+	        "rm -rf tests/examples/diffs/ && "
+	        "mv tests/examples_backup/ tests/examples/diffs/";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -92,13 +94,13 @@ static Return test0028_2_test(void)
 	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -112,11 +114,11 @@ static Return test0028_2_test(void)
 	command = "cd ${TMPDIR};"
 	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;"; // Remove
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -131,7 +133,7 @@ static Return test0028_2_test(void)
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0028_002.txt";
 
@@ -142,10 +144,12 @@ static Return test0028_2_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db database2.db && "
-		"rm -rf tests/examples/diffs/ && "
-		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "rm database1.db database2.db && "
+	        "rm -rf tests/examples/diffs/ && "
+	        "mv tests/examples_backup/ tests/examples/diffs/";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -166,13 +170,13 @@ static Return test0028_3_test(void)
 	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -186,11 +190,11 @@ static Return test0028_3_test(void)
 	command = "cd ${TMPDIR};"
 	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -205,7 +209,7 @@ static Return test0028_3_test(void)
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0028_003.txt";
 
@@ -216,10 +220,12 @@ static Return test0028_3_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db database2.db && "
-		"rm -rf tests/examples/diffs/ && "
-		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "rm database1.db database2.db && "
+	        "rm -rf tests/examples/diffs/ && "
+	        "mv tests/examples_backup/ tests/examples/diffs/";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -240,13 +246,13 @@ static Return test0028_4_test(void)
 	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -260,11 +266,11 @@ static Return test0028_4_test(void)
 	command = "cd ${TMPDIR};"
 	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"; // Modify
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
 	{
@@ -279,7 +285,7 @@ static Return test0028_4_test(void)
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0028_004.txt";
 
@@ -290,10 +296,12 @@ static Return test0028_4_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db database2.db && "
-		"rm -rf tests/examples/diffs/ && "
-		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "rm database1.db database2.db && "
+	        "rm -rf tests/examples/diffs/ && "
+	        "mv tests/examples_backup/ tests/examples/diffs/";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -311,17 +319,17 @@ static Return test0028_5_test(void)
 
 	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--database=database2.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0028_005.txt";
 
@@ -332,8 +340,10 @@ static Return test0028_5_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db database2.db;",COMPLETED,ALLOW_BOTH));
+	const char *command = "cd ${TMPDIR} && "
+	        "rm database1.db database2.db;";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

@@ -127,7 +127,6 @@ The following scenario illustrates the issue:
 * Author contact options:
   * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
   * [Bug reports and feature requests](https://github.com/precizer/precizer/issues/new).
-* If issues arise while using the program, questions can be posted on [ru.stackoverflow.com](https://ru.stackoverflow.com) using the **precizer** tag. The author actively monitors such questions and helps with troubleshooting any problems.
 
 ## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
 

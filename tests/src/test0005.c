@@ -10,7 +10,14 @@ Return test0005(void)
 	INITTEST;
 
 	// Example of suppress messages to STDERR
-	ASSERT(SUCCESS == external_call("echo Example message to STDERR that should be suppressed 1>&2",0,STDERR_SUPPRESS));
+	const char *command = "echo Example message to STDERR that should be suppressed 1>&2";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,STDERR_SUPPRESS));
+
+	// Example of NOT suppressed messages to STDERR
+	command = "echo Example message to STDERR that should be suppressed 1>&2";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,STDERR_ALLOW));
 
 	RETURN_STATUS;
 }

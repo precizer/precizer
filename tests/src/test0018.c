@@ -13,7 +13,10 @@ Return test0018_1_maxdepth_argument(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--maxdepth=3 --database=database3.db $TMPDIR/tests/examples/levels",result,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--maxdepth=3 --database=database3.db "
+	        "$TMPDIR/tests/examples/levels";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -33,7 +36,10 @@ Return test0018_1_maxdepth_argument(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--update --database=database3.db $TMPDIR/tests/examples/levels",result,COMPLETED,ALLOW_BOTH));
+	arguments = "--update --database=database3.db "
+	        "$TMPDIR/tests/examples/levels";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -45,7 +51,10 @@ Return test0018_1_maxdepth_argument(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/database3.db\"",COMPLETED,ALLOW_BOTH));
+	const char *command = "rm \"${TMPDIR}/database3.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
 	RETURN_STATUS;
 }
 

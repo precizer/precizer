@@ -20,19 +20,21 @@ static Return test0011_1_readme(void)
 	create(char,result);
 	create(char,chunk);
 
-	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--progress --database=database1.db "
+	        "tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	arguments = "--progress --database=database2.db tests/examples/diffs/diff2";
+	arguments = "--progress --database=database2.db "
+	        "tests/examples/diffs/diff2";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	create(char,pattern);
@@ -45,8 +47,10 @@ static Return test0011_1_readme(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",COMPLETED,ALLOW_BOTH));
+	const char *command = "cd ${TMPDIR};"
+	        "rm database1.db database2.db";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
 	del(chunk);
@@ -88,9 +92,10 @@ static Return test0011_2_readme(void)
 	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--progress --database=database1.db "
+	        "tests/examples/diffs/diff1";
 
 	// Create memory for the result
 	create(char,result);
@@ -101,7 +106,7 @@ static Return test0011_2_readme(void)
 
 	const char *filename = "templates/0011_002_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -112,11 +117,12 @@ static Return test0011_2_readme(void)
 	del(pattern);
 	del(result);
 
-	arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--progress --database=database1.db "
+	        "tests/examples/diffs/diff1";
 
 	filename = "templates/0011_002_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,WARNING,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -128,9 +134,10 @@ static Return test0011_2_readme(void)
 
 	create(char,chunk);
 
-	arguments = "--update --progress --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--update --progress --database=database1.db "
+	        "tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	command = "cd ${TMPDIR};"
@@ -138,11 +145,12 @@ static Return test0011_2_readme(void)
 	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
 	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--watch-timestamps --update --progress --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--watch-timestamps --update --progress "
+	        "--database=database1.db tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	filename = "templates/0011_002_3.txt";
@@ -178,7 +186,10 @@ static Return test0011_3_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--silent --update --progress --database=database1.db "
+	        "tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	// Verify that silent mode produced no stdout after command execution
 	if(result->length > 0)
@@ -196,7 +207,7 @@ static Return test0011_3_readme(void)
 
 	const char *filename = "templates/0011_003.txt";
 
-	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -225,7 +236,10 @@ static Return test0011_4_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == runit("--verbose --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--verbose --update --progress --database=database1.db "
+	        "tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -233,10 +247,12 @@ static Return test0011_4_readme(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db && "
-		"rm -rf tests/examples/diffs/ && "
-		"mv tests/examples_backup/ tests/examples/diffs/",COMPLETED,ALLOW_BOTH));
+	const char *command = "cd ${TMPDIR} && "
+	        "rm database1.db && "
+	        "rm -rf tests/examples/diffs/ && "
+	        "mv tests/examples_backup/ tests/examples/diffs/";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -276,7 +292,9 @@ static Return test0011_5_readme(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
+	const char *command = "rm \"${TMPDIR}/${DBNAME}\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -328,10 +346,8 @@ static Return test0011_7_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--update --db-clean-ignored"
-	        " --ignore=\"^diff1/1/.*\""
-	        " --ignore=\"^diff2/1/.*\""
-	        " tests/examples/diffs";
+	const char *arguments = "--update --db-clean-ignored --ignore=\"^diff1/1/.*\" "
+	        "--ignore=\"^diff2/1/.*\" tests/examples/diffs";
 
 	const char *filename = "templates/0011_007.txt";
 
@@ -343,7 +359,9 @@ static Return test0011_7_readme(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
+	const char *command = "rm \"${TMPDIR}/${DBNAME}\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -363,17 +381,16 @@ static Return test0011_8_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("tests/examples/diffs",NULL,COMPLETED,ALLOW_BOTH));
+	arguments = "tests/examples/diffs";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	arguments = "--update"
-	        " --db-clean-ignored"
-	        " --ignore=\"^.*/path2/.*\""
-	        " --ignore=\"^diff2/.*\""
-	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
-	        " --include=\"^diff2/path1/AAA/ZAW/.*\""
-	        " tests/examples/diffs";
+	arguments = "--update --db-clean-ignored --ignore=\"^.*/path2/.*\" "
+	        "--ignore=\"^diff2/.*\" "
+	        "--include=\"^diff2/1/AAA/ZAW/A/b/c/.*\" "
+	        "--include=\"^diff2/path1/AAA/ZAW/.*\" tests/examples/diffs";
 
 	const char *filename = "templates/0011_008.txt";
 
@@ -385,7 +402,9 @@ static Return test0011_8_readme(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
+	const char *command = "rm \"${TMPDIR}/${DBNAME}\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
