@@ -112,8 +112,8 @@ Return sha512sum(
 			{
 				if(ferror(fileptr))
 				{
-					slog(ERROR,"Error reading file %s\n",path);
-					status = FAILURE;
+					slog(EVERY|UNDECOR,"error reading %s: %s\n",path,strerror(errno));
+					status = WARNING;
 				}
 
 				break;
