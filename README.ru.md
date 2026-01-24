@@ -79,7 +79,7 @@ abc/def/aaa.txt
 
 ## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
 
-Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
+Скачать [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) исполняемые файлы для:
 
 * Linux x86_64
 * Linux aarch64
@@ -95,7 +95,7 @@ Download [https://github.com/precizer/precizer/releases/latest/](https://github.
 
 * На macOS статическая линковка не поддерживается, поэтому для запуска скачанного приложения нужно озаботиться наличием в системе таких библиотек, как sqlite3, pcre2, argp и fts.
 
-## ТЕХНИЧЕСКИЕ ПОДРОБНОСТИ
+## ТЕХНИЧЕСКИЕ ПОДРОБНОСТИ алгоритмов работы
 
 Рассмотрим сценарий, когда имеется основное дисковое хранилище и его копия.
 Например, это может быть хранилище датацентра и его Disaster Recovery‑копия.
