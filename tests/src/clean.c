@@ -8,7 +8,7 @@ Return clean(void)
 	const char *command = "chmod -R a+rwX ${TMPDIR};"
 	        "rm -rf ${TMPDIR};";
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH);
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(SUCCESS == status)
 	{
