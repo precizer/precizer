@@ -12,6 +12,8 @@ Return sha512sum(
 	unsigned char  *sha512,
 	sqlite3_int64  *offset,
 	SHA512_Context *mdContext,
+	bool           *read_error,
+	int            *read_errno,
 	bool           *wrong_file_type)
 {
 	/// The status that will be passed to return() before exiting.
@@ -112,8 +114,8 @@ Return sha512sum(
 			{
 				if(ferror(fileptr))
 				{
-					slog(EVERY|UNDECOR|REMEMBER,"error reading %s: %s\n",path,strerror(errno));
-					status = WARNING;
+					*read_error = true;
+					*read_errno = errno;
 				}
 
 				break;
