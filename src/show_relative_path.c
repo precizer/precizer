@@ -179,8 +179,17 @@ void show_relative_path(
 		*at_least_one_file_was_shown = true;
 	}
 
-	if(read_error == true)
+	if(ignore == true)
 	{
+		if(dbrow->relative_path_already_in_db == false)
+		{
+			slog(EVERY|UNDECOR,"%s %s\n","ignore & do not add",relative_path);
+		} else {
+			slog(EVERY|UNDECOR,"ignored & do not update %s\n",relative_path);
+		}
+
+	} else if(read_error == true){
+
 		slog(EVERY|UNDECOR|REMEMBER,"error reading %s for %s\n",strerror(read_errno),relative_path);
 
 	} else if(is_readable == false){
@@ -191,11 +200,7 @@ void show_relative_path(
 
 		/* Add new */
 
-		if(ignore == true)
-		{
-			slog(EVERY|UNDECOR,"%s %s\n","ignore & do not add",relative_path);
-
-		} else if(db_inserted == true){
+		if(db_inserted == true){
 			if(include == true)
 			{
 				slog(EVERY|UNDECOR,"%s %s\n","add included",relative_path);
@@ -218,11 +223,7 @@ void show_relative_path(
 
 		/* Update existing */
 
-		if(ignore == true)
-		{
-			slog(EVERY|UNDECOR,"ignored & do not update %s\n",relative_path);
-
-		} else if(locked_checksum_mismatch == true){
+		if(locked_checksum_mismatch == true){
 
 			slog(EVERY|UNDECOR,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
 

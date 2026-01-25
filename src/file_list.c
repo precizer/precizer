@@ -370,50 +370,6 @@ Return file_list(const bool count_size_of_all_files)
 					rehashing_from_the_beginning = true;
 				}
 
-				// The file is available for reading
-				FileAccessStatus access_status = FILE_ACCESS_DENIED;
-
-				/* Check file access */
-				access_status = file_check_access(p->fts_path,
-					(size_t)p->fts_pathlen);
-
-				if(access_status == FILE_ACCESS_ERROR)
-				{
-					status = FAILURE;
-					continue_the_loop = false;
-					break;
-				}
-
-				bool is_readable = (access_status == FILE_ACCESS_ALLOWED);
-
-				// Marks zero-length files to avoid unnecessary hashing
-				bool zero_size_file = false;
-
-				/**
-				 * Indicates files that cannot be read/seeks (e.g. sysfs)
-				 *
-				 * On some special file systems (such as /sys, which has
-				 * the SYSFS_MAGIC constant == 0x62656572), standard
-				 * file operations like fopen, fseek, and lseek
-				 * cannot be used for reading and seeking.
-				 * While information about the file itself will be
-				 * recorded in the primary database, due to the
-				 * nature of such files, their hash sum is never
-				 * read and is stored as NULL
-				 */
-				bool wrong_file_type = false;
-
-				// Read error reported by sha512sum for this path
-				bool read_error = false;
-				// errno snapshot from the read error (valid when read_error is true).
-				int read_errno = 0;
-
-				if(p->fts_statp->st_size == 0)
-				{
-					zero_size_file = true;
-					rehash = false;
-				}
-
 				// Captures files explicitly skipped or forced by regexp filters
 				// Ignored with --ignore= or admitted with --include=
 				bool ignore = false;
@@ -454,6 +410,54 @@ Return file_list(const bool count_size_of_all_files)
 				if(ignore == true && locked_checksum_file == true && path_known == false)
 				{
 					ignore = false;
+				}
+
+				// Determine read access for non-ignored paths
+				FileAccessStatus access_status = FILE_ACCESS_DENIED;
+				bool is_readable = false;
+
+				/* Check file access */
+				if(ignore == false)
+				{
+					access_status = file_check_access(p->fts_path,
+						(size_t)p->fts_pathlen);
+
+					if(access_status == FILE_ACCESS_ERROR)
+					{
+						status = FAILURE;
+						continue_the_loop = false;
+						break;
+					}
+
+					is_readable = (access_status == FILE_ACCESS_ALLOWED);
+				}
+
+				// Marks zero-length files to avoid unnecessary hashing
+				bool zero_size_file = false;
+
+				/**
+				 * Indicates files that cannot be read/seeks (e.g. sysfs)
+				 *
+				 * On some special file systems (such as /sys, which has
+				 * the SYSFS_MAGIC constant == 0x62656572), standard
+				 * file operations like fopen, fseek, and lseek
+				 * cannot be used for reading and seeking.
+				 * While information about the file itself will be
+				 * recorded in the primary database, due to the
+				 * nature of such files, their hash sum is never
+				 * read and is stored as NULL
+				 */
+				bool wrong_file_type = false;
+
+				// Read error reported by sha512sum for this path
+				bool read_error = false;
+				// errno snapshot from the read error (valid when read_error is true).
+				int read_errno = 0;
+
+				if(p->fts_statp->st_size == 0)
+				{
+					zero_size_file = true;
+					rehash = false;
 				}
 
 				// Locked checksum files must not diverge once sealed
