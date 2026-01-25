@@ -360,6 +360,9 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **ignore;
 
+	/// Suppress per-file log output for paths matched by --ignore
+	bool quiet_ignored;
+
 	/// Include those relative paths even if
 	/// they were excluded via the --ignore option
 	/// The string array of PCRE2 regular expressions

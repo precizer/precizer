@@ -181,16 +181,19 @@ void show_relative_path(
 
 	if(ignore == true)
 	{
-		if(dbrow->relative_path_already_in_db == false)
+		if(config->quiet_ignored == false)
 		{
-			slog(EVERY|UNDECOR,"%s %s\n","ignore & do not add",relative_path);
-		} else {
-			slog(EVERY|UNDECOR,"ignored & do not update %s\n",relative_path);
+			if(dbrow->relative_path_already_in_db == false)
+			{
+				slog(EVERY|UNDECOR,"%s %s\n","ignore & do not add",relative_path);
+			} else {
+				slog(EVERY|UNDECOR,"ignored & do not update %s\n",relative_path);
+			}
 		}
 
 	} else if(read_error == true){
 
-		slog(EVERY|UNDECOR|REMEMBER,"error reading %s for %s\n",strerror(read_errno),relative_path);
+		slog(EVERY|UNDECOR|REMEMBER,"error \"%s\" when reading %s\n",strerror(read_errno),relative_path);
 
 	} else if(is_readable == false){
 
@@ -203,7 +206,9 @@ void show_relative_path(
 		if(db_inserted == true){
 			if(include == true)
 			{
-				slog(EVERY|UNDECOR,"%s %s\n","add included",relative_path);
+				if(config->quiet_ignored == false){
+					slog(EVERY|UNDECOR,"%s %s\n","add included",relative_path);
+				}
 
 			} else if(locked_checksum_file == true){
 

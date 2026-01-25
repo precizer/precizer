@@ -115,6 +115,9 @@ void init_config(void)
 	// The string array of PCRE2 regular expressions
 	config->ignore = NULL;
 
+	// Suppress per-file log output for paths matched by --ignore
+	config->quiet_ignored = false;
+
 	// Include those relative paths even if
 	// they were excluded via the --ignore option
 	// The string array of PCRE2 regular expressions

@@ -117,6 +117,7 @@ static struct argp_option options[] = {
 	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n",0 },
 	{ 0,0,0,0,"Visualizations options:\n",-1},
 	{"silent",'s',0,0,"Don't produce any output. The option will not affect " BOLD "--compare" RESET,0 },
+	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.\n",0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
 	{0}
@@ -220,6 +221,9 @@ static error_t parse_opt(
 		case 's':
 			// Global variable
 			rational_logger_mode = SILENT;
+			break;
+		case 'q':
+			config->quiet_ignored = true;
 			break;
 		case 'v':
 			// Global variable
@@ -459,6 +463,11 @@ Return parse_arguments(
 			slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
 		}
 
+		if(config->quiet_ignored)
+		{
+			slog(TESTING,"argument:quiet-ignored=%s\n",config->quiet_ignored ? "yes" : "no");
+		}
+
 		if(config->watch_timestamps)
 		{
 			slog(TESTING,"argument:watch-timestamps=%s\n",config->watch_timestamps ? "yes" : "no");
@@ -595,9 +604,10 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
-		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
 			config->verbose ? "yes" : "no",
 			config->maxdepth,
+			config->quiet_ignored ? "yes" : "no",
 			config->force ? "yes" : "no",
 			config->update ? "yes" : "no",
 			config->watch_timestamps ? "yes" : "no",
