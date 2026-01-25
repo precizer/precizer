@@ -96,7 +96,7 @@ static void print_changes(
  *
  * This function prints the relative path of a file along with explanations of what actions
  * will be taken regarding the file (e.g., ignore, updated, added, or rehashed). It also handles
- * initial messages for traversal, updates, and warnings.
+ * initial messages for traversal, updates, and warnings, including read errors with errno.
  *
  */
 void show_relative_path(
@@ -119,7 +119,9 @@ void show_relative_path(
 	const bool          is_readable,
 	const bool          zero_size_file,
 	const bool          db_inserted,
-	const bool          db_updated)
+	const bool          db_updated,
+	const bool          read_error,
+	const int           read_errno)
 {
 	bool show_traversal_started = false;
 	bool show_update_warning = false;
@@ -177,13 +179,16 @@ void show_relative_path(
 		*at_least_one_file_was_shown = true;
 	}
 
-	/* Prefixes */
-
-	if(is_readable == false)
+	if(read_error == true)
 	{
-		slog(EVERY|UNDECOR,"%s %s\n","inaccessible",relative_path);
+		slog(EVERY|UNDECOR|REMEMBER,"error reading %s: errno %d: %s\n",
+			relative_path,
+			read_errno,
+			strerror(read_errno));
 
-		/* Add or update */
+	} else if(is_readable == false){
+
+		slog(EVERY|UNDECOR|REMEMBER,"%s %s\n","inaccessible",relative_path);
 
 	} else if(dbrow->relative_path_already_in_db == false){
 

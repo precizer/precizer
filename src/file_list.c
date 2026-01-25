@@ -403,6 +403,11 @@ Return file_list(const bool count_size_of_all_files)
 				 */
 				bool wrong_file_type = false;
 
+				// Read error reported by sha512sum for this path
+				bool read_error = false;
+				// errno snapshot from the read error (valid when read_error is true).
+				int read_errno = 0;
+
 				if(p->fts_statp->st_size == 0)
 				{
 					zero_size_file = true;
@@ -491,6 +496,8 @@ Return file_list(const bool count_size_of_all_files)
 							sha512,
 							&offset,
 							&mdContext,
+							&read_error,
+							&read_errno,
 							&wrong_file_type));
 
 						if(TRIUMPH & status)
@@ -641,7 +648,9 @@ Return file_list(const bool count_size_of_all_files)
 						is_readable,
 						zero_size_file,
 						db_inserted,
-						db_updated);
+						db_updated,
+						read_error,
+						read_errno);
 				}
 
 				if(break_after_log == true)

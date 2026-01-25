@@ -432,6 +432,8 @@ Return sha512sum(
 	unsigned char *,
 	sqlite3_int64 *,
 	SHA512_Context *,
+	bool *,
+	int *,
 	bool *);
 
 size_t file_buffer_memory(void);
@@ -624,7 +626,9 @@ void show_relative_path(
 	const bool,
 	const bool,
 	const bool,
-	const bool);
+	const bool,
+	const bool,
+	const int);
 
 void show_metadata(
 	LOGMODES,
