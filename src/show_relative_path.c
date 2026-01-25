@@ -181,10 +181,7 @@ void show_relative_path(
 
 	if(read_error == true)
 	{
-		slog(EVERY|UNDECOR|REMEMBER,"error reading %s: errno %d: %s\n",
-			relative_path,
-			read_errno,
-			strerror(read_errno));
+		slog(EVERY|UNDECOR|REMEMBER,"error reading %s for %s\n",strerror(read_errno),relative_path);
 
 	} else if(is_readable == false){
 
