@@ -38,6 +38,9 @@ int main(void)
 	HEADER("System Testing of precizer");
 	TEST(comprehensive_system_testing,"Comprehensive System testing…");
 
+	HEADER("Mock-Based Testing of precizer");
+	TEST(comprehensive_mock_testing,"Comprehensive Mock testing…");
+
 	HEADER("Clean results");
 	RUN(clean,"Temporary data cleanup…");
 

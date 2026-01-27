@@ -115,6 +115,12 @@ int __wrap_ferror(FILE *stream)
 {
 	if(stream != NULL && stream == mock_fread_target_stream && mock_fread_error_seen)
 	{
+		/*
+		 * Clear the target once the error is observed to avoid matching a
+		 * recycled FILE* address for unrelated files (seen in coverage builds).
+		 */
+		mock_fread_target_stream = NULL;
+		mock_fread_error_seen = false;
 		return 1;
 	}
 
