@@ -18,6 +18,11 @@ ifeq ($(UNAME_S),Darwin)
 CFLAGS += -DEVIL_EMPIRE_OS
 endif
 
+# Prefer LLVM lld on macOS to support -wrap in test link steps.
+ifeq ($(UNAME_S),Darwin)
+LLD_FLAGS := -fuse-ld=lld
+endif
+
 SRC = src
 STATIC = -static -static-libgcc -Wl,--gc-sections
 
@@ -86,7 +91,7 @@ endif
 # Link-time wrappers for cmocka tests (add more functions as needed).
 WRAPFUNCS = fopen fread ferror
 ifeq ($(UNAME_S),Darwin)
-WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,-wrap,_$(f))
+WRAPFLAGS = $(LLD_FLAGS) $(foreach f,$(WRAPFUNCS),-Wl,-wrap,_$(f))
 else
 WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
 endif
