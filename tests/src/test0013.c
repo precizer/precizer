@@ -85,8 +85,8 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--dry-run --update --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	arguments = "--dry-run --update --database=database1.db"
+	        " tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
@@ -134,8 +134,9 @@ static Return dry_run_mode_2_test(void)
 	// references from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update "
-	        "--dry-run --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--dry-run --db-clean-ignored --update"
+	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
+	        " --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -146,6 +147,7 @@ static Return dry_run_mode_2_test(void)
 	filename = "templates/0013_002_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	del(pattern);
@@ -158,9 +160,9 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--watch-timestamps --db-clean-ignored "
-	        "--ignore=\"^path2/AAA/ZAW/.*\" --update --dry-run "
-	        "--database=database1.db tests/examples/diffs/diff1";
+	arguments = "--dry-run --db-clean-ignored --update --watch-timestamps"
+	        " --ignore=\"^path2/AAA/ZAW/.*\""
+	        " --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -171,6 +173,7 @@ static Return dry_run_mode_2_test(void)
 	filename = "templates/0013_002_3.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	del(pattern);
@@ -273,8 +276,9 @@ static Return no_dry_run_mode_3_test(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update "
-	        "--database=database1.db tests/examples/diffs/diff1";
+	arguments = "--db-clean-ignored --update"
+	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
+	        " --database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 

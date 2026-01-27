@@ -12,12 +12,18 @@
  * @param file_systems  FTS traversal handle.
  * @param entry         Current FTS directory entry.
  * @param runtime_root  Absolute traversal root without trailing slash.
+ * @param first_iteration  Banner sentinel for first visible output.
+ * @param at_least_one_file_was_shown  Output flag set on first visible log line.
+ * @param count_size_of_all_files  Size-only mode selector for banners.
  * @return SUCCESS or FAILURE.
  */
 Return verify_directory_access(
 	FTS        *file_systems,
 	FTSENT     *entry,
-	const char *runtime_root)
+	const char *runtime_root,
+	bool       *first_iteration,
+	bool       *at_least_one_file_was_shown,
+	const bool count_size_of_all_files)
 {
 	if(runtime_root == NULL)
 	{
@@ -46,7 +52,8 @@ Return verify_directory_access(
 
 	if(access_status == FILE_ACCESS_DENIED || access_status == FILE_NOT_FOUND)
 	{
-		slog(EVERY|UNDECOR,"inaccessible %s\n",relative_path);
+		slog_show(EVERY|UNDECOR,false,first_iteration,at_least_one_file_was_shown,
+			count_size_of_all_files,"inaccessible directory %s\n",relative_path);
 		(void)fts_set(file_systems,entry,FTS_SKIP);
 	}
 

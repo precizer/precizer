@@ -57,10 +57,48 @@ static int compare_by_name(
 	return strcmp((*first)->fts_name,(*second)->fts_name);
 }
 
+static Return match_include_ignore(
+	const char *relative_path,
+	bool       *include,
+	bool       *ignore,
+	bool       *include_showed_once,
+	bool       *ignore_showed_once)
+{
+	*include = false;
+	*ignore = false;
+
+	Include match_include_response = match_include_pattern(relative_path,include_showed_once);
+
+	if(DO_NOT_INCLUDE == match_include_response)
+	{
+		Ignore match_ignore_response = match_ignore_pattern(relative_path,ignore_showed_once);
+
+		if(IGNORE == match_ignore_response)
+		{
+			*ignore = true;
+
+		} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
+
+			slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
+			provide(FAILURE);
+		}
+
+	} else if(FAIL_REGEXP_INCLUDE == match_include_response){
+
+		slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
+		provide(FAILURE);
+
+	} else if(INCLUDE == match_include_response){
+
+		*include = true;
+	}
+
+	provide(SUCCESS);
+}
+
 /**
  *
- * Traverses a directory recursively and returns
- * a struct for each file it encounters
+ * Traverses directories recursively and processes files for the DB
  *
  */
 Return file_list(const bool count_size_of_all_files)
@@ -212,27 +250,76 @@ Return file_list(const bool count_size_of_all_files)
 			}
 		}
 
+		if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
+		{
+			if(p->fts_info == FTS_D)
+			{
+				(void)fts_set(file_systems,p,FTS_SKIP);
+			}
+
+			if(p->fts_info == FTS_D || p->fts_info == FTS_F)
+			{
+				continue;
+			}
+		}
+
 		switch(p->fts_info)
 		{
 			case FTS_D:
 			{
-				if(SUCCESS != verify_directory_access(file_systems,p,runtime_root))
+				if(runtime_root != NULL)
 				{
-					status = FAILURE;
+					const char *relative_path = extract_relative_path(p->fts_path,runtime_root);
+
+					bool ignore = false;
+					bool include = false;
+
+					status = match_include_ignore(relative_path,
+						&include,
+						&ignore,
+						&include_showed_once,
+						&ignore_showed_once);
+
+					if(SUCCESS != status)
+					{
+						continue_the_loop = false;
+						break;
+					}
+
+					directory_show(relative_path,
+						&first_iteration,
+						&at_least_one_file_was_shown,
+						count_size_of_all_files,
+						ignore,
+						include);
+
+					if(ignore == true)
+					{
+						// Skip ignored directories entirely.
+						(void)fts_set(file_systems,p,FTS_SKIP);
+						break;
+					}
+				}
+
+				// Check access and skip subtrees that are not readable.
+				status = verify_directory_access(file_systems,
+					p,
+					runtime_root,
+					&first_iteration,
+					&at_least_one_file_was_shown,
+					count_size_of_all_files);
+
+				if(SUCCESS != status)
+				{
 					continue_the_loop = false;
 					break;
 				}
+
 				count_dirs++;
 				break;
 			}
 			case FTS_F:
 			{
-				// Limit recursion to the depth determined in config->maxdepth
-				if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
-				{
-					break;
-				}
-
 				CmpctStat stat = {0};
 
 				(void)stat_copy(p->fts_statp,&stat);
@@ -377,33 +464,16 @@ Return file_list(const bool count_size_of_all_files)
 				// Included with --include=
 				bool include = false;
 
-				/* PCRE2 regexp to include the file */
-				Include match_include_response = match_include_pattern(relative_path,&include_showed_once);
+				status = match_include_ignore(relative_path,
+					&include,
+					&ignore,
+					&include_showed_once,
+					&ignore_showed_once);
 
-				if(DO_NOT_INCLUDE == match_include_response)
+				if(SUCCESS != status)
 				{
-					/* PCRE2 regexp to ignore the file */
-
-					Ignore match_ignore_response = match_ignore_pattern(relative_path,&ignore_showed_once);
-
-					if(IGNORE == match_ignore_response)
-					{
-						ignore = true;
-
-					} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
-						slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
-						status = FAILURE;
-						continue_the_loop = false;
-						break;
-					}
-
-				} else if(FAIL_REGEXP_INCLUDE == match_include_response){
-					slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
-					status = FAILURE;
 					continue_the_loop = false;
 					break;
-				} else if(INCLUDE == match_include_response){
-					include = true;
 				}
 
 				// Ensure checksum-locked files are tracked even if matched by ignore pattern
@@ -633,7 +703,7 @@ Return file_list(const bool count_size_of_all_files)
 				if(show_log == true)
 				{
 					// Print out of a file name and its changes
-					show_relative_path(dbrow,
+					file_show(dbrow,
 						relative_path,
 						&stat,
 						&first_iteration,

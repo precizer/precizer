@@ -1,7 +1,7 @@
 #include "sute.h"
 
 /**
- * "inaccessible" message of show_relative_path() function
+ * "inaccessible" message of file_show() function
  */
 static Return test0029_1_test(void)
 {
@@ -140,7 +140,7 @@ Return test0029(void)
 {
 	INITTEST;
 
-	TEST(test0029_1_test,"\"inaccessible\" message of show_relative_path() function…");
+	TEST(test0029_1_test,"\"inaccessible\" message of file_show() function…");
 	TEST(test0029_2_test,"--drop-inaccessible option. Dropping DB records for inaccessible paths…");
 
 	RETURN_STATUS;
