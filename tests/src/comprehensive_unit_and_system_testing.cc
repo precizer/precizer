@@ -1,4 +1,3 @@
-
 SUTE(test0003,"Basic application tests for argument parsing…");
 SUTE(test0011,"User's Manual and examples from README test set…");
 SUTE(test0013,"Dry Run mode testing…");
