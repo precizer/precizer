@@ -108,7 +108,7 @@ The following scenario illustrates the issue:
 * If the program is intentionally or accidentally stopped, there is no need to worry about losing progress. All results are fully preserved and can be used in subsequent runs.
 * The checksum calculations rely on a reliable and fast SHA512 algorithm, which completely eliminates collisions even when analyzing a single massive file. If there are two identical large files differing by just one byte, SHA512 will detect it, and their checksums will be different—something that cannot be guaranteed with simpler hash functions like SHA1 or CRC32.
 * The algorithms in precizer are designed to make it easy to keep the database up to date without having to recalculate everything from scratch. Simply run the program with the `--update` parameter, and new files will be added to the database, while entries for deleted files will be removed. If a file has been modified and its size has changed, its SHA512 checksum will be recalculated and updated in the database.
-* During `--update`, entries for missing files are removed, but records for inaccessible files (permission denied) are kept by default. This protection exists because permissions can temporarily change (ownership, ACLs, transient mount issues), and dropping records in that state would silently erase valid database history. Using `--drop-inaccessible` with `--update` is intended only when those database records must be dropped.
+* During `--update`, entries for missing files are removed, but records for inaccessible files (permission denied) are kept by default. This protection exists because permissions can temporarily change (ownership, ACLs, transient mount issues), and dropping records in that state would silently erase valid database history. Using `--db-drop-inaccessible` with `--update` is intended only when those database records must be dropped.
 * When `--progress` is enabled, warnings and errors collected during a session are printed in one block right before exit so important messages (for example, file access issues) are not lost in routine logs.
 * The `--quiet-ignored` option suppresses per-file log lines for paths filtered by `--ignore` and `--include`. This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use; other warnings and errors remain visible.
 * There is an option to consider not only the file size when updating the database but also the file’s creation or modification timestamps. This means that any change in file metadata will trigger an SHA512 checksum recalculation and update in the database. For example, if a file’s ctime changes but its size remains the same, the checksum will NOT be recalculated if only the `--update` parameter is used. To force checksum recalculation for such files `--watch-timestamps` should be added. This option is disabled by default because ctime (like mtime) can change frequently due to commands like `chmod` or `chown`, even when the file’s content remains the same.
@@ -442,7 +442,7 @@ precizer --verbose --update --progress --database=database1.db tests/examples/di
 ```
 
 <sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
-paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
+paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-drop-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
 2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
 2025-01-25 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments  
 2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/examples/diffs/diff1 exists  
@@ -641,7 +641,7 @@ Multiple regular expressions for ignoring files can be specified simultaneously 
 
 The database will be cleaned of references to files matching the regular expressions provided via the `--ignore` arguments: `"diff1/1/.*"` and `"diff2/1/.*"`.
 
-The `--db-clean-ignored` parameter must be explicitly specified to remove database entries for files that match the patterns passed through the `--ignore` option.
+The `--db-drop-ignored` parameter must be explicitly specified to remove database entries for files that match the patterns passed through the `--ignore` option.
 
 No changes were made to the file system, but the ignored files will be removed from the database.
 
@@ -650,7 +650,7 @@ No changes were made to the file system, but the ignored files will be removed f
 
 precizer \
     --update \
-    --db-clean-ignored \
+    --db-drop-ignored \
     --ignore="^diff1/1/.*" \
     --ignore="^diff2/1/.*" \
     tests/examples/diffs
@@ -694,13 +694,13 @@ PCRE2 regular expressions can be checked and tested using [https://regex101.com/
 
 The DB will be cleaned of references to files matching the regular expressions provided in the `--ignore` arguments: `"^.*/path2/.*"` and `"diff2/.*"`, but paths matching the patterns in `--include` will remain in the database.
 
-The `--db-clean-ignored` parameter must be specified additionally to remove references to files matching the regular expressions passed via the `--ignore` options from the database.
+The `--db-drop-ignored` parameter must be specified additionally to remove references to files matching the regular expressions passed via the `--ignore` options from the database.
 
 ```sh
 # Update the database, removing references to files that were marked as ignored,
 # except for paths matching the --include patterns.
 
-precizer --update --db-clean-ignored \
+precizer --update --db-drop-ignored \
 	--ignore="^.*/path2/.*" \
 	--ignore="^diff2/.*" \
 	--include="^diff2/1/AAA/ZAW/A/b/c/.*" \
@@ -778,12 +778,12 @@ The following cases illustrate how `--lock-checksum`, `--watch-timestamps`, and 
 A practical workflow is to run a quick daily scan without `--rehash-locked` (and even without `--watch-timestamps` if timestamp drift is acceptable) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to force checksum-level verification of the frozen data set.
 
 ### Example 11
-Dropping inaccessible records with `--drop-inaccessible`
+Dropping inaccessible records with `--db-drop-inaccessible`
 
-By default, when a file is inaccessible because of permission errors, its database record is preserved during `--update` to prevent accidental data loss. Dropping such records requires `--drop-inaccessible`:
+By default, when a file is inaccessible because of permission errors, its database record is preserved during `--update` to prevent accidental data loss. Dropping such records requires `--db-drop-inaccessible`:
 
 ```sh
-precizer --update --drop-inaccessible /mnt/storage
+precizer --update --db-drop-inaccessible /mnt/storage
 ```
 
 <sub>drop due to inaccessible archive/secret.bin</sub>

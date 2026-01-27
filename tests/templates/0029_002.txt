@@ -4,7 +4,7 @@ TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database2.db
 TESTING:argument:db_file_name=database2.db
 TESTING:argument:update=yes
-TESTING:argument:drop-inaccessible=yes
+TESTING:argument:db-drop-inaccessible=yes
 TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists

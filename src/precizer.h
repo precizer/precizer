@@ -328,7 +328,7 @@ typedef struct {
 	/// passed through the ignore option(s)
 	/// This is special protection against accidental
 	/// deletion of information from the database.
-	bool db_clean_ignored;
+	bool db_drop_ignored;
 
 	/// Allow dropping database records for files that are inaccessible
 	/// (permission denied). Disabled by default to avoid accidental loss

@@ -85,7 +85,7 @@ void init_config(void)
 	// passed through the ignore option(s)
 	// This is special protection against accidental
 	// deletion of information from the database.
-	config->db_clean_ignored = false;
+	config->db_drop_ignored = false;
 
 	// Allow dropping database records for inaccessible files
 	// (permission denied). Disabled by default.
