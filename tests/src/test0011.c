@@ -138,6 +138,7 @@ static Return test0011_2_readme(void)
 	        "tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	command = "cd ${TMPDIR};"
@@ -151,11 +152,13 @@ static Return test0011_2_readme(void)
 	        "--database=database1.db tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	filename = "templates/0011_002_3.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	del(pattern);
@@ -346,8 +349,9 @@ static Return test0011_7_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--update --db-clean-ignored --ignore=\"^diff1/1/.*\" "
-	        "--ignore=\"^diff2/1/.*\" tests/examples/diffs";
+	const char *arguments = "--update --db-clean-ignored"
+	        " --ignore=\"^diff1/1/.*\""
+	        " --ignore=\"^diff2/1/.*\" tests/examples/diffs";
 
 	const char *filename = "templates/0011_007.txt";
 
@@ -387,10 +391,13 @@ static Return test0011_8_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	arguments = "--update --db-clean-ignored --ignore=\"^.*/path2/.*\" "
-	        "--ignore=\"^diff2/.*\" "
-	        "--include=\"^diff2/1/AAA/ZAW/A/b/c/.*\" "
-	        "--include=\"^diff2/path1/AAA/ZAW/.*\" tests/examples/diffs";
+	arguments = "--update"
+	        " --db-clean-ignored"
+	        " --ignore=\"^.*/path2/.*\""
+	        " --ignore=\"^diff2/.*\""
+	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
+	        " --include=\"^diff2/path1/AAA/ZAW/.*\""
+	        " tests/examples/diffs";
 
 	const char *filename = "templates/0011_008.txt";
 

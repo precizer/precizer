@@ -132,6 +132,8 @@ Return db_delete_the_record_by_id(
 				if(config->the_update_warning_has_already_been_shown == false)
 				{
 					slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the file records will be dropped from the database %s\n",config->db_file_name);
+
+					config->the_update_warning_has_already_been_shown = true;
 				}
 
 				/* Reflect changes in global */

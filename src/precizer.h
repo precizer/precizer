@@ -609,7 +609,23 @@ Return parse_arguments(
 	const int,
 	char **);
 
-void show_relative_path(
+void slog_show_impl(
+	const char *,
+	const char *,
+	int,
+	const char,
+	const bool,
+	bool *,
+	bool *,
+	const bool,
+	const char *,
+	...);
+
+#define slog_show(level,respect_quiet,first_iteration,shown_flag,count_size_of_all_files,...) \
+	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
+		(shown_flag),(count_size_of_all_files),__VA_ARGS__)
+
+void file_show(
 	const DBrow *,
 	const char *,
 	const CmpctStat *,
@@ -632,6 +648,14 @@ void show_relative_path(
 	const bool,
 	const bool,
 	const int);
+
+void directory_show(
+	const char *,
+	bool *,
+	bool *,
+	const bool,
+	const bool,
+	const bool);
 
 void show_metadata(
 	LOGMODES,
@@ -659,7 +683,10 @@ Return show_remembered_messages(void);
 Return verify_directory_access(
 	FTS *,
 	FTSENT *,
-	const char *);
+	const char *,
+	bool *,
+	bool *,
+	const bool);
 
 Return db_check_changes(void);
 
