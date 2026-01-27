@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh libcmocka-dev
 
       - name: Build project (Linux x86_64)
         run: |
@@ -83,7 +83,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh libcmocka-dev
 
       - name: Build project (Linux arm64)
         run: |
@@ -126,7 +126,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install llvm argp-standalone || true
+          brew install llvm argp-standalone cmocka || true
 
       - name: Build project (macOS arm64)
         run: |
