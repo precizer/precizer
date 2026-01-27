@@ -18,18 +18,16 @@ Return test0031(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "rm -rf tests/examples/diffs/;"
+	        "mkdir -p tests/examples/diffs/;"
+	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* tests/examples/diffs/;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=read_fail.db --progress"
 	        " tests/examples/diffs/diff1";
 
-	enum run_mode prev_run_mode = run_external;
-
-	run_external = INTERNAL_TEST;
-
+	/* Configure the fread mock to fail once for the target file only. */
 	mocks_fread_reset();
 	mocks_fread_set_target_suffix(READ_FAIL_REL_PATH);
 	mocks_fread_enable(true);
@@ -37,8 +35,8 @@ Return test0031(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,error_buffer,COMPLETED,ALLOW_BOTH));
 
+	/* Always disable the mock and restore the previous run mode. */
 	mocks_fread_enable(false);
-	run_external = prev_run_mode;
 
 	if(error_buffer->length > 0)
 	{
@@ -53,10 +51,12 @@ Return test0031(void)
 	command = "cd ${TMPDIR} && "
 	        "rm -f read_fail.db && "
 	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "mkdir -p tests/examples/diffs/ && "
+	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* tests/examples/diffs/";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
+	/* The wrapper should have injected exactly one read failure. */
 	ASSERT(mocks_fread_call_count() == 1);
 	mocks_fread_reset();
 
