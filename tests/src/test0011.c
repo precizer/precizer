@@ -349,7 +349,7 @@ static Return test0011_7_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--update --db-clean-ignored"
+	const char *arguments = "--update --db-drop-ignored"
 	        " --ignore=\"^diff1/1/.*\""
 	        " --ignore=\"^diff2/1/.*\" tests/examples/diffs";
 
@@ -392,7 +392,7 @@ static Return test0011_8_readme(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	arguments = "--update"
-	        " --db-clean-ignored"
+	        " --db-drop-ignored"
 	        " --ignore=\"^.*/path2/.*\""
 	        " --ignore=\"^diff2/.*\""
 	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""

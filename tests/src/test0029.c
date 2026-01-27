@@ -66,7 +66,7 @@ static Return test0029_1_test(void)
 }
 
 /**
- * --drop-inaccessible option. Dropping DB records for inaccessible paths
+ * --db-drop-inaccessible option. Dropping DB records for inaccessible paths
  */
 static Return test0029_2_test(void)
 {
@@ -106,7 +106,7 @@ static Return test0029_2_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--update --drop-inaccessible --database=database2.db "
+	arguments = "--update --db-drop-inaccessible --database=database2.db "
 	        "tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -141,7 +141,7 @@ Return test0029(void)
 	INITTEST;
 
 	TEST(test0029_1_test,"\"inaccessible\" message of file_show() function…");
-	TEST(test0029_2_test,"--drop-inaccessible option. Dropping DB records for inaccessible paths…");
+	TEST(test0029_2_test,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths…");
 
 	RETURN_STATUS;
 }

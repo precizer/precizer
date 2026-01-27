@@ -104,7 +104,7 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
 	// Compare against the sample. A message should be displayed indicating
-	// that the --db-clean-ignored option must be specified for permanent
+	// that the --db-drop-ignored option must be specified for permanent
 	// removal of ignored files from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -134,7 +134,7 @@ static Return dry_run_mode_2_test(void)
 	// references from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--dry-run --db-clean-ignored --update"
+	arguments = "--dry-run --db-drop-ignored --update"
 	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
 	        " --database=database1.db tests/examples/diffs/diff1";
 
@@ -160,7 +160,7 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--dry-run --db-clean-ignored --update --watch-timestamps"
+	arguments = "--dry-run --db-drop-ignored --update --watch-timestamps"
 	        " --ignore=\"^path2/AAA/ZAW/.*\""
 	        " --database=database1.db tests/examples/diffs/diff1";
 
@@ -244,7 +244,7 @@ static Return no_dry_run_mode_3_test(void)
 	del(result);
 
 	// Compare against the sample. A message should be displayed indicating
-	// that the --db-clean-ignored option must be specified for permanent
+	// that the --db-drop-ignored option must be specified for permanent
 	// removal of ignored files from the database
 	command = "cd ${TMPDIR};"
 	        "cp -a database1.db database1.db.backup;";
@@ -276,7 +276,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--db-clean-ignored --update"
+	arguments = "--db-drop-ignored --update"
 	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
 	        " --database=database1.db tests/examples/diffs/diff1";
 
@@ -300,7 +300,7 @@ static Return no_dry_run_mode_3_test(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--watch-timestamps --db-clean-ignored "
+	arguments = "--watch-timestamps --db-drop-ignored "
 	        "--ignore=\"^path2/AAA/ZAW/.*\" --update "
 	        "--database=database1.db tests/examples/diffs/diff1";
 
