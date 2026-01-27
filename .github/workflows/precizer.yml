@@ -127,6 +127,8 @@ jobs:
         run: |
           brew update
           brew install llvm argp-standalone cmocka || true
+          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+          echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
 
       - name: Build project (macOS arm64)
         run: |
@@ -138,7 +140,9 @@ jobs:
           ./precizer --version
 
       - name: Run tests (macOS arm64)
-        run: make tests
+        run: |
+          export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+          make tests
 
       - name: Upload macOS arm64 asset
         env:
