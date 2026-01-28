@@ -52,8 +52,7 @@ Return verify_directory_access(
 
 	if(access_status == FILE_ACCESS_DENIED || access_status == FILE_NOT_FOUND)
 	{
-		slog_show(EVERY|UNDECOR,false,first_iteration,at_least_one_file_was_shown,
-			count_size_of_all_files,"inaccessible directory %s\n",relative_path);
+		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,at_least_one_file_was_shown,count_size_of_all_files,"inaccessible directory %s\n",relative_path);
 		(void)fts_set(file_systems,entry,FTS_SKIP);
 	}
 
