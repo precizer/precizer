@@ -78,6 +78,12 @@ endif
 # Detect whether we're using GCC (covers names like arm-linux-gnu-gcc)
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
+# AR, RANLIB, NM, LD for toolchain (can be overridden from command line)
+AR ?= ar
+RANLIB ?= ranlib
+NM ?= nm
+LD ?= ld
+
 EXE = precizer
 
 SRC = src
@@ -246,7 +252,7 @@ PROD_CPU = -O3 -march=native
 PROD_CFLAGS = $(CFLAGS) -flto=auto $(PROD_CPU) -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x
+PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x -fuse-ld=lld
 endif
 
 #
@@ -274,7 +280,7 @@ PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x -fuse-ld=lld
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
@@ -304,7 +310,7 @@ $(DBG_OBJDIR):
 	@mkdir -p $(DBG_OBJDIR)
 
 $(DBG_LIBDIR):
-	@$(MAKE) -s -C libs debug
+	@$(MAKE) -s -C libs debug CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
 
 #
 # Coverage rules
@@ -327,7 +333,7 @@ $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
 
 $(COV_LIBDIR):
-	@$(MAKE) -s -C libs coverage
+	@$(MAKE) -s -C libs coverage CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
 
 test-coverage:
 	@$(MAKE) -s -C $(TESTDIR) coverage
@@ -355,7 +361,7 @@ $(SNTZ_OBJDIR):
 	@mkdir -p $(SNTZ_OBJDIR)
 
 $(SNTZ_LIBDIR):
-	@$(MAKE) -s -C libs sanitize
+	@$(MAKE) -s -C libs sanitize CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
 
 #
 # Production rules
@@ -381,7 +387,7 @@ $(PROD_OBJDIR):
 	@mkdir -p $(PROD_OBJDIR)
 
 $(PROD_LIBDIR):
-	@$(MAKE) -s -C libs production
+	@$(MAKE) -s -C libs production CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
 
 #
 # Dynamic production rules
@@ -428,7 +434,7 @@ $(PRTB_OBJDIR):
 	@mkdir -p $(PRTB_OBJDIR)
 
 $(PRTB_LIBDIR):
-	@$(MAKE) -s -C libs portable
+	@$(MAKE) -s -C libs portable CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
 
 clean: | clean-preproc clean-asm clean-tests
 	@rm -f *.out.* doc
@@ -467,7 +473,7 @@ purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
 
 clean-all: clean-tests clean clean-tools clean-docker
-	@$(MAKE) -C libs clean
+	@$(MAKE) -C libs clean CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
 
 clean-tools:
 	@$(MAKE) -C $(TOOLSDIR) clean
