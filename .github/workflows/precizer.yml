@@ -132,10 +132,11 @@ jobs:
           echo "AR=$(brew --prefix llvm)/bin/llvm-ar" >> $GITHUB_ENV
           echo "RANLIB=$(brew --prefix llvm)/bin/llvm-ranlib" >> $GITHUB_ENV
           echo "NM=$(brew --prefix llvm)/bin/llvm-nm" >> $GITHUB_ENV
+          echo "LD=$(brew --prefix llvm)/bin/ld64.lld" >> $GITHUB_ENV
 
       - name: Build project (macOS arm64)
         run: |
-          make dynamic-production
+          make dynamic-production CC="$CC" AR="$AR" RANLIB="$RANLIB" NM="$NM" LD="$LD"
           otool -L precizer
           otool -l precizer
           zip --junk-paths precizer_v${{ env.VERSION }}_macos_arm64.zip precizer
@@ -143,7 +144,7 @@ jobs:
           ./precizer --version
 
       - name: Run tests (macOS arm64)
-        run: make tests
+        run: make tests CC="$CC" AR="$AR" RANLIB="$RANLIB" NM="$NM" LD="$LD"
 
       - name: Upload macOS arm64 asset
         env:

@@ -18,14 +18,6 @@ ifeq ($(UNAME_S),Darwin)
 CFLAGS += -DEVIL_EMPIRE_OS
 endif
 
-# Prefer LLVM lld on macOS to support -wrap in test link steps.
-# Use an explicit ld64.lld path when available; otherwise fall back to
-# -fuse-ld=lld if the compiler accepts it.
-ifeq ($(UNAME_S),Darwin)
-LLD_PATH := $(shell command -v ld64.lld 2>/dev/null)
-LLD_FLAGS ?= $(if $(LLD_PATH),-fuse-ld=$(LLD_PATH),$(shell $(CC) -fuse-ld=lld -Wl,-v -x c /dev/null -o /dev/null >/dev/null 2>&1 && echo -fuse-ld=lld))
-endif
-
 SRC = src
 STATIC = -static -static-libgcc -Wl,--gc-sections
 
@@ -69,6 +61,12 @@ endif
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
+# AR, RANLIB, NM, LD for toolchain (can be overridden from command line)
+AR ?= ar
+RANLIB ?= ranlib
+NM ?= nm
+LD ?= ld
+
 # Warning flags for additional checks
 WFLAGS += -Wall # Enable common warning set
 WFLAGS += -Wpedantic
@@ -94,10 +92,8 @@ endif
 # Link-time wrappers for cmocka tests (add more functions as needed).
 WRAPFUNCS = fopen fread ferror
 ifeq ($(UNAME_S),Darwin)
-ifeq ($(strip $(LLD_FLAGS)),)
-$(error lld is required for -wrap on macOS; install llvm and ensure ld64.lld is in PATH)
-endif
-WRAPFLAGS = $(LLD_FLAGS) $(foreach f,$(WRAPFUNCS),-Wl,-wrap,_$(f))
+# macOS with  lld supports -wrap
+WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
 else
 WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
 endif
@@ -225,7 +221,7 @@ coverage-html: coverage-report
 # Sanitize rules
 #
 precizer-sanitize:
-	@$(MAKE) -s -C ../ sanitize
+	@$(MAKE) -s -C ../ sanitize CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
 
 sanitize: hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
