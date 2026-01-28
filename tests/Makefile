@@ -19,8 +19,11 @@ CFLAGS += -DEVIL_EMPIRE_OS
 endif
 
 # Prefer LLVM lld on macOS to support -wrap in test link steps.
+# Use an explicit ld64.lld path when available; otherwise fall back to
+# -fuse-ld=lld if the compiler accepts it.
 ifeq ($(UNAME_S),Darwin)
-LLD_FLAGS := -fuse-ld=lld
+LLD_PATH := $(shell command -v ld64.lld 2>/dev/null)
+LLD_FLAGS ?= $(if $(LLD_PATH),-fuse-ld=$(LLD_PATH),$(shell $(CC) -fuse-ld=lld -Wl,-v -x c /dev/null -o /dev/null >/dev/null 2>&1 && echo -fuse-ld=lld))
 endif
 
 SRC = src
@@ -91,6 +94,9 @@ endif
 # Link-time wrappers for cmocka tests (add more functions as needed).
 WRAPFUNCS = fopen fread ferror
 ifeq ($(UNAME_S),Darwin)
+ifeq ($(strip $(LLD_FLAGS)),)
+$(error lld is required for -wrap on macOS; install llvm and ensure ld64.lld is in PATH)
+endif
 WRAPFLAGS = $(LLD_FLAGS) $(foreach f,$(WRAPFUNCS),-Wl,-wrap,_$(f))
 else
 WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
