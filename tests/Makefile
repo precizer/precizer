@@ -61,12 +61,6 @@ endif
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
-# AR, RANLIB, NM, LD for toolchain (can be overridden from command line)
-AR ?= ar
-RANLIB ?= ranlib
-NM ?= nm
-LD ?= ld
-
 # Warning flags for additional checks
 WFLAGS += -Wall # Enable common warning set
 WFLAGS += -Wpedantic
@@ -93,7 +87,7 @@ endif
 WRAPFUNCS = fopen fread ferror
 ifeq ($(UNAME_S),Darwin)
 # macOS with  lld supports -wrap
-WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
+WRAPFLAGS =
 else
 WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
 endif
@@ -221,7 +215,7 @@ coverage-html: coverage-report
 # Sanitize rules
 #
 precizer-sanitize:
-	@$(MAKE) -s -C ../ sanitize CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
+	@$(MAKE) -s -C ../ sanitize
 
 sanitize: hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)

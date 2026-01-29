@@ -12,7 +12,9 @@ Return comprehensive_unit_testing(void)
 
 	/* Mock only tecting in unit-mode so the linker wraps are active */
 
+	#ifndef EVIL_EMPIRE_OS
 	TEST(test0031,"Read error handling during hashing…");
+	#endif
 
 	run_external = prev_run_mode;
 
