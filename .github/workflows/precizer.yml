@@ -75,9 +75,7 @@ jobs:
   build_linux_arm64:
     name: Build & attach Linux arm64
     runs-on: ubuntu-24.04-arm
-    needs:
-      - get_tag_info
-      - build_linux_x86_64
+    needs: get_tag_info
 
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
@@ -114,9 +112,7 @@ jobs:
   build_evil_empire_os_arm64:
     name: Build & attach macOS arm64
     runs-on: macos-latest
-    needs:
-      - get_tag_info
-      - build_linux_x86_64
+    needs: get_tag_info
 
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
