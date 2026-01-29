@@ -133,9 +133,9 @@ The following scenario illustrates the issue:
 
 Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
 
-* Linux x86_64
-* Linux aarch64
-* macOS arm64
+* Linux x86_64 [https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip](precizer_linux_x86_64_portable.zip)
+* Linux arm aarch64 [https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip](precizer_linux_aarch64_portable.zip)
+* macOS arm64 [https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip](precizer_macos_arm64.zip)
 
 The release packages contain portable executables in a zip archive.
 
