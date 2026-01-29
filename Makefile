@@ -78,12 +78,6 @@ endif
 # Detect whether we're using GCC (covers names like arm-linux-gnu-gcc)
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
-# AR, RANLIB, NM, LD for toolchain (can be overridden from command line)
-AR ?= ar
-RANLIB ?= ranlib
-NM ?= nm
-LD ?= ld
-
 EXE = precizer
 
 SRC = src
@@ -310,7 +304,7 @@ $(DBG_OBJDIR):
 	@mkdir -p $(DBG_OBJDIR)
 
 $(DBG_LIBDIR):
-	@$(MAKE) -s -C libs debug CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
+	@$(MAKE) -s -C libs debug
 
 #
 # Coverage rules
@@ -333,7 +327,7 @@ $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
 
 $(COV_LIBDIR):
-	@$(MAKE) -s -C libs coverage CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
+	@$(MAKE) -s -C libs coverage
 
 test-coverage:
 	@$(MAKE) -s -C $(TESTDIR) coverage
@@ -361,7 +355,7 @@ $(SNTZ_OBJDIR):
 	@mkdir -p $(SNTZ_OBJDIR)
 
 $(SNTZ_LIBDIR):
-	@$(MAKE) -s -C libs sanitize CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
+	@$(MAKE) -s -C libs sanitize
 
 #
 # Production rules
@@ -387,7 +381,7 @@ $(PROD_OBJDIR):
 	@mkdir -p $(PROD_OBJDIR)
 
 $(PROD_LIBDIR):
-	@$(MAKE) -s -C libs production CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
+	@$(MAKE) -s -C libs production
 
 #
 # Dynamic production rules
@@ -434,7 +428,7 @@ $(PRTB_OBJDIR):
 	@mkdir -p $(PRTB_OBJDIR)
 
 $(PRTB_LIBDIR):
-	@$(MAKE) -s -C libs portable CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
+	@$(MAKE) -s -C libs portable
 
 clean: | clean-preproc clean-asm clean-tests
 	@rm -f *.out.* doc
@@ -473,7 +467,7 @@ purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
 
 clean-all: clean-tests clean clean-tools clean-docker
-	@$(MAKE) -C libs clean CC="$(CC)" AR="$(AR)" RANLIB="$(RANLIB)" NM="$(NM)" LD="$(LD)"
+	@$(MAKE) -C libs clean
 
 clean-tools:
 	@$(MAKE) -C $(TOOLSDIR) clean
