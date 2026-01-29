@@ -51,9 +51,8 @@ jobs:
       - name: Build project (Linux x86_64)
         run: |
           make portable
-          set -x
           mkdir v${{ env.VERSION }}
-          mv precizer v${{ env.VERSION }}/
+          cp -a precizer v${{ env.VERSION }}/
           zip -r precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/
           ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_portable.zip
@@ -94,7 +93,7 @@ jobs:
         run: |
           make portable
           mkdir v${{ env.VERSION }}
-          mv precizer v${{ env.VERSION }}
+          cp -a precizer v${{ env.VERSION }}
           zip -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/
           ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
@@ -143,7 +142,7 @@ jobs:
           otool -L precizer
           otool -l precizer
           mkdir v${{ env.VERSION }}
-          mv precizer v${{ env.VERSION }}
+          cp -a precizer v${{ env.VERSION }}
           zip -r precizer_macos_arm64.zip v${{ env.VERSION }}/
           make purge
           ./precizer --version
