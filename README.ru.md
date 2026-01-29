@@ -81,9 +81,9 @@ abc/def/aaa.txt
 
 Скачать [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) исполняемые файлы для:
 
-* Linux x86_64 [https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip](precizer_linux_x86_64_portable.zip)
-* Linux arm aarch64 [https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip](precizer_linux_aarch64_portable.zip)
-* macOS arm64 [https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip](precizer_macos_arm64.zip)
+* Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
+* Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
+* macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
 
 Пакеты содержат переносимые исполняемые бинарные файлы в архиве zip (portable‑версии).
 
