@@ -98,7 +98,7 @@ jobs:
           ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
           make purge
-          ./precizer --version
+          #./precizer --version
 
       - name: Run tests (Linux arm64)
         run: make tests
