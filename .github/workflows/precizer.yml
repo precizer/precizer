@@ -89,9 +89,11 @@ jobs:
 
       - name: Build project (Linux arm64)
         run: |
-          make portable
+          #make portable
+          make debug
           mkdir v${{ env.VERSION }}
-          cp -a precizer v${{ env.VERSION }}
+          #cp -a precizer v${{ env.VERSION }}/
+          cp -a .builds/debug/precizer v${{ env.VERSION }}/
           zip -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/
           ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
@@ -130,7 +132,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install llvm  argp-standalone cmocka || true
+          brew install llvm argp-standalone cmocka || true
 
       - name: Build project (macOS arm64)
         run: |
@@ -151,5 +153,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
-            "precizer_v${{ env.VERSION }}_macos_arm64.zip" \
+            "precizer_macos_arm64.zip" \
             --clobber
