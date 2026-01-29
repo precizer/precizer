@@ -1,5 +1,6 @@
 #include "sute.h"
 
+/* Mock only tecting in unit-mode so the linker wraps are active */
 Return comprehensive_mock_testing(void)
 {
 	INITTEST;
@@ -7,8 +8,6 @@ Return comprehensive_mock_testing(void)
 	enum run_mode prev_run_mode = run_external;
 
 	run_external = INTERNAL_TEST;
-
-	/* Mock only tecting in unit-mode so the linker wraps are active */
 
 	TEST(test0031,"Read error handling during hashing…");
 
