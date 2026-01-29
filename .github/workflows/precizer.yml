@@ -52,8 +52,8 @@ jobs:
         run: |
           make portable
           mkdir v${{ env.VERSION }}
-          mv precizer v${{ env.VERSION }}/
-          zip --junk-paths precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/
+          mv precizer v${{ env.VERSION }}
+          zip precizer_linux_x86_64_portable.zip v${{ env.VERSION }}
           ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_portable.zip
           make purge
@@ -93,8 +93,8 @@ jobs:
         run: |
           make portable
           mkdir v${{ env.VERSION }}
-          mv precizer v${{ env.VERSION }}/
-          zip --junk-paths precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/
+          mv precizer v${{ env.VERSION }}
+          zip precizer_linux_aarch64_portable.zip v${{ env.VERSION }}
           ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
           make purge
@@ -142,8 +142,8 @@ jobs:
           otool -L precizer
           otool -l precizer
           mkdir v${{ env.VERSION }}
-          mv precizer v${{ env.VERSION }}/
-          zip --junk-paths precizer_macos_arm64.zip v${{ env.VERSION }}/
+          mv precizer v${{ env.VERSION }}
+          zip precizer_macos_arm64.zip v${{ env.VERSION }}
           make purge
           ./precizer --version
 
