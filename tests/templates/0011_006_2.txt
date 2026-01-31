@@ -3,7 +3,7 @@ Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
 Update mode enabled for DB %DB_NAME%
 File traversal started
-(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 add diff1/1/AAA/BCB/CCC/a.txt
 add diff1/1/AAA/ZAW/A/b/c/a_file.txt
 add diff1/1/AAA/ZAW/D/e/f/b_file.txt

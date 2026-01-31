@@ -1,4 +1,5 @@
 #include "precizer.h"
+#include <errno.h>
 
 /**
  *
@@ -20,6 +21,12 @@ Return sha512sum(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
+	// In --dry-run mode do not touch the filesystem
+	if(config->dry_run == true)
+	{
+		provide(status);
+	}
+
 	if(file_buffer->length == 0)
 	{
 		slog(ERROR,"Invalid buffer size: %ld bytes\n",file_buffer->length);
@@ -35,6 +42,10 @@ Return sha512sum(
 		// No read permission
 		if(errno == EACCES)
 		{
+			*read_error = true;
+
+			*read_errno = errno;
+
 			provide(status);
 		}
 
@@ -58,6 +69,10 @@ Return sha512sum(
 			// No read permission
 			if(errno == EACCES)
 			{
+				*read_error = true;
+
+				*read_errno = errno;
+
 				free(absolute_path);
 				provide(status);
 			}
@@ -92,46 +107,43 @@ Return sha512sum(
 		}
 	}
 
-	if(config->dry_run == false)
+	unsigned char *buffer = rawdata(file_buffer);
+
+	size_t len = 0;
+
+	while(true)
 	{
-		unsigned char *buffer = rawdata(file_buffer);
-
-		size_t len = 0;
-
-		while(true)
+		/* Interrupt the loop smoothly */
+		/* Interrupt when Ctrl+C */
+		if(global_interrupt_flag == true)
 		{
-			/* Interrupt the loop smoothly */
-			/* Interrupt when Ctrl+C */
-			if(global_interrupt_flag == true)
+			loop_was_interrupted = true;
+			break;
+		}
+
+		len = fread(buffer,sizeof(unsigned char),file_buffer->length,fileptr);
+
+		if(len == 0)
+		{
+			if(ferror(fileptr))
 			{
-				loop_was_interrupted = true;
+				*read_error = true;
+				*read_errno = errno;
+			}
+
+			break;
+		}
+
+		if(SUCCESS == status)
+		{
+			if(sha512_update(mdContext,buffer,len) == 1)
+			{
+				slog(ERROR,"SHA512 update failed\n");
+				status = FAILURE;
 				break;
 			}
 
-			len = fread(buffer,sizeof(unsigned char),file_buffer->length,fileptr);
-
-			if(len == 0)
-			{
-				if(ferror(fileptr))
-				{
-					*read_error = true;
-					*read_errno = errno;
-				}
-
-				break;
-			}
-
-			if(SUCCESS == status)
-			{
-				if(sha512_update(mdContext,buffer,len) == 1)
-				{
-					slog(ERROR,"SHA512 update failed\n");
-					status = FAILURE;
-					break;
-				}
-
-				*offset += (sqlite3_int64)len;
-			}
+			*offset += (sqlite3_int64)len;
 		}
 	}
 

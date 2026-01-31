@@ -165,6 +165,8 @@ static error_t parse_opt(
 			break;
 		case 'i':
 			(void)add_string_to_array(&config->include,arg);
+			// Remember that at least one --include pattern was specified.
+			config->include_specified = true;
 			break;
 		case 'k':
 			(void)add_string_to_array(&config->lock_checksum,arg);

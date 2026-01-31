@@ -700,11 +700,14 @@ The `--db-drop-ignored` parameter must be specified additionally to remove refer
 # Update the database, removing references to files that were marked as ignored,
 # except for paths matching the --include patterns.
 
-precizer --update --db-drop-ignored \
+precizer --update \
+	--progress \
 	--ignore="^.*/path2/.*" \
 	--ignore="^diff2/.*" \
 	--include="^diff2/1/AAA/ZAW/A/b/c/.*" \
 	--include="^diff2/path1/AAA/ZAW/.*" \
+	--include="^diff1/path2/AAA/ZAW/A/b/c/a_file\..*" \
+	--db-drop-ignored \
 	tests/examples/diffs
 ```
 

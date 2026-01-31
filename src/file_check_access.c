@@ -2,16 +2,16 @@
 #include <errno.h>
 
 /**
- * @brief Checks if a file is accessible for reading.
+ * @brief Classify errno from a failed access() into FileAccessStatus.
  *
- * This function verifies whether the specified file is readable.
- * If the direct access check fails, it attempts to resolve the absolute path
- * and checks again.
+ * Maps common filesystem errors to a stable, high-level status:
+ * - ENOENT, ENOTDIR -> FILE_NOT_FOUND
+ * - EACCES, EPERM   -> FILE_ACCESS_DENIED
+ * - otherwise       -> FILE_ACCESS_ERROR
  *
- * @param[in] path Pointer to the file path string.
- * @param[in] path_size Pointer to the length of the path string.
+ * @param err errno value (typically `errno` after a failed `access()` call).
+ * @return FileAccessStatus classification.
  *
- * @return FileAccessStatus indicating accessibility, denial, or error.
  */
 static FileAccessStatus classify_access_errno(int err)
 {
@@ -29,7 +29,7 @@ static FileAccessStatus classify_access_errno(int err)
 }
 
 /**
- * Check read access for a path, first as provided, then by its absolute form.
+ * Check access for a path, first as provided, then by its absolute form.
  *
  * The function preserves the errno classification from the initial `access`
  * call and only overwrites it if resolving the absolute path succeeds and a
@@ -37,14 +37,16 @@ static FileAccessStatus classify_access_errno(int err)
  *
  * @param path       Path to check (relative or absolute).
  * @param path_size  Length of the provided path.
+ * @param mode       Access mode for `access()` (e.g., R_OK, X_OK).
  * @return FILE_ACCESS_ALLOWED on success; FILE_NOT_FOUND, FILE_ACCESS_DENIED,
  *         or FILE_ACCESS_ERROR depending on errno classification.
  */
 FileAccessStatus file_check_access(
 	const char   *path,
-	const size_t path_size)
+	const size_t path_size,
+	const int    mode)
 {
-	if(access(path,R_OK) == 0)
+	if(access(path,mode) == 0)
 	{
 		return(FILE_ACCESS_ALLOWED);
 	}
@@ -55,7 +57,7 @@ FileAccessStatus file_check_access(
 
 	if(SUCCESS == path_absolute_from_relative(&absolute_path,path,path_size))
 	{
-		if(access(absolute_path,R_OK) == 0)
+		if(access(absolute_path,mode) == 0)
 		{
 			access_status = FILE_ACCESS_ALLOWED;
 
@@ -63,9 +65,14 @@ FileAccessStatus file_check_access(
 
 			access_status = classify_access_errno(errno);
 		}
+	} else {
+		access_status = FILE_ACCESS_ERROR;
 	}
 
-	free(absolute_path);
+	if(absolute_path != NULL)
+	{
+		free(absolute_path);
+	}
 
 	return(access_status);
 }

@@ -35,7 +35,7 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB lock.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB lock.db:(?:\x1B\[[0-9;]*m)*
 lock checksum diff1/1/AAA/BCB/CCC/a.txt
 lock checksum diff1/1/AAA/ZAW/A/b/c/a_file.txt
 lock checksum diff1/1/AAA/ZAW/D/e/f/b_file.txt

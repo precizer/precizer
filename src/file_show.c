@@ -109,24 +109,32 @@ static void show_banners(
 	bool show_update_warning = false;
 	bool show_changes_will_be_reflected = false;
 	bool show_files_will_be_added = false;
+	bool show_counting_file_system_items_and_total_data_size = false;
 
 	if(*first_iteration == true)
 	{
 		*first_iteration = false;
 
-		if(count_size_of_all_files == false)
+		if(count_size_of_all_files == true)
 		{
+			show_counting_file_system_items_and_total_data_size = true;
+
+		} else {
+
 			show_traversal_started = true;
 		}
 
 		if(config->db_contains_data == true)
 		{
-			if(config->update == true)
+			if(count_size_of_all_files == false && config->update == true)
 			{
 				show_update_warning = true;
 			}
 
-			show_changes_will_be_reflected = true;
+			if(count_size_of_all_files == false)
+			{
+				show_changes_will_be_reflected = true;
+			}
 
 		} else {
 
@@ -146,12 +154,17 @@ static void show_banners(
 
 	if(show_changes_will_be_reflected == true)
 	{
-		slog(EVERY,BOLD "Files reported during this scan against the DB %s:" RESET "\n",config->db_file_name);
+		slog(EVERY,BOLD "Changes reported during this scan against the DB %s:" RESET "\n",config->db_file_name);
 	}
 
 	if(show_files_will_be_added == true)
 	{
-		slog(EVERY,BOLD "Files reported during this scan against the DB %s:" RESET "\n",config->db_file_name);
+		slog(EVERY,BOLD "Items reported during this traversal against the DB %s:" RESET "\n",config->db_file_name);
+	}
+
+	if(show_counting_file_system_items_and_total_data_size == true)
+	{
+		slog(EVERY,BOLD "File system artifacts while counting items and total data size:" RESET "\n");
 	}
 }
 
@@ -246,7 +259,7 @@ void file_show(
 	{
 		if(dbrow->relative_path_already_in_db == false)
 		{
-			slog_show(EVERY|UNDECOR,true,first_iteration,at_least_one_file_was_shown,count_size_of_all_files,"ignore & do not add %s",relative_path);
+			slog_show(EVERY|UNDECOR,true,first_iteration,at_least_one_file_was_shown,count_size_of_all_files,"ignore & do not add %s\n",relative_path);
 		} else {
 			slog_show(EVERY|UNDECOR,true,first_iteration,at_least_one_file_was_shown,count_size_of_all_files,"ignored & do not update %s\n",relative_path);
 		}

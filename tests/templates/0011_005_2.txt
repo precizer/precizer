@@ -39,7 +39,7 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB %DB_NAME%
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 add AAA/BBB/CCC/a.txt
 add AAA/BBB/uuu.txt
 add AAA/tttt.txt
