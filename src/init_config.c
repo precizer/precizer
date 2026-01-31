@@ -100,10 +100,6 @@ void init_config(void)
 	// since the last research
 	config->db_primary_file_modified = false;
 
-	/// The "Warning about using the update option has already been shown"
-	/// option prevents duplicate notifications from being displayed
-	config->the_update_warning_has_already_been_shown = false;
-
 	// Recursion depth limit. The depth of the traversal,
 	// numbered from 0 to N, where a file could be found.
 	// Representing the maximum of the starting
@@ -122,6 +118,7 @@ void init_config(void)
 	// they were excluded via the --ignore option
 	// The string array of PCRE2 regular expressions
 	config->include = NULL;
+	config->include_specified = false;
 
 	// Relative paths whose checksums must never be recalculated
 	// after the initial write. PCRE2 regular expressions.

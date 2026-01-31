@@ -37,7 +37,7 @@ Return db_delete_the_record_by_id(
 			return(FAILURE);
 		}
 
-		FileAccessStatus access_status = file_check_access(absolute_path,(size_t)length);
+		FileAccessStatus access_status = file_check_access(absolute_path,(size_t)length,R_OK);
 
 		free(absolute_path);
 
@@ -127,13 +127,6 @@ Return db_delete_the_record_by_id(
 					} else {
 						slog(TRACE,"The " BOLD "--db-drop-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
 					}
-				}
-
-				if(config->the_update_warning_has_already_been_shown == false)
-				{
-					slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the file records will be dropped from the database %s\n",config->db_file_name);
-
-					config->the_update_warning_has_already_been_shown = true;
 				}
 
 				/* Reflect changes in global */

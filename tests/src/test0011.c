@@ -373,7 +373,7 @@ static Return test0011_7_readme(void)
 /**
  *
  * The Example 8 from README
- * Using the --ignore option(s) together with --include
+ * Using the --ignore options together with --include
  *
  *
  */
@@ -381,22 +381,22 @@ static Return test0011_8_readme(void)
 {
 	INITTEST;
 
-	const char *arguments = NULL;
-
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "tests/examples/diffs";
+	const char *arguments = "tests/examples/diffs";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	arguments = "--update"
-	        " --db-drop-ignored"
+		" --progress"
 	        " --ignore=\"^.*/path2/.*\""
 	        " --ignore=\"^diff2/.*\""
 	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
 	        " --include=\"^diff2/path1/AAA/ZAW/.*\""
+	        " --include=\"^diff1/path2/AAA/ZAW/A/b/c/a_file\\..*\""
+	        " --db-drop-ignored"
 	        " tests/examples/diffs";
 
 	const char *filename = "templates/0011_008.txt";
@@ -434,7 +434,7 @@ Return test0011(void)
 	TEST(test0011_5_readme,"README Example 5 Disable recursion with --maxdepth…");
 	TEST(test0011_6_readme,"README Example 6 Relative path to ignore with --ignore…");
 	TEST(test0011_7_readme,"README Example 7 Multiple regexp for ignoring…");
-	TEST(test0011_8_readme,"README Example 8 The --ignore option(s) together with --include…");
+	TEST(test0011_8_readme,"README Example 8 The --ignore options together with --include…");
 	SUTE(test0030,"README Examples 9 & 10: --lock-checksum with --rehash-locked and --watch-timestamps…");
 	SUTE(test0029,"README Example 11: Testing how the application behaves with inaccessible files…");
 

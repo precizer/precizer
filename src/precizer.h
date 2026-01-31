@@ -72,6 +72,13 @@
 #define st_ctim st_ctimespec
 #endif
 
+/*
+ * All the macros are here
+ */
+#define slog_show(level,respect_quiet,first_iteration,shown_flag,count_size_of_all_files,...) \
+	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
+		(shown_flag),(count_size_of_all_files),__VA_ARGS__)
+
 // PCRE2 return codes
 typedef enum
 {
@@ -344,10 +351,6 @@ typedef struct {
 	/// since the last research
 	bool db_primary_file_modified;
 
-	/// The "Warning about using the update option has already been shown"
-	/// option prevents duplicate notifications from being displayed
-	bool the_update_warning_has_already_been_shown;
-
 	/// Recursion depth limit. The depth of the traversal,
 	/// numbered from 0 to N, where a file could be found.
 	/// Representing the maximum of the starting
@@ -367,6 +370,10 @@ typedef struct {
 	/// they were excluded via the --ignore option
 	/// The string array of PCRE2 regular expressions
 	char **include;
+
+	/// True when at least one --include pattern has been specified.
+	/// Used to adjust traversal behavior (e.g., avoid subtree skipping).
+	bool include_specified;
 
 	/// Relative paths whose checksums must never be recalculated
 	/// after the initial write. PCRE2 regular expressions.
@@ -479,7 +486,8 @@ typedef enum FileAccessStatus
 
 FileAccessStatus file_check_access(
 	const char *,
-	const size_t);
+	const size_t,
+	const int);
 
 void notify_quit_handler(int);
 
@@ -620,10 +628,6 @@ void slog_show_impl(
 	const bool,
 	const char *,
 	...);
-
-#define slog_show(level,respect_quiet,first_iteration,shown_flag,count_size_of_all_files,...) \
-	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
-		(shown_flag),(count_size_of_all_files),__VA_ARGS__)
 
 void file_show(
 	const DBrow *,

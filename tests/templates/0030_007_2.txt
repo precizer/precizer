@@ -44,7 +44,7 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB lock_s7\.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB lock_s7\.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock_s7\.db:(?:\x1B\[[0-9;]*m)*
 locked rehash ok path1/AAA/BCB/CCC/a\.txt
 (?:\x1B\[[0-9;]*m)*checksum locked & mismatch, data corrupted(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 locked rehash ok path1/AAA/ZAW/D/e/f/b_file\.txt

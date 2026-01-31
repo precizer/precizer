@@ -3,13 +3,12 @@ Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
 Update mode enabled for DB %DB_NAME%
 File traversal started
-(?:\x1B\[[0-9;]*m)*Files reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 ignore directory diff1/1/AAA
 ignore directory diff2/1/AAA
 File traversal complete
 Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 Searching for files that no longer exist on the file system…
-The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the file records will be dropped from the database %DB_NAME%
 (?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 drop ignored diff1/1/AAA/BCB/CCC/a.txt
 drop ignored diff1/1/AAA/ZAW/A/b/c/a_file.txt

@@ -702,11 +702,14 @@ DB будет очищена от упоминаний файлов, соотв�
 
 # Обновить базу данных, удалив информацию о тех файлах, которые были указаны как игнорируемые за исключением шаблонов путей из --include
 
-precizer --update --db-drop-ignored \
+precizer --update \
+	--progress \
 	--ignore="^.*/path2/.*" \
 	--ignore="^diff2/.*" \
 	--include="^diff2/1/AAA/ZAW/A/b/c/.*" \
 	--include="^diff2/path1/AAA/ZAW/.*" \
+	--include="^diff1/path2/AAA/ZAW/A/b/c/a_file\..*" \
+	--db-drop-ignored \
 	tests/examples/diffs
 ```
 

@@ -1,6 +1,6 @@
 #include "precizer.h"
 
-Return db_get_path_prefix_index
+Return db_get_runtime_root_index
 (
 	const char *runtime_path_prefix,
 	sqlite3_int64 *path_prefix_index
