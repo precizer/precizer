@@ -1,17 +1,15 @@
 #include "testitall.h"
 
 /**
- * @brief Executes a command and sets its output as an environment variable
+ * @brief Executes a command and sets its stdout as an environment variable.
  *
- * @param variable Name of the environment variable to set
- * @param command Command to execute
- * @param expected_return_code Expected return code from the command execution
+ * @param variable Environment variable name (must not be NULL).
+ * @param command Command to execute (must not be NULL).
+ * @param expected_return_code Expected exit code from the command execution.
  *
- * @return SUCCESS if command executed successfully and variable was set
- *         FAILURE if command failed or output was empty
+ * @return SUCCESS if execute_command() succeeds and stdout is non-empty; FAILURE otherwise.
  *
- * @note The function allocates memory for storing command output temporarily
- * @note Environment variable will only be set if command produces non-empty output
+ * @note Trailing EOL in stdout is trimmed before setting the variable.
  */
 Return execute_and_set_variable(
 	const char *variable,
@@ -32,7 +30,7 @@ Return execute_and_set_variable(
 	create(char,result);
 
 	// Execute command and capture output
-	call(execute_command(command,result,expected_return_code,ALLOW_BOTH));
+	call(execute_command(command,result,NULL,expected_return_code,ALLOW_BOTH));
 
 	if(SUCCESS == status)
 	{

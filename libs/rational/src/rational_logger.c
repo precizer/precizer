@@ -46,6 +46,7 @@ char *rational_reconvert(int mode)
 		{ERROR,"ERROR"},
 		{SILENT,"SILENT"},
 		{UNDECOR,"UNDECOR"},
+		{REMEMBER,"REMEMBER"},
 		{0,NULL}   /* Terminator element */
 	};
 
@@ -74,10 +75,10 @@ char *rational_reconvert(int mode)
 
 /**
  *
- * @brief Print out current date and time in ISO format
- * @param out_buffer Pointer to the destination buffer that receives the timestamp.
+ * @brief Format current date and time in ISO format
+ * @param time_string Pointer to the destination buffer that receives the timestamp.
  * @param buffer_size Size of the destination buffer in bytes.
- * @return Return SUCCESS on success, FAILURE on error (buffer contents will contain fallback value).
+ * @return Return SUCCESS on success, FAILURE on error (buffer contents will be empty on failure).
  *
  */
 static Return logger_show_time(
@@ -131,10 +132,131 @@ static Return logger_show_time(
 	return(status);
 }
 
+__attribute__((format(printf,3,0)))
+static void logger_line_append_va(
+	char       **line,
+	int        *line_len,
+	const char *fmt,
+	va_list    args)
+{
+	va_list args_copy;
+	va_copy(args_copy,args);
+	const int needed = vsnprintf(NULL,0,fmt,args_copy);
+	va_end(args_copy);
+
+	if(needed < 0)
+	{
+		return;
+	}
+
+	const size_t new_len = (size_t)(*line_len) + (size_t)needed;
+	char *tmp = realloc(*line,new_len + 1);
+
+	if(tmp == NULL)
+	{
+		return;
+	}
+
+	*line = tmp;
+
+	va_list args_copy2;
+	va_copy(args_copy2,args);
+	vsnprintf(*line + *line_len,(size_t)needed + 1,fmt,args_copy2);
+	va_end(args_copy2);
+
+	*line_len = (int)new_len;
+}
+
+__attribute__((format(printf,3,4)))
+static void logger_line_append(
+	char       **line,
+	int        *line_len,
+	const char *fmt,
+	...)
+{
+	va_list args;
+	va_start(args,fmt);
+	logger_line_append_va(line,line_len,fmt,args);
+	va_end(args);
+}
+
+__attribute__((format(printf,7,0)))
+void logger_line(
+	char              **line,
+	int               *line_len,
+	const char        level,
+	const char *const filename,
+	size_t            line_number,
+	const char *const funcname,
+	const char        *fmt,
+	va_list           args)
+{
+	if(rational_logger_mode & SILENT)
+	{
+		// Output nothing
+		return;
+	}
+
+	if(!(level & UNDECOR) && (level & TESTING) && (rational_logger_mode & TESTING))
+	{
+		// Print out the word "TESTING:"
+		logger_line_append(line,line_len,"TESTING:");
+	}
+
+	if(!(level & UNDECOR) && (level & (VERBOSE|ERROR)) && (rational_logger_mode & VERBOSE))
+	{
+		char time_string[sizeof "2011-10-18 07:07:09:000"];
+		(void)logger_show_time(time_string,sizeof(time_string));
+
+		// Print out current time
+		logger_line_append(line,line_len,"%s ",time_string);
+
+		// Print out the source file name
+		logger_line_append(line,line_len,"%s:",filename);
+
+		// Print out line number in source file
+		logger_line_append(line,line_len,"%03zu:",line_number);
+
+		// Print out name of the function itself
+		logger_line_append(line,line_len,"%s:",funcname);
+	}
+
+	if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (REGULAR | ERROR)))
+	{
+		// Print out error prefix
+		logger_line_append(line,line_len,"ERROR: ");
+
+	} else if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (TESTING | VERBOSE))){
+		// Print out the word "ERROR:"
+		logger_line_append(line,line_len,"ERROR:");
+	}
+
+	if(level & ERROR && rational_logger_mode & ERROR)
+	{
+		// Print out other arguments
+		logger_line_append_va(line,line_len,fmt,args);
+
+	} else if(level & (REGULAR|ERROR) && rational_logger_mode & REGULAR){
+		// Print out other arguments
+		logger_line_append_va(line,line_len,fmt,args);
+
+	} else if(level & (VERBOSE|ERROR) && rational_logger_mode & VERBOSE){
+		// Print out other arguments
+		logger_line_append_va(line,line_len,fmt,args);
+
+	} else if(level & (TESTING|ERROR) && rational_logger_mode & TESTING){
+		// Print out other arguments
+		logger_line_append_va(line,line_len,fmt,args);
+	}
+}
+
 /**
  *
- * @brief Logging to the screen with the source file name, line number
- * and name of the function that generated the message itself
+ * @brief Build and print a formatted log line with file, line, and function metadata
+ *
+ * @details When REMEMBER is set and the weak rational_remember() symbol is defined,
+ *          the formatted line (without a trailing newline) and its length are
+ *          passed to that callback.
  *
  */
 __attribute__((format(printf,5,6))) // Without this we will get warning
@@ -146,75 +268,26 @@ void rational_logger(
 	const char        *fmt,
 	...)
 {
-	if(rational_logger_mode & SILENT)
+
+	char *logger_line_text = NULL;
+	int line_len = 0;
+
+	va_list args;
+	va_start(args,fmt);
+	logger_line(&logger_line_text,&line_len,level,filename,line,funcname,fmt,args);
+	va_end(args);
+
+	if((level & REMEMBER) && rational_remember && logger_line_text != NULL && line_len > 0)
 	{
-		// Output nothing
-		return;
+		rational_remember(logger_line_text,line_len);
 	}
 
-	if(!(level & UNDECOR) && (level & TESTING) && (rational_logger_mode & TESTING))
+	if(logger_line_text != NULL)
 	{
-		// Print out the word "TESTING:"
-		printf("TESTING:");
+		fwrite(logger_line_text,sizeof(char),(size_t)line_len,stdout);
 	}
 
-	if(!(level & UNDECOR) && (level & (VERBOSE|ERROR)) && (rational_logger_mode & VERBOSE))
-	{
-		char time_string[sizeof "2011-10-18 07:07:09:000"];
-		(void)logger_show_time(time_string,sizeof(time_string));
-
-		// Print out current time
-		printf("%s ",time_string);
-
-		// Print out the source file name
-		printf("%s:",filename);
-
-		// Print out line number in source file
-		printf("%03zu:",line);
-
-		// Print out name of the function itself
-		printf("%s:",funcname);
-	}
-
-	if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (REGULAR | ERROR)))
-	{
-		// Print out error prefix
-		printf("ERROR: ");
-
-	} else if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (TESTING | VERBOSE))){
-		// Print out the word "ERROR:"
-		printf("ERROR:");
-	}
-
-	if(level & ERROR && rational_logger_mode & ERROR)
-	{
-		// Print out other arguments
-		va_list args;
-		va_start(args,fmt);
-		vprintf(fmt,args);
-		va_end(args);
-
-	} else if(level & (REGULAR|ERROR) && rational_logger_mode & REGULAR){
-		// Print out other arguments
-		va_list args;
-		va_start(args,fmt);
-		vprintf(fmt,args);
-		va_end(args);
-
-	} else if(level & (VERBOSE|ERROR) && rational_logger_mode & VERBOSE){
-		// Print out other arguments
-		va_list args;
-		va_start(args,fmt);
-		vprintf(fmt,args);
-		va_end(args);
-
-	} else if(level & (TESTING|ERROR) && rational_logger_mode & TESTING){
-		// Print out other arguments
-		va_list args;
-		va_start(args,fmt);
-		vprintf(fmt,args);
-		va_end(args);
-	}
+	free(logger_line_text);
 }
 
 #ifdef TEST

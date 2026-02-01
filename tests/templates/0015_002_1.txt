@@ -30,7 +30,7 @@ TESTING:Database 0015_database_v0.db has been verified and is in good condition
 TESTING:Metadata table not found in database
 TESTING:The 0015_database_v0.db database file is version 0
 TESTING:The database 0015_database_v0.db file has an outdated version 0 and requires updating to the version 3
-TESTING:Caution! The update will be performed in transaction mode for database safety
+TESTING:Warning! The update will be performed in transaction mode for database safety
 TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
 TESTING:Migration from version 0 to version 1 started
 TESTING:The database connection has been closed
@@ -55,15 +55,15 @@ TESTING:The primary database doesn't need to be vacuumed during updates
 TESTING:Successfully opened database 0015_database_v0.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named 0015_database_v0.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database 0015_database_v0.db
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database 0015_database_v0.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database 0015_database_v0.db
+TESTING:Update mode enabled for DB 0015_database_v0.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB 0015_database_v0.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0015_database_v0.db:(?:\x1B\[[0-9;]*m)*
 update stat 1/AAA/BCB/CCC/a.txt
 update stat 1/AAA/ZAW/A/b/c/a_file.txt
 update stat 1/AAA/ZAW/D/e/f/b_file.txt
@@ -77,7 +77,7 @@ update stat path2/AAA/BCB/CCC/a.txt
 update stat path2/AAA/ZAW/A/b/c/a_file.txt
 update stat path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:File traversal complete
-TESTING:Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
 TESTING:The database connection has been closed

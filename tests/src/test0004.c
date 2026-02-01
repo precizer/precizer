@@ -9,9 +9,17 @@ Return test0004(void)
 {
 	INITTEST;
 
-	ASSERT(SUCCESS == external_call("echo -n > /dev/null",COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == external_call("false",FAILURE,ALLOW_BOTH));
-	ASSERT(SUCCESS == external_call("true",COMPLETED,ALLOW_BOTH));
+	const char *command = "echo -n > /dev/null";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,STDERR_SUPPRESS));
+
+	command = "false";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,FAILURE,STDOUT_SUPPRESS));
+
+	command = "true";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,STDERR_SUPPRESS));
 
 	RETURN_STATUS;
 }

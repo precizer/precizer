@@ -24,19 +24,21 @@ extern _Atomic Return global_return_status;
  * ERROR   — error message only. Will be shown when any of the above modes are engaged
  * UNDECOR — suppress logging prefixes (time/file/line/func and mode labels) for this call
  *           (abbreviation of "UNDECORATED")
+ * REMEMBER — pass the formatted log line to optional rational_remember() callback
  * SILENT  — disable all output
  *
  */
 typedef enum
 {
-	REGULAR = 0x01, // 000001
-	VERBOSE = 0x02, // 000010
-	TESTING = 0x04, // 000100
-	TRACE   = 0x06, // 000110 = VERBOSE|TESTING
-	EVERY   = 0x07, // 000111 = REGULAR|VERBOSE|TESTING
-	ERROR   = 0x08, // 001000
-	SILENT  = 0x10, // 010000
-	UNDECOR = 0x20  // 100000
+	REGULAR  = 0x01, // 0000001
+	VERBOSE  = 0x02, // 0000010
+	TESTING  = 0x04, // 0000100
+	TRACE    = 0x06, // 0000110 = VERBOSE|TESTING
+	EVERY    = 0x07, // 0000111 = REGULAR|VERBOSE|TESTING
+	ERROR    = 0x08, // 0001000
+	SILENT   = 0x10, // 0010000
+	UNDECOR  = 0x20, // 0100000
+	REMEMBER = 0x40  // 1000000
 
 } LOGMODES;
 
@@ -52,6 +54,26 @@ char *rational_reconvert(int);
 // The definition creates a shorthand for logging messages with additional
 // context information, such as the file name, line number, and function name
 #define slog(x,...) rational_logger(x,__FILE__,__LINE__,__func__,__VA_ARGS__ )
+
+/**
+ * @brief Optional callback for REMEMBER logs
+ *
+ * If the main program defines:
+ *   void rational_remember(const char *message);
+ * then any slog() call with REMEMBER will pass the fully formatted log line
+ * (same prefixes as printed, without a trailing newline) to this function.
+ *
+ * If the program does not define it, the library's weak symbol resolves to
+ * NULL and the logger skips the call.
+ *
+ * @param message Formatted log line without a trailing newline
+ *
+ * @note The message pointer is valid only during the call; copy it if needed.
+ *       Avoid calling slog() inside rational_remember() to prevent recursion.
+ */
+__attribute__((weak)) void rational_remember(
+	const char *message,
+	const int  line_len);
 
 void rational_logger
 (

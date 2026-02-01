@@ -9,7 +9,8 @@ Return test0006(void)
 {
 	INITTEST;
 
-	ASSERT(SUCCESS == external_call("echo -n",COMPLETED,ALLOW_BOTH));
+	const char *command = "echo -n";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

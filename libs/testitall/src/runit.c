@@ -28,9 +28,21 @@ static void test_main_wrapper(void)
 	test_main_context.result = test_main(test_main_context.argc,test_main_context.argv);
 }
 
+/**
+ * @brief Run precizer with arguments in-process or via external command.
+ *
+ * @param arguments Command-line arguments without the binary name.
+ * @param stdout_result Buffer to receive stdout (NULL to ignore).
+ * @param stderr_result Buffer to receive stderr (NULL to ignore).
+ * @param expected_return_code Expected exit code from the run.
+ * @param buffer_policy Bitmask controlling stdout/stderr handling (see capture_policy).
+ *
+ * @return SUCCESS when the run completes with the expected exit code; FAILURE otherwise.
+ */
 Return runit(
 	const char   *arguments,
-	memory       *result,
+	memory       *stdout_result,
+	memory       *stderr_result,
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
@@ -45,6 +57,7 @@ Return runit(
 	const char *safe_arguments = arguments;
 	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
 	const bool suppress_stderr = (buffer_policy & STDERR_SUPPRESS) != 0U;
+	const bool allow_stderr = (buffer_policy & STDERR_ALLOW) != 0U;
 
 	if(NULL == safe_arguments || safe_arguments[0] == '\0')
 	{
@@ -67,7 +80,7 @@ Return runit(
 			status = FAILURE;
 
 		} else {
-			run(execute_command(command,result,expected_return_code,buffer_policy));
+			run(execute_command(command,stdout_result,stderr_result,expected_return_code,buffer_policy));
 		}
 
 		provide(status);
@@ -182,10 +195,13 @@ Return runit(
 		{
 			int exit_code = test_main_context.result;
 
-			// Handle stderr: either suppress it or format a warning and fail.
+			// Handle stderr: allow it, suppress it, or format a warning and fail.
 			if(STDERR->length > 0U)
 			{
-				if(true == suppress_stderr)
+				if(true == allow_stderr)
+				{
+					// Keep STDERR contents without failing
+				} else if(true == suppress_stderr)
 				{
 					call(del(STDERR));
 
@@ -288,12 +304,25 @@ Return runit(
 		wordfree(&parsed_arguments);
 	}
 
-	if(NULL != result)
+	if(NULL != stdout_result)
 	{
 		if(STDOUT->length > 0U)
 		{
-			run(copy(result,STDOUT));
+			run(copy(stdout_result,STDOUT));
 		}
+	}
+
+	if(NULL != stderr_result)
+	{
+		if(STDERR->length > 0U)
+		{
+			run(copy(stderr_result,STDERR));
+		}
+	}
+
+	if(SUCCESS == status && true == allow_stderr)
+	{
+		call(del(STDERR));
 	}
 
 	call(del(STDOUT));

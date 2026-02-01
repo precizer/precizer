@@ -8,23 +8,20 @@
 #include "testitall.h"
 
 /**
- * @brief Executes a shell command and optionally copies captured stdout into result.
+ * @brief Executes a shell command and captures stdout/stderr into provided buffers.
  *
- * @param command The shell command to execute (must not be NULL)
- * @param result Managed memory buffer to receive stdout (can be NULL to ignore stdout)
- * @param expected_return_code Expected exit code from the command execution
- * @param buffer_policy Bitmask controlling stdout/stderr handling.
- *                      Use STDOUT_SUPPRESS/STDERR_SUPPRESS to drop buffers.
+ * @param command Shell command to execute (must not be NULL).
+ * @param stdout_result Buffer to receive stdout (NULL to ignore).
+ * @param stderr_result Buffer to receive stderr (NULL to ignore).
+ * @param expected_return_code Expected exit code from the command execution.
+ * @param buffer_policy Bitmask controlling stdout/stderr handling (see capture_policy).
  *
- * @return SUCCESS when the command runs, exits with the expected code, and parameters are valid;
- *         FAILURE otherwise.
- *
- * @details The function clears the shared STDOUT buffer, delegates execution to external_call(),
- *          copies any captured stdout into the provided buffer, and then frees the shared buffer.
+ * @return SUCCESS when external_call() succeeds; FAILURE otherwise.
  */
 Return execute_command(
 	const char   *command,
-	memory       *result,
+	memory       *stdout_result,
+	memory       *stderr_result,
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
@@ -42,16 +39,7 @@ Return execute_command(
 	call(del(STDOUT));
 
 	/* Execute the command with specified parameters */
-	run(external_call(command,expected_return_code,buffer_policy));
-
-	/* Copy captured output to result buffer */
-	if(NULL != result)
-	{
-		if(STDOUT->length > 0U)
-		{
-			call(copy(result,STDOUT));
-		}
-	}
+	run(external_call(command,stdout_result,stderr_result,expected_return_code,buffer_policy));
 
 	/* Free temporary STDOUT buffer after copying */
 	call(del(STDOUT));

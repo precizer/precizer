@@ -37,9 +37,11 @@ Return test0027(void);
 Return test0028(void);
 Return test0029(void);
 Return test0030(void);
+Return test0031(void);
 
 Return comprehensive_system_testing(void);
 Return comprehensive_unit_testing(void);
+Return comprehensive_mock_testing(void);
 
 Return prepare(void);
 Return finish(void);

@@ -2,10 +2,8 @@
 The path %DB_NAME% doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
 File traversal started
-(?:\x1B\[[0-9;]*m)*These files will be added against the %DB_NAME% database:(?:\x1B\[[0-9;]*m)*
-ignore & do not add diff1/1/AAA/BCB/CCC/a.txt
-ignore & do not add diff1/1/AAA/ZAW/A/b/c/a_file.txt
-ignore & do not add diff1/1/AAA/ZAW/D/e/f/b_file.txt
+(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+ignore directory diff1/1/AAA
 add diff1/2/AAA/BBB/CZC/a.txt
 add diff1/3/AAA/BBB/CCC/a.txt
 add diff1/4/AAA/BBB/CCC/a.txt

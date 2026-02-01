@@ -7,7 +7,7 @@ static bool missing_arguments = false;
 
 /**
  *
- * @brief Parse arguments with argp lib
+ * @brief Parse command-line arguments with the argp library.
  *
  */
 
@@ -101,7 +101,12 @@ static struct argp_option options[] = {
 	 "Example:\n"
 	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",0 },
 	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",0 },
-	{"db-clean-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-clean-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",0},
+	{"db-drop-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-drop-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",0},
+	{"db-clean-ignored",'C',0,OPTION_ALIAS | OPTION_HIDDEN,0,0},
+	{"db-drop-inaccessible",'X',0,0,"Allow dropping database records for files that are inaccessible due to permission errors. By default, such paths are reported as \"inaccessible\" and their DB records are kept to avoid accidental loss when permissions change. This option is effective only with " BOLD "--update" RESET ".\n"
+	 "Example:\n"
+	 BOLD APP_NAME " --update --db-drop-inaccessible /mnt/storage" RESET "\n",0},
+	{"drop-inaccessible",'X',0,OPTION_ALIAS | OPTION_HIDDEN,0,0},
 	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.\n",0},
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.\n",0},
 	{"dry-run",'n',0,0,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET "\n",0},
@@ -114,6 +119,7 @@ static struct argp_option options[] = {
 	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n",0 },
 	{ 0,0,0,0,"Visualizations options:\n",-1},
 	{"silent",'s',0,0,"Don't produce any output. The option will not affect " BOLD "--compare" RESET,0 },
+	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore/--include" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.\n",0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
 	{0}
@@ -159,6 +165,8 @@ static error_t parse_opt(
 			break;
 		case 'i':
 			(void)add_string_to_array(&config->include,arg);
+			// Remember that at least one --include pattern was specified.
+			config->include_specified = true;
 			break;
 		case 'k':
 			(void)add_string_to_array(&config->lock_checksum,arg);
@@ -173,7 +181,10 @@ static error_t parse_opt(
 			config->start_device_only = true;
 			break;
 		case 'C':
-			config->db_clean_ignored = true;
+			config->db_drop_ignored = true;
+			break;
+		case 'X':
+			config->db_drop_inaccessible = true;
 			break;
 		case 'm':
 			argument_value = strtol(arg,&ptr,10);
@@ -215,6 +226,9 @@ static error_t parse_opt(
 			// Global variable
 			rational_logger_mode = SILENT;
 			break;
+		case 'q':
+			config->quiet_ignored = true;
+			break;
 		case 'v':
 			// Global variable
 			rational_logger_mode = VERBOSE;
@@ -246,6 +260,16 @@ static error_t parse_opt(
 				}
 			} else if(state->arg_num > 1){
 				slog(TRACE,"Caution: multiple PATH arguments received. Multipath mode activated. It’s important to note that when comparison mode is enabled, the ORDER of the paths must be identical for the database comparison to work correctly. Number of paths: %d\n",state->arg_num);
+			}
+
+			if(config->db_drop_inaccessible == true && config->update == false)
+			{
+				argp_failure(state,0,0,"WARNING: --db-drop-inaccessible has no effect without --update; records for inaccessible paths will be kept in the database");
+			}
+
+			if(config->rehash_locked == true && config->lock_checksum == NULL)
+			{
+				argp_failure(state,0,0,"WARNING: --rehash-locked has no effect without --lock-checksum");
 			}
 			break;
 		default:
@@ -443,6 +467,11 @@ Return parse_arguments(
 			slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
 		}
 
+		if(config->quiet_ignored)
+		{
+			slog(TESTING,"argument:quiet-ignored=%s\n",config->quiet_ignored ? "yes" : "no");
+		}
+
 		if(config->watch_timestamps)
 		{
 			slog(TESTING,"argument:watch-timestamps=%s\n",config->watch_timestamps ? "yes" : "no");
@@ -473,9 +502,14 @@ Return parse_arguments(
 			slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
 		}
 
-		if(config->db_clean_ignored)
+		if(config->db_drop_ignored)
 		{
-			slog(TESTING,"argument:db-clean-ignored=%s\n",config->db_clean_ignored ? "yes" : "no");
+			slog(TESTING,"argument:db-drop-ignored=%s\n",config->db_drop_ignored ? "yes" : "no");
+		}
+
+		if(config->db_drop_inaccessible)
+		{
+			slog(TESTING,"argument:db-drop-inaccessible=%s\n",config->db_drop_inaccessible ? "yes" : "no");
 		}
 
 		if(config->dry_run)
@@ -574,16 +608,18 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
-		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
 			config->verbose ? "yes" : "no",
 			config->maxdepth,
+			config->quiet_ignored ? "yes" : "no",
 			config->force ? "yes" : "no",
 			config->update ? "yes" : "no",
 			config->watch_timestamps ? "yes" : "no",
 			config->rehash_locked ? "yes" : "no",
 			config->progress ? "yes" : "no",
 			config->compare ? "yes" : "no",
-			config->db_clean_ignored ? "yes" : "no",
+			config->db_drop_ignored ? "yes" : "no",
+			config->db_drop_inaccessible ? "yes" : "no",
 			config->dry_run ? "yes" : "no",
 			config->start_device_only ? "yes" : "no",
 			config->db_check_level == QUICK ? "QUICK" : "FULL",

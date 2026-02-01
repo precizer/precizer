@@ -1,4 +1,5 @@
 #include "precizer.h"
+#include <errno.h>
 
 /**
  *
@@ -12,6 +13,8 @@ Return sha512sum(
 	unsigned char  *sha512,
 	sqlite3_int64  *offset,
 	SHA512_Context *mdContext,
+	bool           *read_error,
+	int            *read_errno,
 	bool           *wrong_file_type)
 {
 	/// The status that will be passed to return() before exiting.
@@ -33,6 +36,10 @@ Return sha512sum(
 		// No read permission
 		if(errno == EACCES)
 		{
+			*read_error = true;
+
+			*read_errno = errno;
+
 			provide(status);
 		}
 
@@ -56,6 +63,10 @@ Return sha512sum(
 			// No read permission
 			if(errno == EACCES)
 			{
+				*read_error = true;
+
+				*read_errno = errno;
+
 				free(absolute_path);
 				provide(status);
 			}
@@ -112,8 +123,8 @@ Return sha512sum(
 			{
 				if(ferror(fileptr))
 				{
-					slog(ERROR,"Error reading file %s\n",path);
-					status = FAILURE;
+					*read_error = true;
+					*read_errno = errno;
 				}
 
 				break;
@@ -140,17 +151,16 @@ Return sha512sum(
 
 	free(absolute_path);
 
-	if(SUCCESS == status)
+	if(SUCCESS == status
+	        && config->dry_run == false
+	        && loop_was_interrupted == false)
 	{
-		if(loop_was_interrupted == false)
-		{
-			*offset = 0;
+		*offset = 0;
 
-			if(sha512_final(mdContext,sha512) == 1)
-			{
-				slog(ERROR,"SHA512 finalization failed\n");
-				status = FAILURE;
-			}
+		if(sha512_final(mdContext,sha512) == 1)
+		{
+			slog(ERROR,"SHA512 finalization failed\n");
+			status = FAILURE;
 		}
 	}
 

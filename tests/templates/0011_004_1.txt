@@ -1,5 +1,5 @@
 \A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=yes; compare=no, db-clean-ignored=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
+paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=yes; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments.c:\d+:parse_arguments:Argument parsing is complete
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/detect_paths.c:\d+:detect_paths:Checking directory paths provided as arguments
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:Verify that the path tests/examples/diffs/diff1 exists
@@ -29,7 +29,7 @@ paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:Successfully opened database database1.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The primary database and tables do not require initialization
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The primary database named database1.db is ready for operations
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:Database initialization process completed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_compare.c:\d+:db_compare:Database comparison mode is not enabled. Skipping comparison
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_contains_data.c:\d+:db_contains_data:The database database1.db has already been created previously

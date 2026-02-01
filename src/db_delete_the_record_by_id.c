@@ -2,14 +2,16 @@
 
 /**
  *
- * This function remove information about a specific
- * file from the database by its unique db ID
+ * Drop a file record from the database by its unique ID.
+ * Records are dropped only for ignored paths, missing files, or inaccessible
+ * paths when --db-drop-inaccessible is enabled; accessible paths remain.
+ * In --dry-run mode, the database is not modified.
  *
  */
 Return db_delete_the_record_by_id(
 	sqlite_int64 *ID,
 	bool         *first_iteration,
-	const bool   *clean_ignored,
+	const bool   *drop_ignored,
 	const char   *relative_path,
 	const char   *runtime_path_prefix)
 {
@@ -24,7 +26,7 @@ Return db_delete_the_record_by_id(
 
 	char *absolute_path = NULL;
 
-	if(clean_ignored != NULL && *clean_ignored == false
+	if(drop_ignored != NULL && *drop_ignored == false
 	        && runtime_path_prefix != NULL && relative_path != NULL)
 	{
 		int length = asprintf(&absolute_path,"%s/%s",runtime_path_prefix,relative_path);
@@ -35,7 +37,7 @@ Return db_delete_the_record_by_id(
 			return(FAILURE);
 		}
 
-		FileAccessStatus access_status = file_check_access(absolute_path,(size_t)length);
+		FileAccessStatus access_status = file_check_access(absolute_path,(size_t)length,R_OK);
 
 		free(absolute_path);
 
@@ -50,7 +52,17 @@ Return db_delete_the_record_by_id(
 
 		} else if(access_status == FILE_ACCESS_DENIED){
 
-			inaccessible = true;
+			if(config->db_drop_inaccessible == true)
+			{
+				inaccessible = true;
+
+			} else {
+
+				slog(EVERY|UNDECOR,"kept inaccessible %s\n",relative_path);
+
+				return(SUCCESS);
+
+			}
 
 		} else if(access_status == FILE_ACCESS_ALLOWED){
 
@@ -109,17 +121,12 @@ Return db_delete_the_record_by_id(
 
 				if(config->ignore != NULL)
 				{
-					if(config->db_clean_ignored == false)
+					if(config->db_drop_ignored == false)
 					{
-						slog(EVERY,"If the information about ignored files should be removed from the database the " BOLD "--db-clean-ignored" RESET " option must be specified. This is special protection against accidental deletion of information from the database\n");
+						slog(EVERY,"If the information about ignored files should be removed from the database the " BOLD "--db-drop-ignored" RESET " option must be specified. This is special protection against accidental deletion of information from the database\n");
 					} else {
-						slog(TRACE,"The " BOLD "--db-clean-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
+						slog(TRACE,"The " BOLD "--db-drop-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
 					}
-				}
-
-				if(config->the_update_warning_has_already_been_shown == false)
-				{
-					slog(EVERY,"The " BOLD "--update" RESET " option has been used, so the information about files will be deleted against the database %s\n",config->db_file_name);
 				}
 
 				/* Reflect changes in global */
@@ -128,16 +135,21 @@ Return db_delete_the_record_by_id(
 					config->db_primary_file_modified = true;
 				}
 
-				slog(EVERY,BOLD "These files are no longer exist or ignored and will be deleted against the DB %s:" RESET "\n",config->db_file_name);
+				if(config->db_drop_inaccessible)
+				{
+					slog(EVERY,BOLD "Dropping DB records for missing, inaccessible, or ignored paths in %s:" RESET "\n",config->db_file_name);
+				} else {
+					slog(EVERY,BOLD "Dropping DB records for missing or ignored paths in %s:" RESET "\n",config->db_file_name);
+				}
 			}
 
-			if(*clean_ignored == true)
+			if(*drop_ignored == true)
 			{
-				slog(EVERY|UNDECOR,"clean ignored %s\n",relative_path);
+				slog(EVERY|UNDECOR|REMEMBER,"drop ignored %s\n",relative_path);
 
 			} else if(inaccessible == true){
 
-				slog(EVERY|UNDECOR,"inaccessible %s\n",relative_path);
+				slog(EVERY|UNDECOR|REMEMBER,"drop due to inaccessible %s\n",relative_path);
 
 			} else if(file_not_found == true){
 

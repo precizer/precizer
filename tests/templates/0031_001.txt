@@ -1,0 +1,63 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=read_fail.db
+TESTING:argument:db_file_name=read_fail.db
+TESTING:argument:progress=yes
+TESTING:Argument parsing is complete
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: read_fail.db
+TESTING:Primary database file path: read_fail.db
+TESTING:DB name determined
+TESTING:Verify that the path . exists
+TESTING:The path . is exists and it is a directory
+TESTING:Verify that the path read_fail.db exists
+TESTING:The path read_fail.db doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:The primary database file was just created and doesn't require verification
+TESTING:Successfully opened database read_fail.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named read_fail.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
+TESTING:File system traversal initiated to calculate file count and storage usage
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
+TESTING:File traversal started
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB read_fail.db:(?:\x1B\[[0-9;]*m)*
+add 1/AAA/BCB/CCC/a.txt
+add 1/AAA/ZAW/A/b/c/a_file.txt
+add 1/AAA/ZAW/D/e/f/b_file.txt
+add 2/AAA/BBB/CZC/a.txt
+add 3/AAA/BBB/CCC/a.txt
+add 4/AAA/BBB/CCC/a.txt
+add path1/AAA/BCB/CCC/a.txt
+add path1/AAA/ZAW/A/b/c/a_file.txt
+error "[^\r\n]+" when reading path1/AAA/ZAW/D/e/f/b_file.txt
+add path2/AAA/BCB/CCC/a.txt
+add path2/AAA/ZAW/A/b/c/a_file.txt
+add path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:File traversal complete
+TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
+error "[^\r\n]+" when reading path1/AAA/ZAW/D/e/f/b_file.txt
+TESTING:The database connection has been closed
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
+TESTING:The database connection has been closed
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file read_fail.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+TESTING:The precizer completed its execution without any issues
+TESTING:Exit status » SUCCESS\Z

@@ -48,7 +48,7 @@ Return match_file_template(
 	ASSERT(SUCCESS == replace_placeholder(pattern,template,replacement));
 
 	// Execute command and capture output
-	ASSERT(SUCCESS == execute_command(command,result,expected_return_code,ALLOW_BOTH));
+	ASSERT(SUCCESS == execute_command(command,result,NULL,expected_return_code,ALLOW_BOTH));
 
 	// Compare command output against modified template
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));

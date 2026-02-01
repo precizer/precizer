@@ -13,12 +13,17 @@ Return test0003_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--progress tests/examples/diffs/diff1",NULL,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--progress tests/examples/diffs/diff1";
 
-	ASSERT(SUCCESS == runit("--progress --database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--progress --database=database2.db "
+	        "tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	// Get the output of the application
-	const char *arguments = "--compare $DBNAME database2.db";
+	arguments = "--compare $DBNAME database2.db";
 
 	const char *filename = "templates/0003_001.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -30,7 +35,9 @@ Return test0003_1(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"",COMPLETED,ALLOW_BOTH));
+	const char *command = "rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -44,7 +51,8 @@ Return test0003_2(void)
 {
 	INITTEST;
 
-#if 0
+	const char *arguments = "";
+
 	create(char,result);
 	create(char,pattern);
 
@@ -52,12 +60,8 @@ Return test0003_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("",result,EX_USAGE,ALLOW_BOTH));
-#endif
+	ASSERT(SUCCESS == runit(arguments,NULL,result,EX_USAGE,STDERR_ALLOW));
 
-	ASSERT(SUCCESS == runit("",NULL,EX_USAGE,STDERR_SUPPRESS));
-
-#if 0
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	// Match the result against the pattern
@@ -66,7 +70,6 @@ Return test0003_2(void)
 	// Clean to use it iteratively
 	del(pattern);
 	del(result);
-#endif
 
 	RETURN_STATUS;
 

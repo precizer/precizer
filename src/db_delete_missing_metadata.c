@@ -74,8 +74,8 @@ Return db_delete_missing_metadata(void)
 		const char *runtime_path_prefix = (const char *)sqlite3_column_text(select_stmt,1);
 		const char *relative_path = (const char *)sqlite3_column_text(select_stmt,2);
 
-		// Marks deletions triggered by --db-clean-ignored
-		bool clean_ignored = false;
+		// Marks deletions triggered by --db-drop-ignored
+		bool drop_ignored = false;
 
 		if(runtime_path_prefix != NULL && relative_path != NULL)
 		{
@@ -85,7 +85,7 @@ Return db_delete_missing_metadata(void)
 			 * passed through the ignore option(s)
 			 *
 			 */
-			if(config->db_clean_ignored == true)
+			if(config->db_drop_ignored == true)
 			{
 				/*
 				 *
@@ -110,7 +110,7 @@ Return db_delete_missing_metadata(void)
 
 					if(IGNORE == match_ignore_response)
 					{
-						clean_ignored = true;
+						drop_ignored = true;
 
 					} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
 						status = FAILURE;
@@ -124,11 +124,11 @@ Return db_delete_missing_metadata(void)
 		}
 
 		// Decide on deletion; access check and messaging handled inside db_delete_the_record_by_id
-		if(clean_ignored == true || relative_path != NULL)
+		if(drop_ignored == true || relative_path != NULL)
 		{
 			status = db_delete_the_record_by_id(&ID,
 				&first_iteration,
-				&clean_ignored,
+				&drop_ignored,
 				relative_path,
 				runtime_path_prefix);
 

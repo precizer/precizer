@@ -41,7 +41,7 @@ TESTING:Database 0015_database_v1.db has been verified and is in good condition
 TESTING:Version number 1 found in database
 TESTING:The 0015_database_v1.db database file is version 1
 TESTING:The database 0015_database_v1.db file has an outdated version 1 and requires updating to the version 3
-TESTING:Caution! The update will be performed in transaction mode for database safety
+TESTING:Warning! The update will be performed in transaction mode for database safety
 TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
 TESTING:Migration from version 1 to version 2 started
 TESTING:The database connection has been closed

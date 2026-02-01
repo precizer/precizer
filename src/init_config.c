@@ -6,8 +6,8 @@
 
 /**
  *
- * The structure Config where all runtime settings will be stored.
- * Initialization the structure elements by zero.
+ * Initialize the Config structure that stores runtime settings.
+ * Start with zeroed memory and then apply explicit defaults.
  *
  */
 void init_config(void)
@@ -85,7 +85,11 @@ void init_config(void)
 	// passed through the ignore option(s)
 	// This is special protection against accidental
 	// deletion of information from the database.
-	config->db_clean_ignored = false;
+	config->db_drop_ignored = false;
+
+	// Allow dropping database records for inaccessible files
+	// (permission denied). Disabled by default.
+	config->db_drop_inaccessible = false;
 
 	/// Select database validation level: 'quick' for basic
 	/// structure check, 'full' (default) for comprehensive
@@ -95,10 +99,6 @@ void init_config(void)
 	// Flag that reflects the presence of any changes
 	// since the last research
 	config->db_primary_file_modified = false;
-
-	/// The "Warning about using the update option has already been shown"
-	/// option prevents duplicate notifications from being displayed
-	config->the_update_warning_has_already_been_shown = false;
 
 	// Recursion depth limit. The depth of the traversal,
 	// numbered from 0 to N, where a file could be found.
@@ -111,10 +111,14 @@ void init_config(void)
 	// The string array of PCRE2 regular expressions
 	config->ignore = NULL;
 
+	// Suppress per-file log output for paths matched by --ignore
+	config->quiet_ignored = false;
+
 	// Include those relative paths even if
 	// they were excluded via the --ignore option
 	// The string array of PCRE2 regular expressions
 	config->include = NULL;
+	config->include_specified = false;
 
 	// Relative paths whose checksums must never be recalculated
 	// after the initial write. PCRE2 regular expressions.
