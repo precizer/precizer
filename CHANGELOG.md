@@ -2,10 +2,10 @@
 
 All notable changes will be documented in this file
 
-# [0.5.0] 2026-01-29 Pull Request #42
+# v0.5.0 2026-01-29 Pull Request #45
 
 ## Added
-- New CLI option `--quiet-ignored` to suppress log lines for files filtered out via `--ignore` / `--include`.
+- New CLI option `--quiet-ignored` to suppress log lines for files filtered out via `--ignore`/`--include`.
 - New CLI option to drop database records for inaccessible files during `--update`:
   - Canonical: `--db-drop-inaccessible`
   - Backward-compatible alias: `--drop-inaccessible`
