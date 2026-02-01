@@ -227,6 +227,7 @@ Return file_list(const bool count_size_of_all_files)
 
 			// Remember temporary string in long-lasting variable
 			memcpy(runtime_root,p->fts_path,(size_t)p->fts_pathlen);
+
 			if(p->fts_pathlen > 0)
 			{
 				runtime_root[p->fts_pathlen] = '\0';
