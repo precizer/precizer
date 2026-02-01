@@ -124,7 +124,9 @@ const char *form_real(long double val)
 	return(result);
 }
 
-static const char *form_uintmax_with_commas(uintmax_t val,bool negative)
+static const char *form_uintmax_with_commas(
+	uintmax_t val,
+	bool      negative)
 {
 	static char result[MAX_CHARACTERS];
 	char *p = result + sizeof(result);

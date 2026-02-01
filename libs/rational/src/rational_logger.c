@@ -134,10 +134,10 @@ static Return logger_show_time(
 
 __attribute__((format(printf,3,0)))
 static void logger_line_append_va(
-	char **line,
-	int *line_len,
+	char       **line,
+	int        *line_len,
 	const char *fmt,
-	va_list args)
+	va_list    args)
 {
 	va_list args_copy;
 	va_copy(args_copy,args);
@@ -169,8 +169,8 @@ static void logger_line_append_va(
 
 __attribute__((format(printf,3,4)))
 static void logger_line_append(
-	char **line,
-	int *line_len,
+	char       **line,
+	int        *line_len,
 	const char *fmt,
 	...)
 {
@@ -189,8 +189,7 @@ void logger_line(
 	size_t            line_number,
 	const char *const funcname,
 	const char        *fmt,
-	va_list           args
-)
+	va_list           args)
 {
 	if(rational_logger_mode & SILENT)
 	{
