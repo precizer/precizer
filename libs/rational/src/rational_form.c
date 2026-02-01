@@ -11,7 +11,7 @@
  * @return Pointer to a string
  *
  */
-const char *form(long double val)
+const char *form_real(long double val)
 {
 	static char result[MAX_CHARACTERS];
 	result[0] = '\0';  /* Initialize buffer as empty string */
@@ -122,6 +122,61 @@ const char *form(long double val)
 	}
 
 	return(result);
+}
+
+static const char *form_uintmax_with_commas(
+	uintmax_t val,
+	bool      negative)
+{
+	static char result[MAX_CHARACTERS];
+	char *p = result + sizeof(result);
+	int group = 0;
+
+	*--p = '\0';
+
+	do
+	{
+		if(group == 3)
+		{
+			*--p = ',';
+			group = 0;
+		}
+
+		*--p = (char)('0' + (val % 10U));
+		val /= 10U;
+		group++;
+
+	} while(val > 0U);
+
+	if(negative)
+	{
+		*--p = '-';
+	}
+
+	size_t len = (size_t)((result + sizeof(result)) - p);
+	memmove(result,p,len);
+
+	return result;
+}
+
+const char *form_uintmax(uintmax_t val)
+{
+	return form_uintmax_with_commas(val,false);
+}
+
+const char *form_intmax(intmax_t val)
+{
+	bool negative = val < 0;
+	uintmax_t magnitude = 0U;
+
+	if(negative)
+	{
+		magnitude = (uintmax_t)(-(val + 1)) + 1U;
+	} else {
+		magnitude = (uintmax_t)val;
+	}
+
+	return form_uintmax_with_commas(magnitude,negative);
 }
 
 // Test

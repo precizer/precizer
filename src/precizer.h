@@ -72,6 +72,13 @@
 #define st_ctim st_ctimespec
 #endif
 
+/*
+ * All the macros are here
+ */
+#define slog_show(level,respect_quiet,first_iteration,shown_flag,count_size_of_all_files,...) \
+	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
+	(shown_flag),(count_size_of_all_files),__VA_ARGS__)
+
 // PCRE2 return codes
 typedef enum
 {
@@ -173,7 +180,7 @@ typedef struct Flags {
 } Flags;
 
 /**
- * @brief Compact file metadata structure
+ * @brief Compact Stat file metadata structure
  *
  * Contains essential file metadata including size and timestamps.
  * Provides high precision timing using separate second and nanosecond fields.
@@ -224,7 +231,8 @@ typedef struct {
 	/* DB row ID */
 	sqlite3_int64 ID;
 
-	/* Metadata of a file (man 2 stat) */
+	/* Compact Stat
+	   Metadata of a file (man 2 stat) */
 	CmpctStat saved_stat;
 
 	/* SHA512 metadata */
@@ -327,7 +335,12 @@ typedef struct {
 	/// passed through the ignore option(s)
 	/// This is special protection against accidental
 	/// deletion of information from the database.
-	bool db_clean_ignored;
+	bool db_drop_ignored;
+
+	/// Allow dropping database records for files that are inaccessible
+	/// (permission denied). Disabled by default to avoid accidental loss
+	/// when access rights temporarily change.
+	bool db_drop_inaccessible;
 
 	/// Select database validation level: 'quick' for basic
 	/// structure check, 'full' for comprehensive
@@ -337,10 +350,6 @@ typedef struct {
 	/// Flag that reflects the presence of any changes
 	/// since the last research
 	bool db_primary_file_modified;
-
-	/// The "Warning about using the update option has already been shown"
-	/// option prevents duplicate notifications from being displayed
-	bool the_update_warning_has_already_been_shown;
 
 	/// Recursion depth limit. The depth of the traversal,
 	/// numbered from 0 to N, where a file could be found.
@@ -354,10 +363,17 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **ignore;
 
+	/// Suppress per-file log output for paths matched by --ignore
+	bool quiet_ignored;
+
 	/// Include those relative paths even if
 	/// they were excluded via the --ignore option
 	/// The string array of PCRE2 regular expressions
 	char **include;
+
+	/// True when at least one --include pattern has been specified.
+	/// Used to adjust traversal behavior (e.g., avoid subtree skipping).
+	bool include_specified;
 
 	/// Relative paths whose checksums must never be recalculated
 	/// after the initial write. PCRE2 regular expressions.
@@ -426,6 +442,8 @@ Return sha512sum(
 	unsigned char *,
 	sqlite3_int64 *,
 	SHA512_Context *,
+	bool *,
+	int *,
 	bool *);
 
 size_t file_buffer_memory(void);
@@ -463,11 +481,13 @@ typedef enum FileAccessStatus
 	FILE_ACCESS_DENIED,
 	FILE_NOT_FOUND,
 	FILE_ACCESS_ERROR
+
 } FileAccessStatus;
 
 FileAccessStatus file_check_access(
 	const char *,
-	const size_t);
+	const size_t,
+	const int);
 
 void notify_quit_handler(int);
 
@@ -597,22 +617,49 @@ Return parse_arguments(
 	const int,
 	char **);
 
-void show_relative_path(
+void slog_show_impl(
 	const char *,
-	const Changed *,
+	const char *,
+	int,
+	const char,
+	const bool,
+	bool *,
+	bool *,
+	const bool,
+	const char *,
+	...);
+
+void file_show(
 	const DBrow *,
+	const char *,
 	const CmpctStat *,
 	bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *,
 	bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *);
+	const Changed,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const sqlite3_int64,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const int);
+
+void directory_show(
+	const char *,
+	bool *,
+	bool *,
+	const bool,
+	const bool,
+	const bool);
 
 void show_metadata(
 	LOGMODES,
@@ -631,10 +678,19 @@ void show_checksum_gracefully_interrupted(
 
 Return status_of_changes(void);
 
+/**
+ * @brief Print remembered warning and error lines captured during the run
+ *        (only when --progress is enabled).
+ */
+Return show_remembered_messages(void);
+
 Return verify_directory_access(
 	FTS *,
 	FTSENT *,
-	const char *);
+	const char *,
+	bool *,
+	bool *,
+	const bool);
 
 Return db_check_changes(void);
 

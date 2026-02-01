@@ -841,7 +841,7 @@ perf:
 stat: cloc
 cloc:
 #	@cloc --exclude-dir=$(SNTZ_DIR),$(DBG_DIR),$(PROD_DIR) $(PRTB_DIR) ./src
-	@cloc ./src
+	@cloc $(SRC) libs/sha512/src/ libs/mem/src/ libs/rational/src/ libs/testitall/src/
 
 banner:
 	@printf "Now some tests could be running:\n"

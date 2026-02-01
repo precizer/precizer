@@ -28,12 +28,12 @@ TESTING:The primary database file was just created and doesn't require verificat
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables have been successfully initialized
 TESTING:The primary database named database1.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the database1.db database:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1.db:(?:\x1B\[[0-9;]*m)*
 path1/AAA/BCB/CCC/a.txt
 path1/AAA/ZAW/A/b/c/a_file.txt
 path1/AAA/ZAW/A/b/c/b_file.txt

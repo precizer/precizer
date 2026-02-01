@@ -1,5 +1,5 @@
 \A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-paths=tests/examples/diffs/diff1; database=0015_database_v2.db; db_file_name=0015_database_v2.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=no; compare=no, db-clean-ignored=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
+paths=tests/examples/diffs/diff1; database=0015_database_v2.db; db_file_name=0015_database_v2.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=no; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments.c:\d+:parse_arguments:Argument parsing is complete
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/detect_paths.c:\d+:detect_paths:Checking directory paths provided as arguments
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability.c:\d+:file_availability:Verify that the path tests/examples/diffs/diff1 exists
@@ -26,7 +26,7 @@ paths=tests/examples/diffs/diff1; database=0015_database_v2.db; db_file_name=001
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_get_version.c:\d+:db_get_version:Version number \d+ found in database
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version.c:\d+:db_check_version:The 0015_database_v2.db database file is version \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:The database 0015_database_v2.db file has an outdated version \d+ and requires updating to the version \d+
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Caution! The update will be performed in transaction mode for database safety
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Warning! The update will be performed in transaction mode for database safety
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version \d+ to version \d+ started
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
@@ -39,15 +39,15 @@ paths=tests/examples/diffs/diff1; database=0015_database_v2.db; db_file_name=001
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:Successfully opened database 0015_database_v2.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The primary database and tables do not require initialization
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The primary database named 0015_database_v2.db is ready for operations
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The in-memory runtime_paths_id database successfully attached to the primary database 0015_database_v2.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:Database initialization process completed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_compare.c:\d+:db_compare:Database comparison mode is not enabled. Skipping comparison
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_contains_data.c:\d+:db_contains_data:The database 0015_database_v2.db has already been created previously
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_validate_paths.c:\d+:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_buffer_memory.c:\d+:file_buffer_memory:Bytes that can be allocated for the file buffer: \d+.*
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_relative_path.c:\d+:show_relative_path:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database 0015_database_v2.db
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_relative_path.c:\d+:show_relative_path:File traversal started
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_relative_path.c:\d+:show_relative_path:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB 0015_database_v2.db:(?:\x1B\[[0-9;]*m)*
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_show.c:\d+:show_banners:Update mode enabled for DB 0015_database_v2.db
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_show.c:\d+:show_banners:File traversal started
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_show.c:\d+:show_banners:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0015_database_v2.db:(?:\x1B\[[0-9;]*m)*
 update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/BCB/CCC/a.txt
 update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/ZAW/A/b/c/a_file.txt
 update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/ZAW/D/e/f/b_file.txt

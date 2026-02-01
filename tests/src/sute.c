@@ -38,6 +38,12 @@ int main(void)
 	HEADER("System Testing of precizer");
 	TEST(comprehensive_system_testing,"Comprehensive System testing…");
 
+	/* Mock only tecting in unit-mode so the linker wraps are active */
+	#ifndef EVIL_EMPIRE_OS
+	HEADER("Mock-Based Testing of precizer");
+	TEST(comprehensive_mock_testing,"Comprehensive Mock testing…");
+	#endif
+
 	HEADER("Clean results");
 	RUN(clean,"Temporary data cleanup…");
 

@@ -20,13 +20,36 @@
 -TESTING:Recursion depth limited to: 3
 \+TESTING:The database database3.db has already been created previously
 \+TESTING:The paths written against the database and the paths passed as arguments are completely identical
-\+TESTING:The \Q(?:\x1B\[[0-9;]*m)*\E--update\Q(?:\x1B\[[0-9;]*m)*\E option has been used, so the information about files will be updated against the database database3.db
--TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThese files will be added against the database3.db database:\Q(?:\x1B\[[0-9;]*m)*\E
+\+TESTING:Update mode enabled for DB database3.db
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EItems reported during this traversal against the DB database3.db:\Q(?:\x1B\[[0-9;]*m)*\E
+-add 1/1/2/bbb.txt
+-add 1/1/aaa.txt
 -add 1/2/3/ccc.txt
 -add 1/2/bbb.txt
 -add 1/aaa.txt
-\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThese files were added or changed on disk and will be reflected against the DB database3.db:\Q(?:\x1B\[[0-9;]*m)*\E
+-add 2/1/2/bbb.txt
+-add 2/1/aaa.txt
+-add 2/2/3/ccc.txt
+-add 2/2/bbb.txt
+-add 2/aaa.txt
+-add 3/1/2/bbb.txt
+-add 3/1/aaa.txt
+-add 3/2/3/ccc.txt
+-add 3/2/bbb.txt
+-add 3/aaa.txt
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EChanges reported during this scan against the DB database3.db:\Q(?:\x1B\[[0-9;]*m)*\E
+\+add 1/1/2/3/4/ddd.txt
+\+add 1/1/2/3/ccc.txt
+\+add 1/2/3/4/5/eee.txt
 \+add 1/2/3/4/ddd.txt
+\+add 2/1/2/3/4/ddd.txt
+\+add 2/1/2/3/ccc.txt
+\+add 2/2/3/4/5/eee.txt
+\+add 2/2/3/4/ddd.txt
+\+add 3/1/2/3/4/ddd.txt
+\+add 3/1/2/3/ccc.txt
+\+add 3/2/3/4/5/eee.txt
+\+add 3/2/3/4/ddd.txt
 \+TESTING:Searching for files that no longer exist on the file system…
 \+TESTING:Missing file search completed
 -TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database3.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E

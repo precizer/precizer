@@ -1,22 +1,91 @@
 \APrimary database file name: %DB_NAME%
 Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
+File system traversal initiated to calculate file count and storage usage
+Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+Update mode enabled for DB %DB_NAME%
+File traversal started
+(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+ignore directory diff1/path2/AAA
+ignore directory diff1/path2/AAA/BCB
+ignore directory diff1/path2/AAA/BCB/CCC
+ignore directory diff1/path2/AAA/ZAW
+ignore directory diff1/path2/AAA/ZAW/A
+ignore directory diff1/path2/AAA/ZAW/A/b
+ignore directory diff1/path2/AAA/ZAW/A/b/c
+ignore directory diff1/path2/AAA/ZAW/D
+ignore directory diff1/path2/AAA/ZAW/D/e
+ignore directory diff1/path2/AAA/ZAW/D/e/f
+ignore directory diff2/1
+ignore directory diff2/1/AAA
+ignore directory diff2/1/AAA/BCB
+ignore directory diff2/1/AAA/BCB/CCC
+ignore directory diff2/1/AAA/ZAW
+ignore directory diff2/1/AAA/ZAW/A
+ignore directory diff2/1/AAA/ZAW/A/b
+ignore directory diff2/1/AAA/ZAW/A/b/c
+ignore directory diff2/1/AAA/ZAW/D
+ignore directory diff2/1/AAA/ZAW/D/e
+ignore directory diff2/1/AAA/ZAW/D/e/f
+ignore directory diff2/2
+ignore directory diff2/2/AAA
+ignore directory diff2/2/AAA/BBB
+ignore directory diff2/2/AAA/BBB/CZC
+ignore directory diff2/3
+ignore directory diff2/3/AAA
+ignore directory diff2/3/AAA/BBB
+ignore directory diff2/3/AAA/BBB/CCC
+ignore directory diff2/4
+ignore directory diff2/4/AAA
+ignore directory diff2/4/AAA/BBB
+ignore directory diff2/4/AAA/BBB/CCC
+ignore directory diff2/path1
+ignore directory diff2/path1/AAA
+ignore directory diff2/path1/AAA/BCB
+ignore directory diff2/path1/AAA/BCB/CCC
+ignore directory diff2/path1/AAA/ZAW
+include directory diff2/path1/AAA/ZAW/A
+include directory diff2/path1/AAA/ZAW/A/b
+include directory diff2/path1/AAA/ZAW/A/b/c
+include directory diff2/path1/AAA/ZAW/D
+include directory diff2/path1/AAA/ZAW/D/e
+include directory diff2/path1/AAA/ZAW/D/e/f
+ignore directory diff2/path2
+ignore directory diff2/path2/AAA
+ignore directory diff2/path2/AAA/BCB
+ignore directory diff2/path2/AAA/BCB/CCC
+ignore directory diff2/path2/AAA/ZAW
+ignore directory diff2/path2/AAA/ZAW/A
+ignore directory diff2/path2/AAA/ZAW/A/b
+ignore directory diff2/path2/AAA/ZAW/A/b/c
+File traversal complete
+Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 Searching for files that no longer exist on the file system…
-The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be deleted against the database %DB_NAME%
-(?:\x1B\[[0-9;]*m)*These files are no longer exist or ignored and will be deleted against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-clean ignored diff1/path2/AAA/BCB/CCC/a.txt
-clean ignored diff1/path2/AAA/ZAW/A/b/c/a_file.txt
-clean ignored diff1/path2/AAA/ZAW/D/e/f/b_file.txt
-clean ignored diff2/1/AAA/BCB/CCC/a.txt
-clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt
-clean ignored diff2/2/AAA/BBB/CZC/a.txt
-clean ignored diff2/3/AAA/BBB/CCC/a.txt
-clean ignored diff2/4/AAA/BBB/CCC/a.txt
-clean ignored diff2/path1/AAA/BCB/CCC/a.txt
-clean ignored diff2/path1/AAA/BCB/CCC/b.txt
-clean ignored diff2/path2/AAA/BCB/CCC/a.txt
-clean ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt
+(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+drop ignored diff1/path2/AAA/BCB/CCC/a.txt
+drop ignored diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+drop ignored diff2/1/AAA/BCB/CCC/a.txt
+drop ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt
+drop ignored diff2/2/AAA/BBB/CZC/a.txt
+drop ignored diff2/3/AAA/BBB/CCC/a.txt
+drop ignored diff2/4/AAA/BBB/CCC/a.txt
+drop ignored diff2/path1/AAA/BCB/CCC/a.txt
+drop ignored diff2/path1/AAA/BCB/CCC/b.txt
+drop ignored diff2/path2/AAA/BCB/CCC/a.txt
+drop ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt
 Missing file search completed
+(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
+drop ignored diff1/path2/AAA/BCB/CCC/a.txt
+drop ignored diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+drop ignored diff2/1/AAA/BCB/CCC/a.txt
+drop ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt
+drop ignored diff2/2/AAA/BBB/CZC/a.txt
+drop ignored diff2/3/AAA/BBB/CCC/a.txt
+drop ignored diff2/4/AAA/BBB/CCC/a.txt
+drop ignored diff2/path1/AAA/BCB/CCC/a.txt
+drop ignored diff2/path1/AAA/BCB/CCC/b.txt
+drop ignored diff2/path2/AAA/BCB/CCC/a.txt
+drop ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt
 Start vacuuming the primary database…
 The primary database has been vacuumed
 (?:\x1B\[[0-9;]*m)*The database file %DB_NAME% has been modified since the program was launched(?:\x1B\[[0-9;]*m)*

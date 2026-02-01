@@ -57,10 +57,48 @@ static int compare_by_name(
 	return strcmp((*first)->fts_name,(*second)->fts_name);
 }
 
+static Return match_include_ignore(
+	const char *relative_path,
+	bool       *include,
+	bool       *ignore,
+	bool       *include_showed_once,
+	bool       *ignore_showed_once)
+{
+	*include = false;
+	*ignore = false;
+
+	Include match_include_response = match_include_pattern(relative_path,include_showed_once);
+
+	if(DO_NOT_INCLUDE == match_include_response)
+	{
+		Ignore match_ignore_response = match_ignore_pattern(relative_path,ignore_showed_once);
+
+		if(IGNORE == match_ignore_response)
+		{
+			*ignore = true;
+
+		} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
+
+			slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
+			provide(FAILURE);
+		}
+
+	} else if(FAIL_REGEXP_INCLUDE == match_include_response){
+
+		slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
+		provide(FAILURE);
+
+	} else if(INCLUDE == match_include_response){
+
+		*include = true;
+	}
+
+	provide(SUCCESS);
+}
+
 /**
  *
- * Traverses a directory recursively and returns
- * a struct for each file it encounters
+ * Traverses directories recursively and processes files for the DB
  *
  */
 Return file_list(const bool count_size_of_all_files)
@@ -117,7 +155,6 @@ Return file_list(const bool count_size_of_all_files)
 	if((file_systems = fts_open(config->paths,fts_options,compare_by_name)) == NULL)
 	{
 		slog(ERROR,"fts_open() error\n");
-		fts_close(file_systems);
 		provide(FAILURE);
 	}
 
@@ -171,68 +208,126 @@ Return file_list(const bool count_size_of_all_files)
 			break;
 		}
 
-		if(count_size_of_all_files == false)
+		/* Get absolute path prefix from FTSENT structure and current runtime path */
+		if(p->fts_level == FTS_ROOTLEVEL)
 		{
-			/* Get absolute path prefix from FTSENT structure and current runtime path */
-			if(p->fts_level == FTS_ROOTLEVEL)
+			size_t new_size = (size_t)(p->fts_pathlen + 1) * sizeof(char);
+
+			// All below run once per new path prefix
+			char *tmp = (char *)realloc(runtime_root,new_size);
+
+			if(NULL == tmp)
 			{
-				size_t new_size = (size_t)(p->fts_pathlen + 1) * sizeof(char);
+				report("Memory allocation failed, requested size: %zu bytes",new_size);
+				status = FAILURE;
+				break;
+			} else {
+				runtime_root = tmp;
+			}
 
-				// All below run once per new path prefix
-				char *tmp = (char *)realloc(runtime_root,new_size);
+			// Remember temporary string in long-lasting variable
+			memcpy(runtime_root,p->fts_path,(size_t)p->fts_pathlen);
 
-				if(NULL == tmp)
-				{
-					report("Memory allocation failed, requested size: %zu bytes",new_size);
-					status = FAILURE;
-					break;
-				} else {
-					runtime_root = tmp;
-				}
+			if(p->fts_pathlen > 0)
+			{
+				runtime_root[p->fts_pathlen] = '\0';
+			}
 
-				// Remember temporary string in long-lasting variable
-				strcpy(runtime_root,p->fts_path);
-
-				// Remove unnecessary trailing slash at the end of the directory path
-				remove_trailing_slash(runtime_root);
+			// Remove unnecessary trailing slash at the end of the directory path
+			remove_trailing_slash(runtime_root);
 
 #if 0 // Old multiPATH solution
 
-				// If several paths were passed as arguments,
-				// then the counting of the path prefix index
-				// will start from zero
-				if(SUCCESS != (status = db_get_runtime_root_index(config,
-					runtime_root,
-					&runtime_root_index)))
-				{
-					continue_the_loop = false;
-					break;
-				}
-#endif
+			// If several paths were passed as arguments,
+			// then the counting of the path prefix index
+			// will start from zero
+			if(SUCCESS != (status = db_get_runtime_root_index(config,
+				runtime_root,
+				&runtime_root_index)))
+			{
+				continue_the_loop = false;
+				break;
 			}
+#endif
+		}
+
+		if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
+		{
+			if(p->fts_info == FTS_D)
+			{
+				(void)fts_set(file_systems,p,FTS_SKIP);
+			}
+
+			continue;
 		}
 
 		switch(p->fts_info)
 		{
 			case FTS_D:
 			{
-				if(SUCCESS != verify_directory_access(file_systems,p,runtime_root))
+				const char *relative_path = extract_relative_path(p->fts_path,runtime_root);
+
+				// Captures files explicitly skipped or forced by regexp filters
+				// Ignored with --ignore= or admitted with --include=
+				bool ignore = false;
+
+				// Included with --include=
+				bool include = false;
+
+				status = match_include_ignore(relative_path,
+					&include,
+					&ignore,
+					&include_showed_once,
+					&ignore_showed_once);
+
+				if(SUCCESS != status)
 				{
-					status = FAILURE;
 					continue_the_loop = false;
 					break;
 				}
+
+				if(count_size_of_all_files == false)
+				{
+					directory_show(relative_path,
+						&first_iteration,
+						&at_least_one_file_was_shown,
+						count_size_of_all_files,
+						ignore,
+						include);
+				}
+
+				if(ignore == true)
+				{
+					// Skip ignored directories entirely.
+					if(config->include_specified == false)
+					{
+						(void)fts_set(file_systems,p,FTS_SKIP);
+					}
+					break;
+				}
+
+				if(count_size_of_all_files == false)
+				{
+					// Check access and skip subtrees that are not readable.
+					status = verify_directory_access(file_systems,
+						p,
+						runtime_root,
+						&first_iteration,
+						&at_least_one_file_was_shown,
+						count_size_of_all_files);
+				}
+
+				if(SUCCESS != status)
+				{
+					continue_the_loop = false;
+					break;
+				}
+
 				count_dirs++;
 				break;
 			}
 			case FTS_F:
 			{
-				// Limit recursion to the depth determined in config->maxdepth
-				if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
-				{
-					break;
-				}
-
 				CmpctStat stat = {0};
 
 				(void)stat_copy(p->fts_statp,&stat);
@@ -240,7 +335,7 @@ Return file_list(const bool count_size_of_all_files)
 				total_size_in_bytes += (size_t)stat.st_size;
 				count_files++;
 
-				if(runtime_root == NULL)
+				if(count_size_of_all_files == true)
 				{
 					continue;
 				}
@@ -306,6 +401,50 @@ Return file_list(const bool count_size_of_all_files)
 				        && path_known == true
 				        && has_saved_offset == false;
 
+				// Captures files explicitly skipped or forced by regexp filters
+				// Ignored with --ignore= or admitted with --include=
+				bool ignore = false;
+
+				// Included with --include=
+				bool include = false;
+
+				status = match_include_ignore(relative_path,
+					&include,
+					&ignore,
+					&include_showed_once,
+					&ignore_showed_once);
+
+				if(SUCCESS != status)
+				{
+					continue_the_loop = false;
+					break;
+				}
+
+				// Ensure checksum-locked files are tracked even if matched by ignore pattern
+				if(ignore == true && locked_checksum_file == true && path_known == false)
+				{
+					ignore = false;
+				}
+
+				// Determine read access for non-ignored paths
+				FileAccessStatus access_status = FILE_ACCESS_DENIED;
+				bool is_readable = false;
+
+				/* Check file access */
+				if(ignore == false)
+				{
+					access_status = file_check_access(p->fts_path,(size_t)p->fts_pathlen,R_OK);
+
+					if(access_status == FILE_ACCESS_ERROR)
+					{
+						status = FAILURE;
+						continue_the_loop = false;
+						break;
+					}
+
+					is_readable = (access_status == FILE_ACCESS_ALLOWED);
+				}
+
 				// Used to skip files whose metadata and checksum are already up to date
 				bool unchanged_and_complete = path_known == true
 				        && metadata_identical == true
@@ -370,28 +509,12 @@ Return file_list(const bool count_size_of_all_files)
 					rehashing_from_the_beginning = true;
 				}
 
-				// The file is available for reading
-				FileAccessStatus access_status = FILE_ACCESS_DENIED;
-
-				/* Check file access */
-				access_status = file_check_access(p->fts_path,
-					(size_t)p->fts_pathlen);
-
-				if(access_status == FILE_ACCESS_ERROR)
-				{
-					status = FAILURE;
-					continue_the_loop = false;
-					break;
-				}
-
-				bool is_readable = (access_status == FILE_ACCESS_ALLOWED);
-
 				// Marks zero-length files to avoid unnecessary hashing
 				bool zero_size_file = false;
 
 				/**
 				 * Indicates files that cannot be read/seeks (e.g. sysfs)
-			 	 *
+				 *
 				 * On some special file systems (such as /sys, which has
 				 * the SYSFS_MAGIC constant == 0x62656572), standard
 				 * file operations like fopen, fseek, and lseek
@@ -403,52 +526,15 @@ Return file_list(const bool count_size_of_all_files)
 				 */
 				bool wrong_file_type = false;
 
+				// Read error reported by sha512sum for this path
+				bool read_error = false;
+				// errno snapshot from the read error (valid when read_error is true).
+				int read_errno = 0;
+
 				if(p->fts_statp->st_size == 0)
 				{
 					zero_size_file = true;
 					rehash = false;
-				}
-
-				// Captures files explicitly skipped or forced by regexp filters
-				// Ignored with --ignore= or admitted with --include=
-				bool ignore = false;
-
-				// Included with --include=
-				bool include = false;
-
-				/* PCRE2 regexp to include the file */
-				Include match_include_response = match_include_pattern(relative_path,&include_showed_once);
-
-				if(DO_NOT_INCLUDE == match_include_response)
-				{
-					/* PCRE2 regexp to ignore the file */
-
-					Ignore match_ignore_response = match_ignore_pattern(relative_path,&ignore_showed_once);
-
-					if(IGNORE == match_ignore_response)
-					{
-						ignore = true;
-
-					} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
-						slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
-						status = FAILURE;
-						continue_the_loop = false;
-						break;
-					}
-
-				} else if(FAIL_REGEXP_INCLUDE == match_include_response){
-					slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
-					status = FAILURE;
-					continue_the_loop = false;
-					break;
-				} else if(INCLUDE == match_include_response){
-					include = true;
-				}
-
-				// Ensure checksum-locked files are tracked even if matched by ignore pattern
-				if(ignore == true && locked_checksum_file == true && path_known == false)
-				{
-					ignore = false;
 				}
 
 				// Locked checksum files must not diverge once sealed
@@ -470,100 +556,92 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
-				// Print out of a file name and its changes
-				show_relative_path(relative_path,
-					&metadata_of_scanned_and_saved_files,
-					dbrow,
-					&stat,
-					&first_iteration,
-					&rehashing_from_the_beginning,
-					&ignore,
-					&include,
-					&locked_checksum_file,
-					&lock_checksum_violation,
-					&at_least_one_file_was_shown,
-					&rehash,
-					&count_size_of_all_files,
-					&is_readable,
-					&zero_size_file);
-
-				if(is_readable != true)
-				{
-					break;
-				}
-
-				if(ignore == true)
-				{
-					break;
-				}
-
-				/* When a checksum-locked file changed;
-				   blocks rehash/DB update and flags corruption */
-				if(lock_checksum_violation == true)
-				{
-					lock_checksum_violation_detected = true;
-					break;
-				}
-
 				// Buffer for current file SHA512 digest
 				unsigned char sha512[SHA512_DIGEST_LENGTH] = {0};
 
-				if(rehash == true)
-				{
-					run(sha512sum(p->fts_path,
-						(size_t)p->fts_pathlen,
-						file_buffer,
-						sha512,
-						&offset,
-						&mdContext,
-						&wrong_file_type));
+				bool hash_failed = false;
+				bool hash_interrupted = false;
+				bool locked_checksum_mismatch = false; // Detects corruption when rehashing locked files
 
-					if(TRIUMPH & status)
+				bool should_process = is_readable == true
+				        && ignore == false
+				        && lock_checksum_violation == false;
+
+				if(should_process == true)
+				{
+					if(rehash == true)
 					{
-						/* If the sha512sum has been interrupted smoothly when Ctrl+C */
-						if(offset > 0 && global_interrupt_flag == true)
+						run(sha512sum(p->fts_path,
+							(size_t)p->fts_pathlen,
+							file_buffer,
+							sha512,
+							&offset,
+							&mdContext,
+							&read_error,
+							&read_errno,
+							&wrong_file_type));
+
+						if(TRIUMPH & status)
 						{
-							slog(EVERY,"SHA512 checksum for the file %s has been"
-								" gracefully interrupted at byte: %s\n",
-								relative_path,
-								bkbmbgbtbpbeb((size_t)offset));
+							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
+							if(offset > 0 && global_interrupt_flag == true)
+							{
+								hash_interrupted = true;
+							}
+
+						} else {
+							continue_the_loop = false;
+							hash_failed = true;
 						}
 
 					} else {
-						continue_the_loop = false;
-						break;
+						memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
 					}
 
-				} else {
-					memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
-				}
-
-				bool locked_checksum_mismatch = false; // Detects corruption when rehashing locked files
-
-				if(config->rehash_locked == true && lock_checksum_ready == true
-				        && rehash == true && (TRIUMPH & status)
-				        && wrong_file_type == false && zero_size_file == false
-				        && offset == 0)
-				{
-					if(memcmp(sha512,dbrow->sha512,SHA512_DIGEST_LENGTH) != 0)
+					if(hash_failed == false
+					        && read_error == false
+					        && config->rehash_locked == true
+					        && lock_checksum_ready == true
+					        && rehash == true
+					        && (TRIUMPH & status)
+					        && wrong_file_type == false
+					        && zero_size_file == false
+					        && offset == 0)
 					{
-						locked_checksum_mismatch = true;
+						if(memcmp(sha512,dbrow->sha512,SHA512_DIGEST_LENGTH) != 0)
+						{
+							locked_checksum_mismatch = true;
+						}
 					}
 				}
 
-				if(locked_checksum_mismatch == true)
-				{
-					lock_checksum_violation_detected = true;
-					slog(EVERY|UNDECOR,RED "checksum locked, data corruption detected" RESET " %s\n",relative_path);
-					break;
-				}
+				bool db_inserted = false;
+				bool db_updated = false;
+				bool show_log = false;
 
-				if(path_known == true)
+				if(is_readable != true
+				        || ignore == true
+				        || lock_checksum_violation == true
+				        || hash_failed == true
+				        || read_error == true
+				        || locked_checksum_mismatch == true)
 				{
+					show_log = true;
+
+					/* When a checksum-locked file changed;
+					   blocks rehash/DB update and flags corruption */
+					if((lock_checksum_violation == true || locked_checksum_mismatch == true) && read_error == false)
+					{
+						lock_checksum_violation_detected = true;
+					}
+
+				} else if(path_known == true){
 					/* Update in DB */
 
 					bool allow_locked_update = lock_checksum_violation == false
-					        && (locked_checksum_file == false || config->rehash_locked == true);
+					        && (locked_checksum_file == false
+					        || config->rehash_locked == true
+					        || has_saved_offset == true);
 
 					bool should_update_db = path_known == true
 					        && allow_locked_update == true
@@ -589,9 +667,11 @@ Return file_list(const bool count_size_of_all_files)
 								continue_the_loop = false;
 								break;
 							}
+							db_updated = true;
 						}
 					}
 
+					show_log = true;
 				} else {
 
 					/* Insert into DB */
@@ -621,22 +701,70 @@ Return file_list(const bool count_size_of_all_files)
 							continue_the_loop = false;
 							break;
 						}
+						db_inserted = true;
 					}
+
+					show_log = true;
 				}
 
-				/**
-				 * Interrupt the loop smoothly
-				 * Interrupt when Ctrl+C
-				 */
-				if(global_interrupt_flag == true)
+				if(show_log == true)
 				{
-					break;
+					// Print out of a file name and its changes
+					file_show(dbrow,
+						relative_path,
+						&stat,
+						&first_iteration,
+						&at_least_one_file_was_shown,
+						metadata_of_scanned_and_saved_files,
+						rehashing_from_the_beginning,
+						ignore,
+						include,
+						locked_checksum_file,
+						lock_checksum_violation,
+						locked_checksum_mismatch,
+						hash_interrupted,
+						offset,
+						rehash,
+						count_size_of_all_files,
+						is_readable,
+						zero_size_file,
+						db_inserted,
+						db_updated,
+						read_error,
+						read_errno);
 				}
+
+				break;
 			}
-			break;
 			case FTS_SL:
 				count_symlnks++;
 				break;
+			case FTS_DNR:
+			case FTS_ERR:
+			case FTS_NS:
+			{
+				if(count_size_of_all_files == true)
+				{
+					break;
+				}
+
+				const char *relative_path = extract_relative_path(p->fts_path,runtime_root);
+
+				if(p->fts_info == FTS_DNR)
+				{
+					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,&at_least_one_file_was_shown,count_size_of_all_files,"inaccessible directory %s\n",relative_path);
+
+				} else if(p->fts_info == FTS_NS){
+
+					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,&at_least_one_file_was_shown,count_size_of_all_files,"cannot stat \"%s\" when reading %s\n",strerror(p->fts_errno),relative_path);
+
+				} else {
+
+					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,&at_least_one_file_was_shown,count_size_of_all_files,"fts error \"%s\" when reading %s\n",strerror(p->fts_errno),relative_path);
+				}
+
+				break;
+			}
 			default:
 				break;
 		}
@@ -661,7 +789,7 @@ Return file_list(const bool count_size_of_all_files)
 
 	if(lock_checksum_violation_detected == true)
 	{
-		slog(ERROR,BOLD "Caution! Data corruption detected for checksum-locked file!" RESET "\n");
+		slog(EVERY,BOLD "Warning! Data corruption detected for checksum-locked file!" RESET "\n");
 
 		if(SUCCESS == status)
 		{

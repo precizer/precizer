@@ -30,7 +30,7 @@ Return test0026(void)
 		fclose(f);
 
 		const size_t len = strlen(abs_path);
-		FileAccessStatus rc = file_check_access(abs_path,len);
+		FileAccessStatus rc = file_check_access(abs_path,len,R_OK);
 		ASSERT(rc == FILE_ACCESS_ALLOWED);
 
 		remove(abs_path);
@@ -55,7 +55,7 @@ Return test0026(void)
 		config->running_dir_size = (long int)strlen(tmpdir) + 1; // includes terminating '\0' like determine_running_dir()
 
 		const size_t len = strlen(relative_name);
-		FileAccessStatus rc = file_check_access(relative_name,len);
+		FileAccessStatus rc = file_check_access(relative_name,len,R_OK);
 
 		free(config->running_dir);
 		config->running_dir = prev_dir;
@@ -73,7 +73,7 @@ Return test0026(void)
 		remove(missing_path); // ensure absence
 
 		const size_t len = strlen(missing_path);
-		FileAccessStatus rc = file_check_access(missing_path,len);
+		FileAccessStatus rc = file_check_access(missing_path,len,R_OK);
 
 		ASSERT(rc == FILE_NOT_FOUND);
 	}
@@ -99,7 +99,7 @@ Return test0026(void)
 		ASSERT(chmod(locked_dir,0000) == 0);
 
 		const size_t len = strlen(locked_file_path);
-		FileAccessStatus rc = file_check_access(locked_file_path,len);
+		FileAccessStatus rc = file_check_access(locked_file_path,len,R_OK);
 
 		/* restore permissions for cleanup */
 		ASSERT(chmod(locked_dir,0700) == 0);

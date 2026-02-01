@@ -17,7 +17,10 @@ Return test0020_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--update --database=nonexistent_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,ALLOW_BOTH));
+	const char *arguments = "--update --database=nonexistent_directory/database1.db "
+	        "tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -48,7 +51,10 @@ Return test0020_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--update --database=nonexistent_database1.db tests/examples/diffs/diff1",result,FAILURE,ALLOW_BOTH));
+	const char *arguments = "--update --database=nonexistent_database1.db "
+	        "tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -79,13 +85,16 @@ Return test0020_3(void)
 	        "mkdir write_protected_directory && "
 	        "chmod a-rwx write_protected_directory";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0020_003.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--database=write_protected_directory/database1.db tests/examples/diffs/diff1",result,FAILURE,ALLOW_BOTH));
+	const char *arguments = "--database=write_protected_directory/database1.db "
+	        "tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -96,7 +105,11 @@ Return test0020_3(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && chmod a+rwx write_protected_directory && rm -rf write_protected_directory",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "chmod a+rwx write_protected_directory && "
+	        "rm -rf write_protected_directory";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -116,17 +129,25 @@ Return test0020_4(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--database=write_protected_database1.db tests/examples/diffs/diff1",NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == runit("--database=database2.db tests/examples/diffs/diff2",NULL,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--database=write_protected_database1.db "
+	        "tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--database=database2.db tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *command = "cd ${TMPDIR} && "
 	        "chmod a-rwx write_protected_database1.db";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0020_004.txt";
 
-	ASSERT(SUCCESS == runit("--compare write_protected_database1.db database2.db",result,FAILURE,ALLOW_BOTH));
+	arguments = "--compare write_protected_database1.db database2.db";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -137,7 +158,10 @@ Return test0020_4(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm database2.db",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "rm database2.db";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -159,7 +183,10 @@ Return test0020_5(void)
 
 	const char *filename = "templates/0020_005.txt";
 
-	ASSERT(SUCCESS == runit("--update --database=write_protected_database1.db tests/examples/diffs/diff1",result,FAILURE,ALLOW_BOTH));
+	const char *arguments = "--update --database=write_protected_database1.db "
+	        "tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -170,7 +197,10 @@ Return test0020_5(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm -f write_protected_database1.db",COMPLETED,ALLOW_BOTH));
+	const char *command = "cd ${TMPDIR} && "
+	        "rm -f write_protected_database1.db";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -192,8 +222,13 @@ Return test0020_6(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == runit("--update --database=database1.db tests/examples/diffs/diff2",result,WARNING,ALLOW_BOTH));
+	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--update --database=database1.db tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -224,7 +259,10 @@ Return test0020_7(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--update --force --database=database1.db tests/examples/diffs/diff2",result,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--update --force --database=database1.db "
+	        "tests/examples/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -235,7 +273,10 @@ Return test0020_7(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && rm -f database1.db",COMPLETED,ALLOW_BOTH));
+	const char *command = "cd ${TMPDIR} && "
+	        "rm -f database1.db";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }

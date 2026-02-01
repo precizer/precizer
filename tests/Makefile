@@ -29,6 +29,8 @@ LIBS = testitall mem sha512 rational sqlite3 xdiff
 
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+# cmocka is used in sanitizer/coverage builds.
+CMOCKA_LDLIBS = -lcmocka
 
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
@@ -79,6 +81,15 @@ WFLAGS += -Wsuggest-attribute=pure
 WFLAGS += -Wsuggest-attribute=noreturn
 WFLAGS += -Wsuggest-attribute=format
 WFLAGS += -Wmissing-format-attribute
+endif
+
+# Link-time wrappers for cmocka tests (add more functions as needed).
+WRAPFUNCS = fopen fread ferror
+ifeq ($(UNAME_S),Darwin)
+# macOS with  lld supports -wrap
+WRAPFLAGS =
+else
+WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
 endif
 
 #
@@ -175,7 +186,7 @@ precizer-coverage:
 coverage: coverage-html
 
 $(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage
-	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) -o $(COV_EXE) $^ $(LDLIBS)
+	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) $(WRAPFLAGS) -o $(COV_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
 	@echo "$@ linked."
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
@@ -210,7 +221,7 @@ sanitize: hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize
-	@$(CC) $(SNTZ_LIBS) $(SNTZ_LDFLAGS) $(SNTZ_DYNLIB) -o $(SNTZ_EXE) $^ $(LDLIBS)
+	@$(CC) $(SNTZ_LIBS) $(SNTZ_LDFLAGS) $(SNTZ_DYNLIB) $(WRAPFLAGS) -o $(SNTZ_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
 	@echo "$@ linked."
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
@@ -234,7 +245,7 @@ debug: hugetestfile $(DBG_EXE)
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug
-	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) -o $(DBG_EXE) $^ $(LDLIBS)
+	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
