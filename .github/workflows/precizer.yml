@@ -7,7 +7,7 @@ on:
 
 jobs:
   get_tag_info:
-    name: Get annotated tag message
+    name: Get tag info & create release
     runs-on: ubuntu-24.04
 
     outputs:
@@ -32,14 +32,22 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
+      - name: Create GitHub Release with gh CLI
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --title "v${{ github.ref_name }}" \
+            --notes "${{ steps.tag_message.outputs.body }}" \
+            --draft
+
   build_linux_x86_64:
-    name: Build & release Linux x86_64
+    name: Build & attach Linux x86_64
     runs-on: ubuntu-24.04
     needs: get_tag_info
 
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
-      BODY: ${{ needs.get_tag_info.outputs.body }}
 
     steps:
       - name: Checkout repository
@@ -62,15 +70,13 @@ jobs:
       - name: Run tests (Linux x86_64)
         run: make tests
 
-      - name: Create GitHub Release with gh CLI
+      - name: Upload Linux x86_64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} \
+          gh release upload ${{ github.ref_name }} \
             "precizer_linux_x86_64_portable.zip" \
-            --title "v${{ github.ref_name }}" \
-            --notes "${{ env.BODY }}" \
-            --draft
+            --clobber
 
   build_linux_arm64:
     name: Build & attach Linux arm64
