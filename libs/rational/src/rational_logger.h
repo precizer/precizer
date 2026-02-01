@@ -73,7 +73,7 @@ char *rational_reconvert(int);
  */
 __attribute__((weak)) void rational_remember(
 	const char *message,
-	const int line_len);
+	const int  line_len);
 
 void rational_logger
 (
