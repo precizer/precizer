@@ -605,8 +605,7 @@ Return file_list(const bool count_size_of_all_files)
 					        && (TRIUMPH & status)
 					        && wrong_file_type == false
 					        && zero_size_file == false
-					        && offset == 0
-									&& config->dry_run == false)
+					        && offset == 0)
 					{
 						if(memcmp(sha512,dbrow->sha512,SHA512_DIGEST_LENGTH) != 0)
 						{
