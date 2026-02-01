@@ -152,8 +152,8 @@ Return sha512sum(
 	free(absolute_path);
 
 	if(SUCCESS == status
-			&& config->dry_run == false
-			&& loop_was_interrupted == false)
+	        && config->dry_run == false
+	        && loop_was_interrupted == false)
 	{
 		*offset = 0;
 

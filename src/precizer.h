@@ -77,7 +77,7 @@
  */
 #define slog_show(level,respect_quiet,first_iteration,shown_flag,count_size_of_all_files,...) \
 	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
-		(shown_flag),(count_size_of_all_files),__VA_ARGS__)
+	(shown_flag),(count_size_of_all_files),__VA_ARGS__)
 
 // PCRE2 return codes
 typedef enum

@@ -301,7 +301,8 @@ void file_show(
 
 		/* Update existing */
 
-		if(locked_checksum_mismatch == true){
+		if(locked_checksum_mismatch == true)
+		{
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,at_least_one_file_was_shown,count_size_of_all_files,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
 
