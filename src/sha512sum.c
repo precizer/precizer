@@ -21,12 +21,6 @@ Return sha512sum(
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
-	// In --dry-run mode do not touch the filesystem
-	if(config->dry_run == true)
-	{
-		provide(status);
-	}
-
 	if(file_buffer->length == 0)
 	{
 		slog(ERROR,"Invalid buffer size: %ld bytes\n",file_buffer->length);
@@ -107,43 +101,46 @@ Return sha512sum(
 		}
 	}
 
-	unsigned char *buffer = rawdata(file_buffer);
-
-	size_t len = 0;
-
-	while(true)
+	if(config->dry_run == false)
 	{
-		/* Interrupt the loop smoothly */
-		/* Interrupt when Ctrl+C */
-		if(global_interrupt_flag == true)
-		{
-			loop_was_interrupted = true;
-			break;
-		}
+		unsigned char *buffer = rawdata(file_buffer);
 
-		len = fread(buffer,sizeof(unsigned char),file_buffer->length,fileptr);
+		size_t len = 0;
 
-		if(len == 0)
+		while(true)
 		{
-			if(ferror(fileptr))
+			/* Interrupt the loop smoothly */
+			/* Interrupt when Ctrl+C */
+			if(global_interrupt_flag == true)
 			{
-				*read_error = true;
-				*read_errno = errno;
-			}
-
-			break;
-		}
-
-		if(SUCCESS == status)
-		{
-			if(sha512_update(mdContext,buffer,len) == 1)
-			{
-				slog(ERROR,"SHA512 update failed\n");
-				status = FAILURE;
+				loop_was_interrupted = true;
 				break;
 			}
 
-			*offset += (sqlite3_int64)len;
+			len = fread(buffer,sizeof(unsigned char),file_buffer->length,fileptr);
+
+			if(len == 0)
+			{
+				if(ferror(fileptr))
+				{
+					*read_error = true;
+					*read_errno = errno;
+				}
+
+				break;
+			}
+
+			if(SUCCESS == status)
+			{
+				if(sha512_update(mdContext,buffer,len) == 1)
+				{
+					slog(ERROR,"SHA512 update failed\n");
+					status = FAILURE;
+					break;
+				}
+
+				*offset += (sqlite3_int64)len;
+			}
 		}
 	}
 
@@ -154,17 +151,16 @@ Return sha512sum(
 
 	free(absolute_path);
 
-	if(SUCCESS == status)
+	if(SUCCESS == status
+			&& config->dry_run == false
+			&& loop_was_interrupted == false)
 	{
-		if(loop_was_interrupted == false)
-		{
-			*offset = 0;
+		*offset = 0;
 
-			if(sha512_final(mdContext,sha512) == 1)
-			{
-				slog(ERROR,"SHA512 finalization failed\n");
-				status = FAILURE;
-			}
+		if(sha512_final(mdContext,sha512) == 1)
+		{
+			slog(ERROR,"SHA512 finalization failed\n");
+			status = FAILURE;
 		}
 	}
 
