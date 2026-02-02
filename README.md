@@ -139,6 +139,23 @@ Download [https://github.com/precizer/precizer/releases/latest/](https://github.
 
 The release packages contain portable executables in a zip archive.
 
+### Download, unzip, and run
+
+A universal approach to automating upgrades to newer versions
+
+```sh
+# Automation for downloading and unarchiving new versions
+
+# Download
+wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+
+# Extract the archive
+unzip -jqo precizer.zip '*/precizer' -d ./
+
+# Run
+./precizer --version
+```
+
 ### Technical details of the portable build
 
 * The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.

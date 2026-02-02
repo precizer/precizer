@@ -87,6 +87,22 @@ abc/def/aaa.txt
 
 Пакеты содержат переносимые исполняемые бинарные файлы в архиве zip (portable‑версии).
 
+### Скачать, распаковать и запустить
+Универсальный способ для автоматизации обновлений на новые версии
+
+```sh
+# Automation for downloading and unarchiving new versions
+
+# Download
+wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+
+# Extract the archive
+unzip -jqo precizer.zip '*/precizer' -d ./
+
+# Run
+./precizer --version
+```
+
 ### Технические детали portable сборки
 
 * Готовая Linux сборка представляет собой один исполняемый, статически слинкованный бинарный файл в формате ELF, не привязанный к какому-либо определённому дистрибутиву. Файл может быть запущен сразу, практически на любом дистрибутиве Linux и не требует использования внешних, динамически подгружаемых библиотек.
