@@ -23,6 +23,7 @@ RUN set -eux; \
       sqlite sqlite-devel \
       glibc-devel \
       pcre2 pcre2-devel \
+      libcmocka libcmocka-devel \
       upx; \
     dnf -y --enablerepo=devel install pcre2-static glibc-static; \
     dnf -y clean all; \
