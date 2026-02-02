@@ -494,7 +494,7 @@ tests-debug: debug
 #
 
 # Defaults for high-level docker targets
-DOCKER_DEFAULT_OS    ?= gentoo
+DOCKER_DEFAULT_OS    ?= ubuntu
 DOCKER_DEFAULT_BUILD ?= production
 
 # You can override these:
