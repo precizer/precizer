@@ -13,6 +13,7 @@ RUN set -eux; \
       llvm-dev \
       libpcre2-dev \
       libsqlite3-dev \
+      libcmocka0 libcmocka-dev \
       upx-ucl; \
     rm -rf /var/lib/apt/lists/*;
 
