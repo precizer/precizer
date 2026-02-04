@@ -483,10 +483,10 @@ clean-asm:
 
 test: tests
 tests: tests-sanitize
-tests-sanitize: sanitize
+tests-sanitize:
 	@$(MAKE) -s -C $(TESTDIR) sanitize
 
-tests-debug: debug
+tests-debug:
 	@$(MAKE) -s -C $(TESTDIR) debug
 
 #

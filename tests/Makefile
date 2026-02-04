@@ -200,7 +200,7 @@ $(COV_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 $(COV_OBJDIR):
 	@mkdir -p "$(COV_OBJDIR)"
 
-coverage-report: $(COV_EXE)
+coverage-report: precizer-coverage $(COV_EXE)
 	@echo "Generating coverage report..."
 	./$(COV_EXE)
 	@echo "Coverage run finished. Inspect .gcda/.gcno outputs for details"
@@ -217,7 +217,7 @@ coverage-html: coverage-report
 precizer-sanitize:
 	@$(MAKE) -s -C ../ sanitize
 
-sanitize: hugetestfile $(SNTZ_EXE)
+sanitize: precizer-sanitize hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize
@@ -241,7 +241,7 @@ $(SNTZ_OBJDIR):
 precizer-debug:
 	@$(MAKE) -s -C ../ debug
 
-debug: hugetestfile $(DBG_EXE)
+debug: precizer-debug hugetestfile $(DBG_EXE)
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug
