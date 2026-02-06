@@ -13,7 +13,7 @@
  */
 static Return convert_blob_to_v4_stat(
 	const CmpctStat_v1 *source,
-	CmpctStat *destination)
+	CmpctStat          *destination)
 {
 	if(source == NULL || destination == NULL)
 	{
@@ -44,7 +44,7 @@ static Return convert_blob_to_v4_stat(
  */
 static Return process_row(
 	sqlite3_stmt *stmt,
-	bool *db_file_modified)
+	bool         *db_file_modified)
 {
 	Return status = SUCCESS;
 	int rc = SQLITE_OK;
@@ -120,7 +120,7 @@ static Return process_row(
  */
 static Return process_database(
 	sqlite3 *db,
-	bool *db_file_modified)
+	bool    *db_file_modified)
 {
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
