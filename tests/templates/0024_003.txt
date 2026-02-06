@@ -34,7 +34,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File system traversal initiated to calculate file count and storage usage
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1.db:(?:\x1B\[[0-9;]*m)*
@@ -52,7 +52,8 @@ add path_with_apo'strophe/path2/AAA/BCB/CCC/a.txt
 add path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe.txt
 add path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
@@ -96,7 +97,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File system traversal initiated to calculate file count and storage usage
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database2.db:(?:\x1B\[[0-9;]*m)*
@@ -114,7 +115,8 @@ add path_with_apo'strophe/path2/AAA/BCB/CCC/a.txt
 add path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe.txt
 add path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
@@ -153,17 +155,17 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database1.db database file is version 3
-TESTING:The database database1.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database1.db database file is version 4
+TESTING:The database database1.db is on version 4 and does not require any upgrades
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
 TESTING:Starting database file database2.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database2.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database2.db database file is version 3
-TESTING:The database database2.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database2.db database file is version 4
+TESTING:The database database2.db is on version 4 and does not require any upgrades
 TESTING:(?:\x1B\[[0-9;]*m)*All files are identical against database1.db and database2.db(?:\x1B\[[0-9;]*m)*
 TESTING:(?:\x1B\[[0-9;]*m)*All SHA512 checksums of files are identical against database1.db and database2.db(?:\x1B\[[0-9;]*m)*
 TESTING:(?:\x1B\[[0-9;]*m)*The databases database1.db and database2.db are absolutely equal(?:\x1B\[[0-9;]*m)*

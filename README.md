@@ -77,6 +77,39 @@ abc/def/aaa.txt
 
 This ensures that even when files reside in different mount points or sources, they can still be compared accurately under the same relative paths and their respective checksums.
 
+## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
+
+Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
+
+* Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
+* Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
+* macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
+
+The release packages contain portable executables in a zip archive.
+
+### Download, unzip, and run
+
+A universal approach to automating upgrades to newer versions
+
+```sh
+# Automation for downloading and unarchiving new versions
+
+# Download
+wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+
+# Extract the archive
+unzip -jqo precizer.zip '*/precizer' -d ./
+
+# Run
+./precizer --version
+```
+
+### Technical details of the portable build
+
+* The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.
+* The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. The file can be extracted from the archive and run directly.
+* Static linking is not supported on macOS, so running the downloaded application requires the following libraries to be available on the system: sqlite3, pcre2, argp and fts.
+
 ## TECHNICAL DETAILS
 
 Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its *Disaster Recovery* copy.
@@ -113,7 +146,14 @@ The following scenario illustrates the issue:
 * The `--quiet-ignored` option suppresses per-file log lines for paths filtered by `--ignore` and `--include`. This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use; other warnings and errors remain visible.
 * There is an option to consider not only the file size when updating the database but also the file’s creation or modification timestamps. This means that any change in file metadata will trigger an SHA512 checksum recalculation and update in the database. For example, if a file’s ctime changes but its size remains the same, the checksum will NOT be recalculated if only the `--update` parameter is used. To force checksum recalculation for such files `--watch-timestamps` should be added. This option is disabled by default because ctime (like mtime) can change frequently due to commands like `chmod` or `chown`, even when the file’s content remains the same.
 * precizer can be used as a security monitoring tool, detecting unauthorized file modifications where contents might have changed while metadata remains untouched.
-* The program never modifies, deletes, moves, or copies any files or directories it processes. All it does is list files, compute their checksums, and update them in the database. All changes are strictly confined to the database.
+* Security:
+  * The program never modifies, deletes, moves, or copies any files or directories it processes.
+  * The program enumerates files, computes SHA512 checksums, and updates a local database; all changes are strictly confined to the database.
+  * The database does not store file contents. It stores relative paths, checksums, and metadata such as size and timestamps (ctime/mtime).
+  * The program does not open network sockets.
+  * The program does not transmit data.
+  * The program does not require privileged execution and does not use the SUID bit or other unsafe permission bits.
+  * No functionality is provided for privilege escalation or other security violations.
 * Performance is primarily limited by disk subsystem speed. Each file is read byte by byte, and its SHA512 checksum is computed.
 * The program runs very fast thanks to SQLite and FTS libraries ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).
 * Command-line argument parsing is handled via the ARGP library.
@@ -128,39 +168,6 @@ The following scenario illustrates the issue:
 * Author contact options:
   * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
   * [Bug reports and feature requests](https://github.com/precizer/precizer/issues/new).
-
-## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
-
-Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
-
-* Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
-* Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
-* macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
-
-The release packages contain portable executables in a zip archive.
-
-### Download, unzip, and run
-
-A universal approach to automating upgrades to newer versions
-
-```sh
-# Automation for downloading and unarchiving new versions
-
-# Download
-wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-
-# Extract the archive
-unzip -jqo precizer.zip '*/precizer' -d ./
-
-# Run
-./precizer --version
-```
-
-### Technical details of the portable build
-
-* The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.
-* The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. The file can be extracted from the archive and run directly.
-* Static linking is not supported on macOS, so running the downloaded application requires the following libraries to be available on the system: sqlite3, pcre2, argp and fts.
 
 ## BUILD & INSTALLATION
 
@@ -417,7 +424,7 @@ Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
 The **--update** option has been used, so the information about files will be updated against the database database1.db  
 File traversal started  
 **These files have been added or changed and those changes will be reflected against the DB database1.db:**  
-1/AAA/BCB/CCC/a.txt changed size & ctime & mtime rehashed  
+1/AAA/BCB/CCC/a.txt changed lsize & ctime & mtime rehashed  
 1/AAA/BCB/CCC/c.txt added  
 File traversal complete  
 Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
@@ -428,6 +435,12 @@ The primary database has been vacuumed
 **The database file database1.db has been modified since the program was launched**  
 The precizer completed its execution without any issues  
 </sub>
+
+Change labels in output mean:
+- `lsize` — logical file size in bytes (`st_size`)
+- `asize` — allocated size on disk in bytes (`st_blocks * 512`)
+- `ctime` — metadata/status change time
+- `mtime` — file content modification time
 
 Every time **precizer** runs, it traverses the file system and then checks whether a record for a specific file already exists in the database. In other words, the program prioritizes the current state of the file system on disk.
 
@@ -545,7 +558,7 @@ The precizer completed its execution without any issues
 
 Example of a Path to Ignore. To specify a pattern for ignoring files or directories, PCRE2 regular expressions can be used. **Note:** All paths in the regular expression must be specified as **relative**.
 
-PCRE2 regular expressions can be tested and validated using [https://regex101.com/](https://regex101.com/).
+PCRE2 regular expressions can be tested and validated using https://regex101.com
 
 To illustrate how a relative path looks, run a directory traversal without the `--ignore` option and check how the terminal displays the relative paths recorded in the database:
 
@@ -707,7 +720,7 @@ This variant uses regular expressions.
 
 PCRE2 regular expressions for relative paths that need to be included. The specified relative paths will be included even if they were excluded using one or more `--ignore` parameters. Multiple regular expressions can be specified using `--include`.
 
-PCRE2 regular expressions can be checked and tested using [https://regex101.com/](https://regex101.com/).
+PCRE2 regular expressions can be checked and tested using https://regex101.com
 
 The DB will be cleaned of references to files matching the regular expressions provided in the `--ignore` arguments: `"^.*/path2/.*"` and `"diff2/.*"`, but paths matching the patterns in `--include` will remain in the database.
 

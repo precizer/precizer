@@ -30,6 +30,8 @@ Return db_upgrade(
 	}
 
 	/* Sequentially upgrade through versions */
+
+	/* This legacy can be removed in 2034 (10-year Long-Term Support) */
 	if(*db_version < 1)
 	{
 		slog(TRACE,"Migration from version 0 to version 1 started\n");
@@ -47,6 +49,7 @@ Return db_upgrade(
 		}
 	}
 
+	/* This legacy can be removed in 2035 (10-year Long-Term Support) */
 	if(SUCCESS == status && *db_version < 2)
 	{
 		slog(TRACE,"Migration from version 1 to version 2 started\n");
@@ -64,6 +67,7 @@ Return db_upgrade(
 		}
 	}
 
+	/* This legacy can be removed in 2035 (10-year Long-Term Support) */
 	if(SUCCESS == status && *db_version < 3)
 	{
 		slog(TRACE,"Migration from version 2 to version 3 started\n");
@@ -78,6 +82,24 @@ Return db_upgrade(
 		if(SUCCESS == status)
 		{
 			slog(TRACE,"Migration from version 2 to version 3 completed\n");
+		}
+	}
+
+	/* This legacy can be removed in 2036 (10-year Long-Term Support) */
+	if(SUCCESS == status && *db_version < 4)
+	{
+		slog(TRACE,"Migration from version 3 to version 4 started\n");
+		status = db_migrate_from_3_to_4(db_file_path);
+
+		if(SUCCESS == status)
+		{
+			slog(TRACE,"Store the database version 4 in the metadata table\n");
+			status = db_specify_version(db_file_path,4);
+		}
+
+		if(SUCCESS == status)
+		{
+			slog(TRACE,"Migration from version 3 to version 4 completed\n");
 		}
 	}
 

@@ -65,11 +65,11 @@ static inline Byte tobyte(const size_t bytes)
 }
 
 /**
+ * @brief Append one non-zero unit to the resulting size string.
  *
- * @brief The function for convert bytes to a readable date.
- * The function generates a string if the structure element
- * contains data greater than zero.
- *
+ * @param result Output string being built.
+ * @param bytes Unit value to append when it is non-zero.
+ * @param suffix Unit suffix (B, KiB, MiB, GiB, TiB, PiB, EiB).
  */
 static void catbyte(
 	char *const       result,
@@ -92,6 +92,8 @@ static void catbyte(
 }
 
 /**
+ * @brief Convert bytes to a human-readable size string.
+ *
  * @details Convert number of bytes to human-readable string:
  * B   - Byte
  * KiB - Kibibyte
@@ -101,8 +103,15 @@ static void catbyte(
  * PiB - Pebibyte
  * EiB - Exbibyte
  *
+ * @param bytes Number of bytes to format.
+ * @param format Output style:
+ *               - FULL_VIEW: show all non-zero units.
+ *               - MAJOR_VIEW: show only the highest non-zero unit.
+ * @return Pointer to a static buffer with formatted text.
  */
-char *bkbmbgbtbpbeb(const size_t bytes)
+char *bkbmbgbtbpbeb(
+	const size_t     bytes,
+	const ByteFormat format)
 {
 	// Zero out a static memory area with a string array
 	static char result[MAX_CHARACTERS] = {0};
@@ -118,13 +127,34 @@ char *bkbmbgbtbpbeb(const size_t bytes)
 
 	Byte byte = tobyte(bytes);
 
-	catbyte(result,byte.exbibytes,"EiB");
-	catbyte(result,byte.pebibytes,"PiB");
-	catbyte(result,byte.tebibytes,"TiB");
-	catbyte(result,byte.gibibytes,"GiB");
-	catbyte(result,byte.mebibytes,"MiB");
-	catbyte(result,byte.kibibytes,"KiB");
-	catbyte(result,byte.bytes,"B");
+	if(format == MAJOR_VIEW)
+	{
+		if(byte.exbibytes > 0ULL)
+		{
+			catbyte(result,byte.exbibytes,"EiB");
+		} else if(byte.pebibytes > 0ULL){
+			catbyte(result,byte.pebibytes,"PiB");
+		} else if(byte.tebibytes > 0ULL){
+			catbyte(result,byte.tebibytes,"TiB");
+		} else if(byte.gibibytes > 0ULL){
+			catbyte(result,byte.gibibytes,"GiB");
+		} else if(byte.mebibytes > 0ULL){
+			catbyte(result,byte.mebibytes,"MiB");
+		} else if(byte.kibibytes > 0ULL){
+			catbyte(result,byte.kibibytes,"KiB");
+		} else {
+			catbyte(result,byte.bytes,"B");
+		}
+
+	} else {
+		catbyte(result,byte.exbibytes,"EiB");
+		catbyte(result,byte.pebibytes,"PiB");
+		catbyte(result,byte.tebibytes,"TiB");
+		catbyte(result,byte.gibibytes,"GiB");
+		catbyte(result,byte.mebibytes,"MiB");
+		catbyte(result,byte.kibibytes,"KiB");
+		catbyte(result,byte.bytes,"B");
+	}
 
 	// Remove space at the end of a line
 	result[strlen(result) - 1ULL] = '\0';
@@ -138,7 +168,7 @@ char *bkbmbgbtbpbeb(const size_t bytes)
 int main(void)
 {
 	const size_t bytes = 4617322122555958282ULL;
-	printf("%s\n",bkbmbgbtbpbeb(bytes));
+	printf("%s\n",bkbmbgbtbpbeb(bytes,FULL_VIEW));
 	return 0;
 }
 #endif

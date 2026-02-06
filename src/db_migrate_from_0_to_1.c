@@ -1,9 +1,12 @@
 /**
  * @file db_migrate_from_0_to_1.c
- * @brief
+ * @brief Migration to database version 1
+ *
+ * This legacy can be removed in 2034 (10-year Long-Term Support)
  */
 
 #include "precizer.h"
+#include "db_upgrade.h"
 
 #define STAT64_SIZE 144
 #define STAT64_ST_SIZE_OFF 48
@@ -18,7 +21,7 @@
  * @param stat Pointer to compact stat to validate.
  * @return SUCCESS if fields look sane, FAILURE otherwise.
  */
-static Return cmpct_stat_is_sane(const CmpctStat *stat)
+static Return cmpct_stat_is_sane(const CmpctStat_v1 *stat)
 {
 	if(NULL == stat)
 	{
@@ -59,7 +62,7 @@ static Return cmpct_stat_is_sane(const CmpctStat *stat)
  * @brief Convert a glibc/Linux stat blob into a compact stat.
  *
  * The blob format corresponds to 64-bit glibc stat layout (144 bytes) used in legacy DB v0.
- * Extracts st_size, st_mtim, st_ctim by fixed offsets and fills CmpctStat.
+ * Extracts st_size, st_mtim, st_ctim by fixed offsets and fills CmpctStat_v1.
  *
  * @param blob Pointer to raw blob data.
  * @param blob_size Size of the blob in bytes.
@@ -69,7 +72,7 @@ static Return cmpct_stat_is_sane(const CmpctStat *stat)
 static Return populate_from_glibc_stat_blob(
 	const void *blob,
 	const int  blob_size,
-	CmpctStat  *new_stat)
+	CmpctStat_v1  *new_stat)
 {
 	if(blob_size < STAT64_SIZE)
 	{
@@ -112,7 +115,7 @@ static Return process_row(
 	int rc = SQLITE_OK;
 
 	/* Allocate memory for new blob data */
-	CmpctStat new_stat = {0};
+	CmpctStat_v1 new_stat = {0};
 
 	/* Get blob data from the 'stat' column (column index 4) */
 	stat = sqlite3_column_blob(stmt,4);
@@ -148,7 +151,7 @@ static Return process_row(
 			status = FAILURE;
 		} else {
 			/* Bind parameters */
-			rc = sqlite3_bind_blob(update_stmt,1,&new_stat,sizeof(CmpctStat),SQLITE_STATIC);
+			rc = sqlite3_bind_blob(update_stmt,1,&new_stat,sizeof(CmpctStat_v1),SQLITE_STATIC);
 
 			if(SQLITE_OK != rc)
 			{

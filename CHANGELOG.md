@@ -2,6 +2,11 @@
 
 All notable changes will be documented in this file
 
+# v0.6.0 2026-02-06
+
+## Added
+- Added reporting for filesystem traversal time and the average per second throughput for reading files and calculating checksums.
+
 # v0.5.0 2026-01-29 Pull Request #45
 
 ## Added

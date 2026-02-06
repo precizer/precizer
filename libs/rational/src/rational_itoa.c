@@ -1,4 +1,5 @@
 #include "rational.h"
+#include <errno.h>
 
 // A utility function to reverse a string
 static void reverse(
@@ -28,6 +29,9 @@ static void reverse(
  *
  * @note The buffer should be large enough to hold the result
  * @note Supports negative numbers only in base 10
+ * @note For invalid base (not in 2-36), sets errno = EINVAL,
+ *       writes an empty string, and returns str
+ * @note If str is NULL, sets errno = EINVAL and returns NULL
  */
 char *itoa(
 	int          num,
@@ -37,6 +41,19 @@ char *itoa(
 	size_t i = 0;
 	bool isNegative = false;
 	unsigned int unum; // Use unsigned int for calculations
+
+	if(str == NULL)
+	{
+		errno = EINVAL;
+		return NULL;
+	}
+
+	if(base < 2 || base > 36)
+	{
+		errno = EINVAL;
+		str[0] = '\0';
+		return str;
+	}
 
 	/* Handle 0 explicitly, otherwise empty string is
 	 * printed for 0 */
@@ -78,13 +95,12 @@ char *itoa(
 		unum = (unsigned int)(-(unsigned int)num);
 	} else {
 		/* For non-negative numbers, or for any base other than 10,
-		 * we simply reinterpret the value as unsigned.
+		 * we simply convert the value to unsigned.
 		 *
 		 * - If num >= 0, this just gives the same numeric value.
-		 * - If num < 0 and base != 10, the bit pattern of num is
-		 *   reinterpreted as an unsigned integer, which allows us
-		 *   to display its two's-complement representation (e.g. for
-		 *   hexadecimal or binary dumps).
+		 * - If num < 0 and base != 10, the result is the unsigned
+		 *   value modulo 2^N, which is useful for hexadecimal or
+		 *   binary dumps of the underlying representation.
 		 */
 		unum = (unsigned int)num;
 	}
@@ -113,6 +129,7 @@ char *itoa(
 
 #if 0
 #include <limits.h>
+#include <errno.h>
 /// Test
 
 static void test_conversion(
@@ -137,7 +154,6 @@ static void test_conversion(
  */
 static void test_itoa(void)
 {
-
 	/* Test extreme values */
 	printf("=== Testing extreme values ===\n");
 	test_conversion(INT_MAX,10,"2147483647");
@@ -196,6 +212,27 @@ static void test_itoa(void)
 	printf("Base: %d\t\tConverted String: %s\n",2,itoa(1567,str,2));
 	printf("Base: %d\t\tConverted String: %s\n",8,itoa(1567,str,8));
 	printf("Base: %d\tConverted String: %s\n",16,itoa(1567,str,16));
+
+	printf("\n=== Invalid base handling ===\n");
+	char errbuf[4];
+	char *ret = NULL;
+
+	errno = 0;
+	ret = itoa(123,errbuf,0);
+	printf("Base 0 result: '%s', errno: %d\n",ret ? ret : "NULL",errno);
+
+	errno = 0;
+	ret = itoa(123,errbuf,1);
+	printf("Base 1 result: '%s', errno: %d\n",ret ? ret : "NULL",errno);
+
+	errno = 0;
+	ret = itoa(123,errbuf,37);
+	printf("Base 37 result: '%s', errno: %d\n",ret ? ret : "NULL",errno);
+
+	printf("\n=== NULL buffer handling ===\n");
+	errno = 0;
+	ret = itoa(123,NULL,10);
+	printf("NULL buffer result: %s, errno: %d\n",ret ? "non-NULL" : "NULL",errno);
 }
 
 /**
