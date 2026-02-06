@@ -771,7 +771,8 @@ Return file_list(TraversalSummary *summary)
 	// Print preflight totals only for the stats-only pass from main().
 	if(SUCCESS == status)
 	{
-		if(summary->at_least_one_file_was_shown == true){
+		if(summary->at_least_one_file_was_shown == true)
+		{
 
 			slog(EVERY,"File traversal complete\n");
 		}

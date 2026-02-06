@@ -17,10 +17,10 @@
  * @return SUCCESS or FAILURE.
  */
 Return verify_directory_access(
-	FTS        *file_systems,
-	FTSENT     *entry,
-	const char *runtime_root,
-	bool       *first_iteration,
+	FTS              *file_systems,
+	FTSENT           *entry,
+	const char       *runtime_root,
+	bool             *first_iteration,
 	TraversalSummary *summary)
 {
 	if(runtime_root == NULL)

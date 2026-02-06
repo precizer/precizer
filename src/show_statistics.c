@@ -22,8 +22,8 @@ void show_statistics(const TraversalSummary *summary)
 	}
 
 	size_t total_items = summary->count_dirs
-		+ summary->count_files
-		+ summary->count_symlnks;
+	        + summary->count_files
+	        + summary->count_symlnks;
 
 	slog(EVERY,"Total allocated size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",
 		bkbmbgbtbpbeb(summary->total_allocated_bytes,FULL_VIEW),
