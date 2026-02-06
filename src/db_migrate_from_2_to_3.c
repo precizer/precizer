@@ -1,6 +1,8 @@
 /**
  * @file db_migrate_from_2_to_3.c
  * @brief Migration to database version 3
+ *
+ * This legacy can be removed in 2035 (10-year Long-Term Support)
  */
 
 #include "precizer.h"

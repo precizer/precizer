@@ -46,7 +46,7 @@ size_t file_buffer_memory(void)
 
 	size_t one_percent = avail_bytes / 100;
 
-	slog(TRACE,"Bytes that can be allocated for the file buffer: %s\n",bkbmbgbtbpbeb(one_percent));
+	slog(TRACE,"Bytes that can be allocated for the file buffer: %s\n",bkbmbgbtbpbeb(one_percent,FULL_VIEW));
 
 	return(one_percent);
 }

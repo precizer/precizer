@@ -4,4 +4,4 @@
  */
 #define APP_NAME "precizer"
 #define APP_VERSION "0.6.0"
-#define CURRENT_DB_VERSION 3
+#define CURRENT_DB_VERSION 4

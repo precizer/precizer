@@ -1,8 +1,7 @@
 #include "precizer.h"
 
 /**
- * @brief Checks if the file's size, creation time, and modification time have
- *        not changed since the last crawl.
+ * @brief Checks whether key file metadata changed since the last crawl.
  *
  * Compares data from the FTS library file traversal with the stat
  * structure stored in SQLite from the previous probe.
@@ -12,8 +11,9 @@
  *
  * @return Return status:
  *         - IDENTICAL: Files are identical
- *         - FAILURE: Error in comparison or invalid parameters
- *         - SIZE_CHANGED
+ *         - COMPARE_FAILED: Error in comparison or invalid parameters
+ *         - SIZE_CHANGED (logical file size changed)
+ *         - ALLOCATED_SIZE_CHANGED (allocated block count changed)
  *         - MODIFICATION_TIME_CHANGED
  *         - STATUS_CHANGED_TIME
  */
@@ -29,10 +29,17 @@ Changed compare_file_metadata_equivalence(
 
 	Changed changes = IDENTICAL;
 
-	/* Size of file, in bytes.  */
+	/* Logical file size in bytes. */
 	if(source->st_size != destination->st_size)
 	{
 		changes |= SIZE_CHANGED;
+	}
+
+	/* Allocated size of file in POSIX 512-byte blocks. */
+	if(source->st_blocks != BLKCNT_UNKNOWN
+	        && source->st_blocks != destination->st_blocks)
+	{
+		changes |= ALLOCATED_SIZE_CHANGED;
 	}
 
 	/* Modified timestamp */

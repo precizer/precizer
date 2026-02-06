@@ -30,9 +30,9 @@ TESTING:DB mode determined
 TESTING:Starting database file lock_s5\.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database lock_s5\.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The lock_s5\.db database file is version 3
-TESTING:The database lock_s5\.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The lock_s5\.db database file is version 4
+TESTING:The database lock_s5\.db is on version 4 and does not require any upgrades
 TESTING:Successfully opened database lock_s5\.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named lock_s5\.db is ready for operations
@@ -49,9 +49,10 @@ locked rehash ok changed ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]
 (?:\x1B\[[0-9;]*m)*checksum locked & mismatch, data corrupted(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 locked rehash ok path1/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
 TESTING:Returned file_list:\d+ status: WARNING
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » WARNING\Z

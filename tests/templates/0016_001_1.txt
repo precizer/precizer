@@ -49,7 +49,8 @@ add path2/AAA/BCB/CCC/a.txt
 add path2/AAA/ZAW/A/b/c/a_file.txt
 add path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
@@ -87,9 +88,9 @@ TESTING:DB mode determined
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to QUICK
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database1.db database file is version 3
-TESTING:The database database1.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database1.db database file is version 4
+TESTING:The database database1.db is on version 4 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named database1.db is ready for operations
@@ -105,11 +106,12 @@ TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB data
 update & rehash 1/AAA/BCB/CCC/a.txt
 update stat 2/AAA/BBB/CZC/a.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1.db:(?:\x1B\[[0-9;]*m)*
 no longer exists path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:Missing file search completed
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
@@ -148,17 +150,17 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database1.db database file is version 3
-TESTING:The database database1.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database1.db database file is version 4
+TESTING:The database database1.db is on version 4 and does not require any upgrades
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
 TESTING:Starting database file database2.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database2.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database2.db database file is version 3
-TESTING:The database database2.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database2.db database file is version 4
+TESTING:The database database2.db is on version 4 and does not require any upgrades
 TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer in the database1.db but still exist in the database2.db(?:\x1B\[[0-9;]*m)*
 path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:(?:\x1B\[[0-9;]*m)*The SHA512 checksums of these files do not match between database1.db and database2.db(?:\x1B\[[0-9;]*m)*
@@ -200,9 +202,9 @@ TESTING:DB mode determined
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database1.db database file is version 3
-TESTING:The database database1.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database1.db database file is version 4
+TESTING:The database database1.db is on version 4 and does not require any upgrades
 TESTING:Successfully opened database database1.db
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named database1.db is ready for operations
@@ -215,14 +217,15 @@ TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB database1.db
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1.db:(?:\x1B\[[0-9;]*m)*
-update & rehash changed size was:\d+.*, now:\d+.* ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/BCB/CCC/a.txt
+update & rehash changed lsize was:\d+.*, now:\d+.* ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 1/AAA/BCB/CCC/a.txt
 update & rehash changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9} 2/AAA/BBB/CZC/a.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1.db:(?:\x1B\[[0-9;]*m)*
 no longer exists path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:Missing file search completed
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
@@ -261,17 +264,17 @@ TESTING:The path database1.db is exists and it is a file
 TESTING:Starting database file database1.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database1.db database file is version 3
-TESTING:The database database1.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database1.db database file is version 4
+TESTING:The database database1.db is on version 4 and does not require any upgrades
 TESTING:Verify that the path database2.db exists
 TESTING:The path database2.db is exists and it is a file
 TESTING:Starting database file database2.db integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database database2.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database2.db database file is version 3
-TESTING:The database database2.db is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The database2.db database file is version 4
+TESTING:The database database2.db is on version 4 and does not require any upgrades
 TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer in the database1.db but still exist in the database2.db(?:\x1B\[[0-9;]*m)*
 path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:(?:\x1B\[[0-9;]*m)*The SHA512 checksums of these files do not match between database1.db and database2.db(?:\x1B\[[0-9;]*m)*

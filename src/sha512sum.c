@@ -2,20 +2,34 @@
 #include <errno.h>
 
 /**
+ * @brief Calculate SHA512 cryptographic hash of a file, optionally resuming from offset.
  *
- * Calculate SHA512 cryptographic hash of a file
+ * Reads file data starting from @p offset, updates @p mdContext and increments
+ * @p summary->total_hashed_bytes for each processed chunk.
  *
+ * @param path File path (relative or absolute).
+ * @param path_size Length of @p path.
+ * @param file_buffer Read buffer descriptor.
+ * @param sha512 Output digest buffer (written after finalization).
+ * @param offset In/out byte offset for resume/interruption handling.
+ * @param summary Traversal counters updated with hashed byte count.
+ * @param mdContext SHA512 context for incremental hashing.
+ * @param read_error Output flag set when reading fails.
+ * @param read_errno Output errno snapshot for read errors.
+ * @param wrong_file_type Output flag for non-seekable/special files.
+ * @return SUCCESS or FAILURE.
  */
 Return sha512sum(
-	const char     *path,
-	const size_t   path_size,
-	memory         *file_buffer,
-	unsigned char  *sha512,
-	sqlite3_int64  *offset,
-	SHA512_Context *mdContext,
-	bool           *read_error,
-	int            *read_errno,
-	bool           *wrong_file_type)
+	const char       *path,
+	const size_t     path_size,
+	memory           *file_buffer,
+	unsigned char    *sha512,
+	sqlite3_int64    *offset,
+	TraversalSummary *summary,
+	SHA512_Context   *mdContext,
+	bool             *read_error,
+	int              *read_errno,
+	bool             *wrong_file_type)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -140,6 +154,7 @@ Return sha512sum(
 				}
 
 				*offset += (sqlite3_int64)len;
+				summary->total_hashed_bytes += len;
 			}
 		}
 	}

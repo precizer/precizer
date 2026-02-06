@@ -20,8 +20,16 @@ void show_metadata(
 	switch(flag)
 	{
 		case SIZE_CHANGED:
-			slog(log_level," was:%s",bkbmbgbtbpbeb((size_t)was->st_size));
-			slog(log_level,", now:%s",bkbmbgbtbpbeb((size_t)now->st_size));
+			slog(log_level," was:%s",bkbmbgbtbpbeb((size_t)was->st_size,FULL_VIEW));
+			slog(log_level,", now:%s",bkbmbgbtbpbeb((size_t)now->st_size,FULL_VIEW));
+			break;
+		case ALLOCATED_SIZE_CHANGED:
+			if(was->st_blocks == BLKCNT_UNKNOWN)
+			{
+				return;
+			}
+			slog(log_level," was:%s",bkbmbgbtbpbeb(blocks_to_bytes(was->st_blocks),FULL_VIEW));
+			slog(log_level,", now:%s",bkbmbgbtbpbeb(blocks_to_bytes(now->st_blocks),FULL_VIEW));
 			break;
 		case STATUS_CHANGED_TIME:
 			slog(log_level," was:%s.%ld",seconds_to_ISOdate(was->ctim_tv_sec),was->ctim_tv_nsec);

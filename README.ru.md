@@ -418,7 +418,7 @@ Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
 The **--update** option has been used, so the information about files will be updated against the database database1.db  
 File traversal started  
 **These files have been added or changed and those changes will be reflected against the DB database1.db:**  
-1/AAA/BCB/CCC/a.txt changed size & ctime & mtime rehashed  
+1/AAA/BCB/CCC/a.txt changed lsize & ctime & mtime rehashed  
 1/AAA/BCB/CCC/c.txt added  
 File traversal complete  
 Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
@@ -429,6 +429,12 @@ The primary database has been vacuumed
 **The database file database1.db has been modified since the program was launched**  
 The precizer completed its execution without any issues  
 </sub>
+
+Метки изменений в выводе означают:
+- `lsize` — логический размер файла в байтах (`st_size`)
+- `asize` — размер, выделенный на диске, в байтах (`st_blocks * 512`)
+- `ctime` — время изменения метаданных/статуса
+- `mtime` — время изменения содержимого файла
 
 При каждом запуске **precizer** обходит файловую систему, после этого проверяя, есть ли запись об определённом файле в базе данных или нет. Другими словами, приоритет для программы имеет состояние файловой системы на диске.
 
@@ -546,7 +552,7 @@ The precizer completed its execution without any issues
 
 Пример пути, который следует игнорировать. Для указания шаблона игнорирования файлов или каталогов можно использовать регулярные выражения PCRE2. Внимание! Все пути в регулярном выражении должны быть указаны как **относительные**.
 
-Чтобы проверить и протестировать регулярные выражения PCRE2, можно использовать ресурс https://regex101.com/
+Чтобы проверить и протестировать регулярные выражения PCRE2, можно использовать ресурс https://regex101.com
 
 Для понимания, как выглядит относительный путь, достаточно запустить сканирование директорий без опции `--ignore` и посмотреть, как терминал будет отображать относительные пути, записываемые в базу данных:
 
@@ -708,7 +714,7 @@ precizer tests/examples/diffs
 
 Регулярные выражения PCRE2 для относительных путей, которые необходимо включить. Включаем указанные относительные пути, даже если они были исключены с помощью одного или нескольких параметров `--ignore`. Несколько регулярных выражений могут быть указаны с помощью `--include`
 
-Чтобы проверить и протестировать регулярные выражения PCRE2, можно использовать ресурс https://regex101.com/
+Чтобы проверить и протестировать регулярные выражения PCRE2, можно использовать ресурс https://regex101.com
 
 DB будет очищена от упоминаний файлов, соответствующих регулярным выражениям из аргументов `--ignore`: "^.\*/path2/.\*" и "diff2/.\*", но опция `--include` оставит в базе данных пути, соответствующие заданным шаблонам.
 
