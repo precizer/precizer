@@ -186,7 +186,7 @@ __attribute__((pure)) static Return is_function_declaration(
 {
 	Return status = SUCCESS;
 	char *pos = NULL;
-	char *name_end = NULL;
+	const char *name_end = NULL;
 
 	if(NULL == line || NULL == function_name)
 	{
@@ -596,7 +596,7 @@ static Return process_directory(
 {
 	Return status = SUCCESS;
 	DIR *dir = NULL;
-	struct dirent *entry = NULL;
+	const struct dirent *entry = NULL;
 
 	if(NULL == dir_path || NULL == names)
 	{

@@ -790,8 +790,10 @@ gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-sum
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
+cppcheck: CPPPATHS += $(foreach d,$(LIBS),libs/$d/src/)
 cppcheck:
-	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs -i tests $(DYNAMIC_INCPATH) --inconclusive .
+	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q \
+		--force $(INCPATH) -Isrc -Ilibs/testitall/src -Ilibs/xdiff/src --inconclusive src tests/src $(CPPPATHS)
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)

@@ -421,11 +421,8 @@ Return db_compare(void)
 	{
 		sqlite3_stmt *no_stmt = NULL;
 		call(db_finalize(config->db,"db1",&no_stmt));
-	}
 
-	/* Detach databases in attach order */
-	if(attached_db1 == true)
-	{
+		/* Detach databases in attach order */
 		call(db_detach("db1"));
 	}
 
