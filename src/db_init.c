@@ -196,10 +196,7 @@ Return db_init(void)
 		{
 			log_sqlite_error(config->db,rc,NULL,"Can't create TEMP remember_history table");
 		}
-	}
 
-	if(SUCCESS == status)
-	{
 		if(config->compare != true)
 		{
 			const char *db_runtime_paths =

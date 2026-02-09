@@ -112,7 +112,6 @@ static Return process_row(
 {
 	Return status = SUCCESS;
 	const struct stat *stat = {0};
-	int rc = SQLITE_OK;
 
 	/* Allocate memory for new blob data */
 	CmpctStat_v1 new_stat = {0};
@@ -143,7 +142,7 @@ static Return process_row(
 		sqlite3_stmt *update_stmt = NULL;
 		const char *update_sql = "UPDATE files SET stat = ? WHERE ID = ?";
 
-		rc = sqlite3_prepare_v2(sqlite3_db_handle(stmt),update_sql,-1,&update_stmt,NULL);
+		int rc = sqlite3_prepare_v2(sqlite3_db_handle(stmt),update_sql,-1,&update_stmt,NULL);
 
 		if(SQLITE_OK != rc)
 		{

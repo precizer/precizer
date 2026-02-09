@@ -452,7 +452,7 @@ int main(
 	int  argc,
 	char *argv[])
 {
-	char *input_file = NULL;
+	const char *input_file = NULL;
 
 	// Parse command line arguments
 	for(int i = 1; i < argc; i++)

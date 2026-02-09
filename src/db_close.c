@@ -10,11 +10,12 @@ Return db_close(
 	const bool *db_file_modified)
 {
 	Return status = SUCCESS;
-	int rc = SQLITE_OK;
 
 	/* Cleanup and close previously used DB */
 	if(db != NULL)
 	{
+		int rc;
+
 		if(*db_file_modified == true)
 		{
 			sqlite3_stmt *stmt;
