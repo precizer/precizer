@@ -16,6 +16,9 @@ void init_config(void)
 	// Fill out with zeroes
 	memset(config,0,sizeof(Config));
 
+	// Application start time for total runtime reporting.
+	config->app_start_time_ns = cur_time_monotonic_ns();
+
 	// Max available size of a path
 	config->running_dir_size = 0;
 

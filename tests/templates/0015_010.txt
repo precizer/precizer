@@ -70,7 +70,7 @@ update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata.c:\d+:db_delete_missing_metadata:Missing file search completed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_statistics.c:\d+:show_statistics:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_elapsed.c:\d+:show_elapsed:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_elapsed.c:\d+:show_elapsed:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_vacuum.c:\d+:db_vacuum:Start vacuuming the primary database…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_vacuum.c:\d+:db_vacuum:The primary database has been vacuumed

@@ -55,7 +55,7 @@ TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in d
 no longer exists 2/AAA/BBB/CZC/a.txt
 TESTING:Missing file search completed
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-TESTING:Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database1.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*

@@ -86,7 +86,7 @@ drop ignored diff2/path1/AAA/BCB/CCC/b.txt
 drop ignored diff2/path2/AAA/BCB/CCC/a.txt
 drop ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-Elapsed time: [^,\r\n]+, hashing rate: [^\r\n]+
+Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 Start vacuuming the primary database…
 The primary database has been vacuumed
 (?:\x1B\[[0-9;]*m)*The database file %DB_NAME% has been modified since the program was launched(?:\x1B\[[0-9;]*m)*

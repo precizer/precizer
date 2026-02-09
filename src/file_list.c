@@ -127,11 +127,8 @@ Return file_list(TraversalSummary *summary)
 	// Track whether any output was produced
 	summary->at_least_one_file_was_shown = false;
 
-	// Start timestamp is unknown until traversal starts.
-	summary->traversal_start_time = 0LL;
-
-	// Stop timestamp is unknown until traversal finishes.
-	summary->traversal_stop_time = 0LL;
+	// Sum of per-file hashing elapsed time in nanoseconds.
+	summary->total_hashing_elapsed_ns = 0LL;
 
 	if((file_systems = fts_open(config->paths,fts_options,compare_by_name)) == NULL)
 	{
@@ -178,12 +175,6 @@ Return file_list(TraversalSummary *summary)
 		{
 			provide(status);
 		}
-	}
-
-	if(summary->stats_only_pass == false)
-	{
-		// Start traversal timing for the real file pass.
-		summary->traversal_start_time = cur_time_ns();
 	}
 
 	while((p = fts_read(file_systems)) != NULL && continue_the_loop == true)
@@ -753,12 +744,6 @@ Return file_list(TraversalSummary *summary)
 			default:
 				break;
 		}
-	}
-
-	if(summary->stats_only_pass == false)
-	{
-		// Stop traversal timing immediately after the filesystem pass.
-		summary->traversal_stop_time = cur_time_ns();
 	}
 
 	del(file_buffer);
