@@ -26,6 +26,21 @@ typedef enum
 } ByteFormat;
 
 /**
+ * @brief Convert bytes to a human-readable string in caller-provided buffer.
+ *
+ * @param bytes Number of bytes to format.
+ * @param format FULL_VIEW for full decomposition, MAJOR_VIEW for the largest unit only.
+ * @param buffer Destination buffer.
+ * @param buffer_size Destination buffer size in bytes.
+ * @return @p buffer on success, NULL when @p buffer is NULL or @p buffer_size is zero.
+ */
+char *bkbmbgbtbpbeb_r(
+	const size_t,
+	const ByteFormat,
+	char *,
+	size_t);
+
+/**
  * @brief Convert bytes to a human-readable string.
  *
  * @param bytes Number of bytes to format.

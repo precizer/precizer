@@ -3,7 +3,7 @@
 /**
  * @brief Print traversal elapsed time and effective hashing throughput.
  *
- * Uses traversal_start_time/traversal_stop_time and total_hashed_bytes from
+ * Uses total_hashing_elapsed_ns and total_hashed_bytes from
  * TraversalSummary.
  *
  * @param summary Traversal timing and hashing counters from file_list().
@@ -21,31 +21,49 @@ void show_elapsed(const TraversalSummary *summary)
 		return;
 	}
 
-	// Compute elapsed time from traversal timing fields collected in file_list().
-	long long int elapsed_ns = summary->traversal_stop_time - summary->traversal_start_time;
+	long long int total_runtime_ns = cur_time_monotonic_ns() - config->app_start_time_ns;
+
+	if(total_runtime_ns < 0LL)
+	{
+		total_runtime_ns = 0LL;
+	}
+
+	static const char *const rate_na = "n/a";
+	static const char *const rate_less_than_1bps = "less than 1B/s";
+
+	// Sum of per-file hashing time collected in sha512sum() during file_list().
+	long long int elapsed_ns = summary->total_hashing_elapsed_ns;
 
 	if(elapsed_ns < 0LL)
 	{
 		elapsed_ns = 0LL;
 	}
 
-	const char *elapsed_human = form_date(elapsed_ns);
+	char total_runtime_string[50] = {0};
+	(void)form_date_r(total_runtime_ns,total_runtime_string,sizeof(total_runtime_string));
 
-	if(elapsed_ns == 0LL)
+	char elapsed_string[50] = {0};
+	(void)form_date_r(elapsed_ns,elapsed_string,sizeof(elapsed_string));
+
+	char hashed_string[MAX_CHARACTERS] = {0};
+	(void)bkbmbgbtbpbeb_r(summary->total_hashed_bytes,MAJOR_VIEW,hashed_string,sizeof(hashed_string));
+
+	const char *rate = rate_na;
+	const char *suffix = "";
+
+	if(elapsed_ns > 0LL)
 	{
-		slog(EVERY,"Elapsed time: %s, hashing rate: n/a\n",elapsed_human);
-		return;
+		long double bytes_per_second = ((long double)summary->total_hashed_bytes * 1000000000.0L) / (long double)elapsed_ns;
+
+		if(bytes_per_second < 1.0L)
+		{
+			rate = rate_less_than_1bps;
+		} else {
+			size_t speed_value = (size_t)bytes_per_second;
+			rate = bkbmbgbtbpbeb(speed_value,MAJOR_VIEW);
+			suffix = "/s";
+		}
 	}
 
-	long double bytes_per_second = ((long double)summary->total_hashed_bytes * 1000000000.0L) / (long double)elapsed_ns;
-
-	if(bytes_per_second < 1.0L)
-	{
-		slog(EVERY,"Elapsed time: %s, hashing rate: less than 1B/s\n",elapsed_human);
-		return;
-	}
-
-	size_t speed_value = (size_t)bytes_per_second;
-
-	slog(EVERY,"Elapsed time: %s, hashing rate: %s/s\n",elapsed_human,bkbmbgbtbpbeb(speed_value,MAJOR_VIEW));
+	slog(EVERY,"Total runtime: %s, elapsed time: %s, hashed: %s, hashing rate: %s%s\n",total_runtime_string,elapsed_string,hashed_string,rate,suffix);
 }

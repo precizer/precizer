@@ -273,6 +273,10 @@ typedef struct {
 	/// A directory where the program was executed
 	char *running_dir;
 
+	/// Application start timestamp in monotonic nanoseconds.
+	/// Used for reporting total process runtime.
+	long long int app_start_time_ns;
+
 	/// Show progress bar
 	bool progress;
 
@@ -462,13 +466,9 @@ typedef struct {
 	 */
 	bool at_least_one_file_was_shown;
 
-	/// Traversal start time in nanoseconds since Unix epoch (cur_time_ns).
-	/// Zero means timing was not recorded.
-	long long int traversal_start_time;
-
-	/// Traversal stop time in nanoseconds since Unix epoch (cur_time_ns).
-	/// Zero means timing was not recorded.
-	long long int traversal_stop_time;
+	/// Total elapsed hashing time in nanoseconds for this traversal pass.
+	/// Accumulated per-file in sha512sum() from read-loop start to finish.
+	long long int total_hashing_elapsed_ns;
 
 } TraversalSummary;
 
@@ -595,7 +595,7 @@ void free_config(void);
 Return db_delete_missing_metadata(void);
 
 Return db_delete_the_record_by_id(
-	sqlite_int64 *,
+	const sqlite_int64 *,
 	bool *,
 	const bool *,
 	const char *,
