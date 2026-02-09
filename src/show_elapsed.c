@@ -45,7 +45,7 @@ void show_elapsed(const TraversalSummary *summary)
 	char elapsed_string[50] = {0};
 	(void)form_date_r(elapsed_ns,elapsed_string,sizeof(elapsed_string));
 
-	char hashed_string[MAX_CHARACTERS] = {0};
+	char hashed_string[50] = {0};
 	(void)bkbmbgbtbpbeb_r(summary->total_hashed_bytes,MAJOR_VIEW,hashed_string,sizeof(hashed_string));
 
 	const char *rate = rate_na;
