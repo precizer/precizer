@@ -418,6 +418,10 @@ typedef struct {
 	/// data integrity remains untouched.
 	bool dry_run;
 
+	/// Enable SHA512 calculation while staying in Dry Run mode.
+	/// Activated by: --dry-run=with-checksums
+	bool dry_run_with_checksums;
+
 	/// Consider file metadata changes (creation and modification timestamps)
 	/// in addition to file size when detecting changes. By default, only
 	/// file size changes trigger rescanning. When this option is enabled,
