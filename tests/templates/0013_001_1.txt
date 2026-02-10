@@ -51,7 +51,7 @@ add path2/AAA/ZAW/A/b/c/a_file.txt
 add path2/AAA/ZAW/D/e/f/b_file.txt
 TESTING:File traversal complete
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: 0B, hashing rate: n/a
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: n/a, hashing rate: n/a
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)(?:\x1B\[[0-9;]*m)*
