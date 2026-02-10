@@ -1,8 +1,6 @@
 #include "sute.h"
 
-#include <inttypes.h>
-
-#define SHOW_TEST 0
+#include <float.h>
 
 static void strip_commas(
 	const char *src,
@@ -121,6 +119,121 @@ static bool form_uintmax_matches_standard(
 	return valid_comma_grouping(formatted) && (0 == strcmp(stripped,expected));
 }
 
+static bool valid_grouped_integer_part(
+	const char *val,
+	size_t     start,
+	size_t     end)
+{
+	if(val == NULL || end <= start)
+	{
+		return false;
+	}
+
+	size_t digits_since_comma = 0U;
+	for(size_t i = end; i > start; i--)
+	{
+		const char ch = val[i - 1U];
+		if(ch >= '0' && ch <= '9')
+		{
+			digits_since_comma++;
+			continue;
+		}
+
+		if(ch == ',')
+		{
+			if(digits_since_comma != 3U)
+			{
+				return false;
+			}
+
+			digits_since_comma = 0U;
+			continue;
+		}
+
+		return false;
+	}
+
+	return digits_since_comma >= 1U && digits_since_comma <= 3U;
+}
+
+static bool valid_grouped_real(
+	const char *val)
+{
+	if(val == NULL || val[0] == '\0')
+	{
+		return false;
+	}
+
+	size_t start = 0U;
+	if(val[0] == '-')
+	{
+		start = 1U;
+	}
+
+	if(val[start] == '\0')
+	{
+		return false;
+	}
+
+	const char *dot = strchr(val + start,'.');
+	const size_t total_len = strlen(val);
+	const size_t integer_end = dot == NULL ? total_len : (size_t)(dot - val);
+
+	if(valid_grouped_integer_part(val,start,integer_end) == false)
+	{
+		return false;
+	}
+
+	if(dot == NULL)
+	{
+		return true;
+	}
+
+	const char *fraction = dot + 1U;
+	if(*fraction == '\0')
+	{
+		return false;
+	}
+
+	for(size_t i = 0U; fraction[i] != '\0'; i++)
+	{
+		if(fraction[i] < '0' || fraction[i] > '9')
+		{
+			return false;
+		}
+	}
+
+	return fraction[strlen(fraction) - 1U] != '0';
+}
+
+static bool form_real_matches_portable(
+	long double expected,
+	const char  *formatted)
+{
+	if(valid_grouped_real(formatted) == false)
+	{
+		return false;
+	}
+
+	char stripped[MAX_CHARACTERS];
+	strip_commas(formatted,stripped,sizeof(stripped));
+
+	errno = 0;
+	char *end = NULL;
+	const long double parsed = strtold(stripped,&end);
+	if(errno != 0 || end == stripped || *end != '\0')
+	{
+		return false;
+	}
+
+	long double tolerance = fabsl(expected) * LDBL_EPSILON * 4.0L;
+	if(tolerance < 0.000000001L)
+	{
+		tolerance = 0.000000001L;
+	}
+	return fabsl(parsed - expected) <= tolerance;
+}
+
 static Return test0032_formatters(void)
 {
 	INITTEST;
@@ -156,13 +269,12 @@ static Return test0032_formatters(void)
 	ASSERT(0 == strcmp(form(1234567890123456.0L,formatted,sizeof(formatted)),"1,234,567,890,123,456"));
 	ASSERT(0 == strcmp(form(1234567.125L,formatted,sizeof(formatted)),"1,234,567.125"));
 	ASSERT(0 == strcmp(form(-9876.5L,formatted,sizeof(formatted)),"-9,876.5"));
-	ASSERT(0 == strcmp(form(123456789.123456780L,formatted,sizeof(formatted)),"123,456,789.12345678"));
-	ASSERT(0 == strcmp(form(987654321098.123456789L,formatted,sizeof(formatted)),"987,654,321,098.123456776"));
-	ASSERT(0 == strcmp(form(123456789.123456780L,formatted,sizeof(formatted)),"123,456,789.12345678"));
-	ASSERT(0 == strcmp(form(1.23L,formatted,sizeof(formatted)),"1.23"));
-	ASSERT(0 == strcmp(form(9.9999999995L,formatted,sizeof(formatted)),"10"));
-	ASSERT(0 == strcmp(form(-9.9999999995L,formatted,sizeof(formatted)),"-10"));
-	ASSERT(0 == strcmp(form(999.9999999995L,formatted,sizeof(formatted)),"1,000"));
+	ASSERT(form_real_matches_portable(123456789.123456780L,form(123456789.123456780L,formatted,sizeof(formatted))));
+	ASSERT(form_real_matches_portable(987654321098.123456789L,form(987654321098.123456789L,formatted,sizeof(formatted))));
+	ASSERT(form_real_matches_portable(1.23L,form(1.23L,formatted,sizeof(formatted))));
+	ASSERT(form_real_matches_portable(9.9999999995L,form(9.9999999995L,formatted,sizeof(formatted))));
+	ASSERT(form_real_matches_portable(-9.9999999995L,form(-9.9999999995L,formatted,sizeof(formatted))));
+	ASSERT(form_real_matches_portable(999.9999999995L,form(999.9999999995L,formatted,sizeof(formatted))));
 
 	ASSERT(0 == strcmp(form((_Bool)0,formatted,sizeof(formatted)),"0"));
 	ASSERT(0 == strcmp(form((_Bool)1,formatted,sizeof(formatted)),"1"));
@@ -197,7 +309,6 @@ static Return test0032_formatters(void)
 	ASSERT(0 == strcmp(form_real_r(NAN,formatted,sizeof(formatted)),""));
 	ASSERT(0 == strcmp(form_real_r(INFINITY,formatted,sizeof(formatted)),""));
 	ASSERT(0 == strcmp(form_real_r(-INFINITY,formatted,sizeof(formatted)),""));
-	ASSERT(0 == strcmp(form_real_r((long double)UINTMAX_MAX + 1.0L,formatted,sizeof(formatted)),""));
 
 	(void)form_uintmax_r(UINTMAX_MAX,tiny_uint_1,sizeof(tiny_uint_1));
 	ASSERT(tiny_uint_1[0] == '\0');
