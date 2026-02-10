@@ -823,6 +823,46 @@ precizer --update --db-drop-inaccessible /mnt/storage
 
 Note: this example applies only to files that have a record in the database but are truly inaccessible on disk for some reason. This can happen due to incorrect `chmod`/`chown` permissions or an incorrectly mounted volume. WARNING: if the file (or even its path) is actually deleted, not just temporarily inaccessible, then updating the database with `--update` will remove its record unconditionally — no extra options are needed.
 
+## TROUBLESHOOTING
+
+### Slow file walk, slow checksums, slow database writes ("everything is slow")
+
+To pinpoint the bottleneck, try running `precizer` in `--dry-run` or `--dry-run=with-checksums` mode.
+
+`--dry-run` recursively walks the **file system**. In this mode, nothing happens except directory tree traversal. You can add `--progress` to also count total bytes and files, but no database writes will occur. This mode helps validate file system accessibility and, to a degree, the underlying hardware. If it is slow even with `--dry-run`, the root cause is unlikely to be `precizer` itself.
+
+`--dry-run=with-checksums` differs from `--dry-run` only in that every encountered file is fully read (byte-by-byte) and a checksum is computed. This is significantly more resource-intensive and is close to the program's real workload, but it still does not write to the database. With `--progress` enabled, `precizer` also prints how many bytes were hashed and the average hashing throughput in B/s. That number can be compared against third-party benchmarks to help spot the bottleneck.
+
+It is also possible that `--dry-run=with-checksums` is fast, but real runs (non-dry-run) slow down noticeably, especially when many records are being added or changed. In that case, check the file system that stores the database file — the issue may be there.
+
+`precizer` opens the SQLite database using settings that favor keeping already-written data safe and resisting database corruption as much as possible. The tradeoff is more disk I/O and more file system syncs to the underlying block device. In practice, SQLite is very fast and usually not the weakest link. However, a compressed, networked, or simply slow file system can materially affect overall performance.
+
+For example, during mass inserts `precizer` waits for the file record to be written and the transaction to be committed before moving on to the next file. As a quick test, try placing the `.db` file temporarily on a fast medium (for example, `tmpfs`) — this can both improve overall performance and help confirm where the bottleneck is.
+
+### If everything is still slow in every mode, check:
+
+#### File system integrity
+
+Run file system checks on the volume being scanned (where checksums are captured) and on the volume where the `.db` file is stored and updated. Performance drops can be caused by logical file system issues.
+
+#### Hardware
+
+##### Disk throughput
+
+Files are read fully, byte-by-byte. Disk subsystem throughput is directly reflected in `precizer` speed. The program works at the file system level (a higher abstraction), not directly with raw block devices, so file system health matters.
+
+Performance can vary significantly depending on the file system. For example, reading files from an NFS mount may be limited by network throughput and behave very differently from reading from a local NVMe file system with `atime` disabled (`atime` is the access time timestamp). Use third-party tools to benchmark the storage subsystem.
+
+##### CPU performance
+
+Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually handle it easily, but it is worth ensuring performance is not degraded by shared vCPU resources in containerized or virtualized setups. Use monitoring and benchmarks to validate CPU performance.
+
+| Step | Mode/command                      | What it measures                                                      | If it is slow here                                                        | Next steps                                                                                         |
+| ---- | --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1    | precizer --dry-run                | File system accessibility, directory walk speed, baseline I/O         | Most likely outside `precizer`: file system/disk/network/system load      | Check storage subsystem, mount status, and overall system load                                     |
+| 2    | precizer --dry-run=with-checksums | Real read + checksum compute speed (no DB writes)                     | Bottleneck: data reads (disk/network/file system) or CPU (more rarely)    | Check disk/network throughput, file system settings, and CPU resource limits (VMs/containers)      |
+| 3    | Normal run (not dry-run)          | Impact of SQLite writes and transactions                              | Often the file system hosting `.db` is the issue (slow/network/compressed)| Check the `.db` file system; try moving `.db` temporarily to a faster medium or `tmpfs`            |
+
 ## AUTHOR
 Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)
 

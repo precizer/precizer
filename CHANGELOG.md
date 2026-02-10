@@ -8,6 +8,9 @@ All notable changes will be documented in this file
 - Added reporting for filesystem traversal time and the average per second throughput for reading files and calculating checksums.
 - Added `--dry-run=with-checksums` mode for `--dry-run`. In this mode, files are read and checksums are calculated without writing to the database.
 
+## Documentation
+- Added a US English `TROUBLESHOOTING` section to `README.md` with guidance for diagnosing slow filesystem walks, checksum computation, and SQLite `.db` write performance
+
 # v0.5.0 2026-01-29 Pull Request #45
 
 ## Added
