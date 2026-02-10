@@ -110,6 +110,10 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 * The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. The file can be extracted from the archive and run directly.
 * Static linking is not supported on macOS, so running the downloaded application requires the following libraries to be available on the system: sqlite3, pcre2, argp and fts.
 
+## CHANGELOG
+
+A list of changes by version is available in a separate file: [CHANGELOG](CHANGELOG.md)
+
 ## TECHNICAL DETAILS
 
 Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its *Disaster Recovery* copy.
