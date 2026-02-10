@@ -1,10 +1,6 @@
 #include "precizer.h"
 #include <sysexits.h>
 
-#ifdef TESTITALL
-static bool missing_arguments = false;
-#endif
-
 /**
  *
  * @brief Parse command-line arguments with the argp library.
@@ -109,7 +105,8 @@ static struct argp_option options[] = {
 	{"drop-inaccessible",'X',0,OPTION_ALIAS | OPTION_HIDDEN,0,0},
 	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.\n",0},
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.\n",0},
-	{"dry-run",'n',0,0,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET "\n",0},
+	{"dry-run",'n',"MODE",OPTION_ARG_OPTIONAL,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET ". "
+	 "Supported mode: " BOLD "--dry-run=with-checksums" RESET " (read files and calculate checksums during dry run).\n",0},
 	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.\n",0 },
 	{"force",'f',0,0,"Use this option only in case when the PATHs that were written into the database as a result of the last scanning really need to be renewed. Warning! If this option will be used in incorrect way, information about files and their checksums against the database would be lost.\n",0},
 	{"update",'u',0,0,"Updates the database to reflect file system changes (new, modified and deleted files). Must be used with the same initial PATH that was used when creating the database, as existing records will be replaced with data from the specified location. This option modifies database consistency. Use with caution, especially in automated scripts, as incorrect usage may lead to loss of file checksums and metadata.\n",0 },
@@ -124,6 +121,31 @@ static struct argp_option options[] = {
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
 	{0}
 };
+
+/**
+ * @brief Convert argp parse error code into human-readable text.
+ */
+static const char *argp_error_to_text(const error_t parse_error)
+{
+	if(parse_error == EX_USAGE)
+	{
+		return("command line usage error");
+	}
+
+	if(parse_error == ARGP_ERR_UNKNOWN)
+	{
+		return("unknown argument parsing error");
+	}
+
+	const char *message = strerror(parse_error);
+
+	if(message == NULL || message[0] == '\0')
+	{
+		return("unknown error");
+	}
+
+	return(message);
+}
 
 /* Parse a single option. */
 static error_t parse_opt(
@@ -142,8 +164,8 @@ static error_t parse_opt(
 
 			if(config->db_primary_file_path == NULL)
 			{
-				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_path failed!");
-				exit(ARGP_ERR_UNKNOWN);
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_path failed!");
+				return(ENOMEM);
 			}
 
 			// Name of DB file only
@@ -153,8 +175,8 @@ static error_t parse_opt(
 			{
 				free(config->db_primary_file_path);  // Free previously allocated memory
 				config->db_primary_file_path = NULL; // Set to NULL after freeing
-				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_name failed!");
-				exit(ARGP_ERR_UNKNOWN);
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed!");
+				return(ENOMEM);
 			}
 			break;
 		case 'e':
@@ -162,6 +184,18 @@ static error_t parse_opt(
 			break;
 		case 'n':
 			config->dry_run = true;
+
+			if(arg != NULL)
+			{
+				if(0 == strcasecmp(arg,"with-checksums"))
+				{
+					config->dry_run_with_checksums = true;
+
+				} else {
+					argp_failure(state,0,0,"ERROR: Unsupported --dry-run mode '%s'. Supported mode: with-checksums. See --help for more information",arg);
+					return(EINVAL);
+				}
+			}
 			break;
 		case 'i':
 			(void)add_string_to_array(&config->include,arg);
@@ -195,8 +229,8 @@ static error_t parse_opt(
 			{
 				config->maxdepth = (short int)argument_value;
 			} else {
-				argp_failure(state,1,0,"ERROR: Wrong --maxdepth (-m) value. Should be an integer from 0 to 32767. See --help for more information");
-				exit(ARGP_ERR_UNKNOWN);
+				argp_failure(state,0,0,"ERROR: Wrong --maxdepth (-m) value. Should be an integer from 0 to 32767. See --help for more information");
+				return(EINVAL);
 			}
 			break;
 		case 'p':
@@ -219,7 +253,8 @@ static error_t parse_opt(
 			} else if(0 == strncasecmp(arg,"FULL",sizeof("FULL"))){
 				config->db_check_level = FULL;
 			} else {
-				return(ARGP_ERR_UNKNOWN);
+				argp_failure(state,0,0,"ERROR: Unsupported --check-level value '%s'. Supported values: FULL or QUICK",arg);
+				return(EINVAL);
 			}
 			break;
 		case 's':
@@ -235,14 +270,8 @@ static error_t parse_opt(
 			config->verbose = true;
 			break;
 		case ARGP_KEY_NO_ARGS:
-#ifdef TESTITALL
-			missing_arguments = true;
-			state->flags |= ARGP_NO_EXIT;
 			argp_usage(state);
 			return(EX_USAGE);
-#else
-			argp_usage(state);
-#endif
 			break;
 		case ARGP_KEY_ARG:
 			config->paths = &state->argv[state->next - 1];
@@ -254,9 +283,11 @@ static error_t parse_opt(
 			{
 				if(state->arg_num < 2)
 				{
-					argp_failure(state,1,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
+					argp_failure(state,0,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
+					return(EX_USAGE);
 				} else if(state->arg_num > 2){
-					argp_failure(state,1,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
+					argp_failure(state,0,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
+					return(EX_USAGE);
 				}
 			} else if(state->arg_num > 1){
 				slog(TRACE,"Caution: multiple PATH arguments received. Multipath mode activated. It’s important to note that when comparison mode is enabled, the ORDER of the paths must be identical for the database comparison to work correctly. Number of paths: %d\n",state->arg_num);
@@ -291,30 +322,18 @@ Return parse_arguments(
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
-
-#ifdef TESTITALL
-	missing_arguments = false;
-#endif
+	unsigned int parse_flags = ARGP_NO_EXIT;
 
 	/* Parse our arguments; every option seen by parse_opt will be
 	   reflected in arguments. */
-	argp_parse(&argp,argc,argv,
+	error_t parse_error = argp_parse(&argp,argc,argv,parse_flags,0,0);
 
-#ifdef TESTITALL
-	ARGP_NO_EXIT,
-#else
-	0,
-#endif
-	0,0);
-
-#ifdef TESTITALL
-	if(true == missing_arguments)
+	if(parse_error != 0)
 	{
-		status = (Return)EX_USAGE;
+		status = FAILURE;
 	}
-#endif
 
-	if(config->paths != NULL)
+	if(SUCCESS == status && config->paths != NULL)
 	{
 		for(int i = 0; config->paths[i]; i++)
 		{
@@ -323,7 +342,7 @@ Return parse_arguments(
 		}
 	}
 
-	if(config->compare == true)
+	if(SUCCESS == status && config->compare == true)
 	{
 		if(config->paths != NULL)
 		{
@@ -362,6 +381,11 @@ Return parse_arguments(
 				}
 			}
 		}
+	}
+
+	if(parse_error != 0)
+	{
+		slog(ERROR,"Argument parsing failed with code %d (%s)\n",parse_error,argp_error_to_text(parse_error));
 	}
 
 	if(SUCCESS != status)
@@ -514,7 +538,7 @@ Return parse_arguments(
 
 		if(config->dry_run)
 		{
-			slog(TESTING,"argument:dry-run=%s\n",config->dry_run ? "yes" : "no");
+			slog(TESTING,"argument:dry-run=%s\n",config->dry_run_with_checksums ? "with-checksums" : "yes");
 		}
 
 		if(config->start_device_only)
@@ -608,6 +632,18 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
+		const char *dry_run_mode = "no";
+
+		if(config->dry_run == true)
+		{
+			if(config->dry_run_with_checksums == true)
+			{
+				dry_run_mode = "with-checksums";
+			} else {
+				dry_run_mode = "yes";
+			}
+		}
+
 		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
 			config->verbose ? "yes" : "no",
 			config->maxdepth,
@@ -620,7 +656,7 @@ Return parse_arguments(
 			config->compare ? "yes" : "no",
 			config->db_drop_ignored ? "yes" : "no",
 			config->db_drop_inaccessible ? "yes" : "no",
-			config->dry_run ? "yes" : "no",
+			dry_run_mode,
 			config->start_device_only ? "yes" : "no",
 			config->db_check_level == QUICK ? "QUICK" : "FULL",
 			rational_reconvert(rational_logger_mode));

@@ -104,6 +104,8 @@ Return sha512sum(
 	}
 
 	bool loop_was_interrupted = false;
+	bool perform_file_hashing = config->dry_run == false
+	        || config->dry_run_with_checksums == true;
 
 	if(*offset == 0)
 	{
@@ -116,7 +118,7 @@ Return sha512sum(
 		}
 	}
 
-	if(config->dry_run == false)
+	if(perform_file_hashing == true)
 	{
 		long long int hashing_start_ns = cur_time_monotonic_ns();
 
@@ -179,7 +181,7 @@ Return sha512sum(
 	free(absolute_path);
 
 	if(SUCCESS == status
-	        && config->dry_run == false
+	        && perform_file_hashing == true
 	        && loop_was_interrupted == false)
 	{
 		*offset = 0;

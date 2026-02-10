@@ -1,5 +1,4 @@
 #include "sute.h"
-#include <sysexits.h>
 
 /**
  *
@@ -53,23 +52,34 @@ Return test0003_2(void)
 
 	const char *arguments = "";
 
-	create(char,result);
-	create(char,pattern);
+	create(char,stdout_result);
+	create(char,stderr_result);
+	create(char,stdout_pattern);
+	create(char,stderr_pattern);
 
 	const char *filename = "templates/0003_002.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit(arguments,NULL,result,EX_USAGE,STDERR_ALLOW));
+	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,FAILURE,STDERR_ALLOW));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == get_file_content(filename,stderr_pattern));
 
-	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+	// Match stderr against the pattern
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,filename));
+
+	filename = "templates/0003_003.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,stdout_pattern));
+
+	// Match stdout against the pattern
+	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	del(stderr_pattern);
+	del(stdout_pattern);
+	del(stderr_result);
+	del(stdout_result);
 
 	RETURN_STATUS;
 

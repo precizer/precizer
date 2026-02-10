@@ -133,6 +133,9 @@ void init_config(void)
 	// Perform a trial run with no changes made
 	config->dry_run = false;
 
+	// Allow hashing in dry-run mode (--dry-run=with-checksums)
+	config->dry_run_with_checksums = false;
+
 	// Define the comparison string
 	const char *compare_string = "true";
 

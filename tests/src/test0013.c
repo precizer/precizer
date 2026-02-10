@@ -39,6 +39,86 @@ static Return dry_run_mode_1_test(void)
 }
 
 /**
+ * In dry-run mode with checksums, files are hashed but DB is still not modified
+ */
+static Return dry_run_with_checksums_mode_1_1_test(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+	create(char,path);
+	bool file_exists = false;
+
+	const char *command = "cd ${TMPDIR}; rm -f dry_run_regular.db dry_run_with_checksums.db;";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments = "--dry-run --database=dry_run_regular.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0013_001_1.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
+
+	arguments = "--dry-run=with-checksums --database=dry_run_with_checksums.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0013_001_2.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
+	del(path);
+
+	/* Dry-run should not create either DB file. */
+	ASSERT(SUCCESS == construct_path("dry_run_regular.db",path));
+	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(path)));
+	ASSERT(file_exists == false);
+
+	del(path);
+	ASSERT(SUCCESS == construct_path("dry_run_with_checksums.db",path));
+	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(path)));
+	ASSERT(file_exists == false);
+
+	del(path);
+
+	RETURN_STATUS;
+}
+
+/**
+ * Invalid dry-run mode should fail with error in stderr
+ */
+static Return dry_run_invalid_mode_1_2_test(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments = "--dry-run=bad-mode --database=dry_run_invalid.db tests/examples/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,result,FAILURE,STDERR_ALLOW));
+
+	const char *filename = "templates/0013_001_3.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
  * The db file should not be updated in the Dry Run mode
  */
 static Return dry_run_mode_2_test(void)
@@ -414,6 +494,8 @@ Return test0013(void)
 	INITTEST;
 
 	TEST(dry_run_mode_1_test,"The DB file should not be created…");
+	TEST(dry_run_with_checksums_mode_1_1_test,"Dry run with checksums hashes files but keeps DB untouched…");
+	TEST(dry_run_invalid_mode_1_2_test,"Invalid dry-run mode should return failure and print stderr error…");
 	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
 	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
 	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
