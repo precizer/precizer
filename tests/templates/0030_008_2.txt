@@ -46,5 +46,5 @@ TESTING:Missing file search completed
 TESTING:The database connection has been closed
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file lock_s8\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

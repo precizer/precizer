@@ -76,5 +76,5 @@ update stat changed ctime was:\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{1,9}, now
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_vacuum.c:\d+:db_vacuum:The primary database has been vacuumed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_changes.c:\d+:db_check_changes:(?:\x1B\[[0-9;]*m)*The database file 0015_database_v2.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status.c:\d+:exit_status:The precizer completed its execution without any issues
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status.c:\d+:exit_status:The precizer completed as expected
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status.c:\d+:exit_status:Exit status » SUCCESS\Z

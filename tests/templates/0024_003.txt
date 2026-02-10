@@ -59,7 +59,7 @@ TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
@@ -122,7 +122,7 @@ TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database2.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
@@ -174,5 +174,5 @@ TESTING:Comparison mode is enabled. The primary database verification is not req
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:The database connection has been closed
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

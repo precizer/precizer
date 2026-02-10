@@ -55,5 +55,5 @@ TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: n/a, hashing 
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

@@ -1,5 +1,37 @@
 #include "sute.h"
 
+static Return assert_information_mode_output(
+	const char *arguments,
+	const char *stdout_pattern_file)
+{
+	INITTEST;
+
+	create(char,stdout_result);
+	create(char,stderr_result);
+	create(char,stdout_pattern);
+	create(char,stderr_pattern);
+
+	ASSERT(arguments != NULL);
+	ASSERT(stdout_pattern_file != NULL);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == get_file_content(stdout_pattern_file,stdout_pattern));
+	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
+
+	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+
+	call(del(stderr_pattern));
+	call(del(stdout_pattern));
+	call(del(stderr_result));
+	call(del(stdout_result));
+
+	return(status);
+}
+
 /**
  *
  * Check the name of the database created by default.
@@ -57,11 +89,11 @@ Return test0003_2(void)
 	create(char,stdout_pattern);
 	create(char,stderr_pattern);
 
-	const char *filename = "templates/0003_002.txt";
-
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,FAILURE,STDERR_ALLOW));
+
+	const char *filename = "templates/0003_002.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,stderr_pattern));
 
@@ -85,12 +117,52 @@ Return test0003_2(void)
 
 }
 
+/**
+ *
+ * Information modes should complete successfully without PATH
+ *
+ */
+Return test0003_3(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == assert_information_mode_output("--help","templates/0003_004.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--usage","templates/0003_005.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("-z","templates/0003_005.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--version","templates/0003_006.txt"));
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * Information modes should ignore PATH and not run the main workflow
+ *
+ */
+Return test0003_4(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == assert_information_mode_output("--help /definitely/nonexistent/path","templates/0003_004.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--usage /definitely/nonexistent/path","templates/0003_005.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("-z /definitely/nonexistent/path","templates/0003_005.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--version /definitely/nonexistent/path","templates/0003_006.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare --help","templates/0003_004.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare --usage","templates/0003_005.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare -z","templates/0003_005.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare --version","templates/0003_006.txt"));
+
+	RETURN_STATUS;
+}
+
 Return test0003(void)
 {
 	INITTEST;
 
 	TEST(test0003_1,"Comply default DB name to \"hostname.db\" template…");
 	TEST(test0003_2,"Running the application with no arguments at all…");
+	TEST(test0003_3,"Information modes without PATH return success…");
+	TEST(test0003_4,"Information modes ignore PATH and stop early…");
 
 	RETURN_STATUS;
 }

@@ -16,7 +16,7 @@ Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing ra
 Start vacuuming the primary database…
 The primary database has been vacuumed
 (?:\x1B\[[0-9;]*m)*The database file database1.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-The precizer completed its execution without any issues
+The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!
 The comparison of database1.db and database2.db databases is starting…
@@ -29,7 +29,7 @@ path2/AAA/ZAW/D/e/f/b_file.txt
 (?:\x1B\[[0-9;]*m)*The SHA512 checksums of these files do not match between database1.db and database2.db(?:\x1B\[[0-9;]*m)*
 1/AAA/BCB/CCC/a.txt
 Comparison of database1.db and database2.db databases is complete
-The precizer completed its execution without any issues
+The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!
 Primary database file name: database1.db
@@ -50,7 +50,7 @@ Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing ra
 Start vacuuming the primary database…
 The primary database has been vacuumed
 (?:\x1B\[[0-9;]*m)*The database file database1.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-The precizer completed its execution without any issues
+The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!
 The comparison of database1.db and database2.db databases is starting…
@@ -63,6 +63,6 @@ path2/AAA/ZAW/D/e/f/b_file.txt
 (?:\x1B\[[0-9;]*m)*The SHA512 checksums of these files do not match between database1.db and database2.db(?:\x1B\[[0-9;]*m)*
 1/AAA/BCB/CCC/a.txt
 Comparison of database1.db and database2.db databases is complete
-The precizer completed its execution without any issues
+The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!\Z

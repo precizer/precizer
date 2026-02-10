@@ -25,7 +25,10 @@ int exit_status(
 	} else {
 		if(TRIUMPH & status)
 		{
-			slog(EVERY,"The %s completed its execution without any issues\n",application_file_name);
+			if((INFO & status) == 0)
+			{
+				slog(EVERY,"The %s completed as expected\n",application_file_name);
+			}
 			slog(EVERY,"Exit status » %s\n",show_status(status));
 			slog(REGULAR,"Enjoy your life!\n");
 			return((int)COMPLETED);

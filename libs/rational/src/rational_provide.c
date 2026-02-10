@@ -11,6 +11,7 @@ const char *show_status(const Return status)
 		case FAILURE:   return "FAILURE";
 		case WARNING:   return "WARNING";
 		case DONOTHING: return "DONOTHING";
+		case INFO:      return "INFO";
 		case HALTED:    return "HALTED";
 		default:        return "UNKNOWN";
 	}
