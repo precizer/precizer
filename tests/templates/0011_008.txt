@@ -90,6 +90,6 @@ Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing ra
 Start vacuuming the primary database…
 The primary database has been vacuumed
 (?:\x1B\[[0-9;]*m)*The database file %DB_NAME% has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-The precizer completed its execution without any issues
+The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!\Z
