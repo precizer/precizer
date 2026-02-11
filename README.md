@@ -7,7 +7,12 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
+Comprehensive hybrid test suite:
+
+* In-process integration tests
+* Out-of-process CLI system tests
+
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/integration-coverage.svg" height="20" alt="Integration Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
 
 [![Precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
 

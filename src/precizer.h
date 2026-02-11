@@ -295,6 +295,15 @@ typedef struct {
 	/// Parameter to compare database
 	bool compare;
 
+	/// Show checksum mismatches in --compare output.
+	bool compare_filter_checksum_mismatch;
+
+	/// Show files that exist only in the first compared database.
+	bool compare_filter_first_source_only;
+
+	/// Show files that exist only in the second compared database.
+	bool compare_filter_second_source_only;
+
 	/// An array of paths to traverse
 	char **paths;
 
