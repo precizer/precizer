@@ -122,6 +122,13 @@ static struct argp_option options[] = {
 	{"check-level",'l',"FULL|QUICK",0,"Select database validation level: 'quick' for basic structure check, 'full' (default) for comprehensive integrity verification.\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
 	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n",0 },
+	{"compare-filter",'F',"checksum-mismatch|first-source-only|second-source-only",0,
+	 "Filter output categories for " BOLD "--compare" RESET ". "
+	 "Supported values: "
+	 BOLD "checksum-mismatch" RESET ", "
+	 BOLD "first-source-only" RESET ", "
+	 BOLD "second-source-only" RESET ". "
+	 "The option can be specified multiple times in any combination.\n",0},
 	{ 0,0,0,0,"Visualizations options:\n",-1},
 	{"silent",'s',0,0,"Don't produce any output. The option will not affect " BOLD "--compare" RESET,0 },
 	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore/--include" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.\n",0 },
@@ -222,6 +229,19 @@ static error_t parse_opt(
 		case 'c':
 			config->compare = true;
 			break;
+		case 'F':
+			if(arg != NULL && 0 == strcmp(arg,"checksum-mismatch"))
+			{
+				config->compare_filter_checksum_mismatch = true;
+			} else if(arg != NULL && 0 == strcmp(arg,"first-source-only")){
+				config->compare_filter_first_source_only = true;
+			} else if(arg != NULL && 0 == strcmp(arg,"second-source-only")){
+				config->compare_filter_second_source_only = true;
+			} else {
+				argp_failure(state,0,0,"ERROR: Unsupported --compare-filter value '%s'. Supported values: checksum-mismatch, first-source-only, second-source-only. See --help for more information",arg == NULL ? "" : arg);
+				return(EINVAL);
+			}
+			break;
 		case 'o':
 			config->start_device_only = true;
 			break;
@@ -311,6 +331,16 @@ static error_t parse_opt(
 			if(information_mode_requested == true)
 			{
 				break;
+			}
+
+			const bool compare_filter_specified = config->compare_filter_checksum_mismatch == true
+			        || config->compare_filter_first_source_only == true
+			        || config->compare_filter_second_source_only == true;
+
+			if(compare_filter_specified == true && config->compare == false)
+			{
+				argp_failure(state,0,0,"ERROR: --compare-filter can only be used together with --compare. See --help for more information");
+				return(EX_USAGE);
 			}
 
 			if(config->compare == true)
