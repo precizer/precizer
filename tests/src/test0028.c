@@ -1,5 +1,9 @@
 #include "sute.h"
 
+/**
+ * Runs precizer with the given arguments and validates output with optional
+ * stdout/stderr regex templates.
+ */
 static Return assert_compare_output(
 	const char *arguments,
 	const int expected_return_code,
@@ -44,6 +48,9 @@ static Return assert_compare_output(
 	return(status);
 }
 
+/**
+ * Prepares two databases with known differences for compare-filter tests.
+ */
 static Return prepare_compare_filter_differences_fixture(void)
 {
 	INITTEST;
@@ -88,6 +95,9 @@ static Return prepare_compare_filter_differences_fixture(void)
 	RETURN_STATUS;
 }
 
+/**
+ * Cleans temporary files created by the "differences" fixture.
+ */
 static Return cleanup_compare_filter_differences_fixture(void)
 {
 	INITTEST;
@@ -102,6 +112,9 @@ static Return cleanup_compare_filter_differences_fixture(void)
 	RETURN_STATUS;
 }
 
+/**
+ * Prepares two equal databases for compare-filter tests.
+ */
 static Return prepare_compare_filter_equal_fixture(void)
 {
 	INITTEST;
@@ -133,6 +146,9 @@ static Return prepare_compare_filter_equal_fixture(void)
 	RETURN_STATUS;
 }
 
+/**
+ * Cleans temporary files created by the "equal" fixture.
+ */
 static Return cleanup_compare_filter_equal_fixture(void)
 {
 	INITTEST;
