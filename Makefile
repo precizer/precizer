@@ -590,7 +590,7 @@ tests-in-docker: build-docker
 	done
 
 #
-# Generic docker targets (parsing using make functions only)
+# Generic docker targets
 #
 # Supported:
 #   make docker                           -> docker-export (defaults)
