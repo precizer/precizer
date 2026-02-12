@@ -176,6 +176,10 @@ unzip -jqo precizer.zip '*/precizer' -d ./
   * [Через форму GitHub Дискуссий](https://github.com/precizer/precizer/discussions).
   * Там же на GitHub можно [опубликовать багрепорт или feature request](https://github.com/precizer/precizer/issues/new).
 
+## УЧАСТИЕ В ПРОЕКТЕ
+
+Участие в развитии проекта приветствуется. Начните с [CONTRIBUTING.md](CONTRIBUTING.md): там описаны рабочий процесс, зависимости, шаги проверки и требования к pull request. Актуальные запросы можно выбрать в списке [Issues](https://github.com/precizer/precizer/issues) по уровню и интересу.
+
 ## СБОРКА И УСТАНОВКА
 
 ### Пакетирование для дистрибутивов
