@@ -1,4 +1,558 @@
 #include "sute.h"
+#include "db_upgrade.h"
+
+#define LEGACY_V3_UTF8_DB "0015_database_v3 это база данных с пробелами и символами UTF-8.db"
+#define LEGACY_V4_UTF8_DB "0015_database_v4 это база данных с пробелами и символами UTF-8.db"
+
+static Return open_db_from_tmpdir(
+	const char *db_filename,
+	const int  open_flags,
+	sqlite3    **db_out)
+{
+	Return status = SUCCESS;
+
+	create(char,db_path);
+
+	if(db_filename == NULL || db_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(db_filename,db_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		*db_out = NULL;
+
+		if(SQLITE_OK != sqlite3_open_v2(getcstring(db_path),db_out,open_flags,NULL))
+		{
+			status = FAILURE;
+
+			if(*db_out != NULL)
+			{
+				(void)sqlite3_close(*db_out);
+				*db_out = NULL;
+			}
+		}
+	}
+
+	del(db_path);
+
+	return(status);
+}
+
+static Return read_first_row_id(
+	const char    *db_filename,
+	sqlite3_int64 *row_id_out)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "SELECT ID FROM files ORDER BY ID ASC LIMIT 1;";
+
+	if(db_filename == NULL || row_id_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_step(stmt);
+
+		if(SQLITE_ROW == rc)
+		{
+			*row_id_out = sqlite3_column_int64(stmt,0);
+			rc = sqlite3_step(stmt);
+
+			if(SQLITE_DONE != rc)
+			{
+				status = FAILURE;
+			}
+		} else {
+			status = FAILURE;
+		}
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
+static Return overwrite_stat_blob_by_row_id(
+	const char          *db_filename,
+	const sqlite3_int64 row_id,
+	const void          *blob,
+	const int           blob_size)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "UPDATE files SET stat = ?1 WHERE ID = ?2;";
+
+	if(db_filename == NULL || blob == NULL || blob_size < 0)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READWRITE,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_blob(stmt,1,blob,blob_size,SQLITE_TRANSIENT))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_int64(stmt,2,row_id))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_DONE != sqlite3_step(stmt))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && sqlite3_changes(db) < 1)
+	{
+		status = FAILURE;
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
+static Return read_files_count(
+	const char *db_filename,
+	int        *count_out)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "SELECT COUNT(*) FROM files;";
+
+	if(db_filename == NULL || count_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_step(stmt);
+
+		if(SQLITE_ROW == rc)
+		{
+			*count_out = sqlite3_column_int(stmt,0);
+			rc = sqlite3_step(stmt);
+
+			if(SQLITE_DONE != rc)
+			{
+				status = FAILURE;
+			}
+		} else {
+			status = FAILURE;
+		}
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
+static Return read_files_count_with_blob_size(
+	const char *db_filename,
+	const int  blob_size,
+	int        *count_out)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "SELECT COUNT(*) FROM files WHERE length(stat) = ?1;";
+
+	if(db_filename == NULL || blob_size < 0 || count_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_int(stmt,1,blob_size))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_step(stmt);
+
+		if(SQLITE_ROW == rc)
+		{
+			*count_out = sqlite3_column_int(stmt,0);
+			rc = sqlite3_step(stmt);
+
+			if(SQLITE_DONE != rc)
+			{
+				status = FAILURE;
+			}
+		} else {
+			status = FAILURE;
+		}
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
+static Return read_db_version_from_metadata(
+	const char *db_filename,
+	int        *db_version_out)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "SELECT db_version FROM metadata LIMIT 1;";
+
+	if(db_filename == NULL || db_version_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_step(stmt);
+
+		if(SQLITE_ROW == rc)
+		{
+			*db_version_out = sqlite3_column_int(stmt,0);
+			rc = sqlite3_step(stmt);
+
+			if(SQLITE_DONE != rc)
+			{
+				status = FAILURE;
+			}
+		} else {
+			status = FAILURE;
+		}
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
+static Return read_stat_blob_by_row_id(
+	const char          *db_filename,
+	const sqlite3_int64 row_id,
+	unsigned char       *blob_out,
+	const size_t        blob_out_size,
+	int                 *blob_size_out)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "SELECT stat FROM files WHERE ID = ?1;";
+
+	if(db_filename == NULL || blob_size_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_int64(stmt,1,row_id))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_step(stmt);
+
+		if(SQLITE_ROW == rc)
+		{
+			const void *blob = sqlite3_column_blob(stmt,0);
+			const int blob_size = sqlite3_column_bytes(stmt,0);
+
+			if(blob_size < 0)
+			{
+				status = FAILURE;
+			}
+
+			if(SUCCESS == status && blob_size > 0 && blob == NULL)
+			{
+				status = FAILURE;
+			}
+
+			if(SUCCESS == status && blob_out != NULL)
+			{
+				if((size_t)blob_size > blob_out_size)
+				{
+					status = FAILURE;
+				} else if(blob_size > 0){
+					memcpy(blob_out,blob,(size_t)blob_size);
+				}
+			}
+
+			if(SUCCESS == status)
+			{
+				*blob_size_out = blob_size;
+			}
+
+			rc = sqlite3_step(stmt);
+
+			if(SUCCESS == status && SQLITE_DONE != rc)
+			{
+				status = FAILURE;
+			}
+		} else {
+			status = FAILURE;
+		}
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
+static Return read_cmpctstat_by_row_id(
+	const char          *db_filename,
+	const sqlite3_int64 row_id,
+	CmpctStat           *stat_out)
+{
+	Return status = SUCCESS;
+	unsigned char raw[sizeof(CmpctStat)];
+	int blob_size = 0;
+
+	if(stat_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = read_stat_blob_by_row_id(db_filename,row_id,raw,sizeof(raw),&blob_size);
+	}
+
+	if(SUCCESS == status && blob_size != (int)sizeof(CmpctStat))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		memcpy(stat_out,raw,sizeof(CmpctStat));
+	}
+
+	return(status);
+}
+
+static Return verify_zero_converted_cmpctstat(
+	const CmpctStat *stat)
+{
+	if(stat == NULL)
+	{
+		return FAILURE;
+	}
+
+	if(stat->st_size != 0)
+	{
+		return FAILURE;
+	}
+
+	if(stat->st_blocks != BLKCNT_UNKNOWN)
+	{
+		return FAILURE;
+	}
+
+	if(stat->st_dev != 0 || stat->st_ino != 0)
+	{
+		return FAILURE;
+	}
+
+	if(stat->mtim_tv_sec != 0 || stat->mtim_tv_nsec != 0)
+	{
+		return FAILURE;
+	}
+
+	if(stat->ctim_tv_sec != 0 || stat->ctim_tv_nsec != 0)
+	{
+		return FAILURE;
+	}
+
+	return SUCCESS;
+}
+
+static Return corrupt_first_row_stat_blob(
+	const char    *db_filename,
+	sqlite3_int64 *row_id_out)
+{
+	Return status = SUCCESS;
+	sqlite3_int64 row_id = 0;
+	const unsigned char corrupt_blob[] = {0xA5};
+
+	if(SUCCESS == status)
+	{
+		status = read_first_row_id(db_filename,&row_id);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = overwrite_stat_blob_by_row_id(db_filename,row_id,corrupt_blob,(int)sizeof(corrupt_blob));
+	}
+
+	if(SUCCESS == status && row_id_out != NULL)
+	{
+		*row_id_out = row_id;
+	}
+
+	return(status);
+}
+
+static Return create_abort_on_second_stat_update_trigger(
+	const char *db_filename)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	const char *sql =
+	        "DROP TRIGGER IF EXISTS __test_abort_on_second_update;"
+	        "DROP TABLE IF EXISTS __test_fail_counter;"
+	        "CREATE TABLE __test_fail_counter(n INTEGER NOT NULL);"
+	        "INSERT INTO __test_fail_counter(n) VALUES(0);"
+	        "CREATE TRIGGER __test_abort_on_second_update "
+	        "BEFORE UPDATE OF stat ON files "
+	        "BEGIN "
+	        "UPDATE __test_fail_counter SET n = n + 1;"
+	        "SELECT CASE WHEN (SELECT n FROM __test_fail_counter LIMIT 1) >= 2 "
+	        "THEN RAISE(ABORT,'forced rollback test failure') END;"
+	        "END;";
+
+	if(db_filename == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READWRITE,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_exec(db,sql,NULL,NULL,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
 
 /**
  *
@@ -594,6 +1148,195 @@ Return test0015_14_checksum_compare(void)
 }
 
 /**
+ * Corrupt one v0 row stat blob and verify that upgrade still completes.
+ * The corrupted row must end up as converted "zero source" v4 compact stat.
+ */
+Return test0015_15_corrupt_row_v0_upgrade_continues(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command =
+	        "cp -a \"${ORIGIN_DIR}/tests/templates/0015_database_v0.db\" "
+	        "\"${TMPDIR}/0015_database_v0_corrupt.db\" && "
+	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V4_UTF8_DB "\" "
+	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	sqlite3_int64 row_id = 0;
+	ASSERT(SUCCESS == corrupt_first_row_stat_blob("0015_database_v0_corrupt.db",&row_id));
+
+	create(char,result);
+	create(char,pattern);
+
+	const char *arguments = "--compare --update "
+	        "0015_database_v4_reference.db 0015_database_v0_corrupt.db";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	const char *filename = "templates/0015_015.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	int db_version = 0;
+	ASSERT(SUCCESS == read_db_version_from_metadata("0015_database_v0_corrupt.db",&db_version));
+	ASSERT(db_version == 4);
+
+	CmpctStat stat = {0};
+	ASSERT(SUCCESS == read_cmpctstat_by_row_id("0015_database_v0_corrupt.db",row_id,&stat));
+	ASSERT(SUCCESS == verify_zero_converted_cmpctstat(&stat));
+
+	command = "rm -f \"${TMPDIR}/0015_database_v0_corrupt.db\" "
+	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(result);
+	del(pattern);
+
+	RETURN_STATUS;
+}
+
+/**
+ * Corrupt one v3 row stat blob and verify that upgrade still completes.
+ * The corrupted row must be stored using zero-source conversion logic.
+ */
+Return test0015_16_corrupt_row_v3_upgrade_continues(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command =
+	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V3_UTF8_DB "\" "
+	        "\"${TMPDIR}/0015_database_v3_corrupt.db\" && "
+	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V4_UTF8_DB "\" "
+	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	sqlite3_int64 row_id = 0;
+	ASSERT(SUCCESS == corrupt_first_row_stat_blob("0015_database_v3_corrupt.db",&row_id));
+
+	create(char,result);
+	create(char,pattern);
+
+	const char *arguments = "--compare --update "
+	        "0015_database_v4_reference.db 0015_database_v3_corrupt.db";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	const char *filename = "templates/0015_016.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	int db_version = 0;
+	ASSERT(SUCCESS == read_db_version_from_metadata("0015_database_v3_corrupt.db",&db_version));
+	ASSERT(db_version == 4);
+
+	CmpctStat stat = {0};
+	ASSERT(SUCCESS == read_cmpctstat_by_row_id("0015_database_v3_corrupt.db",row_id,&stat));
+	ASSERT(SUCCESS == verify_zero_converted_cmpctstat(&stat));
+
+	command = "rm -f \"${TMPDIR}/0015_database_v3_corrupt.db\" "
+	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(result);
+	del(pattern);
+
+	RETURN_STATUS;
+}
+
+/**
+ * Regression test: when a SQLite error occurs during 3->4 migration,
+ * the opened transaction must be rolled back.
+ */
+Return test0015_17_rollback_on_sqlite_failure(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *command =
+	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V3_UTF8_DB "\" "
+	        "\"${TMPDIR}/0015_database_v3_rollback.db\" && "
+	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V4_UTF8_DB "\" "
+	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	int files_count = 0;
+	ASSERT(SUCCESS == read_files_count("0015_database_v3_rollback.db",&files_count));
+	ASSERT(files_count >= 2);
+
+	sqlite3_int64 row_id = 0;
+	ASSERT(SUCCESS == read_first_row_id("0015_database_v3_rollback.db",&row_id));
+
+	unsigned char before_blob[512];
+	int before_blob_size = 0;
+	ASSERT(SUCCESS == read_stat_blob_by_row_id("0015_database_v3_rollback.db",
+	                                           row_id,
+	                                           before_blob,
+	                                           sizeof(before_blob),
+	                                           &before_blob_size));
+
+	int v1_rows_before = 0;
+	ASSERT(SUCCESS == read_files_count_with_blob_size("0015_database_v3_rollback.db",
+	                                                  (int)sizeof(CmpctStat_v1),
+	                                                  &v1_rows_before));
+
+	ASSERT(SUCCESS == create_abort_on_second_stat_update_trigger("0015_database_v3_rollback.db"));
+
+	create(char,result);
+	create(char,pattern);
+
+	const char *arguments = "--compare --update "
+	        "0015_database_v4_reference.db 0015_database_v3_rollback.db";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
+	const char *filename = "templates/0015_017.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	int db_version = 0;
+	ASSERT(SUCCESS == read_db_version_from_metadata("0015_database_v3_rollback.db",&db_version));
+	ASSERT(db_version == 3);
+
+	unsigned char after_blob[512];
+	int after_blob_size = 0;
+	ASSERT(SUCCESS == read_stat_blob_by_row_id("0015_database_v3_rollback.db",
+	                                           row_id,
+	                                           after_blob,
+	                                           sizeof(after_blob),
+	                                           &after_blob_size));
+
+	ASSERT(before_blob_size == after_blob_size);
+
+	if(before_blob_size > 0)
+	{
+		ASSERT(0 == memcmp(before_blob,after_blob,(size_t)before_blob_size));
+	}
+
+	int v1_rows_after = 0;
+	ASSERT(SUCCESS == read_files_count_with_blob_size("0015_database_v3_rollback.db",
+	                                                  (int)sizeof(CmpctStat_v1),
+	                                                  &v1_rows_after));
+	ASSERT(v1_rows_before == v1_rows_after);
+
+	command = "rm -f \"${TMPDIR}/0015_database_v3_rollback.db\" "
+	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(result);
+	del(pattern);
+
+	RETURN_STATUS;
+}
+
+/**
  * Testing scenario 15
  *
  * Database upgrade testing:
@@ -602,6 +1345,8 @@ Return test0015_14_checksum_compare(void)
  * - Launch the program without specifying a database to ensure that a new database is created with the correct version
  * - Compare a current database with an outdated version (v0) without --update and check for the expected error
  * - Validate UTF-8 database names and checksum compatibility against a legacy v4 database
+ * - Verify upgrade resilience for corrupted stat blobs in legacy DB v0 and v3
+ * - Regression-check rollback behavior on forced SQLite failure during migration
  */
 Return test0015(void)
 {
@@ -622,6 +1367,9 @@ Return test0015(void)
 	TEST(test0015_12_upgrade_db,"Upgrading from 3 with UTF-8 name to the last version using the --update…");
 	TEST(test0015_13_upgrade_db,"Upgrading from 3 to the last version using the --compare and --update…");
 	TEST(test0015_14_checksum_compare,"Create and compare DBs with UTF-8 names and checksums from legacy DB…");
+	TEST(test0015_15_corrupt_row_v0_upgrade_continues,"Corrupted v0 stat blob does not break the full upgrade…");
+	TEST(test0015_16_corrupt_row_v3_upgrade_continues,"Corrupted v3 stat blob does not break the full upgrade…");
+	TEST(test0015_17_rollback_on_sqlite_failure,"Forced SQLite failure triggers rollback during 3->4 migration…");
 
 	RETURN_STATUS;
 }
