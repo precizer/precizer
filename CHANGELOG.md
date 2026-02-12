@@ -9,6 +9,10 @@ All notable changes will be documented in this file
 - Added `--dry-run=with-checksums` mode for `--dry-run`. In this mode, files are read and checksums are calculated without writing to the database.
 - Added `--compare-filter` for `--compare` output scoping (`checksum-mismatch`, `first-source-only`, `second-source-only`) with support for repeated combined filters.
 
+## Changed
+- Disk usage calculation now uses allocated block count (`st_blocks`) instead of logical file length (`st_size`). This reflects actual on‑disk space usage rather than apparent size.
+- Database format upgraded to version 4 to support the new accounting model; the migration is fully automatic and transparent for users.
+
 ## Documentation
 - Added a `TROUBLESHOOTING` section to `README.md` with guidance for diagnosing slow filesystem walks, checksum computation, and SQLite `.db` write performance.
 
