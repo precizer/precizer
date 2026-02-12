@@ -27,10 +27,13 @@ void show_metadata(
 			break;
 		case ALLOCATED_SIZE_CHANGED:
 			{
+#if 1
+				/* This legacy can be removed in 2036 (10-year Long-Term Support) */
 				if(was->st_blocks == BLKCNT_UNKNOWN)
 				{
-					return;
+					break;
 				}
+#endif
 				slog(log_level," was:%s",bkbmbgbtbpbeb(blocks_to_bytes(was->st_blocks),FULL_VIEW));
 				slog(log_level,", now:%s",bkbmbgbtbpbeb(blocks_to_bytes(now->st_blocks),FULL_VIEW));
 			}

@@ -86,9 +86,13 @@ static void print_changes(
 			 * with actual data). This is a migration side effect: in database versions prior to 4,
 			 * this field was not persisted.
 			 *
-			 * This legacy can be removed in 2036 (10-year Long-Term Support)
 			 */
+#if 1
+			/* This legacy can be removed in 2036 (10-year Long-Term Support) */
 			if(flag->flag_value == ALLOCATED_SIZE_CHANGED && dbrow->saved_stat.st_blocks == BLKCNT_UNKNOWN)
+#else
+			if(flag->flag_value == ALLOCATED_SIZE_CHANGED)
+#endif
 			{
 				continue;
 			}
