@@ -33,13 +33,7 @@ paths=tests/examples/diffs/diff1; database=0015_database_v2.db; db_file_name=001
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Store the database version \d+ in the metadata table
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_specify_version.c:\d+:db_specify_version:The database version \d+ has been successfully stored in the DB
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version 2 to version 3 completed
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version 3 to version 4 started
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Store the database version 4 in the metadata table
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_specify_version.c:\d+:db_specify_version:The database version 4 has been successfully stored in the DB
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close.c:\d+:db_close:The database connection has been closed
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version 3 to version 4 completed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:Migration from version 2 to version 4 completed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade.c:\d+:db_upgrade:The database has been successfully upgraded
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version.c:\d+:db_check_version:The primary database doesn't need to be vacuumed during updates
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init.c:\d+:db_init:Successfully opened database 0015_database_v2.db
