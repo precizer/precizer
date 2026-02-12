@@ -11,8 +11,7 @@
 /**
  * @brief Convert CmpctStat_v1 into CmpctStat (v4 layout).
  *
- * Caller may pass a zero-initialized source for corrupted rows; in that case
- * the destination remains a valid zeroed v4 record.
+ * Source data must be a validated v3 compact stat blob.
  */
 static void convert_blob_to_v4_stat(
 	const CmpctStat_v1 *source,
@@ -33,8 +32,7 @@ static void convert_blob_to_v4_stat(
 /**
  * @brief Migrate one files row to v4 stat format.
  *
- * Row with invalid blob size/content is not fatal: a zeroed source is used and
- * a zeroed v4 stat is written. FAILURE is returned only for SQLite errors.
+ * Row with invalid blob size/content is fatal and aborts migration.
  */
 static Return process_row(
 	sqlite3_stmt *stmt,
@@ -58,14 +56,20 @@ static Return process_row(
 		{
 			source = blob;
 		} else {
-			slog(ERROR,"Invalid v3 stat blob pointer for row id=%lld (size=%d). Zero stat will be stored\n",(long long)row_id,blob_size);
+			slog(ERROR,"Invalid v3 stat blob pointer for row id=%lld (size=%d). Aborting migration to avoid metadata loss\n",(long long)row_id,blob_size);
+			status = FAILURE;
 		}
 	} else {
-		slog(ERROR,"Invalid v3 stat blob size for row id=%lld (got=%d, expected=%zu). Zero stat will be stored\n",(long long)row_id,blob_size,sizeof(CmpctStat_v1));
+		slog(ERROR,"Invalid v3 stat blob size for row id=%lld (got=%d, expected=%zu). Aborting migration to avoid metadata loss\n",(long long)row_id,blob_size,sizeof(CmpctStat_v1));
+		status = FAILURE;
 	}
 
 	CmpctStat destination = {0};
-	convert_blob_to_v4_stat(source,&destination);
+
+	if(SUCCESS == status)
+	{
+		convert_blob_to_v4_stat(source,&destination);
+	}
 
 	sqlite3_stmt *update_stmt = NULL;
 	const char *update_sql = "UPDATE files SET stat = ?1 WHERE ID = ?2";
@@ -124,8 +128,8 @@ static Return process_row(
 /**
  * @brief Convert all files.stat blobs to v4 format.
  *
- * Corrupted row payloads do not stop migration; iteration stops only on SQLite
- * errors or external interruption.
+ * Corrupted row payloads stop migration to avoid data loss; iteration also
+ * stops on SQLite errors or external interruption.
  */
 static Return process_database(
 	sqlite3 *db,

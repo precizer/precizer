@@ -99,8 +99,7 @@ static Return populate_from_glibc_stat_blob(
 /**
  * @brief Convert and rewrite one row of the files table.
  *
- * Invalid legacy blobs are replaced with a zeroed CmpctStat_v1 and migration
- * continues; FAILURE is returned only for SQLite errors.
+ * Invalid legacy blobs are fatal and abort migration.
  *
  * @param[in] stmt Prepared statement positioned at the current row.
  * @param[out] db_file_modified Set to true when row update succeeds.
@@ -133,8 +132,8 @@ static Return process_row(
 
 	if(SUCCESS != conversion_status)
 	{
-		memset(&new_stat,0,sizeof(new_stat));
-		slog(ERROR,"Invalid legacy stat blob for row id=%lld (len=%d). Zero v1 stat will be stored\n",(long long)row_id,blob_size);
+		slog(ERROR,"Invalid legacy stat blob for row id=%lld (len=%d). Aborting migration to avoid metadata loss\n",(long long)row_id,blob_size);
+		status = FAILURE;
 	}
 
 	/* Prepare update statement */
@@ -182,8 +181,8 @@ static Return process_row(
 /**
  * @brief Process all rows of the files table for v0->v1 conversion.
  *
- * Row-level data corruption does not stop migration. The function fails only on
- * SQLite iteration/update errors or external interruption.
+ * Row-level data corruption stops migration. The function also fails on SQLite
+ * iteration/update errors or external interruption.
  *
  * @param[in] db Open SQLite handle.
  * @param[out] db_file_modified Set to true when at least one row is updated.
