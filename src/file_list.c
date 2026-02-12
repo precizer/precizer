@@ -1,49 +1,6 @@
 #include "precizer.h"
 
 /**
- * @brief Display statistics for filesystem components
- *
- */
-static void display_statistics(
-	size_t       *count_dirs,
-	size_t       *count_files,
-	size_t       *count_symlnks,
-	size_t const *total_size_in_bytes,
-	const bool   *count_size_of_all_files,
-	const bool   *at_least_one_file_was_shown)
-{
-	size_t total_items = *count_dirs + *count_files + *count_symlnks;
-
-	bool show_total = false;
-	bool show_complete = false;
-
-	if(*count_size_of_all_files == true)
-	{
-		show_total = true;
-
-	} else if(*at_least_one_file_was_shown == true){
-
-		show_complete = true;
-		show_total = true;
-	}
-
-	if(show_complete == true)
-	{
-		slog(EVERY,"File traversal complete\n");
-	}
-
-	if(show_total == true)
-	{
-		slog(EVERY,"Total size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",
-			bkbmbgbtbpbeb(*total_size_in_bytes),
-			total_items,
-			*count_dirs,
-			*count_files,
-			*count_symlnks);
-	}
-}
-
-/**
  * @brief Compare two FTS entries by filename
  * @param first Pointer to first FTSENT structure
  * @param second Pointer to second FTSENT structure
@@ -97,11 +54,16 @@ static Return match_include_ignore(
 }
 
 /**
+ * @brief Traverse configured paths and process files for one pass.
  *
- * Traverses directories recursively and processes files for the DB
+ * Supports two modes controlled by summary->stats_only_pass:
+ * - true: collect counters and allocated size only;
+ * - false: hash files, update DB rows, and collect timing/hash metrics.
  *
+ * @param summary Traversal state that is reset and populated by this call.
+ * @return SUCCESS, WARNING, or FAILURE.
  */
-Return file_list(const bool count_size_of_all_files)
+Return file_list(TraversalSummary *summary)
 {
 	/// The status that will be passed to return() before exiting.
 	/// By default, the function worked without errors.
@@ -113,7 +75,7 @@ Return file_list(const bool count_size_of_all_files)
 		return(status);
 	}
 
-	if(config->progress == false && count_size_of_all_files == true)
+	if(config->progress == false && summary->stats_only_pass == true)
 	{
 		// Don't do anything
 		return(status);
@@ -134,9 +96,6 @@ Return file_list(const bool count_size_of_all_files)
 	// Prevent duplicate lock-checksum info messages
 	bool lock_checksum_showed_once = false;
 
-	// Track whether any output was produced
-	bool at_least_one_file_was_shown = false;
-
 	// Signals integrity issues for locked files
 	bool lock_checksum_violation_detected = false;
 
@@ -150,7 +109,26 @@ Return file_list(const bool count_size_of_all_files)
 		fts_options |= FTS_XDEV;
 	}
 
-	size_t count_files = 0,count_dirs = 0,count_symlnks = 0,total_size_in_bytes = 0;
+	// Reset traversal counters and timing for this pass.
+	summary->count_dirs = 0;
+
+	// Number of regular files seen in this pass.
+	summary->count_files = 0;
+
+	// Number of symlinks seen in this pass.
+	summary->count_symlnks = 0;
+
+	// Sum of allocated bytes for encountered files.
+	summary->total_allocated_bytes = 0;
+
+	// Sum of bytes hashed by SHA512 during this pass.
+	summary->total_hashed_bytes = 0;
+
+	// Track whether any output was produced
+	summary->at_least_one_file_was_shown = false;
+
+	// Sum of per-file hashing elapsed time in nanoseconds.
+	summary->total_hashing_elapsed_ns = 0LL;
 
 	if((file_systems = fts_open(config->paths,fts_options,compare_by_name)) == NULL)
 	{
@@ -179,7 +157,7 @@ Return file_list(const bool count_size_of_all_files)
 		slog(EVERY,"Recursion depth limited to: %d\n",config->maxdepth);
 	}
 
-	if(count_size_of_all_files == true && config->progress == true)
+	if(summary->stats_only_pass == true && config->progress == true)
 	{
 		slog(EVERY,"File system traversal initiated to calculate file count and storage usage\n");
 	}
@@ -189,7 +167,7 @@ Return file_list(const bool count_size_of_all_files)
 	// Allocate space for a memory structure
 	create(unsigned char,file_buffer);
 
-	if(count_size_of_all_files == false)
+	if(summary->stats_only_pass == false)
 	{
 		status = resize(file_buffer,file_buffer_memory());
 
@@ -286,12 +264,11 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
-				if(count_size_of_all_files == false)
+				if(summary->stats_only_pass == false)
 				{
 					directory_show(relative_path,
 						&first_iteration,
-						&at_least_one_file_was_shown,
-						count_size_of_all_files,
+						summary,
 						ignore,
 						include);
 				}
@@ -306,15 +283,14 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
-				if(count_size_of_all_files == false)
+				if(summary->stats_only_pass == false)
 				{
 					// Check access and skip subtrees that are not readable.
 					status = verify_directory_access(file_systems,
 						p,
 						runtime_root,
 						&first_iteration,
-						&at_least_one_file_was_shown,
-						count_size_of_all_files);
+						summary);
 				}
 
 				if(SUCCESS != status)
@@ -323,7 +299,7 @@ Return file_list(const bool count_size_of_all_files)
 					break;
 				}
 
-				count_dirs++;
+				summary->count_dirs++;
 				break;
 			}
 			case FTS_F:
@@ -332,10 +308,10 @@ Return file_list(const bool count_size_of_all_files)
 
 				(void)stat_copy(p->fts_statp,&stat);
 
-				total_size_in_bytes += (size_t)stat.st_size;
-				count_files++;
+				summary->total_allocated_bytes += blocks_to_bytes(stat.st_blocks);
+				summary->count_files++;
 
-				if(count_size_of_all_files == true)
+				if(summary->stats_only_pass == true)
 				{
 					continue;
 				}
@@ -364,16 +340,16 @@ Return file_list(const bool count_size_of_all_files)
 
 				const bool has_saved_offset = dbrow->saved_offset > 0;
 
-				// Validate if size, creation and modification time of a
-				// file has not changed since last scanning.
+				// Validate whether logical size, allocated blocks, and ctime/mtime
+				// changed since the previous scan.
 				// Default value is:
 				Changed metadata_of_scanned_and_saved_files = NOT_EQUAL;
 
 				// Tracks if the current relative path already has a DB entry
 				if(path_known == true)
 				{
-					// Validate if size, creation and modification time of a
-					// file has not changed since last scanning.
+					// Validate whether logical size, allocated blocks, and ctime/mtime
+					// changed since the previous scan.
 					metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),&stat);
 				}
 
@@ -468,7 +444,7 @@ Return file_list(const bool count_size_of_all_files)
 				        && has_saved_offset == false;
 
 				// Decision whether to rehash the file contents using
-				// the SHA512 algorithm. Defaults to Yes, rehash"
+				// the SHA512 algorithm. Defaults to rehash.
 				bool rehash = true;
 
 				if(timestamps_only_changed == true)
@@ -531,7 +507,7 @@ Return file_list(const bool count_size_of_all_files)
 				// errno snapshot from the read error (valid when read_error is true).
 				int read_errno = 0;
 
-				if(p->fts_statp->st_size == 0)
+				if(stat.st_size == 0)
 				{
 					zero_size_file = true;
 					rehash = false;
@@ -576,6 +552,7 @@ Return file_list(const bool count_size_of_all_files)
 							file_buffer,
 							sha512,
 							&offset,
+							summary,
 							&mdContext,
 							&read_error,
 							&read_errno,
@@ -710,11 +687,11 @@ Return file_list(const bool count_size_of_all_files)
 				if(show_log == true)
 				{
 					// Print out of a file name and its changes
-					file_show(dbrow,
+					show_file(dbrow,
 						relative_path,
 						&stat,
 						&first_iteration,
-						&at_least_one_file_was_shown,
+						summary,
 						metadata_of_scanned_and_saved_files,
 						rehashing_from_the_beginning,
 						ignore,
@@ -725,7 +702,6 @@ Return file_list(const bool count_size_of_all_files)
 						hash_interrupted,
 						offset,
 						rehash,
-						count_size_of_all_files,
 						is_readable,
 						zero_size_file,
 						db_inserted,
@@ -737,13 +713,13 @@ Return file_list(const bool count_size_of_all_files)
 				break;
 			}
 			case FTS_SL:
-				count_symlnks++;
+				summary->count_symlnks++;
 				break;
 			case FTS_DNR:
 			case FTS_ERR:
 			case FTS_NS:
 			{
-				if(count_size_of_all_files == true)
+				if(summary->stats_only_pass == true)
 				{
 					break;
 				}
@@ -752,15 +728,15 @@ Return file_list(const bool count_size_of_all_files)
 
 				if(p->fts_info == FTS_DNR)
 				{
-					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,&at_least_one_file_was_shown,count_size_of_all_files,"inaccessible directory %s\n",relative_path);
+					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"inaccessible directory %s\n",relative_path);
 
 				} else if(p->fts_info == FTS_NS){
 
-					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,&at_least_one_file_was_shown,count_size_of_all_files,"cannot stat \"%s\" when reading %s\n",strerror(p->fts_errno),relative_path);
+					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"cannot stat \"%s\" when reading %s\n",strerror(p->fts_errno),relative_path);
 
 				} else {
 
-					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,&at_least_one_file_was_shown,count_size_of_all_files,"fts error \"%s\" when reading %s\n",strerror(p->fts_errno),relative_path);
+					slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"fts error \"%s\" when reading %s\n",strerror(p->fts_errno),relative_path);
 				}
 
 				break;
@@ -776,15 +752,20 @@ Return file_list(const bool count_size_of_all_files)
 
 	fts_close(file_systems);
 
-	// Display statistics for filesystem components
+	// Print completion banner only when traversal emitted visible path-level lines.
+	// Print preflight totals only for the stats-only pass from main().
 	if(SUCCESS == status)
 	{
-		display_statistics(&count_dirs,
-			&count_files,
-			&count_symlnks,
-			&total_size_in_bytes,
-			&count_size_of_all_files,
-			&at_least_one_file_was_shown);
+		if(summary->at_least_one_file_was_shown == true)
+		{
+
+			slog(EVERY,"File traversal complete\n");
+		}
+
+		if(summary->stats_only_pass == true)
+		{
+			show_statistics(summary);
+		}
 	}
 
 	if(lock_checksum_violation_detected == true)

@@ -25,9 +25,9 @@ TESTING:DB mode determined
 TESTING:Starting database file %DB_NAME% integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database %DB_NAME% has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The %DB_NAME% database file is version 3
-TESTING:The database %DB_NAME% is on version 3 and does not require any upgrades
+TESTING:Version number 4 found in database
+TESTING:The %DB_NAME% database file is version 4
+TESTING:The database %DB_NAME% is on version 4 and does not require any upgrades
 TESTING:Successfully opened database %DB_NAME%
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named %DB_NAME% is ready for operations
@@ -44,13 +44,14 @@ add AAA/BBB/CCC/a.txt
 add AAA/BBB/uuu.txt
 add AAA/tttt.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The database file %DB_NAME% has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

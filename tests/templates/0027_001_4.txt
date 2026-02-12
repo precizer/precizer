@@ -2,7 +2,7 @@
 Starting database file lock1.db integrity check…
 Database lock1.db has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
-Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 Update mode enabled for DB lock1.db
 File traversal started
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock1.db:(?:\x1B\[[0-9;]*m)*
@@ -11,10 +11,11 @@ update stat diff2/2/AAA/BBB/CZC/a.txt
 update & rehash diff2/3/AAA/BBB/CCC/a.txt
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff2/path1/AAA/BCB/CCC/b.txt
 File traversal complete
-Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 (?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file.txt
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff2/path1/AAA/BCB/CCC/b.txt
+Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 ERROR: The precizer process terminated unexpectedly due to an error
 ERROR: Exit status » WARNING\Z

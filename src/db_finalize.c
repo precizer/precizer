@@ -21,7 +21,6 @@ Return db_finalize(
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
-	int rc = SQLITE_OK;
 
 	if(db == NULL || db_alias == NULL || stmt == NULL)
 	{
@@ -33,7 +32,7 @@ Return db_finalize(
 	{
 		if(*stmt != NULL)
 		{
-			rc = sqlite3_finalize(*stmt);
+			int rc = sqlite3_finalize(*stmt);
 
 			if(SQLITE_OK != rc)
 			{
@@ -70,7 +69,7 @@ Return db_finalize(
 
 		if(SUCCESS == status)
 		{
-			rc = sqlite3_exec(db,sql,NULL,NULL,NULL);
+			int rc = sqlite3_exec(db,sql,NULL,NULL,NULL);
 
 			if(SQLITE_OK != rc)
 			{
@@ -83,7 +82,7 @@ Return db_finalize(
 
 		if(SUCCESS == status)
 		{
-			rc = sqlite3_db_cacheflush(db);
+			int rc = sqlite3_db_cacheflush(db);
 
 			if(SQLITE_OK != rc)
 			{

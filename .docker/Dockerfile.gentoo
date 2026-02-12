@@ -10,6 +10,7 @@ RUN (emerge-webrsync || emerge --sync); \
     emerge --ask=n \
       dev-libs/libpcre2 \
       llvm-core/llvm \
+      dev-util/cmocka \
       app-arch/upx; \
     emerge --depclean
 

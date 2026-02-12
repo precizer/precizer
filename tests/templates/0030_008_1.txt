@@ -35,7 +35,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File system traversal initiated to calculate file count and storage usage
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB lock_s8\.db:(?:\x1B\[[0-9;]*m)*
@@ -52,11 +52,12 @@ add path2/AAA/BCB/CCC/a\.txt
 add path2/AAA/ZAW/A/b/c/a_file\.txt
 add path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file lock_s8\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

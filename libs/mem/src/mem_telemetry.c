@@ -301,29 +301,31 @@ void init_telemetry(void)
 
 void telemetry_show(void)
 {
-	printf("Telemetry: Outstanding heap bytes (expected 0): %s\n",bkbmbgbtbpbeb(telemetry.current_heap_bytes));
-	printf("Telemetry: Outstanding payload bytes (expected 0): %s\n",bkbmbgbtbpbeb(telemetry.current_payload_bytes));
-	printf("Telemetry: Peak heap footprint: %s\n",bkbmbgbtbpbeb(telemetry.peak_heap_bytes));
-	printf("Telemetry: Free operations count: %s\n",form(telemetry.release_operations_counter));
-	printf("Telemetry: Bytes released to the OS: %s\n",bkbmbgbtbpbeb(telemetry.total_heap_bytes_released));
-	printf("Telemetry: Shrink calls that forced immediate buffer release: %s\n",form(telemetry.release_unused_operations_counter));
-	printf("Telemetry: Bytes returned by those forced releases: %s\n",bkbmbgbtbpbeb(telemetry.release_unused_bytes_total));
-	printf("Telemetry: Fresh allocation count: %s\n",form(telemetry.fresh_allocations_counter));
-	printf("Telemetry: Zero-initialized allocation count: %s\n",form(telemetry.zero_initialized_allocations_counter));
-	printf("Telemetry: Optimized resize count: %s\n",form(telemetry.optimized_resizes_counter));
-	printf("Telemetry: Realignment resize count: %s\n",form(telemetry.heap_reallocations_counter));
-	printf("Telemetry: Total aligned bytes requested: %s\n",bkbmbgbtbpbeb(telemetry.total_heap_bytes_acquired));
-	printf("Telemetry: Total payload bytes requested: %s\n",bkbmbgbtbpbeb(telemetry.total_payload_bytes_acquired));
-	printf("Telemetry: Exact-size resize count: %s\n",form(telemetry.exact_size_resizes_counter));
-	printf("Telemetry: Allocation failures intercepted: %s\n",form(telemetry.heap_allocation_failures_counter));
-	printf("Telemetry: Reallocation failures intercepted: %s\n",form(telemetry.heap_reallocation_failures_counter));
-	printf("Telemetry: Current alignment overhead: %s\n",bkbmbgbtbpbeb(telemetry.current_alignment_overhead_bytes));
-	printf("Telemetry: Peak alignment overhead: %s\n",bkbmbgbtbpbeb(telemetry.peak_alignment_overhead_bytes));
-	printf("Telemetry: Total alignment overhead accrued: %s\n",bkbmbgbtbpbeb(telemetry.total_alignment_overhead_bytes));
-	printf("Telemetry: Current no-op resize streak: %s\n",form(telemetry.noop_resize_streak_current));
-	printf("Telemetry: Longest no-op resize streak: %s\n",form(telemetry.noop_resize_streak_peak));
-	printf("Telemetry: String padding injections: %s\n",form(telemetry.concat_zero_padding_counter));
-	printf("Telemetry: Active descriptors: %s\n",form(telemetry.active_descriptors));
-	printf("Telemetry: Peak active descriptors: %s\n",form(telemetry.peak_active_descriptors));
-	printf("Telemetry: Overflow guards triggered: %s\n",form(telemetry.overflow_guard_failures_counter));
+	char buf[FORM_OUTPUT_BUFFER_SIZE];
+
+	printf("Telemetry: Outstanding heap bytes (expected 0): %s\n",bkbmbgbtbpbeb(telemetry.current_heap_bytes,FULL_VIEW));
+	printf("Telemetry: Outstanding payload bytes (expected 0): %s\n",bkbmbgbtbpbeb(telemetry.current_payload_bytes,FULL_VIEW));
+	printf("Telemetry: Peak heap footprint: %s\n",bkbmbgbtbpbeb(telemetry.peak_heap_bytes,FULL_VIEW));
+	printf("Telemetry: Free operations count: %s\n",form(telemetry.release_operations_counter,buf,sizeof(buf)));
+	printf("Telemetry: Bytes released to the OS: %s\n",bkbmbgbtbpbeb(telemetry.total_heap_bytes_released,FULL_VIEW));
+	printf("Telemetry: Shrink calls that forced immediate buffer release: %s\n",form(telemetry.release_unused_operations_counter,buf,sizeof(buf)));
+	printf("Telemetry: Bytes returned by those forced releases: %s\n",bkbmbgbtbpbeb(telemetry.release_unused_bytes_total,FULL_VIEW));
+	printf("Telemetry: Fresh allocation count: %s\n",form(telemetry.fresh_allocations_counter,buf,sizeof(buf)));
+	printf("Telemetry: Zero-initialized allocation count: %s\n",form(telemetry.zero_initialized_allocations_counter,buf,sizeof(buf)));
+	printf("Telemetry: Optimized resize count: %s\n",form(telemetry.optimized_resizes_counter,buf,sizeof(buf)));
+	printf("Telemetry: Realignment resize count: %s\n",form(telemetry.heap_reallocations_counter,buf,sizeof(buf)));
+	printf("Telemetry: Total aligned bytes requested: %s\n",bkbmbgbtbpbeb(telemetry.total_heap_bytes_acquired,FULL_VIEW));
+	printf("Telemetry: Total payload bytes requested: %s\n",bkbmbgbtbpbeb(telemetry.total_payload_bytes_acquired,FULL_VIEW));
+	printf("Telemetry: Exact-size resize count: %s\n",form(telemetry.exact_size_resizes_counter,buf,sizeof(buf)));
+	printf("Telemetry: Allocation failures intercepted: %s\n",form(telemetry.heap_allocation_failures_counter,buf,sizeof(buf)));
+	printf("Telemetry: Reallocation failures intercepted: %s\n",form(telemetry.heap_reallocation_failures_counter,buf,sizeof(buf)));
+	printf("Telemetry: Current alignment overhead: %s\n",bkbmbgbtbpbeb(telemetry.current_alignment_overhead_bytes,FULL_VIEW));
+	printf("Telemetry: Peak alignment overhead: %s\n",bkbmbgbtbpbeb(telemetry.peak_alignment_overhead_bytes,FULL_VIEW));
+	printf("Telemetry: Total alignment overhead accrued: %s\n",bkbmbgbtbpbeb(telemetry.total_alignment_overhead_bytes,FULL_VIEW));
+	printf("Telemetry: Current no-op resize streak: %s\n",form(telemetry.noop_resize_streak_current,buf,sizeof(buf)));
+	printf("Telemetry: Longest no-op resize streak: %s\n",form(telemetry.noop_resize_streak_peak,buf,sizeof(buf)));
+	printf("Telemetry: String padding injections: %s\n",form(telemetry.concat_zero_padding_counter,buf,sizeof(buf)));
+	printf("Telemetry: Active descriptors: %s\n",form(telemetry.active_descriptors,buf,sizeof(buf)));
+	printf("Telemetry: Peak active descriptors: %s\n",form(telemetry.peak_active_descriptors,buf,sizeof(buf)));
+	printf("Telemetry: Overflow guards triggered: %s\n",form(telemetry.overflow_guard_failures_counter,buf,sizeof(buf)));
 }

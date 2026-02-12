@@ -1,9 +1,12 @@
 /**
  * @file db_migrate_from_0_to_1.c
- * @brief
+ * @brief Migration to database version 1
+ *
+ * This legacy can be removed in 2034 (10-year Long-Term Support)
  */
 
 #include "precizer.h"
+#include "db_upgrade.h"
 
 #define STAT64_SIZE 144
 #define STAT64_ST_SIZE_OFF 48
@@ -13,12 +16,12 @@
 /**
  * @brief Validate sanity of a compact stat structure.
  *
- * Checks timestamp ranges (0..999999999 for nsec, reasonable sec), and non-negative size.
+ * Checks timestamp ranges (0..999999999 for nsec, reasonable sec).
  *
  * @param stat Pointer to compact stat to validate.
  * @return SUCCESS if fields look sane, FAILURE otherwise.
  */
-static Return cmpct_stat_is_sane(const CmpctStat *stat)
+static Return cmpct_stat_is_sane(const CmpctStat_v1 *stat)
 {
 	if(NULL == stat)
 	{
@@ -31,11 +34,6 @@ static Return cmpct_stat_is_sane(const CmpctStat *stat)
 	}
 
 	if(stat->ctim_tv_nsec < 0 || stat->ctim_tv_nsec > 999999999)
-	{
-		return(FAILURE);
-	}
-
-	if(stat->st_size < 0)
 	{
 		return(FAILURE);
 	}
@@ -59,7 +57,7 @@ static Return cmpct_stat_is_sane(const CmpctStat *stat)
  * @brief Convert a glibc/Linux stat blob into a compact stat.
  *
  * The blob format corresponds to 64-bit glibc stat layout (144 bytes) used in legacy DB v0.
- * Extracts st_size, st_mtim, st_ctim by fixed offsets and fills CmpctStat.
+ * Extracts st_size, st_mtim, st_ctim by fixed offsets and fills CmpctStat_v1.
  *
  * @param blob Pointer to raw blob data.
  * @param blob_size Size of the blob in bytes.
@@ -67,9 +65,9 @@ static Return cmpct_stat_is_sane(const CmpctStat *stat)
  * @return SUCCESS on successful conversion and sanity check, FAILURE otherwise.
  */
 static Return populate_from_glibc_stat_blob(
-	const void *blob,
-	const int  blob_size,
-	CmpctStat  *new_stat)
+	const void   *blob,
+	const int    blob_size,
+	CmpctStat_v1 *new_stat)
 {
 	if(blob_size < STAT64_SIZE)
 	{
@@ -99,84 +97,97 @@ static Return populate_from_glibc_stat_blob(
 }
 
 /**
- * @brief Process single row from SQLite result
- * @param stmt Prepared statement with current row
- * @return Operation status
+ * @brief Convert and rewrite one row of the files table.
+ *
+ * Invalid legacy blobs are replaced with a zeroed CmpctStat_v1 and migration
+ * continues; FAILURE is returned only for SQLite errors.
+ *
+ * @param[in] stmt Prepared statement positioned at the current row.
+ * @param[out] db_file_modified Set to true when row update succeeds.
+ * @return Operation status.
  */
 static Return process_row(
 	sqlite3_stmt *stmt,
 	bool         *db_file_modified)
 {
 	Return status = SUCCESS;
-	const struct stat *stat = {0};
+
 	int rc = SQLITE_OK;
 
+	sqlite3_int64 row_id = sqlite3_column_int64(stmt,0);
+
 	/* Allocate memory for new blob data */
-	CmpctStat new_stat = {0};
+	CmpctStat_v1 new_stat = {0};
 
 	/* Get blob data from the 'stat' column (column index 4) */
-	stat = sqlite3_column_blob(stmt,4);
+	const void *blob = sqlite3_column_blob(stmt,4);
+
 	int blob_size = sqlite3_column_bytes(stmt,4);
 
-	if(NULL == stat)
+	Return conversion_status = FAILURE;
+
+	if(blob != NULL)
 	{
-		slog(ERROR,"NULL blob data\n");
-		status = FAILURE;
+		conversion_status = populate_from_glibc_stat_blob(blob,blob_size,&new_stat);
 	}
 
-	run(populate_from_glibc_stat_blob(stat,blob_size,&new_stat));
-
-	if(SUCCESS != status)
+	if(SUCCESS != conversion_status)
 	{
-		slog(ERROR,"Failed to convert legacy stat blob (len=%d) into compact stat\n",blob_size);
+		memset(&new_stat,0,sizeof(new_stat));
+		slog(ERROR,"Invalid legacy stat blob for row id=%lld (len=%d). Zero v1 stat will be stored\n",(long long)row_id,blob_size);
+	}
+
+	/* Prepare update statement */
+	sqlite3_stmt *update_stmt = NULL;
+	const char *update_sql = "UPDATE files SET stat = ? WHERE ID = ?";
+
+	rc = sqlite3_prepare_v2(sqlite3_db_handle(stmt),update_sql,-1,&update_stmt,NULL);
+
+	if(SQLITE_OK != rc)
+	{
+		log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error preparing update statement");
+		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
 	{
-		/* Get row ID for update */
-		sqlite3_int64 row_id = sqlite3_column_int64(stmt,0);
-
-		/* Prepare update statement */
-		sqlite3_stmt *update_stmt = NULL;
-		const char *update_sql = "UPDATE files SET stat = ? WHERE ID = ?";
-
-		rc = sqlite3_prepare_v2(sqlite3_db_handle(stmt),update_sql,-1,&update_stmt,NULL);
+		/* Bind parameters */
+		rc = sqlite3_bind_blob(update_stmt,1,&new_stat,sizeof(CmpctStat_v1),SQLITE_STATIC);
 
 		if(SQLITE_OK != rc)
 		{
-			log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error preparing update statement");
+			log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error binding blob parameter");
+			status = FAILURE;
+		} else if(SQLITE_OK != (rc = sqlite3_bind_int64(update_stmt,2,row_id))){
+			log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error binding row ID parameter");
+			status = FAILURE;
+		} else if(SQLITE_DONE != (rc = sqlite3_step(update_stmt))){
+			log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error executing update statement");
 			status = FAILURE;
 		} else {
-			/* Bind parameters */
-			rc = sqlite3_bind_blob(update_stmt,1,&new_stat,sizeof(CmpctStat),SQLITE_STATIC);
-
-			if(SQLITE_OK != rc)
-			{
-				log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error binding blob parameter");
-				status = FAILURE;
-			} else if(SQLITE_OK != (rc = sqlite3_bind_int64(update_stmt,2,row_id))){
-				log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error binding row ID parameter");
-				status = FAILURE;
-			} else if(SQLITE_DONE != (rc = sqlite3_step(update_stmt))){
-				log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error executing update statement");
-				status = FAILURE;
-			} else {
-				/* Changes have been made to the database. Update
-				   this in the global variable value. */
-				*db_file_modified = true;
-			}
-
-			sqlite3_finalize(update_stmt);
+			/* Changes have been made to the database. Update
+			   this in the global variable value. */
+			*db_file_modified = true;
 		}
+	}
+
+	if(update_stmt != NULL)
+	{
+		sqlite3_finalize(update_stmt);
 	}
 
 	provide(status);
 }
 
 /**
- * @brief Process all rows in the database
- * @param db Path to SQLite database file
- * @return Operation status
+ * @brief Process all rows of the files table for v0->v1 conversion.
+ *
+ * Row-level data corruption does not stop migration. The function fails only on
+ * SQLite iteration/update errors or external interruption.
+ *
+ * @param[in] db Open SQLite handle.
+ * @param[out] db_file_modified Set to true when at least one row is updated.
+ * @return Operation status.
  */
 static Return process_database(
 	sqlite3 *db,
@@ -199,7 +210,7 @@ static Return process_database(
 	if(SUCCESS == status)
 	{
 		/* Process each row */
-		while(SQLITE_ROW == sqlite3_step(stmt))
+		while(SQLITE_ROW == (rc = sqlite3_step(stmt)))
 		{
 			if(global_interrupt_flag == true)
 			{
@@ -211,6 +222,15 @@ static Return process_database(
 			if(SUCCESS != status)
 			{
 				break;
+			}
+		}
+
+		if(SUCCESS == status && global_interrupt_flag == false)
+		{
+			if(SQLITE_DONE != rc)
+			{
+				log_sqlite_error(db,rc,NULL,"Error iterating over rows during migration");
+				status = FAILURE;
 			}
 		}
 	}
@@ -225,9 +245,13 @@ static Return process_database(
 }
 
 /**
- * @brief Migrates database from version 0 to version 1
- * @param db_file_path Path to the SQLite database file
- * @return Return status code
+ * @brief Migrate database schema/data from version 0 to version 1.
+ *
+ * Migration runs inside an explicit transaction and issues ROLLBACK on any
+ * FAILURE after BEGIN TRANSACTION.
+ *
+ * @param[in] db_file_path Path to the SQLite database file.
+ * @return Return status code.
  */
 Return db_migrate_from_0_to_1(const char *db_file_path)
 {
@@ -235,6 +259,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;
 	bool db_file_modified = false;
+	bool transaction_started = false;
 	int rc = SQLITE_OK;
 
 	if(config->dry_run == true)
@@ -280,6 +305,8 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 		{
 			log_sqlite_error(db,rc,err_msg,"Failed to begin transaction");
 			status = FAILURE;
+		} else {
+			transaction_started = true;
 		}
 	}
 
@@ -306,7 +333,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 		}
 	}
 
-	if(SUCCESS == status)
+	if(transaction_started == true)
 	{
 		if(global_interrupt_flag == true)
 		{
@@ -316,12 +343,26 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 			if(SQLITE_OK == rc)
 			{
 				slog(TRACE,"The transaction has been rolled back\n");
-				status = WARNING;
+
+				if(SUCCESS == status)
+				{
+					status = WARNING;
+				}
 			} else {
 				log_sqlite_error(db,rc,NULL,"Failed to rollback transaction");
 				status = FAILURE;
 			}
+		} else if(SUCCESS != status){
+			/* Attempt rollback */
+			rc = sqlite3_exec(db,"ROLLBACK",NULL,NULL,NULL);
 
+			if(SQLITE_OK == rc)
+			{
+				slog(TRACE,"The transaction has been rolled back\n");
+			} else {
+				log_sqlite_error(db,rc,NULL,"Failed to rollback transaction");
+				status = FAILURE;
+			}
 		} else {
 			/* Commit transaction */
 			rc = sqlite3_exec(db,"COMMIT",NULL,NULL,&err_msg);

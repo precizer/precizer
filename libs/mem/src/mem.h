@@ -294,7 +294,7 @@ const void *memory_const_data_checked(
  * @param memory_object Pointer to the descriptor.
  * @return Underlying pointer or NULL when @p memory_object itself is NULL.
  */
-static inline void *memory_rawdata(memory * const memory_object)
+static inline void *memory_rawdata(const memory * const memory_object)
 {
 	if(memory_object == NULL)
 	{

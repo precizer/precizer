@@ -16,6 +16,9 @@ void init_config(void)
 	// Fill out with zeroes
 	memset(config,0,sizeof(Config));
 
+	// Application start time for total runtime reporting.
+	config->app_start_time_ns = cur_time_monotonic_ns();
+
 	// Max available size of a path
 	config->running_dir_size = 0;
 
@@ -40,6 +43,15 @@ void init_config(void)
 
 	// Parameter to compare database
 	config->compare = false;
+
+	// Show checksum mismatch entries in --compare output.
+	config->compare_filter_checksum_mismatch = false;
+
+	// Show files present only in the first compared source DB.
+	config->compare_filter_first_source_only = false;
+
+	// Show files present only in the second compared source DB.
+	config->compare_filter_second_source_only = false;
 
 	// An array of paths to traverse
 	config->paths = NULL;
@@ -129,6 +141,9 @@ void init_config(void)
 
 	// Perform a trial run with no changes made
 	config->dry_run = false;
+
+	// Allow hashing in dry-run mode (--dry-run=with-checksums)
+	config->dry_run_with_checksums = false;
 
 	// Define the comparison string
 	const char *compare_string = "true";

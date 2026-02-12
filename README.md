@@ -7,7 +7,12 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/unit-coverage.svg" height="20" alt="Unit Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
+Comprehensive hybrid test suite:
+
+* In-process integration tests
+* Out-of-process CLI system tests
+
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/integration-coverage.svg" height="20" alt="Integration Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
 
 [![Precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
 
@@ -77,6 +82,43 @@ abc/def/aaa.txt
 
 This ensures that even when files reside in different mount points or sources, they can still be compared accurately under the same relative paths and their respective checksums.
 
+## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
+
+Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
+
+* Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
+* Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
+* macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
+
+The release packages contain portable executables in a zip archive.
+
+### Download, unzip, and run
+
+A universal approach to automating upgrades to newer versions
+
+```sh
+# Automation for downloading and unarchiving new versions
+
+# Download
+wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+
+# Extract the archive
+unzip -jqo precizer.zip '*/precizer' -d ./
+
+# Run
+./precizer --version
+```
+
+### Technical details of the portable build
+
+* The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.
+* The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. The file can be extracted from the archive and run directly.
+* Static linking is not supported on macOS, so running the downloaded application requires the following libraries to be available on the system: sqlite3, pcre2, argp and fts.
+
+## CHANGELOG
+
+A list of changes by version is available in a separate file: [CHANGELOG](CHANGELOG.md)
+
 ## TECHNICAL DETAILS
 
 Consider a scenario where a primary storage system has a backup copy. For example, this could be a data center storage and its *Disaster Recovery* copy.
@@ -113,7 +155,14 @@ The following scenario illustrates the issue:
 * The `--quiet-ignored` option suppresses per-file log lines for paths filtered by `--ignore` and `--include`. This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use; other warnings and errors remain visible.
 * There is an option to consider not only the file size when updating the database but also the file’s creation or modification timestamps. This means that any change in file metadata will trigger an SHA512 checksum recalculation and update in the database. For example, if a file’s ctime changes but its size remains the same, the checksum will NOT be recalculated if only the `--update` parameter is used. To force checksum recalculation for such files `--watch-timestamps` should be added. This option is disabled by default because ctime (like mtime) can change frequently due to commands like `chmod` or `chown`, even when the file’s content remains the same.
 * precizer can be used as a security monitoring tool, detecting unauthorized file modifications where contents might have changed while metadata remains untouched.
-* The program never modifies, deletes, moves, or copies any files or directories it processes. All it does is list files, compute their checksums, and update them in the database. All changes are strictly confined to the database.
+* Security:
+  * The program never modifies, deletes, moves, or copies any files or directories it processes.
+  * The program enumerates files, computes SHA512 checksums, and updates a local database; all changes are strictly confined to the database.
+  * The database does not store file contents. It stores relative paths, checksums, and metadata such as size and timestamps (ctime/mtime).
+  * The program does not open network sockets.
+  * The program does not transmit data.
+  * The program does not require privileged execution and does not use the SUID bit or other unsafe permission bits.
+  * No functionality is provided for privilege escalation or other security violations.
 * Performance is primarily limited by disk subsystem speed. Each file is read byte by byte, and its SHA512 checksum is computed.
 * The program runs very fast thanks to SQLite and FTS libraries ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).
 * Command-line argument parsing is handled via the ARGP library.
@@ -129,21 +178,9 @@ The following scenario illustrates the issue:
   * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
   * [Bug reports and feature requests](https://github.com/precizer/precizer/issues/new).
 
-## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
+## CONTRIBUTING
 
-Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
-
-* Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
-* Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
-* macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
-
-The release packages contain portable executables in a zip archive.
-
-### Technical details of the portable build
-
-* The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.
-* The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. The file can be extracted from the archive and run directly.
-* Static linking is not supported on macOS, so running the downloaded application requires the following libraries to be available on the system: sqlite3, pcre2, argp and fts.
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for workflow, dependencies, validation steps, and PR expectations. For open requests, check the [Issues](https://github.com/precizer/precizer/issues) list and pick a task that matches your interest and level of involvement.
 
 ## BUILD & INSTALLATION
 
@@ -400,7 +437,7 @@ Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
 The **--update** option has been used, so the information about files will be updated against the database database1.db  
 File traversal started  
 **These files have been added or changed and those changes will be reflected against the DB database1.db:**  
-1/AAA/BCB/CCC/a.txt changed size & ctime & mtime rehashed  
+1/AAA/BCB/CCC/a.txt changed lsize & ctime & mtime rehashed  
 1/AAA/BCB/CCC/c.txt added  
 File traversal complete  
 Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0  
@@ -411,6 +448,12 @@ The primary database has been vacuumed
 **The database file database1.db has been modified since the program was launched**  
 The precizer completed its execution without any issues  
 </sub>
+
+Change labels in output mean:
+- `lsize` — logical file size in bytes (`st_size`)
+- `asize` — allocated size on disk in bytes (`st_blocks * 512`)
+- `ctime` — metadata/status change time
+- `mtime` — file content modification time
 
 Every time **precizer** runs, it traverses the file system and then checks whether a record for a specific file already exists in the database. In other words, the program prioritizes the current state of the file system on disk.
 
@@ -528,7 +571,7 @@ The precizer completed its execution without any issues
 
 Example of a Path to Ignore. To specify a pattern for ignoring files or directories, PCRE2 regular expressions can be used. **Note:** All paths in the regular expression must be specified as **relative**.
 
-PCRE2 regular expressions can be tested and validated using [https://regex101.com/](https://regex101.com/).
+PCRE2 regular expressions can be tested and validated using https://regex101.com
 
 To illustrate how a relative path looks, run a directory traversal without the `--ignore` option and check how the terminal displays the relative paths recorded in the database:
 
@@ -690,7 +733,7 @@ This variant uses regular expressions.
 
 PCRE2 regular expressions for relative paths that need to be included. The specified relative paths will be included even if they were excluded using one or more `--ignore` parameters. Multiple regular expressions can be specified using `--include`.
 
-PCRE2 regular expressions can be checked and tested using [https://regex101.com/](https://regex101.com/).
+PCRE2 regular expressions can be checked and tested using https://regex101.com
 
 The DB will be cleaned of references to files matching the regular expressions provided in the `--ignore` arguments: `"^.*/path2/.*"` and `"diff2/.*"`, but paths matching the patterns in `--include` will remain in the database.
 
@@ -792,6 +835,46 @@ precizer --update --db-drop-inaccessible /mnt/storage
 <sub>drop due to inaccessible archive/secret.bin</sub>
 
 Note: this example applies only to files that have a record in the database but are truly inaccessible on disk for some reason. This can happen due to incorrect `chmod`/`chown` permissions or an incorrectly mounted volume. WARNING: if the file (or even its path) is actually deleted, not just temporarily inaccessible, then updating the database with `--update` will remove its record unconditionally — no extra options are needed.
+
+## TROUBLESHOOTING
+
+### Slow file walk, slow checksums, slow database writes ("everything is slow")
+
+To pinpoint the bottleneck, try running `precizer` in `--dry-run` or `--dry-run=with-checksums` mode.
+
+`--dry-run` recursively walks the **file system**. In this mode, nothing happens except directory tree traversal. You can add `--progress` to also count total bytes and files, but no database writes will occur. This mode helps validate file system accessibility and, to a degree, the underlying hardware. If it is slow even with `--dry-run`, the root cause is unlikely to be `precizer` itself.
+
+`--dry-run=with-checksums` differs from `--dry-run` only in that every encountered file is fully read (byte-by-byte) and a checksum is computed. This is significantly more resource-intensive and is close to the program's real workload, but it still does not write to the database. With `--progress` enabled, `precizer` also prints how many bytes were hashed and the average hashing throughput in B/s. That number can be compared against third-party benchmarks to help spot the bottleneck.
+
+It is also possible that `--dry-run=with-checksums` is fast, but real runs (non-dry-run) slow down noticeably, especially when many records are being added or changed. In that case, check the file system that stores the database file — the issue may be there.
+
+`precizer` opens the SQLite database using settings that favor keeping already-written data safe and resisting database corruption as much as possible. The tradeoff is more disk I/O and more file system syncs to the underlying block device. In practice, SQLite is very fast and usually not the weakest link. However, a compressed, networked, or simply slow file system can materially affect overall performance.
+
+For example, during mass inserts `precizer` waits for the file record to be written and the transaction to be committed before moving on to the next file. As a quick test, try placing the `.db` file temporarily on a fast medium (for example, `tmpfs`) — this can both improve overall performance and help confirm where the bottleneck is.
+
+### If everything is still slow in every mode, check:
+
+#### File system integrity
+
+Run file system checks on the volume being scanned (where checksums are captured) and on the volume where the `.db` file is stored and updated. Performance drops can be caused by logical file system issues.
+
+#### Hardware
+
+##### Disk throughput
+
+Files are read fully, byte-by-byte. Disk subsystem throughput is directly reflected in `precizer` speed. The program works at the file system level (a higher abstraction), not directly with raw block devices, so file system health matters.
+
+Performance can vary significantly depending on the file system. For example, reading files from an NFS mount may be limited by network throughput and behave very differently from reading from a local NVMe file system with `atime` disabled (`atime` is the access time timestamp). Use third-party tools to benchmark the storage subsystem.
+
+##### CPU performance
+
+Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually handle it easily, but it is worth ensuring performance is not degraded by shared vCPU resources in containerized or virtualized setups. Use monitoring and benchmarks to validate CPU performance.
+
+| Step | Mode/command                      | What it measures                                                      | If it is slow here                                                        | Next steps                                                                                         |
+| ---- | --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1    | precizer --dry-run                | File system accessibility, directory walk speed, baseline I/O         | Most likely outside `precizer`: file system/disk/network/system load      | Check storage subsystem, mount status, and overall system load                                     |
+| 2    | precizer --dry-run=with-checksums | Real read + checksum compute speed (no DB writes)                     | Bottleneck: data reads (disk/network/file system) or CPU (more rarely)    | Check disk/network throughput, file system settings, and CPU resource limits (VMs/containers)      |
+| 3    | Normal run (not dry-run)          | Impact of SQLite writes and transactions                              | Often the file system hosting `.db` is the issue (slow/network/compressed)| Check the `.db` file system; try moving `.db` temporarily to a faster medium or `tmpfs`            |
 
 ## AUTHOR
 Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)

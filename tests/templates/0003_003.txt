@@ -1,0 +1,5 @@
+\ATESTING:Configuration initialized
+ERROR:Argument parsing failed with code 64 \(command line usage error\)
+TESTING:Returned parse_arguments:\d+ status: FAILURE
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » FAILURE\Z

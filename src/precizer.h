@@ -57,6 +57,15 @@
 
 #define SQL_DRY_RUN_MODE ((int)-1)
 
+#define POSIX_STAT_BLOCK_BYTES 512ULL
+/*
+ * st_blocks value used in migrated v4 records when legacy DB versions
+ * (v1..v3) did not store allocated block count.
+ *
+ * This legacy can be removed in 2036 (10-year Long-Term Support)
+ */
+#define BLKCNT_UNKNOWN ((blkcnt_t)-1)
+
 #ifdef TESTITALL
     #define STATIC
 #else
@@ -75,9 +84,9 @@
 /*
  * All the macros are here
  */
-#define slog_show(level,respect_quiet,first_iteration,shown_flag,count_size_of_all_files,...) \
+#define slog_show(level,respect_quiet,first_iteration,summary,...) \
 	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
-	(shown_flag),(count_size_of_all_files),__VA_ARGS__)
+	&((summary)->at_least_one_file_was_shown),((summary)->stats_only_pass),__VA_ARGS__)
 
 // PCRE2 return codes
 typedef enum
@@ -121,12 +130,13 @@ typedef enum
  */
 typedef enum
 {
-	IDENTICAL                 = 0x00, // 00000
-	NOT_EQUAL                 = 0x01, // 00001
-	SIZE_CHANGED              = 0x02, // 00010
-	STATUS_CHANGED_TIME       = 0x04, // 00100
-	MODIFICATION_TIME_CHANGED = 0x08, // 01000
-	COMPARE_FAILED            = 0x10  // 10000
+	IDENTICAL                 = 0x00, // 000000
+	NOT_EQUAL                 = 0x01, // 000001
+	SIZE_CHANGED              = 0x02, // 000010
+	STATUS_CHANGED_TIME       = 0x04, // 000100
+	MODIFICATION_TIME_CHANGED = 0x08, // 001000
+	ALLOCATED_SIZE_CHANGED    = 0x10, // 010000
+	COMPARE_FAILED            = 0x20  // 100000
 
 } Changed;
 
@@ -182,13 +192,23 @@ typedef struct Flags {
 /**
  * @brief Compact Stat file metadata structure
  *
- * Contains essential file metadata including size and timestamps.
+ * Contains essential file metadata including logical size, allocated blocks,
+ * and timestamps.
  * Provides high precision timing using separate second and nanosecond fields.
  */
 typedef struct {
 
 	/** File size in bytes */
 	off_t st_size;
+
+	/** Number of 512-byte blocks allocated to the file */
+	blkcnt_t st_blocks;
+
+	/** Filesystem device number */
+	dev_t st_dev;
+
+	/** Inode number on the filesystem */
+	ino_t st_ino;
 
 	/**
 	 * Last file content modification time - seconds portion
@@ -253,6 +273,10 @@ typedef struct {
 	/// A directory where the program was executed
 	char *running_dir;
 
+	/// Application start timestamp in monotonic nanoseconds.
+	/// Used for reporting total process runtime.
+	long long int app_start_time_ns;
+
 	/// Show progress bar
 	bool progress;
 
@@ -270,6 +294,15 @@ typedef struct {
 
 	/// Parameter to compare database
 	bool compare;
+
+	/// Show checksum mismatches in --compare output.
+	bool compare_filter_checksum_mismatch;
+
+	/// Show files that exist only in the first compared database.
+	bool compare_filter_first_source_only;
+
+	/// Show files that exist only in the second compared database.
+	bool compare_filter_second_source_only;
 
 	/// An array of paths to traverse
 	char **paths;
@@ -394,6 +427,10 @@ typedef struct {
 	/// data integrity remains untouched.
 	bool dry_run;
 
+	/// Enable SHA512 calculation while staying in Dry Run mode.
+	/// Activated by: --dry-run=with-checksums
+	bool dry_run_with_checksums;
+
 	/// Consider file metadata changes (creation and modification timestamps)
 	/// in addition to file size when detecting changes. By default, only
 	/// file size changes trigger rescanning. When this option is enabled,
@@ -407,6 +444,46 @@ typedef struct {
 	bool start_device_only;
 
 } Config;
+
+/**
+ * @brief Summary of a traversal pass for delayed reporting.
+ */
+typedef struct {
+	/// True for the stats-only pass in main().
+	/// When enabled, the traversal counts and allocated size are collected
+	/// without hashing, database updates, or per-file output.
+	bool stats_only_pass;
+
+	/// Total directories encountered during this traversal.
+	size_t count_dirs;
+
+	/// Total regular files encountered during this traversal.
+	size_t count_files;
+
+	/// Total symlinks encountered during this traversal.
+	size_t count_symlnks;
+
+	/// Total allocated size in bytes for encountered files.
+	/// Computed from st_blocks using POSIX_STAT_BLOCK_BYTES.
+	size_t total_allocated_bytes;
+
+	/// Total bytes actually hashed by SHA512 during this traversal.
+	/// This counts the data passed to sha512_update, not allocated size.
+	size_t total_hashed_bytes;
+
+	/**
+	 * @brief True when current pass emitted at least one visible path-level line.
+	 * Set by slog_show()-based output and reset at start of file_list().
+	 * Used by file_list() to decide whether to print "File traversal complete".
+	 * This is an output marker, not a counter of file changes.
+	 */
+	bool at_least_one_file_was_shown;
+
+	/// Total elapsed hashing time in nanoseconds for this traversal pass.
+	/// Accumulated per-file in sha512sum() from read-loop start to finish.
+	long long int total_hashing_elapsed_ns;
+
+} TraversalSummary;
 
 /*
  *
@@ -433,7 +510,17 @@ void free_str_array(char **);
  *
  */
 
-Return file_list(const bool);
+Return file_list(TraversalSummary *);
+
+/**
+ * @brief Print aggregated traversal totals from TraversalSummary.
+ */
+void show_statistics(const TraversalSummary *);
+
+/**
+ * @brief Print traversal elapsed time and hashing rate from TraversalSummary.
+ */
+void show_elapsed(const TraversalSummary *);
 
 Return sha512sum(
 	const char *,
@@ -441,6 +528,7 @@ Return sha512sum(
 	memory *,
 	unsigned char *,
 	sqlite3_int64 *,
+	TraversalSummary *,
 	SHA512_Context *,
 	bool *,
 	int *,
@@ -520,7 +608,7 @@ void free_config(void);
 Return db_delete_missing_metadata(void);
 
 Return db_delete_the_record_by_id(
-	sqlite_int64 *,
+	const sqlite_int64 *,
 	bool *,
 	const bool *,
 	const char *,
@@ -579,15 +667,15 @@ Return db_check_version(
 	const char *);
 
 Return db_upgrade(
-	const int *,
+	int *,
 	const char *,
 	const char *);
 
+/* This legacy can be removed in 2034 (10-year Long-Term Support) */
 Return db_migrate_from_0_to_1(const char *);
 
-Return db_migrate_from_1_to_2(const char *);
-
-Return db_migrate_from_2_to_3(const char *);
+/* This legacy can be removed in 2036 (10-year Long-Term Support) */
+Return db_migrate_to_version_4(const char *);
 
 Return db_specify_version(
 	const char *,
@@ -609,6 +697,8 @@ Return stat_copy(
 	const struct stat *,
 	CmpctStat *);
 
+size_t blocks_to_bytes(blkcnt_t);
+
 Changed compare_file_metadata_equivalence(
 	const CmpctStat *,
 	const CmpctStat *) __attribute__ ((pure));
@@ -629,12 +719,12 @@ void slog_show_impl(
 	const char *,
 	...);
 
-void file_show(
+void show_file(
 	const DBrow *,
 	const char *,
 	const CmpctStat *,
 	bool *,
-	bool *,
+	TraversalSummary *,
 	const Changed,
 	const bool,
 	const bool,
@@ -650,14 +740,12 @@ void file_show(
 	const bool,
 	const bool,
 	const bool,
-	const bool,
 	const int);
 
 void directory_show(
 	const char *,
 	bool *,
-	bool *,
-	const bool,
+	TraversalSummary *,
 	const bool,
 	const bool);
 
@@ -689,8 +777,7 @@ Return verify_directory_access(
 	FTSENT *,
 	const char *,
 	bool *,
-	bool *,
-	const bool);
+	TraversalSummary *);
 
 Return db_check_changes(void);
 

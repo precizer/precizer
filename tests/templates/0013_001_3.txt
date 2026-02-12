@@ -1,0 +1,1 @@
+\Aprecizer: ERROR: Unsupported --dry-run mode 'bad-mode'\. Supported mode: with-checksums\. See --help for more information\Z

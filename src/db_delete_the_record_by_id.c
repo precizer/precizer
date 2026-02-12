@@ -9,7 +9,7 @@
  *
  */
 Return db_delete_the_record_by_id(
-	sqlite_int64 *ID,
+	const sqlite_int64 *ID,
 	bool         *first_iteration,
 	const bool   *drop_ignored,
 	const char   *relative_path,
@@ -102,10 +102,10 @@ Return db_delete_the_record_by_id(
 		}
 	}
 
-	int sql_return = SQLITE_DONE;
-
 	if(SUCCESS == status)
 	{
+		int sql_return = SQLITE_DONE;
+
 		// Select instead Delete in Dry Run mode
 		if(config->dry_run == true)
 		{
