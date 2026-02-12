@@ -48,12 +48,34 @@ static Return process_row(
 {
 	Return status = SUCCESS;
 	int rc = SQLITE_OK;
+	int blob_size = 0;
 
 	sqlite3_int64 row_id = sqlite3_column_int64(stmt,0);
-	const CmpctStat_v1 *source = sqlite3_column_blob(stmt,1);
+	const CmpctStat_v1 *source = NULL;
+
+	blob_size = sqlite3_column_bytes(stmt,1);
+
+	if(blob_size < (int)sizeof(CmpctStat_v1))
+	{
+		slog(ERROR,
+		     "Invalid v3 stat blob size for row id=%lld (got=%d, expected>=%zu)\n",
+		     (long long)row_id,
+		     blob_size,
+		     sizeof(CmpctStat_v1));
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		source = sqlite3_column_blob(stmt,1);
+	}
 
 	CmpctStat destination = {0};
-	status = convert_blob_to_v4_stat(source,&destination);
+
+	if(SUCCESS == status)
+	{
+		status = convert_blob_to_v4_stat(source,&destination);
+	}
 
 	if(status != SUCCESS)
 	{
@@ -138,7 +160,7 @@ static Return process_database(
 
 	if(SUCCESS == status)
 	{
-		while(SQLITE_ROW == sqlite3_step(stmt))
+		while(SQLITE_ROW == (rc = sqlite3_step(stmt)))
 		{
 			if(global_interrupt_flag == true)
 			{
@@ -151,6 +173,12 @@ static Return process_database(
 			{
 				break;
 			}
+		}
+
+		if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
+		{
+			log_sqlite_error(db,rc,NULL,"Error iterating over rows during migration");
+			status = FAILURE;
 		}
 	}
 
