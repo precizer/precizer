@@ -3,23 +3,18 @@
 This document defines the contribution workflow for code, tests, and documentation updates.
 Potential contributors can review the project Issues section at https://github.com/precizer/precizer/issues, where new feature requests are published for specialists with different levels of involvement.
 
-## Contribution Channels
+## How to Start and What to Expect
 
 - Bug reports and feature requests: https://github.com/precizer/precizer/issues/new
 - Technical discussions: https://github.com/precizer/precizer/discussions
 - Pull requests: code, tests, documentation, and build improvements
-
-## Scope and Change Hygiene
-
-- Use one pull request per logical change.
+- One pull request per logical change.
 - For non-trivial changes, align scope and approach in an issue/discussion before implementation.
 - If runtime behavior changes, update tests and user-facing documentation in the same pull request.
 
 ## AI-Assisted Development
 
-The use of AI tools for software development is explicitly encouraged. AI assistance helps reduce repetitive routine work, shifts implementation effort toward creative problem-solving, and can prevent many common low-level mistakes.
-
-Mandatory requirement: any AI-generated or AI-modified code must be manually reviewed before submission.
+AI tools are encouraged for development to reduce routine work and keep focus on higher‑value thinking. Any AI-generated or AI-modified code must be manually reviewed before submission.
 
 ## Local Environment
 
