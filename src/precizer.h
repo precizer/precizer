@@ -667,17 +667,15 @@ Return db_check_version(
 	const char *);
 
 Return db_upgrade(
-	const int *,
+	int *,
 	const char *,
 	const char *);
 
+/* This legacy can be removed in 2034 (10-year Long-Term Support) */
 Return db_migrate_from_0_to_1(const char *);
 
-Return db_migrate_from_1_to_2(const char *);
-
-Return db_migrate_from_2_to_3(const char *);
-
-Return db_migrate_from_3_to_4(const char *);
+/* This legacy can be removed in 2036 (10-year Long-Term Support) */
+Return db_migrate_to_version_4(const char *);
 
 Return db_specify_version(
 	const char *,
