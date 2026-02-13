@@ -19,6 +19,12 @@ Return show_remembered_messages(void)
 		provide(SUCCESS);
 	}
 
+	// DB not initialized yet (early failure): nothing to show
+	if(config->db == NULL)
+	{
+		provide(SUCCESS);
+	}
+
 	sqlite3_stmt *stmt = NULL;
 	const char *select_sql =
 	        "SELECT message FROM temp.remember_history ORDER BY id;";
