@@ -501,7 +501,6 @@ typedef struct {
 void remove_leading_dots(char *);
 void remove_trailing_dots(char *);
 #endif
-void free_str_array(char **);
 #endif
 
 /*
@@ -535,6 +534,8 @@ Return sha512sum(
 	bool *);
 
 size_t file_buffer_memory(void);
+
+void free_string_array(char **);
 
 Return add_string_to_array(
 	char ***,

@@ -1,24 +1,6 @@
 #include "precizer.h"
 
 /**
- * Function to free the array
- *
- */
-STATIC void free_str_array(char **array)
-{
-	if(array == NULL)
-	{
-		return;
-	}
-
-	for(size_t i = 0; array[i] != NULL; i++)
-	{
-		free(array[i]);
-	}
-	free(array);
-}
-
-/**
  *
  * Clean up allocated memory
  *
@@ -41,14 +23,14 @@ void free_config(void)
 	config->db_file_name = NULL;
 
 	// Free memory of string array
-	free_str_array((config)->db_file_names);
+	free_string_array((config)->db_file_names);
 
 	// Free memory of string array
-	free_str_array((config)->ignore);
+	free_string_array((config)->ignore);
 
 	// Free memory of string array
-	free_str_array((config)->include);
+	free_string_array((config)->include);
 
 	// Free memory of string array
-	free_str_array((config)->lock_checksum);
+	free_string_array((config)->lock_checksum);
 }
