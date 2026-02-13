@@ -34,7 +34,7 @@ static Return test_add_string_to_empty_array(void)
 	ASSERT(strcmp(array[0],test_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_str_array(array);
+	free_string_array(array);
 
 	RETURN_STATUS;
 }
@@ -56,7 +56,7 @@ static Return test_add_multiple_strings(void)
 
 	ASSERT(SUCCESS == verify_array_contents(array,strings,num_strings));
 
-	free_str_array(array);
+	free_string_array(array);
 
 	RETURN_STATUS;
 }
@@ -74,7 +74,7 @@ static Return test_add_empty_string(void)
 	ASSERT(strcmp(array[0],empty_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_str_array(array);
+	free_string_array(array);
 
 	RETURN_STATUS;
 }
@@ -94,7 +94,7 @@ static Return test_add_long_string(void)
 	ASSERT(strcmp(array[0],long_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_str_array(array);
+	free_string_array(array);
 
 	RETURN_STATUS;
 }
