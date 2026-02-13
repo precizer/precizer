@@ -1,5 +1,15 @@
 \ATESTING:Configuration initialized
 precizer [0-9]+\.[0-9]+\.[0-9]+
-Usage: precizer \[-cfoTuXCr\?pqsvVz\].*
-.*TESTING:Returned parse_arguments:\d+ status: INFO
+Usage: precizer \[-cfoTuXCr(?:h|\?)pqsvVz\]
+\s+\[-F checksum-mismatch\|first-source-only\|second-source-only\]
+\s+\[-d FILE\] \[-l FULL\|QUICK\] \[-m NUMBER\] \[-n\[MODE\]\] \[-k PCRE2_REGEXP\]
+\s+\[-e PCRE2_REGEXP\] \[-i PCRE2_REGEXP\] \[--compare\]
+\s+\[--compare-filter=checksum-mismatch\|first-source-only\|second-source-only\]\s+\[--database=FILE\] \[--force\] \[--check-level=FULL\|QUICK\]
+\s+\[--maxdepth=NUMBER\] \[--dry-run\[=MODE\]\] \[--start-device-only\]
+\s+\[--watch-timestamps\] \[--update\] \[--db-drop-inaccessible\]
+\s+\[--db-drop-ignored\] \[--lock-checksum=PCRE2_REGEXP\]
+\s+\[--rehash-locked\] \[--ignore=PCRE2_REGEXP\] \[--include=PCRE2_REGEXP\]
+\s+\[--help\] \[--progress\] \[--quiet-ignored\] \[--silent\] \[--verbose\]
+\s+\[--version\] \[--usage\] PATH
+TESTING:Returned parse_arguments:\d+ status: INFO
 TESTING:Exit status » INFO\Z

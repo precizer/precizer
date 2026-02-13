@@ -127,6 +127,7 @@ Return test0003_3(void)
 	INITTEST;
 
 	ASSERT(SUCCESS == assert_information_mode_output("--help","templates/0003_004.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("-h","templates/0003_004.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("--usage","templates/0003_005.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("-z","templates/0003_005.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("--version","templates/0003_006.txt"));
@@ -144,6 +145,7 @@ Return test0003_4(void)
 	INITTEST;
 
 	ASSERT(SUCCESS == assert_information_mode_output("--help /definitely/nonexistent/path","templates/0003_004.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("-h /definitely/nonexistent/path","templates/0003_004.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("--usage /definitely/nonexistent/path","templates/0003_005.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("-z /definitely/nonexistent/path","templates/0003_005.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("--version /definitely/nonexistent/path","templates/0003_006.txt"));
