@@ -134,7 +134,8 @@ static struct argp_option options[] = {
 	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore/--include" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.\n",0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
-	{"help",'?',0,0,"Give this help list",-1 },
+	{"help",'h',0,0,"Give this help list",-1 },
+	{"help",'?',0,OPTION_ALIAS | OPTION_HIDDEN,0,-1 },
 	{"usage",'z',0,0,"Give a short usage message",-1 },
 	{"version",'V',0,0,"Print program version",-1 },
 	{0}
@@ -300,6 +301,7 @@ static error_t parse_opt(
 			rational_logger_mode = VERBOSE;
 			config->verbose = true;
 			break;
+		case 'h':
 		case '?':
 			information_mode_requested = true;
 			fprintf(state->out_stream,"%s\n",argp_program_version);
