@@ -178,7 +178,7 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 ## УЧАСТИЕ В ПРОЕКТЕ
 
-Участие в развитии проекта приветствуется. Начните с [CONTRIBUTING.md](CONTRIBUTING.md): там описаны рабочий процесс, зависимости, шаги проверки и требования к pull request. Актуальные запросы можно выбрать в списке [Issues](https://github.com/precizer/precizer/issues) по уровню и интересу.
+Участие в развитии проекта приветствуется. Начните с [CONTRIBUTING](CONTRIBUTING.md): там описаны рабочий процесс, зависимости, шаги проверки и требования к pull request. Актуальные запросы можно выбрать в списке [Issues](https://github.com/precizer/precizer/issues) по уровню и интересу.
 
 ## СБОРКА И УСТАНОВКА
 

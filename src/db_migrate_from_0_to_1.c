@@ -165,8 +165,8 @@ static Return process_row(
 			log_sqlite_error(sqlite3_db_handle(stmt),rc,NULL,"Error executing update statement");
 			status = FAILURE;
 		} else {
-			/* Changes have been made to the database. Update
-			   this in the global variable value. */
+			/* Changes have been made to the database.
+			   Reflect this in the caller-provided flag. */
 			*db_file_modified = true;
 		}
 	}
