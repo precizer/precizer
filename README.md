@@ -180,7 +180,7 @@ The following scenario illustrates the issue:
 
 ## CONTRIBUTING
 
-Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for workflow, dependencies, validation steps, and PR expectations. For open requests, check the [Issues](https://github.com/precizer/precizer/issues) list and pick a task that matches your interest and level of involvement.
+Contributions are welcome. Start with [CONTRIBUTING](CONTRIBUTING.md) for workflow, dependencies, validation steps, and PR expectations. For open requests, check the [Issues](https://github.com/precizer/precizer/issues) list and pick a task that matches your interest and level of involvement.
 
 ## BUILD & INSTALLATION
 
