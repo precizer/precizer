@@ -7,7 +7,7 @@
  * kill -15 (SIGINT)
  *
  */
-void notify_quit_handler(int sig)
+void signal_notify_quit_handler(int sig)
 {
 	slog(EVERY,"Notify quit!\n");
 
