@@ -1,5 +1,8 @@
 #include "testitall.h"
 
+#include <spawn.h>
+#include <sys/wait.h>
+
 // Global buffers for captured output streams
 memory _STDOUT = {sizeof(char),0,0,NULL};
 memory *STDOUT = &_STDOUT;
@@ -322,9 +325,9 @@ Return external_call(
 		call(copy(stderr_result,STDERR));
 	}
 
-	if(SUCCESS == status && true == allow_stderr)
+	if(true == allow_stderr)
 	{
-		call(del(STDERR));
+		run(del(STDERR));
 	}
 
 	return(status);
