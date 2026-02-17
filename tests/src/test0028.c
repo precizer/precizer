@@ -58,8 +58,8 @@ static Return prepare_compare_filter_differences_fixture(void)
 	create(char,result);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -104,8 +104,8 @@ static Return cleanup_compare_filter_differences_fixture(void)
 
 	const char *command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -173,8 +173,8 @@ static Return test0028_1_test(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -231,8 +231,8 @@ static Return test0028_1_test(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -251,8 +251,8 @@ static Return test0028_2_test(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -307,8 +307,8 @@ static Return test0028_2_test(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -327,8 +327,8 @@ static Return test0028_3_test(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -383,8 +383,8 @@ static Return test0028_3_test(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -403,8 +403,8 @@ static Return test0028_4_test(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -459,8 +459,8 @@ static Return test0028_4_test(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

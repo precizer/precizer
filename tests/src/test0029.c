@@ -12,8 +12,8 @@ static Return test0029_1_test(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -56,9 +56,9 @@ static Return test0029_1_test(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db && "
-	        "chmod -R a+rwX tests/examples/diffs/ && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "chmod -R a+rwX tests/examples/diffs/diff1 && "
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -77,8 +77,8 @@ static Return test0029_2_test(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -122,9 +122,9 @@ static Return test0029_2_test(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database2.db && "
-	        "chmod -R a+rwX tests/examples/diffs/ && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "chmod -R a+rwX tests/examples/diffs/diff1 && "
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

@@ -70,7 +70,8 @@ static Return test0011_1_readme(void)
  * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
- * cp -a tests/examples/ tests/examples_backup
+ * mv tests/examples/diffs/diff1 tests/examples/diff1_backup
+ * cp -a tests/examples/diff1_backup tests/examples/diffs/diff1
  * # Modify a file
  * echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
  * # Add a new file
@@ -80,16 +81,16 @@ static Return test0011_1_readme(void)
  * Stage 5. Run the precizer once again:
  * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
  * Final stage. Recover from backup:
- * rm -rf tests/examples/
- * mv tests/examples_backup/ tests/examples/
+ * rm -rf tests/examples/diffs/diff1
+ * mv tests/examples/diff1_backup tests/examples/diffs/diff1
  */
 static Return test0011_2_readme(void)
 {
 	INITTEST;
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -252,8 +253,8 @@ static Return test0011_4_readme(void)
 
 	const char *command = "cd ${TMPDIR} && "
 	        "rm database1.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
