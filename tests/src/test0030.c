@@ -247,8 +247,8 @@ static Return test0030_1_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -280,8 +280,8 @@ static Return test0030_1_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s1.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
@@ -304,8 +304,8 @@ static Return test0030_2_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
 	        "rm -f lock_s2.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -337,8 +337,8 @@ static Return test0030_2_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s2.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
@@ -361,8 +361,8 @@ static Return test0030_3_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
 	        "rm -f lock_s3.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -394,8 +394,8 @@ static Return test0030_3_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s3.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
@@ -423,8 +423,8 @@ static Return test0030_4_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
 	        "rm -f lock_s4.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -471,8 +471,8 @@ static Return test0030_4_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s4.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -497,8 +497,8 @@ static Return test0030_5_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
 	        "rm -f lock_s5.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -535,8 +535,8 @@ static Return test0030_5_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s5.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -560,8 +560,8 @@ static Return test0030_6_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
 	        "rm -f lock_s6.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -592,8 +592,8 @@ static Return test0030_6_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s6.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -617,8 +617,8 @@ static Return test0030_7_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
 	        "rm -f lock_s7.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -650,8 +650,8 @@ static Return test0030_7_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s7.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -675,8 +675,8 @@ static Return test0030_8_test(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/diffs/;"
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
 	        "rm -f lock_s8.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -705,8 +705,8 @@ static Return test0030_8_test(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s8.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mv tests/examples_backup/ tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

@@ -18,9 +18,8 @@ Return test0031(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "rm -rf tests/examples/diffs/;"
-	        "mkdir -p tests/examples/diffs/;"
-	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* tests/examples/diffs/;";
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -50,9 +49,8 @@ Return test0031(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f read_fail.db && "
-	        "rm -rf tests/examples/diffs/ && "
-	        "mkdir -p tests/examples/diffs/ && "
-	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* tests/examples/diffs/";
+	        "rm -rf tests/examples/diffs/diff1 && "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
