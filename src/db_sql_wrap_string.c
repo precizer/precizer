@@ -115,5 +115,5 @@ Return db_sql_wrap_string(
 		}
 	}
 
-	provide(status);
+	return(status);
 }

@@ -21,8 +21,8 @@ Return db_check_changes(void)
 	CmpctStat before = {0};
 	CmpctStat after = {0};
 
-	stat_copy(&config->db_file_stat,&before);
-	stat_copy(&db_current_stat,&after);
+	(void)stat_copy(&config->db_file_stat,&before);
+	(void)stat_copy(&db_current_stat,&after);
 
 	Changed changes = compare_file_metadata_equivalence(&before,&after);
 
