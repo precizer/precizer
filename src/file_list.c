@@ -177,6 +177,13 @@ Return file_list(TraversalSummary *summary)
 		}
 	}
 
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+	if(summary->stats_only_pass == false)
+	{
+		signal_wait_at_point(1U);
+	}
+#endif
+
 	while((p = fts_read(file_systems)) != NULL && continue_the_loop == true)
 	{
 		/* Interrupt the loop smoothly */
@@ -547,16 +554,22 @@ Return file_list(TraversalSummary *summary)
 				{
 					if(rehash == true)
 					{
-						run(sha512sum(p->fts_path,
+						if(SUCCESS == status)
+						{
+							status = sha512sum(p->fts_path,
 							(size_t)p->fts_pathlen,
 							file_buffer,
 							sha512,
 							&offset,
 							summary,
 							&mdContext,
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+							stat.st_size,
+#endif
 							&read_error,
 							&read_errno,
-							&wrong_file_type));
+							&wrong_file_type);
+						}
 
 						if(TRIUMPH & status)
 						{
@@ -639,7 +652,7 @@ Return file_list(TraversalSummary *summary)
 								&zero_size_file,
 								&wrong_file_type);
 
-							if(SUCCESS != status)
+							if((TRIUMPH & status) == 0)
 							{
 								continue_the_loop = false;
 								break;
@@ -673,7 +686,7 @@ Return file_list(TraversalSummary *summary)
 							&wrong_file_type);
 #endif
 
-						if(SUCCESS != status)
+						if((TRIUMPH & status) == 0)
 						{
 							continue_the_loop = false;
 							break;

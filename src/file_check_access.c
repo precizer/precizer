@@ -55,7 +55,7 @@ FileAccessStatus file_check_access(
 
 	char *absolute_path = NULL;
 
-	if(SUCCESS == path_absolute_from_relative(&absolute_path,path,path_size))
+	if(TRIUMPH & path_absolute_from_relative(&absolute_path,path,path_size))
 	{
 		if(access(absolute_path,mode) == 0)
 		{

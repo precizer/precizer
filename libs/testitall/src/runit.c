@@ -1,31 +1,156 @@
 #include "testitall.h"
-#include <limits.h>
-#include <stdint.h>
-#include <wordexp.h>
 
-#ifndef ARG_MAX
-#ifdef _POSIX_ARG_MAX
-#define ARG_MAX _POSIX_ARG_MAX
-#else
-#define ARG_MAX 4096
-#endif
-#endif
-
-extern int test_main(
-	int  argc,
-	char **argv) __attribute__((weak));
+#include "runit_internal.h"
 
 enum run_mode run_external = EXTERNAL_CALL;
 
-static struct {
-	int argc;
-	char **argv;
-	int result;
-} test_main_context = {0};
-
-static void test_main_wrapper(void)
+/**
+ * @brief Process-state guard used for INTERNAL_TEST in-process execution.
+ */
+struct runit_internal_guard
 {
-	test_main_context.result = test_main(test_main_context.argc,test_main_context.argv);
+	char *previous_cwd;
+	bool previous_cwd_captured;
+	bool changed_directory;
+	bool stdio_saved;
+	int saved_stdout_fd;
+	int saved_stderr_fd;
+};
+
+/**
+ * @brief Initialize the INTERNAL_TEST process-state guard.
+ */
+static void runit_internal_guard_init(struct runit_internal_guard *guard)
+{
+	guard->previous_cwd = NULL;
+	guard->previous_cwd_captured = false;
+	guard->changed_directory = false;
+	guard->stdio_saved = false;
+	guard->saved_stdout_fd = -1;
+	guard->saved_stderr_fd = -1;
+}
+
+/**
+ * @brief Enter INTERNAL_TEST mode execution context.
+ *
+ * Captures current directory, switches to TMPDIR, saves stdout/stderr descriptors,
+ * and redirects process output to capture files.
+ */
+static Return runit_internal_enter(
+	struct runit_internal_guard  *guard,
+	const char                   *tmpdir,
+	struct runit_capture_session *capture)
+{
+	Return status = SUCCESS;
+
+	guard->previous_cwd = getcwd(NULL,0);
+	if(NULL == guard->previous_cwd)
+	{
+		serp("Failed to get current working directory");
+		status = FAILURE;
+
+	} else {
+		guard->previous_cwd_captured = true;
+	}
+
+	if(SUCCESS == status)
+	{
+		if(0 != chdir(tmpdir))
+		{
+			serp("Failed to change directory to TMPDIR");
+			status = FAILURE;
+
+		} else {
+			guard->changed_directory = true;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		if(0 != fflush(stdout) || 0 != fflush(stderr))
+		{
+			serp("Failed to flush STDOUT/STDERR before redirect");
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		guard->saved_stdout_fd = dup(STDOUT_FILENO);
+		guard->saved_stderr_fd = dup(STDERR_FILENO);
+		if(guard->saved_stdout_fd == -1 || guard->saved_stderr_fd == -1)
+		{
+			serp("Failed to save stdout/stderr descriptors");
+			status = FAILURE;
+
+		} else {
+			guard->stdio_saved = true;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		/* Redirect in-process stdout/stderr into the same capture files as external mode. */
+		run(runit_capture_apply_redirect(capture));
+	}
+
+	provide(status);
+}
+
+/**
+ * @brief Leave INTERNAL_TEST mode execution context and restore process state.
+ */
+static Return runit_internal_leave(struct runit_internal_guard *guard)
+{
+	Return status = SUCCESS;
+
+	if(true == guard->stdio_saved)
+	{
+		if(guard->saved_stdout_fd != -1 && dup2(guard->saved_stdout_fd,STDOUT_FILENO) == -1)
+		{
+			serp("Failed to restore original STDOUT");
+			status = FAILURE;
+		}
+
+		if(guard->saved_stderr_fd != -1 && dup2(guard->saved_stderr_fd,STDERR_FILENO) == -1)
+		{
+			serp("Failed to restore original STDERR");
+			status = FAILURE;
+		}
+	}
+
+	if(guard->saved_stdout_fd != -1)
+	{
+		(void)close(guard->saved_stdout_fd);
+		guard->saved_stdout_fd = -1;
+	}
+
+	if(guard->saved_stderr_fd != -1)
+	{
+		(void)close(guard->saved_stderr_fd);
+		guard->saved_stderr_fd = -1;
+	}
+
+	if(true == guard->changed_directory && true == guard->previous_cwd_captured)
+	{
+		if(0 != chdir(guard->previous_cwd))
+		{
+			serp("Failed to restore working directory");
+			status = FAILURE;
+		}
+	}
+
+	if(true == guard->previous_cwd_captured)
+	{
+		free(guard->previous_cwd);
+		guard->previous_cwd = NULL;
+		guard->previous_cwd_captured = false;
+	}
+
+	guard->changed_directory = false;
+	guard->stdio_saved = false;
+
+	provide(status);
 }
 
 /**
@@ -37,6 +162,12 @@ static void test_main_wrapper(void)
  * @param expected_return_code Expected exit code from the run.
  * @param buffer_policy Bitmask controlling stdout/stderr handling (see capture_policy).
  *
+ * @note Internal helper-to-helper calls inside this closed API use lightweight
+ * argument checks by design to improve readability and reduce overhead.
+ * Keep this approach in future runit* internal helpers as well: avoid redundant
+ * argument validation in internal-only functions that are not externally visible
+ * and exist to remove code duplication.
+ *
  * @return SUCCESS when the run completes with the expected exit code; FAILURE otherwise.
  */
 Return runit(
@@ -46,286 +177,110 @@ Return runit(
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
-	// Base status for the whole sequence; subsequent steps update it on errors.
-	/** @var Return status
-	 *  @brief The status that will be passed to return() before exiting
-	 *  @details By default, the function worked without errors
-	 */
 	Return status = SUCCESS;
-
-	// Arguments string to parse and forward into test_main
-	const char *safe_arguments = arguments;
-	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
-	const bool suppress_stderr = (buffer_policy & STDERR_SUPPRESS) != 0U;
-	const bool allow_stderr = (buffer_policy & STDERR_ALLOW) != 0U;
-
-	if(NULL == safe_arguments || safe_arguments[0] == '\0')
+	const char *safe_arguments = "";
+	if(arguments != NULL && '\0' != arguments[0])
 	{
-		safe_arguments = "";
+		safe_arguments = arguments;
 	}
 
-	// External mode: build shell command and exit early.
+	struct runit_call runit_call_data;
+	runit_call_init(&runit_call_data);
+
+	struct runit_capture_session capture;
+	runit_capture_session_init(&capture);
+
+	struct runit_internal_guard internal_guard;
+	runit_internal_guard_init(&internal_guard);
+
+	int wait_status = 0;
+	bool child_waited = false;
+	Return finalize_status = SUCCESS;
+
+	call(del(STDOUT));
+	call(del(STDERR));
+
+	run(runit_validate_runtime_mode(run_external));
+
+	const char *call_label = "Internal call";
 	if(EXTERNAL_CALL == run_external)
 	{
-		char command[ARG_MAX];
-		int written = snprintf(
-			command,
-			sizeof(command),
-			"cd ${TMPDIR} && ${BINDIR}/precizer %s",
-			safe_arguments);
-
-		if(written < 0 || (size_t)written >= sizeof(command))
-		{
-			echo(STDERR,"Command length exceeds ARG_MAX (%zu bytes)",sizeof(command));
-			status = FAILURE;
-
-		} else {
-			run(execute_command(command,stdout_result,stderr_result,expected_return_code,buffer_policy));
-		}
-
-		provide(status);
+		call_label = "External call";
 	}
+	run(runit_prepare_call_and_capture(
+		&runit_call_data,
+		&capture,
+		run_external,
+		safe_arguments,
+		call_label,
+		stdout_result,
+		stderr_result,
+		expected_return_code,
+		buffer_policy));
 
-	// Prepare wordexp and argv/argc for test_main.
-	wordexp_t parsed_arguments = {0};
-	bool words_allocated = false;
-	size_t argc = 0U;
-	char **argv = NULL;
-
-	// Save current working directory to restore after test_main.
-	char *previous_cwd = NULL;
-	bool changed_directory = false;
-
-	// Capture working directory before switching to TMPDIR.
-	if(SUCCESS == status)
+	if(SUCCESS == status && EXTERNAL_CALL == run_external)
 	{
-		previous_cwd = getcwd(NULL,0);
-
-		if(NULL == previous_cwd)
+		const pid_t app_pid = fork();
+		if(app_pid < 0)
 		{
-			serp("Failed to get current working directory");
-			status = FAILURE;
-		}
-	}
-
-	// Switch into TMPDIR (tests expect to run precizer from a temp directory).
-	const char *tmpdir = getenv("TMPDIR");
-
-	if(SUCCESS == status)
-	{
-		if(NULL == tmpdir)
-		{
-			echo(STDERR,"Environment variable TMPDIR is not set");
+			serp("Failed to fork process for EXTERNAL_CALL");
 			status = FAILURE;
 
-		} else {
-			if(0 != chdir(tmpdir))
+		} else if(0 == app_pid) {
+			if(chdir(runit_call_data.tmpdir) != 0)
 			{
-				serp("Failed to change directory to TMPDIR");
-				status = FAILURE;
+				_exit(127);
+			}
 
-			} else {
-				changed_directory = true;
+			if(SUCCESS != runit_capture_apply_redirect(&capture))
+			{
+				_exit(127);
+			}
+
+			(void)execv(runit_call_data.program_path,runit_call_data.argv);
+			_exit(127);
+
+		} else {
+			runit_capture_close_fds(&capture);
+
+			run(runit_wait_child(app_pid,&wait_status,"EXTERNAL_CALL"));
+			if(SUCCESS == status)
+			{
+				child_waited = true;
 			}
 		}
 	}
 
-	// Parse argument string into words without command substitution.
-	if(SUCCESS == status)
+	if(INTERNAL_TEST == run_external)
 	{
-		int word_status = wordexp(safe_arguments,&parsed_arguments,WRDE_NOCMD);
-
-		if(0 != word_status)
-		{
-			echo(STDERR,"Failed to parse arguments \"%s\" (wordexp code %d)",safe_arguments,word_status);
-			status = FAILURE;
-
-		} else {
-			words_allocated = true;
-		}
-	}
-
-	// Ensure argument count fits into int and set argc.
-	if(SUCCESS == status)
-	{
-		argc = parsed_arguments.we_wordc + 1U;
-
-		if(argc > (size_t)INT_MAX)
-		{
-			echo(STDERR,"Too many arguments for test_main: %zu",argc);
-			status = FAILURE;
-		}
-	}
-
-	// Build argv: argv[0] is a program name, the rest are parsed words.
-	if(SUCCESS == status)
-	{
-		argv = calloc(argc + 1U,sizeof(char *));
-
-		if(NULL == argv)
-		{
-			report("Memory allocation failed, requested size: %zu bytes",(argc + 1U) * sizeof(char *));
-			status = FAILURE;
-
-		} else {
-			argv[0] = (char *)(uintptr_t)"precizer";
-
-			for(size_t i = 0U; i < parsed_arguments.we_wordc; i++)
-			{
-				argv[i + 1U] = parsed_arguments.we_wordv[i];
-			}
-
-			argv[argc] = NULL;
-		}
-	}
-
-	// Run test_main in-process while capturing stdout/stderr.
-	if(SUCCESS == status)
-	{
-		call(del(STDERR));
-		call(del(STDOUT));
-
-		test_main_context.argc = (int)argc;
-		test_main_context.argv = argv;
-		test_main_context.result = 0;
-
-		run(function_capture(test_main_wrapper,STDOUT,STDERR));
+		run(runit_internal_enter(&internal_guard,runit_call_data.tmpdir,&capture));
 
 		if(SUCCESS == status)
 		{
-			int exit_code = test_main_context.result;
+			const int test_main_result = test_main((int)runit_call_data.argc,runit_call_data.argv);
+			fflush(stdout);
+			fflush(stderr);
 
-			// Handle stderr: allow it, suppress it, or format a warning and fail.
-			if(STDERR->length > 0U)
-			{
-				if(true == allow_stderr)
-				{
-					// Keep STDERR contents without failing
-				} else if(true == suppress_stderr)
-				{
-					call(del(STDERR));
-
-				} else {
-					char *str;
-					const char *stderr_view = getcstring(STDERR);
-					int rt = asprintf(&str,
-						YELLOW "Warning! STDERR buffer is not empty!\n"
-						"Internal call:\n" YELLOW ">>" RESET "precizer %s" YELLOW "<<" RESET "\n"
-						"Stderr output:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
-						safe_arguments,
-						stderr_view);
-
-					if(rt > -1)
-					{
-						if(SUCCESS == resize(STDERR,(size_t)rt + 1U))
-						{
-							run(copy_literal(STDERR,str));
-						}
-
-					} else {
-						report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1U);
-						status = FAILURE;
-					}
-
-					free(str);
-
-					if(SUCCESS == status)
-					{
-						status = FAILURE;
-					}
-				}
-			}
-
-			// Suppress stdout if requested.
-			if(STDOUT->length > 0U && true == suppress_stdout)
-			{
-				call(del(STDOUT));
-			}
-
-			// Compare exit code with expected and format a report on mismatch.
-			if(SUCCESS == status)
-			{
-				if(expected_return_code != exit_code)
-				{
-					char *str;
-					const char *stderr_view = getcstring(STDERR);
-					const char *stdout_view = getcstring(STDOUT);
-					int rt = asprintf(&str,
-						YELLOW "ERROR: Unexpected exit code!" RESET "\n"
-						YELLOW "Internal call:" RESET "\n" YELLOW ">>" RESET "precizer %s" YELLOW "<<" RESET "\n"
-						YELLOW "Exited with code " RESET "%d" YELLOW " but expected " RESET "%d\n"
-						YELLOW "Stderr output:" RESET "\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
-						YELLOW "Stdout output:" RESET "\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n",
-						safe_arguments,
-						exit_code,
-						expected_return_code,
-						stderr_view,
-						stdout_view);
-
-					if(rt > -1)
-					{
-						if(SUCCESS == resize(STDERR,(size_t)rt + 1U))
-						{
-							run(copy_literal(STDERR,str));
-						}
-
-					} else {
-						report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1U);
-						status = FAILURE;
-					}
-
-					free(str);
-
-					if(SUCCESS == status)
-					{
-						status = FAILURE;
-					}
-				}
-			}
+			wait_status = (test_main_result & 0xff) << 8;
+			child_waited = true;
 		}
+
+		call(runit_internal_leave(&internal_guard));
 	}
 
-	// Restore original working directory if changed.
-	if(true == changed_directory && NULL != previous_cwd)
+	if(true == child_waited)
 	{
-		if(0 != chdir(previous_cwd))
-		{
-			serp("Failed to restore working directory");
-			status = FAILURE;
-		}
+		finalize_status = runit_capture_finalize(&capture,wait_status);
 	}
 
-	free(previous_cwd);
-	free(argv);
-
-	// Copy stdout into caller-provided result buffer when requested.
-	if(true == words_allocated)
+	if(SUCCESS == status && SUCCESS != finalize_status)
 	{
-		wordfree(&parsed_arguments);
+		status = finalize_status;
 	}
 
-	if(NULL != stdout_result)
-	{
-		if(STDOUT->length > 0U)
-		{
-			run(copy(stdout_result,STDOUT));
-		}
-	}
+	runit_release_call_and_capture(&capture,&runit_call_data);
 
-	if(NULL != stderr_result)
-	{
-		if(STDERR->length > 0U)
-		{
-			run(copy(stderr_result,STDERR));
-		}
-	}
-
-	if(SUCCESS == status && true == allow_stderr)
-	{
-		call(del(STDERR));
-	}
-
-	call(del(STDOUT));
+	run(del(STDERR));
 
 	provide(status);
 }

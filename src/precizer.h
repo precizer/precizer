@@ -529,9 +529,22 @@ Return sha512sum(
 	sqlite3_int64 *,
 	TraversalSummary *,
 	SHA512_Context *,
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+	const off_t,
+#endif
 	bool *,
 	int *,
 	bool *);
+
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+/**
+ * @brief Pause execution at a configured test wait point.
+ *
+ * Used only in test builds to delay execution until a signal-driven test
+ * either times out or sets the global interrupt flag.
+ */
+void signal_wait_at_point(unsigned int);
+#endif
 
 size_t file_buffer_memory(void);
 
@@ -578,7 +591,7 @@ FileAccessStatus file_check_access(
 	const size_t,
 	const int);
 
-void notify_quit_handler(int);
+void signal_notify_quit_handler(int);
 
 Return determine_running_dir(void);
 
