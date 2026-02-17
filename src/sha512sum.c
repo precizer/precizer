@@ -1,6 +1,50 @@
 #include "precizer.h"
 #include <errno.h>
 
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+/**
+ * @brief Check whether a path points to the large interruption test file.
+ */
+static bool is_huge_interruption_target(const char *path)
+{
+	if(path == NULL)
+	{
+		return(false);
+	}
+
+	const char *needle = "hugetestfile";
+	const size_t path_length = strlen(path);
+	const size_t needle_length = strlen(needle);
+
+	if(path_length < needle_length)
+	{
+		return(false);
+	}
+
+	return(0 == strcmp(path + (path_length - needle_length),needle));
+}
+
+/**
+ * @brief Generate a pseudo-random stop byte in the closed range [1, file_size].
+ */
+static uint64_t random_stop_byte(const uint64_t file_size)
+{
+	if(file_size == 0U)
+	{
+		return(0U);
+	}
+
+	struct timespec now = {0};
+	(void)clock_gettime(CLOCK_MONOTONIC,&now);
+
+	uint64_t seed = (uint64_t)now.tv_nsec;
+	seed ^= ((uint64_t)now.tv_sec << 32);
+	seed ^= (uint64_t)getpid();
+
+	return((seed % file_size) + 1U);
+}
+#endif
+
 /**
  * @brief Calculate SHA512 cryptographic hash of a file, optionally resuming from offset.
  *
@@ -28,6 +72,9 @@ Return sha512sum(
 	sqlite3_int64    *offset,
 	TraversalSummary *summary,
 	SHA512_Context   *mdContext,
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+	const off_t      file_size,
+#endif
 	bool             *read_error,
 	int              *read_errno,
 	bool             *wrong_file_type)
@@ -60,7 +107,7 @@ Return sha512sum(
 
 		status = path_absolute_from_relative(&absolute_path,path,path_size);
 
-		if(absolute_path == NULL || SUCCESS != status)
+		if(absolute_path == NULL || (TRIUMPH & status) == 0)
 		{
 			slog(ERROR,"Can't constructs an absolute path from the base directory %s and a relative path %s\n",config->running_dir,path);
 
@@ -107,6 +154,18 @@ Return sha512sum(
 	bool perform_file_hashing = config->dry_run == false
 	        || config->dry_run_with_checksums == true;
 
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+	/*
+	 * 0 means random-stop flow is disabled for this file.
+	 * Non-zero means upper bound for random stop byte selection.
+	 */
+	uint64_t random_stop_limit = 0U;
+	/* 0 means stop byte has not been selected yet. */
+	uint64_t random_stop_byte_value = 0U;
+	/* Separate state flag: do not overload stop-byte numeric value. */
+	bool random_stop_triggered = false;
+#endif
+
 	if(*offset == 0)
 	{
 		if(sha512_init(mdContext) == 1)
@@ -118,6 +177,18 @@ Return sha512sum(
 		}
 	}
 
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+	/*
+	 * Activate random interruption only for a fresh pass of hugetestfile.
+	 * Resume path (*offset > 0 at entry) must continue from saved state
+	 * without selecting a new random stop point.
+	 */
+	if(*offset == 0 && is_huge_interruption_target(path) == true && file_size > 0)
+	{
+		random_stop_limit = (uint64_t)file_size;
+	}
+#endif
+
 	if(perform_file_hashing == true)
 	{
 		long long int hashing_start_ns = cur_time_monotonic_ns();
@@ -126,9 +197,72 @@ Return sha512sum(
 
 		while(true)
 		{
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+			/*
+			 * Choose stop byte only after real hashing has started
+			 * (offset became > 0), then trigger point 2 exactly once.
+			 */
+			if(*offset > 0)
+			{
+				if(random_stop_limit > 0U && random_stop_byte_value == 0U)
+				{
+					random_stop_byte_value = random_stop_byte(random_stop_limit);
+
+					/*
+					 * Safety guard: hugetestfile must never skip interruption
+					 * point because of an unexpected zero from generator.
+					 */
+					if(random_stop_byte_value == 0U)
+					{
+						random_stop_byte_value = 1U;
+					}
+				}
+
+				/*
+				 * >0 check prevents false trigger for files where random-stop
+				 * is not enabled and stop byte remains 0.
+				 */
+				if(random_stop_byte_value > 0U
+				        && random_stop_triggered == false
+				        && (uint64_t)(*offset) >= random_stop_byte_value)
+				{
+					signal_wait_at_point(2U);
+					random_stop_triggered = true;
+				}
+			}
+#endif
+
 			/* Interrupt the loop smoothly */
 			/* Interrupt when Ctrl+C */
-			if(global_interrupt_flag == true)
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+			/*
+			 * Temporary guard: when random-stop mode is active for hugetestfile,
+			 * do not break on global_interrupt_flag until point 2 has really
+			 * happened. Otherwise interruption may fire too early and miss the
+			 * controlled "interrupt at random byte" scenario.
+			 */
+			bool delay_interrupt_for_random_stop = false;
+			if(random_stop_limit > 0U && random_stop_triggered == false)
+			{
+				if(random_stop_byte_value == 0U)
+				{
+					/* No stop byte yet: wait until at least one block is hashed. */
+					delay_interrupt_for_random_stop = true;
+
+				}
+				else if((uint64_t)(*offset) < random_stop_byte_value)
+				{
+					/* Stop byte is known but not reached yet: keep hashing. */
+					delay_interrupt_for_random_stop = true;
+				}
+			}
+#endif
+
+			if(global_interrupt_flag == true
+#ifdef TESTITALL_RUN_IN_BACKGROUND
+			        && delay_interrupt_for_random_stop == false
+#endif
+			)
 			{
 				loop_was_interrupted = true;
 				break;

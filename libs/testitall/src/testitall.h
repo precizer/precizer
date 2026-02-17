@@ -23,19 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <spawn.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <stdarg.h>
 #include <sys/stat.h>
-#define PCRE2_STATIC
-#define PCRE2_CODE_UNIT_WIDTH 8
-#include <pcre2.h>
+#include <stdint.h>
 #include <stdbool.h>
-
-// Functions for working with time.
-#include <time.h>
-#include <sys/time.h>
 
 // Functions for string manipulation.
 #include <string.h>
@@ -49,6 +39,10 @@
 
 // libxdiff library.
 #include "xdiff.h"
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 /**
  * @brief Prints a formatted header message if the status check passes.
@@ -301,11 +295,42 @@ enum capture_policy
 
 extern enum run_mode run_external;
 
+extern int test_main(
+	int  argc,
+	char **argv) __attribute__((weak));
+
 Return runit(
 	const char *,
 	memory *,
 	memory *,
 	const int,
+	unsigned int);
+
+/**
+ * @brief Run precizer in background and complete signal-driven scenario.
+ *
+ * The helper starts the process, configures delay control environment variables
+ * (`TESTITALL_SIGNAL_WAIT_MS` and `TESTITALL_SIGNAL_WAIT_POINT`), waits
+ * `min_delay_ms`, attempts to send `signal_number` to the child, waits for
+ * completion, and finalizes output capture and exit-code validation.
+ *
+ * If the child exits before signal delivery, the helper returns failure.
+ *
+ * `max_delay_ms` is used both as:
+ * - value for `TESTITALL_SIGNAL_WAIT_MS`
+ * - watchdog timeout (SIGKILL after timeout if child is still alive)
+ *
+ * @note Supports both EXTERNAL_CALL and INTERNAL_TEST modes.
+ */
+Return runit_background(
+	const char   *,
+	memory       *,
+	memory       *,
+	const int,
+	unsigned int,
+	uint64_t,
+	uint64_t,
+	int,
 	unsigned int);
 
 Return trim_trailing_eol(memory *);
