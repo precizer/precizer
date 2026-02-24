@@ -46,7 +46,7 @@ static char doc[] =
         "* Files present on both hosts whose SHA512 checksums do not match.\n"
         "\n"
         "Database paths are stored as relative paths only.\n"
-        "For example, " YELLOW "/mnt1/abc/def/aaa.txt" RESET " is stored as " YELLOW "abc/def/aaa.txt" RESET ".\n"
+        "For example, " YELLOW "/mnt1/abc/def/aaa.txt" RESET " is stored as " YELLOW "abc/def/aaa.txt" RESET ". "
         "The same relative-path rule applies to " YELLOW "/mnt2/abc/def/aaa.txt" RESET ", enabling direct cross-source comparison.\n"
         "\n"
         "See the project README for additional technical details.";
@@ -178,26 +178,45 @@ static error_t parse_opt(
 	switch(key)
 	{
 		case 'd':
+		{
 			// Full path to DB file
-			config->db_primary_file_path = strdup(arg);
-
-			if(config->db_primary_file_path == NULL)
+			if(CRITICAL & copy_literal(conf(db_primary_file_path),arg))
 			{
-				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_path failed!");
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_path failed");
 				return(ENOMEM);
 			}
 
 			// Name of DB file only
-			config->db_file_name = strdup(basename(arg));
+			char *tmp = strdup(arg);
 
-			if(config->db_file_name == NULL)
+			if(tmp == NULL)
 			{
-				free(config->db_primary_file_path);  // Free previously allocated memory
-				config->db_primary_file_path = NULL; // Set to NULL after freeing
-				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed!");
+				(void)del(conf(db_primary_file_path));
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed");
 				return(ENOMEM);
 			}
+
+			const char *db_file_basename = basename(tmp);
+
+			if(db_file_basename == NULL)
+			{
+				free(tmp);
+				(void)del(conf(db_primary_file_path));
+				argp_failure(state,0,0,"ERROR: Failed to determine database base name from path '%s'",arg);
+				return(EINVAL);
+			}
+
+			if(CRITICAL & copy_literal(conf(db_file_name),db_file_basename))
+			{
+				free(tmp);
+				(void)del(conf(db_primary_file_path));
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed");
+				return(ENOMEM);
+			}
+
+			free(tmp);
 			break;
+		}
 		case 'e':
 			(void)add_string_to_array(&config->ignore,arg);
 			break;
@@ -278,7 +297,6 @@ static error_t parse_opt(
 			config->force = true;
 			break;
 		case 'l':
-
 			if(0 == strncasecmp(arg,"QUICK",sizeof("QUICK")))
 			{
 				config->db_check_level = QUICK;
@@ -373,7 +391,7 @@ static error_t parse_opt(
 			return(ARGP_ERR_UNKNOWN);
 	}
 
-	return(0);
+	return(EX_OK);
 }
 
 /* Our argp parser. */
@@ -385,28 +403,25 @@ Return parse_arguments(
 	const int argc,
 	char      *argv[])
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 	unsigned int parse_flags = ARGP_NO_EXIT | ARGP_NO_HELP;
 
 	information_mode_requested = false;
 
-	/* Parse our arguments; every option seen by parse_opt will be
+	/* Parse arguments; every option seen by parse_opt will be
 	   reflected in arguments. */
 	error_t parse_error = argp_parse(&argp,argc,argv,parse_flags,0,0);
 
-	if(parse_error == 0 && information_mode_requested == true)
+	if(parse_error != EX_OK)
 	{
+		status = FAILURE;
+	} else if(information_mode_requested == true){
 		provide(INFO);
 	}
 
-	if(parse_error != 0)
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && config->paths != NULL)
+	if((SUCCESS & status) && config->paths != NULL)
 	{
 		for(int i = 0; config->paths[i]; i++)
 		{
@@ -415,14 +430,14 @@ Return parse_arguments(
 		}
 	}
 
-	if(SUCCESS == status && config->compare == true)
+	if((SUCCESS & status)  && config->compare == true)
 	{
 		if(config->paths != NULL)
 		{
 			// The array with database names
 			config->db_file_paths = config->paths;
 
-			for(int i = 0; config->db_file_paths[i] && (SUCCESS == status); i++)
+			for(int i = 0; config->db_file_paths[i] && (SUCCESS & status); i++)
 			{
 				// Create a copy of the path string for basename
 				char *tmp = strdup(config->db_file_paths[i]);
@@ -448,7 +463,7 @@ Return parse_arguments(
 				status = add_string_to_array(&config->db_file_names,db_file_basename);
 				free(tmp);
 
-				if(SUCCESS != status)
+				if((SUCCESS & status) == false)
 				{
 					break;
 				}
@@ -459,9 +474,10 @@ Return parse_arguments(
 	if(parse_error != 0)
 	{
 		slog(ERROR,"Argument parsing failed with code %d (%s)\n",parse_error,argp_error_to_text(parse_error));
+		status = FAILURE;
 	}
 
-	if(SUCCESS != status)
+	if(CRITICAL & status)
 	{
 		provide(status);
 	}
@@ -481,14 +497,16 @@ Return parse_arguments(
 			slog(TESTING|UNDECOR,"\n");
 		}
 
-		if(config->db_primary_file_path != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content.
+		if(conf(db_primary_file_path)->length > 1)
 		{
-			slog(TESTING,"argument:database=%s\n",config->db_primary_file_path);
+			slog(TESTING,"argument:database=%s\n",confstr(db_primary_file_path));
 		}
 
-		if(config->db_file_name != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content.
+		if(conf(db_file_name)->length > 1)
 		{
-			slog(TESTING,"argument:db_file_name=%s\n",config->db_file_name);
+			slog(TESTING,"argument:db_file_name=%s\n",confstr(db_file_name));
 		}
 
 		if(config->db_file_paths != NULL)
@@ -637,14 +655,16 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
-		if(config->db_primary_file_path != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content.
+		if(conf(db_primary_file_path)->length > 1)
 		{
-			slog(VERBOSE|UNDECOR,"database=%s; ",config->db_primary_file_path);
+			slog(VERBOSE|UNDECOR,"database=%s; ",confstr(db_primary_file_path));
 		}
 
-		if(config->db_file_name != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content.
+		if(conf(db_file_name)->length > 1)
 		{
-			slog(VERBOSE|UNDECOR,"db_file_name=%s; ",config->db_file_name);
+			slog(VERBOSE|UNDECOR,"db_file_name=%s; ",confstr(db_file_name));
 		}
 
 		if(config->db_file_paths != NULL)

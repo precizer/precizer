@@ -388,7 +388,7 @@ Return db_migrate_from_0_to_1(const char *db_file_path)
 		 */
 		if(db_file_modified == true)
 		{
-			if(strcmp(db_file_path,config->db_primary_file_path) == 0)
+			if(strcmp(db_file_path,confstr(db_primary_file_path)) == 0)
 			{
 				/* Changes have been made to the database. Update
 				   this in the global variable value. */

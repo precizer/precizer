@@ -8,7 +8,7 @@
  */
 Return db_primary_consider_vacuum(void)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -35,7 +35,7 @@ Return db_primary_consider_vacuum(void)
 	}
 
 	/* Vacuum the primary database */
-	status = db_vacuum(config->db_primary_file_path);
+	status = db_vacuum(confstr(db_primary_file_path));
 
 	provide(status);
 }

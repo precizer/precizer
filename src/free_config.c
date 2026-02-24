@@ -16,11 +16,9 @@ void free_config(void)
 
 	free(config->running_dir);
 
-	free(config->db_primary_file_path);
-	config->db_primary_file_path = NULL;
+	(void)del(conf(db_primary_file_path));
 
-	free(config->db_file_name);
-	config->db_file_name = NULL;
+	(void)del(conf(db_file_name));
 
 	// Free memory of string array
 	free_string_array((config)->db_file_names);

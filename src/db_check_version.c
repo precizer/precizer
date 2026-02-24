@@ -73,7 +73,7 @@ Return db_check_version(
 			   The primary database doesn't need to be vacuumed during updates.
 			   It will be vacuumed automatically before the Precizer
 			   application session ends */
-			if(strcmp(db_file_path,config->db_primary_file_path) != 0)
+			if(strcmp(db_file_path,confstr(db_primary_file_path)) != 0)
 			{
 				/* Vacuum the database */
 				status = db_vacuum(db_file_path);

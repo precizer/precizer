@@ -9,7 +9,7 @@
  */
 Return db_init(void)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -25,24 +25,25 @@ Return db_init(void)
 
 	/* Open database */
 
-	const char *db_file_path = config->db_primary_file_path;
+	const char *db_file_path = confstr(db_primary_file_path);
 
 	if(config->sqlite_open_flag == SQL_DRY_RUN_MODE)
 	{
 		db_file_path = ":memory:";
+		config->db_primary_path_is_memory = true;
 		config->sqlite_open_flag = SQLITE_OPEN_READWRITE;
 		slog(TRACE,"Dry Run mode was activated. In-memory database will be used to simulate activity.\n");
 	}
 
 	if(SQLITE_OK == (rc = sqlite3_open_v2(db_file_path,&config->db,config->sqlite_open_flag,NULL)))
 	{
-		slog(TRACE,"Successfully opened database %s\n",config->db_file_name);
+		slog(TRACE,"Successfully opened database %s\n",confstr(db_file_name));
 	} else if(config->compare != true){
 		log_sqlite_error(config->db,
 			rc,
 			NULL,
 			"Can't open database %s",
-			config->db_primary_file_path);
+			confstr(db_primary_file_path));
 		status = FAILURE;
 	}
 
@@ -175,7 +176,7 @@ Return db_init(void)
 
 		if(rc == SQLITE_OK)
 		{
-			slog(TRACE,"The primary database named %s is ready for operations\n",config->db_file_name);
+			slog(TRACE,"The primary database named %s is ready for operations\n",confstr(db_file_name));
 		} else {
 			log_sqlite_error(config->db,rc,NULL,"Can't execute pragma setup");
 			status = FAILURE;
