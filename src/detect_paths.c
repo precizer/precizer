@@ -9,7 +9,7 @@
 
 Return detect_paths(void)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -24,6 +24,12 @@ Return detect_paths(void)
 		// Check directory paths passed as arguments, traverse
 		// them for files, and store the file metadata in the database
 		slog(TRACE,"Checking directory paths provided as arguments\n");
+	}
+
+	if(config->paths == NULL)
+	{
+		slog(ERROR,"The PATH is not defined\n");
+		status = FAILURE;
 	}
 
 	for(int i = 0; config->paths[i]; i++)

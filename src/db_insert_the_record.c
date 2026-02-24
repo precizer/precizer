@@ -36,7 +36,7 @@ Return db_insert_the_record(
 	const bool           *zero_size_file,
 	const bool           *wrong_file_type)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 

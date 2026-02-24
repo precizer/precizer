@@ -94,5 +94,5 @@ Return show_difference(
 
 	del(flags);
 
-	return(SUCCESS);
+	provide(SUCCESS);
 }

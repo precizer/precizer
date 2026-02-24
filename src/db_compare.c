@@ -15,7 +15,7 @@ static Return compose_sql(
 	const char *db_path,
 	int        db_num)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -42,7 +42,7 @@ static Return db_attach(
 	int db_A,
 	int db_B)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -74,7 +74,7 @@ static Return db_attach(
  */
 static Return db_detach(const char *db_alias)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -138,7 +138,7 @@ static Return db_changes(
 	int        db_A,
 	int        db_B)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -214,7 +214,7 @@ static Return db_changes(
  */
 Return db_compare(void)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 

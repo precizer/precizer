@@ -17,7 +17,7 @@ Return db_finalize(
 	sqlite3_stmt **stmt)
 {
 	/** Return status
-	 *  The status that will be passed to return() before exiting
+	 *  The status that will be passed to provide() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;

@@ -12,7 +12,7 @@ Return db_read_file_data_from(
 #endif
 	const char *relative_path)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
