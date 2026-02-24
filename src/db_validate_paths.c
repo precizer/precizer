@@ -39,14 +39,14 @@
  */
 Return db_validate_paths(void)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
 	// Don't do anything
 	if(config->compare == true)
 	{
-		return(status);
+		provide(status);
 	}
 
 	/* Interrupt the function smoothly */
@@ -240,7 +240,7 @@ Return db_validate_paths(void)
 				{
 					if(!(rational_logger_mode & SILENT))
 					{
-						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",config->db_file_name);
+						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",confstr(db_file_name));
 
 						for(int i = 0; config->paths[i]; i++)
 						{
