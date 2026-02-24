@@ -1,7 +1,7 @@
 #include "precizer.h"
 #include <errno.h>
 
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 /**
  * @brief Check whether a path points to the large interruption test file.
  */
@@ -72,14 +72,14 @@ Return sha512sum(
 	sqlite3_int64    *offset,
 	TraversalSummary *summary,
 	SHA512_Context   *mdContext,
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 	const off_t      file_size,
 #endif
 	bool             *read_error,
 	int              *read_errno,
 	bool             *wrong_file_type)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -142,8 +142,10 @@ Return sha512sum(
 	// It moves the file pointer "offset" bytes from the beginning of the file
 	if(fseek(fileptr,*offset,SEEK_SET) != 0)
 	{
-		/* Looks like the wrong file type.
-		   Doesn't need to return FAILURE status */
+		/*
+		 * Looks like the wrong file type.
+		 * Doesn't need to return FAILURE status.
+		 */
 		*wrong_file_type = true;
 		free(absolute_path);
 		fclose(fileptr);
@@ -154,7 +156,7 @@ Return sha512sum(
 	bool perform_file_hashing = config->dry_run == false
 	        || config->dry_run_with_checksums == true;
 
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 	/*
 	 * 0 means random-stop flow is disabled for this file.
 	 * Non-zero means upper bound for random stop byte selection.
@@ -177,7 +179,7 @@ Return sha512sum(
 		}
 	}
 
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 	/*
 	 * Activate random interruption only for a fresh pass of hugetestfile.
 	 * Resume path (*offset > 0 at entry) must continue from saved state
@@ -186,6 +188,29 @@ Return sha512sum(
 	if(*offset == 0 && is_huge_interruption_target(path) == true && file_size > 0)
 	{
 		random_stop_limit = (uint64_t)file_size;
+
+		/*
+		 * Select interruption target before the first fread() call so
+		 * the first chunk can be bounded and the stop point can land
+		 * anywhere in [1, file_size].
+		 */
+		random_stop_byte_value = random_stop_byte(random_stop_limit);
+
+		/* Defensive fallback: never allow a zero stop byte. */
+		if(random_stop_byte_value == 0U)
+		{
+			random_stop_byte_value = 1U;
+		}
+
+		/*
+		 * Keep the stop point strictly inside file data for multi-byte files.
+		 * If random selection lands exactly at EOF, shift it one byte left.
+		 * The guard keeps subtraction safe and avoids unsigned underflow.
+		 */
+		if(random_stop_limit > 1U && random_stop_byte_value >= random_stop_limit)
+		{
+			random_stop_byte_value = random_stop_limit - 1U;
+		}
 	}
 #endif
 
@@ -197,44 +222,23 @@ Return sha512sum(
 
 		while(true)
 		{
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 			/*
-			 * Choose stop byte only after real hashing has started
-			 * (offset became > 0), then trigger point 2 exactly once.
+			 * Trigger point 2 exactly once when selected stop byte is reached.
 			 */
-			if(*offset > 0)
+			if(random_stop_limit > 0U
+			        && random_stop_triggered == false
+			        && random_stop_byte_value > 0U
+			        && (uint64_t)(*offset) >= random_stop_byte_value)
 			{
-				if(random_stop_limit > 0U && random_stop_byte_value == 0U)
-				{
-					random_stop_byte_value = random_stop_byte(random_stop_limit);
-
-					/*
-					 * Safety guard: hugetestfile must never skip interruption
-					 * point because of an unexpected zero from generator.
-					 */
-					if(random_stop_byte_value == 0U)
-					{
-						random_stop_byte_value = 1U;
-					}
-				}
-
-				/*
-				 * >0 check prevents false trigger for files where random-stop
-				 * is not enabled and stop byte remains 0.
-				 */
-				if(random_stop_byte_value > 0U
-				        && random_stop_triggered == false
-				        && (uint64_t)(*offset) >= random_stop_byte_value)
-				{
-					signal_wait_at_point(2U);
-					random_stop_triggered = true;
-				}
+				signal_wait_at_point(2U);
+				random_stop_triggered = true;
 			}
 #endif
 
 			/* Interrupt the loop smoothly */
 			/* Interrupt when Ctrl+C */
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 			/*
 			 * Temporary guard: when random-stop mode is active for hugetestfile,
 			 * do not break on global_interrupt_flag until point 2 has really
@@ -249,8 +253,7 @@ Return sha512sum(
 					/* No stop byte yet: wait until at least one block is hashed. */
 					delay_interrupt_for_random_stop = true;
 
-				}
-				else if((uint64_t)(*offset) < random_stop_byte_value)
+				} else if((uint64_t)(*offset) < random_stop_byte_value)
 				{
 					/* Stop byte is known but not reached yet: keep hashing. */
 					delay_interrupt_for_random_stop = true;
@@ -259,7 +262,7 @@ Return sha512sum(
 #endif
 
 			if(global_interrupt_flag == true
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 			        && delay_interrupt_for_random_stop == false
 #endif
 			)
@@ -268,7 +271,27 @@ Return sha512sum(
 				break;
 			}
 
-			size_t len = fread(buffer,sizeof(unsigned char),file_buffer->length,fileptr);
+			size_t read_limit = file_buffer->length;
+
+#ifdef TESTITALL_TEST_HOOKS
+			/*
+			 * Keep the read bounded so offset can stop exactly at the selected
+			 * byte instead of jumping to EOF in a single large fread().
+			 */
+			if(random_stop_limit > 0U
+			        && random_stop_triggered == false
+			        && random_stop_byte_value > 0U
+			        && (uint64_t)(*offset) < random_stop_byte_value)
+			{
+				const uint64_t bytes_left_to_stop = random_stop_byte_value - (uint64_t)(*offset);
+				if(bytes_left_to_stop < (uint64_t)read_limit)
+				{
+					read_limit = (size_t)bytes_left_to_stop;
+				}
+			}
+#endif
+
+			size_t len = fread(buffer,sizeof(unsigned char),read_limit,fileptr);
 
 			if(len == 0)
 			{
