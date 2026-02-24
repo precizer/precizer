@@ -238,9 +238,15 @@ static Return test0032_formatters(void)
 {
 	INITTEST;
 
+	// Shared destination for most formatter calls in this test.
+	// We pass this buffer into form()/form_*_r() and compare the produced text.
 	char formatted[MAX_CHARACTERS];
+	// Separate destinations to verify independent writes between two calls.
 	char first[FORM_OUTPUT_BUFFER_SIZE];
 	char second[FORM_OUTPUT_BUFFER_SIZE];
+
+	// Intentionally tiny buffers prefilled with sentinels.
+	// They are used to validate truncation and NUL-termination behavior.
 	char tiny_real_1[1] = {'X'};
 	char tiny_real_2[2] = {'X','Y'};
 	char tiny_real_2_nonzero[2] = {'X','Y'};
@@ -260,15 +266,27 @@ static Return test0032_formatters(void)
 	char bkb_r_tiny_6[6] = {'X','X','X','X','X','X'};
 	char bkb_r_tiny_9[9] = {'X','X','X','X','X','X','X','X','X'};
 	char bkb_r_tiny_10[10] = {'X','X','X','X','X','X','X','X','X','X'};
+	char date_r_a[MAX_CHARACTERS];
+	char date_r_tiny_1[1] = {'X'};
+	char date_r_tiny_2[2] = {'X','Y'};
+	char date_r_tiny_3[3] = {'X','Y','Z'};
 
+	// Series 1: generic form() formatting into caller-provided buffer `formatted`.
+	// Pattern: call form(value,formatted,sizeof(formatted)), then compare with exact text.
 	ASSERT(0 == strcmp(form(0.0L,formatted,sizeof(formatted)),"0"));
+	// Same path, near-zero negative rounds to textual zero.
 	ASSERT(0 == strcmp(form(-0.0000000004L,formatted,sizeof(formatted)),"0"));
+	// Same path, rounding at 9th decimal place.
 	ASSERT(0 == strcmp(form(0.0000000006L,formatted,sizeof(formatted)),"0.000000001"));
+	// Same behavior for negative rounding.
 	ASSERT(0 == strcmp(form(-0.0000000006L,formatted,sizeof(formatted)),"-0.000000001"));
+	// Grouping separators in integer part.
 	ASSERT(0 == strcmp(form(1234567.0L,formatted,sizeof(formatted)),"1,234,567"));
 	ASSERT(0 == strcmp(form(1234567890123456.0L,formatted,sizeof(formatted)),"1,234,567,890,123,456"));
 	ASSERT(0 == strcmp(form(1234567.125L,formatted,sizeof(formatted)),"1,234,567.125"));
 	ASSERT(0 == strcmp(form(-9876.5L,formatted,sizeof(formatted)),"-9,876.5"));
+	// For long double cases, compare parsed numeric value with tolerance.
+	// The formatted string still comes from the same `formatted` buffer.
 	ASSERT(form_real_matches_portable(123456789.123456780L,form(123456789.123456780L,formatted,sizeof(formatted))));
 	ASSERT(form_real_matches_portable(987654321098.123456789L,form(987654321098.123456789L,formatted,sizeof(formatted))));
 	ASSERT(form_real_matches_portable(1.23L,form(1.23L,formatted,sizeof(formatted))));
@@ -276,13 +294,17 @@ static Return test0032_formatters(void)
 	ASSERT(form_real_matches_portable(-9.9999999995L,form(-9.9999999995L,formatted,sizeof(formatted))));
 	ASSERT(form_real_matches_portable(999.9999999995L,form(999.9999999995L,formatted,sizeof(formatted))));
 
+	// Series 2: boolean/integer overloads still write to `formatted`.
 	ASSERT(0 == strcmp(form((_Bool)0,formatted,sizeof(formatted)),"0"));
 	ASSERT(0 == strcmp(form((_Bool)1,formatted,sizeof(formatted)),"1"));
 	ASSERT(0 == strcmp(form((int)-12345,formatted,sizeof(formatted)),"-12,345"));
 	ASSERT(0 == strcmp(form((short)-12345,formatted,sizeof(formatted)),"-12,345"));
 
+	// Series 3: form_intmax_r writes to `formatted`, then helper validates comma placement
+	// and numeric equivalence against standard conversion for the same input value.
 	const char *intmin_formatted = form_intmax_r(INTMAX_MIN,formatted,sizeof(formatted));
 	ASSERT(form_intmax_matches_standard(INTMAX_MIN,intmin_formatted));
+	// Same comparison strategy for other intmax values.
 	const char *intmax_formatted = form_intmax_r(INTMAX_MAX,formatted,sizeof(formatted));
 	ASSERT(form_intmax_matches_standard(INTMAX_MAX,intmax_formatted));
 	const char *intneg_formatted = form_intmax_r(-1234567,formatted,sizeof(formatted));
@@ -290,15 +312,21 @@ static Return test0032_formatters(void)
 	const char *intpos_formatted = form_intmax_r(1234567,formatted,sizeof(formatted));
 	ASSERT(form_intmax_matches_standard(1234567,intpos_formatted));
 
+	// Same idea for unsigned max conversion.
 	const char *uintmax_formatted = form_uintmax_r(UINTMAX_MAX,formatted,sizeof(formatted));
 	ASSERT(form_uintmax_matches_standard(UINTMAX_MAX,uintmax_formatted));
 
+	// Series 4: independent output buffers (`first`, `second`) for two calls.
+	// Then ensure `first` keeps its value after writing into `second`.
 	ASSERT(0 == strcmp(form((size_t)1234,first,sizeof(first)),"1,234"));
 	ASSERT(0 == strcmp(form((size_t)5678,second,sizeof(second)),"5,678"));
 	ASSERT(0 == strcmp(first,"1,234"));
 
+	// Series 5: tiny-buffer behavior for form_real_r.
+	// Buffer too small => empty string.
 	(void)form_real_r(1234.5L,tiny_real_1,sizeof(tiny_real_1));
 	ASSERT(tiny_real_1[0] == '\0');
+	// Still using tiny destinations, now checking reduced output variants.
 	ASSERT(0 == strcmp(form_real_r(1.25L,tiny_real_2_nonzero,sizeof(tiny_real_2_nonzero)),"1"));
 	ASSERT(0 == strcmp(form_real_r(0.0L,tiny_real_2,sizeof(tiny_real_2)),"0"));
 	(void)form_real_r(1234.0L,tiny_real_group_fail,sizeof(tiny_real_group_fail));
@@ -310,33 +338,40 @@ static Return test0032_formatters(void)
 	ASSERT(0 == strcmp(form_real_r(INFINITY,formatted,sizeof(formatted)),""));
 	ASSERT(0 == strcmp(form_real_r(-INFINITY,formatted,sizeof(formatted)),""));
 
+	// Series 6: tiny-buffer behavior for form_uintmax_r (same pattern).
 	(void)form_uintmax_r(UINTMAX_MAX,tiny_uint_1,sizeof(tiny_uint_1));
 	ASSERT(tiny_uint_1[0] == '\0');
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_2,sizeof(tiny_uint_2)),""));
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_3,sizeof(tiny_uint_3)),""));
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_7,sizeof(tiny_uint_7)),"12,345"));
 
+	// Series 7: bkbmbgbtbpbeb returns static text; compare FULL_VIEW outputs directly.
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(0,FULL_VIEW),"0B"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(1024,FULL_VIEW),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(1536,FULL_VIEW),"1KiB 512B"));
 
+	// Same for MAJOR_VIEW (only the largest non-zero unit).
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(0,MAJOR_VIEW),"0B"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(1536,MAJOR_VIEW),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(1291845632ULL,MAJOR_VIEW),"1GiB"));
 
+	// Series 8: bkbmbgbtbpbeb_r writes into caller buffer (`bkb_r_a`), check invalid args first.
 	ASSERT(NULL == bkbmbgbtbpbeb_r(1U,FULL_VIEW,NULL,sizeof(bkb_r_a)));
 	ASSERT(NULL == bkbmbgbtbpbeb_r(1U,FULL_VIEW,bkb_r_a,0U));
 
+	// Valid writes into the same destination buffer, then strcmp with expected literals.
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(0U,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"0B"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1024U,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1KiB 512B"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,MAJOR_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1291845632ULL,MAJOR_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1GiB"));
 
+	// Cross-buffer isolation check: writing into bkb_r_b must not modify bkb_r_a.
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1024U,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(2048U,FULL_VIEW,bkb_r_b,sizeof(bkb_r_b)),"2KiB"));
 	ASSERT(0 == strcmp(bkb_r_a,"1KiB"));
 
+	// Tiny destination checks for bkbmbgbtbpbeb_r.
 	(void)bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_1,sizeof(bkb_r_tiny_1));
 	ASSERT('\0' == bkb_r_tiny_1[0]);
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(0U,FULL_VIEW,bkb_r_tiny_2,sizeof(bkb_r_tiny_2)),"0"));
@@ -344,6 +379,25 @@ static Return test0032_formatters(void)
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_6,sizeof(bkb_r_tiny_6)),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_9,sizeof(bkb_r_tiny_9)),"1KiB 512"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_10,sizeof(bkb_r_tiny_10)),"1KiB 512B"));
+
+	// Series 9: form_date (static output) in FULL_VIEW and MAJOR_VIEW.
+	ASSERT(0 == strcmp(form_date(0LL,FULL_VIEW),"0ns"));
+	ASSERT(0 == strcmp(form_date(0LL,MAJOR_VIEW),"0ns"));
+	ASSERT(0 == strcmp(form_date(273000528LL,FULL_VIEW),"273ms 528ns"));
+	ASSERT(0 == strcmp(form_date(273000528LL,MAJOR_VIEW),"273ms"));
+	ASSERT(0 == strcmp(form_date(3600000000001LL,FULL_VIEW),"1h 1ns"));
+	ASSERT(0 == strcmp(form_date(3600000000001LL,MAJOR_VIEW),"1h"));
+
+	// form_date_r with explicit destination buffer and invalid-argument checks.
+	ASSERT(NULL == form_date_r(1LL,FULL_VIEW,NULL,sizeof(date_r_a)));
+	ASSERT(NULL == form_date_r(1LL,FULL_VIEW,date_r_a,0U));
+	// Then normal writes and compact-buffer edge cases.
+	ASSERT(0 == strcmp(form_date_r(273000528LL,FULL_VIEW,date_r_a,sizeof(date_r_a)),"273ms 528ns"));
+	ASSERT(0 == strcmp(form_date_r(273000528LL,MAJOR_VIEW,date_r_a,sizeof(date_r_a)),"273ms"));
+	(void)form_date_r(273000528LL,FULL_VIEW,date_r_tiny_1,sizeof(date_r_tiny_1));
+	ASSERT('\0' == date_r_tiny_1[0]);
+	ASSERT(0 == strcmp(form_date_r(0LL,FULL_VIEW,date_r_tiny_2,sizeof(date_r_tiny_2)),"0"));
+	ASSERT(0 == strcmp(form_date_r(0LL,FULL_VIEW,date_r_tiny_3,sizeof(date_r_tiny_3)),"0n"));
 
 	RETURN_STATUS;
 }
