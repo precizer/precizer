@@ -264,20 +264,24 @@ static Return test_string_memory(void)
 	create(char,extra_buffer);
 	create(char,guarded_buffer);
 	const char *final_string_view = NULL;
+	const char bounded_gamma[] = {'-','g','a','m','m','a','\0','x'};
 
 	run(copy_literal(string_buffer,"alpha"));
 	run(concat_literal(string_buffer,"-beta"));
-	run(copy_literal(extra_buffer,"-gamma"));
+	run(copy_cstring(extra_buffer,bounded_gamma,sizeof(bounded_gamma)));
 	run(concat_strings(string_buffer,extra_buffer));
 	run(copy_literal(extra_buffer,"+delta"));
 	run(concat_strings(string_buffer,extra_buffer));
+
+	const char bounded_suffix[] = {'-','e','p','s','i','l','o','n','\0','x','x'};
+	run(concat_cstring(string_buffer,bounded_suffix,sizeof(bounded_suffix)));
 
 	if(SUCCESS == status){
 		const char *string_view = cdata(char,string_buffer);
 		if(string_view == NULL){
 			fprintf(stderr,"cdata returned NULL for string_buffer\n");
 			status = FAILURE;
-		} else if(strcmp(string_view,"alpha-beta-gamma+delta") != 0){
+		} else if(strcmp(string_view,"alpha-beta-gamma+delta-epsilon") != 0){
 			fprintf(stderr,"String concatenation result mismatch: %s\n",string_view);
 			status = FAILURE;
 		}
@@ -445,6 +449,90 @@ static Return test_string_memory(void)
 }
 
 /**
+ * @brief Test copy_buffer helper with known-size arrays.
+ *
+ * @return Return describing success or failure.
+ */
+static Return test_copy_buffer_memory(void)
+{
+	/** Return status
+	 *  The status that will be passed to return() before exiting
+	 *  By default, the function worked without errors
+	 */
+	Return status = SUCCESS;
+
+	create(char,db_path);
+	create(point,point_buffer);
+
+	const char in_memory_db_path[] = ":memory:";
+	const point sample_points[] = {
+		{3,4},
+		{5,6}
+	};
+
+	run(copy_buffer(db_path,in_memory_db_path,sizeof(in_memory_db_path)));
+
+	if(SUCCESS == status){
+		if(db_path->length != sizeof(in_memory_db_path)){
+			fprintf(stderr,"copy_buffer produced unexpected db_path length: %zu\n",db_path->length);
+			status = FAILURE;
+		} else if(strcmp(getcstring(db_path),":memory:") != 0){
+			fprintf(stderr,"copy_buffer produced unexpected string payload: %s\n",getcstring(db_path));
+			status = FAILURE;
+		}
+	}
+
+	run(copy_buffer(point_buffer,sample_points,sizeof(sample_points)));
+
+	if(SUCCESS == status){
+		const point *point_view = cdata(point,point_buffer);
+		if(point_view == NULL){
+			fprintf(stderr,"cdata returned NULL for point_buffer after copy_buffer\n");
+			status = FAILURE;
+		} else if(point_buffer->length != 2){
+			fprintf(stderr,"copy_buffer produced unexpected point length: %zu\n",point_buffer->length);
+			status = FAILURE;
+		} else if(point_view[0].x != 3 || point_view[0].y != 4 || point_view[1].x != 5 || point_view[1].y != 6){
+			fprintf(stderr,"copy_buffer did not preserve point payload\n");
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status){
+		run(copy_buffer(point_buffer,NULL,0));
+		if(point_buffer->length != 0){
+			fprintf(stderr,"copy_buffer(NULL,0) should clear the descriptor\n");
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status){
+		printf("copy_buffer helper test passed.\n");
+	}
+
+	const Return test_result_status = status;
+
+	status = SUCCESS;
+	run(del(db_path));
+	const Return cleanup_db_path_status = status;
+
+	status = SUCCESS;
+	run(del(point_buffer));
+	const Return cleanup_point_buffer_status = status;
+
+	status = test_result_status;
+	if(status == SUCCESS){
+		if(cleanup_db_path_status != SUCCESS){
+			status = cleanup_db_path_status;
+		} else if(cleanup_point_buffer_status != SUCCESS){
+			status = cleanup_point_buffer_status;
+		}
+	}
+
+	provide(status);
+}
+
+/**
  * @brief Exercise the pointer reset helper for legacy allocations.
  *
  * @return Return describing success or failure.
@@ -499,6 +587,7 @@ static Return run_mem_tests(void)
 
 	run(test_point_memory());
 	run(test_string_memory());
+	run(test_copy_buffer_memory());
 	run(test_pointer_reset());
 
 	provide(status);
