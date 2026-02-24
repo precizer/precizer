@@ -487,6 +487,151 @@ Return compare_dry_and_real_4_test(void)
 }
 
 /**
+ * Verifies detection of unexpected database metadata drift in dry-run mode.
+ *
+ * The function performs two runs. First, it creates `database1.db` in normal
+ * mode. Then it enables the testing hook
+ * `PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED=true` and runs the application
+ * with `--dry-run --update`. In test-hook mode this forces a DB timestamp bump
+ * inside the process before `db_check_changes()` compares the saved and current
+ * file metadata.
+ *
+ * The expected outcome of the second run is `WARNING`
+ */
+static Return dry_run_mode_5_db_timestamp_bump_test(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+
+	const char *cleanup_command = "cd ${TMPDIR}; rm -f database1.db;";
+	const char *arguments = NULL;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
+
+	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	/* First run: create DB in normal mode. */
+	arguments = "--database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","true"));
+	arguments = "--dry-run --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	const char *filename = "templates/0013_005.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
+	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * Verifies internal consistency check when DB should be modified but appears unchanged.
+ *
+ * The function first validates a real update path: it creates `database1.db`,
+ * modifies one sample file, runs `--update`, compares output with template,
+ * and verifies that DB file metadata has actually changed.
+ *
+ * After that, it restores the pre-update DB state, enables
+ * `PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED=true`, and runs `--update`
+ * again. The hook rewrites the saved baseline database stat to the current
+ * stat right before comparison in db_check_changes(). This simulates a faulty
+ * "no metadata drift" result after a real database update and must trigger
+ * WARNING.
+ */
+static Return dry_run_mode_6_db_expected_modification_missing_test(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+	create(char,path);
+
+	struct stat stat_before_real_update = {0};
+	struct stat stat_after_real_update = {0};
+
+	const char *prepare_command = "cd ${TMPDIR}; "
+	        "rm -f database1.db database1.db.backup; "
+	        "rm -rf tests/examples/diff1_backup; "
+	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup; "
+	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	const char *cleanup_command = "cd ${TMPDIR}; "
+	        "rm -f database1.db database1.db.backup; "
+	        "rm -rf tests/examples/diffs/diff1; "
+	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	const char *arguments = NULL;
+	const char *command = NULL;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","false"));
+
+	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	/* First run: create DB in normal mode. */
+	arguments = "--database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	/* Make at least one real filesystem change so --update modifies DB. */
+	command = "cd ${TMPDIR}; "
+	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	/* Control check: real --update must modify database metadata. */
+	ASSERT(SUCCESS == construct_path("database1.db",path));
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat_before_real_update));
+
+	command = "cd ${TMPDIR}; cp -a database1.db database1.db.backup;";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0013_006_1.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat_after_real_update));
+	ASSERT(FAILURE == check_file_identity(&stat_before_real_update,&stat_after_real_update));
+
+	/*
+	 * Restore pre-update DB snapshot so the next run starts from the same state
+	 * and tests only the simulation hook behavior.
+	 */
+	command = "cd ${TMPDIR}; rm -f database1.db; mv database1.db.backup database1.db;";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(result);
+	del(pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","true"));
+	arguments = "--update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	filename = "templates/0013_006_2.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","false"));
+	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(path);
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
  *
  * Dry Run mode testing
  *
@@ -501,6 +646,8 @@ Return test0013(void)
 	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
 	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
 	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
+	TEST(dry_run_mode_5_db_timestamp_bump_test,"Dry-run DB metadata drift should trigger internal warning path…");
+	TEST(dry_run_mode_6_db_expected_modification_missing_test,"Live update: force missing DB metadata drift and trigger warning…");
 
 	RETURN_STATUS;
 }
