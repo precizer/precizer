@@ -72,17 +72,17 @@
 
 /**
  *
- * Time Logging structures and functions prototypes
- *
- */
-#include "rational_time.h"
-
-/**
- *
  * Functions and structs to convert a number of bytes into a human-readable string
  *
  */
 #include "rational_bkbmbgbtbpbeb.h"
+
+/**
+ *
+ * Time Logging structures and functions prototypes
+ *
+ */
+#include "rational_time.h"
 
 /**
  *

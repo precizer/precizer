@@ -44,13 +44,23 @@ char *seconds_to_ISOdate(time_t seconds);
 /**
  * @brief Convert nanoseconds to a human-readable date string in caller-provided buffer.
  * @param nanoseconds Time span in nanoseconds.
+ * @param format FULL_VIEW for full decomposition, MAJOR_VIEW for the largest unit only.
  * @param buffer Destination buffer.
  * @param buffer_size Destination buffer size in bytes.
  * @return @p buffer on success, NULL when @p buffer is NULL or @p buffer_size is zero.
  */
 char *form_date_r(
 	const long long int,
+	const ByteFormat,
 	char *,
 	size_t);
 
-char *form_date(const long long int);
+/**
+ * @brief Convert nanoseconds to a human-readable date string.
+ * @param nanoseconds Time span in nanoseconds.
+ * @param format FULL_VIEW for full decomposition, MAJOR_VIEW for the largest unit only.
+ * @return Pointer to a static buffer with formatted text.
+ */
+char *form_date(
+	const long long int,
+	const ByteFormat);

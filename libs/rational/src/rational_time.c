@@ -205,6 +205,7 @@ static void catdate_r(
  */
 char *form_date_r(
 	const long long int nanoseconds,
+	const ByteFormat   format,
 	char                *buffer,
 	const size_t        buffer_size)
 {
@@ -225,27 +226,42 @@ char *form_date_r(
 
 	Date date = asadate(nanoseconds);
 
-	catdate_r(buffer,buffer_size,&used_len,date.years,"y");
-	catdate_r(buffer,buffer_size,&used_len,date.months,"mon");
-	catdate_r(buffer,buffer_size,&used_len,date.weeks,"w");
-	catdate_r(buffer,buffer_size,&used_len,date.days,"d");
-	catdate_r(buffer,buffer_size,&used_len,date.hours,"h");
-	catdate_r(buffer,buffer_size,&used_len,date.minutes,"min");
-	catdate_r(buffer,buffer_size,&used_len,date.seconds,"s");
-	catdate_r(buffer,buffer_size,&used_len,date.milliseconds,"ms");
-
-	#if 0
-
-	// Print out microseconds and nanoseconds only
-	// when larger units of time are not exist.
-	if(nanoseconds < 1000LL*1000LL)
+	if(format == MAJOR_VIEW)
 	{
-	#endif
-	catdate_r(buffer,buffer_size,&used_len,date.microseconds,"μs");
-	catdate_r(buffer,buffer_size,&used_len,date.nanoseconds,"ns");
-	#if 0
-}
-	#endif
+		if(date.years > 0LL)
+		{
+			catdate_r(buffer,buffer_size,&used_len,date.years,"y");
+		} else if(date.months > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.months,"mon");
+		} else if(date.weeks > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.weeks,"w");
+		} else if(date.days > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.days,"d");
+		} else if(date.hours > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.hours,"h");
+		} else if(date.minutes > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.minutes,"min");
+		} else if(date.seconds > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.seconds,"s");
+		} else if(date.milliseconds > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.milliseconds,"ms");
+		} else if(date.microseconds > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.microseconds,"μs");
+		} else {
+			catdate_r(buffer,buffer_size,&used_len,date.nanoseconds,"ns");
+		}
+	} else {
+		catdate_r(buffer,buffer_size,&used_len,date.years,"y");
+		catdate_r(buffer,buffer_size,&used_len,date.months,"mon");
+		catdate_r(buffer,buffer_size,&used_len,date.weeks,"w");
+		catdate_r(buffer,buffer_size,&used_len,date.days,"d");
+		catdate_r(buffer,buffer_size,&used_len,date.hours,"h");
+		catdate_r(buffer,buffer_size,&used_len,date.minutes,"min");
+		catdate_r(buffer,buffer_size,&used_len,date.seconds,"s");
+		catdate_r(buffer,buffer_size,&used_len,date.milliseconds,"ms");
+		catdate_r(buffer,buffer_size,&used_len,date.microseconds,"μs");
+		catdate_r(buffer,buffer_size,&used_len,date.nanoseconds,"ns");
+	}
 
 	// Remove trailing space at the end of the line.
 	if(used_len > 0ULL && buffer[used_len - 1ULL] == ' ')
@@ -261,12 +277,14 @@ char *form_date_r(
  * Convert nanoseconds to human-readable date as a string
  *
  */
-char *form_date(const long long int nanoseconds)
+char *form_date(
+	const long long int nanoseconds,
+	const ByteFormat   format)
 {
 	// Zero out a static memory area with a string array
 	static char result[MAX_CHARACTERS];
 
-	return(form_date_r(nanoseconds,result,sizeof(result)));
+	return(form_date_r(nanoseconds,format,result,sizeof(result)));
 }
 #if 0
 /// Test
@@ -280,9 +298,9 @@ char *form_date(const long long int nanoseconds)
 int main(void)
 {
 	long long int ns = 339800645368118513LL;
-	printf("%s\n",form_date(ns));
+	printf("%s\n",form_date(ns,FULL_VIEW));
 
-	printf("%s\n",form_date(273522528));
+	printf("%s\n",form_date(273522528,FULL_VIEW));
 
 	return 0;
 }
