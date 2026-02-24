@@ -19,13 +19,13 @@ Return trim_trailing_eol(memory *buffer)
 
 	if(buffer == NULL)
 	{
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	/* Nothing to trim if length is less than one byte */
 	if(buffer->length < 1U)
 	{
-		return(SUCCESS);
+		deliver(SUCCESS);
 	}
 
 	size_t len = buffer->length;
@@ -33,7 +33,7 @@ Return trim_trailing_eol(memory *buffer)
 
 	if(data_ptr == NULL)
 	{
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	/* If there is a trailing '\0', operate on the actual string payload */
@@ -45,7 +45,7 @@ Return trim_trailing_eol(memory *buffer)
 	/* After trimming a possible '\0' we might end up empty */
 	if(len == 0U)
 	{
-		return(SUCCESS);
+		deliver(SUCCESS);
 	}
 
 	size_t new_len = len;
@@ -63,7 +63,7 @@ Return trim_trailing_eol(memory *buffer)
 	/* No change means no trailing EOL */
 	if(new_len == len)
 	{
-		return(SUCCESS);
+		deliver(SUCCESS);
 	}
 
 	/* Restore trailing '\0' if it originally existed */
@@ -90,5 +90,5 @@ Return trim_trailing_eol(memory *buffer)
 		}
 	}
 
-	provide(status);
+	deliver(status);
 }

@@ -1,4 +1,5 @@
 #include "testitall.h"
+#include <time.h>
 
 /*
  * Modification bits
@@ -160,7 +161,7 @@ Return print_stat(const struct stat *st)
 		echo(STDERR,"\n");
 	}
 
-	return(status);
+	deliver(status);
 }
 
 /**
@@ -185,5 +186,5 @@ Return check_file_identity(
 		status = FAILURE;
 	}
 
-	return(status);
+	deliver(status);
 }

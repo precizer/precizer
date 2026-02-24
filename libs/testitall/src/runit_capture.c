@@ -31,7 +31,7 @@ static Return create_capture_file(
 	{
 		echo(STDERR,"Failed to build a temporary capture path for %s",kind);
 		status = FAILURE;
-		provide(status);
+		deliver(status);
 	}
 
 	*fd = mkstemp(path);
@@ -41,7 +41,7 @@ static Return create_capture_file(
 		status = FAILURE;
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -63,7 +63,7 @@ static Return load_capture_file(
 	{
 		serp("Failed to open capture file");
 		status = FAILURE;
-		provide(status);
+		deliver(status);
 	}
 
 	if(0 != fseek(file,0,SEEK_END))
@@ -124,7 +124,7 @@ static Return load_capture_file(
 		call(del(buffer));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -145,7 +145,7 @@ static Return set_stderr_message(
 		status = FAILURE;
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -193,12 +193,12 @@ static Return format_unexpected_exit_report(
 	{
 		report("Memory allocation failed while formatting unexpected exit report");
 		status = FAILURE;
-		provide(status);
+		deliver(status);
 	}
 
 	run(set_stderr_message(message,true));
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -224,12 +224,12 @@ static Return format_stderr_warning_report(const struct runit_capture_session *s
 	{
 		report("Memory allocation failed while formatting stderr warning report");
 		status = FAILURE;
-		provide(status);
+		deliver(status);
 	}
 
 	run(set_stderr_message(message,true));
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -284,7 +284,7 @@ Return runit_capture_prepare(
 		runit_capture_cleanup(session);
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -308,7 +308,7 @@ Return runit_capture_apply_redirect(struct runit_capture_session *session)
 
 	runit_capture_close_fds(session);
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -326,7 +326,7 @@ static Return runit_capture_validate_exit_status(
 		run(format_unexpected_exit_report(session,wait_status));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -352,7 +352,7 @@ static Return runit_capture_apply_stderr_policy(const struct runit_capture_sessi
 		}
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -368,7 +368,7 @@ static Return runit_capture_apply_stdout_policy(const struct runit_capture_sessi
 		call(del(STDOUT));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -388,7 +388,7 @@ static Return runit_capture_copy_results(const struct runit_capture_session *ses
 		call(copy(session->stderr_result,STDERR));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -419,7 +419,7 @@ Return runit_capture_finalize(
 
 	call(del(STDOUT));
 
-	provide(status);
+	deliver(status);
 }
 
 /**

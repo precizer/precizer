@@ -8,7 +8,7 @@
  */
 Return write_to_temp_file(const char *buffer)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to deliver() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -63,5 +63,5 @@ Return write_to_temp_file(const char *buffer)
 		close(fd);
 	}
 
-	return(status);
+	deliver(status);
 }

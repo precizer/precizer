@@ -204,5 +204,5 @@ Return function_capture(
 	close(stdout_fd);
 	close(stderr_fd);
 
-	return(status);
+	deliver(status);
 }

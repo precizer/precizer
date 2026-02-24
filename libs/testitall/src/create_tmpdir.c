@@ -26,13 +26,13 @@ Return create_tmpdir(
 
 	if(NULL == path || 0U == path_size)
 	{
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	if(prefix_len + suffix_len + 1U > path_size)
 	{
 		path[0] = '\0';
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	if(false == seeded)
@@ -61,16 +61,16 @@ Return create_tmpdir(
 
 		if(0 == mkdir(path,0700))
 		{
-			return(SUCCESS);
+			deliver(SUCCESS);
 		}
 
 		if(EEXIST != errno)
 		{
 			path[0] = '\0';
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 	}
 
 	path[0] = '\0';
-	return(FAILURE);
+	deliver(FAILURE);
 }

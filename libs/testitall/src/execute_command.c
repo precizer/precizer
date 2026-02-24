@@ -25,14 +25,14 @@ Return execute_command(
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to deliver() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
 	/* Validate input parameters */
 	if(!command)
 	{
-		return(FAILURE); // Invalid arguments
+		deliver(FAILURE); // Invalid arguments
 	}
 
 	/* Clean the STDOUT buffer to prepare for new command output */
@@ -44,5 +44,5 @@ Return execute_command(
 	/* Free temporary STDOUT buffer after copying */
 	call(del(STDOUT));
 
-	return(status);
+	deliver(status);
 }

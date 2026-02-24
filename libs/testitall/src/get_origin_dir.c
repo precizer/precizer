@@ -33,7 +33,7 @@ Return get_origin_dir(
 {
 	if(NULL == path || 0U == path_size)
 	{
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	char *cwd = NULL;
@@ -48,7 +48,7 @@ Return get_origin_dir(
 	if(NULL == cwd)
 	{
 		path[0] = '\0';
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	remove_trailing_slash_local(cwd);
@@ -59,7 +59,7 @@ Return get_origin_dir(
 	{
 		path[0] = '\0';
 		free(cwd);
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	size_t parent_len = 0U;
@@ -78,7 +78,7 @@ Return get_origin_dir(
 	{
 		path[0] = '\0';
 		free(cwd);
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	if(parent_len == 1U)
@@ -92,5 +92,5 @@ Return get_origin_dir(
 
 	free(cwd);
 
-	return(SUCCESS);
+	deliver(SUCCESS);
 }

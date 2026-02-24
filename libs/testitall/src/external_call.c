@@ -27,7 +27,7 @@ static Return external_call_impl(
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to deliver() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
@@ -40,7 +40,7 @@ static Return external_call_impl(
 	if(pipe(stdout_pipe) == -1 || pipe(stderr_pipe) == -1)
 	{
 		serp("Error creating pipe");
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	// Initialize spawn file actions and attributes
@@ -72,7 +72,7 @@ static Return external_call_impl(
 	{
 		serp("Error executing posix_spawnp"); // Handle command execution error
 		posix_spawn_file_actions_destroy(&actions);
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	// Clean up spawn resources
@@ -96,7 +96,7 @@ static Return external_call_impl(
 		{
 			serp("Error reading from pipe"); // Handle read error
 			free(tmp_stdout_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 
 		// Reallocate memory to accommodate new data
@@ -106,7 +106,7 @@ static Return external_call_impl(
 		{
 			report("Memory allocation failed, requested size: %zu bytes",total_read + (size_t)count + 1);
 			free(tmp_stdout_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 		tmp_stdout_buffer = new_buffer;
 
@@ -120,7 +120,7 @@ static Return external_call_impl(
 		if(resize(STDOUT,total_read + 1) != SUCCESS)
 		{
 			free(tmp_stdout_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 
 		char *stdout_mem = data(char,STDOUT);
@@ -128,7 +128,7 @@ static Return external_call_impl(
 		if(stdout_mem == NULL)
 		{
 			free(tmp_stdout_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 
 		memcpy(stdout_mem,tmp_stdout_buffer,(size_t)total_read);
@@ -152,7 +152,7 @@ static Return external_call_impl(
 		{
 			serp("Error reading from pipe"); // Handle read error
 			free(tmp_stderr_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 
 		// Reallocate memory to accommodate new data
@@ -162,7 +162,7 @@ static Return external_call_impl(
 		{
 			report("Memory allocation failed, requested size: %zu bytes",total_read + (size_t)count + 1);
 			free(tmp_stderr_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 		tmp_stderr_buffer = new_buffer;
 
@@ -176,7 +176,7 @@ static Return external_call_impl(
 		if(resize(STDERR,total_read + 1) != SUCCESS)
 		{
 			free(tmp_stderr_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 
 		char *stderr_mem = data(char,STDERR);
@@ -184,7 +184,7 @@ static Return external_call_impl(
 		if(stderr_mem == NULL)
 		{
 			free(tmp_stderr_buffer);
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 
 		memcpy(stderr_mem,tmp_stderr_buffer,(size_t)total_read);
@@ -199,7 +199,7 @@ static Return external_call_impl(
 	if(waitpid(pid,&return_code,0) == -1)
 	{
 		serp("Error waiting for child process");
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 	int exit_code = WEXITSTATUS(return_code);
 
@@ -239,7 +239,7 @@ static Return external_call_impl(
 
 		free(str);
 
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	if(STDERR->length > 0)
@@ -274,7 +274,7 @@ static Return external_call_impl(
 
 			free(str);
 
-			return(FAILURE);
+			deliver(FAILURE);
 		}
 	}
 
@@ -289,7 +289,7 @@ static Return external_call_impl(
 		}
 	}
 
-	return(SUCCESS);
+	deliver(SUCCESS);
 }
 
 /**
@@ -330,5 +330,5 @@ Return external_call(
 		run(del(STDERR));
 	}
 
-	return(status);
+	deliver(status);
 }

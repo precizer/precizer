@@ -25,7 +25,7 @@ Return match_app_output(
 		return FAILURE;
 	}
 
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to deliver() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -55,5 +55,5 @@ Return match_app_output(
 	call(del(result));
 	call(del(pattern));
 
-	return(status);
+	deliver(status);
 }

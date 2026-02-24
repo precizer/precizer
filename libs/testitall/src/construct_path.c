@@ -57,5 +57,5 @@ Return construct_path(
 		}
 	}
 
-	return(status);
+	deliver(status);
 }
