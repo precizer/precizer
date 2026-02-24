@@ -12,13 +12,13 @@ Return memory_verify_type(
 
 	if(memory_structure == NULL)
 	{
-		slog(ERROR,"Memory management; Descriptor is NULL");
+		report("Memory management; Descriptor is NULL");
 		status = FAILURE;
 	}
 
 	if((TRIUMPH & status) && memory_structure->element_size != expected_element_size)
 	{
-		slog(ERROR,"Memory management; Expected %zu bytes but descriptor uses %zu",expected_element_size,memory_structure->element_size);
+		report("Memory management; Expected %zu bytes but descriptor uses %zu",expected_element_size,memory_structure->element_size);
 		status = FAILURE;
 	}
 

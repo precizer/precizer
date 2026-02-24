@@ -72,7 +72,7 @@ Return memory_resize(
 
 		if(terminator != UCHAR_MAX)
 		{
-			slog(ERROR,"Memory management; Resize flags terminator missing");
+			report("Memory management; Resize flags terminator missing");
 			status = FAILURE;
 		}
 	}
@@ -85,7 +85,7 @@ Return memory_resize(
 	{
 		if(memory_structure == NULL || memory_structure->element_size == 0)
 		{
-			slog(ERROR,"Memory management; Descriptor is NULL or not initialized");
+			report("Memory management; Descriptor is NULL or not initialized");
 			provide(FAILURE);
 		}
 	}
@@ -135,7 +135,7 @@ Return memory_resize(
 
 	if(CRITICAL & status)
 	{
-		slog(ERROR,"Memory management; Overflow for length=%zu (element_size=%zu)",new_count,memory_structure->element_size);
+		report("Memory management; Overflow for length=%zu (element_size=%zu)",new_count,memory_structure->element_size);
 	}
 
 	if(TRIUMPH & status)
@@ -148,7 +148,7 @@ Return memory_resize(
 
 			if(align_to_block_boundary(total_size_in_bytes,&aligned_size_in_bytes) != 0)
 			{
-				slog(ERROR,"Memory management; Allocation alignment overflow for %zu bytes",total_size_in_bytes);
+				report("Memory management; Allocation alignment overflow for %zu bytes",total_size_in_bytes);
 				status = FAILURE;
 			} else {
 				const bool needs_fresh_allocation = memory_structure->data == NULL;
@@ -169,9 +169,7 @@ Return memory_resize(
 
 					if(resized_pointer == NULL)
 					{
-						slog(ERROR,
-							"Memory management; Memory allocation failed for %zu bytes",
-							aligned_size_in_bytes);
+						report("Memory management; Memory allocation failed for %zu bytes",aligned_size_in_bytes);
 						status = FAILURE;
 
 						if(needs_fresh_allocation)
@@ -231,7 +229,7 @@ Return memory_resize(
 
 						if(byte_view == NULL)
 						{
-							slog(ERROR,"Memory management; Data pointer is NULL during zero-fill");
+							report("Memory management; Data pointer is NULL during zero-fill");
 							status = FAILURE;
 						} else {
 							memset(byte_view + previous_effective_bytes,0,bytes_to_zero);

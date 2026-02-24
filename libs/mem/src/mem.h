@@ -83,7 +83,7 @@ typedef enum
  * @param element_count  New number of elements.
  * @param ...            Optional @ref RESIZEMODES mask controlling zero-fill or shrink behavior.
  * @return `SUCCESS` on success; `FAILURE` otherwise. All failures are reported
- *         through @ref slog for easier diagnostics.
+ *         through @ref report for easier diagnostics.
  *
  * @post If @p element_count is 0, the function frees the block and sets
  *       @ref memory::data to NULL and @ref memory::length to 0.

@@ -20,13 +20,13 @@ Return memory_copy_buffer(
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; copy_buffer destination must be non-NULL");
+		report("Memory management; copy_buffer destination must be non-NULL");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Destination element size is zero (uninitialized)");
+		report("Memory management; Destination element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
@@ -38,16 +38,13 @@ Return memory_copy_buffer(
 			provide(status);
 		}
 
-		slog(ERROR,"Memory management; copy_buffer source is NULL while size is %zu",buffer_size);
+		report("Memory management; copy_buffer source is NULL while size is %zu",buffer_size);
 		provide(FAILURE);
 	}
 
 	if((buffer_size % destination->element_size) != 0)
 	{
-		slog(ERROR,
-			"Memory management; copy_buffer size %zu is not divisible by element size %zu",
-			buffer_size,
-			destination->element_size);
+		report("Memory management; copy_buffer size %zu is not divisible by element size %zu",buffer_size,destination->element_size);
 		provide(FAILURE);
 	}
 
@@ -59,7 +56,7 @@ Return memory_copy_buffer(
 	{
 		if(destination->data == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL during copy_buffer");
+			report("Memory management; Destination data pointer is NULL during copy_buffer");
 			status = FAILURE;
 		} else {
 			memcpy(destination->data,source_buffer,buffer_size);

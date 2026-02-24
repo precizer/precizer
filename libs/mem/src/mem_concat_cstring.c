@@ -21,7 +21,7 @@ Return memory_concat_cstring(
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; concat_cstring destination must be non-NULL");
+		report("Memory management; concat_cstring destination must be non-NULL");
 		status = FAILURE;
 	}
 

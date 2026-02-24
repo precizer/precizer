@@ -13,7 +13,7 @@ Return memory_concat_literal(
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; concat_literal destination must be non-NULL");
+		report("Memory management; concat_literal destination must be non-NULL");
 		status = FAILURE;
 	}
 
@@ -25,7 +25,7 @@ Return memory_concat_literal(
 
 	if((TRIUMPH & status) && destination->element_size != sizeof(char))
 	{
-		slog(ERROR,"Memory management; concat_literal supports byte-sized elements only");
+		report("Memory management; concat_literal supports byte-sized elements only");
 		status = FAILURE;
 	}
 
@@ -46,14 +46,14 @@ Return memory_concat_literal(
 	{
 		if(destination_length > SIZE_MAX - literal_length)
 		{
-			slog(ERROR,"Memory management; Concatenating literal would overflow element count");
+			report("Memory management; Concatenating literal would overflow element count");
 			status = FAILURE;
 		} else {
 			const size_t sum = destination_length + literal_length;
 
 			if(sum == SIZE_MAX)
 			{
-				slog(ERROR,"Memory management; Not enough room for string terminator");
+				report("Memory management; Not enough room for string terminator");
 				status = FAILURE;
 			} else {
 				new_total_elements = sum + 1;
@@ -77,7 +77,7 @@ Return memory_concat_literal(
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL after resize");
+			report("Memory management; Destination data pointer is NULL after resize");
 			status = FAILURE;
 		} else {
 			if(literal_bytes > 0)

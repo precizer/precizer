@@ -13,25 +13,25 @@ Return memory_copy(
 
 	if(destination == NULL || source == NULL)
 	{
-		slog(ERROR,"Memory management; append arguments must be non-NULL");
+		report("Memory management; append arguments must be non-NULL");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Destination element size is zero (uninitialized)");
+		report("Memory management; Destination element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
 	if(source->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Source element size is zero (uninitialized)");
+		report("Memory management; Source element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size != source->element_size)
 	{
-		slog(ERROR,"Memory management; Element size mismatch (%zu vs %zu)",
+		report("Memory management; Element size mismatch (%zu vs %zu)",
 			destination->element_size,
 			source->element_size);
 		provide(FAILURE);
@@ -43,7 +43,7 @@ Return memory_copy(
 
 	if(CRITICAL & status)
 	{
-		slog(ERROR,"Memory management; Overflow computing %zu * %zu",
+		report("Memory management; Overflow computing %zu * %zu",
 			source->element_size,
 			source->length);
 	}
