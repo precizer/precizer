@@ -37,8 +37,10 @@ Changed compare_file_metadata_equivalence(
 
 	/* Allocated size of file in POSIX 512-byte blocks. */
 #if 0
+
 	if(source->st_blocks != destination->st_blocks)
 #else
+
 	/* This legacy can be removed in 2036 (10-year Long-Term Support) */
 	if(source->st_blocks != BLKCNT_UNKNOWN
 	        && source->st_blocks != destination->st_blocks)

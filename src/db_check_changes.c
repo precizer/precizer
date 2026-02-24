@@ -17,6 +17,7 @@ static Return run_test_hook_bump_db_timestamps(void)
 	Return status = SUCCESS;
 
 	const char *flag_value = getenv("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED");
+
 	if(flag_value == NULL || strcmp(flag_value,"true") != 0)
 	{
 		return(status);
@@ -34,6 +35,7 @@ static Return run_test_hook_bump_db_timestamps(void)
 	}
 
 	const char *db_path = confstr(db_primary_file_path);
+
 	if(db_path == NULL || db_path[0] == '\0')
 	{
 		slog(ERROR,"Test hook failed: database path is empty\n");
@@ -68,6 +70,7 @@ static Return run_test_hook_resync_db_stat_baseline(const struct stat *db_curren
 	Return status = SUCCESS;
 
 	const char *flag_value = getenv("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED");
+
 	if(flag_value == NULL || strcmp(flag_value,"true") != 0)
 	{
 		return(status);

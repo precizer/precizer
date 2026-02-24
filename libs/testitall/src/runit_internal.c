@@ -82,7 +82,7 @@ Return runit_validate_runtime_mode(enum run_mode mode)
  */
 Return runit_call_prepare(
 	struct runit_call *call,
-	enum run_mode      mode,
+	enum run_mode     mode,
 	const char        *arguments)
 {
 	Return status = SUCCESS;
@@ -95,6 +95,7 @@ Return runit_call_prepare(
 	if(SUCCESS == status)
 	{
 		call->tmpdir = getenv("TMPDIR");
+
 		if(NULL == call->tmpdir)
 		{
 			echo(STDERR,"Environment variable TMPDIR is not set");
@@ -105,6 +106,7 @@ Return runit_call_prepare(
 	if(SUCCESS == status && true == is_external_mode)
 	{
 		bindir = getenv("BINDIR");
+
 		if(NULL == bindir)
 		{
 			echo(STDERR,"Environment variable BINDIR is not set");
@@ -125,6 +127,7 @@ Return runit_call_prepare(
 
 		} else {
 			const size_t path_size = bindir_length + suffix_length;
+
 			if(SUCCESS != resize(&call->program_path_buffer,path_size))
 			{
 				report("Memory allocation failed, requested size: %zu bytes",path_size);
@@ -132,6 +135,7 @@ Return runit_call_prepare(
 
 			} else {
 				call->program_path = data(char,&call->program_path_buffer);
+
 				if(snprintf(call->program_path,path_size,"%s%s",bindir,suffix) < 0)
 				{
 					echo(STDERR,"Failed to build executable path from BINDIR");
@@ -149,6 +153,7 @@ Return runit_call_prepare(
 	if(SUCCESS == status)
 	{
 		const int word_status = wordexp(call->safe_arguments,&call->parsed_arguments,WRDE_NOCMD);
+
 		if(0 == word_status)
 		{
 			call->words_allocated = true;
@@ -186,6 +191,7 @@ Return runit_call_prepare(
 	if(SUCCESS == status)
 	{
 		const size_t argv_size = call->argc + 1U;
+
 		if(SUCCESS != resize(&call->argv_buffer,argv_size,ZERO_NEW_MEMORY))
 		{
 			report("Memory allocation failed, requested size: %zu bytes",argv_size * sizeof(char *));
@@ -194,6 +200,7 @@ Return runit_call_prepare(
 		} else {
 			call->argv = data(char *,&call->argv_buffer);
 			call->argv[0] = call->program_path;
+
 			for(size_t i = 0U; i < call->parsed_arguments.we_wordc; i++)
 			{
 				call->argv[i + 1U] = call->parsed_arguments.we_wordv[i];
@@ -208,13 +215,13 @@ Return runit_call_prepare(
 Return runit_prepare_call_and_capture(
 	struct runit_call            *call,
 	struct runit_capture_session *capture,
-	enum run_mode                 mode,
+	enum run_mode                mode,
 	const char                   *arguments,
 	const char                   *call_label,
 	memory                       *stdout_result,
 	memory                       *stderr_result,
-	int                           expected_return_code,
-	unsigned int                  buffer_policy)
+	int                          expected_return_code,
+	unsigned int                 buffer_policy)
 {
 	Return status = SUCCESS;
 
@@ -245,13 +252,14 @@ void runit_release_call_and_capture(
  * @brief Wait for a child PID and retry waitpid() on EINTR.
  */
 Return runit_wait_child(
-	pid_t       child_pid,
+	pid_t      child_pid,
 	int        *wait_status,
 	const char *context_label)
 {
 	Return status = SUCCESS;
 
 	pid_t waited_pid = (pid_t)-1;
+
 	do {
 		waited_pid = waitpid(child_pid,wait_status,0);
 	} while(waited_pid == (pid_t)-1 && errno == EINTR);

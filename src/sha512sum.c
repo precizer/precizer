@@ -246,6 +246,7 @@ Return sha512sum(
 			 * controlled "interrupt at random byte" scenario.
 			 */
 			bool delay_interrupt_for_random_stop = false;
+
 			if(random_stop_limit > 0U && random_stop_triggered == false)
 			{
 				if(random_stop_byte_value == 0U)
@@ -253,8 +254,7 @@ Return sha512sum(
 					/* No stop byte yet: wait until at least one block is hashed. */
 					delay_interrupt_for_random_stop = true;
 
-				} else if((uint64_t)(*offset) < random_stop_byte_value)
-				{
+				} else if((uint64_t)(*offset) < random_stop_byte_value){
 					/* Stop byte is known but not reached yet: keep hashing. */
 					delay_interrupt_for_random_stop = true;
 				}
@@ -284,6 +284,7 @@ Return sha512sum(
 			        && (uint64_t)(*offset) < random_stop_byte_value)
 			{
 				const uint64_t bytes_left_to_stop = random_stop_byte_value - (uint64_t)(*offset);
+
 				if(bytes_left_to_stop < (uint64_t)read_limit)
 				{
 					read_limit = (size_t)bytes_left_to_stop;

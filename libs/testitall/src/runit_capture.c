@@ -21,12 +21,13 @@ static Return create_capture_file(
 	const char *tmpdir,
 	const char *kind,
 	char       *path,
-	size_t      path_size,
+	size_t     path_size,
 	int        *fd)
 {
 	Return status = SUCCESS;
 
 	int written = snprintf(path,path_size,"%s/testitall.%s.XXXXXX",tmpdir,kind);
+
 	if(written < 0 || (size_t)written >= path_size)
 	{
 		echo(STDERR,"Failed to build a temporary capture path for %s",kind);
@@ -35,6 +36,7 @@ static Return create_capture_file(
 	}
 
 	*fd = mkstemp(path);
+
 	if(*fd < 0)
 	{
 		serp("Failed to create temporary capture file");
@@ -59,6 +61,7 @@ static Return load_capture_file(
 	call(del(buffer));
 
 	file = fopen(path,"rb");
+
 	if(NULL == file)
 	{
 		serp("Failed to open capture file");
@@ -75,6 +78,7 @@ static Return load_capture_file(
 	if(SUCCESS == status)
 	{
 		file_size_long = ftell(file);
+
 		if(file_size_long < 0)
 		{
 			serp("Failed to get capture file size");
@@ -105,6 +109,7 @@ static Return load_capture_file(
 	{
 		char *buffer_data = data(char,buffer);
 		size_t bytes_read = fread(buffer_data,1,file_size,file);
+
 		if(bytes_read != file_size)
 		{
 			echo(STDERR,"Failed to read capture file: %s",path);
@@ -132,7 +137,7 @@ static Return load_capture_file(
  */
 static Return set_stderr_message(
 	char *message,
-	bool  fail_after_write)
+	bool fail_after_write)
 {
 	Return status = SUCCESS;
 
@@ -153,18 +158,20 @@ static Return set_stderr_message(
  */
 static Return format_unexpected_exit_report(
 	const struct runit_capture_session *session,
-	int                                 wait_status)
+	int                                wait_status)
 {
 	Return status = SUCCESS;
 
 	const bool exited_normally = WIFEXITED(wait_status);
 	int exit_code = -1;
+
 	if(true == exited_normally)
 	{
 		exit_code = WEXITSTATUS(wait_status);
 	}
 
 	int term_signal = 0;
+
 	if(WIFSIGNALED(wait_status))
 	{
 		term_signal = WTERMSIG(wait_status);
@@ -261,8 +268,8 @@ Return runit_capture_prepare(
 	const char                   *call_label,
 	memory                       *stdout_result,
 	memory                       *stderr_result,
-	int                           expected_return_code,
-	unsigned int                  buffer_policy)
+	int                          expected_return_code,
+	unsigned int                 buffer_policy)
 {
 	Return status = SUCCESS;
 
@@ -316,7 +323,7 @@ Return runit_capture_apply_redirect(struct runit_capture_session *session)
  */
 static Return runit_capture_validate_exit_status(
 	const struct runit_capture_session *session,
-	int                                 wait_status)
+	int                                wait_status)
 {
 	Return status = SUCCESS;
 
@@ -344,7 +351,7 @@ static Return runit_capture_apply_stderr_policy(const struct runit_capture_sessi
 		{
 			/* Keep STDERR as-is and do not fail. */
 
-		} else if(true == suppress_stderr) {
+		} else if(true == suppress_stderr){
 			call(del(STDERR));
 
 		} else {
@@ -396,7 +403,7 @@ static Return runit_capture_copy_results(const struct runit_capture_session *ses
  */
 Return runit_capture_finalize(
 	struct runit_capture_session *session,
-	int                           wait_status)
+	int                          wait_status)
 {
 	Return status = SUCCESS;
 	const bool allow_stderr = (session->buffer_policy & STDERR_ALLOW) != 0U;

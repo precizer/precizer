@@ -67,9 +67,9 @@
 #define BLKCNT_UNKNOWN ((blkcnt_t)-1)
 
 #ifdef TESTITALL
-    #define STATIC
+	#define STATIC
 #else
-    #define STATIC static
+	#define STATIC static
 #endif
 
 /*

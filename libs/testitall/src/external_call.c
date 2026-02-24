@@ -247,7 +247,7 @@ static Return external_call_impl(
 		if(allow_stderr == true)
 		{
 			// Keep STDERR contents without failing
-		} else if(suppress_stderr == true) {
+		} else if(suppress_stderr == true){
 			// Suppress the output from the STDERR buffer
 			del(STDERR);
 

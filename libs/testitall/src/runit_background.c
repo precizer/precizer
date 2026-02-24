@@ -25,8 +25,7 @@ static const char *const runit_wait_env_names[RUNIT_WAIT_ENV_COUNT] = {
 	"TESTITALL_SIGNAL_WAIT_POINT"
 };
 
-struct runit_wait_env
-{
+struct runit_wait_env {
 	char *old_value[RUNIT_WAIT_ENV_COUNT];
 	bool had_value[RUNIT_WAIT_ENV_COUNT];
 	bool snapshot_ready;
@@ -76,6 +75,7 @@ static void sleep_for_milliseconds(uint64_t timeout_ms)
 	while(timeout_ms > 0U)
 	{
 		uint64_t chunk_ms = timeout_ms;
+
 		if(chunk_ms > 1000U)
 		{
 			chunk_ms = 1000U;
@@ -87,8 +87,7 @@ static void sleep_for_milliseconds(uint64_t timeout_ms)
 		};
 
 		while(nanosleep(&request,&request) == -1 && errno == EINTR)
-		{
-		}
+		{}
 
 		timeout_ms -= chunk_ms;
 	}
@@ -113,6 +112,7 @@ static void run_watchdog(
 		}
 
 		uint64_t chunk_ms = timeout_ms;
+
 		if(chunk_ms > interval_ms)
 		{
 			chunk_ms = interval_ms;
@@ -135,7 +135,7 @@ static void run_watchdog(
  */
 static Return runit_wait_env_snapshot(
 	const char *name,
-	char      **saved_value,
+	char       **saved_value,
 	bool       *had_value)
 {
 	Return status = SUCCESS;
@@ -144,10 +144,12 @@ static Return runit_wait_env_snapshot(
 	*had_value = false;
 
 	const char *current_value = getenv(name);
+
 	if(NULL != current_value)
 	{
 		*had_value = true;
 		*saved_value = strdup(current_value);
+
 		if(NULL == *saved_value)
 		{
 			report("Memory allocation failed while saving %s",name);
@@ -163,7 +165,7 @@ static Return runit_wait_env_snapshot(
  */
 static Return runit_wait_env_set_numeric(
 	const char *name,
-	uint64_t    value)
+	uint64_t   value)
 {
 	Return status = SUCCESS;
 	char value_text[32];
@@ -185,7 +187,7 @@ static Return runit_wait_env_set_numeric(
 static Return runit_wait_env_restore_one(
 	const char *name,
 	const char *saved_value,
-	bool        had_value)
+	bool       had_value)
 {
 	Return status = SUCCESS;
 
@@ -215,8 +217,8 @@ static Return runit_wait_env_restore_one(
  * restored after the background run finishes.
  */
 static Return runit_wait_env_set(
-	uint64_t      max_delay_ms,
-	unsigned int  wait_point,
+	uint64_t              max_delay_ms,
+	unsigned int          wait_point,
 	struct runit_wait_env *state)
 {
 	Return status = SUCCESS;
@@ -250,8 +252,7 @@ static Return runit_wait_env_set(
 /**
  * @brief Restore previously saved wait-control environment variable values.
  */
-static Return runit_wait_env_restore(
-	const struct runit_wait_env *state)
+static Return runit_wait_env_restore(const struct runit_wait_env *state)
 {
 	Return status = SUCCESS;
 
@@ -295,6 +296,7 @@ Return runit_background(
 {
 	Return status = SUCCESS;
 	const char *safe_arguments = "";
+
 	if(arguments != NULL && '\0' != arguments[0])
 	{
 		safe_arguments = arguments;
@@ -360,12 +362,13 @@ Return runit_background(
 	if(SUCCESS == status)
 	{
 		app_pid = fork();
+
 		if(app_pid < 0)
 		{
 			serp("Failed to fork background process");
 			status = FAILURE;
 
-		} else if(0 == app_pid) {
+		} else if(0 == app_pid){
 			if(chdir(runit_call_data.tmpdir) != 0)
 			{
 				_exit(127);
@@ -379,6 +382,7 @@ Return runit_background(
 			/* Separate watchdog process enforces hard timeout with SIGKILL. */
 			const pid_t protected_pid = getpid();
 			const pid_t watchdog_pid = fork();
+
 			if(watchdog_pid < 0)
 			{
 				_exit(127);
@@ -413,6 +417,7 @@ Return runit_background(
 		sleep_for_milliseconds(min_delay_ms);
 
 		pid_t poll_pid = (pid_t)-1;
+
 		do {
 			poll_pid = waitpid(app_pid,&wait_status,WNOHANG);
 		} while(poll_pid == (pid_t)-1 && errno == EINTR);
@@ -423,8 +428,9 @@ Return runit_background(
 			echo(STDERR,"Background process exited before signal delivery");
 			status = FAILURE;
 
-		} else if(poll_pid == 0) {
+		} else if(poll_pid == 0){
 			errno = 0;
+
 			if(0 != kill(app_pid,signal_number))
 			{
 				echo(STDERR,
@@ -451,6 +457,7 @@ Return runit_background(
 		if(false == child_waited)
 		{
 			wait_return_status = runit_wait_child(app_pid,&wait_status,"background process");
+
 			if(SUCCESS == wait_return_status)
 			{
 				child_waited = true;
