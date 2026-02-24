@@ -357,7 +357,7 @@ Return db_migrate_to_version_4(const char *db_file_path)
 
 	if(SUCCESS == status && db_file_modified == true)
 	{
-		if(strcmp(db_file_path,config->db_primary_file_path) == 0)
+		if(strcmp(db_file_path,confstr(db_primary_file_path)) == 0)
 		{
 			config->db_primary_file_modified = true;
 		}

@@ -88,6 +88,28 @@
 	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
 	&((summary)->at_least_one_file_was_shown),((summary)->stats_only_pass),__VA_ARGS__)
 
+/**
+ * @brief Get a pointer to a field in the global @ref Config instance.
+ *
+ * Convenience wrapper for `&(config->field)`.
+ * Primarily used with libmem helpers that accept `memory *`.
+ *
+ * @param field Name of a @ref Config field without the `config->` prefix.
+ * @return Pointer to the selected field.
+ */
+#define conf(field) (&(config->field))
+
+/**
+ * @brief Get a C-string view of a string field in the global @ref Config instance.
+ *
+ * Convenience wrapper for `getcstring(&(config->field))`.
+ * The target field is expected to be of type @ref memory and to store string data.
+ *
+ * @param field Name of a @ref Config field without the `config->` prefix.
+ * @return `const char *` returned by @ref getcstring.
+ */
+#define confstr(field) getcstring(&(config->field))
+
 // PCRE2 return codes
 typedef enum
 {
@@ -310,11 +332,14 @@ typedef struct {
 	/// The pointer to the primary database
 	sqlite3 *db;
 
-	/// The path of DB file
-	char *db_primary_file_path;
+	/// The path of DB file stored as a managed byte string.
+	memory db_primary_file_path;
 
-	/// The name of DB file
-	char *db_file_name;
+	/// True when primary DB path is the in-memory SQLite marker (":memory:").
+	bool db_primary_path_is_memory;
+
+	/// The name of DB file stored as a managed byte string.
+	memory db_file_name;
 
 	/// Pointers to the array with database paths
 	char **db_file_paths;
@@ -529,14 +554,14 @@ Return sha512sum(
 	sqlite3_int64 *,
 	TraversalSummary *,
 	SHA512_Context *,
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 	const off_t,
 #endif
 	bool *,
 	int *,
 	bool *);
 
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 /**
  * @brief Pause execution at a configured test wait point.
  *

@@ -168,7 +168,7 @@ static void show_banners(
 
 	if(show_update_warning == true)
 	{
-		slog(EVERY,"Update mode enabled for DB %s\n",config->db_file_name);
+		slog(EVERY,"Update mode enabled for DB %s\n",confstr(db_file_name));
 	}
 
 	if(show_traversal_started == true)
@@ -178,12 +178,12 @@ static void show_banners(
 
 	if(show_changes_will_be_reflected == true)
 	{
-		slog(EVERY,BOLD "Changes reported during this scan against the DB %s:" RESET "\n",config->db_file_name);
+		slog(EVERY,BOLD "Changes reported during this scan against the DB %s:" RESET "\n",confstr(db_file_name));
 	}
 
 	if(show_files_will_be_added == true)
 	{
-		slog(EVERY,BOLD "Items reported during this traversal against the DB %s:" RESET "\n",config->db_file_name);
+		slog(EVERY,BOLD "Items reported during this traversal against the DB %s:" RESET "\n",confstr(db_file_name));
 	}
 
 	if(show_counting_file_system_items_and_total_data_size == true)

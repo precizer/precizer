@@ -15,7 +15,7 @@ Return db_delete_the_record_by_id(
 	const char   *relative_path,
 	const char   *runtime_path_prefix)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -125,7 +125,7 @@ Return db_delete_the_record_by_id(
 					{
 						slog(EVERY,"If the information about ignored files should be removed from the database the " BOLD "--db-drop-ignored" RESET " option must be specified. This is special protection against accidental deletion of information from the database\n");
 					} else {
-						slog(TRACE,"The " BOLD "--db-drop-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",config->db_file_name);
+						slog(TRACE,"The " BOLD "--db-drop-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",confstr(db_file_name));
 					}
 				}
 
@@ -137,9 +137,9 @@ Return db_delete_the_record_by_id(
 
 				if(config->db_drop_inaccessible)
 				{
-					slog(EVERY,BOLD "Dropping DB records for missing, inaccessible, or ignored paths in %s:" RESET "\n",config->db_file_name);
+					slog(EVERY,BOLD "Dropping DB records for missing, inaccessible, or ignored paths in %s:" RESET "\n",confstr(db_file_name));
 				} else {
-					slog(EVERY,BOLD "Dropping DB records for missing or ignored paths in %s:" RESET "\n",config->db_file_name);
+					slog(EVERY,BOLD "Dropping DB records for missing or ignored paths in %s:" RESET "\n",confstr(db_file_name));
 				}
 			}
 

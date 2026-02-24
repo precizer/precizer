@@ -69,10 +69,15 @@ void init_config(void)
 	config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 	// The path of DB file
-	config->db_primary_file_path = NULL;
+	// Set element size for libmem string descriptors; other fields are already zeroed by memset
+	config->db_primary_file_path.element_size = sizeof(char);
+
+	// Set true only when the primary database path is ":memory:"
+	config->db_primary_path_is_memory = false;
 
 	// The name of DB file
-	config->db_file_name = NULL;
+	// Set element size for libmem string descriptors; other fields are already zeroed by memset
+	config->db_file_name.element_size = sizeof(char);
 
 	// Pointers to the array with database paths
 	config->db_file_paths = NULL;

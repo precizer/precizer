@@ -7,7 +7,7 @@
  */
 Return db_primary_file_test(void)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -21,7 +21,7 @@ Return db_primary_file_test(void)
 	// The primary database file integrity check
 	if(config->db_primary_file_exists == true)
 	{
-		run(db_test(config->db_primary_file_path));
+		run(db_test(confstr(db_primary_file_path)));
 
 	} else if(config->sqlite_open_flag & SQLITE_OPEN_CREATE){
 
