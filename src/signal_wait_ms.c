@@ -61,6 +61,7 @@ void signal_wait_at_point(unsigned int point_id)
 		}
 
 		uint64_t chunk_ms = remaining_timeout_ms;
+
 		if(chunk_ms > 10U)
 		{
 			chunk_ms = 10U;

@@ -74,9 +74,9 @@ static inline Byte tobyte(const size_t bytes)
  * @param suffix Unit suffix (B, KiB, MiB, GiB, TiB, PiB, EiB).
  */
 static void catbyte_r(
-	char       *const result,
+	char *const       result,
 	const size_t      result_size,
-	size_t      *const used_len,
+	size_t *const     used_len,
 	const size_t      bytes,
 	const char *const suffix)
 {
@@ -86,12 +86,14 @@ static void catbyte_r(
 	}
 
 	const int written = snprintf(result + *used_len,result_size - *used_len,"%zu%s ",bytes,suffix);
+
 	if(written < 0)
 	{
 		return;
 	}
 
 	const size_t write_size = (size_t)written;
+
 	if(write_size >= result_size - *used_len)
 	{
 		*used_len = result_size - 1ULL;

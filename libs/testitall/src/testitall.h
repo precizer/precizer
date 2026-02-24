@@ -134,7 +134,7 @@ Return create_tmpdir(
 	size_t);
 
 Return function_capture(
-	void  (*func)(void),
+	void (*func)(void),
 	memory *,
 	memory *);
 
@@ -323,9 +323,9 @@ Return runit(
  * @note Supports both EXTERNAL_CALL and INTERNAL_TEST modes.
  */
 Return runit_background(
-	const char   *,
-	memory       *,
-	memory       *,
+	const char *,
+	memory *,
+	memory *,
 	const int,
 	unsigned int,
 	uint64_t,

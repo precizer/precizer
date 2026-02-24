@@ -557,18 +557,18 @@ Return file_list(TraversalSummary *summary)
 						if(SUCCESS == status)
 						{
 							status = sha512sum(p->fts_path,
-							(size_t)p->fts_pathlen,
-							file_buffer,
-							sha512,
-							&offset,
-							summary,
-							&mdContext,
+								(size_t)p->fts_pathlen,
+								file_buffer,
+								sha512,
+								&offset,
+								summary,
+								&mdContext,
 #ifdef TESTITALL_TEST_HOOKS
-							stat.st_size,
+								stat.st_size,
 #endif
-							&read_error,
-							&read_errno,
-							&wrong_file_type);
+								&read_error,
+								&read_errno,
+								&wrong_file_type);
 						}
 
 						if(TRIUMPH & status)

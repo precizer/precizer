@@ -33,20 +33,20 @@
  */
 const char *form_real_r(
 	long double val,
-	char       *result,
+	char        *result,
 	size_t      result_size);
 
 const char *form_intmax_r(
 	intmax_t val,
-	char    *result,
+	char     *result,
 	size_t   result_size);
 
 const char *form_uintmax_r(
 	uintmax_t val,
-	char     *result,
+	char      *result,
 	size_t    result_size);
 
-#define form(x, result, result_size) _Generic((x), \
+#define form(x,result,result_size) _Generic((x), \
 	long double: form_real_r, \
 	double:      form_real_r, \
 	float:       form_real_r, \

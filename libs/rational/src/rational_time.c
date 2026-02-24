@@ -168,14 +168,14 @@ __attribute__((always_inline)) static inline Date asadate(const long long int na
 static void catdate_r(
 	char *const         result,
 	const size_t        result_size,
-	size_t              *const used_len,
+	size_t *const       used_len,
 	const long long int number,
 	const char *const   suffix)
 {
-  if(number <= 0LL || *used_len >= result_size)
-  {
-  	return;
-  }
+	if(number <= 0LL || *used_len >= result_size)
+	{
+		return;
+	}
 
 	if(*used_len >= result_size)
 	{
@@ -183,12 +183,14 @@ static void catdate_r(
 	}
 
 	const int written = snprintf(result + *used_len,result_size - *used_len,"%lld%s ",number,suffix);
+
 	if(written < 0)
 	{
 		return;
 	}
 
 	const size_t write_size = (size_t)written;
+
 	if(write_size >= result_size - *used_len)
 	{
 		*used_len = result_size - 1ULL;
@@ -205,7 +207,7 @@ static void catdate_r(
  */
 char *form_date_r(
 	const long long int nanoseconds,
-	const ByteFormat   format,
+	const ByteFormat    format,
 	char                *buffer,
 	const size_t        buffer_size)
 {
@@ -279,7 +281,7 @@ char *form_date_r(
  */
 char *form_date(
 	const long long int nanoseconds,
-	const ByteFormat   format)
+	const ByteFormat    format)
 {
 	// Zero out a static memory area with a string array
 	static char result[MAX_CHARACTERS];

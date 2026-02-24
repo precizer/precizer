@@ -2,7 +2,7 @@
 
 static const char *form_write_empty(
 	char   *result,
-	size_t  result_size)
+	size_t result_size)
 {
 	if(result == NULL || result_size == 0U)
 	{
@@ -15,7 +15,7 @@ static const char *form_write_empty(
 
 static const char *form_write_zero(
 	char   *result,
-	size_t  result_size)
+	size_t result_size)
 {
 	if(result == NULL || result_size == 0U)
 	{
@@ -35,7 +35,7 @@ static const char *form_write_zero(
 static const char *form_uintmax_with_sign_r(
 	uintmax_t val,
 	bool      negative,
-	char     *result,
+	char      *result,
 	size_t    result_size)
 {
 	if(result == NULL || result_size == 0U)
@@ -90,10 +90,10 @@ static const char *form_uintmax_with_sign_r(
 	return result;
 }
 
-static size_t form_grouped_uintmax_len(
-	uintmax_t val)
+static size_t form_grouped_uintmax_len(uintmax_t val)
 {
 	size_t digits = 1U;
+
 	while(val >= 10U)
 	{
 		val /= 10U;
@@ -116,7 +116,7 @@ static size_t form_grouped_uintmax_len(
  */
 const char *form_real_r(
 	long double val,
-	char       *result,
+	char        *result,
 	size_t      result_size)
 {
 	if(result == NULL || result_size == 0U)
@@ -125,6 +125,7 @@ const char *form_real_r(
 	}
 
 	const long double magnitude = fabsl(val);
+
 	if(magnitude < 0.0000000001L)
 	{
 		return form_write_zero(result,result_size);
@@ -143,10 +144,11 @@ const char *form_real_r(
 	{
 		fraction *= 10.0L;
 		int digit = (int)fraction;
+
 		if(digit < 0)
 		{
 			digit = 0;
-		} else if(digit > 9) {
+		} else if(digit > 9){
 			digit = 9;
 		}
 
@@ -168,6 +170,7 @@ const char *form_real_r(
 		}
 
 		bool carry = fraction_digits[precision] >= 5U;
+
 		for(size_t i = precision; i > 0U && carry; i--)
 		{
 			const size_t idx = i - 1U;
@@ -192,6 +195,7 @@ const char *form_real_r(
 		}
 
 		size_t fractional_len = precision;
+
 		while(fractional_len > 0U && rounded_fraction_digits[fractional_len - 1U] == 0U)
 		{
 			fractional_len--;
@@ -204,6 +208,7 @@ const char *form_real_r(
 
 		const size_t integer_len = form_grouped_uintmax_len(rounded_integer_part);
 		size_t required = integer_len + 1U;
+
 		if(negative)
 		{
 			required++;
@@ -239,6 +244,7 @@ const char *form_real_r(
 
 		size_t group = 0U;
 		uintmax_t integer_write_part = rounded_integer_part;
+
 		do
 		{
 			if(group == 3U)
@@ -272,7 +278,7 @@ const char *form_real_r(
 
 const char *form_uintmax_r(
 	uintmax_t val,
-	char     *result,
+	char      *result,
 	size_t    result_size)
 {
 	return form_uintmax_with_sign_r(val,false,result,result_size);
@@ -280,7 +286,7 @@ const char *form_uintmax_r(
 
 const char *form_intmax_r(
 	intmax_t val,
-	char    *result,
+	char     *result,
 	size_t   result_size)
 {
 	const bool negative = val < 0;

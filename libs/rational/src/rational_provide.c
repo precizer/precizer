@@ -4,6 +4,7 @@
 const char *show_status(const Return status)
 {
 	const char *status_label = "UNKNOWN";
+
 	/* Keep behavior explicit for the zero status value. */
 	if(status == OK)
 	{

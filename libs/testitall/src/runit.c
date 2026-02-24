@@ -7,8 +7,7 @@ enum run_mode run_external = EXTERNAL_CALL;
 /**
  * @brief Process-state guard used for INTERNAL_TEST in-process execution.
  */
-struct runit_internal_guard
-{
+struct runit_internal_guard {
 	char *previous_cwd;
 	bool previous_cwd_captured;
 	bool changed_directory;
@@ -44,6 +43,7 @@ static Return runit_internal_enter(
 	Return status = SUCCESS;
 
 	guard->previous_cwd = getcwd(NULL,0);
+
 	if(NULL == guard->previous_cwd)
 	{
 		serp("Failed to get current working directory");
@@ -78,6 +78,7 @@ static Return runit_internal_enter(
 	{
 		guard->saved_stdout_fd = dup(STDOUT_FILENO);
 		guard->saved_stderr_fd = dup(STDERR_FILENO);
+
 		if(guard->saved_stdout_fd == -1 || guard->saved_stderr_fd == -1)
 		{
 			serp("Failed to save stdout/stderr descriptors");
@@ -179,6 +180,7 @@ Return runit(
 {
 	Return status = SUCCESS;
 	const char *safe_arguments = "";
+
 	if(arguments != NULL && '\0' != arguments[0])
 	{
 		safe_arguments = arguments;
@@ -203,6 +205,7 @@ Return runit(
 	run(runit_validate_runtime_mode(run_external));
 
 	const char *call_label = "Internal call";
+
 	if(EXTERNAL_CALL == run_external)
 	{
 		call_label = "External call";
@@ -221,12 +224,13 @@ Return runit(
 	if(SUCCESS == status && EXTERNAL_CALL == run_external)
 	{
 		const pid_t app_pid = fork();
+
 		if(app_pid < 0)
 		{
 			serp("Failed to fork process for EXTERNAL_CALL");
 			status = FAILURE;
 
-		} else if(0 == app_pid) {
+		} else if(0 == app_pid){
 			if(chdir(runit_call_data.tmpdir) != 0)
 			{
 				_exit(127);
@@ -244,6 +248,7 @@ Return runit(
 			runit_capture_close_fds(&capture);
 
 			run(runit_wait_child(app_pid,&wait_status,"EXTERNAL_CALL"));
+
 			if(SUCCESS == status)
 			{
 				child_waited = true;

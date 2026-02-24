@@ -10,10 +10,10 @@
  */
 Return db_delete_the_record_by_id(
 	const sqlite_int64 *ID,
-	bool         *first_iteration,
-	const bool   *drop_ignored,
-	const char   *relative_path,
-	const char   *runtime_path_prefix)
+	bool               *first_iteration,
+	const bool         *drop_ignored,
+	const char         *relative_path,
+	const char         *runtime_path_prefix)
 {
 	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.

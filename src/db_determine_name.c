@@ -32,6 +32,7 @@ Return db_determine_name(void)
 			run(copy_buffer(conf(db_primary_file_path),in_memory_db_path,sizeof(in_memory_db_path)));
 			// Set display-friendly DB name for logs.
 			run(copy_literal(conf(db_file_name),IN_MEMORY_DB_NAME));
+
 			if(CRITICAL & status)
 			{
 				slog(ERROR,"Failed to initialize in-memory database names\n");
@@ -63,6 +64,7 @@ Return db_determine_name(void)
 				run(concat_cstring(conf(db_primary_file_path),db_file_extension,sizeof(db_file_extension)));
 				// Copy the same path to db_file_name.
 				run(copy(conf(db_file_name),conf(db_primary_file_path)));
+
 				if(CRITICAL & status)
 				{
 					slog(ERROR,"Failed to build default database name from hostname\n");
