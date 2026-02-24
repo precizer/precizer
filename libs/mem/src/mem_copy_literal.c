@@ -6,7 +6,7 @@ Return memory_copy_literal(
 	const char *literal)
 {
 	/** Return status
-	 *  The status that will be passed to return() before exiting
+	 *  The status that will be passed to provide() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
@@ -17,13 +17,13 @@ Return memory_copy_literal(
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && literal == NULL)
+	if((TRIUMPH & status) && literal == NULL)
 	{
 		/* Treat NULL literals as a no-op to keep existing payload intact */
 		provide(SUCCESS);
 	}
 
-	if(SUCCESS == status && destination->element_size != sizeof(char))
+	if((TRIUMPH & status) && destination->element_size != sizeof(char))
 	{
 		slog(ERROR,"Memory management; copy_literal supports byte-sized elements only");
 		status = FAILURE;
@@ -31,14 +31,14 @@ Return memory_copy_literal(
 
 	size_t literal_length = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		literal_length = strlen(literal);
 	}
 
 	size_t new_total_elements = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		if(literal_length == SIZE_MAX)
 		{
@@ -55,7 +55,7 @@ Return memory_copy_literal(
 
 	run(resize(destination,new_total_elements));
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		unsigned char *destination_bytes = (unsigned char *)destination->data;
 
