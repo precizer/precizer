@@ -78,36 +78,35 @@ static Return read_resume_state_from_db(
 	const char *sql = "SELECT offset, mdContext FROM files WHERE relative_path = ?1;";
 	create(char,db_path);
 
-	if(SUCCESS == status
-	        && (db_filename == NULL
+	if(db_filename == NULL
 	        || relative_path == NULL
 	        || offset_out == NULL
-	        || md_context_bytes_out == NULL))
+	        || md_context_bytes_out == NULL)
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		status = construct_path(db_filename,db_path);
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
+	if((TRIUMPH & status) && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	if((TRIUMPH & status) && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
+	if((TRIUMPH & status) && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		const int step_rc = sqlite3_step(stmt);
 		if(step_rc != SQLITE_ROW)
@@ -116,7 +115,7 @@ static Return read_resume_state_from_db(
 		}
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		if(sqlite3_column_type(stmt,0) == SQLITE_NULL)
 		{
@@ -164,36 +163,35 @@ static Return read_final_sha512_from_db(
 	const char *sql = "SELECT offset, sha512 FROM files WHERE relative_path = ?1;";
 	create(char,db_path);
 
-	if(SUCCESS == status
-	        && (db_filename == NULL
+	if(db_filename == NULL
 	        || relative_path == NULL
 	        || offset_out == NULL
-	        || sha512_out == NULL))
+	        || sha512_out == NULL)
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		status = construct_path(db_filename,db_path);
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
+	if((TRIUMPH & status) && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	if((TRIUMPH & status) && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
+	if((TRIUMPH & status) && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		const int step_rc = sqlite3_step(stmt);
 		if(step_rc != SQLITE_ROW)
@@ -202,7 +200,7 @@ static Return read_final_sha512_from_db(
 		}
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		if(sqlite3_column_type(stmt,0) == SQLITE_NULL)
 		{
@@ -222,7 +220,7 @@ static Return read_final_sha512_from_db(
 		}
 
 		const int done_rc = sqlite3_step(stmt);
-		if(SUCCESS == status && done_rc != SQLITE_DONE)
+		if((TRIUMPH & status) && done_rc != SQLITE_DONE)
 		{
 			status = FAILURE;
 		}
@@ -265,7 +263,7 @@ static Return test0033_1_sigterm(void)
 		arguments,
 		stdout_result,
 		stderr_result,
-		HALTED,
+		SUCCESS|HALTED,
 		ALLOW_BOTH,
 		100U,
 		1000U,
@@ -310,7 +308,7 @@ static Return test0033_2_sigint(void)
 		arguments,
 		stdout_result,
 		stderr_result,
-		HALTED,
+		SUCCESS|HALTED,
 		ALLOW_BOTH,
 		100U,
 		1000U,
@@ -358,23 +356,45 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	create(char,stderr_pattern);
 	create(char,huge_file_path);
 
+	/*
+	 * Step 1: Prepare isolated test data in TMPDIR and start from a clean DB
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
 	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
+	ASSERT(SUCCESS == construct_path("tests/examples/huge/hugetestfile",huge_file_path));
+
+	/*
+	 * Read the real file size from the filesystem once and use it as
+	 * an upper bound for the interrupted offset assertions below
+	 */
+	struct stat huge_file_stat = {0};
+	ASSERT(0 == stat(getcstring(huge_file_path),&huge_file_stat));
+	ASSERT(huge_file_stat.st_size > 0);
+
 	const char *arguments = "--progress --database=huge_interrupt_resume.db tests/examples/huge";
 
+	/*
+	 * Step 2: Run in background, wait until hashing reaches wait-point 2,
+	 * then deliver SIGINT. The process must exit as SUCCESS|HALTED
+	 */
 	ASSERT(SUCCESS == runit_background(
 		arguments,
 		stdout_result,
 		stderr_result,
-		HALTED,
+		SUCCESS|HALTED,
 		ALLOW_BOTH,
 		500U,
 		5000U,
 		SIGINT,
 		2U));
 
+	/*
+	 * Step 3: Validate first-run output.
+	 * It must contain the interruption scenario messages and no stderr output
+	 */
 	ASSERT(SUCCESS == get_file_content(first_run_template,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,first_run_template));
 
@@ -384,18 +404,25 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	sqlite3_int64 interrupted_offset = 0;
 	int interrupted_md_context_bytes = 0;
 
+	/*
+	 * Step 4: Read intermediate resume state from DB.
+	 * The interrupted offset must be inside (0, real_file_size),
+	 * and mdContext blob must be non-empty for resume.
+	 */
 	ASSERT(SUCCESS == read_resume_state_from_db(
 		db_filename,
 		relative_path,
 		&interrupted_offset,
 		&interrupted_md_context_bytes));
 
-	ASSERT(interrupted_offset >= 0);
-	if(interrupted_offset > 0)
-	{
-		ASSERT(interrupted_md_context_bytes > 0);
-	}
+	ASSERT(interrupted_offset > 0);
+	ASSERT(interrupted_offset < (sqlite3_int64)huge_file_stat.st_size);
 
+	ASSERT(interrupted_md_context_bytes > 0);
+
+	/*
+	 * Step 5: Resume hashing with --update and verify second-run output
+	 */
 	arguments = "--update --progress --database=huge_interrupt_resume.db tests/examples/huge";
 	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));
 
@@ -409,6 +436,10 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	unsigned char db_sha512[SHA512_DIGEST_LENGTH] = {0};
 	unsigned char expected_sha512[SHA512_DIGEST_LENGTH] = {0};
 
+	/*
+	 * Step 6: Verify final DB state after resume.
+	 * Offset must be reset to 0 and the stored SHA512 must match file content
+	 */
 	ASSERT(SUCCESS == read_final_sha512_from_db(
 		db_filename,
 		relative_path,
@@ -417,10 +448,10 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 
 	ASSERT(0 == final_offset);
 
-	ASSERT(SUCCESS == construct_path("tests/examples/huge/hugetestfile",huge_file_path));
 	ASSERT(SUCCESS == compute_file_sha512(getcstring(huge_file_path),expected_sha512));
 	ASSERT(0 == memcmp(db_sha512,expected_sha512,(size_t)SHA512_DIGEST_LENGTH));
 
+	/* Step 7: Cleanup temporary test artifacts */
 	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(huge_file_path);

@@ -126,6 +126,7 @@ Return test0003_3(void)
 {
 	INITTEST;
 
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == assert_information_mode_output("--help","templates/0003_004.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("-h","templates/0003_004.txt"));
 	ASSERT(SUCCESS == assert_information_mode_output("--usage","templates/0003_005.txt"));
