@@ -6,7 +6,7 @@ Return memory_copy(
 	const memory *source)
 {
 	/** Return status
-	 *  The status that will be passed to return() before exiting
+	 *  The status that will be passed to provide() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
@@ -41,19 +41,19 @@ Return memory_copy(
 
 	run(memory_guarded_size(source->element_size,source->length,&bytes_to_copy));
 
-	if(FAILURE == status)
+	if(CRITICAL & status)
 	{
 		slog(ERROR,"Memory management; Overflow computing %zu * %zu",
 			source->element_size,
 			source->length);
 	}
 
-	if(SUCCESS == status && destination->length != source->length)
+	if((TRIUMPH & status) && destination->length != source->length)
 	{
 		run(resize(destination,source->length));
 	}
 
-	if(SUCCESS == status && source->length > 0)
+	if((TRIUMPH & status) && source->length > 0)
 	{
 		memcpy(destination->data,source->data,bytes_to_copy);
 	}

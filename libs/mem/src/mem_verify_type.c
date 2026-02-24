@@ -5,7 +5,7 @@ Return memory_verify_type(
 	size_t       expected_element_size)
 {
 	/** Return status
-	 *  The status that will be passed to return() before exiting
+	 *  The status that will be passed to provide() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
@@ -16,12 +16,9 @@ Return memory_verify_type(
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && memory_structure->element_size != expected_element_size)
+	if((TRIUMPH & status) && memory_structure->element_size != expected_element_size)
 	{
-		slog(ERROR,
-			"Memory management; Expected %zu bytes but descriptor uses %zu",
-			expected_element_size,
-			memory_structure->element_size);
+		slog(ERROR,"Memory management; Expected %zu bytes but descriptor uses %zu",expected_element_size,memory_structure->element_size);
 		status = FAILURE;
 	}
 

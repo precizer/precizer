@@ -3,7 +3,7 @@
 Return memory_delete(memory *memory_structure)
 {
 	/** Return status
-	 *  The status that will be passed to return() before exiting
+	 *  The status that will be passed to provide() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
@@ -14,7 +14,7 @@ Return memory_delete(memory *memory_structure)
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		const size_t previously_allocated = memory_structure->actually_allocated_bytes;
 		size_t previous_effective_bytes = 0;

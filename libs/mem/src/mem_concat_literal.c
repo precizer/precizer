@@ -6,7 +6,7 @@ Return memory_concat_literal(
 	const char *literal)
 {
 	/** Return status
-	 *  The status that will be passed to return() before exiting
+	 *  The status that will be passed to provide() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
@@ -17,13 +17,13 @@ Return memory_concat_literal(
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && literal == NULL)
+	if((TRIUMPH & status) && literal == NULL)
 	{
 		/* Treat NULL literals as a no-op to keep destination intact */
-		provide(SUCCESS);
+		provide(status);
 	}
 
-	if(SUCCESS == status && destination->element_size != sizeof(char))
+	if((TRIUMPH & status) && destination->element_size != sizeof(char))
 	{
 		slog(ERROR,"Memory management; concat_literal supports byte-sized elements only");
 		status = FAILURE;
@@ -35,14 +35,14 @@ Return memory_concat_literal(
 
 	size_t literal_length = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		literal_length = strlen(literal);
 	}
 
 	size_t new_total_elements = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		if(destination_length > SIZE_MAX - literal_length)
 		{
@@ -71,7 +71,7 @@ Return memory_concat_literal(
 
 	run(resize(destination,new_total_elements));
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		unsigned char *destination_bytes = (unsigned char *)destination->data;
 
