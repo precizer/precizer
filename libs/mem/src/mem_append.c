@@ -9,25 +9,25 @@ Return memory_append(
 
 	if(destination == NULL || source == NULL)
 	{
-		slog(ERROR,"Memory management; append arguments must be non-NULL");
+		report("Memory management; append arguments must be non-NULL");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Destination element size is zero (uninitialized)");
+		report("Memory management; Destination element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
 	if(source->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Source element size is zero (uninitialized)");
+		report("Memory management; Source element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size != source->element_size)
 	{
-		slog(ERROR,"Memory management; Element size mismatch (%zu vs %zu)",destination->element_size,source->element_size);
+		report("Memory management; Element size mismatch (%zu vs %zu)",destination->element_size,source->element_size);
 		provide(FAILURE);
 	}
 
@@ -40,7 +40,7 @@ Return memory_append(
 
 	if(append_elements > SIZE_MAX - destination->length)
 	{
-		slog(ERROR,"Memory management; Append would overflow element count");
+		report("Memory management; Append would overflow element count");
 		provide(FAILURE);
 	}
 
@@ -50,7 +50,7 @@ Return memory_append(
 
 	if(CRITICAL & status)
 	{
-		slog(ERROR,"Memory management; Overflow computing append bytes");
+		report("Memory management; Overflow computing append bytes");
 	}
 
 	size_t offset_bytes = 0;
@@ -59,7 +59,7 @@ Return memory_append(
 
 	if(CRITICAL & status)
 	{
-		slog(ERROR,"Memory management; Overflow computing append offset");
+		report("Memory management; Overflow computing append offset");
 	}
 
 	size_t new_total_elements;
@@ -77,7 +77,7 @@ Return memory_append(
 
 		if(destination_bytes == NULL || source->data == NULL)
 		{
-			slog(ERROR,"Memory management; Data pointer is NULL during append");
+			report("Memory management; Data pointer is NULL during append");
 			status = FAILURE;
 		} else {
 			memcpy(destination_bytes + offset_bytes,source->data,append_bytes);

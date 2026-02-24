@@ -10,7 +10,7 @@ Return memory_delete(memory *memory_structure)
 
 	if(memory_structure == NULL)
 	{
-		slog(ERROR,"Memory management; Descriptor is NULL");
+		report("Memory management; Descriptor is NULL");
 		status = FAILURE;
 	}
 

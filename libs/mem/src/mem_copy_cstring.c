@@ -23,19 +23,19 @@ Return memory_copy_cstring(
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; copy_cstring destination must be non-NULL");
+		report("Memory management; copy_cstring destination must be non-NULL");
 		status = FAILURE;
 	}
 
 	if((TRIUMPH & status) && destination->element_size != sizeof(char))
 	{
-		slog(ERROR,"Memory management; copy_cstring supports byte-sized elements only");
+		report("Memory management; copy_cstring supports byte-sized elements only");
 		status = FAILURE;
 	}
 
 	if((TRIUMPH & status) && source_buffer == NULL && source_buffer_size > 0)
 	{
-		slog(ERROR,"Memory management; copy_cstring source is NULL while size is %zu",source_buffer_size);
+		report("Memory management; copy_cstring source is NULL while size is %zu",source_buffer_size);
 		status = FAILURE;
 	}
 
@@ -46,7 +46,7 @@ Return memory_copy_cstring(
 	{
 		if(source_length == SIZE_MAX)
 		{
-			slog(ERROR,"Memory management; Not enough room for string terminator");
+			report("Memory management; Not enough room for string terminator");
 			status = FAILURE;
 		} else {
 			total_elements = source_length + 1;
@@ -61,7 +61,7 @@ Return memory_copy_cstring(
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL after resize");
+			report("Memory management; Destination data pointer is NULL after resize");
 			status = FAILURE;
 		} else {
 			if(source_length > 0)

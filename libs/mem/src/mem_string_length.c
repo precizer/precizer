@@ -24,7 +24,7 @@ Return memory_string_length(
 
 	if(memory_structure == NULL || length_out == NULL)
 	{
-		slog(ERROR,"Memory management; Invalid arguments for string length helper");
+		report("Memory management; Invalid arguments for string length helper");
 		status = FAILURE;
 	} else if(memory_structure->length == 0){
 		*length_out = 0;

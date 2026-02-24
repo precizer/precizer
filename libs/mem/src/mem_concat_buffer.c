@@ -24,13 +24,13 @@ Return memory_concat_buffer(
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; concat_buffer destination must be non-NULL");
+		report("Memory management; concat_buffer destination must be non-NULL");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Destination element size is zero (uninitialized)");
+		report("Memory management; Destination element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
@@ -41,13 +41,13 @@ Return memory_concat_buffer(
 			provide(status);
 		}
 
-		slog(ERROR,"Memory management; concat_buffer source is NULL while size is %zu",source_buffer_size);
+		report("Memory management; concat_buffer source is NULL while size is %zu",source_buffer_size);
 		provide(FAILURE);
 	}
 
 	if((source_buffer_size % destination->element_size) != 0)
 	{
-		slog(ERROR,"Memory management; concat_buffer size %zu is not divisible by element size %zu",source_buffer_size,destination->element_size);
+		report("Memory management; concat_buffer size %zu is not divisible by element size %zu",source_buffer_size,destination->element_size);
 		provide(FAILURE);
 	}
 
@@ -65,7 +65,7 @@ Return memory_concat_buffer(
 
 	if(append_elements > SIZE_MAX - destination->length)
 	{
-		slog(ERROR,"Memory management; concat_buffer would overflow element count");
+		report("Memory management; concat_buffer would overflow element count");
 		provide(FAILURE);
 	}
 
@@ -75,7 +75,7 @@ Return memory_concat_buffer(
 
 	if(CRITICAL & status)
 	{
-		slog(ERROR,"Memory management; Overflow computing concat_buffer destination offset");
+		report("Memory management; Overflow computing concat_buffer destination offset");
 		provide(status);
 	}
 
@@ -87,7 +87,7 @@ Return memory_concat_buffer(
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL during concat_buffer");
+			report("Memory management; Destination data pointer is NULL during concat_buffer");
 			status = FAILURE;
 		} else {
 			memcpy(destination_bytes + offset_bytes,source_buffer,source_buffer_size);

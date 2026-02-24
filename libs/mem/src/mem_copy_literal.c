@@ -13,7 +13,7 @@ Return memory_copy_literal(
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; copy_literal destination must be non-NULL");
+		report("Memory management; copy_literal destination must be non-NULL");
 		status = FAILURE;
 	}
 
@@ -25,7 +25,7 @@ Return memory_copy_literal(
 
 	if((TRIUMPH & status) && destination->element_size != sizeof(char))
 	{
-		slog(ERROR,"Memory management; copy_literal supports byte-sized elements only");
+		report("Memory management; copy_literal supports byte-sized elements only");
 		status = FAILURE;
 	}
 
@@ -42,7 +42,7 @@ Return memory_copy_literal(
 	{
 		if(literal_length == SIZE_MAX)
 		{
-			slog(ERROR,"Memory management; Not enough room for string terminator");
+			report("Memory management; Not enough room for string terminator");
 			status = FAILURE;
 		} else {
 			new_total_elements = literal_length + 1;
@@ -61,7 +61,7 @@ Return memory_copy_literal(
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL after resize");
+			report("Memory management; Destination data pointer is NULL after resize");
 			status = FAILURE;
 		} else {
 			if(literal_bytes > 0)
