@@ -15,3 +15,4 @@ precizer
 /*.out.*
 /src/tool_*
 .vms/
+A*
