@@ -19,7 +19,7 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: lock_s4\.db
 TESTING:Primary database file path: lock_s4\.db
-TESTING:DB name determined
+TESTING:Finished determining database name
 TESTING:Verify that the path \. exists
 TESTING:The path \. is exists and it is a directory
 TESTING:Verify that the path lock_s4\.db exists

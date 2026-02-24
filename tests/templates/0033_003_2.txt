@@ -17,7 +17,7 @@ TESTING:Signals initialized
 TESTING:Current directory: /tmp/precizer\.[^\n]+
 TESTING:Primary database file name: huge_interrupt_resume\.db
 TESTING:Primary database file path: huge_interrupt_resume\.db
-TESTING:DB name determined
+TESTING:Finished determining database name
 TESTING:Verify that the path \. exists
 TESTING:The path \. is exists and it is a directory
 TESTING:Verify that the path huge_interrupt_resume\.db exists

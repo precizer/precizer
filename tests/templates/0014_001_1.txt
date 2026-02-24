@@ -1,8 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
-TESTING:argument:database=database1.db
-TESTING:argument:db_file_name=database1.db
+TESTING:argument:database=database1\.db
+TESTING:argument:db_file_name=database1\.db
 TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -13,40 +13,40 @@ TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
-TESTING:Primary database file name: database1.db
-TESTING:Primary database file path: database1.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path database1.db exists
-TESTING:The path database1.db doesn't exist or it is not a file
+TESTING:Primary database file name: database1\.db
+TESTING:Primary database file path: database1\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database1\.db exists
+TESTING:The path database1\.db doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
 TESTING:The primary database file was just created and doesn't require verification
-TESTING:Successfully opened database database1.db
+TESTING:Successfully opened database database1\.db
 TESTING:The primary database and tables have been successfully initialized
-TESTING:The primary database named database1.db is ready for operations
+TESTING:The primary database named database1\.db is ready for operations
 TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1.db:(?:\x1B\[[0-9;]*m)*
-1/AAA/BCB/CCC/a.txt
-1/AAA/ZAW/A/b/c/a_file.txt
-1/AAA/ZAW/D/e/f/b_file.txt
-2/AAA/BBB/CZC/a.txt
-3/AAA/BBB/CCC/a.txt
-4/AAA/BBB/CCC/a.txt
-path1/AAA/BCB/CCC/a.txt
-path1/AAA/ZAW/A/b/c/a_file.txt
-path1/AAA/ZAW/D/e/f/b_file.txt
-path2/AAA/BCB/CCC/a.txt
-path2/AAA/ZAW/A/b/c/a_file.txt
-path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
+1/AAA/BCB/CCC/a\.txt
+1/AAA/ZAW/A/b/c/a_file\.txt
+1/AAA/ZAW/D/e/f/b_file\.txt
+2/AAA/BBB/CZC/a\.txt
+3/AAA/BBB/CCC/a\.txt
+4/AAA/BBB/CCC/a\.txt
+path1/AAA/BCB/CCC/a\.txt
+path1/AAA/ZAW/A/b/c/a_file\.txt
+path1/AAA/ZAW/D/e/f/b_file\.txt
+path2/AAA/BCB/CCC/a\.txt
+path2/AAA/ZAW/A/b/c/a_file\.txt
+path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
@@ -54,14 +54,14 @@ TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/long
-TESTING:argument:database=database1.db
-TESTING:argument:db_file_name=database1.db
+TESTING:argument:database=database1\.db
+TESTING:argument:db_file_name=database1\.db
 TESTING:argument:force=yes
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
@@ -74,77 +74,77 @@ TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
-TESTING:Primary database file name: database1.db
-TESTING:Primary database file path: database1.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path database1.db exists
-TESTING:The path database1.db is exists and it is a file
+TESTING:Primary database file name: database1\.db
+TESTING:Primary database file path: database1\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database1\.db exists
+TESTING:The path database1\.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting database file database1.db integrity check…
+TESTING:Starting database file database1\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
+TESTING:Database database1\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
-TESTING:The database1.db database file is version 4
-TESTING:The database database1.db is on version 4 and does not require any upgrades
-TESTING:Successfully opened database database1.db
+TESTING:The database1\.db database file is version 4
+TESTING:The database database1\.db is on version 4 and does not require any upgrades
+TESTING:Successfully opened database database1\.db
 TESTING:The primary database and tables do not require initialization
-TESTING:The primary database named database1.db is ready for operations
+TESTING:The primary database named database1\.db is ready for operations
 TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The database database1.db has already been created previously
+TESTING:The database database1\.db has already been created previously
 TESTING:The paths passed as arguments differ from those saved in the database. File paths and checksum information may be lost!
 TESTING:Paths saved in the database:
 tests/examples/diffs/diff1
-TESTING:The (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option has been used, so the following paths will be written to the database1.db:
+TESTING:The (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option has been used, so the following paths will be written to the database1\.db:
 tests/examples/long
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:Update mode enabled for DB database1.db
+TESTING:Update mode enabled for DB database1\.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
 длинныйпутьвЮТФ8/аааааааа.* add
 длинныйпутьвЮТФ8/ааааааа add
 длинныйпутьвЮТФ8/аааааа add
-длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file.txt add
-длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a.txt add
-длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b.txt add
-длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file.txt add
-длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file.txt add
-длинныйпутьвЮТФ8/аа…путьпуть/path1/AAA/BCB/CCC/a.txt add
-длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/a_file.txt add
-длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/b_file.txt add
-длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/D/e/f/b_file.txt add
-длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/a.txt add
-длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/b.txt add
-длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/A/b/c/a_file.txt add
-длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/D/e/f/b_file.txt add
-длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a.txt add
-длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file.txt add
-длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file.txt add
-длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file.txt add
-длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a.txt add
-длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b.txt add
-длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file.txt add
-длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file.txt add
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file\.txt add
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a\.txt add
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b\.txt add
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file\.txt add
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file\.txt add
+длинныйпутьвЮТФ8/аа…путьпуть/path1/AAA/BCB/CCC/a\.txt add
+длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/a_file\.txt add
+длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/b_file\.txt add
+длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/D/e/f/b_file\.txt add
+длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/a\.txt add
+длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/b\.txt add
+длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/A/b/c/a_file\.txt add
+длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/D/e/f/b_file\.txt add
+длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a\.txt add
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file\.txt add
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file\.txt add
+длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file\.txt add
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a\.txt add
+длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b\.txt add
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file\.txt add
+длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file\.txt add
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
-TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1.db:(?:\x1B\[[0-9;]*m)*
-no longer exists 1/AAA/BCB/CCC/a.txt
-no longer exists 1/AAA/ZAW/A/b/c/a_file.txt
-no longer exists 1/AAA/ZAW/D/e/f/b_file.txt
-no longer exists 2/AAA/BBB/CZC/a.txt
-no longer exists 3/AAA/BBB/CCC/a.txt
-no longer exists 4/AAA/BBB/CCC/a.txt
-no longer exists path1/AAA/BCB/CCC/a.txt
-no longer exists path1/AAA/ZAW/A/b/c/a_file.txt
-no longer exists path1/AAA/ZAW/D/e/f/b_file.txt
-no longer exists path2/AAA/BCB/CCC/a.txt
-no longer exists path2/AAA/ZAW/A/b/c/a_file.txt
-no longer exists path2/AAA/ZAW/D/e/f/b_file.txt
+TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1\.db:(?:\x1B\[[0-9;]*m)*
+no longer exists 1/AAA/BCB/CCC/a\.txt
+no longer exists 1/AAA/ZAW/A/b/c/a_file\.txt
+no longer exists 1/AAA/ZAW/D/e/f/b_file\.txt
+no longer exists 2/AAA/BBB/CZC/a\.txt
+no longer exists 3/AAA/BBB/CCC/a\.txt
+no longer exists 4/AAA/BBB/CCC/a\.txt
+no longer exists path1/AAA/BCB/CCC/a\.txt
+no longer exists path1/AAA/ZAW/A/b/c/a_file\.txt
+no longer exists path1/AAA/ZAW/D/e/f/b_file\.txt
+no longer exists path2/AAA/BCB/CCC/a\.txt
+no longer exists path2/AAA/ZAW/A/b/c/a_file\.txt
+no longer exists path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:Missing file search completed
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
@@ -152,6 +152,6 @@ TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The database file database1.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*The database file database1\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

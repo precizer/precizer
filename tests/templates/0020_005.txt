@@ -1,8 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/diffs/diff1
-TESTING:argument:database=write_protected_database1.db
-TESTING:argument:db_file_name=write_protected_database1.db
+TESTING:argument:database=write_protected_database1\.db
+TESTING:argument:db_file_name=write_protected_database1\.db
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
@@ -14,17 +14,17 @@ TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
-TESTING:Primary database file name: write_protected_database1.db
-TESTING:Primary database file path: write_protected_database1.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path write_protected_database1.db exists
-TESTING:The path write_protected_database1.db is exists and it is a file
+TESTING:Primary database file name: write_protected_database1\.db
+TESTING:Primary database file path: write_protected_database1\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path write_protected_database1\.db exists
+TESTING:The path write_protected_database1\.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting database file write_protected_database1.db integrity check…
+TESTING:Starting database file write_protected_database1\.db integrity check…
 ERROR:Can't open database .*: unable to open database file
 TESTING:Returned db_test:148 status: FAILURE
 TESTING:Returned db_primary_file_test:\d+ status: FAILURE

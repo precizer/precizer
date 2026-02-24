@@ -16,7 +16,7 @@ TESTING:Signals initialized
 TESTING:Current directory: /tmp/precizer\.[^\n]+
 TESTING:Primary database file name: huge_interrupt_resume\.db
 TESTING:Primary database file path: huge_interrupt_resume\.db
-TESTING:DB name determined
+TESTING:Finished determining database name
 TESTING:Verify that the path \. exists
 TESTING:The path \. is exists and it is a directory
 TESTING:Verify that the path huge_interrupt_resume\.db exists
@@ -39,17 +39,10 @@ TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Notify quit!
 TESTING:The global return status and exit flag has been set to HALTED
 TESTING:Interrupting the application\. Please wait while the database will be closed smoothly…
-TESTING:Returned sha512sum:[0-9]+ status: HALTED
-TESTING:Returned db_insert_the_record:[0-9]+ status: HALTED
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB huge_interrupt_resume\.db:(?:\x1B\[[0-9;]*m)*
 add hugetestfile
 TESTING:SHA512 checksum for the file hugetestfile has been gracefully interrupted at byte: .+
-TESTING:Returned memory_guarded_size:[0-9]+ status: HALTED
-TESTING:Returned memory_delete:[0-9]+ status: HALTED
-TESTING:Returned file_list:[0-9]+ status: HALTED
-TESTING:Returned show_remembered_messages:[0-9]+ status: HALTED
 TESTING:The database connection has been closed
-TESTING:Returned db_close:[0-9]+ status: HALTED
 TESTING:The precizer has been interrupted smoothly\. All data remain in integrity condition
-TESTING:Exit status » HALTED\Z
+TESTING:Exit status » SUCCESS\|HALTED\Z

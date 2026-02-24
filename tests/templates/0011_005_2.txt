@@ -14,9 +14,9 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: %DB_NAME%
 TESTING:Primary database file path: %DB_NAME%
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
@@ -40,9 +40,9 @@ TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB %DB_NAME%
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-add AAA/BBB/CCC/a.txt
-add AAA/BBB/uuu.txt
-add AAA/tttt.txt
+add AAA/BBB/CCC/a\.txt
+add AAA/BBB/uuu\.txt
+add AAA/tttt\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed

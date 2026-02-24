@@ -1,8 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=database1.db, database2.db
-TESTING:argument:db_file_paths=database1.db, database2.db
-TESTING:argument:db_file_names=database1.db, database2.db
+TESTING:argument:paths=database1\.db, database2\.db
+TESTING:argument:db_file_paths=database1\.db, database2\.db
+TESTING:argument:db_file_names=database1\.db, database2\.db
 TESTING:argument:compare=yes
 TESTING:Argument parsing is complete
 TESTING:Comparing databases. Directory path verification is not required
@@ -13,9 +13,9 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
@@ -23,26 +23,26 @@ TESTING:Successfully opened database DisposableDB
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:Database initialization process completed
-TESTING:The comparison of database1.db and database2.db databases is starting…
-TESTING:Verify that the path database1.db exists
-TESTING:The path database1.db is exists and it is a file
-TESTING:Starting database file database1.db integrity check…
+TESTING:The comparison of database1\.db and database2\.db databases is starting…
+TESTING:Verify that the path database1\.db exists
+TESTING:The path database1\.db is exists and it is a file
+TESTING:Starting database file database1\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
+TESTING:Database database1\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
-TESTING:The database1.db database file is version 4
-TESTING:The database database1.db is on version 4 and does not require any upgrades
-TESTING:Verify that the path database2.db exists
-TESTING:The path database2.db is exists and it is a file
-TESTING:Starting database file database2.db integrity check…
+TESTING:The database1\.db database file is version 4
+TESTING:The database database1\.db is on version 4 and does not require any upgrades
+TESTING:Verify that the path database2\.db exists
+TESTING:The path database2\.db is exists and it is a file
+TESTING:Starting database file database2\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database database2.db has been verified and is in good condition
+TESTING:Database database2\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
-TESTING:The database2.db database file is version 4
-TESTING:The database database2.db is on version 4 and does not require any upgrades
-TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer in the database2.db but still exist in the database1.db(?:\x1B\[[0-9;]*m)*
-2/AAA/BBB/CZC/a.txt
-TESTING:Comparison of database1.db and database2.db databases is complete
+TESTING:The database2\.db database file is version 4
+TESTING:The database database2\.db is on version 4 and does not require any upgrades
+TESTING:(?:\x1B\[[0-9;]*m)*These files are no longer in the database2\.db but still exist in the database1\.db(?:\x1B\[[0-9;]*m)*
+2/AAA/BBB/CZC/a\.txt
+TESTING:Comparison of database1\.db and database2\.db databases is complete
 TESTING:Comparison mode is enabled. The primary database verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:The database connection has been closed
