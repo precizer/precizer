@@ -13,9 +13,9 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: %DB_NAME%
 TESTING:Primary database file path: %DB_NAME%
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
@@ -33,18 +33,18 @@ TESTING:The brand new database has just been created. No need to verify the path
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-add 1/AAA/BCB/CCC/a.txt
-add 1/AAA/ZAW/A/b/c/a_file.txt
-add 1/AAA/ZAW/D/e/f/b_file.txt
-add 2/AAA/BBB/CZC/a.txt
-add 3/AAA/BBB/CCC/a.txt
-add 4/AAA/BBB/CCC/a.txt
-add path1/AAA/BCB/CCC/a.txt
-add path1/AAA/ZAW/A/b/c/a_file.txt
-add path1/AAA/ZAW/D/e/f/b_file.txt
-add path2/AAA/BCB/CCC/a.txt
-add path2/AAA/ZAW/A/b/c/a_file.txt
-add path2/AAA/ZAW/D/e/f/b_file.txt
+add 1/AAA/BCB/CCC/a\.txt
+add 1/AAA/ZAW/A/b/c/a_file\.txt
+add 1/AAA/ZAW/D/e/f/b_file\.txt
+add 2/AAA/BBB/CZC/a\.txt
+add 3/AAA/BBB/CCC/a\.txt
+add 4/AAA/BBB/CCC/a\.txt
+add path1/AAA/BCB/CCC/a\.txt
+add path1/AAA/ZAW/A/b/c/a_file\.txt
+add path1/AAA/ZAW/D/e/f/b_file\.txt
+add path2/AAA/BCB/CCC/a\.txt
+add path2/AAA/ZAW/A/b/c/a_file\.txt
+add path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+

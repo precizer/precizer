@@ -1,34 +1,34 @@
-\A-TESTING:argument:database=database3.db
--TESTING:argument:db_file_name=database3.db
+\A-TESTING:argument:database=database3\\.db
+-TESTING:argument:db_file_name=database3\\.db
 -TESTING:argument:maxdepth=3
-\+TESTING:argument:database=database4.db
-\+TESTING:argument:db_file_name=database4.db
--TESTING:Primary database file name: database3.db
--TESTING:Primary database file path: database3.db
-\+TESTING:Primary database file name: database4.db
-\+TESTING:Primary database file path: database4.db
--TESTING:Verify that the path database3.db exists
--TESTING:The path database3.db doesn't exist or it is not a file
-\+TESTING:Verify that the path database4.db exists
-\+TESTING:The path database4.db doesn't exist or it is not a file
--TESTING:Successfully opened database database3.db
-\+TESTING:Successfully opened database database4.db
--TESTING:The primary database named database3.db is ready for operations
-\+TESTING:The primary database named database4.db is ready for operations
+\+TESTING:argument:database=database4\\.db
+\+TESTING:argument:db_file_name=database4\\.db
+-TESTING:Primary database file name: database3\\.db
+-TESTING:Primary database file path: database3\\.db
+\+TESTING:Primary database file name: database4\\.db
+\+TESTING:Primary database file path: database4\\.db
+-TESTING:Verify that the path database3\\.db exists
+-TESTING:The path database3\\.db doesn't exist or it is not a file
+\+TESTING:Verify that the path database4\\.db exists
+\+TESTING:The path database4\\.db doesn't exist or it is not a file
+-TESTING:Successfully opened database database3\\.db
+\+TESTING:Successfully opened database database4\\.db
+-TESTING:The primary database named database3\\.db is ready for operations
+\+TESTING:The primary database named database4\\.db is ready for operations
 -TESTING:Recursion depth limited to: 3
--TESTING:\Q(?:\x1B\[[0-9;]*m)*\EItems reported during this traversal against the DB database3.db:\Q(?:\x1B\[[0-9;]*m)*\E
-\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EItems reported during this traversal against the DB database4.db:\Q(?:\x1B\[[0-9;]*m)*\E
-\+add 1/1/2/3/4/ddd.txt
-\+add 1/1/2/3/ccc.txt
-\+add 1/2/3/4/5/eee.txt
-\+add 1/2/3/4/ddd.txt
-\+add 2/1/2/3/4/ddd.txt
-\+add 2/1/2/3/ccc.txt
-\+add 2/2/3/4/5/eee.txt
-\+add 2/2/3/4/ddd.txt
-\+add 3/1/2/3/4/ddd.txt
-\+add 3/1/2/3/ccc.txt
-\+add 3/2/3/4/5/eee.txt
-\+add 3/2/3/4/ddd.txt
--TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database3.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E
-\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database4.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E\Z
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EItems reported during this traversal against the DB database3\\.db:\Q(?:\x1B\[[0-9;]*m)*\E
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EItems reported during this traversal against the DB database4\\.db:\Q(?:\x1B\[[0-9;]*m)*\E
+\+add 1/1/2/3/4/ddd\\.txt
+\+add 1/1/2/3/ccc\\.txt
+\+add 1/2/3/4/5/eee\\.txt
+\+add 1/2/3/4/ddd\\.txt
+\+add 2/1/2/3/4/ddd\\.txt
+\+add 2/1/2/3/ccc\\.txt
+\+add 2/2/3/4/5/eee\\.txt
+\+add 2/2/3/4/ddd\\.txt
+\+add 3/1/2/3/4/ddd\\.txt
+\+add 3/1/2/3/ccc\\.txt
+\+add 3/2/3/4/5/eee\\.txt
+\+add 3/2/3/4/ddd\\.txt
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database3\\.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database4\\.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E\Z

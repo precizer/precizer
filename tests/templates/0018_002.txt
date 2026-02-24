@@ -1,8 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=/.+/tests/examples/levels
-TESTING:argument:database=database3.db
-TESTING:argument:db_file_name=database3.db
+TESTING:argument:database=database3\.db
+TESTING:argument:db_file_name=database3\.db
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
@@ -14,46 +14,46 @@ TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: /.*$
-TESTING:Primary database file name: database3.db
-TESTING:Primary database file path: database3.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path database3.db exists
-TESTING:The path database3.db is exists and it is a file
+TESTING:Primary database file name: database3\.db
+TESTING:Primary database file path: database3\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database3\.db exists
+TESTING:The path database3\.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting database file database3.db integrity check…
+TESTING:Starting database file database3\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database database3.db has been verified and is in good condition
+TESTING:Database database3\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
-TESTING:The database3.db database file is version 4
-TESTING:The database database3.db is on version 4 and does not require any upgrades
-TESTING:Successfully opened database database3.db
+TESTING:The database3\.db database file is version 4
+TESTING:The database database3\.db is on version 4 and does not require any upgrades
+TESTING:Successfully opened database database3\.db
 TESTING:The primary database and tables do not require initialization
-TESTING:The primary database named database3.db is ready for operations
+TESTING:The primary database named database3\.db is ready for operations
 TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The database database3.db has already been created previously
+TESTING:The database database3\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:Update mode enabled for DB database3.db
+TESTING:Update mode enabled for DB database3\.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database3.db:(?:\x1B\[[0-9;]*m)*
-add 1/1/2/3/4/ddd.txt
-add 1/1/2/3/ccc.txt
-add 1/2/3/4/5/eee.txt
-add 1/2/3/4/ddd.txt
-add 2/1/2/3/4/ddd.txt
-add 2/1/2/3/ccc.txt
-add 2/2/3/4/5/eee.txt
-add 2/2/3/4/ddd.txt
-add 3/1/2/3/4/ddd.txt
-add 3/1/2/3/ccc.txt
-add 3/2/3/4/5/eee.txt
-add 3/2/3/4/ddd.txt
+TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database3\.db:(?:\x1B\[[0-9;]*m)*
+add 1/1/2/3/4/ddd\.txt
+add 1/1/2/3/ccc\.txt
+add 1/2/3/4/5/eee\.txt
+add 1/2/3/4/ddd\.txt
+add 2/1/2/3/4/ddd\.txt
+add 2/1/2/3/ccc\.txt
+add 2/2/3/4/5/eee\.txt
+add 2/2/3/4/ddd\.txt
+add 3/1/2/3/4/ddd\.txt
+add 3/1/2/3/ccc\.txt
+add 3/2/3/4/5/eee\.txt
+add 3/2/3/4/ddd\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
@@ -63,6 +63,6 @@ TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The database file database3.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*The database file database3\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

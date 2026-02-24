@@ -1,8 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=%DB_NAME%, 0015_database_v1.db
-TESTING:argument:db_file_paths=%DB_NAME%, 0015_database_v1.db
-TESTING:argument:db_file_names=%DB_NAME%, 0015_database_v1.db
+TESTING:argument:paths=%DB_NAME%, 0015_database_v1\.db
+TESTING:argument:db_file_paths=%DB_NAME%, 0015_database_v1\.db
+TESTING:argument:db_file_names=%DB_NAME%, 0015_database_v1\.db
 TESTING:argument:update=yes
 TESTING:argument:compare=yes
 TESTING:Argument parsing is complete
@@ -14,9 +14,9 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
@@ -24,7 +24,7 @@ TESTING:Successfully opened database DisposableDB
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:Database initialization process completed
-TESTING:The comparison of %DB_NAME% and 0015_database_v1.db databases is starting…
+TESTING:The comparison of %DB_NAME% and 0015_database_v1\.db databases is starting…
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% is exists and it is a file
 TESTING:Starting database file %DB_NAME% integrity check…
@@ -33,14 +33,14 @@ TESTING:Database %DB_NAME% has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The %DB_NAME% database file is version 4
 TESTING:The database %DB_NAME% is on version 4 and does not require any upgrades
-TESTING:Verify that the path 0015_database_v1.db exists
-TESTING:The path 0015_database_v1.db is exists and it is a file
-TESTING:Starting database file 0015_database_v1.db integrity check…
+TESTING:Verify that the path 0015_database_v1\.db exists
+TESTING:The path 0015_database_v1\.db is exists and it is a file
+TESTING:Starting database file 0015_database_v1\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database 0015_database_v1.db has been verified and is in good condition
+TESTING:Database 0015_database_v1\.db has been verified and is in good condition
 TESTING:Version number 1 found in database
-TESTING:The 0015_database_v1.db database file is version 1
-TESTING:The database 0015_database_v1.db file has an outdated version 1 and requires updating to the version 4
+TESTING:The 0015_database_v1\.db database file is version 1
+TESTING:The database 0015_database_v1\.db file has an outdated version 1 and requires updating to the version 4
 TESTING:Warning! The update will be performed in transaction mode for database safety
 TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
 TESTING:Migration from version 1 to version 4 started
@@ -53,10 +53,10 @@ TESTING:The database has been successfully upgraded
 TESTING:Start vacuuming…
 TESTING:The database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*All files are identical against %DB_NAME% and 0015_database_v1.db(?:\x1B\[[0-9;]*m)*
-TESTING:(?:\x1B\[[0-9;]*m)*All SHA512 checksums of files are identical against %DB_NAME% and 0015_database_v1.db(?:\x1B\[[0-9;]*m)*
-TESTING:(?:\x1B\[[0-9;]*m)*The databases %DB_NAME% and 0015_database_v1.db are absolutely equal(?:\x1B\[[0-9;]*m)*
-TESTING:Comparison of %DB_NAME% and 0015_database_v1.db databases is complete
+TESTING:(?:\x1B\[[0-9;]*m)*All files are identical against %DB_NAME% and 0015_database_v1\.db(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*All SHA512 checksums of files are identical against %DB_NAME% and 0015_database_v1\.db(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*The databases %DB_NAME% and 0015_database_v1\.db are absolutely equal(?:\x1B\[[0-9;]*m)*
+TESTING:Comparison of %DB_NAME% and 0015_database_v1\.db databases is complete
 TESTING:Comparison mode is enabled. The primary database verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:The database connection has been closed

@@ -4,6 +4,7 @@ TESTING:argument:paths=tests/examples/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:update=yes
+TESTING:argument:dry-run=yes
 TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
@@ -21,7 +22,7 @@ TESTING:Verify that the path \. exists
 TESTING:The path \. is exists and it is a directory
 TESTING:Verify that the path database1\.db exists
 TESTING:The path database1\.db is exists and it is a file
-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting database file database1\.db integrity check…
@@ -35,14 +36,19 @@ TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named database1\.db is ready for operations
 TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
-TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:Database comparison mode is not enabled\. Skipping comparison
 TESTING:The database database1\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Searching for files that no longer exist on the file system…
+TESTING:Dry Run mode is enabled. The primary database must not be modified
 TESTING:Missing file search completed
 TESTING:The database connection has been closed
-TESTING:No changes were made. The primary database doesn't require vacuuming
-TESTING:(?:\x1B\[[0-9;]*m)*The database file database1\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed as expected
-TESTING:Exit status » SUCCESS\Z
+TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
+TESTING:Test hook: database file timestamps were bumped for database1\.db
+ERROR:Internal error: The database file database1\.db has changed, but according to the global variable tracking modification status, this should not have happened!
+ERROR:Database file details: [^\r\n]+
+TESTING:Returned db_check_changes:\d+ status: WARNING
+TESTING:Returned status_of_changes:\d+ status: WARNING
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » WARNING\Z
