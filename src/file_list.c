@@ -65,20 +65,20 @@ static Return match_include_ignore(
  */
 Return file_list(TraversalSummary *summary)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
 	// Don't do anything
 	if(config->compare == true)
 	{
-		return(status);
+		provide(status);
 	}
 
 	if(config->progress == false && summary->stats_only_pass == true)
 	{
 		// Don't do anything
-		return(status);
+		provide(status);
 	}
 
 	// Flags that reflect the presence of any changes
@@ -177,7 +177,7 @@ Return file_list(TraversalSummary *summary)
 		}
 	}
 
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 	if(summary->stats_only_pass == false)
 	{
 		signal_wait_at_point(1U);
@@ -563,7 +563,7 @@ Return file_list(TraversalSummary *summary)
 							&offset,
 							summary,
 							&mdContext,
-#ifdef TESTITALL_RUN_IN_BACKGROUND
+#ifdef TESTITALL_TEST_HOOKS
 							stat.st_size,
 #endif
 							&read_error,

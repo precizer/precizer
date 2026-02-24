@@ -13,7 +13,7 @@
  */
 Return db_test(const char *db_file_path)
 {
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to provide() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 

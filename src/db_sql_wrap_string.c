@@ -13,7 +13,7 @@ Return db_sql_wrap_string(
 	const char *source)
 {
 	/** Return status
-	 *  The status that will be passed to return() before exiting
+	 *  The status that will be passed to provide() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
@@ -115,5 +115,5 @@ Return db_sql_wrap_string(
 		}
 	}
 
-	return(status);
+	provide(status);
 }
