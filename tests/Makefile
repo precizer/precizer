@@ -122,7 +122,7 @@ COV_DYNLIB = -Wl,-rpath,@executable_path/$(COV_LIBDIR),-rpath,@executable_path/.
 endif
 
 COV_PRZROBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(PRZROBJS)))
-COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage
+COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS += -lgcov --coverage
 
 #
@@ -162,8 +162,7 @@ DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGI
 ifeq ($(UNAME_S),Darwin)
 DBG_DYNLIB = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
 endif
-
-DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
+DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL_TEST_HOOKS
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge gcc-analyzer cppcheck print-%
@@ -183,7 +182,7 @@ run: sanitize
 precizer-coverage:
 	@$(MAKE) -s -C ../ precizer-coverage
 
-coverage: coverage-html
+coverage: hugetestfile coverage-html
 
 $(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage
 	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) $(WRAPFLAGS) -o $(COV_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
@@ -200,7 +199,7 @@ $(COV_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 $(COV_OBJDIR):
 	@mkdir -p "$(COV_OBJDIR)"
 
-coverage-report: precizer-coverage $(COV_EXE)
+coverage-report: hugetestfile precizer-coverage $(COV_EXE)
 	@echo "Generating coverage report..."
 	./$(COV_EXE)
 	@echo "Coverage run finished. Inspect .gcda/.gcno outputs for details"
@@ -281,8 +280,10 @@ format:
 	done
 	@echo "All files formatted."
 
-clean:
+clean-hugetestfile:
 	@rm -f $(HUGETESTFILE)
+
+clean: clean-hugetestfile
 	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(COV_EXE)
 	@rm -f $(DBG_OBJS) $(DBG_PRZROBJS)
 	@rm -f $(SNTZ_OBJS) $(SNTZ_PRZROBJS)
@@ -304,7 +305,7 @@ clean:
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
 	@echo $(EXE) cleared
 
-purge:
+purge: clean-hugetestfile
 	@$(MAKE) -s -C ../ purge
 
 # Optional preprocessor files
