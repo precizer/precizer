@@ -42,10 +42,10 @@ void show_elapsed(const TraversalSummary *summary)
 	}
 
 	char total_runtime_string[50] = {0};
-	(void)form_date_r(total_runtime_ns,total_runtime_string,sizeof(total_runtime_string));
+	(void)form_date_r(total_runtime_ns,FULL_VIEW,total_runtime_string,sizeof(total_runtime_string));
 
 	char elapsed_string[50] = {0};
-	(void)form_date_r(elapsed_ns,elapsed_string,sizeof(elapsed_string));
+	(void)form_date_r(elapsed_ns,FULL_VIEW,elapsed_string,sizeof(elapsed_string));
 
 	char hashed_string[50] = {0};
 	const char *hashed = rate_na;
