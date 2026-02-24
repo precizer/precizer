@@ -1,6 +1,7 @@
 #define PCRE2_STATIC
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
+#include <stdarg.h>
 
 #include "testitall.h"
 
@@ -188,5 +189,5 @@ Return match_pattern(
 	free(diff);
 #endif
 
-	return(status);
+	deliver(status);
 }

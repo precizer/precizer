@@ -31,7 +31,7 @@ Return match_file_template(
 		return FAILURE;
 	}
 
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to deliver() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -61,5 +61,5 @@ Return match_file_template(
 	call(del(result));
 	call(del(pattern));
 
-	return(status);
+	deliver(status);
 }

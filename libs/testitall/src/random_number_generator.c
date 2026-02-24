@@ -25,7 +25,7 @@ Return random_number_generator(
 	if(fp == NULL)
 	{
 		echo(STDERR,"Can't open /dev/urandom\n");
-		provide(FAILURE);
+		deliver(FAILURE);
 	}
 
 	uint64_t random_value;
@@ -60,5 +60,5 @@ Return random_number_generator(
 	printf("random:%zu\n",*random_number);
 	#endif
 
-	provide(status);
+	deliver(status);
 }

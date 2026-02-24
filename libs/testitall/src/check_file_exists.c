@@ -25,7 +25,7 @@ Return check_file_exists(
 
 	if(NULL == filename)
 	{
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	if(0 == access(filename,F_OK))
@@ -33,5 +33,5 @@ Return check_file_exists(
 		*file_exists = true;
 	}
 
-	return(status);
+	deliver(status);
 }

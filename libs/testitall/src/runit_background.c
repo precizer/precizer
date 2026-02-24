@@ -155,7 +155,7 @@ static Return runit_wait_env_snapshot(
 		}
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -176,7 +176,7 @@ static Return runit_wait_env_set_numeric(
 		status = FAILURE;
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -205,7 +205,7 @@ static Return runit_wait_env_restore_one(
 		}
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -244,7 +244,7 @@ static Return runit_wait_env_set(
 		run(runit_wait_env_set_numeric(runit_wait_env_names[i],target_value));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -263,7 +263,7 @@ static Return runit_wait_env_restore(
 			state->had_value[i]));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -478,5 +478,5 @@ Return runit_background(
 
 	run(del(STDERR));
 
-	provide(status);
+	deliver(status);
 }

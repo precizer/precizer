@@ -37,5 +37,5 @@ Return get_file_stat(
 		}
 	}
 
-	return(status);
+	deliver(status);
 }

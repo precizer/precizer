@@ -151,5 +151,5 @@ Return replace_placeholder(
 		pcre2_code_free(re);
 	}
 
-	return(status);
+	deliver(status);
 }

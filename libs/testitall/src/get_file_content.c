@@ -135,5 +135,5 @@ Return get_file_content(
 		del(pattern);
 	}
 
-	return(status);
+	deliver(status);
 }

@@ -22,7 +22,7 @@ Return execute_and_set_variable(
 		return FAILURE;
 	}
 
-	/// The status that will be passed to return() before exiting.
+	/// The status that will be passed to deliver() before exiting.
 	/// By default, the function worked without errors.
 	Return status = SUCCESS;
 
@@ -51,5 +51,5 @@ Return execute_and_set_variable(
 	// Cleanup allocated memory
 	call(del(result));
 
-	return(status);
+	deliver(status);
 }

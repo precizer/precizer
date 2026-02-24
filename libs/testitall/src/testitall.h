@@ -87,7 +87,7 @@
 	} else { \
 		echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
 	} \
-	return(status); \
+	deliver(status); \
 
 // Global buffers for capturing output streams.
 extern memory _STDOUT;
@@ -235,14 +235,14 @@ Return extract_current_executable_directory_name(
 #define SUTEDONE \
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
-	printf(WHITE "Total execution time: %s\n" RESET,form_date(_time_spent)); \
+	printf(WHITE "Total execution time: %s\n" RESET,form_date(_time_spent,FULL_VIEW)); \
 	if(TRIUMPH & status) \
 	{ \
 		printf(WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
-		return(COMPLETED); \
+		deliver(COMPLETED); \
 	} else { \
 		printf(WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
-		return((int)status); \
+		deliver(status); \
 	}
 
 // Initializes a test. Defines the return value as SUCCESS or FAILURE.
@@ -258,7 +258,7 @@ Return extract_current_executable_directory_name(
 	if(env_var != NULL && strncasecmp(env_var,compare_string,strlen(compare_string)) == 0) \
 	{ \
 		echo(EXTEND,BOLDYELLOW "↯" BOLDWHITE " skipped" RESET); \
-		return(SKIPPED); \
+		deliver(SKIPPED); \
 	}
 
 Return testitall(

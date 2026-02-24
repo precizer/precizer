@@ -94,7 +94,7 @@ static Return runit_internal_enter(
 		run(runit_capture_apply_redirect(capture));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -150,7 +150,7 @@ static Return runit_internal_leave(struct runit_internal_guard *guard)
 	guard->changed_directory = false;
 	guard->stdio_saved = false;
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -282,5 +282,5 @@ Return runit(
 
 	run(del(STDERR));
 
-	provide(status);
+	deliver(status);
 }

@@ -32,7 +32,7 @@ Return extract_current_executable_directory_name(
 	size_t environment_size)
 {
 	/** Return status
-	 *  The status that will be passed to provide() before exiting
+	 *  The status that will be passed to deliver() before exiting
 	 *  By default, the function worked without errors
 	 */
 	Return status = SUCCESS;
@@ -155,5 +155,5 @@ Return extract_current_executable_directory_name(
 		}
 	}
 
-	provide(status);
+	deliver(status);
 }

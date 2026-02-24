@@ -48,7 +48,7 @@ Return runit_reset_result_buffers(
 		call(del(stderr_result));
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -70,7 +70,7 @@ Return runit_validate_runtime_mode(enum run_mode mode)
 		status = FAILURE;
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 /**
@@ -202,7 +202,7 @@ Return runit_call_prepare(
 		}
 	}
 
-	provide(status);
+	deliver(status);
 }
 
 Return runit_prepare_call_and_capture(
@@ -230,7 +230,7 @@ Return runit_prepare_call_and_capture(
 		expected_return_code,
 		buffer_policy));
 
-	provide(status);
+	deliver(status);
 }
 
 void runit_release_call_and_capture(
@@ -262,5 +262,5 @@ Return runit_wait_child(
 		status = FAILURE;
 	}
 
-	provide(status);
+	deliver(status);
 }
