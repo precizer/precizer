@@ -458,7 +458,7 @@ endif
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
-	@echo "$< compiled with portable release flags"
+	@echo "$< compiled with portable flags"
 
 $(PRTB_OBJDIR):
 	@mkdir -p $(PRTB_OBJDIR)
