@@ -69,5 +69,4 @@ int sha512_update(
 	SHA512_Context *,
 	const unsigned char *,
 	size_t);
-
 #endif // SHA512_H

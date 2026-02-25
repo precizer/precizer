@@ -637,5 +637,4 @@ void FREE_AND_RESET(void **pointer_handle);
  *   (`data = NULL`, `length = 0`).
  * - Always go through the helper macros so pointer conversions stay explicit and safe.
  */
-
 #endif /* MEM_H */
