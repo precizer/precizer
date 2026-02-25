@@ -40,9 +40,9 @@ TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB %DB_NAME%
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-add AAA/BBB/CCC/a\.txt
-add AAA/BBB/uuu\.txt
-add AAA/tttt\.txt
+new AAA/BBB/CCC/a\.txt
+new AAA/BBB/uuu\.txt
+new AAA/tttt\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed

@@ -46,7 +46,7 @@ TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
 ignore directory 1/AAA/ZAW/A
 ignore directory 1/AAA/ZAW/D
-add 2/AAA/BBB/CZC/b\.txt
+new 2/AAA/BBB/CZC/b\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Dry Run mode is enabled. The primary database must not be modified
