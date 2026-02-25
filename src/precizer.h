@@ -746,6 +746,8 @@ Return parse_arguments(
 	const int,
 	char **);
 
+void about(void);
+
 void slog_show_impl(
 	const char *,
 	const char *,
