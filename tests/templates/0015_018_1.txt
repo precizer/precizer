@@ -1,0 +1,36 @@
+\ATESTING:Configuration initialized
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:database=0015_database_future_version\.db
+TESTING:argument:db_file_name=0015_database_future_version\.db
+TESTING:Argument parsing is complete
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/examples/diffs/diff1 exists
+TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Paths detected
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: 0015_database_future_version\.db
+TESTING:Primary database file path: 0015_database_future_version\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path 0015_database_future_version\.db exists
+TESTING:The path 0015_database_future_version\.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Starting database file 0015_database_future_version\.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database 0015_database_future_version\.db has been verified and is in good condition
+TESTING:Version number \d+ found in database
+TESTING:The 0015_database_future_version\.db database file is version \d+
+ERROR:The database 0015_database_future_version\.db is designed to work with a newer version of the application and cannot be used with the old one\. Please update precizer application to the last version
+TESTING:Returned db_check_version:\d+ status: WARNING
+TESTING:Returned db_test:\d+ status: WARNING
+TESTING:Returned db_primary_file_test:\d+ status: WARNING
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » WARNING\Z
