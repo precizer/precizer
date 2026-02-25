@@ -1,8 +1,8 @@
 \ATESTING:Configuration initialized
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=tests/examples/huge
-TESTING:argument:database=huge_interrupt_resume\.db
-TESTING:argument:db_file_name=huge_interrupt_resume\.db
+TESTING:argument:database=0033_interrupt_resume\.db
+TESTING:argument:db_file_name=0033_interrupt_resume\.db
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Argument parsing is complete
@@ -15,36 +15,36 @@ TESTING:Set signal SIGINT OK:pid:[0-9]+
 TESTING:Set signal SIGTERM OK:pid:[0-9]+
 TESTING:Signals initialized
 TESTING:Current directory: /tmp/precizer\.[^\n]+
-TESTING:Primary database file name: huge_interrupt_resume\.db
-TESTING:Primary database file path: huge_interrupt_resume\.db
+TESTING:Primary database file name: 0033_interrupt_resume\.db
+TESTING:Primary database file path: 0033_interrupt_resume\.db
 TESTING:Finished determining database name
 TESTING:Verify that the path \. exists
 TESTING:The path \. is exists and it is a directory
-TESTING:Verify that the path huge_interrupt_resume\.db exists
-TESTING:The path huge_interrupt_resume\.db is exists and it is a file
+TESTING:Verify that the path 0033_interrupt_resume\.db exists
+TESTING:The path 0033_interrupt_resume\.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting database file huge_interrupt_resume\.db integrity check…
+TESTING:Starting database file 0033_interrupt_resume\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database huge_interrupt_resume\.db has been verified and is in good condition
+TESTING:Database 0033_interrupt_resume\.db has been verified and is in good condition
 TESTING:Version number [0-9]+ found in database
-TESTING:The huge_interrupt_resume\.db database file is version [0-9]+
-TESTING:The database huge_interrupt_resume\.db is on version [0-9]+ and does not require any upgrades
-TESTING:Successfully opened database huge_interrupt_resume\.db
+TESTING:The 0033_interrupt_resume\.db database file is version [0-9]+
+TESTING:The database 0033_interrupt_resume\.db is on version [0-9]+ and does not require any upgrades
+TESTING:Successfully opened database 0033_interrupt_resume\.db
 TESTING:The primary database and tables do not require initialization
-TESTING:The primary database named huge_interrupt_resume\.db is ready for operations
+TESTING:The primary database named 0033_interrupt_resume\.db is ready for operations
 TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled\. Skipping comparison
-TESTING:The database huge_interrupt_resume\.db has already been created previously
+TESTING:The database 0033_interrupt_resume\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:File system traversal initiated to calculate file count and storage usage
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:Update mode enabled for DB huge_interrupt_resume\.db
+TESTING:Update mode enabled for DB 0033_interrupt_resume\.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB huge_interrupt_resume\.db:(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0033_interrupt_resume\.db:(?:\x1B\[[0-9;]*m)*
 continue to rehash from .+ hugetestfile
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
@@ -55,6 +55,6 @@ TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The database file huge_interrupt_resume\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*The database file 0033_interrupt_resume\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z
