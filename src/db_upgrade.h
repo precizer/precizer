@@ -23,5 +23,4 @@ typedef struct {
 	time_t ctim_tv_sec;
 	long ctim_tv_nsec;
 } CmpctStat_v1;
-
 #endif // _DB_UPGRADE_H

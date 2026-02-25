@@ -222,7 +222,6 @@ Return file_list(TraversalSummary *summary)
 			remove_trailing_slash(runtime_root);
 
 #if 0 // Old multiPATH solution
-
 			// If several paths were passed as arguments,
 			// then the counting of the path prefix index
 			// will start from zero
