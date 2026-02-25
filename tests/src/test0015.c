@@ -329,6 +329,58 @@ static Return read_db_version_from_metadata(
 	return(status);
 }
 
+static Return set_db_version_in_metadata(
+	const char *db_filename,
+	const int  db_version)
+{
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "UPDATE metadata SET db_version = ?1;";
+
+	if(db_filename == NULL || db_version < 0)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READWRITE,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_int(stmt,1,db_version))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_DONE != sqlite3_step(stmt))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && sqlite3_changes(db) < 1)
+	{
+		status = FAILURE;
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
 static Return read_stat_blob_by_row_id(
 	const char          *db_filename,
 	const sqlite3_int64 row_id,
@@ -1337,6 +1389,59 @@ Return test0015_17_rollback_on_sqlite_failure(void)
 }
 
 /**
+ * Generate a fresh database, force future metadata version and verify warning path
+ */
+Return test0015_18_future_version_warning(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *db_filename = "0015_database_future_version.db";
+	const char *command = "rm -f \"${TMPDIR}/0015_database_future_version.db\"";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *arguments = "--database=0015_database_future_version.db "
+	        "tests/examples/diffs/diff1";
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == set_db_version_in_metadata(db_filename,CURRENT_DB_VERSION + 1));
+
+	int db_version = 0;
+	ASSERT(SUCCESS == read_db_version_from_metadata(db_filename,&db_version));
+	ASSERT(db_version == CURRENT_DB_VERSION + 1);
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	const char *filename = "templates/0015_018_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == read_db_version_from_metadata(db_filename,&db_version));
+	ASSERT(db_version == CURRENT_DB_VERSION + 1);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	filename = "templates/0015_018_2.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(result);
+	del(pattern);
+
+	RETURN_STATUS;
+}
+
+/**
  * Testing scenario 15
  *
  * Database upgrade testing:
@@ -1347,6 +1452,7 @@ Return test0015_17_rollback_on_sqlite_failure(void)
  * - Validate UTF-8 database names and checksum compatibility against a legacy v4 database
  * - Verify upgrade resilience for corrupted stat blobs in legacy DB v0 and v3
  * - Regression-check rollback behavior on forced SQLite failure during migration
+ * - Generate a fresh DB and verify warning behavior for future DB version
  */
 Return test0015(void)
 {
@@ -1370,6 +1476,7 @@ Return test0015(void)
 	TEST(test0015_15_corrupt_row_v0_upgrade_continues,"Corrupted v0 stat blob does not break the full upgrade…");
 	TEST(test0015_16_corrupt_row_v3_upgrade_continues,"Corrupted v3 stat blob does not break the full upgrade…");
 	TEST(test0015_17_rollback_on_sqlite_failure,"Forced SQLite failure triggers rollback during 3->4 migration…");
+	TEST(test0015_18_future_version_warning,"Fresh DB with forced future version returns warning and stays unchanged…");
 
 	RETURN_STATUS;
 }

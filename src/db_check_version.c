@@ -59,7 +59,7 @@ Return db_check_version(
 			slog(ERROR,"The database %s is designed to work with a newer version "
 				"of the application and cannot be used with the old one. "
 				"Please update %s application to the last version\n",db_file_name,APP_NAME);
-			status = FAILURE;
+			status = WARNING;
 		} else {
 			slog(TRACE,"The database %s is on version %d and does not require any upgrades\n",db_file_name,db_version);
 		}
