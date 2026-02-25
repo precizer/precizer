@@ -1,6 +1,6 @@
 /******************************************************************************
 ** This file is an amalgamation of many separate C source files from SQLite
-** version 3.51.0.  By combining all the individual C code files into this
+** version 3.51.2.  By combining all the individual C code files into this
 ** single large file, the entire code can be compiled as a single translation
 ** unit.  This allows many compilers to do optimizations that would not be
 ** possible if the files were compiled separately.  Performance improvements
@@ -18,7 +18,7 @@
 ** separate file. This file contains only code for the core SQLite library.
 **
 ** The content in this amalgamation comes from Fossil check-in
-** fb2c931ae597f8d00a37574ff67aeed3eced with changes in files:
+** b270f8339eb13b504d0b2ba154ebca966b7d with changes in files:
 **
 **    
 */
@@ -467,12 +467,12 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.51.0"
-#define SQLITE_VERSION_NUMBER 3051000
-#define SQLITE_SOURCE_ID      "2025-11-04 19:38:17 fb2c931ae597f8d00a37574ff67aeed3eced4e5547f9120744ae4bfa8e74527b"
-#define SQLITE_SCM_BRANCH     "trunk"
-#define SQLITE_SCM_TAGS       "release major-release version-3.51.0"
-#define SQLITE_SCM_DATETIME   "2025-11-04T19:38:17.314Z"
+#define SQLITE_VERSION        "3.51.2"
+#define SQLITE_VERSION_NUMBER 3051002
+#define SQLITE_SOURCE_ID      "2026-01-09 17:27:48 b270f8339eb13b504d0b2ba154ebca966b7dde08e40c3ed7d559749818cb2075"
+#define SQLITE_SCM_BRANCH     "branch-3.51"
+#define SQLITE_SCM_TAGS       "release version-3.51.2"
+#define SQLITE_SCM_DATETIME   "2026-01-09T17:27:48.405Z"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -10747,7 +10747,7 @@ SQLITE_API int sqlite3_vtab_in(sqlite3_index_info*, int iCons, int bHandle);
 ** &nbsp;  ){
 ** &nbsp;    // do something with pVal
 ** &nbsp;  }
-** &nbsp;  if( rc!=SQLITE_OK ){
+** &nbsp;  if( rc!=SQLITE_DONE ){
 ** &nbsp;    // an error has occurred
 ** &nbsp;  }
 ** </pre></blockquote>)^
@@ -38004,6 +38004,7 @@ SQLITE_PRIVATE void *sqlite3HashInsert(Hash *pH, const char *pKey, void *data){
   return 0;
 }
 
+
 /************** End of hash.c ************************************************/
 /************** Begin file opcodes.c *****************************************/
 /* Automatically generated.  Do not edit */
@@ -41227,11 +41228,17 @@ static int unixLock(sqlite3_file *id, int eFileLock){
       pInode->nLock++;
       pInode->nShared = 1;
     }
-  }else if( (eFileLock==EXCLUSIVE_LOCK && pInode->nShared>1)
-         || unixIsSharingShmNode(pFile)
-  ){
+  }else if( eFileLock==EXCLUSIVE_LOCK && pInode->nShared>1 ){
     /* We are trying for an exclusive lock but another thread in this
     ** same process is still holding a shared lock. */
+    rc = SQLITE_BUSY;
+  }else if( unixIsSharingShmNode(pFile) ){
+    /* We are in WAL mode and attempting to delete the SHM and WAL
+    ** files due to closing the connection or changing out of WAL mode,
+    ** but another process still holds locks on the SHM file, thus
+    ** indicating that database locks have been broken, perhaps due
+    ** to a rogue close(open(dbFile)) or similar.
+    */
     rc = SQLITE_BUSY;
   }else{
     /* The request was for a RESERVED or EXCLUSIVE lock.  It is
@@ -43871,26 +43878,21 @@ static int unixFcntlExternalReader(unixFile *pFile, int *piOut){
 ** still not a disaster.
 */
 static int unixIsSharingShmNode(unixFile *pFile){
-  int rc;
   unixShmNode *pShmNode;
+  struct flock lock;
   if( pFile->pShm==0 ) return 0;
   if( pFile->ctrlFlags & UNIXFILE_EXCL ) return 0;
   pShmNode = pFile->pShm->pShmNode;
-  rc = 1;
-  unixEnterMutex();
-  if( ALWAYS(pShmNode->nRef==1) ){
-    struct flock lock;
-    lock.l_whence = SEEK_SET;
-    lock.l_start = UNIX_SHM_DMS;
-    lock.l_len = 1;
-    lock.l_type = F_WRLCK;
-    osFcntl(pShmNode->hShm, F_GETLK, &lock);
-    if( lock.l_type==F_UNLCK ){
-      rc = 0;
-    }
-  }
-  unixLeaveMutex();
-  return rc;
+#if SQLITE_ATOMIC_INTRINSICS
+  assert( AtomicLoad(&pShmNode->nRef)==1 );
+#endif
+  memset(&lock, 0, sizeof(lock));
+  lock.l_whence = SEEK_SET;
+  lock.l_start = UNIX_SHM_DMS;
+  lock.l_len = 1;
+  lock.l_type = F_WRLCK;
+  osFcntl(pShmNode->hShm, F_GETLK, &lock);
+  return (lock.l_type!=F_UNLCK);
 }
 
 /*
@@ -115315,9 +115317,22 @@ SQLITE_PRIVATE int sqlite3CodeSubselect(Parse *pParse, Expr *pExpr){
   pParse->nMem += nReg;
   if( pExpr->op==TK_SELECT ){
     dest.eDest = SRT_Mem;
-    dest.iSdst = dest.iSDParm;
+    if( (pSel->selFlags&SF_Distinct) && pSel->pLimit && pSel->pLimit->pRight ){
+      /* If there is both a DISTINCT and an OFFSET clause, then allocate
+      ** a separate dest.iSdst array for sqlite3Select() and other
+      ** routines to populate. In this case results will be copied over
+      ** into the dest.iSDParm array only after OFFSET processing. This
+      ** ensures that in the case where OFFSET excludes all rows, the
+      ** dest.iSDParm array is not left populated with the contents of the
+      ** last row visited - it should be all NULLs if all rows were
+      ** excluded by OFFSET.  */
+      dest.iSdst = pParse->nMem+1;
+      pParse->nMem += nReg;
+    }else{
+      dest.iSdst = dest.iSDParm;
+    }
     dest.nSdst = nReg;
-    sqlite3VdbeAddOp3(v, OP_Null, 0, dest.iSDParm, dest.iSDParm+nReg-1);
+    sqlite3VdbeAddOp3(v, OP_Null, 0, dest.iSDParm, pParse->nMem);
     VdbeComment((v, "Init subquery result"));
   }else{
     dest.eDest = SRT_Exists;
@@ -130655,6 +130670,7 @@ SQLITE_PRIVATE void sqlite3SchemaClear(void *p){
   for(pElem=sqliteHashFirst(&temp2); pElem; pElem=sqliteHashNext(pElem)){
     sqlite3DeleteTrigger(&xdb, (Trigger*)sqliteHashData(pElem));
   }
+
   sqlite3HashClear(&temp2);
   sqlite3HashInit(&pSchema->tblHash);
   for(pElem=sqliteHashFirst(&temp1); pElem; pElem=sqliteHashNext(pElem)){
@@ -148184,9 +148200,14 @@ static void selectInnerLoop(
         assert( nResultCol<=pDest->nSdst );
         pushOntoSorter(
             pParse, pSort, p, regResult, regOrig, nResultCol, nPrefixReg);
+        pDest->iSDParm = regResult;
       }else{
         assert( nResultCol==pDest->nSdst );
-        assert( regResult==iParm );
+        if( regResult!=iParm ){
+          /* This occurs in cases where the SELECT had both a DISTINCT and
+          ** an OFFSET clause.  */
+          sqlite3VdbeAddOp3(v, OP_Copy, regResult, iParm, nResultCol-1);
+        }
         /* The LIMIT clause will jump out of the loop for us */
       }
       break;
@@ -154201,12 +154222,24 @@ static SQLITE_NOINLINE void existsToJoin(
        && (pSub->selFlags & SF_Aggregate)==0
        && !pSub->pSrc->a[0].fg.isSubquery
        && pSub->pLimit==0
+       && pSub->pPrior==0
       ){
+        /* Before combining the sub-select with the parent, renumber the
+        ** cursor used by the subselect. This is because the EXISTS expression
+        ** might be a copy of another EXISTS expression from somewhere
+        ** else in the tree, and in this case it is important that it use
+        ** a unique cursor number.  */
+        sqlite3 *db = pParse->db;
+        int *aCsrMap = sqlite3DbMallocZero(db, (pParse->nTab+2)*sizeof(int));
+        if( aCsrMap==0 ) return;
+        aCsrMap[0] = (pParse->nTab+1);
+        renumberCursors(pParse, pSub, -1, aCsrMap);
+        sqlite3DbFree(db, aCsrMap);
+
         memset(pWhere, 0, sizeof(*pWhere));
         pWhere->op = TK_INTEGER;
         pWhere->u.iValue = 1;
         ExprSetProperty(pWhere, EP_IntValue);
-
         assert( p->pWhere!=0 );
         pSub->pSrc->a[0].fg.fromExists = 1;
         pSub->pSrc->a[0].fg.jointype |= JT_CROSS;
@@ -160976,9 +161009,12 @@ SQLITE_PRIVATE int sqlite3VtabEponymousTableInit(Parse *pParse, Module *pMod){
   addModuleArgument(pParse, pTab, sqlite3DbStrDup(db, pTab->zName));
   addModuleArgument(pParse, pTab, 0);
   addModuleArgument(pParse, pTab, sqlite3DbStrDup(db, pTab->zName));
+  db->nSchemaLock++;
   rc = vtabCallConstructor(db, pTab, pMod, pModule->xConnect, &zErr);
+  db->nSchemaLock--;
   if( rc ){
     sqlite3ErrorMsg(pParse, "%s", zErr);
+    pParse->rc = rc;
     sqlite3DbFree(db, zErr);
     sqlite3VtabEponymousTableClear(db, pMod);
   }
@@ -173996,6 +174032,9 @@ SQLITE_PRIVATE void sqlite3WhereEnd(WhereInfo *pWInfo){
   sqlite3 *db = pParse->db;
   int iEnd = sqlite3VdbeCurrentAddr(v);
   int nRJ = 0;
+#ifndef SQLITE_DISABLE_SKIPAHEAD_DISTINCT
+  int addrSeek = 0;
+#endif
 
   /* Generate loop termination code.
   */
@@ -174008,7 +174047,10 @@ SQLITE_PRIVATE void sqlite3WhereEnd(WhereInfo *pWInfo){
       ** the RIGHT JOIN table */
       WhereRightJoin *pRJ = pLevel->pRJ;
       sqlite3VdbeResolveLabel(v, pLevel->addrCont);
-      pLevel->addrCont = 0;
+      /* Replace addrCont with a new label that will never be used, just so
+      ** the subsequent call to resolve pLevel->addrCont will have something
+      ** to resolve. */
+      pLevel->addrCont = sqlite3VdbeMakeLabel(pParse);
       pRJ->endSubrtn = sqlite3VdbeCurrentAddr(v);
       sqlite3VdbeAddOp3(v, OP_Return, pRJ->regReturn, pRJ->addrSubrtn, 1);
       VdbeCoverage(v);
@@ -174017,7 +174059,6 @@ SQLITE_PRIVATE void sqlite3WhereEnd(WhereInfo *pWInfo){
     pLoop = pLevel->pWLoop;
     if( pLevel->op!=OP_Noop ){
 #ifndef SQLITE_DISABLE_SKIPAHEAD_DISTINCT
-      int addrSeek = 0;
       Index *pIdx;
       int n;
       if( pWInfo->eDistinct==WHERE_DISTINCT_ORDERED
@@ -174040,11 +174081,26 @@ SQLITE_PRIVATE void sqlite3WhereEnd(WhereInfo *pWInfo){
         sqlite3VdbeAddOp2(v, OP_Goto, 1, pLevel->p2);
       }
 #endif /* SQLITE_DISABLE_SKIPAHEAD_DISTINCT */
-      if( pTabList->a[pLevel->iFrom].fg.fromExists ){
-        sqlite3VdbeAddOp2(v, OP_Goto, 0, sqlite3VdbeCurrentAddr(v)+2);
+    }
+    if( pTabList->a[pLevel->iFrom].fg.fromExists && i==pWInfo->nLevel-1 ){
+      /* If the EXISTS-to-JOIN optimization was applied, then the EXISTS
+      ** loop(s) will be the inner-most loops of the join. There might be
+      ** multiple EXISTS loops, but they will all be nested, and the join
+      ** order will not have been changed by the query planner.  If the
+      ** inner-most EXISTS loop sees a single successful row, it should
+      ** break out of *all* EXISTS loops.  But only the inner-most of the
+      ** nested EXISTS loops should do this breakout. */
+      int nOuter = 0; /* Nr of outer EXISTS that this one is nested within */
+      while( nOuter<i ){
+        if( !pTabList->a[pLevel[-nOuter-1].iFrom].fg.fromExists ) break;
+        nOuter++;
       }
-      /* The common case: Advance to the next row */
-      if( pLevel->addrCont ) sqlite3VdbeResolveLabel(v, pLevel->addrCont);
+      testcase( nOuter>0 );
+      sqlite3VdbeAddOp2(v, OP_Goto, 0, pLevel[-nOuter].addrBrk);
+      VdbeComment((v, "EXISTS break"));
+    }
+    sqlite3VdbeResolveLabel(v, pLevel->addrCont);
+    if( pLevel->op!=OP_Noop ){
       sqlite3VdbeAddOp3(v, pLevel->op, pLevel->p1, pLevel->p2, pLevel->p3);
       sqlite3VdbeChangeP5(v, pLevel->p5);
       VdbeCoverage(v);
@@ -174057,10 +174113,11 @@ SQLITE_PRIVATE void sqlite3WhereEnd(WhereInfo *pWInfo){
         VdbeCoverage(v);
       }
 #ifndef SQLITE_DISABLE_SKIPAHEAD_DISTINCT
-      if( addrSeek ) sqlite3VdbeJumpHere(v, addrSeek);
+      if( addrSeek ){
+        sqlite3VdbeJumpHere(v, addrSeek);
+        addrSeek = 0;
+      }
 #endif
-    }else if( pLevel->addrCont ){
-      sqlite3VdbeResolveLabel(v, pLevel->addrCont);
     }
     if( (pLoop->wsFlags & WHERE_IN_ABLE)!=0 && pLevel->u.in.nIn>0 ){
       struct InLoop *pIn;
@@ -186225,6 +186282,7 @@ SQLITE_PRIVATE void sqlite3LeaveMutexAndCloseZombie(sqlite3 *db){
   /* Clear the TEMP schema separately and last */
   if( db->aDb[1].pSchema ){
     sqlite3SchemaClear(db->aDb[1].pSchema);
+    assert( db->aDb[1].pSchema->trigHash.count==0 );
   }
   sqlite3VtabUnlockList(db);
 
@@ -187553,7 +187611,7 @@ SQLITE_API const char *sqlite3_errmsg(sqlite3 *db){
 */
 SQLITE_API int sqlite3_set_errmsg(sqlite3 *db, int errcode, const char *zMsg){
   int rc = SQLITE_OK;
-  if( !sqlite3SafetyCheckSickOrOk(db) ){
+  if( !sqlite3SafetyCheckOk(db) ){
     return SQLITE_MISUSE_BKPT;
   }
   sqlite3_mutex_enter(db->mutex);
@@ -219433,7 +219491,7 @@ static void rtreenode(sqlite3_context *ctx, int nArg, sqlite3_value **apArg){
   if( node.zData==0 ) return;
   nData = sqlite3_value_bytes(apArg[1]);
   if( nData<4 ) return;
-  if( nData<NCELL(&node)*tree.nBytesPerCell ) return;
+  if( nData<4+NCELL(&node)*tree.nBytesPerCell ) return;
 
   pOut = sqlite3_str_new(0);
   for(ii=0; ii<NCELL(&node); ii++){
@@ -238514,7 +238572,13 @@ typedef sqlite3_uint64 u64;
 # define FLEXARRAY 1
 #endif
 
-#endif
+#endif /* SQLITE_AMALGAMATION */
+
+/*
+** Constants for the largest and smallest possible 32-bit signed integers.
+*/
+# define LARGEST_INT32  ((int)(0x7fffffff))
+# define SMALLEST_INT32 ((int)((-1) - LARGEST_INT32))
 
 /* Truncate very long tokens to this many bytes. Hard limit is
 ** (65536-1-1-4-9)==65521 bytes. The limiting factor is the 16-bit offset
@@ -249220,6 +249284,7 @@ static void fts5SegIterReverseInitPage(Fts5Index *p, Fts5SegIter *pIter){
   while( 1 ){
     u64 iDelta = 0;
 
+    if( i>=n ) break;
     if( eDetail==FTS5_DETAIL_NONE ){
       /* todo */
       if( i<n && a[i]==0 ){
@@ -253076,7 +253141,7 @@ static int sqlite3Fts5IndexMerge(Fts5Index *p, int nMerge){
       fts5StructureRelease(pStruct);
       pStruct = pNew;
       nMin = 1;
-      nMerge = nMerge*-1;
+      nMerge = (nMerge==SMALLEST_INT32 ? LARGEST_INT32 : (nMerge*-1));
     }
     if( pStruct && pStruct->nLevel ){
       if( fts5IndexMerge(p, &pStruct, nMerge, nMin) ){
@@ -260283,7 +260348,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2025-11-04 19:38:17 fb2c931ae597f8d00a37574ff67aeed3eced4e5547f9120744ae4bfa8e74527b", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2026-01-09 17:27:48 b270f8339eb13b504d0b2ba154ebca966b7dde08e40c3ed7d559749818cb2075", -1, SQLITE_TRANSIENT);
 }
 
 /*
@@ -265104,7 +265169,12 @@ static int fts5VocabOpenMethod(
   return rc;
 }
 
+/*
+** Restore cursor pCsr to the state it was in immediately after being
+** created by the xOpen() method.
+*/
 static void fts5VocabResetCursor(Fts5VocabCursor *pCsr){
+  int nCol = pCsr->pFts5->pConfig->nCol;
   pCsr->rowid = 0;
   sqlite3Fts5IterClose(pCsr->pIter);
   sqlite3Fts5StructureRelease(pCsr->pStruct);
@@ -265114,6 +265184,12 @@ static void fts5VocabResetCursor(Fts5VocabCursor *pCsr){
   pCsr->nLeTerm = -1;
   pCsr->zLeTerm = 0;
   pCsr->bEof = 0;
+  pCsr->iCol = 0;
+  pCsr->iInstPos = 0;
+  pCsr->iInstOff = 0;
+  pCsr->colUsed = 0;
+  memset(pCsr->aCnt, 0, sizeof(i64)*nCol);
+  memset(pCsr->aDoc, 0, sizeof(i64)*nCol);
 }
 
 /*
