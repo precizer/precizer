@@ -51,7 +51,7 @@ Return memory_concat_buffer(
 		provide(FAILURE);
 	}
 
-	size_t append_elements;
+	size_t append_elements = 0;
 
 	if(TRIUMPH & status)
 	{
