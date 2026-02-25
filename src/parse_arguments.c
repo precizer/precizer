@@ -340,6 +340,14 @@ static error_t parse_opt(
 				break;
 			}
 
+			if(state->argc == 1)
+			{
+				information_mode_requested = true;
+				fprintf(state->out_stream,"%s\n",argp_program_version);
+				argp_usage(state);
+				break;
+			}
+
 			argp_usage(state);
 			return(EX_USAGE);
 			break;
