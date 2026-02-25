@@ -82,14 +82,10 @@ EXE = precizer
 
 SRC = src
 STRIP = -Wl,-s
-STRIP_MSG = "-strip"
 STATIC = -static -static-libgcc -Wl,--gc-sections
-STATIC_MSG = "with -static"
 ifeq ($(UNAME_S),Darwin)
 STRIP =
 STATIC =
-STATIC_MSG =
-STRIP_MSG =
 endif
 
 # UPX compression (disabled on macOS)
@@ -189,7 +185,7 @@ DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
@@ -210,8 +206,8 @@ COV_OBJDIR = $(COV_DIR)/obj
 COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
 COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG
-COV_LDFLAGS =  -lgcov --coverage
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
+COV_LDFLAGS = -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -280,7 +276,16 @@ endif
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
+define BUILD_USAGE_BANNER
+printf "Now some tests could be running:\n"
+printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/examples/diffs/diff1\n"
+printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/examples/diffs/diff2\n"
+printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
+endef
+
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: production-done dynamic-production-done portable-done
+.PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
@@ -294,11 +299,15 @@ debugfinal: $(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked $(STATIC_MSG)"
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, not stripped"
+else
+	@echo "$@ linked statically, not stripped"
+endif
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with debug flags"
 
 $(DBG_OBJDIR):
 	@mkdir -p $(DBG_OBJDIR)
@@ -309,7 +318,7 @@ $(DBG_LIBDIR):
 #
 # Coverage rules
 #
-coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal | test-coverage
+coverage: test-coverage
 precizer-coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal
 
 coveragefinal: $(COV_EXE)
@@ -317,11 +326,15 @@ coveragefinal: $(COV_EXE)
 
 $(COV_EXE): $(COV_OBJS) | $(COV_LIBDIR)
 	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked $(STATIC_MSG)"
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, not stripped"
+else
+	@echo "$@ linked statically, not stripped"
+endif
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with coverage flags"
 
 $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
@@ -345,11 +358,11 @@ sanitizefinal: $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked"
+	@echo "$@ linked dynamically, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
 	@mkdir -p $(SNTZ_OBJDIR)
@@ -361,7 +374,12 @@ $(SNTZ_LIBDIR):
 # Production rules
 #
 prod: production
-production: $(PROD_LIBDIR) $(PROD_EXE) prodfinal banner
+production: banner-production
+
+production-done: $(PROD_LIBDIR) $(PROD_EXE) prodfinal
+
+banner-production: production-done
+	@$(BUILD_USAGE_BANNER)
 
 prodfinal: $(PROD_EXE)
 	@cp $(PROD_EXE) $(EXE)
@@ -371,11 +389,15 @@ prodfinal: $(PROD_EXE)
 $(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@strip -x $(PROD_EXE)
-	@echo "$@ linked $(STATIC_MSG) $(STRIP_MSG)"
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, stripped"
+else
+	@echo "$@ linked statically, stripped"
+endif
 
 $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
-	@echo "$< compiled with $(PROD_CPU)"
+	@echo "$< compiled with release flags"
 
 $(PROD_OBJDIR):
 	@mkdir -p $(PROD_OBJDIR)
@@ -386,21 +408,26 @@ $(PROD_LIBDIR):
 #
 # Dynamic production rules
 #
-dynamic-production: $(PROD_LIBDIR) $(DYNP_EXE) dynprodfinal banner
+dynamic-production: banner-dynamic-production
+
+dynamic-production-done: $(DYNP_EXE) dynprodfinal
+
+banner-dynamic-production: dynamic-production-done
+	@$(BUILD_USAGE_BANNER)
 
 dynprodfinal: $(DYNP_EXE)
 	@cp $(DYNP_EXE) $(EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
-$(DYNP_EXE): $(DYNP_OBJS)
+$(DYNP_EXE): $(DYNP_OBJS) | $(PROD_LIBDIR)
 	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@strip -x $(DYNP_EXE)
-	@echo "$@ linked"
+	@echo "$@ linked dynamically, stripped"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
 	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with release flags"
 
 $(DYNP_OBJDIR):
 	@mkdir -p $(DYNP_OBJDIR)
@@ -408,7 +435,12 @@ $(DYNP_OBJDIR):
 #
 # Portable rules
 #
-portable: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal banner
+portable: banner-portable
+
+portable-done: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal
+
+banner-portable: portable-done
+	@$(BUILD_USAGE_BANNER)
 
 portfinal: $(PRTB_EXE)
 	@cp $(PRTB_EXE) $(EXE)
@@ -418,11 +450,15 @@ portfinal: $(PRTB_EXE)
 $(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
 	@strip -x $(PRTB_EXE)
-	@echo "$@ linked $(STATIC_MSG) $(STRIP_MSG)"
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, stripped"
+else
+	@echo "$@ linked statically, stripped"
+endif
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with portable release flags"
 
 $(PRTB_OBJDIR):
 	@mkdir -p $(PRTB_OBJDIR)
@@ -465,6 +501,9 @@ clean: | clean-preproc clean-asm clean-tests
 
 purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
+	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
+	@$(MAKE) -C tests clean-hugetestfile
+	@echo Quick cleanup of all artifacts
 
 clean-all: clean-tests clean clean-tools clean-docker
 	@$(MAKE) -C libs clean
@@ -846,10 +885,7 @@ cloc:
 	@cloc $(SRC) libs/sha512/src/ libs/mem/src/ libs/rational/src/ libs/testitall/src/
 
 banner:
-	@printf "Now some tests could be running:\n"
-	@printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/examples/diffs/diff1\n"
-	@printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/examples/diffs/diff2\n"
-	@printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
+	@$(BUILD_USAGE_BANNER)
 
 #
 # Print variables
