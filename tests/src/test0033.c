@@ -248,9 +248,9 @@ static Return test0033_1_sigterm(void)
 {
 	INITTEST;
 
-	const char *arguments = "--progress tests/examples/diffs/";
+	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/examples/diffs/";
 	const char *filename = "templates/0033_001.txt";
-	const char *cleanup_command = "rm -f \"${TMPDIR}/${DBNAME}\"";
+	const char *cleanup_command = "rm -f \"${TMPDIR}/0033_interrupt_resume.db\"";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -293,9 +293,9 @@ static Return test0033_2_sigint(void)
 {
 	INITTEST;
 
-	const char *arguments = "--progress tests/examples/diffs/";
+	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/examples/diffs/";
 	const char *filename = "templates/0033_002.txt";
-	const char *cleanup_command = "rm -f \"${TMPDIR}/${DBNAME}\"";
+	const char *cleanup_command = "rm -f \"${TMPDIR}/0033_interrupt_resume.db\"";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -338,7 +338,6 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 {
 	INITTEST;
 
-	const char *db_filename = "huge_interrupt_resume.db";
 	const char *relative_path = "hugetestfile";
 	const char *first_run_template = "templates/0033_003_1.txt";
 	const char *second_run_template = "templates/0033_003_2.txt";
@@ -347,7 +346,7 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	        "rm -rf tests/examples/huge/;"
 	        "cp -a \"$ORIGIN_DIR/tests/examples/huge\" tests/examples/;";
 	const char *cleanup_command = "cd ${TMPDIR};"
-	        "rm -f huge_interrupt_resume.db;"
+	        "rm -f 0033_interrupt_resume.db;"
 	        "rm -rf tests/examples/huge/;";
 
 	create(char,stdout_result);
@@ -374,7 +373,7 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	ASSERT(0 == stat(getcstring(huge_file_path),&huge_file_stat));
 	ASSERT(huge_file_stat.st_size > 0);
 
-	const char *arguments = "--progress --database=huge_interrupt_resume.db tests/examples/huge";
+	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/examples/huge";
 
 	/*
 	 * Step 2: Run in background, wait until hashing reaches wait-point 2,
@@ -409,11 +408,7 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	 * The interrupted offset must be inside (0, real_file_size),
 	 * and mdContext blob must be non-empty for resume.
 	 */
-	ASSERT(SUCCESS == read_resume_state_from_db(
-		db_filename,
-		relative_path,
-		&interrupted_offset,
-		&interrupted_md_context_bytes));
+	ASSERT(SUCCESS == read_resume_state_from_db("0033_interrupt_resume.db",relative_path,&interrupted_offset,&interrupted_md_context_bytes));
 
 	ASSERT(interrupted_offset > 0);
 	ASSERT(interrupted_offset < (sqlite3_int64)huge_file_stat.st_size);
@@ -423,7 +418,7 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	/*
 	 * Step 5: Resume hashing with --update and verify second-run output
 	 */
-	arguments = "--update --progress --database=huge_interrupt_resume.db tests/examples/huge";
+	arguments = "--update --progress --database=0033_interrupt_resume.db tests/examples/huge";
 	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(second_run_template,stdout_pattern));
@@ -440,11 +435,7 @@ static Return test0033_3_huge_random_interrupt_resume(void)
 	 * Step 6: Verify final DB state after resume.
 	 * Offset must be reset to 0 and the stored SHA512 must match file content
 	 */
-	ASSERT(SUCCESS == read_final_sha512_from_db(
-		db_filename,
-		relative_path,
-		&final_offset,
-		db_sha512));
+	ASSERT(SUCCESS == read_final_sha512_from_db("0033_interrupt_resume.db",relative_path,&final_offset,db_sha512));
 
 	ASSERT(0 == final_offset);
 
