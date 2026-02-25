@@ -7,8 +7,6 @@
  *
  */
 
-const char *argp_program_version = APP_NAME " " APP_VERSION;
-
 /* Program documentation. */
 static char doc[] =
         "\nVerify file checksums at scale\n\n"
@@ -322,16 +320,13 @@ static error_t parse_opt(
 		case 'h':
 		case '?':
 			information_mode_requested = true;
-			fprintf(state->out_stream,"%s\n",argp_program_version);
 			argp_state_help(state,state->out_stream,ARGP_HELP_STD_HELP & ~(ARGP_HELP_EXIT_OK | ARGP_HELP_EXIT_ERR));
 			break;
 		case 'V':
 			information_mode_requested = true;
-			fprintf(state->out_stream,"%s\n",argp_program_version);
 			break;
 		case 'z':
 			information_mode_requested = true;
-			fprintf(state->out_stream,"%s\n",argp_program_version);
 			argp_state_help(state,state->out_stream,ARGP_HELP_USAGE);
 			break;
 		case ARGP_KEY_NO_ARGS:
@@ -343,7 +338,6 @@ static error_t parse_opt(
 			if(state->argc == 1)
 			{
 				information_mode_requested = true;
-				fprintf(state->out_stream,"%s\n",argp_program_version);
 				argp_usage(state);
 				break;
 			}

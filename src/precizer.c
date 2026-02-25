@@ -51,6 +51,9 @@ int test_main(
 	// Use pointer form for consistency.
 	TraversalSummary *summary = &_summary;
 
+	// Print program identity
+	about();
+
 	// Initialize configuration with values
 	init_config();
 
