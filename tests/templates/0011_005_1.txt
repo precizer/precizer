@@ -34,7 +34,7 @@ TESTING:Recursion depth limited to: \d+$
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-add sss\.txt
+new sss\.txt
 TESTING:File traversal complete
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+

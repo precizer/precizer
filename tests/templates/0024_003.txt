@@ -38,19 +38,19 @@ TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, sy
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
-add path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
-add path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
-add path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
-add path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
-add path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
-add path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
-add path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
-add path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
-add path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
+new path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
+new path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:File traversal complete
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
@@ -101,19 +101,19 @@ TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, sy
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database2\.db:(?:\x1B\[[0-9;]*m)*
-add path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
-add path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
-add path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
-add path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
-add path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
-add path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
-add path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
-add path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
-add path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
+new path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
+new path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:File traversal complete
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+

@@ -39,18 +39,18 @@ TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, sy
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB lock_s6\.db:(?:\x1B\[[0-9;]*m)*
-add 1/AAA/BCB/CCC/a\.txt
-add 1/AAA/ZAW/A/b/c/a_file\.txt
-add 1/AAA/ZAW/D/e/f/b_file\.txt
-add 2/AAA/BBB/CZC/a\.txt
-add 3/AAA/BBB/CCC/a\.txt
-add 4/AAA/BBB/CCC/a\.txt
+new 1/AAA/BCB/CCC/a\.txt
+new 1/AAA/ZAW/A/b/c/a_file\.txt
+new 1/AAA/ZAW/D/e/f/b_file\.txt
+new 2/AAA/BBB/CZC/a\.txt
+new 3/AAA/BBB/CCC/a\.txt
+new 4/AAA/BBB/CCC/a\.txt
 lock checksum path1/AAA/BCB/CCC/a\.txt
 lock checksum path1/AAA/ZAW/A/b/c/a_file\.txt
 lock checksum path1/AAA/ZAW/D/e/f/b_file\.txt
-add path2/AAA/BCB/CCC/a\.txt
-add path2/AAA/ZAW/A/b/c/a_file\.txt
-add path2/AAA/ZAW/D/e/f/b_file\.txt
+new path2/AAA/BCB/CCC/a\.txt
+new path2/AAA/ZAW/A/b/c/a_file\.txt
+new path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+

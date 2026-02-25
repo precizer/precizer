@@ -315,7 +315,7 @@ void show_file(
 
 			} else {
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"add %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"new %s\n",relative_path);
 			}
 		}
 

@@ -54,7 +54,7 @@ update & rehash 2/AAA/BBB/CZC/a\.txt
 update & rehash 3/AAA/BBB/CCC/a\.txt
 update & rehash 4/AAA/BBB/CCC/a\.txt
 update stat path1/AAA/BCB/CCC/a\.txt
-add path1/AAA/BCB/CCC/b\.txt
+new path1/AAA/BCB/CCC/b\.txt
 update stat path1/AAA/ZAW/A/b/c/a_file\.txt
 update & rehash path1/AAA/ZAW/D/e/f/b_file\.txt
 update & rehash path2/AAA/BCB/CCC/a\.txt
