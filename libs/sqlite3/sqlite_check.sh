@@ -1,13 +1,13 @@
 #!/bin/bash
 
-VER=3510000
+VER=3510200
 
 echo Creating temp dir...
 TMPDIR=$(mktemp -d)
 cd $TMPDIR
 
 echo Downloading...
-wget https://www.sqlite.org/2025/sqlite-amalgamation-${VER}.zip -O sqlite-amalgamation-${VER}.zip
+wget https://sqlite.org/2026/sqlite-amalgamation-${VER}.zip -O sqlite-amalgamation-${VER}.zip
 
 echo Extracting...
 # Extract without subdir and force file overwrites
