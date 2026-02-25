@@ -16,7 +16,7 @@ static Return assert_information_mode_output(
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,STDERR_ALLOW));
 
 	ASSERT(SUCCESS == get_file_content(stdout_pattern_file,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
@@ -91,7 +91,7 @@ Return test0003_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,FAILURE,STDERR_ALLOW));
+	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,STDERR_ALLOW));
 
 	const char *filename = "templates/0003_002.txt";
 
