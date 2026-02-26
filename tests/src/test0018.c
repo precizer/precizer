@@ -1,6 +1,6 @@
 #include "sute.h"
 
-Return test0018_1_maxdepth_argument(void)
+Return test0018_1(void)
 {
 	INITTEST;
 
@@ -58,7 +58,7 @@ Return test0018_1_maxdepth_argument(void)
 	RETURN_STATUS;
 }
 
-Return test0018_2_maxdepth_argument(void)
+Return test0018_2(void)
 {
 	INITTEST;
 
@@ -94,7 +94,7 @@ Return test0018_2_maxdepth_argument(void)
 }
 
 
-Return test0018_3_comparing_templates(void)
+Return test0018_3(void)
 {
 	INITTEST;
 
@@ -126,7 +126,7 @@ Return test0018_3_comparing_templates(void)
 	RETURN_STATUS;
 }
 
-Return test0018_4_comparing_templates(void)
+Return test0018_4(void)
 {
 	INITTEST;
 
@@ -167,10 +167,10 @@ Return test0018(void)
 {
 	INITTEST;
 
-	TEST(test0018_1_maxdepth_argument,"Traversal with limited depth…");
-	TEST(test0018_2_maxdepth_argument,"Update DB w/o depth limits…");
-	TEST(test0018_3_comparing_templates,"Comparing templates w/ and w/o depth limits…")
-	TEST(test0018_4_comparing_templates,"Comparing templates after update w/o depth limits…")
+	TEST(test0018_1,"Traversal with limited depth…");
+	TEST(test0018_2,"Update DB w/o depth limits…");
+	TEST(test0018_3,"Comparing templates w/ and w/o depth limits…")
+	TEST(test0018_4,"Comparing templates after update w/o depth limits…")
 
 	RETURN_STATUS;
 }

@@ -3,7 +3,7 @@
 /**
  * "inaccessible" message of file_show() function
  */
-static Return test0029_1_test(void)
+static Return test0029_1(void)
 {
 	INITTEST;
 
@@ -68,7 +68,7 @@ static Return test0029_1_test(void)
 /**
  * --db-drop-inaccessible option. Dropping DB records for inaccessible paths
  */
-static Return test0029_2_test(void)
+static Return test0029_2(void)
 {
 	INITTEST;
 
@@ -140,8 +140,8 @@ Return test0029(void)
 {
 	INITTEST;
 
-	TEST(test0029_1_test,"\"inaccessible\" message of file_show() function…");
-	TEST(test0029_2_test,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths…");
+	TEST(test0029_1,"\"inaccessible\" message of file_show() function…");
+	TEST(test0029_2,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths…");
 
 	RETURN_STATUS;
 }

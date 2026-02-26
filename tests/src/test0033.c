@@ -250,7 +250,7 @@ static Return read_final_sha512_from_db(
 /**
  * Run background scenario with SIGTERM and verify output template.
  */
-static Return test0033_1_sigterm(void)
+static Return test0033_1(void)
 {
 	INITTEST;
 
@@ -295,7 +295,7 @@ static Return test0033_1_sigterm(void)
 /**
  * Run background scenario with SIGINT and verify output template.
  */
-static Return test0033_2_sigint(void)
+static Return test0033_2(void)
 {
 	INITTEST;
 
@@ -340,7 +340,7 @@ static Return test0033_2_sigint(void)
 /**
  * Interrupt hashing of hugetestfile, resume with --update, and verify SHA512.
  */
-static Return test0033_3_huge_random_interrupt_resume(void)
+static Return test0033_3(void)
 {
 	INITTEST;
 
@@ -467,9 +467,9 @@ Return test0033(void)
 {
 	INITTEST;
 
-	TEST(test0033_1_sigterm,"Background run receives SIGTERM and exits with HALTED…");
-	TEST(test0033_2_sigint,"Background run receives SIGINT and exits with HALTED…");
-	TEST(test0033_3_huge_random_interrupt_resume,"Random interruption on hugetestfile with resume and SHA512 verification…");
+	TEST(test0033_1,"Background run receives SIGTERM and exits with HALTED…");
+	TEST(test0033_2,"Background run receives SIGINT and exits with HALTED…");
+	TEST(test0033_3,"Random interruption on hugetestfile with resume and SHA512 verification…");
 
 	RETURN_STATUS;
 }

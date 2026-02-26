@@ -243,7 +243,7 @@ static Return tamper_locked_file_bytes(
  * README --lock-checksum example: size differs -> WARNING, independent of
  * --watch-timestamps or --rehash-locked.
  */
-static Return test0030_1_test(void)
+static Return test0030_1(void)
 {
 	INITTEST;
 
@@ -300,7 +300,7 @@ static Return test0030_1_test(void)
  * README --lock-checksum example: timestamps differ, --watch-timestamps enabled,
  * --rehash-locked disabled -> WARNING.
  */
-static Return test0030_2_test(void)
+static Return test0030_2(void)
 {
 	INITTEST;
 
@@ -357,7 +357,7 @@ static Return test0030_2_test(void)
  * README --lock-checksum example: size matches, --watch-timestamps disabled,
  * --rehash-locked disabled -> SUCCESS (timestamps ignored).
  */
-static Return test0030_3_test(void)
+static Return test0030_3(void)
 {
 	INITTEST;
 
@@ -414,7 +414,7 @@ static Return test0030_3_test(void)
  * README --lock-checksum example: --rehash-locked decides consistency; when the
  * checksum matches, result is SUCCESS regardless of --watch-timestamps.
  */
-static Return test0030_4_test(void)
+static Return test0030_4(void)
 {
 	INITTEST;
 
@@ -493,7 +493,7 @@ static Return test0030_4_test(void)
  * README --lock-checksum example extension: rehash compares computed checksum with
  * the stored one; a mismatch should trigger WARNING. Simulate by modifying the DB.
  */
-static Return test0030_5_test(void)
+static Return test0030_5(void)
 {
 	INITTEST;
 
@@ -556,7 +556,7 @@ static Return test0030_5_test(void)
  * README --lock-checksum example extension: on-disk content change with
  * --rehash-locked should trigger WARNING.
  */
-static Return test0030_6_test(void)
+static Return test0030_6(void)
 {
 	INITTEST;
 
@@ -613,7 +613,7 @@ static Return test0030_6_test(void)
  * Same as test0030_6 but with --watch-timestamps; per README example, this option
  * does not change the --rehash-locked outcome.
  */
-static Return test0030_7_test(void)
+static Return test0030_7(void)
 {
 	INITTEST;
 
@@ -671,7 +671,7 @@ static Return test0030_7_test(void)
  * README --lock-checksum example: size and timestamps match,
  * --watch-timestamps enabled, --rehash-locked disabled -> SUCCESS.
  */
-static Return test0030_8_test(void)
+static Return test0030_8(void)
 {
 	INITTEST;
 
@@ -732,14 +732,14 @@ Return test0030(void)
 {
 	INITTEST;
 
-	TEST(test0030_1_test,"Size change with locked checksum triggers a warning…");
-	TEST(test0030_2_test,"Timestamp drift with --watch-timestamps triggers a warning…");
-	TEST(test0030_3_test,"Timestamp drift without --watch-timestamps completes successfully…");
-	TEST(test0030_4_test,"Timestamp drift with --watch-timestamps and --rehash-locked completes successfully…");
-	TEST(test0030_5_test,"Locked checksum mismatch in DB triggers a warning…");
-	TEST(test0030_6_test,"Locked file content change triggers a warning…");
-	TEST(test0030_7_test,"Locked file content change with --watch-timestamps triggers a warning…");
-	TEST(test0030_8_test,"No changes with --watch-timestamps completes successfully…");
+	TEST(test0030_1,"Size change with locked checksum triggers a warning…");
+	TEST(test0030_2,"Timestamp drift with --watch-timestamps triggers a warning…");
+	TEST(test0030_3,"Timestamp drift without --watch-timestamps completes successfully…");
+	TEST(test0030_4,"Timestamp drift with --watch-timestamps and --rehash-locked completes successfully…");
+	TEST(test0030_5,"Locked checksum mismatch in DB triggers a warning…");
+	TEST(test0030_6,"Locked file content change triggers a warning…");
+	TEST(test0030_7,"Locked file content change with --watch-timestamps triggers a warning…");
+	TEST(test0030_8,"No changes with --watch-timestamps completes successfully…");
 
 	RETURN_STATUS;
 }

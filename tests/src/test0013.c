@@ -3,7 +3,7 @@
 /**
  * The db file should not be created in the Dry Run mode
  */
-static Return dry_run_mode_1_test(void)
+static Return test0013_1(void)
 {
 	INITTEST;
 
@@ -41,7 +41,7 @@ static Return dry_run_mode_1_test(void)
 /**
  * In dry-run mode with checksums, files are hashed but DB is still not modified
  */
-static Return dry_run_with_checksums_mode_1_1_test(void)
+static Return test0013_2(void)
 {
 	INITTEST;
 
@@ -94,7 +94,7 @@ static Return dry_run_with_checksums_mode_1_1_test(void)
 /**
  * Invalid dry-run mode should fail with error in stderr
  */
-static Return dry_run_invalid_mode_1_2_test(void)
+static Return test0013_3(void)
 {
 	INITTEST;
 
@@ -121,7 +121,7 @@ static Return dry_run_invalid_mode_1_2_test(void)
 /**
  * The db file should not be updated in the Dry Run mode
  */
-static Return dry_run_mode_2_test(void)
+static Return test0013_4(void)
 {
 	INITTEST;
 
@@ -282,7 +282,7 @@ static Return dry_run_mode_2_test(void)
  * will now be tested in live mode without simulation, and
  * the results will be compared against each other
  */
-static Return no_dry_run_mode_3_test(void)
+static Return test0013_5(void)
 {
 	INITTEST;
 	// Create memory for the result
@@ -414,7 +414,7 @@ static Return no_dry_run_mode_3_test(void)
 	RETURN_STATUS;
 }
 
-Return compare_dry_and_real_4_test(void)
+Return test0013_6(void)
 {
 	INITTEST;
 
@@ -498,7 +498,7 @@ Return compare_dry_and_real_4_test(void)
  *
  * The expected outcome of the second run is `WARNING`
  */
-static Return dry_run_mode_5_db_timestamp_bump_test(void)
+static Return test0013_7(void)
 {
 	INITTEST;
 
@@ -548,7 +548,7 @@ static Return dry_run_mode_5_db_timestamp_bump_test(void)
  * "no metadata drift" result after a real database update and must trigger
  * WARNING.
  */
-static Return dry_run_mode_6_db_expected_modification_missing_test(void)
+static Return test0013_8(void)
 {
 	INITTEST;
 
@@ -640,14 +640,14 @@ Return test0013(void)
 {
 	INITTEST;
 
-	TEST(dry_run_mode_1_test,"The DB file should not be created…");
-	TEST(dry_run_with_checksums_mode_1_1_test,"Dry run with checksums hashes files but keeps DB untouched…");
-	TEST(dry_run_invalid_mode_1_2_test,"Invalid dry-run mode should return failure and print stderr error…");
-	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
-	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
-	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
-	TEST(dry_run_mode_5_db_timestamp_bump_test,"Dry-run DB metadata drift should trigger internal warning path…");
-	TEST(dry_run_mode_6_db_expected_modification_missing_test,"Live update: force missing DB metadata drift and trigger warning…");
+	TEST(test0013_1,"The DB file should not be created…");
+	TEST(test0013_2,"Dry run with checksums hashes files but keeps DB untouched…");
+	TEST(test0013_3,"Invalid dry-run mode should return failure and print stderr error…");
+	TEST(test0013_4,"The DB file should not be updated…");
+	TEST(test0013_5,"Now run the same without simulation…");
+	TEST(test0013_6,"Compare dry and real mode templates…");
+	TEST(test0013_7,"Dry-run DB metadata drift should trigger internal warning path…");
+	TEST(test0013_8,"Live update: force missing DB metadata drift and trigger warning…");
 
 	RETURN_STATUS;
 }

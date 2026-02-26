@@ -634,7 +634,7 @@ static Return create_abort_on_second_stat_update_trigger(
  * Verify the run fails without the --update parameter and prints the proper error.
  *
  */
-Return test0015_1_upgrade_db(void)
+Return test0015_1(void)
 {
 	INITTEST;
 
@@ -677,7 +677,7 @@ Return test0015_1_upgrade_db(void)
  * completes successfully
  *
  */
-Return test0015_2_1_upgrade_db(void)
+Return test0015_2(void)
 {
 	INITTEST;
 
@@ -721,7 +721,7 @@ Return test0015_2_1_upgrade_db(void)
  * the update completes successfully with according details in output
  *
  */
-Return test0015_2_2_upgrade_db(void)
+Return test0015_3(void)
 {
 	INITTEST;
 
@@ -759,7 +759,7 @@ Return test0015_2_2_upgrade_db(void)
  * is actually at the current version
  *
  */
-Return test0015_3_upgrade_db(void)
+Return test0015_4(void)
 {
 	INITTEST;
 
@@ -798,7 +798,7 @@ Return test0015_3_upgrade_db(void)
  * Create a database with the default name
  *
  */
-Return test0015_4_upgrade_db(void)
+Return test0015_5(void)
 {
 	INITTEST;
 
@@ -826,7 +826,7 @@ Return test0015_4_upgrade_db(void)
  * appropriate error message
  *
  */
-Return test0015_5_upgrade_db(void)
+Return test0015_6(void)
 {
 	INITTEST;
 
@@ -858,7 +858,7 @@ Return test0015_5_upgrade_db(void)
  * Upgrading from 0 to the last version
  *
  */
-Return test0015_6_upgrade_db(void)
+Return test0015_7(void)
 {
 	INITTEST;
 
@@ -891,7 +891,7 @@ Return test0015_6_upgrade_db(void)
  * completes successfully
  *
  */
-Return test0015_7_upgrade_db(void)
+Return test0015_8(void)
 {
 	INITTEST;
 
@@ -929,7 +929,7 @@ Return test0015_7_upgrade_db(void)
  * is actually at the current version
  *
  */
-Return test0015_8_upgrade_db(void)
+Return test0015_9(void)
 {
 	INITTEST;
 
@@ -968,7 +968,7 @@ Return test0015_8_upgrade_db(void)
  * Upgrading from 1 to the last version
  *
  */
-Return test0015_9_upgrade_db(void)
+Return test0015_10(void)
 {
 	INITTEST;
 
@@ -1005,7 +1005,7 @@ Return test0015_9_upgrade_db(void)
  * completes successfully
  *
  */
-Return test0015_10_upgrade_db(void)
+Return test0015_11(void)
 {
 	INITTEST;
 
@@ -1048,7 +1048,7 @@ Return test0015_10_upgrade_db(void)
  * Upgrading from 2 to the last version
  *
  */
-Return test0015_11_upgrade_db(void)
+Return test0015_12(void)
 {
 	INITTEST;
 
@@ -1085,7 +1085,7 @@ Return test0015_11_upgrade_db(void)
  * as the primary database using --update.
  *
  */
-Return test0015_12_upgrade_db(void)
+Return test0015_13(void)
 {
 	INITTEST;
 
@@ -1127,7 +1127,7 @@ Return test0015_12_upgrade_db(void)
  * Upgrade from version 3 during database comparison using
  * --compare and --update parameters.
  */
-Return test0015_13_upgrade_db(void)
+Return test0015_14(void)
 {
 	INITTEST;
 
@@ -1175,7 +1175,7 @@ Return test0015_13_upgrade_db(void)
  * If the files and checksums match, the current checksum calculation is
  * considered compatible with the legacy well-tested algorithm.
  */
-Return test0015_14_checksum_compare(void)
+Return test0015_15(void)
 {
 	INITTEST;
 
@@ -1225,7 +1225,7 @@ Return test0015_14_checksum_compare(void)
  * Corrupt one v0 row stat blob and verify that upgrade still completes.
  * The corrupted row must end up as converted "zero source" v4 compact stat.
  */
-Return test0015_15_corrupt_row_v0_upgrade_continues(void)
+Return test0015_16(void)
 {
 	INITTEST;
 
@@ -1276,7 +1276,7 @@ Return test0015_15_corrupt_row_v0_upgrade_continues(void)
  * Corrupt one v3 row stat blob and verify that upgrade still completes.
  * The corrupted row must be stored using zero-source conversion logic.
  */
-Return test0015_16_corrupt_row_v3_upgrade_continues(void)
+Return test0015_17(void)
 {
 	INITTEST;
 
@@ -1327,7 +1327,7 @@ Return test0015_16_corrupt_row_v3_upgrade_continues(void)
  * Regression test: when a SQLite error occurs during 3->4 migration,
  * the opened transaction must be rolled back.
  */
-Return test0015_17_rollback_on_sqlite_failure(void)
+Return test0015_18(void)
 {
 	INITTEST;
 
@@ -1413,7 +1413,7 @@ Return test0015_17_rollback_on_sqlite_failure(void)
 /**
  * Generate a fresh database, force future metadata version and verify warning path
  */
-Return test0015_18_future_version_warning(void)
+Return test0015_19(void)
 {
 	INITTEST;
 
@@ -1480,25 +1480,25 @@ Return test0015(void)
 {
 	INITTEST;
 
-	TEST(test0015_1_upgrade_db,"Upgrade a DB from v0 to the current version. Error handling…");
-	TEST(test0015_2_1_upgrade_db,"Upgrade a DB from v0 to the current version as the primary database…");
-	TEST(test0015_2_2_upgrade_db,"Upgrade a DB from v0 to the current version with --watch-timestamps…");
-	TEST(test0015_3_upgrade_db,"Verify that the DB is actually at the current version…");
-	TEST(test0015_4_upgrade_db,"Create default name database…");
-	TEST(test0015_5_upgrade_db,"Attempting an upgrade with a single --compare parameter…");
-	TEST(test0015_6_upgrade_db,"Upgrading from 0 to the last version using the --compare and --update…");
-	TEST(test0015_7_upgrade_db,"Upgrade a DB from v1 to the current version as the primary database…");
-	TEST(test0015_8_upgrade_db,"Verify that the DB is actually at the current version…");
-	TEST(test0015_9_upgrade_db,"Upgrading from 1 to the last version using the --compare and --update…");
-	TEST(test0015_10_upgrade_db,"Upgrade a DB from v2 to the current version as the primary database…");
-	TEST(test0015_11_upgrade_db,"Upgrading from 2 to the last version using the --compare and --update…");
-	TEST(test0015_12_upgrade_db,"Upgrading from 3 with UTF-8 name to the last version using the --update…");
-	TEST(test0015_13_upgrade_db,"Upgrading from 3 to the last version using the --compare and --update…");
-	TEST(test0015_14_checksum_compare,"Create and compare DBs with UTF-8 names and checksums from legacy DB…");
-	TEST(test0015_15_corrupt_row_v0_upgrade_continues,"Corrupted v0 stat blob does not break the full upgrade…");
-	TEST(test0015_16_corrupt_row_v3_upgrade_continues,"Corrupted v3 stat blob does not break the full upgrade…");
-	TEST(test0015_17_rollback_on_sqlite_failure,"Forced SQLite failure triggers rollback during 3->4 migration…");
-	TEST(test0015_18_future_version_warning,"Fresh DB with forced future version returns warning and stays unchanged…");
+	TEST(test0015_1,"Upgrade a DB from v0 to the current version. Error handling…");
+	TEST(test0015_2,"Upgrade a DB from v0 to the current version as the primary database…");
+	TEST(test0015_3,"Upgrade a DB from v0 to the current version with --watch-timestamps…");
+	TEST(test0015_4,"Verify that the DB is actually at the current version…");
+	TEST(test0015_5,"Create default name database…");
+	TEST(test0015_6,"Attempting an upgrade with a single --compare parameter…");
+	TEST(test0015_7,"Upgrading from 0 to the last version using the --compare and --update…");
+	TEST(test0015_8,"Upgrade a DB from v1 to the current version as the primary database…");
+	TEST(test0015_9,"Verify that the DB is actually at the current version…");
+	TEST(test0015_10,"Upgrading from 1 to the last version using the --compare and --update…");
+	TEST(test0015_11,"Upgrade a DB from v2 to the current version as the primary database…");
+	TEST(test0015_12,"Upgrading from 2 to the last version using the --compare and --update…");
+	TEST(test0015_13,"Upgrading from 3 with UTF-8 name to the last version using the --update…");
+	TEST(test0015_14,"Upgrading from 3 to the last version using the --compare and --update…");
+	TEST(test0015_15,"Create and compare DBs with UTF-8 names and checksums from legacy DB…");
+	TEST(test0015_16,"Corrupted v0 stat blob does not break the full upgrade…");
+	TEST(test0015_17,"Corrupted v3 stat blob does not break the full upgrade…");
+	TEST(test0015_18,"Forced SQLite failure triggers rollback during 3->4 migration…");
+	TEST(test0015_19,"Fresh DB with forced future version returns warning and stays unchanged…");
 
 	RETURN_STATUS;
 }

@@ -1,6 +1,6 @@
 #include "sute.h"
 
-Return prefix_path_with_apostrophe_test(void)
+Return test0024_1(void)
 {
 	INITTEST;
 
@@ -37,7 +37,7 @@ Return prefix_path_with_apostrophe_test(void)
 	RETURN_STATUS;
 }
 
-Return another_prefix_path_with_apostrophe_test(void)
+Return test0024_2(void)
 {
 	INITTEST;
 
@@ -81,7 +81,7 @@ Return another_prefix_path_with_apostrophe_test(void)
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
-static Return adding_and_comparing_with_apostrophe(void)
+static Return test0024_3(void)
 {
 	INITTEST;
 
@@ -139,9 +139,9 @@ Return test0024(void)
 {
 	INITTEST;
 
-	TEST(prefix_path_with_apostrophe_test,"Prefix path with apostrophe…");
-	TEST(another_prefix_path_with_apostrophe_test,"Another prefix and apostrophe combination in the name…");
-	TEST(adding_and_comparing_with_apostrophe,"Adding and comparing with apostrophe…");
+	TEST(test0024_1,"Prefix path with apostrophe…");
+	TEST(test0024_2,"Another prefix and apostrophe combination in the name…");
+	TEST(test0024_3,"Adding and comparing with apostrophe…");
 
 	RETURN_STATUS;
 }
