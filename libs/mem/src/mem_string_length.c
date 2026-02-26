@@ -16,10 +16,8 @@ Return memory_string_length(
 	const memory *memory_structure,
 	size_t       *length_out)
 {
-	/** Return status
-	 *  The status that will be passed to provide() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(memory_structure == NULL || length_out == NULL)

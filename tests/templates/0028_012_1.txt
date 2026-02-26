@@ -1,4 +1,4 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 ERROR:Argument parsing failed with code 64 \(command line usage error\)
 TESTING:Returned parse_arguments:\d+ status: FAILURE
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+

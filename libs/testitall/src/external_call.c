@@ -27,8 +27,8 @@ static Return external_call_impl(
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
-	/// The status that will be passed to deliver() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const bool suppress_stdout = (buffer_policy & STDOUT_SUPPRESS) != 0U;
 	const bool suppress_stderr = (buffer_policy & STDERR_SUPPRESS) != 0U;
@@ -306,6 +306,8 @@ Return external_call(
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const bool allow_stderr = (buffer_policy & STDERR_ALLOW) != 0U;
 

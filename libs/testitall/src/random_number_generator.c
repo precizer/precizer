@@ -18,6 +18,8 @@ Return random_number_generator(
 	uint64_t start,
 	uint64_t end)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	FILE *fp = fopen("/dev/urandom","rb");

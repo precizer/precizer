@@ -10,6 +10,8 @@ static Return tamper_locked_checksum(
 	const char *db_filename,
 	const char *relative_path)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -72,6 +74,8 @@ static Return read_cmpctstat_from_db(
 	const char *relative_path,
 	CmpctStat *stat_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -163,6 +167,8 @@ static bool cmpctstat_matches_stat_timestamps(
 static Return tamper_locked_file_bytes(
 	const char *relative_path)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	int fd = -1;
 	struct stat before = {0};

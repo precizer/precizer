@@ -31,8 +31,8 @@ Return match_file_template(
 		return FAILURE;
 	}
 
-	/// The status that will be passed to deliver() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Will store template content from file

@@ -40,6 +40,8 @@ static Return process_row(
 	sqlite3_stmt *stmt,
 	bool         *db_file_modified)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	int rc = SQLITE_OK;
 	int blob_size = 0;
@@ -131,6 +133,8 @@ static Return process_database(
 	sqlite3 *db,
 	bool    *db_file_modified)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
 	int rc = SQLITE_OK;
@@ -188,6 +192,8 @@ static Return process_database(
  */
 static Return normalize_journal_mode(sqlite3 *db)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
 	int rc = SQLITE_OK;
@@ -249,6 +255,8 @@ static Return normalize_journal_mode(sqlite3 *db)
  */
 Return db_migrate_to_version_4(const char *db_file_path)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;

@@ -22,6 +22,8 @@ Return db_upgrade(
 	const char *db_file_path,
 	const char *db_file_name)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	slog(EVERY,"The database %s file has an outdated version %d and requires updating to the version %d\n",db_file_name,*db_version,CURRENT_DB_VERSION);

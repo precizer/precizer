@@ -822,11 +822,18 @@ Return verify_directory_access(
 
 Return db_check_changes(void);
 
+/**
+ * @brief Check whether the given path exists and matches requested filesystem object type
+ * @param path Path to verify
+ * @param fs_object_type Expected object type: SHOULD_BE_A_FILE or SHOULD_BE_A_DIRECTORY
+ * @return EXISTS when path exists and matches requested type, otherwise NOT_FOUND
+ * @details The special path ":memory:" is treated as not available and returns NOT_FOUND
+ */
 FileAvailability file_availability(
 	const char *,
 	const unsigned char);
 
-Return detect_paths(void);
+Return paths_detect(void);
 
 Ignore match_ignore_pattern(
 	const char *,

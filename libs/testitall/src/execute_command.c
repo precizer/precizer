@@ -25,8 +25,8 @@ Return execute_command(
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
-	/// The status that will be passed to deliver() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Validate input parameters */

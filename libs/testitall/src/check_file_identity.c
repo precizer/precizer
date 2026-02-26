@@ -74,6 +74,8 @@ static int compare_file_metadata_equivalence(
  */
 Return print_stat(const struct stat *st)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	char time_str[20]; /* "YYYY-MM-DD HH:MM:SS" + NUL */
 	struct tm *tm_info;
@@ -177,6 +179,8 @@ Return check_file_identity(
 	const struct stat *stat1,
 	const struct stat *stat2)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(IDENTICAL != compare_file_metadata_equivalence(stat1,stat2))

@@ -24,6 +24,8 @@ static Return create_capture_file(
 	size_t     path_size,
 	int        *fd)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	int written = snprintf(path,path_size,"%s/testitall.%s.XXXXXX",tmpdir,kind);
@@ -53,6 +55,8 @@ static Return load_capture_file(
 	const char *path,
 	memory     *buffer)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *file = NULL;
 	long file_size_long = 0;
@@ -139,6 +143,8 @@ static Return set_stderr_message(
 	char *message,
 	bool fail_after_write)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	run(copy_literal(STDERR,message));
@@ -160,6 +166,8 @@ static Return format_unexpected_exit_report(
 	const struct runit_capture_session *session,
 	int                                wait_status)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	const bool exited_normally = WIFEXITED(wait_status);
@@ -213,6 +221,8 @@ static Return format_unexpected_exit_report(
  */
 static Return format_stderr_warning_report(const struct runit_capture_session *session)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	const char *stderr_view = getcstring(STDERR);
@@ -271,6 +281,8 @@ Return runit_capture_prepare(
 	int                          expected_return_code,
 	unsigned int                 buffer_policy)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	session->stdout_result = stdout_result;
@@ -299,6 +311,8 @@ Return runit_capture_prepare(
  */
 Return runit_capture_apply_redirect(struct runit_capture_session *session)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(dup2(session->stdout_fd,STDOUT_FILENO) == -1)
@@ -325,6 +339,8 @@ static Return runit_capture_validate_exit_status(
 	const struct runit_capture_session *session,
 	int                                wait_status)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(!WIFEXITED(wait_status) || session->expected_return_code != WEXITSTATUS(wait_status))
@@ -341,6 +357,8 @@ static Return runit_capture_validate_exit_status(
  */
 static Return runit_capture_apply_stderr_policy(const struct runit_capture_session *session)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const bool suppress_stderr = (session->buffer_policy & STDERR_SUPPRESS) != 0U;
 	const bool allow_stderr = (session->buffer_policy & STDERR_ALLOW) != 0U;
@@ -367,6 +385,8 @@ static Return runit_capture_apply_stderr_policy(const struct runit_capture_sessi
  */
 static Return runit_capture_apply_stdout_policy(const struct runit_capture_session *session)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const bool suppress_stdout = (session->buffer_policy & STDOUT_SUPPRESS) != 0U;
 
@@ -383,6 +403,8 @@ static Return runit_capture_apply_stdout_policy(const struct runit_capture_sessi
  */
 static Return runit_capture_copy_results(const struct runit_capture_session *session)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(NULL != session->stdout_result && STDOUT->length > 0U)
@@ -405,6 +427,8 @@ Return runit_capture_finalize(
 	struct runit_capture_session *session,
 	int                          wait_status)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const bool allow_stderr = (session->buffer_policy & STDERR_ALLOW) != 0U;
 

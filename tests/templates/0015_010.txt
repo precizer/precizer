@@ -2,10 +2,10 @@
 paths=tests/examples/diffs/diff1; database=0015_database_v2\.db; db_file_name=0015_database_v2\.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=no; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is complete
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/detect_paths\.c:\d+:detect_paths:Checking directory paths provided as arguments
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Checking directory paths provided as arguments
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability\.c:\d+:file_availability:Verify that the path tests/examples/diffs/diff1 exists
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability\.c:\d+:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/detect_paths\.c:\d+:detect_paths:Paths detected
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Path detection is finished
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals\.c:\d+:init_signals:Set signal SIGUSR2 OK:pid:\d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals\.c:\d+:init_signals:Set signal SIGINT OK:pid:\d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals\.c:\d+:init_signals:Set signal SIGTERM OK:pid:\d+

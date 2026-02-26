@@ -16,10 +16,8 @@ typedef struct point {
  */
 static Return fill_points(memory *points)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	point *typed_points = data(point,points);
 
@@ -47,10 +45,8 @@ static Return fill_points(memory *points)
  */
 static Return test_point_memory(void)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	create(point,points);
@@ -254,10 +250,8 @@ static Return test_point_memory(void)
  */
 static Return test_string_memory(void)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	create(char,string_buffer);
@@ -455,10 +449,8 @@ static Return test_string_memory(void)
  */
 static Return test_copy_buffer_memory(void)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	create(char,db_path);
@@ -539,10 +531,8 @@ static Return test_copy_buffer_memory(void)
  */
 static Return test_pointer_reset(void)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	char *manual_buffer = NULL;
 
@@ -579,10 +569,8 @@ static Return test_pointer_reset(void)
  */
 static Return run_mem_tests(void)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	run(test_point_memory());

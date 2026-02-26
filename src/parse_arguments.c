@@ -2,12 +2,10 @@
 #include <sysexits.h>
 
 /**
- *
- * @brief Parse command-line arguments with the argp library.
- *
+ * @brief Parse command-line arguments and populate global runtime configuration
  */
 
-/* Program documentation. */
+/* Program documentation text used by argp */
 static char doc[] =
         "\nVerify file checksums at scale\n\n"
         BOLD APP_NAME RESET " is a lightweight and blazing-fast CLI application designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program recursively traverses directories, generating a database of files and their checksums for quick and efficient comparisons.\n"
@@ -49,12 +47,12 @@ static char doc[] =
         "\n"
         "See the project README for additional technical details.";
 
-/* A description of the arguments we accept. */
+/* Positional-argument description for argp */
 static char args_doc[] = "PATH";
 
 static bool information_mode_requested = false;
 
-/* The options we understand. */
+/* Supported command-line options for argp */
 static struct argp_option options[] = {
 	{ 0,0,0,0,"Locked Checksum Protection:",3},
 	{"lock-checksum",'k',"PCRE2_REGEXP",0,"Relative path to be treated as immutable archival data. PCRE2 regular expressions can be used to "
@@ -140,7 +138,9 @@ static struct argp_option options[] = {
 };
 
 /**
- * @brief Convert argp parse error code into human-readable text.
+ * @brief Convert an argp parse error code into human-readable text
+ * @param parse_error Error code returned by argp_parse
+ * @return Pointer to a static descriptive string
  */
 static const char *argp_error_to_text(const error_t parse_error)
 {
@@ -164,7 +164,13 @@ static const char *argp_error_to_text(const error_t parse_error)
 	return(message);
 }
 
-/* Parse a single option. */
+/**
+ * @brief Handle a single argp parser event
+ * @param key Current option key or argp event key
+ * @param arg Optional value for the current option
+ * @param state Current argp parser state
+ * @return EX_OK on success, EX_USAGE for invalid usage, or errno-style error code
+ */
 static error_t parse_opt(
 	int               key,
 	char              *arg,
@@ -177,14 +183,14 @@ static error_t parse_opt(
 	{
 		case 'd':
 		{
-			// Full path to DB file
+			// Store full path to the DB file
 			if(CRITICAL & copy_literal(conf(db_primary_file_path),arg))
 			{
 				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_path failed");
 				return(ENOMEM);
 			}
 
-			// Name of DB file only
+			// Store only the DB file basename
 			char *tmp = strdup(arg);
 
 			if(tmp == NULL)
@@ -235,7 +241,7 @@ static error_t parse_opt(
 			break;
 		case 'i':
 			(void)add_string_to_array(&config->include,arg);
-			// Remember that at least one --include pattern was specified.
+			// Track that at least one --include pattern was provided
 			config->include_specified = true;
 			break;
 		case 'k':
@@ -272,8 +278,8 @@ static error_t parse_opt(
 		case 'm':
 			argument_value = strtol(arg,&ptr,10);
 
-			// Validate if lont int could be casted to short int
-			// and the argument contains a digit only
+			// Accept only non-negative integer values that fit into short int
+			// and reject strings with trailing non-numeric characters
 			if(argument_value >= 0 && argument_value <= 32767 && *ptr == '\0')
 			{
 				config->maxdepth = (short int)argument_value;
@@ -306,14 +312,14 @@ static error_t parse_opt(
 			}
 			break;
 		case 's':
-			// Global variable
+			// Set global logger mode
 			rational_logger_mode = SILENT;
 			break;
 		case 'q':
 			config->quiet_ignored = true;
 			break;
 		case 'v':
-			// Global variable
+			// Set global logger mode
 			rational_logger_mode = VERBOSE;
 			config->verbose = true;
 			break;
@@ -400,24 +406,29 @@ static error_t parse_opt(
 	return(EX_OK);
 }
 
-/* Our argp parser. */
+/* argp parser definition */
 static struct argp argp = {
 	options,parse_opt,args_doc,doc,0,0,0
 };
 
+/**
+ * @brief Parse command-line arguments and finalize parse-related configuration state
+ * @param argc Number of CLI arguments
+ * @param argv CLI argument vector
+ * @return SUCCESS for normal mode, INFO for informational mode, or failure flags on errors
+ */
 Return parse_arguments(
 	const int argc,
 	char      *argv[])
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	unsigned int parse_flags = ARGP_NO_EXIT | ARGP_NO_HELP;
 
 	information_mode_requested = false;
 
-	/* Parse arguments; every option seen by parse_opt will be
-	   reflected in arguments. */
+	/* Parse arguments and route each parser event through parse_opt */
 	error_t parse_error = argp_parse(&argp,argc,argv,parse_flags,0,0);
 
 	if(parse_error != EX_OK)
@@ -431,7 +442,7 @@ Return parse_arguments(
 	{
 		for(int i = 0; config->paths[i]; i++)
 		{
-			// Remove unnecessary trailing slash at the end of the directory path
+			// Normalize input path by removing trailing slash
 			remove_trailing_slash(config->paths[i]);
 		}
 	}
@@ -440,12 +451,12 @@ Return parse_arguments(
 	{
 		if(config->paths != NULL)
 		{
-			// The array with database names
+			// Reuse parsed positional arguments as database file paths
 			config->db_file_paths = config->paths;
 
 			for(int i = 0; config->db_file_paths[i] && (SUCCESS & status); i++)
 			{
-				// Create a copy of the path string for basename
+				// Duplicate the path because basename may modify the buffer
 				char *tmp = strdup(config->db_file_paths[i]);
 
 				if(tmp == NULL)
@@ -455,7 +466,7 @@ Return parse_arguments(
 					break;
 				}
 
-				// Get basename and handle possible NULL return
+				// Resolve basename and handle NULL result
 				const char *db_file_basename = basename(tmp);
 
 				if(db_file_basename == NULL)
@@ -488,7 +499,7 @@ Return parse_arguments(
 		provide(status);
 	}
 
-	/* Testing mode */
+	/* Testing-mode diagnostics */
 	{
 		slog(TESTING,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
 
@@ -503,13 +514,13 @@ Return parse_arguments(
 			slog(TESTING|UNDECOR,"\n");
 		}
 
-		// String descriptor length includes '\0'; >1 means there is actual content.
+		// String descriptor length includes '\0'; >1 means there is actual content
 		if(conf(db_primary_file_path)->length > 1)
 		{
 			slog(TESTING,"argument:database=%s\n",confstr(db_primary_file_path));
 		}
 
-		// String descriptor length includes '\0'; >1 means there is actual content.
+		// String descriptor length includes '\0'; >1 means there is actual content
 		if(conf(db_file_name)->length > 1)
 		{
 			slog(TESTING,"argument:db_file_name=%s\n",confstr(db_file_name));
@@ -541,7 +552,7 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:ignore=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->ignore[i] != NULL; ++i)
 			{
 				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
@@ -553,7 +564,7 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:include=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->include[i] != NULL; ++i)
 			{
 				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
@@ -565,7 +576,7 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:lock-checksum=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
 			{
 				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
@@ -645,7 +656,7 @@ Return parse_arguments(
 
 	}
 
-	/* Verbose mode */
+	/* Verbose-mode diagnostics */
 	{
 		slog(VERBOSE,"Configuration: ");
 		slog(VERBOSE|UNDECOR,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
@@ -661,13 +672,13 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
-		// String descriptor length includes '\0'; >1 means there is actual content.
+		// String descriptor length includes '\0'; >1 means there is actual content
 		if(conf(db_primary_file_path)->length > 1)
 		{
 			slog(VERBOSE|UNDECOR,"database=%s; ",confstr(db_primary_file_path));
 		}
 
-		// String descriptor length includes '\0'; >1 means there is actual content.
+		// String descriptor length includes '\0'; >1 means there is actual content
 		if(conf(db_file_name)->length > 1)
 		{
 			slog(VERBOSE|UNDECOR,"db_file_name=%s; ",confstr(db_file_name));
@@ -699,7 +710,7 @@ Return parse_arguments(
 		{
 			slog(VERBOSE|UNDECOR,"ignore=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->ignore[i] != NULL; ++i)
 			{
 				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
@@ -711,7 +722,7 @@ Return parse_arguments(
 		{
 			slog(VERBOSE|UNDECOR,"include=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->include[i] != NULL; ++i)
 			{
 				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
@@ -723,7 +734,7 @@ Return parse_arguments(
 		{
 			slog(VERBOSE|UNDECOR,"lock-checksum=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
 			{
 				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);

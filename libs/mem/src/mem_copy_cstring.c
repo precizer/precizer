@@ -12,10 +12,8 @@ Return memory_copy_cstring(
 	const char *source_buffer,
 	size_t     source_buffer_size)
 {
-	/** Return status
-	 *  The status that will be passed to provide() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	create(char,source_view);
 	size_t source_length = 0;

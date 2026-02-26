@@ -7,10 +7,10 @@
  *
  */
 
-Return detect_paths(void)
+Return paths_detect(void)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Don't do anything
@@ -40,7 +40,7 @@ Return detect_paths(void)
 		}
 	}
 
-	slog(TRACE,"Paths detected\n");
+	slog(TRACE,"Path detection is finished\n");
 
 	provide(status);
 }

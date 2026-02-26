@@ -65,8 +65,8 @@ static Return match_include_ignore(
  */
 Return file_list(TraversalSummary *summary)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Don't do anything

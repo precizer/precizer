@@ -110,6 +110,8 @@ static Return process_row(
 	sqlite3_stmt *stmt,
 	bool         *db_file_modified)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	int rc = SQLITE_OK;
@@ -193,6 +195,8 @@ static Return process_database(
 	sqlite3 *db,
 	bool    *db_file_modified)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3_stmt *stmt = NULL;
 	int rc = SQLITE_OK;
@@ -255,6 +259,8 @@ static Return process_database(
  */
 Return db_migrate_from_0_to_1(const char *db_file_path)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	char *err_msg = NULL;

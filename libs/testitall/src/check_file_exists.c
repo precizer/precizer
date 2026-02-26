@@ -19,6 +19,8 @@ Return check_file_exists(
 	bool       *file_exists,
 	const char *filename)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	*file_exists = false;

@@ -22,8 +22,8 @@ Return testitall(
 	const char *function_name,
 	const char *test_description)
 {
-	/// The status that will be passed to deliver() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Start time measurement */

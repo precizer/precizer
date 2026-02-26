@@ -26,8 +26,8 @@ Return db_update_the_record_by_id(
 	const bool           *zero_size_file,
 	const bool           *wrong_file_type)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Skip database operations in dry run mode --dry-run */

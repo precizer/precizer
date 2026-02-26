@@ -23,6 +23,8 @@ Return db_get_version(
 	int        *db_version,
 	const char *db_file_path)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;

@@ -16,10 +16,8 @@ Return memory_concat_buffer(
 	const void *source_buffer,
 	size_t     source_buffer_size)
 {
-	/** Return status
-	 *  The status that will be passed to provide() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(destination == NULL)

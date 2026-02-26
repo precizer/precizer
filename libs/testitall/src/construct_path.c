@@ -11,6 +11,8 @@ Return construct_path(
 	const char *filename,
 	memory     *full_path)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const char *tmp_dir = NULL;
 	size_t path_len = 0;

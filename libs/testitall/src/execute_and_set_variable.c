@@ -22,8 +22,8 @@ Return execute_and_set_variable(
 		return FAILURE;
 	}
 
-	/// The status that will be passed to deliver() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Create memory for storing command output

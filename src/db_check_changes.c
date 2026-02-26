@@ -14,6 +14,8 @@
  */
 static Return run_test_hook_bump_db_timestamps(void)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	const char *flag_value = getenv("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED");
@@ -67,6 +69,8 @@ static Return run_test_hook_bump_db_timestamps(void)
  */
 static Return run_test_hook_resync_db_stat_baseline(const struct stat *db_current_stat)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	const char *flag_value = getenv("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED");
@@ -113,10 +117,8 @@ static Return run_test_hook_resync_db_stat_baseline(const struct stat *db_curren
 
 Return db_check_changes(void)
 {
-	/** @var Return status
-	 *  @brief The status that will be passed to provide() before exiting
-	 *  @details By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	struct stat db_current_stat = {0};

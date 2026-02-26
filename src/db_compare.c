@@ -15,8 +15,8 @@ static Return compose_sql(
 	const char *db_path,
 	int        db_num)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(asprintf(sql,"ATTACH DATABASE '%s' as db%d;",db_path,db_num) == -1)
@@ -42,8 +42,8 @@ static Return db_attach(
 	int db_A,
 	int db_B)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	char *select_sql = NULL;
@@ -74,8 +74,8 @@ static Return db_attach(
  */
 static Return db_detach(const char *db_alias)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	sqlite3_stmt *stmt = NULL;
@@ -138,8 +138,8 @@ static Return db_changes(
 	int        db_A,
 	int        db_B)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	bool first_iteration = true;
@@ -214,8 +214,8 @@ static Return db_changes(
  */
 Return db_compare(void)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	bool attached_db1 = false;

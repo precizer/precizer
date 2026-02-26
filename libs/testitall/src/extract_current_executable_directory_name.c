@@ -31,10 +31,8 @@ Return extract_current_executable_directory_name(
 	char   *environment,
 	size_t environment_size)
 {
-	/** Return status
-	 *  The status that will be passed to deliver() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	char exe_path[PATH_MAX];

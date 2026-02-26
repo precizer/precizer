@@ -12,8 +12,8 @@ Return db_read_file_data_from(
 #endif
 	const char *relative_path)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Read from SQL */

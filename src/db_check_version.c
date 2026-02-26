@@ -13,6 +13,8 @@ Return db_check_version(
 	const char *db_file_path,
 	const char *db_file_name)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Interrupt the function smoothly */

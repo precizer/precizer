@@ -21,6 +21,8 @@ Return db_specify_version(
 	const char *db_file_path,
 	int        version)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;

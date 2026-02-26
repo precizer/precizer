@@ -15,8 +15,8 @@ Return db_delete_the_record_by_id(
 	const char         *relative_path,
 	const char         *runtime_path_prefix)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Indicates removal due to missing or unreadable path
