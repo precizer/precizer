@@ -5,7 +5,7 @@
  * Attempt to modify files protected by the --lock-checksum
  *
  */
-static Return test0027_1_lock_checksum(void)
+static Return test0027_1(void)
 {
 	INITTEST;
 
@@ -97,7 +97,7 @@ Return test0027(void)
 {
 	INITTEST;
 
-	TEST(test0027_1_lock_checksum,"Attempt to modify files protected by the --lock-checksum…");
+	TEST(test0027_1,"Attempt to modify files protected by the --lock-checksum…");
 
 	RETURN_STATUS;
 }

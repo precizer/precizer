@@ -234,7 +234,7 @@ static bool form_real_matches_portable(
 	return fabsl(parsed - expected) <= tolerance;
 }
 
-static Return test0032_formatters(void)
+static Return test0032_1(void)
 {
 	INITTEST;
 
@@ -406,7 +406,7 @@ Return test0032(void)
 {
 	INITTEST;
 
-	TEST(test0032_formatters,"rational formatting helpers…");
+	TEST(test0032_1,"rational formatting helpers…");
 
 	RETURN_STATUS;
 }

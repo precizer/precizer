@@ -10,7 +10,7 @@
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
-static Return test0011_1_readme(void)
+static Return test0011_1(void)
 {
 	INITTEST;
 
@@ -84,7 +84,7 @@ static Return test0011_1_readme(void)
  * rm -rf tests/examples/diffs/diff1
  * mv tests/examples/diff1_backup tests/examples/diffs/diff1
  */
-static Return test0011_2_readme(void)
+static Return test0011_2(void)
 {
 	INITTEST;
 
@@ -181,7 +181,7 @@ static Return test0011_2_readme(void)
  *
  *
  */
-static Return test0011_3_readme(void)
+static Return test0011_3(void)
 {
 	INITTEST;
 
@@ -227,7 +227,7 @@ static Return test0011_3_readme(void)
  * Additional information with --verbose mode
  *
  */
-static Return test0011_4_readme(void)
+static Return test0011_4(void)
 {
 	INITTEST;
 
@@ -268,7 +268,7 @@ static Return test0011_4_readme(void)
  *
  *
  */
-static Return test0011_5_readme(void)
+static Return test0011_5(void)
 {
 	INITTEST;
 
@@ -310,7 +310,7 @@ static Return test0011_5_readme(void)
  *
  *
  */
-static Return test0011_6_readme(void)
+static Return test0011_6(void)
 {
 	INITTEST;
 
@@ -344,7 +344,7 @@ static Return test0011_6_readme(void)
  * using many --ignore options
  *
  */
-static Return test0011_7_readme(void)
+static Return test0011_7(void)
 {
 	INITTEST;
 
@@ -378,7 +378,7 @@ static Return test0011_7_readme(void)
  *
  *
  */
-static Return test0011_8_readme(void)
+static Return test0011_8(void)
 {
 	INITTEST;
 
@@ -428,14 +428,14 @@ Return test0011(void)
 	/// By default, the function worked without errors.
 	INITTEST;
 
-	TEST(test0011_1_readme,"README Example 1 Adding and comparing…");
-	TEST(test0011_2_readme,"README Example 2 Updating the data in DB…");
-	TEST(test0011_3_readme,"README Example 3 --silent mode…");
-	TEST(test0011_4_readme,"README Example 4 --verbose mode…");
-	TEST(test0011_5_readme,"README Example 5 Disable recursion with --maxdepth…");
-	TEST(test0011_6_readme,"README Example 6 Relative path to ignore with --ignore…");
-	TEST(test0011_7_readme,"README Example 7 Multiple regexp for ignoring…");
-	TEST(test0011_8_readme,"README Example 8 The --ignore options together with --include…");
+	TEST(test0011_1,"README Example 1 Adding and comparing…");
+	TEST(test0011_2,"README Example 2 Updating the data in DB…");
+	TEST(test0011_3,"README Example 3 --silent mode…");
+	TEST(test0011_4,"README Example 4 --verbose mode…");
+	TEST(test0011_5,"README Example 5 Disable recursion with --maxdepth…");
+	TEST(test0011_6,"README Example 6 Relative path to ignore with --ignore…");
+	TEST(test0011_7,"README Example 7 Multiple regexp for ignoring…");
+	TEST(test0011_8,"README Example 8 The --ignore options together with --include…");
 	SUTE(test0030,"README Examples 9 & 10: --lock-checksum with --rehash-locked and --watch-timestamps…");
 	SUTE(test0029,"README Example 11: Testing how the application behaves with inaccessible files…");
 

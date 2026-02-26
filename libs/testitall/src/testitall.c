@@ -52,7 +52,7 @@ Return testitall(
 	{
 		/* Green OK for passed tests */
 		fprintf(stdout,WHITE "[  " BOLDGREEN "OK" RESET WHITE  "  ]" RESET );
-		fprintf(stdout,WHITE " %s %s %s" RESET,elapsed_time_text,function_name,test_description);
+		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		const char *extend_buffer = getcstring(EXTEND);
@@ -66,7 +66,7 @@ Return testitall(
 	} else if(DONOTHING & status){
 		/* Green OK for passed tests */
 		fprintf(stdout,WHITE "[ " BOLDYELLOW "SKIP" RESET WHITE  " ]" RESET );
-		fprintf(stdout,WHITE " %s %s %s" RESET,elapsed_time_text,function_name,test_description);
+		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		const char *extend_buffer = getcstring(EXTEND);
@@ -80,7 +80,7 @@ Return testitall(
 	} else {
 		/* Red FAIL for failed tests */
 		fprintf(stdout,WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" RESET );
-		fprintf(stdout,WHITE " %s %s %s" RESET,elapsed_time_text,function_name,test_description);
+		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		const char *extend_buffer = getcstring(EXTEND);

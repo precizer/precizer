@@ -44,7 +44,7 @@ static void print_hash(const unsigned char *hash)
  * @retval SUCCESS if test passed
  * @retval FAILURE if test failed
  */
-static Return test0007_1_libmem(void)
+static Return test0007_1(void)
 {
 	INITTEST;
 
@@ -73,7 +73,7 @@ static Return test0007_1_libmem(void)
  * @retval SUCCESS if memory allocation worked and hashes match
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
-static Return test0007_2_libmem(void)
+static Return test0007_2(void)
 {
 	INITTEST;
 
@@ -163,7 +163,7 @@ static Return test0007_2_libmem(void)
  * @retval SUCCESS if memory allocation worked and hashes match
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
-static Return test0007_3_libmem(void)
+static Return test0007_3(void)
 {
 	INITTEST;
 
@@ -259,7 +259,7 @@ static Return test0007_3_libmem(void)
  * @retval SUCCESS if all three tests pass
  * @retval FAILURE if any test fails or memory allocation fails
  */
-static Return test0007_4_5_6_libmem(void)
+static Return test0007_4(void)
 {
 	INITTEST;
 
@@ -473,7 +473,7 @@ static Return test0007_4_5_6_libmem(void)
  * @brief Multiple tests with unsigned long long int type and different array sizes
  *
  */
-static Return test0007_7_libmem_multiple(void)
+static Return test0007_5(void)
 {
 	INITTEST;
 
@@ -490,7 +490,7 @@ static Return test0007_7_libmem_multiple(void)
  * @brief Multiple tests with char type and different array sizes
  *
  */
-static Return test0007_8_libmem_multiple(void)
+static Return test0007_6(void)
 {
 	INITTEST;
 
@@ -507,7 +507,7 @@ static Return test0007_8_libmem_multiple(void)
  * @brief Multiple tests with int type and different array sizes
  *
  */
-static Return test0007_9_libmem_multiple(void)
+static Return test0007_7(void)
 {
 	INITTEST;
 
@@ -524,7 +524,7 @@ static Return test0007_9_libmem_multiple(void)
  * @brief Multiple tests with undigned char type and different array sizes
  *
  */
-static Return test0007_10_libmem_multiple(void)
+static Return test0007_8(void)
 {
 	INITTEST;
 
@@ -537,7 +537,7 @@ static Return test0007_10_libmem_multiple(void)
 	RETURN_STATUS;
 }
 
-static Return test0007_11_libmem_telemetry_counters(void)
+static Return test0007_9(void)
 {
 	INITTEST;
 
@@ -616,15 +616,15 @@ Return test0007(void)
 {
 	INITTEST;
 
-	TEST(test0007_1_libmem,"Copy an array of 0 size…");
-	TEST(test0007_2_libmem,"libmem Memory allocator test 1…");
-	TEST(test0007_3_libmem,"libmem Memory allocator test 2…");
-	TEST(test0007_4_5_6_libmem,"libmem Memory allocator tests 4,5,6…");
-	TEST(test0007_7_libmem_multiple,"libmem generate multiple tests unsigned long long int type…");
-	TEST(test0007_8_libmem_multiple,"libmem generate multiple tests char type…");
-	TEST(test0007_9_libmem_multiple,"libmem generate multiple tests int type…");
-	TEST(test0007_10_libmem_multiple,"libmem generate multiple tests unsigned char type…");
-	TEST(test0007_11_libmem_telemetry_counters,"libmem telemetry counters…");
+	TEST(test0007_1,"Copy an array of 0 size…");
+	TEST(test0007_2,"libmem Memory allocator test 1…");
+	TEST(test0007_3,"libmem Memory allocator test 2…");
+	TEST(test0007_4,"libmem Memory allocator tests 4,5,6…");
+	TEST(test0007_5,"libmem generate multiple tests unsigned long long int type…");
+	TEST(test0007_6,"libmem generate multiple tests char type…");
+	TEST(test0007_7,"libmem generate multiple tests int type…");
+	TEST(test0007_8,"libmem generate multiple tests unsigned char type…");
+	TEST(test0007_9,"libmem telemetry counters…");
 
 	RETURN_STATUS;
 }

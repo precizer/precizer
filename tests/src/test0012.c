@@ -21,7 +21,7 @@ static Return verify_array_contents(
 	return(status);
 }
 
-static Return test_add_string_to_empty_array(void)
+static Return test0012_1(void)
 {
 	INITTEST;
 
@@ -39,7 +39,7 @@ static Return test_add_string_to_empty_array(void)
 	RETURN_STATUS;
 }
 
-static Return test_add_multiple_strings(void)
+static Return test0012_2(void)
 {
 	INITTEST;
 
@@ -61,7 +61,7 @@ static Return test_add_multiple_strings(void)
 	RETURN_STATUS;
 }
 
-static Return test_add_empty_string(void)
+static Return test0012_3(void)
 {
 	INITTEST;
 
@@ -79,7 +79,7 @@ static Return test_add_empty_string(void)
 	RETURN_STATUS;
 }
 
-static Return test_add_long_string(void)
+static Return test0012_4(void)
 {
 	INITTEST;
 
@@ -108,10 +108,10 @@ Return test0012(void)
 {
 	INITTEST;
 
-	TEST(test_add_string_to_empty_array,"Adding string to empty array…");
-	TEST(test_add_multiple_strings,"Testing adding multiple strings…");
-	TEST(test_add_empty_string,"Testing adding empty string…");
-	TEST(test_add_long_string,"Testing adding long string…");
+	TEST(test0012_1,"Adding string to empty array…");
+	TEST(test0012_2,"Testing adding multiple strings…");
+	TEST(test0012_3,"Testing adding empty string…");
+	TEST(test0012_4,"Testing adding long string…");
 
 	RETURN_STATUS;
 }

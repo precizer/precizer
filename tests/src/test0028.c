@@ -92,7 +92,7 @@ static Return prepare_compare_filter_differences_fixture(void)
 
 	del(result);
 
-	RETURN_STATUS;
+	deliver(status);
 }
 
 /**
@@ -109,7 +109,7 @@ static Return cleanup_compare_filter_differences_fixture(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	RETURN_STATUS;
+	deliver(status);
 }
 
 /**
@@ -143,7 +143,7 @@ static Return prepare_compare_filter_equal_fixture(void)
 
 	del(result);
 
-	RETURN_STATUS;
+	deliver(status);
 }
 
 /**
@@ -158,13 +158,13 @@ static Return cleanup_compare_filter_equal_fixture(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	RETURN_STATUS;
+	deliver(status);
 }
 
 /**
  * One file is removed, updated, and added at a time
  */
-static Return test0028_1_test(void)
+static Return test0028_1(void)
 {
 	INITTEST;
 
@@ -242,7 +242,7 @@ static Return test0028_1_test(void)
 /**
  * One file is removed. It should be reflected as a change in one of the databases.
  */
-static Return test0028_2_test(void)
+static Return test0028_2(void)
 {
 	INITTEST;
 
@@ -318,7 +318,7 @@ static Return test0028_2_test(void)
 /**
  * One file is added. It should be reflected as a change in one of the databases.
  */
-static Return test0028_3_test(void)
+static Return test0028_3(void)
 {
 	INITTEST;
 
@@ -394,7 +394,7 @@ static Return test0028_3_test(void)
 /**
  * One file is updated and its checksum should change
  */
-static Return test0028_4_test(void)
+static Return test0028_4(void)
 {
 	INITTEST;
 
@@ -470,7 +470,7 @@ static Return test0028_4_test(void)
 /**
  * Nothing changes. The databases should be equivalent
  */
-static Return test0028_5_test(void)
+static Return test0028_5(void)
 {
 	INITTEST;
 
@@ -512,7 +512,7 @@ static Return test0028_5_test(void)
 /**
  * Compare-filter combinations in compare mode and argument validation.
  */
-static Return test0028_6_compare_filter_combinations_test(void)
+static Return test0028_6(void)
 {
 	INITTEST;
 
@@ -607,7 +607,7 @@ static Return test0028_6_compare_filter_combinations_test(void)
 /**
  * Invalid --compare-filter value should fail argument parsing
  */
-static Return test0028_7_compare_filter_invalid_value_test(void)
+static Return test0028_7(void)
 {
 	INITTEST;
 
@@ -629,13 +629,13 @@ Return test0028(void)
 {
 	INITTEST;
 
-	TEST(test0028_1_test,"One file is removed, updated, and added at a time…");
-	TEST(test0028_2_test,"One file is removed. It should be reflected as a change in one of the databases…");
-	TEST(test0028_3_test,"One file is added. It should be reflected as a change in one of the databases…");
-	TEST(test0028_4_test,"One file is updated and its checksum should change…");
-	TEST(test0028_5_test,"Nothing changes. The databases should be equivalent…");
-	TEST(test0028_6_compare_filter_combinations_test,"All supported --compare-filter combinations should behave as expected…");
-	TEST(test0028_7_compare_filter_invalid_value_test,"Invalid --compare-filter value should fail with an argument parsing error…");
+	TEST(test0028_1,"One file is removed, updated, and added at a time…");
+	TEST(test0028_2,"One file is removed. It should be reflected as a change in one of the databases…");
+	TEST(test0028_3,"One file is added. It should be reflected as a change in one of the databases…");
+	TEST(test0028_4,"One file is updated and its checksum should change…");
+	TEST(test0028_5,"Nothing changes. The databases should be equivalent…");
+	TEST(test0028_6,"All supported --compare-filter combinations should behave as expected…");
+	TEST(test0028_7,"Invalid --compare-filter value should fail with an argument parsing error…");
 
 	RETURN_STATUS;
 }
