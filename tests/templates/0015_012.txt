@@ -5,6 +5,7 @@ TESTING:argument:database=0015_database_v3 это база данных с пр�
 TESTING:argument:db_file_name=0015_database_v3 это база данных с пробелами и символами UTF-8\.db
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory

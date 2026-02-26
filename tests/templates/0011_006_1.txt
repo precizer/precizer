@@ -1,4 +1,5 @@
-\APrimary database file name: %DB_NAME%
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: %DB_NAME%
 The path %DB_NAME% doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
 File traversal started

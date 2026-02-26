@@ -51,15 +51,18 @@ int test_main(
 	// Use pointer form for consistency.
 	TraversalSummary *summary = &_summary;
 
-	// Print program identity
-	about();
-
 	// Initialize configuration with values
 	init_config();
 
 	// Fill Config structure
 	// parsing command line arguments
 	run(parse_arguments(argc,argv));
+
+	// Print program identity only when argument parsing is not in info mode
+	if((status & INFO) == false)
+	{
+		about();
+	}
 
 	// Verify that the provided paths exist and
 	// are directories

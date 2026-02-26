@@ -8,6 +8,7 @@ TESTING:argument:watch-timestamps=yes
 TESTING:argument:rehash-locked=yes
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory

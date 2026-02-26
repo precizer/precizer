@@ -1,4 +1,5 @@
-\APrimary database file name: database1\.db
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: database1\.db
 Starting database file database1\.db integrity check…
 Database database1\.db has been verified and is in good condition
 Update mode enabled for DB database1\.db
@@ -19,6 +20,7 @@ The primary database has been vacuumed
 The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!
+precizer [0-9]+\.[0-9]+\.[0-9]+
 The comparison of database1\.db and database2\.db databases is starting…
 Starting database file database1\.db integrity check…
 Database database1\.db has been verified and is in good condition
@@ -32,6 +34,7 @@ Comparison of database1\.db and database2\.db databases is complete
 The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!
+precizer [0-9]+\.[0-9]+\.[0-9]+
 Primary database file name: database1\.db
 Starting database file database1\.db integrity check…
 Database database1\.db has been verified and is in good condition
@@ -53,6 +56,7 @@ The primary database has been vacuumed
 The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!
+precizer [0-9]+\.[0-9]+\.[0-9]+
 The comparison of database1\.db and database2\.db databases is starting…
 Starting database file database1\.db integrity check…
 Database database1\.db has been verified and is in good condition
