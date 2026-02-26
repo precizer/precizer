@@ -194,8 +194,6 @@ Return extract_current_executable_directory_name(
 	char *,
 	size_t);
 
-#define SKIPPED 100500
-
 /**
  * @brief Macro for executing a test.
  * @param func The function to test.
@@ -239,10 +237,11 @@ Return extract_current_executable_directory_name(
 	if(TRIUMPH & status) \
 	{ \
 		printf(WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
-		deliver(COMPLETED); \
+		return((int)COMPLETED); \
 	} else { \
 		printf(WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
-		deliver(status); \
+		printf("Exit status » %s\n",show_status(status)); \
+		return((int)status); \
 	}
 
 // Initializes a test. Defines the return value as SUCCESS or FAILURE.
@@ -258,7 +257,7 @@ Return extract_current_executable_directory_name(
 	if(env_var != NULL && strncasecmp(env_var,compare_string,strlen(compare_string)) == 0) \
 	{ \
 		echo(EXTEND,BOLDYELLOW "↯" BOLDWHITE " skipped" RESET); \
-		deliver(SKIPPED); \
+		deliver(DONOTHING); \
 	}
 
 Return testitall(
