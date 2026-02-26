@@ -58,7 +58,7 @@ jobs:
 
       - name: Build project (Linux x86_64)
         run: |
-          make portable
+          make -j portable
           mkdir v${{ env.VERSION }}
           cp -a precizer v${{ env.VERSION }}/
           zip -r precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/
@@ -68,7 +68,7 @@ jobs:
           make purge
 
       - name: Run tests (Linux x86_64)
-        run: make tests
+        run: make -j tests
 
       - name: Upload Linux x86_64 asset
         env:
@@ -104,7 +104,7 @@ jobs:
 
       - name: Build project (Linux arm64)
         run: |
-          make portable
+          make -j portable
           mkdir v${{ env.VERSION }}
           cp -a .builds/portable/precizer v${{ env.VERSION }}/
           zip -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/
@@ -114,7 +114,7 @@ jobs:
           make purge
 
       - name: Run tests (Linux arm64)
-        run: make tests
+        run: make -j tests
 
       - name: Upload Linux arm64 asset
         env:
@@ -158,7 +158,7 @@ jobs:
 
       - name: Build project (macOS arm64)
         run: |
-          make dynamic-production
+          make -j dynamic-production
           otool -L precizer
           otool -l precizer
           mkdir v${{ env.VERSION }}
@@ -168,7 +168,7 @@ jobs:
           make purge
 
       - name: Run tests (macOS arm64)
-        run: make tests
+        run: make -j tests
 
       - name: Upload macOS arm64 asset
         env:
