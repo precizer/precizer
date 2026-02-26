@@ -283,10 +283,6 @@ int xdl_prepare_env(
 	xdfenv_t *xe);
 void xdl_free_env(xdfenv_t *xe);
 
-int xdlt_load_mmfile(
-	char const *fname,
-	mmfile_t   *mf);
-
 long xdl_bogosqrt(long n) __attribute__((const));
 int xdl_emit_diffrec(
 	char const *rec,
