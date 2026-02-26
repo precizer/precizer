@@ -6,6 +6,7 @@ TESTING:argument:db_file_name=lock_s6\.db
 TESTING:argument:lock-checksum=\^path1/.*
 TESTING:argument:progress=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/diffs/diff1 exists
 TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory

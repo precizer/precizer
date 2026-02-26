@@ -1,5 +1,5 @@
 \ATESTING:Configuration initialized
-precizer [0-9]+\.[0-9]+\.[0-9]+
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 Usage: precizer \[OPTION\.\.\.\] PATH
 [\s\S]*? Compare databases options:
 [\s\S]*?  -c, --compare[^\n]*

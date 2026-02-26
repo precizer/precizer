@@ -320,13 +320,16 @@ static error_t parse_opt(
 		case 'h':
 		case '?':
 			information_mode_requested = true;
+			about();
 			argp_state_help(state,state->out_stream,ARGP_HELP_STD_HELP & ~(ARGP_HELP_EXIT_OK | ARGP_HELP_EXIT_ERR));
 			break;
 		case 'V':
 			information_mode_requested = true;
+			about();
 			break;
 		case 'z':
 			information_mode_requested = true;
+			about();
 			argp_state_help(state,state->out_stream,ARGP_HELP_USAGE);
 			break;
 		case ARGP_KEY_NO_ARGS:
@@ -338,6 +341,7 @@ static error_t parse_opt(
 			if(state->argc == 1)
 			{
 				information_mode_requested = true;
+				about();
 				argp_usage(state);
 				break;
 			}

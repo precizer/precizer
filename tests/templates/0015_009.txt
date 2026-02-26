@@ -6,6 +6,7 @@ TESTING:argument:db_file_names=%DB_NAME%, 0015_database_v1\.db
 TESTING:argument:update=yes
 TESTING:argument:compare=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+

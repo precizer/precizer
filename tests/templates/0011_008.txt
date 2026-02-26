@@ -1,4 +1,5 @@
-\APrimary database file name: %DB_NAME%
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: %DB_NAME%
 Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage

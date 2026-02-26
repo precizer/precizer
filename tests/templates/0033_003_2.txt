@@ -6,6 +6,7 @@ TESTING:argument:db_file_name=0033_interrupt_resume\.db
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/examples/huge exists
 TESTING:The path tests/examples/huge is exists and it is a directory
