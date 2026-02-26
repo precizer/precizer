@@ -63,7 +63,7 @@ Return testitall(
 		}
 		fprintf(stdout,"\n");
 
-	} else if(SKIPPED == status){
+	} else if(DONOTHING & status){
 		/* Green OK for passed tests */
 		fprintf(stdout,WHITE "[ " BOLDYELLOW "SKIP" RESET WHITE  " ]" RESET );
 		fprintf(stdout,WHITE " %s %s %s" RESET,elapsed_time_text,function_name,test_description);
