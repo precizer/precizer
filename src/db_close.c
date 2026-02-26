@@ -9,6 +9,8 @@ Return db_close(
 	sqlite3    *db,
 	const bool *db_file_modified)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Cleanup and close previously used DB */

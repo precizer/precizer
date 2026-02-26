@@ -12,10 +12,8 @@ Return db_sql_wrap_string(
 	memory     *destination,
 	const char *source)
 {
-	/** Return status
-	 *  The status that will be passed to provide() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(destination == NULL || source == NULL)

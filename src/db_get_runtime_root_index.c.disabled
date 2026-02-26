@@ -5,8 +5,8 @@ Return db_get_runtime_root_index
 	const char *runtime_path_prefix,
 	sqlite3_int64 *path_prefix_index
 ){
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	*path_prefix_index = -1;

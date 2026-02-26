@@ -189,5 +189,5 @@ void init_config(void)
 	}
 #endif
 
-	slog(TRACE,"Configuration initialized\n");
+	slog(TRACE,"Configuration initialization is finished\n");
 }

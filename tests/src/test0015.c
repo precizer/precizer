@@ -9,6 +9,8 @@ static Return open_db_from_tmpdir(
 	const int  open_flags,
 	sqlite3    **db_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	create(char,db_path);
@@ -48,6 +50,8 @@ static Return read_first_row_id(
 	const char    *db_filename,
 	sqlite3_int64 *row_id_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -105,6 +109,8 @@ static Return overwrite_stat_blob_by_row_id(
 	const void          *blob,
 	const int           blob_size)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -162,6 +168,8 @@ static Return read_files_count(
 	const char *db_filename,
 	int        *count_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -218,6 +226,8 @@ static Return read_files_count_with_blob_size(
 	const int  blob_size,
 	int        *count_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -278,6 +288,8 @@ static Return read_db_version_from_metadata(
 	const char *db_filename,
 	int        *db_version_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -333,6 +345,8 @@ static Return set_db_version_in_metadata(
 	const char *db_filename,
 	const int  db_version)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -388,6 +402,8 @@ static Return read_stat_blob_by_row_id(
 	const size_t        blob_out_size,
 	int                 *blob_size_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -476,6 +492,8 @@ static Return read_cmpctstat_by_row_id(
 	const sqlite3_int64 row_id,
 	CmpctStat           *stat_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	unsigned char raw[sizeof(CmpctStat)];
 	int blob_size = 0;
@@ -543,6 +561,8 @@ static Return corrupt_first_row_stat_blob(
 	const char    *db_filename,
 	sqlite3_int64 *row_id_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3_int64 row_id = 0;
 	const unsigned char corrupt_blob[] = {0xA5};
@@ -568,6 +588,8 @@ static Return corrupt_first_row_stat_blob(
 static Return create_abort_on_second_stat_update_trigger(
 	const char *db_filename)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	const char *sql =

@@ -1,4 +1,4 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=/.*/examples/diffs/diff1
 TESTING:argument:database=/.*database1\.db
@@ -8,7 +8,7 @@ TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path /.*/examples/diffs/diff1 exists
 TESTING:The path /.*/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
@@ -57,7 +57,7 @@ TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
 TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
-TESTING:Configuration initialized
+TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:paths=/.*tests/examples/long
 TESTING:argument:database=/.*database1\.db
@@ -69,7 +69,7 @@ TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path /.*tests/examples/long exists
 TESTING:The path /.*tests/examples/long is exists and it is a directory
-TESTING:Paths detected
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+

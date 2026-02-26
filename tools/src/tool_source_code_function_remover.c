@@ -70,6 +70,8 @@ static void free_function_names(FunctionNames *names);
  */
 __attribute__((pure)) static Return is_c_source_file(const char *filename)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const char *extension = NULL;
 
@@ -111,6 +113,8 @@ Return update_declaration_state(
 	DeclarationState *state,
 	char             c)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(NULL == state)
@@ -153,6 +157,8 @@ Return update_declaration_state(
  */
 static Return init_declaration_state(DeclarationState *state)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(NULL == state)
@@ -184,6 +190,8 @@ __attribute__((pure)) static Return is_function_declaration(
 	const char *line,
 	const char *function_name)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	char *pos = NULL;
 	const char *name_end = NULL;
@@ -235,6 +243,8 @@ static Return remove_functions(
 	const char          *filename,
 	const FunctionNames *names)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *source = NULL;
 	FILE *temp = NULL;
@@ -399,6 +409,8 @@ static Return process_directory_entry(
 	const struct dirent *entry,
 	const FunctionNames *names)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	char full_path[MAX_PATH_LENGTH];
 	struct stat path_stat;
@@ -461,6 +473,8 @@ static Return init_function_names(
 	char          **argv,
 	FunctionNames *names)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	size_t array_size = 0;
 	int function_count = 0;
@@ -565,6 +579,8 @@ __attribute__((pure)) static Return is_target_function(
 	const char          *line,
 	const FunctionNames *names)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = FAILURE;
 
 	if(NULL != line && NULL != names)
@@ -594,6 +610,8 @@ static Return process_directory(
 	const char          *dir_path,
 	const FunctionNames *names)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	DIR *dir = NULL;
 	const struct dirent *entry = NULL;
@@ -640,6 +658,8 @@ int main(
 	int  argc,
 	char **argv)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FunctionNames names = {NULL,0};
 

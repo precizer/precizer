@@ -1,4 +1,4 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 Usage: precizer \[-cfoTuXCr(?:h|\?)pqsvVz\]
 \s+\[-F checksum-mismatch\|first-source-only\|second-source-only\]

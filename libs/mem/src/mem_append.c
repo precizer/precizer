@@ -5,6 +5,8 @@ Return memory_append(
 	memory       *destination,
 	const memory *source)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(destination == NULL || source == NULL)

@@ -17,6 +17,8 @@ Return match_pattern(
 	const memory *pattern,
 	...)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const char *text_view = NULL;
 	const char *pattern_view = NULL;

@@ -25,8 +25,8 @@ Return add_string_to_array(
 	char       ***array_ptr,
 	const char *new_string)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(array_ptr == NULL)

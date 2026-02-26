@@ -15,6 +15,8 @@
  */
 Return trim_trailing_eol(memory *buffer)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(buffer == NULL)

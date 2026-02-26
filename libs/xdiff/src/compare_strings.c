@@ -16,6 +16,8 @@ typedef struct {
  */
 static output_buffer_t *init_output_buffer(void)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	output_buffer_t *buf = NULL;
 
@@ -133,6 +135,8 @@ static Return create_mmfile(
 	mmfile_t   *mmf,
 	const char *content)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	size_t size = 0;
 	void *data = NULL;
@@ -191,6 +195,8 @@ Return compare_strings(
 	const char *string1,
 	const char *string2)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	mmfile_t mf1,mf2;
 	xpparam_t xpp;

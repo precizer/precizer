@@ -16,10 +16,8 @@ Return db_finalize(
 	const char   *db_alias,
 	sqlite3_stmt **stmt)
 {
-	/** Return status
-	 *  The status that will be passed to provide() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(db == NULL || db_alias == NULL || stmt == NULL)

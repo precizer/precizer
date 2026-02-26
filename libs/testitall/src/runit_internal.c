@@ -36,6 +36,8 @@ Return runit_reset_result_buffers(
 	memory *stdout_result,
 	memory *stderr_result)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(NULL != stdout_result)
@@ -56,6 +58,8 @@ Return runit_reset_result_buffers(
  */
 Return runit_validate_runtime_mode(enum run_mode mode)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(EXTERNAL_CALL != mode && INTERNAL_TEST != mode)
@@ -85,6 +89,8 @@ Return runit_call_prepare(
 	enum run_mode     mode,
 	const char        *arguments)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	const char *bindir = NULL;
@@ -223,6 +229,8 @@ Return runit_prepare_call_and_capture(
 	int                          expected_return_code,
 	unsigned int                 buffer_policy)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	run(runit_call_prepare(call,mode,arguments));
@@ -256,6 +264,8 @@ Return runit_wait_child(
 	int        *wait_status,
 	const char *context_label)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	pid_t waited_pid = (pid_t)-1;

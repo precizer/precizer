@@ -42,8 +42,8 @@ int test_main(
 	char **argv)
 #endif // TESTITALL
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Stack storage for traversal stats, zero-initialized.
@@ -66,7 +66,7 @@ int test_main(
 
 	// Verify that the provided paths exist and
 	// are directories
-	run(detect_paths());
+	run(paths_detect());
 
 	// Initialize signals interception like Ctrl+C
 	run(init_signals());

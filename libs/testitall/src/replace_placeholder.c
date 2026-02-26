@@ -9,6 +9,8 @@ Return replace_placeholder(
 	const char *placeholder,
 	const char *replacement)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if((pattern == NULL) || (placeholder == NULL) || (replacement == NULL))

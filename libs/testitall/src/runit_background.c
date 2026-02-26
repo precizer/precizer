@@ -138,6 +138,8 @@ static Return runit_wait_env_snapshot(
 	char       **saved_value,
 	bool       *had_value)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	*saved_value = NULL;
@@ -167,6 +169,8 @@ static Return runit_wait_env_set_numeric(
 	const char *name,
 	uint64_t   value)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	char value_text[32];
 
@@ -189,6 +193,8 @@ static Return runit_wait_env_restore_one(
 	const char *saved_value,
 	bool       had_value)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(true == had_value)
@@ -221,6 +227,8 @@ static Return runit_wait_env_set(
 	unsigned int          wait_point,
 	struct runit_wait_env *state)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	for(size_t i = 0U; i < RUNIT_WAIT_ENV_COUNT; i++)
@@ -254,6 +262,8 @@ static Return runit_wait_env_set(
  */
 static Return runit_wait_env_restore(const struct runit_wait_env *state)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	for(size_t i = 0U; i < RUNIT_WAIT_ENV_COUNT; i++)
@@ -294,6 +304,8 @@ Return runit_background(
 	int          signal_number,
 	unsigned int wait_point)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const char *safe_arguments = "";
 

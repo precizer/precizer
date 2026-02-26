@@ -37,6 +37,8 @@ Return show_difference(
 		return(SUCCESS);
 	}
 
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	create(Flags,flags);

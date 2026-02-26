@@ -79,8 +79,8 @@ Return sha512sum(
 	int              *read_errno,
 	bool             *wrong_file_type)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(file_buffer->length == 0)

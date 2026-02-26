@@ -19,10 +19,8 @@
  */
 Return db_primary_file_validate_existence(void)
 {
-	/** @var Return status
-	 *  @brief The status that will be passed to provide() before exiting
-	 *  @details By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Interrupt the function smoothly */

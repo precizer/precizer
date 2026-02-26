@@ -24,6 +24,8 @@ Return stat_copy(
 	const struct stat *source,
 	CmpctStat         *destination)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(source == NULL || destination == NULL)

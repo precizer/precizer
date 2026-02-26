@@ -13,8 +13,8 @@
  */
 Return db_test(const char *db_file_path)
 {
-	/// The status that will be passed to provide() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	sqlite3_stmt *select_stmt = NULL;

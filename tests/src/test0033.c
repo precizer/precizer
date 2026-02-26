@@ -7,6 +7,8 @@ static Return compute_file_sha512(
 	const char    *file_path,
 	unsigned char *sha512_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *file = NULL;
 	unsigned char buffer[65536];
@@ -72,6 +74,8 @@ static Return read_resume_state_from_db(
 	sqlite3_int64  *offset_out,
 	int            *md_context_bytes_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -157,6 +161,8 @@ static Return read_final_sha512_from_db(
 	sqlite3_int64  *offset_out,
 	unsigned char  *sha512_out)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;

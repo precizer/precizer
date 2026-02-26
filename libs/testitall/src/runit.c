@@ -40,6 +40,8 @@ static Return runit_internal_enter(
 	const char                   *tmpdir,
 	struct runit_capture_session *capture)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	guard->previous_cwd = getcwd(NULL,0);
@@ -103,6 +105,8 @@ static Return runit_internal_enter(
  */
 static Return runit_internal_leave(struct runit_internal_guard *guard)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(true == guard->stdio_saved)
@@ -178,6 +182,8 @@ Return runit(
 	const int    expected_return_code,
 	unsigned int buffer_policy)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const char *safe_arguments = "";
 
