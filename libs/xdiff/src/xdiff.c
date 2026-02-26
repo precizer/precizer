@@ -1570,47 +1570,6 @@ void xdl_free_env(xdfenv_t *xe)
 	xdl_free_ctx(&xe->xdf1);
 }
 
-int xdlt_load_mmfile(
-	char const *fname,
-	mmfile_t   *mf)
-{
-	int fd;
-	long size;
-	char *blk;
-
-	if(xdl_init_mmfile(mf,XDLT_STD_BLKSIZE,XDL_MMF_ATOMIC) < 0)
-	{
-		return -1;
-	}
-
-	if((fd = open(fname,O_RDONLY)) == -1)
-	{
-		perror(fname);
-		xdl_free_mmfile(mf);
-		return -1;
-	}
-	size = lseek(fd,0,SEEK_END);
-	lseek(fd,0,SEEK_SET);
-
-	if(!(blk = (char *)xdl_mmfile_writeallocate(mf,size)))
-	{
-		xdl_free_mmfile(mf);
-		close(fd);
-		return -1;
-	}
-
-	if(read(fd,blk,(size_t)size) != (ssize_t)size)
-	{
-		perror(fname);
-		xdl_free_mmfile(mf);
-		close(fd);
-		return -1;
-	}
-	close(fd);
-
-	return 0;
-}
-
 long xdl_bogosqrt(long n)
 {
 	long i;
