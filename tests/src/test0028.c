@@ -45,7 +45,7 @@ static Return assert_compare_output(
 	del(stderr_result);
 	del(stdout_result);
 
-	return(status);
+	deliver(status);
 }
 
 /**
