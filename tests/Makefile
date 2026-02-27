@@ -206,8 +206,8 @@ coverage-report: hugetestfile precizer-coverage $(COV_EXE)
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --directory $(COV_OBJDIR) --directory $(COV_LIBSOBJ) --output-file $(COV_OBJDIR)/coverage.info
-	@genhtml $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
+	@lcov --capture --branch-coverage --rc lcov_excl_br_line='.*provide\s*\(.*' --directory $(COV_OBJDIR) --directory $(COV_LIBSOBJ) --output-file $(COV_OBJDIR)/coverage.info
+	@genhtml --branch-coverage $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
 #
