@@ -1,0 +1,1 @@
+\AERROR: Failed to open file \[File: src/test0008\.c, Function: serp_case\] Errno: \(2\) No such file or directory\Z
