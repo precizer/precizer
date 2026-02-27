@@ -264,8 +264,8 @@ typedef struct {
 /* DB row content */
 typedef struct {
 
-	/* True if the relative path saved against DB */
-	bool relative_path_already_in_db;
+	/* True if the relative path already existed in DB before current file processing */
+	bool relative_path_was_in_db_before_processing;
 
 	/* Offset of a file (man 3 fopen) */
 	sqlite3_int64 saved_offset;

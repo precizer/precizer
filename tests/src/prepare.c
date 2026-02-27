@@ -31,6 +31,7 @@ Return prepare(void)
 	        "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TMPDIR}/tests/examples/;"
 	        "cp -a $ORIGIN_DIR/tests/examples/levels ${TMPDIR}/tests/examples/;"
 	        "cp -a $ORIGIN_DIR/tests/examples/4 ${TMPDIR}/tests/examples/;"
+	        "cp -a $ORIGIN_DIR/tests/examples/ignore_include_cases ${TMPDIR}/tests/examples/;"
 	        "mkdir -p ${TMPDIR}/.builds;"
 	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT} && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT} ${TMPDIR}/.builds/;"
 	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
