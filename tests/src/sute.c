@@ -19,8 +19,7 @@ int main(void)
 	TEST(test0002,"An empty example…");
 	SUTE(test0007,"libmem Memory allocator test set…");
 	TEST(test0032,"librational formatting test…");
-	TEST(test0008,"librational test report messaging…");
-	TEST(test0009,"librational test slog messaging…");
+	SUTE(test0008,"librational report/logger test set…");
 	TEST(test0017,"librational test itoa function…");
 
 	HEADER("Unit Testing of precizer's functions");
