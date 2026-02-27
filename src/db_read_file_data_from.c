@@ -75,7 +75,7 @@ Return db_read_file_data_from(
 			memcpy(&dbrow->sha512,get_sha512,SHA512_DIGEST_LENGTH);
 		}
 
-		dbrow->relative_path_already_in_db = true;
+		dbrow->relative_path_was_in_db_before_processing = true;
 	}
 
 	if(SQLITE_DONE != rc)

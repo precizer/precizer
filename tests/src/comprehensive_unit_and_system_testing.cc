@@ -1,4 +1,5 @@
 SUTE(test0003,"Basic application tests for argument parsing…");
+TEST(test0009,"Ignore/include filtering for files and directories with DB verification…");
 SUTE(test0011,"User's Manual and examples from README test set…");
 SUTE(test0013,"Dry Run mode testing…");
 #if 0

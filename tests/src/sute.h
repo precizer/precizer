@@ -15,6 +15,7 @@ Return test0005(void);
 Return test0006(void);
 Return test0007(void);
 Return test0008(void);
+Return test0009(void);
 Return test0010(void);
 Return test0011(void);
 Return test0012(void);

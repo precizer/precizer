@@ -1,0 +1,27 @@
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: database0009_2\.db
+The path database0009_2\.db doesn't exist or it is not a file
+The primary DB file not yet exists. Brand new database will be created
+File traversal started
+(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009_2\.db:(?:\x1B\[[0-9;]*m)*
+new alpha_m0n9k2_zz\.txt
+new hold_a1r9v-0pq\.bak
+new keep_4xv7__m2\.log
+ignore & do not add omega_77xy__aa\.bin
+add included skip_4xv7__m2\.log
+ignore & do not add skip_a1r9v-0pq\.bak
+ignore & do not add skip_m0n9k2_zz\.log
+ignore & do not add tmp_77xy__aa\.bak
+add included tmp_qwe_90210\.log
+ignore & do not add tmp_z1-9vv\.bak
+new xqwe_90210\.md
+add included zeta_z1-9vv\.dat
+File traversal complete
+Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+Start vacuuming the primary database…
+The primary database has been vacuumed
+(?:\x1B\[[0-9;]*m)*The brand-new primary database file database0009_2\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+The precizer completed as expected
+Exit status » SUCCESS
+Enjoy your life!\Z

@@ -281,7 +281,12 @@ Return file_list(TraversalSummary *summary)
 
 				if(ignore == true)
 				{
-					// Skip ignored directories entirely.
+					/*
+					 * Use FTS_SKIP for an ignored directory only when no --include patterns were provided
+					 * If any --include is present, keep traversing even ignored directories
+					 * At this point only the directory path itself was checked, not paths under it
+					 * Otherwise FTS_SKIP would cut off child files that should be brought back by --include
+					 */
 					if(config->include_specified == false)
 					{
 						(void)fts_set(file_systems,p,FTS_SKIP);
@@ -342,7 +347,7 @@ Return file_list(TraversalSummary *summary)
 					break;
 				}
 
-				const bool path_known = dbrow->relative_path_already_in_db == true;
+				const bool path_known = dbrow->relative_path_was_in_db_before_processing == true;
 
 				const bool has_saved_offset = dbrow->saved_offset > 0;
 
@@ -351,7 +356,7 @@ Return file_list(TraversalSummary *summary)
 				// Default value is:
 				Changed metadata_of_scanned_and_saved_files = NOT_EQUAL;
 
-				// Tracks if the current relative path already has a DB entry
+				// Tracks whether the current relative path existed in DB before current file processing
 				if(path_known == true)
 				{
 					// Validate whether logical size, allocated blocks, and ctime/mtime
@@ -604,8 +609,8 @@ Return file_list(TraversalSummary *summary)
 					}
 				}
 
-				bool db_inserted = false;
-				bool db_updated = false;
+				bool db_record_inserted = false;
+				bool db_record_updated = false;
 				bool show_log = false;
 
 				if(is_readable != true
@@ -656,7 +661,7 @@ Return file_list(TraversalSummary *summary)
 								continue_the_loop = false;
 								break;
 							}
-							db_updated = true;
+							db_record_updated = true;
 						}
 					}
 
@@ -690,7 +695,7 @@ Return file_list(TraversalSummary *summary)
 							continue_the_loop = false;
 							break;
 						}
-						db_inserted = true;
+						db_record_inserted = true;
 					}
 
 					show_log = true;
@@ -716,8 +721,8 @@ Return file_list(TraversalSummary *summary)
 						rehash,
 						is_readable,
 						zero_size_file,
-						db_inserted,
-						db_updated,
+						db_record_inserted,
+						db_record_updated,
 						read_error,
 						read_errno);
 				}

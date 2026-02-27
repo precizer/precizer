@@ -273,14 +273,14 @@ void show_file(
 	const bool          rehash,
 	const bool          is_readable,
 	const bool          zero_size_file,
-	const bool          db_inserted,
-	const bool          db_updated,
+	const bool          db_record_inserted,
+	const bool          db_record_updated,
 	const bool          read_error,
 	const int           read_errno)
 {
 	if(ignore == true)
 	{
-		if(dbrow->relative_path_already_in_db == false)
+		if(dbrow->relative_path_was_in_db_before_processing == false)
 		{
 			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignore & do not add %s\n",relative_path);
 		} else {
@@ -295,11 +295,11 @@ void show_file(
 
 		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible file %s\n",relative_path);
 
-	} else if(dbrow->relative_path_already_in_db == false){
+	} else if(dbrow->relative_path_was_in_db_before_processing == false){
 
 		/* Add new */
 
-		if(db_inserted == true)
+		if(db_record_inserted == true)
 		{
 			if(include == true)
 			{
@@ -336,7 +336,7 @@ void show_file(
 
 			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary," %s\n",relative_path);
 
-		} else if(db_updated == true && include == true){
+		} else if(db_record_updated == true && include == true){
 
 			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"update included");
 
@@ -344,7 +344,7 @@ void show_file(
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
-		} else if(db_updated == true && zero_size_file == true){
+		} else if(db_record_updated == true && zero_size_file == true){
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update as empty");
 
@@ -374,7 +374,7 @@ void show_file(
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
-			} else if(db_updated == true){
+			} else if(db_record_updated == true){
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update & rehash");
 
@@ -383,7 +383,7 @@ void show_file(
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 			}
 
-		} else if(db_updated == true){
+		} else if(db_record_updated == true){
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update stat");
 
