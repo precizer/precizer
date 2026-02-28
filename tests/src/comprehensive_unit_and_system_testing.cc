@@ -14,3 +14,4 @@ SUTE(test0024,"Paths with apostrophe test…");
 SUTE(test0027,"--lock-checksum option testing…");
 SUTE(test0028,"--compare mode across different types of responses…");
 SUTE(test0033,"Background interruption scenarios with timeout guard…");
+TEST(test0034,"Metadata diffs: logical size vs allocated blocks…");

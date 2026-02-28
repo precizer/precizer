@@ -40,6 +40,7 @@ Return test0030(void);
 Return test0031(void);
 Return test0032(void);
 Return test0033(void);
+Return test0034(void);
 
 Return db_paths_match(
 	const char        *db_filename,
