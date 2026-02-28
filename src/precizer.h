@@ -738,7 +738,7 @@ Return stat_copy(
 
 size_t blocks_to_bytes(blkcnt_t);
 
-Changed compare_file_metadata_equivalence(
+Changed file_compare_metadata_equivalence(
 	const CmpctStat *,
 	const CmpctStat *) __attribute__ ((pure));
 
