@@ -41,6 +41,11 @@ Return test0031(void);
 Return test0032(void);
 Return test0033(void);
 
+Return db_paths_match(
+	const char        *db_filename,
+	const char *const *expected_paths,
+	const int         expected_count);
+
 Return comprehensive_system_testing(void);
 Return comprehensive_unit_testing(void);
 Return comprehensive_mock_testing(void);
