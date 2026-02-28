@@ -354,19 +354,17 @@ Return file_list(TraversalSummary *summary)
 				// Validate whether logical size, allocated blocks, and ctime/mtime
 				// changed since the previous scan.
 				// Default value is:
-				Changed metadata_of_scanned_and_saved_files = NOT_EQUAL;
+				Changed db_record_vs_file_metadata_changes = NOT_EQUAL;
 
 				// Tracks whether the current relative path existed in DB before current file processing
 				if(path_known == true)
 				{
 					// Validate whether logical size, allocated blocks, and ctime/mtime
 					// changed since the previous scan.
-					metadata_of_scanned_and_saved_files = compare_file_metadata_equivalence(&(dbrow->saved_stat),&stat);
+					db_record_vs_file_metadata_changes = file_compare_metadata_equivalence(&(dbrow->saved_stat),&stat);
 				}
 
-				const bool metadata_identical = metadata_of_scanned_and_saved_files == IDENTICAL;
-
-				const bool metadata_changed = metadata_identical == false;
+				bool file_metadata_identical = db_record_vs_file_metadata_changes == IDENTICAL;
 
 				// Flag that marks files matched by the checksum lock pattern
 				bool locked_checksum_file = false;
@@ -434,7 +432,7 @@ Return file_list(TraversalSummary *summary)
 
 				// Used to skip files whose metadata and checksum are already up to date
 				bool unchanged_and_complete = path_known == true
-				        && metadata_identical == true
+				        && file_metadata_identical == true
 				        && has_saved_offset == false;
 
 				if(unchanged_and_complete == true && !(config->rehash_locked == true && lock_checksum_ready == true))
@@ -444,12 +442,12 @@ Return file_list(TraversalSummary *summary)
 				}
 
 				// Derived flags to qualify the type of metadata change
-				bool size_changed = (metadata_of_scanned_and_saved_files & SIZE_CHANGED) != 0;
+				bool size_changed = (db_record_vs_file_metadata_changes & SIZE_CHANGED) != 0;
 
-				bool timestamps_changed = (metadata_of_scanned_and_saved_files & (STATUS_CHANGED_TIME | MODIFICATION_TIME_CHANGED)) != 0;
+				bool timestamps_changed = (db_record_vs_file_metadata_changes & (STATUS_CHANGED_TIME | MODIFICATION_TIME_CHANGED)) != 0;
 
 				bool timestamps_only_changed = path_known == true
-				        && metadata_changed == true
+				        && file_metadata_identical == false
 				        && config->watch_timestamps == false
 				        && size_changed == false
 				        && has_saved_offset == false;
@@ -478,11 +476,11 @@ Return file_list(TraversalSummary *summary)
 
 				// Can we resume hashing from a previous partial state?
 				bool can_resume_partial_hash = has_saved_offset == true
-				        && metadata_changed == false;
+				        && file_metadata_identical == true;
 
 				// Indicates that a previous partial hash is now invalid and must restart
 				bool partial_hash_invalidated = has_saved_offset == true
-				        && metadata_changed == true;
+				        && file_metadata_identical == false;
 
 				if(can_resume_partial_hash == true)
 				{
@@ -641,7 +639,7 @@ Return file_list(TraversalSummary *summary)
 					        && allow_locked_update == true
 					        && (offset > dbrow->saved_offset
 					        || (has_saved_offset == true && offset == 0)
-					        || metadata_changed == true);
+					        || file_metadata_identical == false);
 
 					if(should_update_db == true)
 					{
@@ -709,7 +707,7 @@ Return file_list(TraversalSummary *summary)
 						&stat,
 						&first_iteration,
 						summary,
-						metadata_of_scanned_and_saved_files,
+						db_record_vs_file_metadata_changes,
 						rehashing_from_the_beginning,
 						ignore,
 						include,
