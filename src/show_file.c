@@ -102,7 +102,7 @@ static void print_changes(
 			{
 				slog(log_level," & ");
 			} else {
-				slog(log_level," changed ");
+				slog(log_level,", changed: ");
 			}
 
 			slog(log_level,"%s",flag->flag_name);
@@ -117,7 +117,7 @@ static void print_changes(
 }
 
 /**
- * @brief Show traversal banners once before the first visible log line.
+ * @brief Show traversal banners once before the first visible log line of the main pass
  *
  */
 static void show_banners(
@@ -133,36 +133,28 @@ static void show_banners(
 	bool show_update_warning = false;
 	bool show_changes_will_be_reflected = false;
 	bool show_files_will_be_added = false;
-	bool show_counting_file_system_items_and_total_data_size = false;
 
 	if(*first_iteration == true)
 	{
 		*first_iteration = false;
 
-		if(stats_only_pass == true)
+		if(stats_only_pass == false)
 		{
-			show_counting_file_system_items_and_total_data_size = true;
-
-		} else {
-
 			show_traversal_started = true;
-		}
-
-		if(config->db_contains_data == true)
-		{
-			if(stats_only_pass == false && config->update == true)
+	
+			if(config->db_contains_data == true)
 			{
-				show_update_warning = true;
-			}
+				if(config->update == true)
+				{
+					show_update_warning = true;
+				}
 
-			if(stats_only_pass == false)
-			{
 				show_changes_will_be_reflected = true;
+
+			} else {
+
+				show_files_will_be_added = true;
 			}
-
-		} else {
-
-			show_files_will_be_added = true;
 		}
 	}
 
@@ -185,17 +177,13 @@ static void show_banners(
 	{
 		slog(EVERY,BOLD "Items reported during this traversal against the DB %s:" RESET "\n",confstr(db_file_name));
 	}
-
-	if(show_counting_file_system_items_and_total_data_size == true)
-	{
-		slog(EVERY,BOLD "File system artifacts while counting items and total data size:" RESET "\n");
-	}
 }
 
 /**
  * @brief Log a line with banner/quiet handling and update output flags.
  *
- * Uses the call site metadata from the slog_show macro.
+ * Uses the call site metadata from the slog_show macro
+ * Banners are emitted only for the main traversal pass
  *
  */
 __attribute__((format(printf,9,10)))

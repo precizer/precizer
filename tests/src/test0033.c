@@ -66,6 +66,52 @@ static Return compute_file_sha512(
 }
 
 /**
+ * Append one byte to a file using native C file I/O
+ */
+static Return append_byte_to_file(
+	const char   *file_path,
+	unsigned char byte)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	if(file_path == NULL)
+	{
+		status = FAILURE;
+	}
+
+	FILE *file = NULL;
+
+	if(SUCCESS == status)
+	{
+		file = fopen(file_path,"ab");
+		if(file == NULL)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		if(fwrite(&byte,sizeof(unsigned char),1U,file) != 1U)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(file != NULL)
+	{
+		if(fclose(file) != 0)
+		{
+			status = FAILURE;
+		}
+	}
+
+	return(status);
+}
+
+/**
  * Read intermediate offset and mdContext state for one file from DB.
  */
 static Return read_resume_state_from_db(
@@ -461,6 +507,88 @@ static Return test0033_3(void)
 }
 
 /**
+ * Interrupt hashing, modify file metadata, and verify restart from beginning
+ */
+static Return test0033_4(void)
+{
+	INITTEST;
+
+	const char *db_filename = "0033_interrupt_rehash.db";
+	const char *relative_path = "hugetestfile";
+	const char *first_run_template = "templates/0033_004_1.txt";
+	const char *second_run_template = "templates/0033_004_2.txt";
+	const char *prepare_command = "cd ${TMPDIR};"
+	        "mkdir -p tests/examples/;"
+	        "rm -rf tests/examples/huge/;"
+	        "cp -a \"$ORIGIN_DIR/tests/examples/huge\" tests/examples/;";
+	const char *cleanup_command = "cd ${TMPDIR};"
+	        "rm -f 0033_interrupt_rehash.db;"
+	        "rm -rf tests/examples/huge/;";
+
+	create(char,stdout_result);
+	create(char,stderr_result);
+	create(char,stdout_pattern);
+	create(char,stderr_pattern);
+	create(char,huge_file_path);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == construct_path("tests/examples/huge/hugetestfile",huge_file_path));
+
+	const char *arguments = "--progress --database=0033_interrupt_rehash.db tests/examples/huge";
+
+	ASSERT(SUCCESS == runit_background(
+		arguments,
+		stdout_result,
+		stderr_result,
+		SUCCESS|HALTED,
+		ALLOW_BOTH,
+		500U,
+		5000U,
+		SIGINT,
+		2U));
+
+	ASSERT(SUCCESS == get_file_content(first_run_template,stdout_pattern));
+	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,first_run_template));
+	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+
+	sqlite3_int64 interrupted_offset = 0;
+	int interrupted_md_context_bytes = 0;
+
+	ASSERT(SUCCESS == read_resume_state_from_db(db_filename,relative_path,&interrupted_offset,&interrupted_md_context_bytes));
+	ASSERT(interrupted_offset > 0);
+	ASSERT(interrupted_md_context_bytes > 0);
+
+	ASSERT(SUCCESS == append_byte_to_file(getcstring(huge_file_path),(unsigned char)'X'));
+
+	arguments = "--update --progress --database=0033_interrupt_rehash.db tests/examples/huge";
+	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == get_file_content(second_run_template,stdout_pattern));
+	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,second_run_template));
+	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+
+	const char *expected_paths[] =
+	{
+		"hugetestfile"
+	};
+
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(huge_file_path);
+	del(stderr_pattern);
+	del(stdout_pattern);
+	del(stderr_result);
+	del(stdout_result);
+
+	RETURN_STATUS;
+}
+
+/**
  * Background interruption tests grouped as a separate suite.
  */
 Return test0033(void)
@@ -470,6 +598,7 @@ Return test0033(void)
 	TEST(test0033_1,"Background run receives SIGTERM and exits with HALTED…");
 	TEST(test0033_2,"Background run receives SIGINT and exits with HALTED…");
 	TEST(test0033_3,"Random interruption on hugetestfile with resume and SHA512 verification…");
+	TEST(test0033_4,"Interrupted hash with file change restarts rehash from the beginning…");
 
 	RETURN_STATUS;
 }

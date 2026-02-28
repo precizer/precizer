@@ -1,86 +1,46 @@
 #include "sute.h"
 
-static Return assert_db_paths_match(
-	const char        *db_filename,
-	const char *const *expected_paths,
-	const int         expected_count)
+/**
+ * @brief Truncate an existing file to zero bytes by reopening it in binary write mode
+ *
+ * @param[in] relative_path_to_tmpdir Relative path from TMPDIR to the target file
+ *
+ * @return Return status code:
+ *         - SUCCESS: File was truncated successfully
+ *         - FAILURE: Path construction or file operation failed
+ */
+static Return truncate_file_to_zero_size(
+	const char *relative_path_to_tmpdir)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	sqlite3 *db = NULL;
-	sqlite3_stmt *stmt = NULL;
-	const char *sql = "SELECT relative_path FROM files ORDER BY relative_path ASC;";
-	create(char,db_path);
 
-	if(SUCCESS == status && (db_filename == NULL || expected_paths == NULL || expected_count < 0))
+	create(char,absolute_path);
+
+	if(relative_path_to_tmpdir == NULL)
 	{
 		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
 	{
-		status = construct_path(db_filename,db_path);
+		status = construct_path(relative_path_to_tmpdir,absolute_path);
 	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
-	{
-		status = FAILURE;
-	}
-
-	int index = 0;
 
 	if(SUCCESS == status)
 	{
-		int rc = sqlite3_step(stmt);
+		FILE *file = fopen(getcstring(absolute_path),"wb");
 
-		while(rc == SQLITE_ROW)
+		if(file == NULL)
 		{
-			if(index >= expected_count)
-			{
-				status = FAILURE;
-				break;
-			}
-
-			const unsigned char *db_path_text = sqlite3_column_text(stmt,0);
-
-			if(db_path_text == NULL || strcmp((const char *)db_path_text,expected_paths[index]) != 0)
-			{
-				status = FAILURE;
-				break;
-			}
-
-			index++;
-			rc = sqlite3_step(stmt);
-		}
-
-		if(SUCCESS == status && rc != SQLITE_DONE)
-		{
+			status = FAILURE;
+		} else if(fclose(file) != 0){
 			status = FAILURE;
 		}
 	}
 
-	if(SUCCESS == status && index != expected_count)
-	{
-		status = FAILURE;
-	}
-
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
-
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
-
-	del(db_path);
+	del(absolute_path);
 
 	return(status);
 }
@@ -120,7 +80,7 @@ Return test0009_1(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == assert_db_paths_match("database0009.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == db_paths_match("database0009.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 
 	const char *command = "rm \"${TMPDIR}/database0009.db\"";
 
@@ -180,7 +140,7 @@ static Return test0009_2(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == assert_db_paths_match("database0009_2.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == db_paths_match("database0009_2.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 
 	const char *command = "rm \"${TMPDIR}/database0009_2.db\"";
 
@@ -228,11 +188,113 @@ static Return test0009_3(void)
 		"chaotic_filenames/zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == assert_db_paths_match("database0009_3.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == db_paths_match("database0009_3.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 
 	const char *command = "rm \"${TMPDIR}/database0009_3.db\"";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Validate update included branch in three passes
+ */
+static Return test0009_4(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+
+	const char *prepare_fixture_command =
+		"cd \"${TMPDIR}\"; "
+		"rm -rf tests/examples/ignore_include_cases/chaotic_filenames_backup; "
+		"mv tests/examples/ignore_include_cases/chaotic_filenames tests/examples/ignore_include_cases/chaotic_filenames_backup; "
+		"cp -a tests/examples/ignore_include_cases/chaotic_filenames_backup tests/examples/ignore_include_cases/chaotic_filenames;";
+	ASSERT(SUCCESS == external_call(prepare_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *remove_db_command = "rm -f \"${TMPDIR}/database0009_4.db\"";
+	ASSERT(SUCCESS == external_call(remove_db_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments_create = "--database=database0009_4.db "
+		"--ignore=\"^(?:skip_|tmp_).+\" "
+		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		"tests/examples/ignore_include_cases/chaotic_filenames";
+
+	/*
+	 * Create the baseline DB using the same ignore/include rules as the later update passes
+	 * We intentionally build the initial record set as "tracked-after-filters" and not as "all files in directory"
+	 * Update mode processes the current filtered set and does not retroactively delete rows that were inserted earlier
+	 * If this first pass omitted filters, all 12 paths would be stored and the update-included scenario would validate a different logic branch
+	 */
+	ASSERT(SUCCESS == runit(arguments_create,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_004_1.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *change_file_command = "cd \"${TMPDIR}\"; "
+		"printf ' ' >> tests/examples/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log";
+	ASSERT(SUCCESS == external_call(change_file_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *arguments_update = "--update --database=database0009_4.db "
+		"--ignore=\"^(?:skip_|tmp_).+\" "
+		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		"tests/examples/ignore_include_cases/chaotic_filenames";
+
+	// Update mode pass where only one included file has changed
+	ASSERT(SUCCESS == runit(arguments_update,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0009_004_2.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *change_files_command = "cd \"${TMPDIR}\"; "
+		"printf ' ' >> tests/examples/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log; "
+		"printf ' ' >> tests/examples/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak";
+	ASSERT(SUCCESS == external_call(change_files_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Truncate a tracked non-included file to trigger the "update as empty" branch
+	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/examples/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
+
+	const char *arguments_update_watch = "--watch-timestamps --update --database=database0009_4.db "
+		"--ignore=\"^(?:skip_|tmp_).+\" "
+		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		"tests/examples/ignore_include_cases/chaotic_filenames";
+
+	// Update mode with watch-timestamps enabled where one non-included file becomes empty and two included files are updated
+	ASSERT(SUCCESS == runit(arguments_update_watch,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0009_004_3.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *expected_paths[] =
+	{
+		"alpha_m0n9k2_zz.txt",
+		"hold_a1r9v-0pq.bak",
+		"keep_4xv7__m2.log",
+		"omega_77xy__aa.bin",
+		"skip_4xv7__m2.log",
+		"tmp_qwe_90210.log",
+		"tmp_z1-9vv.bak",
+		"xqwe_90210.md",
+		"zeta_z1-9vv.dat"
+	};
+
+	ASSERT(SUCCESS == db_paths_match("database0009_4.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == external_call(remove_db_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *restore_fixture_command =
+		"cd \"${TMPDIR}\"; "
+		"rm -rf tests/examples/ignore_include_cases/chaotic_filenames; "
+		"mv tests/examples/ignore_include_cases/chaotic_filenames_backup tests/examples/ignore_include_cases/chaotic_filenames;";
+	ASSERT(SUCCESS == external_call(restore_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
 	del(result);
@@ -247,6 +309,7 @@ Return test0009(void)
 	TEST(test0009_1,"Ignore regexp splits chaotic filenames into tracked and skipped sets…");
 	TEST(test0009_2,"Ignore most files and include back selected ones…");
 	TEST(test0009_3,"Directory ignore with selective child include…");
+	TEST(test0009_4,"Create then update included files with and without detailed change output…");
 
 	RETURN_STATUS;
 }
