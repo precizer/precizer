@@ -17,7 +17,7 @@
  *         - MODIFICATION_TIME_CHANGED
  *         - STATUS_CHANGED_TIME
  */
-Changed compare_file_metadata_equivalence(
+Changed file_compare_metadata_equivalence(
 	const CmpctStat *source,
 	const CmpctStat *destination)
 {

@@ -151,7 +151,7 @@ Return db_check_changes(void)
 	run(stat_copy(&config->db_file_stat,&before));
 	run(stat_copy(&db_current_stat,&after));
 
-	Changed changes = compare_file_metadata_equivalence(&before,&after);
+	Changed changes = file_compare_metadata_equivalence(&before,&after);
 
 	if(IDENTICAL != changes)
 	{
