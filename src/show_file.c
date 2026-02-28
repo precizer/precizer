@@ -38,7 +38,7 @@ static const Flags *lookup(
  */
 static void print_changes(
 	LOGMODES        level,
-	Changed         metadata_of_scanned_and_saved_files,
+	Changed         db_record_vs_file_metadata_changes,
 	const DBrow     *dbrow,
 	const CmpctStat *stat)
 {
@@ -78,25 +78,8 @@ static void print_changes(
 			break;
 		}
 
-		if(metadata_of_scanned_and_saved_files & flag->flag_value)
+		if(db_record_vs_file_metadata_changes & flag->flag_value)
 		{
-			/*
-			 * In the database, in the cell where the CmpctStat structure is stored,
-			 * the blkcnt_t st_blocks field of the CmpctStat structure remains unset (not populated
-			 * with actual data). This is a migration side effect: in database versions prior to 4,
-			 * this field was not persisted.
-			 *
-			 */
-#if 1
-			/* This legacy can be removed in 2036 (10-year Long-Term Support) */
-			if(flag->flag_value == ALLOCATED_SIZE_CHANGED && dbrow->saved_stat.st_blocks == BLKCNT_UNKNOWN)
-#else
-			if(flag->flag_value == ALLOCATED_SIZE_CHANGED)
-#endif
-			{
-				continue;
-			}
-
 			/* Add separator if not the first flag */
 			if(flags_found > 0)
 			{
@@ -249,7 +232,7 @@ void show_file(
 	const CmpctStat     *stat,
 	bool                *first_iteration,
 	TraversalSummary    *summary,
-	const Changed       metadata_of_scanned_and_saved_files,
+	const Changed       db_record_vs_file_metadata_changes,
 	const bool          rehashing_from_the_beginning,
 	const bool          ignore,
 	const bool          include,
@@ -320,7 +303,7 @@ void show_file(
 
 			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked, data corruption detected" RESET);
 
-			print_changes(EVERY|REMEMBER,metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY|REMEMBER,db_record_vs_file_metadata_changes,dbrow,stat);
 
 			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary," %s\n",relative_path);
 
@@ -328,7 +311,7 @@ void show_file(
 
 			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"update included");
 
-			print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
@@ -336,7 +319,7 @@ void show_file(
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update as empty");
 
-			print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
@@ -346,7 +329,7 @@ void show_file(
 			{
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"rehash from the beginning");
 
-				print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
+				print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
@@ -358,7 +341,7 @@ void show_file(
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"locked rehash ok");
 
-				print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
+				print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
@@ -366,7 +349,7 @@ void show_file(
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update & rehash");
 
-				print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
+				print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 			}
@@ -375,7 +358,7 @@ void show_file(
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update stat");
 
-			print_changes(EVERY,metadata_of_scanned_and_saved_files,dbrow,stat);
+			print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 		}
