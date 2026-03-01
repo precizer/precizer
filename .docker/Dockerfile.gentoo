@@ -6,10 +6,11 @@ ENV BUILD=${BUILD}
 
 # deps: gcc, make, llvm, pcre2 (static), upx, useradd
 RUN (emerge-webrsync || emerge --sync); \
+    emerge --ask=n --getbinpkg --usepkgonly \
+      llvm-core/llvm; \
     echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2; \
     emerge --ask=n \
       dev-libs/libpcre2 \
-      llvm-core/llvm \
       dev-util/cmocka \
       app-arch/upx; \
     emerge --depclean
@@ -21,6 +22,6 @@ RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
 
-RUN make ${BUILD}
+RUN make -j ${BUILD}
 
-CMD ["sh", "-c", "export PATH=\"$(ls -d /usr/lib/llvm/[0-9]*/bin 2>/dev/null):$PATH\"; echo $PATH; make tests"]
+CMD ["sh", "-c", "export PATH=\"$(ls -d /usr/lib/llvm/[0-9]*/bin 2>/dev/null):$PATH\"; echo $PATH; make -j tests"]
