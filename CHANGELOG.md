@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# v0.7.0 2026-02-28
+
+This version mainly improves test reliability (including complex `--ignore`/`--include`, interruption, and file metadata change scenarios) and includes minor output and documentation polish without noticeable user-facing CLI behavior changes
+
 # v0.6.0 2026-02-10
 
 ## Added
