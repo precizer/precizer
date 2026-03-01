@@ -14,7 +14,7 @@ Return test0018_1(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--maxdepth=3 --database=database3.db "
-	        "$TMPDIR/tests/examples/levels";
+	        "$TMPDIR/tests/fixtures/levels";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -37,7 +37,7 @@ Return test0018_1(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	arguments = "--database=database4.db "
-	        "$TMPDIR/tests/examples/levels";
+	        "$TMPDIR/tests/fixtures/levels";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -72,7 +72,7 @@ Return test0018_2(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--update --database=database3.db "
-	        "$TMPDIR/tests/examples/levels";
+	        "$TMPDIR/tests/fixtures/levels";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 

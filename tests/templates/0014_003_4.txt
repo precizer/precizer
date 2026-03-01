@@ -1,14 +1,14 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/long
-TESTING:argument:database=tests/examples/long/длинныйп…и/короткийпуть/database1\.db
+TESTING:argument:paths=tests/fixtures/long
+TESTING:argument:database=tests/fixtures/long/длинныйп…и/короткийпуть/database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:ignore=\^длинныйпутьвЮТФ8/аа…ороткийпуть/database1\\\.db\.\*\$
 TESTING:Argument parsing is complete
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/long exists
-TESTING:The path tests/examples/long is exists and it is a directory
+TESTING:Verify that the path tests/fixtures/long exists
+TESTING:The path tests/fixtures/long is exists and it is a directory
 TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
@@ -16,12 +16,12 @@ TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database1\.db
-TESTING:Primary database file path: tests/examples/long/длинныйп…и/короткийпуть/database1\.db
+TESTING:Primary database file path: tests/fixtures/long/длинныйп…и/короткийпуть/database1\.db
 TESTING:Finished determining database name
-TESTING:Verify that the path tests/examples/long/длинныйп…стьпути/короткийпуть exists
-TESTING:The path tests/examples/long/длинныйп…стьпути/короткийпуть is exists and it is a directory
-TESTING:Verify that the path tests/examples/long/длинныйп…и/короткийпуть/database1\.db exists
-TESTING:The path tests/examples/long/длинныйп…и/короткийпуть/database1\.db doesn't exist or it is not a file
+TESTING:Verify that the path tests/fixtures/long/длинныйп…стьпути/короткийпуть exists
+TESTING:The path tests/fixtures/long/длинныйп…стьпути/короткийпуть is exists and it is a directory
+TESTING:Verify that the path tests/fixtures/long/длинныйп…и/короткийпуть/database1\.db exists
+TESTING:The path tests/fixtures/long/длинныйп…и/короткийпуть/database1\.db doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
 TESTING:Final value for config->db_initialize_tables: true

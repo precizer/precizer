@@ -171,14 +171,14 @@ static Return test0034_1(void)
 
 	const char *prepare_fixture_command = "cd ${TMPDIR};"
 	        "rm -f 0034_lsize_vs_asize_flags.db;"
-	        "rm -rf tests/examples/diff1_backup;"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "rm -rf tests/fixtures/diff1_backup;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	const char *cleanup_fixture_command = "cd ${TMPDIR};"
 	        "rm -f 0034_lsize_vs_asize_flags.db;"
-	        "rm -rf tests/examples/diffs/diff1;"
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "rm -rf tests/fixtures/diffs/diff1;"
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	off_t sparse_file_size = 0;
 	blkcnt_t sparse_blocks = 0;
@@ -189,12 +189,12 @@ static Return test0034_1(void)
 	// Prepare fixture copy and clean previous DB
 	ASSERT(SUCCESS == external_call(prepare_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *arguments = "--database=0034_lsize_vs_asize_flags.db tests/examples/diffs/diff1";
+	const char *arguments = "--database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	// Case 1: grow logical size as sparse extension and preserve allocated blocks
 	ASSERT(SUCCESS == make_sparse_size_change_without_allocated_block_growth(
-		"tests/examples/diffs/diff1/path1/AAA/BCB/CCC/a.txt",
+		"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",
 		&sparse_file_size,
 		&sparse_blocks));
 
@@ -202,7 +202,7 @@ static Return test0034_1(void)
 	// Second pass uses --verbose, third pass uses --watch-timestamps
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	arguments = "--verbose --update --database=0034_lsize_vs_asize_flags.db tests/examples/diffs/diff1";
+	arguments = "--verbose --update --database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0034_001_1.txt";
@@ -214,11 +214,11 @@ static Return test0034_1(void)
 
 	// Case 2: rewrite file densely with same logical size so only allocated blocks differ
 	ASSERT(SUCCESS == rewrite_file_dense_with_same_size(
-		"tests/examples/diffs/diff1/path1/AAA/BCB/CCC/a.txt",
+		"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",
 		sparse_file_size,
 		sparse_blocks));
 
-	arguments = "--update --watch-timestamps --database=0034_lsize_vs_asize_flags.db tests/examples/diffs/diff1";
+	arguments = "--update --watch-timestamps --database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	filename = "templates/0034_001_2.txt";

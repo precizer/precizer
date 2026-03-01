@@ -61,7 +61,7 @@ Return test0009_1(void)
 
 	const char *arguments = "--database=database0009.db "
 		"--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
-		"tests/examples/ignore_include_cases/chaotic_filenames";
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -120,7 +120,7 @@ static Return test0009_2(void)
 	const char *arguments = "--database=database0009_2.db "
 		"--ignore=\"^(?:skip_|tmp_|zeta_|omega_).+\" "
 		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|zeta_z1-9vv\\.dat)$\" "
-		"tests/examples/ignore_include_cases/chaotic_filenames";
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -169,7 +169,7 @@ static Return test0009_3(void)
 	const char *arguments = "--database=database0009_3.db "
 		"--ignore=\"^chaotic_filenames(?:/|$)\" "
 		"--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
-		"tests/examples/ignore_include_cases";
+		"tests/fixtures/ignore_include_cases";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -212,9 +212,9 @@ static Return test0009_4(void)
 
 	const char *prepare_fixture_command =
 		"cd \"${TMPDIR}\"; "
-		"rm -rf tests/examples/ignore_include_cases/chaotic_filenames_backup; "
-		"mv tests/examples/ignore_include_cases/chaotic_filenames tests/examples/ignore_include_cases/chaotic_filenames_backup; "
-		"cp -a tests/examples/ignore_include_cases/chaotic_filenames_backup tests/examples/ignore_include_cases/chaotic_filenames;";
+		"rm -rf tests/fixtures/ignore_include_cases/chaotic_filenames_backup; "
+		"mv tests/fixtures/ignore_include_cases/chaotic_filenames tests/fixtures/ignore_include_cases/chaotic_filenames_backup; "
+		"cp -a tests/fixtures/ignore_include_cases/chaotic_filenames_backup tests/fixtures/ignore_include_cases/chaotic_filenames;";
 	ASSERT(SUCCESS == external_call(prepare_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *remove_db_command = "rm -f \"${TMPDIR}/database0009_4.db\"";
@@ -225,7 +225,7 @@ static Return test0009_4(void)
 	const char *arguments_create = "--database=database0009_4.db "
 		"--ignore=\"^(?:skip_|tmp_).+\" "
 		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
-		"tests/examples/ignore_include_cases/chaotic_filenames";
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
 
 	/*
 	 * Create the baseline DB using the same ignore/include rules as the later update passes
@@ -240,13 +240,13 @@ static Return test0009_4(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	const char *change_file_command = "cd \"${TMPDIR}\"; "
-		"printf ' ' >> tests/examples/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log";
+		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log";
 	ASSERT(SUCCESS == external_call(change_file_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments_update = "--update --database=database0009_4.db "
 		"--ignore=\"^(?:skip_|tmp_).+\" "
 		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
-		"tests/examples/ignore_include_cases/chaotic_filenames";
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
 
 	// Update mode pass where only one included file has changed
 	ASSERT(SUCCESS == runit(arguments_update,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -256,16 +256,16 @@ static Return test0009_4(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	const char *change_files_command = "cd \"${TMPDIR}\"; "
-		"printf ' ' >> tests/examples/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log; "
-		"printf ' ' >> tests/examples/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak";
+		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log; "
+		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak";
 	ASSERT(SUCCESS == external_call(change_files_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	// Truncate a tracked non-included file to trigger the "update as empty" branch
-	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/examples/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
+	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
 
 	const char *arguments_update_watch = "--watch-timestamps --update --database=database0009_4.db "
 		"--ignore=\"^(?:skip_|tmp_).+\" "
 		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
-		"tests/examples/ignore_include_cases/chaotic_filenames";
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
 
 	// Update mode with watch-timestamps enabled where one non-included file becomes empty and two included files are updated
 	ASSERT(SUCCESS == runit(arguments_update_watch,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -292,8 +292,8 @@ static Return test0009_4(void)
 
 	const char *restore_fixture_command =
 		"cd \"${TMPDIR}\"; "
-		"rm -rf tests/examples/ignore_include_cases/chaotic_filenames; "
-		"mv tests/examples/ignore_include_cases/chaotic_filenames_backup tests/examples/ignore_include_cases/chaotic_filenames;";
+		"rm -rf tests/fixtures/ignore_include_cases/chaotic_filenames; "
+		"mv tests/fixtures/ignore_include_cases/chaotic_filenames_backup tests/fixtures/ignore_include_cases/chaotic_filenames;";
 	ASSERT(SUCCESS == external_call(restore_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);

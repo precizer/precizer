@@ -158,7 +158,7 @@ Where tests live:
 * primary test harness: `tests/`
 * test sources: `tests/src/` (naming pattern: `testXXXX.c`)
 * expected output templates: `tests/templates/`
-* filesystem fixtures: `tests/examples/`
+* filesystem fixtures: `tests/fixtures/`
 
 See [TESTING](TESTING.md) for a concise overview of the testing framework: dual-path (in-process vs. black-box CLI) execution, output/state contracts, sanitizer-enabled runs, coverage reporting, and practical guidance on what to avoid when writing tests.
 

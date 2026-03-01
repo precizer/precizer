@@ -26,16 +26,16 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == execute_and_set_variable("DBNAME","echo \"$(hostname).db\"",0));
 
-	command = "mkdir -p ${TMPDIR}/tests/examples/diffs/;"
-	        "cp -a $ORIGIN_DIR/tests/examples/diffs/diff* ${TMPDIR}/tests/examples/diffs/;"
-	        "cp -a $ORIGIN_DIR/tests/examples/*apos* ${TMPDIR}/tests/examples/;"
-	        "cp -a $ORIGIN_DIR/tests/examples/levels ${TMPDIR}/tests/examples/;"
-	        "cp -a $ORIGIN_DIR/tests/examples/4 ${TMPDIR}/tests/examples/;"
-	        "cp -a $ORIGIN_DIR/tests/examples/ignore_include_cases ${TMPDIR}/tests/examples/;"
+	command = "mkdir -p ${TMPDIR}/tests/fixtures/diffs/;"
+	        "cp -a $ORIGIN_DIR/tests/fixtures/diffs/diff* ${TMPDIR}/tests/fixtures/diffs/;"
+	        "cp -a $ORIGIN_DIR/tests/fixtures/*apos* ${TMPDIR}/tests/fixtures/;"
+	        "cp -a $ORIGIN_DIR/tests/fixtures/levels ${TMPDIR}/tests/fixtures/;"
+	        "cp -a $ORIGIN_DIR/tests/fixtures/4 ${TMPDIR}/tests/fixtures/;"
+	        "cp -a $ORIGIN_DIR/tests/fixtures/ignore_include_cases ${TMPDIR}/tests/fixtures/;"
 	        "mkdir -p ${TMPDIR}/.builds;"
 	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT} && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT} ${TMPDIR}/.builds/;"
 	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
-	        "test -d $ORIGIN_DIR/tests/examples/long && cp -a $ORIGIN_DIR/tests/examples/long ${TMPDIR}/tests/examples/;"
+	        "test -d $ORIGIN_DIR/tests/fixtures/long && cp -a $ORIGIN_DIR/tests/fixtures/long ${TMPDIR}/tests/fixtures/;"
 	        "true";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));

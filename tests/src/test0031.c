@@ -2,7 +2,7 @@
 #include "mocks.h"
 #include <errno.h>
 
-#define READ_FAIL_REL_PATH "tests/examples/diffs/diff1/path1/AAA/ZAW/D/e/f/b_file.txt"
+#define READ_FAIL_REL_PATH "tests/fixtures/diffs/diff1/path1/AAA/ZAW/D/e/f/b_file.txt"
 
 /**
  * Simulate fread failure for a specific file to verify error handling.
@@ -18,13 +18,13 @@ Return test0031(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=read_fail.db --progress"
-	        " tests/examples/diffs/diff1";
+	        " tests/fixtures/diffs/diff1";
 
 	/* Configure the fread mock to fail once for the target file only. */
 	mocks_fread_reset();
@@ -49,8 +49,8 @@ Return test0031(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f read_fail.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

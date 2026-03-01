@@ -1,4 +1,4 @@
-tests/examples/huge/hugetestfile
+tests/fixtures/huge/hugetestfile
 \.*
 precizer
 tools/tool_*

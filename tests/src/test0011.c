@@ -4,9 +4,9 @@
  * The Example 1 from README:
  * Now some tests could be running:
  * Stage 1. Adding:
- * precizer --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 2. Adding:
- * precizer --progress --database=database2.db tests/examples/diffs/diff2
+ * precizer --progress --database=database2.db tests/fixtures/diffs/diff2
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
@@ -21,13 +21,13 @@ static Return test0011_1(void)
 	create(char,chunk);
 
 	const char *arguments = "--progress --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--progress --database=database2.db "
-	        "tests/examples/diffs/diff2";
+	        "tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
@@ -63,40 +63,40 @@ static Return test0011_1(void)
  * The Example 2 from README
  * Updating the database:
  * Stage 1. Adding:
- * precizer --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 2. Reuse previous example once agan. The first try. The warning message.
- * precizer --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 3. Run of database update without making actual changes to disk:
- * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
- * mv tests/examples/diffs/diff1 tests/examples/diff1_backup
- * cp -a tests/examples/diff1_backup tests/examples/diffs/diff1
+ * mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup
+ * cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1
  * # Modify a file
- * echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+ * echo -n "  " >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt
  * # Add a new file
- * touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt
+ * touch tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt
  * # Remove a file
- * rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+ * rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
  * Stage 5. Run the precizer once again:
- * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
  * Final stage. Recover from backup:
- * rm -rf tests/examples/diffs/diff1
- * mv tests/examples/diff1_backup tests/examples/diffs/diff1
+ * rm -rf tests/fixtures/diffs/diff1
+ * mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1
  */
 static Return test0011_2(void)
 {
 	INITTEST;
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--progress --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	// Create memory for the result
 	create(char,result);
@@ -119,7 +119,7 @@ static Return test0011_2(void)
 	del(result);
 
 	arguments = "--progress --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	filename = "templates/0011_002_2.txt";
 
@@ -136,21 +136,21 @@ static Return test0011_2(void)
 	create(char,chunk);
 
 	arguments = "--update --progress --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	command = "cd ${TMPDIR};"
-	        "echo -n '  ' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
-	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
-	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
+	        "echo -n '  ' >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
+	        "touch tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
+	        "rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--watch-timestamps --update --progress "
-	        "--database=database1.db tests/examples/diffs/diff1";
+	        "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -177,7 +177,7 @@ static Return test0011_2(void)
  * anything on the screen. This makes sense when using the program inside scripts.
  * Let's add the --silent option to the previous example:
  *
- * precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --silent --update --progress --database=database1.db tests/fixtures/diffs/diff1
  *
  *
  */
@@ -191,7 +191,7 @@ static Return test0011_3(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --update --progress --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -241,7 +241,7 @@ static Return test0011_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--verbose --update --progress --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
@@ -253,8 +253,8 @@ static Return test0011_4(void)
 
 	const char *command = "cd ${TMPDIR} && "
 	        "rm database1.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -274,7 +274,7 @@ static Return test0011_5(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--maxdepth=0 tests/examples/4";
+	const char *arguments = "--maxdepth=0 tests/fixtures/4";
 
 	const char *filename = "templates/0011_005_1.txt";
 
@@ -290,7 +290,7 @@ static Return test0011_5(void)
 	   Therefore, all files that were not previously included
 	   will be added to the database. */
 
-	arguments = "--update tests/examples/4";
+	arguments = "--update tests/fixtures/4";
 
 	filename = "templates/0011_005_2.txt";
 
@@ -316,7 +316,7 @@ static Return test0011_6(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--ignore=\"^diff1/1/.*\" tests/examples/diffs";
+	const char *arguments = "--ignore=\"^diff1/1/.*\" tests/fixtures/diffs";
 
 	const char *filename = "templates/0011_006_1.txt";
 
@@ -330,7 +330,7 @@ static Return test0011_6(void)
 
 	filename = "templates/0011_006_2.txt";
 
-	arguments = "--update tests/examples/diffs";
+	arguments = "--update tests/fixtures/diffs";
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -352,7 +352,7 @@ static Return test0011_7(void)
 
 	const char *arguments = "--update --db-drop-ignored"
 	        " --ignore=\"^diff1/1/.*\""
-	        " --ignore=\"^diff2/1/.*\" tests/examples/diffs";
+	        " --ignore=\"^diff2/1/.*\" tests/fixtures/diffs";
 
 	const char *filename = "templates/0011_007.txt";
 
@@ -384,7 +384,7 @@ static Return test0011_8(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "tests/examples/diffs";
+	const char *arguments = "tests/fixtures/diffs";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -398,7 +398,7 @@ static Return test0011_8(void)
 	        " --include=\"^diff2/path1/AAA/ZAW/.*\""
 	        " --include=\"^diff1/path2/AAA/ZAW/A/b/c/a_file\\..*\""
 	        " --db-drop-ignored"
-	        " tests/examples/diffs";
+	        " tests/fixtures/diffs";
 
 	const char *filename = "templates/0011_008.txt";
 

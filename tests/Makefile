@@ -258,7 +258,7 @@ $(DBG_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
 $(DBG_OBJDIR):
 	@mkdir -p "$(DBG_OBJDIR)"
 
-HUGETESTFILE = examples/huge/hugetestfile
+HUGETESTFILE = fixtures/huge/hugetestfile
 HUGETESTDIR := $(dir $(HUGETESTFILE))
 
 hugetestfile: $(HUGETESTFILE)

@@ -16,8 +16,8 @@ Return test0016(void)
 	create(char,chunk);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for the test
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -27,7 +27,7 @@ Return test0016(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--start-device-only --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
@@ -38,14 +38,14 @@ Return test0016(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	command = "cd ${TMPDIR} && "
-	        "echo -n 'PWOEUNVSODNLKUHGE' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt && "
-	        "touch tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt && "
-	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
+	        "echo -n 'PWOEUNVSODNLKUHGE' >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt && "
+	        "touch tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt && "
+	        "rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--update --check-level=QUICK --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
@@ -60,7 +60,7 @@ Return test0016(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--watch-timestamps --update --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
@@ -86,7 +86,7 @@ Return test0016(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
@@ -101,7 +101,7 @@ Return test0016(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--watch-timestamps --update --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
@@ -123,8 +123,8 @@ Return test0016(void)
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db && "
 	        "rm database2.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

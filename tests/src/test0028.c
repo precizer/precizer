@@ -58,14 +58,14 @@ static Return prepare_compare_filter_differences_fixture(void)
 	create(char,result);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
@@ -75,13 +75,13 @@ static Return prepare_compare_filter_differences_fixture(void)
 	}
 
 	command = "cd ${TMPDIR};"
-	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;"
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;";
+	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;"
+	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
+	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
@@ -104,8 +104,8 @@ static Return cleanup_compare_filter_differences_fixture(void)
 
 	const char *command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -123,7 +123,7 @@ static Return prepare_compare_filter_equal_fixture(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
@@ -132,7 +132,7 @@ static Return prepare_compare_filter_equal_fixture(void)
 		status = FAILURE;
 	}
 
-	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	if(result->length > 0)
@@ -173,15 +173,15 @@ static Return test0028_1(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -195,13 +195,13 @@ static Return test0028_1(void)
 	}
 
 	command = "cd ${TMPDIR};"
-	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
+	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
+	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
+	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -231,8 +231,8 @@ static Return test0028_1(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -251,15 +251,15 @@ static Return test0028_2(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -273,11 +273,11 @@ static Return test0028_2(void)
 	}
 
 	command = "cd ${TMPDIR};"
-	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;"; // Remove
+	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;"; // Remove
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -307,8 +307,8 @@ static Return test0028_2(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -327,15 +327,15 @@ static Return test0028_3(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -349,11 +349,11 @@ static Return test0028_3(void)
 	}
 
 	command = "cd ${TMPDIR};"
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
+	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -383,8 +383,8 @@ static Return test0028_3(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -403,15 +403,15 @@ static Return test0028_4(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--silent --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -425,11 +425,11 @@ static Return test0028_4(void)
 	}
 
 	command = "cd ${TMPDIR};"
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"; // Modify
+	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"; // Modify
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--silent --database=database2.db tests/examples/diffs/diff1";
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -459,8 +459,8 @@ static Return test0028_4(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db database2.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -478,11 +478,11 @@ static Return test0028_5(void)
 	create(char,result);
 	create(char,pattern);
 
-	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--database=database2.db tests/examples/diffs/diff1";
+	arguments = "--database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

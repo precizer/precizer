@@ -644,7 +644,7 @@ Return test0015_1(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *arguments = "--database=./0015_database_v0.db tests/examples/diffs/diff1";
+	const char *arguments = "--database=./0015_database_v0.db tests/fixtures/diffs/diff1";
 
 	create(char,result);
 	create(char,pattern);
@@ -688,7 +688,7 @@ Return test0015_2(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--update --database=0015_database_v0.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	create(char,result);
 	create(char,pattern);
@@ -732,7 +732,7 @@ Return test0015_3(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--watch-timestamps --update --database=0015_database_v0.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	create(char,result);
 	create(char,pattern);
@@ -771,7 +771,7 @@ Return test0015_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--update --database=./0015_database_v0.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -805,7 +805,7 @@ Return test0015_5(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	// Get the output of an external program
-	const char *arguments = "tests/examples/diffs/diff1";
+	const char *arguments = "tests/fixtures/diffs/diff1";
 
 	const char *filename = "templates/0015_004.txt";  // File name
 	const char *template = "%DB_NAME%";
@@ -902,7 +902,7 @@ Return test0015_8(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--update --database=0015_database_v1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	create(char,result);
 	create(char,pattern);
@@ -941,7 +941,7 @@ Return test0015_9(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--update --database=./0015_database_v1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -1016,7 +1016,7 @@ Return test0015_11(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--update --database=0015_database_v2.db --verbose "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	create(char,result);
 	create(char,pattern);
@@ -1096,7 +1096,7 @@ Return test0015_13(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--update --database=\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	create(char,result);
 
@@ -1166,7 +1166,7 @@ Return test0015_14(void)
 }
 
 /**
- * Create a fresh database inside tests/examples/diffs/ with the UTF-8 name
+ * Create a fresh database inside tests/fixtures/diffs/ with the UTF-8 name
  * "Это новая база данных.db" and ensure the app can read/write it despite
  * spaces and non-ASCII characters.
  * Then compare it against the legacy database
@@ -1190,7 +1190,7 @@ Return test0015_15(void)
 	create(char,chunk);
 
 	const char *arguments = "--database=\"Это новая база данных.db\" "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
@@ -1425,7 +1425,7 @@ Return test0015_19(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=0015_database_future_version.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	create(char,result);
 	create(char,pattern);

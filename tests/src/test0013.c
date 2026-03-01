@@ -11,7 +11,7 @@ static Return test0013_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--dry-run --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--dry-run --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -55,7 +55,7 @@ static Return test0013_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--dry-run --database=dry_run_regular.db tests/examples/diffs/diff1";
+	const char *arguments = "--dry-run --database=dry_run_regular.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0013_001_1.txt";
@@ -65,7 +65,7 @@ static Return test0013_2(void)
 	del(pattern);
 	del(result);
 
-	arguments = "--dry-run=with-checksums --database=dry_run_with_checksums.db tests/examples/diffs/diff1";
+	arguments = "--dry-run=with-checksums --database=dry_run_with_checksums.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	filename = "templates/0013_001_2.txt";
@@ -103,7 +103,7 @@ static Return test0013_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--dry-run=bad-mode --database=dry_run_invalid.db tests/examples/diffs/diff1";
+	const char *arguments = "--dry-run=bad-mode --database=dry_run_invalid.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,result,FAILURE,STDERR_ALLOW));
 
@@ -133,15 +133,15 @@ static Return test0013_4(void)
 	create(char,chunk);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for tests
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -159,14 +159,14 @@ static Return test0013_4(void)
 	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat1));
 
 	command = "cd ${TMPDIR};"
-	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
+	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
+	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
+	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--dry-run --update --database=database1.db"
-	        " tests/examples/diffs/diff1";
+	        " tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
@@ -189,7 +189,7 @@ static Return test0013_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	arguments = "--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update "
-	        "--database=database1.db tests/examples/diffs/diff1";
+	        "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -216,7 +216,7 @@ static Return test0013_4(void)
 
 	arguments = "--dry-run --db-drop-ignored --update"
 	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
-	        " --database=database1.db tests/examples/diffs/diff1";
+	        " --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -242,7 +242,7 @@ static Return test0013_4(void)
 
 	arguments = "--dry-run --db-drop-ignored --update --watch-timestamps"
 	        " --ignore=\"^path2/AAA/ZAW/.*\""
-	        " --database=database1.db tests/examples/diffs/diff1";
+	        " --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -269,8 +269,8 @@ static Return test0013_4(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -295,8 +295,8 @@ static Return test0013_5(void)
 
 	// Preparation for tests
 	command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -304,7 +304,7 @@ static Return test0013_5(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--database=database1.db tests/examples/diffs/diff1";
+	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -313,9 +313,9 @@ static Return test0013_5(void)
 	#endif
 
 	command = "cd ${TMPDIR};"
-	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;"
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
+	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;"
+	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
+	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -334,7 +334,7 @@ static Return test0013_5(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -360,7 +360,7 @@ static Return test0013_5(void)
 
 	arguments = "--db-drop-ignored --update"
 	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
-	        " --database=database1.db tests/examples/diffs/diff1";
+	        " --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -384,7 +384,7 @@ static Return test0013_5(void)
 
 	arguments = "--watch-timestamps --db-drop-ignored "
 	        "--ignore=\"^path2/AAA/ZAW/.*\" --update "
-	        "--database=database1.db tests/examples/diffs/diff1";
+	        "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -406,8 +406,8 @@ static Return test0013_5(void)
 	// Clean up test results
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -514,11 +514,11 @@ static Return test0013_7(void)
 	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* First run: create DB in normal mode. */
-	arguments = "--database=database1.db tests/examples/diffs/diff1";
+	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","true"));
-	arguments = "--dry-run --update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--dry-run --update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	const char *filename = "templates/0013_005.txt";
@@ -561,13 +561,13 @@ static Return test0013_8(void)
 
 	const char *prepare_command = "cd ${TMPDIR}; "
 	        "rm -f database1.db database1.db.backup; "
-	        "rm -rf tests/examples/diff1_backup; "
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup; "
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "rm -rf tests/fixtures/diff1_backup; "
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup; "
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	const char *cleanup_command = "cd ${TMPDIR}; "
 	        "rm -f database1.db database1.db.backup; "
-	        "rm -rf tests/examples/diffs/diff1; "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "rm -rf tests/fixtures/diffs/diff1; "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	const char *arguments = NULL;
 	const char *command = NULL;
 
@@ -578,12 +578,12 @@ static Return test0013_8(void)
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* First run: create DB in normal mode. */
-	arguments = "--database=database1.db tests/examples/diffs/diff1";
+	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* Make at least one real filesystem change so --update modifies DB. */
 	command = "cd ${TMPDIR}; "
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;";
+	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* Control check: real --update must modify database metadata. */
@@ -593,7 +593,7 @@ static Return test0013_8(void)
 	command = "cd ${TMPDIR}; cp -a database1.db database1.db.backup;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0013_006_1.txt";
@@ -614,7 +614,7 @@ static Return test0013_8(void)
 	del(pattern);
 
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","true"));
-	arguments = "--update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	filename = "templates/0013_006_2.txt";

@@ -142,14 +142,14 @@ jobs:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
-      - name: Checkout repository (exclude tests/examples/long)
+      - name: Checkout repository (exclude tests/fixtures/long)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /*
-            !tests/examples/long/**
+            !tests/fixtures/long/**
 
       - name: Install dependencies
         run: |
