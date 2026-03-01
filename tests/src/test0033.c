@@ -300,7 +300,7 @@ static Return test0033_1(void)
 {
 	INITTEST;
 
-	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/examples/diffs/";
+	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/fixtures/diffs/";
 	const char *filename = "templates/0033_001.txt";
 	const char *cleanup_command = "rm -f \"${TMPDIR}/0033_interrupt_resume.db\"";
 
@@ -345,7 +345,7 @@ static Return test0033_2(void)
 {
 	INITTEST;
 
-	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/examples/diffs/";
+	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/fixtures/diffs/";
 	const char *filename = "templates/0033_002.txt";
 	const char *cleanup_command = "rm -f \"${TMPDIR}/0033_interrupt_resume.db\"";
 
@@ -394,12 +394,12 @@ static Return test0033_3(void)
 	const char *first_run_template = "templates/0033_003_1.txt";
 	const char *second_run_template = "templates/0033_003_2.txt";
 	const char *prepare_command = "cd ${TMPDIR};"
-	        "mkdir -p tests/examples/;"
-	        "rm -rf tests/examples/huge/;"
-	        "cp -a \"$ORIGIN_DIR/tests/examples/huge\" tests/examples/;";
+	        "mkdir -p tests/fixtures/;"
+	        "rm -rf tests/fixtures/huge/;"
+	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
 	const char *cleanup_command = "cd ${TMPDIR};"
 	        "rm -f 0033_interrupt_resume.db;"
-	        "rm -rf tests/examples/huge/;";
+	        "rm -rf tests/fixtures/huge/;";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -415,7 +415,7 @@ static Return test0033_3(void)
 	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == construct_path("tests/examples/huge/hugetestfile",huge_file_path));
+	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
 
 	/*
 	 * Read the real file size from the filesystem once and use it as
@@ -425,7 +425,7 @@ static Return test0033_3(void)
 	ASSERT(0 == stat(getcstring(huge_file_path),&huge_file_stat));
 	ASSERT(huge_file_stat.st_size > 0);
 
-	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/examples/huge";
+	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/fixtures/huge";
 
 	/*
 	 * Step 2: Run in background, wait until hashing reaches wait-point 2,
@@ -470,7 +470,7 @@ static Return test0033_3(void)
 	/*
 	 * Step 5: Resume hashing with --update and verify second-run output
 	 */
-	arguments = "--update --progress --database=0033_interrupt_resume.db tests/examples/huge";
+	arguments = "--update --progress --database=0033_interrupt_resume.db tests/fixtures/huge";
 	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(second_run_template,stdout_pattern));
@@ -518,12 +518,12 @@ static Return test0033_4(void)
 	const char *first_run_template = "templates/0033_004_1.txt";
 	const char *second_run_template = "templates/0033_004_2.txt";
 	const char *prepare_command = "cd ${TMPDIR};"
-	        "mkdir -p tests/examples/;"
-	        "rm -rf tests/examples/huge/;"
-	        "cp -a \"$ORIGIN_DIR/tests/examples/huge\" tests/examples/;";
+	        "mkdir -p tests/fixtures/;"
+	        "rm -rf tests/fixtures/huge/;"
+	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
 	const char *cleanup_command = "cd ${TMPDIR};"
 	        "rm -f 0033_interrupt_rehash.db;"
-	        "rm -rf tests/examples/huge/;";
+	        "rm -rf tests/fixtures/huge/;";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -534,9 +534,9 @@ static Return test0033_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == construct_path("tests/examples/huge/hugetestfile",huge_file_path));
+	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
 
-	const char *arguments = "--progress --database=0033_interrupt_rehash.db tests/examples/huge";
+	const char *arguments = "--progress --database=0033_interrupt_rehash.db tests/fixtures/huge";
 
 	ASSERT(SUCCESS == runit_background(
 		arguments,
@@ -563,7 +563,7 @@ static Return test0033_4(void)
 
 	ASSERT(SUCCESS == append_byte_to_file(getcstring(huge_file_path),(unsigned char)'X'));
 
-	arguments = "--update --progress --database=0033_interrupt_rehash.db tests/examples/huge";
+	arguments = "--update --progress --database=0033_interrupt_rehash.db tests/fixtures/huge";
 	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(second_run_template,stdout_pattern));

@@ -1,11 +1,11 @@
 \ATESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/diffs/diff1
+TESTING:argument:paths=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:Argument parsing is complete
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
+TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
+TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
 TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
@@ -57,7 +57,7 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/long
+TESTING:argument:paths=tests/fixtures/long
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:force=yes
@@ -65,8 +65,8 @@ TESTING:argument:update=yes
 TESTING:Argument parsing is complete
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/long exists
-TESTING:The path tests/examples/long is exists and it is a directory
+TESTING:Verify that the path tests/fixtures/long exists
+TESTING:The path tests/fixtures/long is exists and it is a directory
 TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
@@ -98,9 +98,9 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1\.db has already been created previously
 TESTING:The paths passed as arguments differ from those saved in the database. File paths and checksum information may be lost!
 TESTING:Paths saved in the database:
-tests/examples/diffs/diff1
+tests/fixtures/diffs/diff1
 TESTING:The (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option has been used, so the following paths will be written to the database1\.db:
-tests/examples/long
+tests/fixtures/long
 TESTING:Update mode enabled for DB database1\.db
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*

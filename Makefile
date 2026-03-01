@@ -118,7 +118,7 @@ WFLAGS += -Wmissing-format-attribute
 endif
 
 # Arguments for the test
-ARGS = tests/examples/diffs
+ARGS = tests/fixtures/diffs
 
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
@@ -278,8 +278,8 @@ TOPTARGETS := all
 
 define BUILD_USAGE_BANNER
 printf "Now some tests could be running:\n"
-printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/examples/diffs/diff1\n"
-printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/examples/diffs/diff2\n"
+printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/fixtures/diffs/diff1\n"
+printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/fixtures/diffs/diff2\n"
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 

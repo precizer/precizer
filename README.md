@@ -291,7 +291,7 @@ or replace `-ubuntu-` with any distro from the list above.
 
 #### Tests
 
-The test sets in the `tests/examples/` directory can be used to evaluate the program’s capabilities.
+The test sets in the `tests/fixtures/` directory can be used to evaluate the program’s capabilities.
 
 Test execution:
 
@@ -355,9 +355,9 @@ make purge
 Add files to two databases and compare them with each other:
 
 ```sh
-precizer --progress --database=database1.db tests/examples/diffs/diff1
+precizer --progress --database=database1.db tests/fixtures/diffs/diff1
 
-precizer --progress --database=database2.db tests/examples/diffs/diff2
+precizer --progress --database=database2.db tests/fixtures/diffs/diff2
 
 precizer --compare database1.db database2.db
 ```
@@ -387,7 +387,7 @@ Database Update
 The previous example is run again. First attempt. Warning message.
 
 ```sh
-precizer --progress --database=database1.db tests/examples/diffs/diff1
+precizer --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when it is certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.  
@@ -397,7 +397,7 @@ ERROR: The precizer process terminated unexpectedly due to an error
 The **--update** parameter must be included. This parameter is required to protect the database from data loss caused by accidental execution.
 
 ```sh
-precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>Primary database file name: database1.db  
@@ -413,20 +413,20 @@ Make the following adjustments:
 
 ```sh
 # Modify a file
-echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+echo -n "  " >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt
 
 # Add a new file
-touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt
+touch tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt
 
 # Remove a file
-rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
 
 ```
 
 Run **precizer** again with the `--update` parameter:
 
 ```sh
-precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>Primary database file name: database1.db  
@@ -470,7 +470,7 @@ Using the `--silent` mode. When this mode is enabled, the program does not produ
 Add the **--silent** parameter to the previous example:
 
 ```sh
-precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --silent --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 As a result, nothing will be displayed on the screen.
@@ -481,15 +481,15 @@ Additional Information in `--verbose` mode. This mode can be useful for debuggin
 Add the **--verbose** parameter to the previous example:
 
 ```sh
-precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --verbose --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
-paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-drop-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
+paths=tests/fixtures/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-drop-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
 2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
 2025-01-25 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments  
-2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/examples/diffs/diff1 exists  
-2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory  
+2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/fixtures/diffs/diff1 exists  
+2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/fixtures/diffs/diff1 is exists and it is a directory  
 2025-01-25 09:55:59:821 src/detect_paths.c:036:detect_paths:Paths detected  
 2025-01-25 09:55:59:821 src/init_signals.c:034:init_signals:Set signal SIGUSR2 OK:pid:604770  
 2025-01-25 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770  
@@ -532,9 +532,9 @@ paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.
 Non-recursive traversal using the `--maxdepth` parameter
 
 ```sh
-tree tests/examples/4
+tree tests/fixtures/4
 
-tests/examples/4
+tests/fixtures/4
 ├── AAA
 │   ├── BBB
 │   │   ├── CCC
@@ -549,7 +549,7 @@ tests/examples/4
 The `--maxdepth=0` parameter completely disables recursion.
 
 ```sh
-precizer --maxdepth=0 tests/examples/4
+precizer --maxdepth=0 tests/fixtures/4
 ```
 
 <sub>Primary database file name: myhost.db  
@@ -576,9 +576,9 @@ PCRE2 regular expressions can be tested and validated using https://regex101.com
 To illustrate how a relative path looks, run a directory traversal without the `--ignore` option and check how the terminal displays the relative paths recorded in the database:
 
 ```sh
-% tree -L 3 tests/examples/diffs
+% tree -L 3 tests/fixtures/diffs
 
-tests/examples/diffs
+tests/fixtures/diffs
 ├── diff1
 │   ├── 1
 │   │   └── AAA
@@ -610,10 +610,10 @@ tests/examples/diffs
 ```
 
 ```sh
-precizer --ignore="^diff1/1/.*" tests/examples/diffs
+precizer --ignore="^diff1/1/.*" tests/fixtures/diffs
 ```
 
-In this example, the initial traversal path is `./tests/examples/diffs`, and the generated ignore path is `./tests/examples/diffs/diff1/1/` along with all its subdirectories (`/*`).
+In this example, the initial traversal path is `./tests/fixtures/diffs`, and the generated ignore path is `./tests/fixtures/diffs/diff1/1/` along with all its subdirectories (`/*`).
 
 <sub>Primary database file name: myhost.db  
 The path myhost.db doesn't exist or it is not a file  
@@ -656,7 +656,7 @@ Enjoy life!
 Repeat the same example, but this time without the `--ignore` option to include the three previously ignored files:
 
 ```sh
-precizer --update tests/examples/diffs
+precizer --update tests/fixtures/diffs
 ```
 
 <sub>Primary database file name: myhost.db  
@@ -696,7 +696,7 @@ precizer \
     --db-drop-ignored \
     --ignore="^diff1/1/.*" \
     --ignore="^diff2/1/.*" \
-    tests/examples/diffs
+    tests/fixtures/diffs
 ```
 
 <sub>Primary database file name: myhost.db  
@@ -726,7 +726,7 @@ Using `--ignore` together with `--include`
 
 rm -i "${HOST}.db"
 
-precizer tests/examples/diffs
+precizer tests/fixtures/diffs
 ```
 
 This variant uses regular expressions.
@@ -751,7 +751,7 @@ precizer --update \
 	--include="^diff2/path1/AAA/ZAW/.*" \
 	--include="^diff1/path2/AAA/ZAW/A/b/c/a_file\..*" \
 	--db-drop-ignored \
-	tests/examples/diffs
+	tests/fixtures/diffs
 ```
 
 <sub>Primary database file name: myhost.db  

@@ -1,10 +1,10 @@
 #include "sute.h"
 
 #define TARGET_REL_PATH "path1/AAA/BCB/CCC/a.txt"
-#define TARGET_FILE_REL "tests/examples/diffs/diff1/" TARGET_REL_PATH
-#define TARGET_FILE "${TMPDIR}/tests/examples/diffs/diff1/" TARGET_REL_PATH
+#define TARGET_FILE_REL "tests/fixtures/diffs/diff1/" TARGET_REL_PATH
+#define TARGET_FILE "${TMPDIR}/tests/fixtures/diffs/diff1/" TARGET_REL_PATH
 #define LOCKED_TAMPER_PATH "path1/AAA/ZAW/A/b/c/a_file.txt"
-#define LOCKED_TAMPER_FILE "tests/examples/diffs/diff1/" LOCKED_TAMPER_PATH
+#define LOCKED_TAMPER_FILE "tests/fixtures/diffs/diff1/" LOCKED_TAMPER_PATH
 
 static Return tamper_locked_checksum(
 	const char *db_filename,
@@ -253,13 +253,13 @@ static Return test0030_1(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s1.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -274,7 +274,7 @@ static Return test0030_1(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
-	        "--database=lock_s1.db tests/examples/diffs/diff1";
+	        "--database=lock_s1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -286,8 +286,8 @@ static Return test0030_1(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s1.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
@@ -310,14 +310,14 @@ static Return test0030_2(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
 	        "rm -f lock_s2.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s2.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -331,7 +331,7 @@ static Return test0030_2(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
-	        "--database=lock_s2.db tests/examples/diffs/diff1";
+	        "--database=lock_s2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -343,8 +343,8 @@ static Return test0030_2(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s2.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
@@ -367,14 +367,14 @@ static Return test0030_3(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
 	        "rm -f lock_s3.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s3.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -388,7 +388,7 @@ static Return test0030_3(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--update --lock-checksum=\"^path1/.*\" "
-	        "--database=lock_s3.db tests/examples/diffs/diff1";
+	        "--database=lock_s3.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -400,8 +400,8 @@ static Return test0030_3(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s3.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);
@@ -429,14 +429,14 @@ static Return test0030_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
 	        "rm -f lock_s4.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s4.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -459,7 +459,7 @@ static Return test0030_4(void)
 
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -477,8 +477,8 @@ static Return test0030_4(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s4.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -503,14 +503,14 @@ static Return test0030_5(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
 	        "rm -f lock_s5.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s5.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -529,7 +529,7 @@ static Return test0030_5(void)
 
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s5.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -541,8 +541,8 @@ static Return test0030_5(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s5.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -566,14 +566,14 @@ static Return test0030_6(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
 	        "rm -f lock_s6.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s6.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -586,7 +586,7 @@ static Return test0030_6(void)
 	ASSERT(SUCCESS == tamper_locked_file_bytes(LOCKED_TAMPER_FILE));
 
 	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
-	        "--database=lock_s6.db tests/examples/diffs/diff1";
+	        "--database=lock_s6.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -598,8 +598,8 @@ static Return test0030_6(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s6.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -623,14 +623,14 @@ static Return test0030_7(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
 	        "rm -f lock_s7.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s7.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -644,7 +644,7 @@ static Return test0030_7(void)
 
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s7.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -656,8 +656,8 @@ static Return test0030_7(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s7.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -681,14 +681,14 @@ static Return test0030_8(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/diffs/diff1 tests/examples/diff1_backup;"
-	        "cp -a tests/examples/diff1_backup tests/examples/diffs/diff1;"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
 	        "rm -f lock_s8.db;";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s8.db --progress "
-	        "--lock-checksum=\"^path1/.*\" tests/examples/diffs/diff1";
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -699,7 +699,7 @@ static Return test0030_8(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
-	        "--database=lock_s8.db tests/examples/diffs/diff1";
+	        "--database=lock_s8.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -711,8 +711,8 @@ static Return test0030_8(void)
 
 	command = "cd ${TMPDIR} && "
 	        "rm -f lock_s8.db && "
-	        "rm -rf tests/examples/diffs/diff1 && "
-	        "mv tests/examples/diff1_backup tests/examples/diffs/diff1";
+	        "rm -rf tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

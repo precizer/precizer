@@ -285,7 +285,7 @@ make docker-ubuntu-dynamic-production
 
 #### Тесты
 
-Для проверки возможностей программы можно использовать наборы тестов из директории tests/examples/ в исходном коде программы
+Для проверки возможностей программы можно использовать наборы тестов из директории tests/fixtures/ в исходном коде программы
 
 Запуск тестов:
 
@@ -349,9 +349,9 @@ make purge
 Добавить файлы в две базы данных и сравнить их между собой:
 
 ```sh
-precizer --progress --database=database1.db tests/examples/diffs/diff1
+precizer --progress --database=database1.db tests/fixtures/diffs/diff1
 
-precizer --progress --database=database2.db tests/examples/diffs/diff2
+precizer --progress --database=database2.db tests/fixtures/diffs/diff2
 
 precizer --compare database1.db database2.db
 ```
@@ -381,7 +381,7 @@ The precizer completed its execution without any issues
 Попробуем использовать предыдущий пример ещё раз. Первая попытка. Сообщение с предупреждением.
 
 ```sh
-precizer --progress --database=database1.db tests/examples/diffs/diff1
+precizer --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.  
@@ -391,7 +391,7 @@ ERROR: The precizer process terminated unexpectedly due to an error
 Должен быть добавлен параметр **--update**. Этот параметр необходим для защиты базы данных от потери информации из-за случайного запуска.
 
 ```sh
-precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>Primary database file name: database1.db  
@@ -407,20 +407,20 @@ The precizer completed its execution without any issues
 
 ```sh
 # Modify a file
-echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
+echo -n "  " >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt
 
 # Add a new file
-touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt
+touch tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt
 
 # Remove a file
-rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
 
 ```
 
 и запустим **precizer** ещё раз, но уже с параметром `--update`:
 
 ```sh
-precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>Primary database file name: database1.db  
@@ -464,7 +464,7 @@ The precizer completed its execution without any issues
 Добавим параметр **--silent** к предыдущему примеру:
 
 ```sh
-precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --silent --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 В результате на экране ничего не отобразится.
@@ -475,15 +475,15 @@ precizer --silent --update --progress --database=database1.db tests/examples/dif
 Добавим параметр **--verbose** к предыдущему примеру:
 
 ```sh
-precizer --verbose --update --progress --database=database1.db tests/examples/diffs/diff1
+precizer --verbose --update --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <sub>2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE  
-paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-drop-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
+paths=tests/fixtures/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-drop-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE  
 2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed  
 2025-01-25 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments  
-2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/examples/diffs/diff1 exists  
-2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/examples/diffs/diff1 is exists and it is a directory  
+2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/fixtures/diffs/diff1 exists  
+2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/fixtures/diffs/diff1 is exists and it is a directory  
 2025-01-25 09:55:59:821 src/detect_paths.c:036:detect_paths:Paths detected  
 2025-01-25 09:55:59:821 src/init_signals.c:034:init_signals:Set signal SIGUSR2 OK:pid:604770  
 2025-01-25 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770  
@@ -526,9 +526,9 @@ paths=tests/examples/diffs/diff1; database=database1.db; db_file_name=database1.
 Исследование без рекурсии с помощью параметра `--maxdepth`
 
 ```sh
-tree tests/examples/4
+tree tests/fixtures/4
 
-tests/examples/4
+tests/fixtures/4
 ├── AAA
 │   ├── BBB
 │   │   ├── CCC
@@ -543,7 +543,7 @@ tests/examples/4
 Параметр `--maxdepth` со значением `=0` полностью отключает рекурсию.
 
 ```sh
-precizer --maxdepth=0 tests/examples/4
+precizer --maxdepth=0 tests/fixtures/4
 ```
 
 <sub>Primary database file name: myhost.db  
@@ -570,9 +570,9 @@ The precizer completed its execution without any issues
 Для понимания, как выглядит относительный путь, достаточно запустить сканирование директорий без опции `--ignore` и посмотреть, как терминал будет отображать относительные пути, записываемые в базу данных:
 
 ```sh
-% tree -L 3 tests/examples/diffs
+% tree -L 3 tests/fixtures/diffs
 
-tests/examples/diffs
+tests/fixtures/diffs
 ├── diff1
 │   ├── 1
 │   │   └── AAA
@@ -604,10 +604,10 @@ tests/examples/diffs
 ```
 
 ```sh
-precizer --ignore="^diff1/1/.*" tests/examples/diffs
+precizer --ignore="^diff1/1/.*" tests/fixtures/diffs
 ```
 
-В этом примере начальный путь сканирования — `./tests/examples/diffs`, а сформированный путь для игнорирования — `./tests/examples/diffs/diff1/1/` со всеми подкаталогами (`/*`).
+В этом примере начальный путь сканирования — `./tests/fixtures/diffs`, а сформированный путь для игнорирования — `./tests/fixtures/diffs/diff1/1/` со всеми подкаталогами (`/*`).
 
 <sub>Primary database file name: myhost.db  
 The path myhost.db doesn't exist or it is not a file  
@@ -650,7 +650,7 @@ Enjoy your life!
 Повторим тот же пример, но без опции `--ignore`, чтобы добавить три ранее проигнорированных файла:
 
 ```sh
-precizer --update tests/examples/diffs
+precizer --update tests/fixtures/diffs
 ```
 
 <sub>Primary database file name: myhost.db  
@@ -690,7 +690,7 @@ precizer \
     --db-drop-ignored \
     --ignore="^diff1/1/.*" \
     --ignore="^diff2/1/.*" \
-    tests/examples/diffs
+    tests/fixtures/diffs
 ```
 
 <sub>Primary database file name: myhost.db  
@@ -720,7 +720,7 @@ The precizer completed its execution without any issues
 
 rm -i "${HOST}.db"
 
-precizer tests/examples/diffs
+precizer tests/fixtures/diffs
 ```
 
 Усложним задачу с использованием регулярных выражений.
@@ -745,7 +745,7 @@ precizer --update \
 	--include="^diff2/path1/AAA/ZAW/.*" \
 	--include="^diff1/path2/AAA/ZAW/A/b/c/a_file\..*" \
 	--db-drop-ignored \
-	tests/examples/diffs
+	tests/fixtures/diffs
 ```
 
 <sub>Primary database file name: myhost.db  

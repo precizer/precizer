@@ -44,12 +44,12 @@ Return test0003_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--progress tests/examples/diffs/diff1";
+	const char *arguments = "--progress tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--progress --database=database2.db "
-	        "tests/examples/diffs/diff2";
+	        "tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 

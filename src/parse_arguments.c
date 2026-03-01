@@ -92,14 +92,14 @@ static struct argp_option options[] = {
 	 BOLD "--ignore" RESET " option and look how the terminal will display "
 	 "relative paths that are written to the database.\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --ignore=\"^diff2/1/.*\" tests/examples/diffs" RESET "\n"
+	 BOLD APP_NAME " --ignore=\"^diff2/1/.*\" tests/fixtures/diffs" RESET "\n"
 	 "In this example, the starting path for the traversing "
-	 "is ./tests/examples/diffs and the relative path to ignore will "
-	 "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/.*).\n"
+	 "is ./tests/fixtures/diffs and the relative path to ignore will "
+	 "be ./tests/fixtures/diffs/diff2/1/ and all subdirectories (/.*).\n"
 	 "Multiple regular expressions for ignore could be specified using many "
 	 BOLD "--ignore" RESET " options at once.\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",4 },
+	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/fixtures/diffs" RESET "\n",4 },
 	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",4 },
 	{"db-drop-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-drop-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",3},
 	{"db-clean-ignored",'C',0,OPTION_ALIAS | OPTION_HIDDEN,0,3}, // This legacy can be removed in 2036 (10-year Long-Term Support)

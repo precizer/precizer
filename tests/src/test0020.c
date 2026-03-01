@@ -18,7 +18,7 @@ Return test0020_1(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--update --database=nonexistent_directory/database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
@@ -52,7 +52,7 @@ Return test0020_2(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--update --database=nonexistent_database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
@@ -92,7 +92,7 @@ Return test0020_3(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--database=write_protected_directory/database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
@@ -130,11 +130,11 @@ Return test0020_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--database=write_protected_database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--database=database2.db tests/examples/diffs/diff2";
+	arguments = "--database=database2.db tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -184,7 +184,7 @@ Return test0020_5(void)
 	const char *filename = "templates/0020_005.txt";
 
 	const char *arguments = "--update --database=write_protected_database1.db "
-	        "tests/examples/diffs/diff1";
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 
@@ -222,11 +222,11 @@ Return test0020_6(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--update --database=database1.db tests/examples/diffs/diff2";
+	arguments = "--update --database=database1.db tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -260,7 +260,7 @@ Return test0020_7(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--update --force --database=database1.db "
-	        "tests/examples/diffs/diff2";
+	        "tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 

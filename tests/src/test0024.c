@@ -14,7 +14,7 @@ Return test0024_1(void)
 	 * with an apostrophe
 	 */
 	const char *arguments = "--progress --database=database1.db "
-	        "tests/examples/\\'apostrophe";
+	        "tests/fixtures/\\'apostrophe";
 
 	const char *filename = "templates/0024_001.txt";
 
@@ -50,7 +50,7 @@ Return test0024_2(void)
 	 * Checking how paths are handled when the directory name ends
 	 * with an apostrophe
 	 */
-	const char *arguments = "--progress --database=database1.db tests/examples/apostrophe\\'";
+	const char *arguments = "--progress --database=database1.db tests/fixtures/apostrophe\\'";
 
 	const char *filename = "templates/0024_002.txt";
 
@@ -75,9 +75,9 @@ Return test0024_2(void)
 
 /**
  * Stage 1. Adding:
- * precizer --progress --database=database1.db tests/examples/\'apostrophe/\'apostrophe/
+ * precizer --progress --database=database1.db tests/fixtures/\'apostrophe/\'apostrophe/
  * Stage 2. Adding:
- * precizer --progress --database=database2.db tests/examples/apostrophe\'/\'apostrophe/apostrophe\'/
+ * precizer --progress --database=database2.db tests/fixtures/apostrophe\'/\'apostrophe/apostrophe\'/
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
@@ -88,7 +88,7 @@ static Return test0024_3(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--progress --database=database1.db "
-	        "tests/examples/\\'apostrophe/\\'apostrophe/";
+	        "tests/fixtures/\\'apostrophe/\\'apostrophe/";
 
 	// Create memory for the result
 	create(char,result);
@@ -99,7 +99,7 @@ static Return test0024_3(void)
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	arguments = "--progress --database=database2.db "
-	        "tests/examples/apostrophe\\'/\\'apostrophe/apostrophe\\'/";
+	        "tests/fixtures/apostrophe\\'/\\'apostrophe/apostrophe\\'/";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 

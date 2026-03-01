@@ -2,7 +2,7 @@
 .vscode
 doc
 src/*/
-tests/examples/huge/
+tests/fixtures/huge/
 tests/testitall
 tools/tool_*
 precizer
