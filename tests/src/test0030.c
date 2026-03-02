@@ -252,8 +252,8 @@ static Return test0030_2(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	command = "touch -m " TARGET_FILE;
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
 
 	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s2.db tests/fixtures/diffs/diff1";
@@ -309,8 +309,8 @@ static Return test0030_3(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	command = "touch -m " TARGET_FILE;
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
 
 	arguments = "--update --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s3.db tests/fixtures/diffs/diff1";
@@ -379,8 +379,8 @@ static Return test0030_4(void)
 
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
 
-	command = "touch -m " TARGET_FILE;
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
 
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
@@ -445,9 +445,8 @@ static Return test0030_5(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	command = "touch -m " TARGET_FILE;
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
 
 	// Corrupt the stored checksum for a locked file without touching it on disk.
 	ASSERT(SUCCESS == tamper_locked_checksum("lock_s5.db",LOCKED_TAMPER_PATH));

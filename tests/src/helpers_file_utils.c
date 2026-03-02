@@ -348,8 +348,11 @@ Return append_byte_to_file(
  * Relative paths are resolved from TMPDIR with construct_path
  * Source and target can be the same file
  * If relative_source_path is NULL, relative_target_path is used as source
+ * If relative_target_path is NULL, the function returns FAILURE
  * The delta is applied in nanoseconds and can be any signed integer value
+ * If mtime_delta_nanoseconds is 0, target mtime is set to source mtime
  * atime is preserved with UTIME_OMIT
+ * Even when resulting mtime equals current mtime, successful metadata update may still change ctime
  * ctime cannot be set directly from userspace and will change automatically after metadata update
  *
  * @param[in] relative_source_path Relative path from TMPDIR to source file or NULL
@@ -374,31 +377,37 @@ Return touch_file_mtime_with_reference_delta_ns(
 	create(char,source_absolute_path);
 	create(char,target_absolute_path);
 
+	// Require a target path because the mtime update is applied to this file
 	if(relative_target_path == NULL)
 	{
 		status = FAILURE;
 	}
 
+	// Reuse target as source when source path is not provided
 	if(SUCCESS == status && source_relative_path == NULL)
 	{
 		source_relative_path = relative_target_path;
 	}
 
+	// Resolve source path relative to TMPDIR
 	if(SUCCESS == status)
 	{
 		status = construct_path(source_relative_path,source_absolute_path);
 	}
 
+	// Resolve target path relative to TMPDIR
 	if(SUCCESS == status)
 	{
 		status = construct_path(relative_target_path,target_absolute_path);
 	}
 
+	// Read source stat to use its mtime as the reference point
 	if(SUCCESS == status)
 	{
 		status = get_file_stat(getcstring(source_absolute_path),&source_file_stat);
 	}
 
+	// Build target mtime by applying and normalizing nanosecond delta
 	if(SUCCESS == status)
 	{
 		const intmax_t nanoseconds_per_second = 1000000000;
@@ -407,10 +416,12 @@ Return touch_file_mtime_with_reference_delta_ns(
 		long target_nanoseconds = source_file_stat.st_mtim.tv_nsec
 		        + (long)(mtime_delta_nanoseconds % nanoseconds_per_second);
 
+		// Normalize nanosecond overflow into next second
 		if(target_nanoseconds >= (long)nanoseconds_per_second)
 		{
 			target_nanoseconds -= (long)nanoseconds_per_second;
 			target_seconds++;
+		// Normalize negative nanoseconds by borrowing one second
 		} else if(target_nanoseconds < 0){
 			target_nanoseconds += (long)nanoseconds_per_second;
 			target_seconds--;
@@ -418,16 +429,19 @@ Return touch_file_mtime_with_reference_delta_ns(
 
 		time_t normalized_target_seconds = (time_t)target_seconds;
 
+		// Ensure computed seconds value is representable as time_t
 		if((intmax_t)normalized_target_seconds != target_seconds)
 		{
 			status = FAILURE;
 		} else {
+			// Keep atime unchanged and prepare mtime for utimensat
 			target_times[0].tv_nsec = UTIME_OMIT;
 			target_times[1].tv_sec = normalized_target_seconds;
 			target_times[1].tv_nsec = target_nanoseconds;
 		}
 	}
 
+	// Apply the prepared timestamp values to the target file
 	if(SUCCESS == status)
 	{
 		if(utimensat(0,getcstring(target_absolute_path),target_times,0) != 0)
@@ -463,47 +477,56 @@ Return tamper_locked_file_bytes(
 	struct timespec times[2] = {{0}};
 	create(char,file_path);
 
+	// Validate input path before any filesystem operations
 	if(SUCCESS == status && relative_path == NULL)
 	{
 		status = FAILURE;
 	}
 
+	// Resolve path relative to TMPDIR
 	if(SUCCESS == status)
 	{
 		status = construct_path(relative_path,file_path);
 	}
 
+	// Open file for in-place read and write operations
 	if(SUCCESS == status && (fd = open(getcstring(file_path),O_RDWR)) < 0)
 	{
 		status = FAILURE;
 	}
 
+	// Read file metadata to preserve timestamps later
 	if(SUCCESS == status && fstat(fd,&before) != 0)
 	{
 		status = FAILURE;
 	}
 
+	// Require at least two bytes because exactly two bytes are modified
 	if(SUCCESS == status && before.st_size < (off_t)sizeof(buffer))
 	{
 		status = FAILURE;
 	}
 
+	// Read first two bytes that will be modified
 	if(SUCCESS == status && pread(fd,buffer,sizeof(buffer),0) != (ssize_t)sizeof(buffer))
 	{
 		status = FAILURE;
 	}
 
+	// Flip both bytes to guarantee content and checksum change
 	if(SUCCESS == status)
 	{
 		buffer[0] = (unsigned char)~buffer[0];
 		buffer[1] = (unsigned char)~buffer[1];
 	}
 
+	// Write modified bytes back to file start
 	if(SUCCESS == status && pwrite(fd,buffer,sizeof(buffer),0) != (ssize_t)sizeof(buffer))
 	{
 		status = FAILURE;
 	}
 
+	// Restore atime and mtime best effort after content tampering
 	if(SUCCESS == status)
 	{
 		// Best effort restore for atime and mtime while ctime still changes on POSIX
@@ -516,6 +539,7 @@ Return tamper_locked_file_bytes(
 		}
 	}
 
+	// Close descriptor on all paths where open succeeded
 	if(fd >= 0)
 	{
 		(void)close(fd);

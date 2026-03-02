@@ -39,10 +39,12 @@ Return test0016(void)
 
 	command = "cd ${TMPDIR} && "
 	        "echo -n 'PWOEUNVSODNLKUHGE' >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt && "
-	        "touch tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt && "
 	        "rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt",999));
 
 	arguments = "--update --check-level=QUICK --database=database1.db "
 	        "tests/fixtures/diffs/diff1";

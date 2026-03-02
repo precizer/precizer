@@ -40,6 +40,12 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
+	// Bump diff2 fixture mtime relative to diff1 for stat-only test coverage
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(
+		"tests/fixtures/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt",
+		"tests/fixtures/diffs/diff2/1/AAA/ZAW/A/b/c/a_file.txt",
+		999));
+
 	bool file_exists = false;
 
 	create(char,absolute_path);

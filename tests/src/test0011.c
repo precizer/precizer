@@ -74,8 +74,8 @@ static Return test0011_1(void)
  * cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1
  * # Modify a file
  * echo -n "  " >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt
- * # Add a new file
- * touch tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt
+ * # Add a new file by truncating the file with the target name
+ * truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt")
  * # Remove a file
  * rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
  * Stage 5. Run the precizer once again:
@@ -144,10 +144,12 @@ static Return test0011_2(void)
 
 	command = "cd ${TMPDIR};"
 	        "echo -n '  ' >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
-	        "touch tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
 	        "rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	// Create the file as empty without using shell touch
+	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt"));
 
 	arguments = "--watch-timestamps --update --progress "
 	        "--database=database1.db tests/fixtures/diffs/diff1";

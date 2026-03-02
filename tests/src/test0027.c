@@ -52,10 +52,12 @@ static Return test0027_1(void)
 	        "echo 'corrupted' >> tests/fixtures/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt;"
 	        "echo 'corrupted' >> tests/fixtures/diffs/diff2/path1/AAA/BCB/CCC/b.txt;"
 	        "echo 'changed' >> tests/fixtures/diffs/diff2/3/AAA/BBB/CCC/a.txt;"
-	        "touch tests/fixtures/diffs/diff2/2/AAA/BBB/CZC/a.txt;"
 	        "cp lock.db lock1.db";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff2/2/AAA/BBB/CZC/a.txt",999));
 
 	arguments = "--progress --update --database=lock.db "
 	        "--lock-checksum=\"^diff1/1/.*\" "
