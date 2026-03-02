@@ -5,13 +5,14 @@ ARG BUILD
 ENV BUILD=${BUILD}
 
 # deps: gcc, make, llvm, pcre2 (static), upx, useradd
-RUN (emerge-webrsync || emerge --sync); \
-    emerge --ask=n --getbinpkg --usepkgonly \
-      llvm-core/llvm \
-      dev-build/cmake \
-      app-arch/upx; \
+RUN mkdir -p /var/db/repos/gentoo; \
+    echo 'FEATURES="-ipc-sandbox -network-sandbox -pid-sandbox"' >> /etc/portage/make.conf; \
+    (emerge-webrsync || emerge --sync); \
+    emerge --ask=n --getbinpkg --usepkgonly -pv \
+      llvm-core/llvm; \
     echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2; \
     emerge --ask=n \
+      app-arch/upx \
       dev-libs/libpcre2 \
       dev-util/cmocka; \
     emerge --depclean
