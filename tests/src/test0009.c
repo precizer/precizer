@@ -1,51 +1,6 @@
 #include "sute.h"
 
 /**
- * @brief Truncate an existing file to zero bytes by reopening it in binary write mode
- *
- * @param[in] relative_path_to_tmpdir Relative path from TMPDIR to the target file
- *
- * @return Return status code:
- *         - SUCCESS: File was truncated successfully
- *         - FAILURE: Path construction or file operation failed
- */
-static Return truncate_file_to_zero_size(
-	const char *relative_path_to_tmpdir)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-
-	create(char,absolute_path);
-
-	if(relative_path_to_tmpdir == NULL)
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		status = construct_path(relative_path_to_tmpdir,absolute_path);
-	}
-
-	if(SUCCESS == status)
-	{
-		FILE *file = fopen(getcstring(absolute_path),"wb");
-
-		if(file == NULL)
-		{
-			status = FAILURE;
-		} else if(fclose(file) != 0){
-			status = FAILURE;
-		}
-	}
-
-	del(absolute_path);
-
-	return(status);
-}
-
-/**
  *
  * Validate file-level ignore filtering in a mixed directory
  *
