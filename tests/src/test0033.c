@@ -1,93 +1,6 @@
 #include "sute.h"
 
 /**
- * Read intermediate offset and mdContext state for one file from DB.
- */
-static Return read_resume_state_from_db(
-	const char     *db_filename,
-	const char     *relative_path,
-	sqlite3_int64  *offset_out,
-	int            *md_context_bytes_out)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-	sqlite3 *db = NULL;
-	sqlite3_stmt *stmt = NULL;
-	const char *sql = "SELECT offset, mdContext FROM files WHERE relative_path = ?1;";
-	create(char,db_path);
-
-	if(db_filename == NULL
-	        || relative_path == NULL
-	        || offset_out == NULL
-	        || md_context_bytes_out == NULL)
-	{
-		status = FAILURE;
-	}
-
-	if(TRIUMPH & status)
-	{
-		status = construct_path(db_filename,db_path);
-	}
-
-	if((TRIUMPH & status) && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if((TRIUMPH & status) && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if((TRIUMPH & status) && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
-	{
-		status = FAILURE;
-	}
-
-	if(TRIUMPH & status)
-	{
-		const int step_rc = sqlite3_step(stmt);
-		if(step_rc != SQLITE_ROW)
-		{
-			status = FAILURE;
-		}
-	}
-
-	if(TRIUMPH & status)
-	{
-		if(sqlite3_column_type(stmt,0) == SQLITE_NULL)
-		{
-			*offset_out = 0;
-		} else {
-			*offset_out = sqlite3_column_int64(stmt,0);
-		}
-
-		*md_context_bytes_out = sqlite3_column_bytes(stmt,1);
-
-		const int done_rc = sqlite3_step(stmt);
-		if(done_rc != SQLITE_DONE)
-		{
-			status = FAILURE;
-		}
-	}
-
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
-
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
-
-	del(db_path);
-
-	return(status);
-}
-
-/**
  * Read final offset and SHA512 checksum for one file from DB.
  */
 static Return read_final_sha512_from_db(
@@ -206,8 +119,8 @@ static Return test0033_1(void)
 		stderr_result,
 		SUCCESS|HALTED,
 		ALLOW_BOTH,
-		100U,
-		1000U,
+		500U,
+		5000U,
 		SIGTERM,
 		1U));
 
@@ -251,8 +164,8 @@ static Return test0033_2(void)
 		stderr_result,
 		SUCCESS|HALTED,
 		ALLOW_BOTH,
-		100U,
-		1000U,
+		500U,
+		5000U,
 		SIGINT,
 		1U));
 

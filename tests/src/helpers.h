@@ -15,6 +15,12 @@ Return db_paths_match(
 	const char *const *expected_paths,
 	const int         expected_count);
 
+Return read_resume_state_from_db(
+	const char     *db_filename,
+	const char     *relative_path,
+	sqlite3_int64  *offset_out,
+	int            *md_context_bytes_out);
+
 Return truncate_file_to_zero_size(
 	const char *relative_path_to_tmpdir);
 
