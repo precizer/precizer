@@ -6,7 +6,17 @@
 #define LOCKED_TAMPER_PATH "path1/AAA/ZAW/A/b/c/a_file.txt"
 #define LOCKED_TAMPER_FILE "tests/fixtures/diffs/diff1/" LOCKED_TAMPER_PATH
 
-static Return tamper_locked_checksum(
+/**
+ * @brief Corrupt stored SHA512 bytes for one locked file row in DB
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] relative_path Relative path key in files table
+ *
+ * @return Return status code:
+ *         - SUCCESS: SHA512 value was updated for at least one row
+ *         - FAILURE: Validation, DB access, bind, step, or change check failed
+ */
+static Return db_tamper_locked_checksum(
 	const char *db_filename,
 	const char *relative_path)
 {
@@ -69,6 +79,17 @@ static Return tamper_locked_checksum(
 	return(status);
 }
 
+/**
+ * @brief Read CmpctStat blob for one file by relative path
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] relative_path Relative path key in files table
+ * @param[out] stat_out Output compact stat structure
+ *
+ * @return Return status code:
+ *         - SUCCESS: CmpctStat value was read
+ *         - FAILURE: Validation, DB access, blob size check, or row parsing failed
+ */
 static Return read_cmpctstat_from_db(
 	const char *db_filename,
 	const char *relative_path,
@@ -449,7 +470,7 @@ static Return test0030_5(void)
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
 
 	// Corrupt the stored checksum for a locked file without touching it on disk.
-	ASSERT(SUCCESS == tamper_locked_checksum("lock_s5.db",LOCKED_TAMPER_PATH));
+	ASSERT(SUCCESS == db_tamper_locked_checksum("lock_s5.db",LOCKED_TAMPER_PATH));
 
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s5.db "

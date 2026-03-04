@@ -4,6 +4,17 @@
 #define LEGACY_V3_UTF8_DB "0015_database_v3 это база данных с пробелами и символами UTF-8.db"
 #define LEGACY_V4_UTF8_DB "0015_database_v4 это база данных с пробелами и символами UTF-8.db"
 
+/**
+ * @brief Open SQLite database from TMPDIR by relative filename
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] open_flags Flags passed to sqlite3_open_v2
+ * @param[out] db_out Opened database handle
+ *
+ * @return Return status code:
+ *         - SUCCESS: Database opened successfully
+ *         - FAILURE: Validation, path construction, or open failed
+ */
 static Return open_db_from_tmpdir(
 	const char *db_filename,
 	const int  open_flags,
@@ -46,7 +57,17 @@ static Return open_db_from_tmpdir(
 	return(status);
 }
 
-static Return read_first_row_id(
+/**
+ * @brief Read first row ID from files table
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[out] row_id_out Output row ID
+ *
+ * @return Return status code:
+ *         - SUCCESS: First row ID was read
+ *         - FAILURE: Validation, DB access, or query execution failed
+ */
+static Return db_read_first_row_id(
 	const char    *db_filename,
 	sqlite3_int64 *row_id_out)
 {
@@ -103,7 +124,19 @@ static Return read_first_row_id(
 	return(status);
 }
 
-static Return overwrite_stat_blob_by_row_id(
+/**
+ * @brief Overwrite stat blob for a specific files row ID
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] row_id Row ID in files table
+ * @param[in] blob New blob bytes
+ * @param[in] blob_size Size of blob in bytes
+ *
+ * @return Return status code:
+ *         - SUCCESS: Blob was updated
+ *         - FAILURE: Validation, DB access, bind, step, or change check failed
+ */
+static Return db_overwrite_stat_blob_by_row_id(
 	const char          *db_filename,
 	const sqlite3_int64 row_id,
 	const void          *blob,
@@ -164,64 +197,18 @@ static Return overwrite_stat_blob_by_row_id(
 	return(status);
 }
 
-static Return read_files_count(
-	const char *db_filename,
-	int        *count_out)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-	sqlite3 *db = NULL;
-	sqlite3_stmt *stmt = NULL;
-	const char *sql = "SELECT COUNT(*) FROM files;";
-
-	if(db_filename == NULL || count_out == NULL)
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		int rc = sqlite3_step(stmt);
-
-		if(SQLITE_ROW == rc)
-		{
-			*count_out = sqlite3_column_int(stmt,0);
-			rc = sqlite3_step(stmt);
-
-			if(SQLITE_DONE != rc)
-			{
-				status = FAILURE;
-			}
-		} else {
-			status = FAILURE;
-		}
-	}
-
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
-
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
-
-	return(status);
-}
-
-static Return read_files_count_with_blob_size(
+/**
+ * @brief Read number of files rows whose stat blob has exact size
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] blob_size Expected stat blob size
+ * @param[out] count_out Output row count
+ *
+ * @return Return status code:
+ *         - SUCCESS: Count value was read
+ *         - FAILURE: Validation, DB access, bind, or query execution failed
+ */
+static Return db_read_files_count_with_blob_size(
 	const char *db_filename,
 	const int  blob_size,
 	int        *count_out)
@@ -284,63 +271,16 @@ static Return read_files_count_with_blob_size(
 	return(status);
 }
 
-static Return read_db_version_from_metadata(
-	const char *db_filename,
-	int        *db_version_out)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-	sqlite3 *db = NULL;
-	sqlite3_stmt *stmt = NULL;
-	const char *sql = "SELECT db_version FROM metadata LIMIT 1;";
-
-	if(db_filename == NULL || db_version_out == NULL)
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		int rc = sqlite3_step(stmt);
-
-		if(SQLITE_ROW == rc)
-		{
-			*db_version_out = sqlite3_column_int(stmt,0);
-			rc = sqlite3_step(stmt);
-
-			if(SQLITE_DONE != rc)
-			{
-				status = FAILURE;
-			}
-		} else {
-			status = FAILURE;
-		}
-	}
-
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
-
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
-
-	return(status);
-}
-
+/**
+ * @brief Update db_version value in metadata table
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] db_version Version value to store
+ *
+ * @return Return status code:
+ *         - SUCCESS: Version value was updated
+ *         - FAILURE: Validation, DB access, bind, step, or change check failed
+ */
 static Return set_db_version_in_metadata(
 	const char *db_filename,
 	const int  db_version)
@@ -395,7 +335,20 @@ static Return set_db_version_in_metadata(
 	return(status);
 }
 
-static Return read_stat_blob_by_row_id(
+/**
+ * @brief Read raw stat blob for a specific files row ID
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] row_id Row ID in files table
+ * @param[out] blob_out Optional output buffer for blob bytes
+ * @param[in] blob_out_size Size of blob_out buffer in bytes
+ * @param[out] blob_size_out Output blob size from DB
+ *
+ * @return Return status code:
+ *         - SUCCESS: Blob size and optional bytes were read
+ *         - FAILURE: Validation, DB access, bind, or row parsing failed
+ */
+static Return db_read_stat_blob_by_row_id(
 	const char          *db_filename,
 	const sqlite3_int64 row_id,
 	unsigned char       *blob_out,
@@ -487,7 +440,18 @@ static Return read_stat_blob_by_row_id(
 	return(status);
 }
 
-static Return read_cmpctstat_by_row_id(
+/**
+ * @brief Read CmpctStat struct from files row by ID
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] row_id Row ID in files table
+ * @param[out] stat_out Output compact stat structure
+ *
+ * @return Return status code:
+ *         - SUCCESS: CmpctStat value was read
+ *         - FAILURE: Validation, blob read, size check, or conversion failed
+ */
+static Return db_read_cmpctstat_by_row_id(
 	const char          *db_filename,
 	const sqlite3_int64 row_id,
 	CmpctStat           *stat_out)
@@ -505,7 +469,7 @@ static Return read_cmpctstat_by_row_id(
 
 	if(SUCCESS == status)
 	{
-		status = read_stat_blob_by_row_id(db_filename,row_id,raw,sizeof(raw),&blob_size);
+		status = db_read_stat_blob_by_row_id(db_filename,row_id,raw,sizeof(raw),&blob_size);
 	}
 
 	if(SUCCESS == status && blob_size != (int)sizeof(CmpctStat))
@@ -521,7 +485,16 @@ static Return read_cmpctstat_by_row_id(
 	return(status);
 }
 
-static Return verify_zero_converted_cmpctstat(
+/**
+ * @brief Validate zero-converted CmpctStat values after migration fixups
+ *
+ * @param[in] stat Compact stat structure to verify
+ *
+ * @return Return status code:
+ *         - SUCCESS: Structure matches expected zero-converted values
+ *         - FAILURE: One or more fields differ from expected values
+ */
+static Return db_verify_zero_converted_cmpctstat(
 	const CmpctStat *stat)
 {
 	if(stat == NULL)
@@ -557,7 +530,17 @@ static Return verify_zero_converted_cmpctstat(
 	return SUCCESS;
 }
 
-static Return corrupt_first_row_stat_blob(
+/**
+ * @brief Corrupt stat blob for first files row with one-byte payload
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[out] row_id_out Optional output for affected row ID
+ *
+ * @return Return status code:
+ *         - SUCCESS: First row stat blob was corrupted
+ *         - FAILURE: Row lookup or blob overwrite failed
+ */
+static Return db_corrupt_first_row_stat_blob(
 	const char    *db_filename,
 	sqlite3_int64 *row_id_out)
 {
@@ -569,12 +552,12 @@ static Return corrupt_first_row_stat_blob(
 
 	if(SUCCESS == status)
 	{
-		status = read_first_row_id(db_filename,&row_id);
+		status = db_read_first_row_id(db_filename,&row_id);
 	}
 
 	if(SUCCESS == status)
 	{
-		status = overwrite_stat_blob_by_row_id(db_filename,row_id,corrupt_blob,(int)sizeof(corrupt_blob));
+		status = db_overwrite_stat_blob_by_row_id(db_filename,row_id,corrupt_blob,(int)sizeof(corrupt_blob));
 	}
 
 	if(SUCCESS == status && row_id_out != NULL)
@@ -585,7 +568,16 @@ static Return corrupt_first_row_stat_blob(
 	return(status);
 }
 
-static Return create_abort_on_second_stat_update_trigger(
+/**
+ * @brief Create trigger that aborts on second stat update in files table
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Trigger and helper table were created
+ *         - FAILURE: Validation, DB open, or SQL execution failed
+ */
+static Return db_create_abort_on_second_stat_update_trigger(
 	const char *db_filename)
 {
 	/* Status returned by this function through provide()
@@ -1240,7 +1232,7 @@ Return test0015_16(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	sqlite3_int64 row_id = 0;
-	ASSERT(SUCCESS == corrupt_first_row_stat_blob("0015_database_v0_corrupt.db",&row_id));
+	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob("0015_database_v0_corrupt.db",&row_id));
 
 	create(char,result);
 	create(char,pattern);
@@ -1258,8 +1250,8 @@ Return test0015_16(void)
 	ASSERT(db_version == 4);
 
 	CmpctStat stat = {0};
-	ASSERT(SUCCESS == read_cmpctstat_by_row_id("0015_database_v0_corrupt.db",row_id,&stat));
-	ASSERT(SUCCESS == verify_zero_converted_cmpctstat(&stat));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_row_id("0015_database_v0_corrupt.db",row_id,&stat));
+	ASSERT(SUCCESS == db_verify_zero_converted_cmpctstat(&stat));
 
 	command = "rm -f \"${TMPDIR}/0015_database_v0_corrupt.db\" "
 	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
@@ -1291,7 +1283,7 @@ Return test0015_17(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	sqlite3_int64 row_id = 0;
-	ASSERT(SUCCESS == corrupt_first_row_stat_blob("0015_database_v3_corrupt.db",&row_id));
+	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob("0015_database_v3_corrupt.db",&row_id));
 
 	create(char,result);
 	create(char,pattern);
@@ -1309,8 +1301,8 @@ Return test0015_17(void)
 	ASSERT(db_version == 4);
 
 	CmpctStat stat = {0};
-	ASSERT(SUCCESS == read_cmpctstat_by_row_id("0015_database_v3_corrupt.db",row_id,&stat));
-	ASSERT(SUCCESS == verify_zero_converted_cmpctstat(&stat));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_row_id("0015_database_v3_corrupt.db",row_id,&stat));
+	ASSERT(SUCCESS == db_verify_zero_converted_cmpctstat(&stat));
 
 	command = "rm -f \"${TMPDIR}/0015_database_v3_corrupt.db\" "
 	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
@@ -1342,26 +1334,26 @@ Return test0015_18(void)
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	int files_count = 0;
-	ASSERT(SUCCESS == read_files_count("0015_database_v3_rollback.db",&files_count));
+	ASSERT(SUCCESS == db_read_files_count("0015_database_v3_rollback.db",&files_count));
 	ASSERT(files_count >= 2);
 
 	sqlite3_int64 row_id = 0;
-	ASSERT(SUCCESS == read_first_row_id("0015_database_v3_rollback.db",&row_id));
+	ASSERT(SUCCESS == db_read_first_row_id("0015_database_v3_rollback.db",&row_id));
 
 	unsigned char before_blob[512];
 	int before_blob_size = 0;
-	ASSERT(SUCCESS == read_stat_blob_by_row_id("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_stat_blob_by_row_id("0015_database_v3_rollback.db",
 	                                           row_id,
 	                                           before_blob,
 	                                           sizeof(before_blob),
 	                                           &before_blob_size));
 
 	int v1_rows_before = 0;
-	ASSERT(SUCCESS == read_files_count_with_blob_size("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_files_count_with_blob_size("0015_database_v3_rollback.db",
 	                                                  (int)sizeof(CmpctStat_v1),
 	                                                  &v1_rows_before));
 
-	ASSERT(SUCCESS == create_abort_on_second_stat_update_trigger("0015_database_v3_rollback.db"));
+	ASSERT(SUCCESS == db_create_abort_on_second_stat_update_trigger("0015_database_v3_rollback.db"));
 
 	create(char,result);
 	create(char,pattern);
@@ -1380,7 +1372,7 @@ Return test0015_18(void)
 
 	unsigned char after_blob[512];
 	int after_blob_size = 0;
-	ASSERT(SUCCESS == read_stat_blob_by_row_id("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_stat_blob_by_row_id("0015_database_v3_rollback.db",
 	                                           row_id,
 	                                           after_blob,
 	                                           sizeof(after_blob),
@@ -1394,7 +1386,7 @@ Return test0015_18(void)
 	}
 
 	int v1_rows_after = 0;
-	ASSERT(SUCCESS == read_files_count_with_blob_size("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_files_count_with_blob_size("0015_database_v3_rollback.db",
 	                                                  (int)sizeof(CmpctStat_v1),
 	                                                  &v1_rows_after));
 	ASSERT(v1_rows_before == v1_rows_after);
