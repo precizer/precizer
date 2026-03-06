@@ -870,6 +870,8 @@ Performance can vary significantly depending on the file system. For example, re
 
 Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually handle it easily, but it is worth ensuring performance is not degraded by shared vCPU resources in containerized or virtualized setups. Use monitoring and benchmarks to validate CPU performance.
 
+### Bottleneck triage matrix
+
 | Step | Mode/command                      | What it measures                                                      | If it is slow here                                                        | Next steps                                                                                         |
 | ---- | --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | 1    | precizer --dry-run                | File system accessibility, directory walk speed, baseline I/O         | Most likely outside `precizer`: file system/disk/network/system load      | Check storage subsystem, mount status, and overall system load                                     |
