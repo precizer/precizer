@@ -181,6 +181,5 @@ If CLI behavior changes, update `README.md` in the same pull request.
 
 By submitting changes, contributors agree that contributions are distributed under the repository licensing terms:
 
-* `LICENSE`
-* `README.md`, section `LICENSE`
-
+* `COPYING`
+* `README.md`, section `COPYING`

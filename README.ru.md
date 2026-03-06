@@ -961,8 +961,8 @@ precizer --update --db-drop-inaccessible /mnt/storage
 ## АВТОР
 Автор приложения [Денис Владимирович Разумовский](https://github.com/dennisrazumovsky)
 
-## LICENSE
-This program is distributed under the [CC0 (Creative Commons Zero) Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
+## COPYING
+This program is distributed under the GNU General Public License v3.0 (GPLv3) as provided in the top-level `COPYING` file. The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility
 
 ### Ограничение использования на территории рашистского террористического геообразования, захваченного оккупировавшей власть авторитарной диктатурой
 

@@ -240,4 +240,4 @@ if(resize(points,4,ZERO_NEW_MEMORY | RELEASE_UNUSED) != SUCCESS) {
 
 ## License
 
-The library follows the project-wide CC0 1.0 Universal dedication (see the top-level `LICENSE`). You may copy, modify, or redistribute the code without restriction, but no warranty is provided.
+The library follows the project-wide GNU General Public License v3.0 (GPLv3) terms (see the top-level `COPYING` file). You may copy, modify, or redistribute the code under GPLv3 conditions, but no warranty is provided

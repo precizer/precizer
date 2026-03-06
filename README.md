@@ -879,8 +879,8 @@ Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually 
 ## AUTHOR
 Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)
 
-## LICENSE
-This program is distributed under the [CC0 (Creative Commons Zero) Public Domain Dedication](https://creativecommons.org/publicdomain/zero/1.0/). The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility.
+## COPYING
+This program is distributed under the GNU General Public License v3.0 (GPLv3) as provided in the top-level `COPYING` file. The author is not responsible for any use of the source code or the entire program. Anyone who uses the code or the program uses it at their own risk and responsibility
 
 ### Usage Restrictions within Territory Under the Ruscist Terrorist Regime, Where Power Has Been Seized by an Authoritarian Dictatorship
 
