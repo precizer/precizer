@@ -134,13 +134,6 @@ TOOLSDIR = tools
 # Extra libs for linking
 LDLIBS += -lpcre2-8
 
-# For old gcc versions
-GCC_VERSION := $(shell gcc -dumpversion)
-# Checking if the GCC version is less than 10
-ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
-LDLIBS += -pthread
-endif
-
 # Additional include headers of external libraries
 DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
