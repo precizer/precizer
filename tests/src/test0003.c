@@ -66,9 +66,8 @@ Return test0003_1(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	const char *command = "rm \"${TMPDIR}/${DBNAME}\" \"${TMPDIR}/database2.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == remove_path(replacement));
+	ASSERT(SUCCESS == remove_path("database2.db"));
 
 	RETURN_STATUS;
 }
