@@ -5,17 +5,18 @@
  * @brief Print warnings and errors captured in the TEMP remember_history table.
  *
  * @details The table is created in db_init(). Output is produced only when
- *          --progress is enabled. If the database is unavailable or no rows
- *          are present, the function returns without output.
+ *          delayed remembered output is enabled. If the database is unavailable
+ *          or no rows are present, the function returns without output
  *
  * @return SUCCESS on completion, FAILURE if a SQLite operation fails.
  *
  */
 Return show_remembered_messages(void)
 {
-	// Show only with --progress
-	if(config->progress != true)
+	// Show only when the final remembered output is enabled
+	if(config->show_remembered_messages_at_exit == false)
 	{
+		// Do nothing
 		provide(SUCCESS);
 	}
 

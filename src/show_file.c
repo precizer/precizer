@@ -297,7 +297,7 @@ void show_file(
 		if(locked_checksum_mismatch == true)
 		{
 
-			slog_show(EVERY|UNDECOR,false,first_iteration,summary,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
 
 		} else if(lock_checksum_violation == true){
 

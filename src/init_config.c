@@ -29,6 +29,9 @@ void init_config(void)
 	// Show progress bar
 	config->progress = false;
 
+	// Print remembered warnings and errors before exit
+	config->show_remembered_messages_at_exit = false;
+
 	// Force update of the database
 	config->force = false;
 

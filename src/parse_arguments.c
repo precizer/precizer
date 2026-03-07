@@ -290,6 +290,7 @@ static error_t parse_opt(
 			break;
 		case 'p':
 			config->progress = true;
+			config->show_remembered_messages_at_exit = true;
 			break;
 		case 'T':
 			config->watch_timestamps = true;

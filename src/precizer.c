@@ -116,7 +116,7 @@ int test_main(
 	// no longer exist.
 	run(db_delete_missing_metadata());
 
-	// Print remembered warning and error lines if --progress is enabled.
+	// Print remembered warning and error lines when delayed output is enabled
 	call(show_remembered_messages());
 
 	// Print final totals and runtime metrics after delayed warnings/errors.

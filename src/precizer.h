@@ -302,6 +302,9 @@ typedef struct {
 	/// Show progress bar
 	bool progress;
 
+	/// Print remembered warnings and errors before exit
+	bool show_remembered_messages_at_exit;
+
 	/// Force update of the database
 	bool force;
 
@@ -809,7 +812,7 @@ Return status_of_changes(void);
 
 /**
  * @brief Print remembered warning and error lines captured during the run
- *        (only when --progress is enabled).
+ *        when delayed output is enabled
  */
 Return show_remembered_messages(void);
 

@@ -625,6 +625,7 @@ Return file_list(TraversalSummary *summary)
 					if((lock_checksum_violation == true || locked_checksum_mismatch == true) && read_error == false)
 					{
 						lock_checksum_violation_detected = true;
+						config->show_remembered_messages_at_exit = true;
 					}
 
 				} else if(path_known == true){
