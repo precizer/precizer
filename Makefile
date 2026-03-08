@@ -276,7 +276,7 @@ printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production dynprodlibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done dynamic-production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
@@ -413,7 +413,10 @@ dynprodfinal: $(DYNP_EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
-$(DYNP_EXE): $(DYNP_OBJS) | $(PROD_LIBDIR)
+dynprodlibs:
+	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
+
+$(DYNP_EXE): $(DYNP_OBJS) | dynprodlibs
 	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@strip -x $(DYNP_EXE)
 	@echo "$@ linked dynamically, stripped"
@@ -822,10 +825,10 @@ gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-sum
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
-cppcheck: CPPPATHS += $(foreach d,$(LIBS),libs/$d/src/)
 cppcheck:
-	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q \
-		--force $(INCPATH) -Isrc -Ilibs/testitall/src -Ilibs/xdiff/src --inconclusive src tests/src $(CPPPATHS)
+	bear --output compile_commands.json -- make -B -C tests ../.builds/testitall/debug/testitall
+	cppcheck --project=compile_commands.json --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q \
+		--force -i libs/sqlite3/src --inconclusive
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
