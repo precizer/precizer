@@ -66,8 +66,8 @@ Return test0003_1(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	ASSERT(SUCCESS == remove_path(replacement));
-	ASSERT(SUCCESS == remove_path("database2.db"));
+	ASSERT(SUCCESS == delete_path(replacement));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	RETURN_STATUS;
 }
@@ -124,13 +124,16 @@ Return test0003_2(void)
 Return test0003_3(void)
 {
 	INITTEST;
+	const char *help_template = "templates/0003_004.txt";
+	const char *usage_template = "templates/0003_005.txt";
+	const char *version_template = "templates/0003_006.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == assert_information_mode_output("--help","templates/0003_004.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("-h","templates/0003_004.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--usage","templates/0003_005.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("-z","templates/0003_005.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--version","templates/0003_006.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--help",help_template));
+	ASSERT(SUCCESS == assert_information_mode_output("-h",help_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--usage",usage_template));
+	ASSERT(SUCCESS == assert_information_mode_output("-z",usage_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--version",version_template));
 
 	RETURN_STATUS;
 }
@@ -143,16 +146,19 @@ Return test0003_3(void)
 Return test0003_4(void)
 {
 	INITTEST;
+	const char *help_template = "templates/0003_004.txt";
+	const char *usage_template = "templates/0003_005.txt";
+	const char *version_template = "templates/0003_006.txt";
 
-	ASSERT(SUCCESS == assert_information_mode_output("--help /definitely/nonexistent/path","templates/0003_004.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("-h /definitely/nonexistent/path","templates/0003_004.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--usage /definitely/nonexistent/path","templates/0003_005.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("-z /definitely/nonexistent/path","templates/0003_005.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--version /definitely/nonexistent/path","templates/0003_006.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare --help","templates/0003_004.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare --usage","templates/0003_005.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare -z","templates/0003_005.txt"));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare --version","templates/0003_006.txt"));
+	ASSERT(SUCCESS == assert_information_mode_output("--help /definitely/nonexistent/path",help_template));
+	ASSERT(SUCCESS == assert_information_mode_output("-h /definitely/nonexistent/path",help_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--usage /definitely/nonexistent/path",usage_template));
+	ASSERT(SUCCESS == assert_information_mode_output("-z /definitely/nonexistent/path",usage_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--version /definitely/nonexistent/path",version_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare --help",help_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare --usage",usage_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare -z",usage_template));
+	ASSERT(SUCCESS == assert_information_mode_output("--compare --version",version_template));
 
 	RETURN_STATUS;
 }

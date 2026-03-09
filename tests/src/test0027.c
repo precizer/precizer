@@ -48,10 +48,11 @@ static Return test0027_1(void)
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
+	ASSERT(SUCCESS == add_string_to("corrupted","tests/fixtures/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt"));
+	ASSERT(SUCCESS == add_string_to("corrupted","tests/fixtures/diffs/diff2/path1/AAA/BCB/CCC/b.txt"));
+	ASSERT(SUCCESS == add_string_to("changed","tests/fixtures/diffs/diff2/3/AAA/BBB/CCC/a.txt"));
+
 	command = "cd ${TMPDIR};"
-	        "echo 'corrupted' >> tests/fixtures/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt;"
-	        "echo 'corrupted' >> tests/fixtures/diffs/diff2/path1/AAA/BCB/CCC/b.txt;"
-	        "echo 'changed' >> tests/fixtures/diffs/diff2/3/AAA/BBB/CCC/a.txt;"
 	        "cp lock.db lock1.db";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -82,9 +83,12 @@ static Return test0027_1(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
+	ASSERT(SUCCESS == delete_path("lock.db"));
+	ASSERT(SUCCESS == delete_path("lock1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff2"));
+
 	command = "cd ${TMPDIR} && "
-	        "rm lock.db lock1.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 tests/fixtures/diffs/diff2 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff2_backup tests/fixtures/diffs/diff2";
 

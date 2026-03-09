@@ -76,16 +76,14 @@ Return test0020_2(void)
 Return test0020_3(void)
 {
 	INITTEST;
+	const char *create_write_protected_directory_command = "cd ${TMPDIR} && mkdir write_protected_directory && chmod a-rwx write_protected_directory";
+	const char *unlock_write_protected_directory_command = "cd ${TMPDIR} && chmod a+rwx write_protected_directory";
 
 	create(char,result);
 
 	create(char,pattern);
 
-	const char *command = "cd ${TMPDIR} && "
-	        "mkdir write_protected_directory && "
-	        "chmod a-rwx write_protected_directory";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(create_write_protected_directory_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0020_003.txt";
 
@@ -105,11 +103,8 @@ Return test0020_3(void)
 	del(pattern);
 	del(result);
 
-	command = "cd ${TMPDIR} && "
-	        "chmod a+rwx write_protected_directory && "
-	        "rm -rf write_protected_directory";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(unlock_write_protected_directory_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("write_protected_directory"));
 
 	RETURN_STATUS;
 }
@@ -158,10 +153,7 @@ Return test0020_4(void)
 	del(pattern);
 	del(result);
 
-	command = "cd ${TMPDIR} && "
-	        "rm database2.db";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	RETURN_STATUS;
 }
@@ -197,10 +189,7 @@ Return test0020_5(void)
 	del(pattern);
 	del(result);
 
-	const char *command = "cd ${TMPDIR} && "
-	        "rm -f write_protected_database1.db";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("write_protected_database1.db"));
 
 	RETURN_STATUS;
 }
@@ -273,10 +262,7 @@ Return test0020_7(void)
 	del(pattern);
 	del(result);
 
-	const char *command = "cd ${TMPDIR} && "
-	        "rm -f database1.db";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	RETURN_STATUS;
 }

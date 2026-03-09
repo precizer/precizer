@@ -37,19 +37,17 @@ Return test0031(void)
 	/* Always disable the mock and restore the previous run mode. */
 	mocks_fread_enable(false);
 
-	if(error_buffer->length > 0)
-	{
-		echo(STDOUT,"stderr buffer:\n%s\n",getcstring(error_buffer));
-	}
+	ASSERT(error_buffer->length == 0);
 
 	const char *filename = "templates/0031_001.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("read_fail.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
 	command = "cd ${TMPDIR} && "
-	        "rm -f read_fail.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));

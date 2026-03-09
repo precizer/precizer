@@ -230,9 +230,9 @@ static Return test0030_1(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("lock_s1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s1.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -257,9 +257,7 @@ static Return test0030_2(void)
 
 	const char *command = "cd ${TMPDIR};"
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "rm -f lock_s2.db;";
-
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s2.db --progress "
@@ -287,9 +285,9 @@ static Return test0030_2(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("lock_s2.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s2.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -314,9 +312,7 @@ static Return test0030_3(void)
 
 	const char *command = "cd ${TMPDIR};"
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "rm -f lock_s3.db;";
-
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s3.db --progress "
@@ -344,9 +340,9 @@ static Return test0030_3(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("lock_s3.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s3.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -376,9 +372,7 @@ static Return test0030_4(void)
 
 	const char *command = "cd ${TMPDIR};"
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "rm -f lock_s4.db;";
-
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s4.db --progress "
@@ -421,9 +415,9 @@ static Return test0030_4(void)
 
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
 
+	ASSERT(SUCCESS == delete_path("lock_s4.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s4.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -450,9 +444,7 @@ static Return test0030_5(void)
 
 	const char *command = "cd ${TMPDIR};"
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "rm -f lock_s5.db;";
-
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s5.db --progress "
@@ -484,9 +476,9 @@ static Return test0030_5(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("lock_s5.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s5.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -512,9 +504,7 @@ static Return test0030_6(void)
 
 	const char *command = "cd ${TMPDIR};"
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "rm -f lock_s6.db;";
-
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s6.db --progress "
@@ -541,9 +531,9 @@ static Return test0030_6(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("lock_s6.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s6.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -569,9 +559,7 @@ static Return test0030_7(void)
 
 	const char *command = "cd ${TMPDIR};"
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "rm -f lock_s7.db;";
-
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s7.db --progress "
@@ -599,9 +587,9 @@ static Return test0030_7(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("lock_s7.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s7.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -627,9 +615,7 @@ static Return test0030_8(void)
 
 	const char *command = "cd ${TMPDIR};"
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "rm -f lock_s8.db;";
-
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *arguments = "--database=lock_s8.db --progress "
@@ -654,9 +640,9 @@ static Return test0030_8(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == delete_path("lock_s8.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	command = "cd ${TMPDIR} && "
-	        "rm -f lock_s8.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));

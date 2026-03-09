@@ -47,10 +47,8 @@ static Return test0011_1(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	const char *command = "cd ${TMPDIR};"
-	        "rm database1.db database2.db";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	del(pattern);
 	del(chunk);
@@ -77,11 +75,11 @@ static Return test0011_1(void)
  * # Add a new file by truncating the file with the target name
  * truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt")
  * # Remove a file
- * rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+ * delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt")
  * Stage 5. Run the precizer once again:
  * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
  * Final stage. Recover from backup:
- * rm -rf tests/fixtures/diffs/diff1
+ * delete_path("tests/fixtures/diffs/diff1")
  * mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1
  */
 static Return test0011_2(void)
@@ -142,11 +140,8 @@ static Return test0011_2(void)
 
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	command = "cd ${TMPDIR};"
-	        "echo -n '  ' >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
-	        "rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == add_string_to("  ","tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
 
 	// Create the file as empty without using shell touch
 	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt"));
@@ -198,12 +193,17 @@ static Return test0011_3(void)
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	// Verify that silent mode produced no stdout after command execution
+	ASSERT(result->length == 0);
+
+#if 0
+	// Verify that silent mode produced no stdout after command execution
 	if(result->length > 0)
 	{
 		echo(STDERR,"ERROR: In silent mode stdout must be empty\n");
 		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET,getcstring(result));
 		status = FAILURE;
 	}
+#endif
 
 	call(del(result));
 
@@ -253,9 +253,10 @@ static Return test0011_4(void)
 	del(pattern);
 	del(result);
 
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
 	const char *command = "cd ${TMPDIR} && "
-	        "rm database1.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -298,9 +299,7 @@ static Return test0011_5(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	const char *command = "rm \"${TMPDIR}/${DBNAME}\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(replacement));
 
 	RETURN_STATUS;
 }
@@ -366,9 +365,7 @@ static Return test0011_7(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	const char *command = "rm \"${TMPDIR}/${DBNAME}\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(replacement));
 
 	RETURN_STATUS;
 }
@@ -412,9 +409,7 @@ static Return test0011_8(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	const char *command = "rm \"${TMPDIR}/${DBNAME}\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(replacement));
 
 	RETURN_STATUS;
 }

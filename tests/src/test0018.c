@@ -51,9 +51,7 @@ Return test0018_1(void)
 	del(result);
 
 	// Clean up test results
-	const char *command = "rm \"${TMPDIR}/database4.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database4.db"));
 
 	RETURN_STATUS;
 }
@@ -86,9 +84,7 @@ Return test0018_2(void)
 	del(result);
 
 	// Clean up test results
-	const char *command = "rm \"${TMPDIR}/database3.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database3.db"));
 
 	RETURN_STATUS;
 }

@@ -9,7 +9,7 @@ static Return test0033_1(void)
 
 	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/fixtures/diffs/";
 	const char *filename = "templates/0033_001.txt";
-	const char *cleanup_command = "rm -f \"${TMPDIR}/0033_interrupt_resume.db\"";
+	const char *cleanup_path = "0033_interrupt_resume.db";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -35,7 +35,7 @@ static Return test0033_1(void)
 	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(cleanup_path));
 
 	del(stderr_pattern);
 	del(stdout_pattern);
@@ -54,7 +54,7 @@ static Return test0033_2(void)
 
 	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/fixtures/diffs/";
 	const char *filename = "templates/0033_002.txt";
-	const char *cleanup_command = "rm -f \"${TMPDIR}/0033_interrupt_resume.db\"";
+	const char *cleanup_path = "0033_interrupt_resume.db";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -80,7 +80,7 @@ static Return test0033_2(void)
 	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(cleanup_path));
 
 	del(stderr_pattern);
 	del(stdout_pattern);
@@ -102,11 +102,7 @@ static Return test0033_3(void)
 	const char *second_run_template = "templates/0033_003_2.txt";
 	const char *prepare_command = "cd ${TMPDIR};"
 	        "mkdir -p tests/fixtures/;"
-	        "rm -rf tests/fixtures/huge/;"
 	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
-	const char *cleanup_command = "cd ${TMPDIR};"
-	        "rm -f 0033_interrupt_resume.db;"
-	        "rm -rf tests/fixtures/huge/;";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -118,8 +114,6 @@ static Return test0033_3(void)
 	 * Step 1: Prepare isolated test data in TMPDIR and start from a clean DB
 	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
@@ -202,7 +196,8 @@ static Return test0033_3(void)
 	ASSERT(0 == memcmp(db_sha512,expected_sha512,(size_t)SHA512_DIGEST_LENGTH));
 
 	/* Step 7: Cleanup temporary test artifacts */
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0033_interrupt_resume.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/huge"));
 
 	del(huge_file_path);
 	del(stderr_pattern);
@@ -226,11 +221,7 @@ static Return test0033_4(void)
 	const char *second_run_template = "templates/0033_004_2.txt";
 	const char *prepare_command = "cd ${TMPDIR};"
 	        "mkdir -p tests/fixtures/;"
-	        "rm -rf tests/fixtures/huge/;"
 	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
-	const char *cleanup_command = "cd ${TMPDIR};"
-	        "rm -f 0033_interrupt_rehash.db;"
-	        "rm -rf tests/fixtures/huge/;";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -239,7 +230,6 @@ static Return test0033_4(void)
 	create(char,huge_file_path);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
 
@@ -284,7 +274,8 @@ static Return test0033_4(void)
 	};
 
 	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0033_interrupt_rehash.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/huge"));
 
 	del(huge_file_path);
 	del(stderr_pattern);

@@ -29,10 +29,7 @@ Return test0024_1(void)
 	del(result);
 
 	// Clean up test results
-	const char *command = "cd ${TMPDIR};"
-	        "rm database1.db;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	RETURN_STATUS;
 }
@@ -65,10 +62,7 @@ Return test0024_2(void)
 	del(result);
 
 	// Clean up test results
-	const char *command = "cd ${TMPDIR};"
-	        "rm database1.db;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	RETURN_STATUS;
 }
@@ -122,10 +116,8 @@ static Return test0024_3(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	const char *command = "cd ${TMPDIR};"
-	        "rm database1.db database2.db";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	del(pattern);
 	del(chunk);
