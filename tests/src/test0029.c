@@ -24,14 +24,7 @@ static Return test0029_1(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
 	command = "cd ${TMPDIR};"
 	        "chmod 000 tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
@@ -54,12 +47,15 @@ static Return test0029_1(void)
 	del(result);
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm database1.db && "
-	        "chmod -R a+rwX tests/fixtures/diffs/diff1 && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database1.db"));
 
+	command = "cd ${TMPDIR} && "
+	        "chmod -R a+rwX tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
+	command = "cd ${TMPDIR} && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
@@ -89,14 +85,7 @@ static Return test0029_2(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
 	command = "cd ${TMPDIR};"
 	        "chmod 000 tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
@@ -120,12 +109,15 @@ static Return test0029_2(void)
 	del(result);
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm database2.db && "
-	        "chmod -R a+rwX tests/fixtures/diffs/diff1 && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
+	command = "cd ${TMPDIR} && "
+	        "chmod -R a+rwX tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
+	command = "cd ${TMPDIR} && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
