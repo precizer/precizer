@@ -2,15 +2,15 @@
 #include <errno.h>
 
 /**
- * @brief Classify errno from a failed access() into FileAccessStatus.
+ * @brief Classify errno from a failed access() into FileAccessStatus
  *
  * Maps common filesystem errors to a stable, high-level status:
  * - ENOENT, ENOTDIR -> FILE_NOT_FOUND
  * - EACCES, EPERM   -> FILE_ACCESS_DENIED
  * - otherwise       -> FILE_ACCESS_ERROR
  *
- * @param err errno value (typically `errno` after a failed `access()` call).
- * @return FileAccessStatus classification.
+ * @param err errno value (typically `errno` after a failed `access()` call)
+ * @return FileAccessStatus classification
  *
  */
 static FileAccessStatus classify_access_errno(int err)
@@ -29,17 +29,25 @@ static FileAccessStatus classify_access_errno(int err)
 }
 
 /**
- * Check access for a path, first as provided, then by its absolute form.
+ * @brief Check access for a path, first as provided, then by its absolute form
  *
- * The function preserves the errno classification from the initial `access`
- * call and only overwrites it if resolving the absolute path succeeds and a
- * second `access` call provides a more precise status.
+ * @details
+ * The function first calls `access()` for the path exactly as supplied
+ * If that succeeds, it returns `FILE_ACCESS_ALLOWED`
  *
- * @param path       Path to check (relative or absolute).
- * @param path_size  Length of the provided path.
- * @param mode       Access mode for `access()` (e.g., R_OK, X_OK).
- * @return FILE_ACCESS_ALLOWED on success; FILE_NOT_FOUND, FILE_ACCESS_DENIED,
- *         or FILE_ACCESS_ERROR depending on errno classification.
+ * If the initial call fails, the function then tries to construct an
+ * absolute path from `config->running_dir`
+ * When that fallback path can be built, the result is determined by the
+ * second `access()` call for the constructed absolute path
+ * If the fallback path cannot be built, the function returns
+ * `FILE_ACCESS_ERROR`
+ *
+ * @param path Path to check, relative or absolute
+ * @param path_size Length of the provided path
+ * @param mode Access mode for `access()` such as `R_OK` or `X_OK`
+ * @return `FILE_ACCESS_ALLOWED`, `FILE_ACCESS_DENIED`, `FILE_NOT_FOUND`, or
+ *         `FILE_ACCESS_ERROR` based on the direct check or the fallback
+ *         absolute-path check
  */
 FileAccessStatus file_check_access(
 	const char   *path,
@@ -51,7 +59,7 @@ FileAccessStatus file_check_access(
 		return(FILE_ACCESS_ALLOWED);
 	}
 
-	FileAccessStatus access_status = classify_access_errno(errno);
+	FileAccessStatus access_status;
 
 	char *absolute_path = NULL;
 

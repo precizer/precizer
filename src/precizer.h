@@ -598,12 +598,12 @@ Return path_absolute_from_relative(
 	const size_t);
 
 /**
- * @brief Result of checking accessibility for a given path.
+ * @brief Result of checking accessibility for a given path
  *
- * FILE_ACCESS_ALLOWED    — path is readable (direct or resolved absolute check).
- * FILE_ACCESS_DENIED     — path exists but is not readable (or resolved path is not readable).
- * FILE_NOT_FOUND         — path or one of its components does not exist.
- * FILE_ACCESS_ERROR      — unable to complete access check (e.g., failed to resolve absolute path).
+ * FILE_ACCESS_ALLOWED    — path is readable by direct or fallback absolute check
+ * FILE_ACCESS_DENIED     — path exists but is not readable
+ * FILE_NOT_FOUND         — path or one of its components does not exist
+ * FILE_ACCESS_ERROR      — access failed for another reason or fallback path construction failed
  */
 typedef enum FileAccessStatus
 {

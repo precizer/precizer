@@ -163,7 +163,9 @@ Return db_validate_paths(void)
 				if(SUCCESS == status)
 				{
 					/* Execute SQL statement */
-					if(sqlite3_step(insert_stmt) != SQLITE_DONE)
+					rc = sqlite3_step(insert_stmt);
+
+					if(rc != SQLITE_DONE)
 					{
 						log_sqlite_error(config->db,rc,NULL,"Insert statement didn't return DONE");
 						status = FAILURE;

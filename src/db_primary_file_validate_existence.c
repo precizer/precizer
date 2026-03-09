@@ -48,12 +48,7 @@ Return db_primary_file_validate_existence(void)
 		if(db_file_full_path == NULL)
 		{
 			report("Memory allocation failed for database path copy");
-			status = FAILURE;
-		}
-
-		if(SUCCESS != status)
-		{
-			provide(status);
+			provide(FAILURE);
 		}
 
 		char *db_file_dir = dirname(db_file_full_path);
