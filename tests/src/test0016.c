@@ -15,63 +15,43 @@ Return test0016(void)
 	create(char,result);
 	create(char,chunk);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
 	// Preparation for the test
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-
-	const char *filename = "templates/0016_001_1.txt";
+	const char *diff1_fixture_path = "tests/fixtures/diffs/diff1";
+	const char *diff1_backup_path = "tests/fixtures/diff1_backup";
+	ASSERT(SUCCESS == move_path(diff1_fixture_path,diff1_backup_path));
+	ASSERT(SUCCESS == copy_path(diff1_backup_path,diff1_fixture_path));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--start-device-only --database=database1.db "
-	        "tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--start-device-only --database=database1.db tests/fixtures/diffs/diff1",chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	command = "cd ${TMPDIR} && "
-	        "cp -a database1.db database2.db";
+	ASSERT(SUCCESS == copy_path("database1.db","database2.db"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == add_string_to("PWOEUNVSODNLKUHGE","tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt"));
 
-	command = "cd ${TMPDIR} && "
-	        "echo -n 'PWOEUNVSODNLKUHGE' >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt && "
-	        "rm tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
 
 	// Bump file mtime by a nanosecond delta without changing file content
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt",999));
 
-	arguments = "--update --check-level=QUICK --database=database1.db "
-	        "tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--update --check-level=QUICK --database=database1.db tests/fixtures/diffs/diff1",chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	arguments = "--compare database1.db database2.db";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	const char *compare_arguments = "--compare database1.db database2.db";
+	ASSERT(SUCCESS == runit(compare_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	command = "cd ${TMPDIR} && "
-	        "cp -a database2.db database1.db";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("database2.db","database1.db"));
 
-	arguments = "--watch-timestamps --update --database=database1.db "
-	        "tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	const char *watch_update_arguments = "--watch-timestamps --update --database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(watch_update_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	arguments = "--compare database1.db database2.db";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(compare_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
+	const char *filename = "templates/0016_001_1.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -80,39 +60,25 @@ Return test0016(void)
 	del(result);
 	del(chunk);
 
-	filename = "templates/0016_001_2.txt";
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	command = "cd ${TMPDIR} && "
-	        "cp -a database2.db database1.db";
+	ASSERT(SUCCESS == copy_path("database2.db","database1.db"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-
-	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--update --database=database1.db tests/fixtures/diffs/diff1",chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	arguments = "--compare database1.db database2.db";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(compare_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	command = "cd ${TMPDIR} && "
-	        "cp -a database2.db database1.db";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("database2.db","database1.db"));
 
-	arguments = "--watch-timestamps --update --database=database1.db "
-	        "tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(watch_update_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
-	arguments = "--compare database1.db database2.db";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(compare_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
+	filename = "templates/0016_001_2.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -122,13 +88,11 @@ Return test0016(void)
 	del(chunk);
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm database1.db && "
-	        "rm database2.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
+	ASSERT(SUCCESS == delete_path(diff1_fixture_path));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path(diff1_backup_path,diff1_fixture_path));
 
 	RETURN_STATUS;
 }
