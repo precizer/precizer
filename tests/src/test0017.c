@@ -119,14 +119,10 @@ Return test0017(void)
 
 	ASSERT(SUCCESS == function_capture(test_itoa,captured_stdout,captured_stderr));
 
-	if(captured_stderr->length > 0)
-	{
-		echo(STDERR,"ERROR: Stderr buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
-		status = FAILURE;
-		#if 0
+	ASSERT(captured_stderr->length == 0);
+#if 0
 		echo(STDOUT,"%s\n",getcstring(captured_stderr));
-		#endif
-	}
+#endif
 
 	const char *template_name = "templates/0017.txt";
 	ASSERT(SUCCESS == get_file_content(template_name,pattern));
