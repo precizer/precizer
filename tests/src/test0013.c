@@ -50,9 +50,6 @@ static Return test0013_2(void)
 	create(char,path);
 	bool file_exists = false;
 
-	const char *command = "cd ${TMPDIR}; rm -f dry_run_regular.db dry_run_with_checksums.db;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "--dry-run --database=dry_run_regular.db tests/fixtures/diffs/diff1";
@@ -158,12 +155,9 @@ static Return test0013_4(void)
 
 	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat1));
 
-	command = "cd ${TMPDIR};"
-	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
-	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
-	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt")); // Remove
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt")); // Modify
+	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt")); // New file
 
 	arguments = "--dry-run --update --database=database1.db"
 	        " tests/fixtures/diffs/diff1";
@@ -267,9 +261,10 @@ static Return test0013_4(void)
 	del(path);
 
 	// Clean up test results
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
 	command = "cd ${TMPDIR} && "
-	        "rm database1.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -312,12 +307,9 @@ static Return test0013_5(void)
 	echo(STDOUT,"Path: %s\n",path);
 	#endif
 
-	command = "cd ${TMPDIR};"
-	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;"
-	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
-	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt"));
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
+	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt")); // New file
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -404,9 +396,10 @@ static Return test0013_5(void)
 	del(path);
 
 	// Clean up test results
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
 	command = "cd ${TMPDIR} && "
-	        "rm database1.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -504,14 +497,10 @@ static Return test0013_7(void)
 
 	create(char,result);
 	create(char,pattern);
-
-	const char *cleanup_command = "cd ${TMPDIR}; rm -f database1.db;";
 	const char *arguments = NULL;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
-
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* First run: create DB in normal mode. */
 	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
@@ -526,7 +515,7 @@ static Return test0013_7(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	del(pattern);
 	del(result);
@@ -560,13 +549,9 @@ static Return test0013_8(void)
 	struct stat stat_after_real_update = {0};
 
 	const char *prepare_command = "cd ${TMPDIR}; "
-	        "rm -f database1.db database1.db.backup; "
-	        "rm -rf tests/fixtures/diff1_backup; "
 	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup; "
 	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	const char *cleanup_command = "cd ${TMPDIR}; "
-	        "rm -f database1.db database1.db.backup; "
-	        "rm -rf tests/fixtures/diffs/diff1; "
 	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	const char *arguments = NULL;
 	const char *command = NULL;
@@ -582,9 +567,7 @@ static Return test0013_8(void)
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* Make at least one real filesystem change so --update modifies DB. */
-	command = "cd ${TMPDIR}; "
-	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
 
 	/* Control check: real --update must modify database metadata. */
 	ASSERT(SUCCESS == construct_path("database1.db",path));
@@ -607,7 +590,7 @@ static Return test0013_8(void)
 	 * Restore pre-update DB snapshot so the next run starts from the same state
 	 * and tests only the simulation hook behavior.
 	 */
-	command = "cd ${TMPDIR}; rm -f database1.db; mv database1.db.backup database1.db;";
+	command = "cd ${TMPDIR}; mv database1.db.backup database1.db;";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(result);
@@ -622,6 +605,8 @@ static Return test0013_8(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","false"));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(path);
