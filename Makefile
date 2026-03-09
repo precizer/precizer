@@ -46,6 +46,7 @@
 .SUFFIXES: .c .o .h # Define our suffix list
 
 BUILDDIR = .builds
+COMPILE_COMMANDS = compile_commands.json
 
 #
 # Compiler flags
@@ -464,6 +465,7 @@ $(PRTB_OBJDIR):
 
 clean: | clean-preproc clean-asm clean-tests
 	@rm -f *.out.* doc
+	@rm -f $(COMPILE_COMMANDS)
 	@rm -f $(DBG_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
 	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
 
@@ -497,6 +499,7 @@ clean: | clean-preproc clean-asm clean-tests
 
 purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
+	@test -f $(COMPILE_COMMANDS) && rm $(COMPILE_COMMANDS) 2>/dev/null || true
 	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
 	@$(MAKE) -C tests clean-hugetestfile
 	@echo Quick cleanup of all artifacts
@@ -826,8 +829,8 @@ gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
 cppcheck:
-	bear --output compile_commands.json -- make -B -s .builds/production/precizer
-	cppcheck --project=compile_commands.json --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs/sqlite3/src --inconclusive
+	bear --output $(COMPILE_COMMANDS) -- make -B -s .builds/production/precizer
+	cppcheck --project=$(COMPILE_COMMANDS) --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs/sqlite3/src --inconclusive
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)

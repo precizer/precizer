@@ -3,3 +3,5 @@ tests/fixtures/huge/hugetestfile
 precizer
 tools/tool_*
 *\.db
+A*
+compile_commands.json
