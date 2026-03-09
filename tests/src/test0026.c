@@ -4,13 +4,14 @@
 #include <limits.h>
 
 /**
- * @brief Unit tests for file_check_access().
+ * @brief Unit tests for file_check_access()
  *
  * @details
- * - Verifies readable absolute paths are detected immediately.
- * - Verifies relative paths are resolved via config->running_dir and marked readable.
- * - Verifies missing files return FILE_NOT_FOUND without errors.
- * - Verifies unreadable paths return FILE_ACCESS_DENIED.
+ * - Verifies readable absolute paths are detected immediately
+ * - Verifies relative paths are resolved via config->running_dir and marked readable
+ * - Verifies missing files return FILE_NOT_FOUND without errors
+ * - Verifies missing relative paths return FILE_NOT_FOUND after fallback resolution
+ * - Verifies unreadable paths return FILE_ACCESS_DENIED
  */
 Return test0026(void)
 {
@@ -74,6 +75,31 @@ Return test0026(void)
 
 		const size_t len = strlen(missing_path);
 		FileAccessStatus rc = file_check_access(missing_path,len,R_OK);
+
+		ASSERT(rc == FILE_NOT_FOUND);
+	}
+
+	/* Missing relative path should report not found after absolute fallback */
+	{
+		const char *relative_name = "test0026_missing_rel.txt";
+		char rel_full_path[PATH_MAX];
+		const int written = snprintf(rel_full_path,sizeof(rel_full_path),"%s/%s",tmpdir,relative_name);
+		ASSERT(written > 0 && (size_t)written < sizeof(rel_full_path));
+		remove(rel_full_path);
+
+		char *prev_dir = config->running_dir;
+		long int prev_len = config->running_dir_size;
+
+		config->running_dir = strdup(tmpdir);
+		ASSERT(config->running_dir != NULL);
+		config->running_dir_size = (long int)strlen(tmpdir) + 1; // includes terminating '\0' like determine_running_dir()
+
+		const size_t len = strlen(relative_name);
+		FileAccessStatus rc = file_check_access(relative_name,len,R_OK);
+
+		free(config->running_dir);
+		config->running_dir = prev_dir;
+		config->running_dir_size = prev_len;
 
 		ASSERT(rc == FILE_NOT_FOUND);
 	}
