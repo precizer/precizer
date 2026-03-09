@@ -210,9 +210,9 @@ SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
-SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
 ifeq ($(UNAME_S),Darwin)
-SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
+SNTZ_RPATH = -Wl,-rpath,@executable_path,-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
 endif
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
@@ -276,7 +276,7 @@ printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production dynprodlibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done dynamic-production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
@@ -285,13 +285,16 @@ endef
 #
 # Debug rules
 #
-debug: $(DBG_LIBDIR) $(DBG_EXE) debugfinal
+debug: $(DBG_EXE) debugfinal
 
 debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
-$(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
+debuglibs:
+	@$(MAKE) -s -C libs debug SUBDIRS="$(EXTRA_LIBS)"
+
+$(DBG_EXE): $(DBG_OBJS) debuglibs
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, not stripped"
 else
@@ -305,20 +308,20 @@ $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
 $(DBG_OBJDIR):
 	@mkdir -p $(DBG_OBJDIR)
 
-$(DBG_LIBDIR):
-	@$(MAKE) -s -C libs debug
-
 #
 # Coverage rules
 #
 coverage: test-coverage
-precizer-coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal
+precizer-coverage: $(COV_EXE) coveragefinal
 
 coveragefinal: $(COV_EXE)
 	@echo "The application has been built and is located: $(COV_EXE)"
 
-$(COV_EXE): $(COV_OBJS) | $(COV_LIBDIR)
-	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $^ $(LDLIBS)
+coveragelibs:
+	@$(MAKE) -s -C libs coverage SUBDIRS="$(EXTRA_LIBS)"
+
+$(COV_EXE): $(COV_OBJS) coveragelibs
+	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, not stripped"
 else
@@ -332,9 +335,6 @@ $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
 $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
 
-$(COV_LIBDIR):
-	@$(MAKE) -s -C libs coverage
-
 test-coverage:
 	@$(MAKE) -s -C $(TESTDIR) coverage
 
@@ -344,13 +344,16 @@ test-coverage:
 run: sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE) $(ARGS)
 
-sanitize: $(SNTZ_LIBDIR) $(SNTZ_EXE) sanitizefinal
+sanitize: $(SNTZ_EXE) sanitizefinal
 
 sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
-$(SNTZ_EXE): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
+sanitizelibs:
+	@$(MAKE) -s -C libs sanitize SUBDIRS="$(EXTRA_LIBS)"
+
+$(SNTZ_EXE): $(SNTZ_OBJS) sanitizelibs
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $(SNTZ_OBJS) $(LDLIBS)
 	@echo "$@ linked dynamically, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
@@ -360,16 +363,13 @@ $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
 $(SNTZ_OBJDIR):
 	@mkdir -p $(SNTZ_OBJDIR)
 
-$(SNTZ_LIBDIR):
-	@$(MAKE) -s -C libs sanitize
-
 #
 # Production rules
 #
 prod: production
 production: banner-production
 
-production-done: $(PROD_LIBDIR) $(PROD_EXE) prodfinal
+production-done: $(PROD_EXE) prodfinal
 
 banner-production: production-done
 	@$(BUILD_USAGE_BANNER)
@@ -379,8 +379,11 @@ prodfinal: $(PROD_EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
-$(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+prodlibs:
+	@$(MAKE) -s -C libs production SUBDIRS="$(EXTRA_LIBS)"
+
+$(PROD_EXE): $(PROD_OBJS) prodlibs
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(LDLIBS)
 	@strip -x $(PROD_EXE)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
@@ -394,9 +397,6 @@ $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
 
 $(PROD_OBJDIR):
 	@mkdir -p $(PROD_OBJDIR)
-
-$(PROD_LIBDIR):
-	@$(MAKE) -s -C libs production
 
 #
 # Dynamic production rules
@@ -416,8 +416,8 @@ dynprodfinal: $(DYNP_EXE)
 dynprodlibs:
 	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
 
-$(DYNP_EXE): $(DYNP_OBJS) | dynprodlibs
-	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+$(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
+	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@strip -x $(DYNP_EXE)
 	@echo "$@ linked dynamically, stripped"
 
@@ -433,7 +433,7 @@ $(DYNP_OBJDIR):
 #
 portable: banner-portable
 
-portable-done: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal
+portable-done: $(PRTB_EXE) portfinal
 
 banner-portable: portable-done
 	@$(BUILD_USAGE_BANNER)
@@ -443,8 +443,11 @@ portfinal: $(PRTB_EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
-$(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+portablelibs:
+	@$(MAKE) -s -C libs portable SUBDIRS="$(EXTRA_LIBS)"
+
+$(PRTB_EXE): $(PRTB_OBJS) portablelibs
+	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(LDLIBS)
 	@strip -x $(PRTB_EXE)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
@@ -459,36 +462,33 @@ $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
 $(PRTB_OBJDIR):
 	@mkdir -p $(PRTB_OBJDIR)
 
-$(PRTB_LIBDIR):
-	@$(MAKE) -s -C libs portable
-
 clean: | clean-preproc clean-asm clean-tests
 	@rm -f *.out.* doc
 	@rm -f $(DBG_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
 	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
 
+	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
-	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 
+	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
 	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
-	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 
+	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
-	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
 
+	@test -d $(PROD_LIBDIR) && rm -d $(PROD_LIBDIR) 2>/dev/null || true
 	@test -d $(PROD_OBJDIR) && rm -d $(PROD_OBJDIR) 2>/dev/null || true
 	@test -d $(PROD_DIR) && rm -d $(PROD_DIR) 2>/dev/null || true
-	@test -d $(PROD_LIBDIR) && rm -d $(PROD_LIBDIR) 2>/dev/null || true
 
 	@test -d $(DYNP_OBJDIR) && rm -d $(DYNP_OBJDIR) 2>/dev/null || true
 	@test -d $(DYNP_DIR) && rm -d $(DYNP_DIR) 2>/dev/null || true
 
+	@test -d $(PRTB_LIBDIR) && rm -d $(PRTB_LIBDIR) 2>/dev/null || true
 	@test -d $(PRTB_OBJDIR) && rm -d $(PRTB_OBJDIR) 2>/dev/null || true
 	@test -d $(PRTB_DIR) && rm -d $(PRTB_DIR) 2>/dev/null || true
-	@test -d $(PRTB_LIBDIR) && rm -d $(PRTB_LIBDIR) 2>/dev/null || true
 
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 
@@ -826,9 +826,8 @@ gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
 cppcheck:
-	bear --output compile_commands.json -- make -B -C tests ../.builds/testitall/debug/testitall
-	cppcheck --project=compile_commands.json --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q \
-		--force -i libs/sqlite3/src --inconclusive
+	bear --output compile_commands.json -- make -B -s .builds/production/precizer
+	cppcheck --project=compile_commands.json --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs/sqlite3/src --inconclusive
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
