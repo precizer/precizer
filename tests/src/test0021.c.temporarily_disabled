@@ -51,11 +51,7 @@ Return test0021(void)
 
 	ASSERT(SUCCESS == function_capture(test0021_1,captured_stdout,captured_stderr));
 
-	if(captured_stderr->length > 0)
-	{
-		echo(STDERR,"ERROR: Stderr buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
-		status = FAILURE;
-	}
+	ASSERT(captured_stderr->length == 0);
 
 	ASSERT(SUCCESS == get_file_content("templates/0021_0001.txt",pattern));
 
