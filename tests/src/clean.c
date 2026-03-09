@@ -9,7 +9,7 @@ Return clean(void)
 
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	// Empty relative path resolves to TMPDIR itself, so this removes the whole temporary test root
-	ASSERT(SUCCESS == remove_path(""));
+	ASSERT(SUCCESS == delete_path(""));
 
 	if(SUCCESS == status)
 	{
