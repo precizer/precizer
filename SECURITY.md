@@ -6,17 +6,15 @@ Security fixes are provided for the latest released version and the current `mai
 
 ## Reporting a Vulnerability
 
-Please do not open a public issue or discussion for suspected vulnerabilities.
+Please do not open public issues for suspected vulnerabilities.
 
-Use GitHub's private vulnerability reporting:
-- open the repository
-- go to **Security**
-- click **Report a vulnerability**
+Report vulnerabilities privately via GitHub Security Advisories:
+https://github.com/precizer/precizer/security/advisories/new
+
+Please include:
+- affected version
+- reproduction steps
+- impact
+- any suggested fix
 
 We will review the report and respond as soon as possible
-
-Use this section to tell people how to report a vulnerability.
-
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
