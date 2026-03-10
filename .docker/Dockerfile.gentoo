@@ -1,5 +1,5 @@
 ARG BUILD=production
-FROM gentoo/stage3:latest AS gentoo
+FROM gentoo/stage3@sha256:a9c44c491144a872b8a7fdced668c92a25dcb26f7502a9241e6fd595fab4fb1f AS gentoo
 
 ARG BUILD
 ENV BUILD=${BUILD}
