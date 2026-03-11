@@ -454,7 +454,7 @@ static Return test0028_6(void)
 		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_4.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_5.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_6.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_005.txt",NULL}
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_19.txt",NULL}
 	};
 
 	const struct compare_filter_case one_sided_cases[] = {
@@ -468,13 +468,13 @@ static Return test0028_6(void)
 	const struct compare_filter_case differences_cases[] = {
 		// Valid combinations with --compare for databases with all difference categories
 		{"--compare database1.db database2.db",COMPLETED,"templates/0028_001.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_006_21.txt",NULL},
 		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_9.txt",NULL},
 		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_10.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_11.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_12.txt",NULL},
 		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_13.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_001.txt",NULL}
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_20.txt",NULL}
 	};
 
 	const struct compare_filter_case invalid_cases[] = {

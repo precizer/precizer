@@ -635,6 +635,34 @@ Return parse_arguments(
 			slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
 		}
 
+		if(config->compare_filter_checksum_mismatch == true
+		        || config->compare_filter_first_source_only == true
+		        || config->compare_filter_second_source_only == true)
+		{
+			bool first_compare_filter = true;
+
+			slog(TESTING,"argument:compare-filter=");
+
+			if(config->compare_filter_checksum_mismatch == true)
+			{
+				slog(TESTING|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_first_source_only == true)
+			{
+				slog(TESTING|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_second_source_only == true)
+			{
+				slog(TESTING|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
+			}
+
+			slog(TESTING|UNDECOR,"\n");
+		}
+
 		if(config->db_drop_ignored)
 		{
 			slog(TESTING,"argument:db-drop-ignored=%s\n",config->db_drop_ignored ? "yes" : "no");
@@ -771,6 +799,33 @@ Return parse_arguments(
 			config->start_device_only ? "yes" : "no",
 			config->db_check_level == QUICK ? "QUICK" : "FULL",
 			rational_reconvert(rational_logger_mode));
+
+		if(config->compare_filter_checksum_mismatch == true
+		        || config->compare_filter_first_source_only == true
+		        || config->compare_filter_second_source_only == true)
+		{
+			bool first_compare_filter = true;
+
+			slog(VERBOSE|UNDECOR,"; compare-filter=");
+
+			if(config->compare_filter_checksum_mismatch == true)
+			{
+				slog(VERBOSE|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_first_source_only == true)
+			{
+				slog(VERBOSE|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_second_source_only == true)
+			{
+				slog(VERBOSE|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
+			}
+		}
+
 		slog(VERBOSE|UNDECOR,"\n");
 	}
 
