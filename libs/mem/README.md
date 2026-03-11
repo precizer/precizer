@@ -127,6 +127,12 @@ as text always exposes a writable, null-terminated buffer. `memory_getcstring`
 when descriptors are NULL, uninitialized, or missing terminators. Both helpers remove
 the need for defensive checks before calling standard library routines:
 
+`getstring(...)` is intended for C-string workflows rather than generic bounded buffer writes.
+Unlike `data(char,...)`, it may repair string state, grow zero-length descriptors to hold a
+terminator, and fall back to an internal empty string when the descriptor is invalid.
+Use `data(char,...)` when exact writable storage is required and invalid descriptors must fail
+explicitly with `NULL`
+
 ```c
 #include "mem.h"
 #include <stdio.h>
@@ -164,7 +170,8 @@ int main(void)
 When string payload length is already known, descriptors can be used as explicit byte buffers instead of relying on `strlen`-based flows.
 
 - Allocate exact capacity with `resize(buffer,n)` for raw bytes or `resize(buffer,n + 1)` when a trailing null terminator is required.
-- Write/read directly through `data(char,buffer)` (checked) or `rawdata(buffer)` (unchecked raw pointer).
+- Write/read directly through `data(char,buffer)` (checked) or `rawdata(buffer)` (unchecked raw pointer) when exact writable byte-range access is needed
+- Prefer `data(char,buffer)` over `getstring(buffer)` for bounded writes where invalid descriptors must fail explicitly instead of degrading to string-repair or fallback behavior
 - Use `copy(destination,source)` and `append(destination,source)` for fixed-length transfers. Both operations use descriptor lengths directly and do not scan for terminators.
 - Use `copy_buffer(destination,ptr,n)` to copy exactly `n` bytes from a known-size external array or buffer.
 - Use `concat_buffer(destination,ptr,n)` to append exactly `n` bytes from a known-size external array or buffer.
@@ -198,6 +205,7 @@ if(concat_cstring(db_path,bounded_suffix,sizeof(bounded_suffix)) != SUCCESS) {
 - `concat_cstring(destination,buffer,n)`: Appends visible source bytes (up to first `'\0'` or `n`) and enforces one trailing `'\0'`.
 - `concat_literal(destination,literal)`: Appends a C literal and enforces a trailing `'\0'`.
 - `concat_strings(destination,source)`: Concatenates two descriptor-backed strings and keeps exactly one trailing `'\0'`.
+- `data(char,destination)`: Returns a checked writable byte pointer and fails with `NULL` on invalid descriptors or type mismatch.
 - `getstring(destination)`: Returns a writable C-string pointer and repairs missing termination when possible.
 - `getcstring(source)`: Returns a read-only C-string pointer and falls back to an empty string when input is invalid.
 - `string_length(source,&len)`: Measures visible string length without reading past descriptor bounds (first `'\0'` or descriptor length). Return value is propagated through `provide(...)`.
