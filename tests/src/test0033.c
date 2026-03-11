@@ -258,7 +258,7 @@ static Return test0033_4(void)
 	ASSERT(interrupted_offset > 0);
 	ASSERT(interrupted_md_context_bytes > 0);
 
-	ASSERT(SUCCESS == append_byte_to_file(getcstring(huge_file_path),(unsigned char)'X'));
+	ASSERT(SUCCESS == append_byte_to_file(huge_file_path,(unsigned char)'X'));
 
 	arguments = "--update --progress --database=0033_interrupt_rehash.db tests/fixtures/huge";
 	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,ALLOW_BOTH));

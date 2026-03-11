@@ -1,26 +1,36 @@
 #include "sute.h"
 
+/**
+ * @brief Prepare the test environment
+ *
+ * Initializes the temporary workspace and required environment variables
+ * so the test suite can run against a consistent isolated setup
+ *
+ * @return SUCCESS on success, FAILURE on error
+ */
 Return prepare(void)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	INITTEST;
 
 	const char *command = NULL;
 
-	char path[PATH_MAX] = {0};
+	create(char,path);
 
-	ASSERT(SUCCESS == get_origin_dir(path,sizeof(path)));
+	ASSERT(SUCCESS == get_origin_dir(path));
+	ASSERT(SUCCESS == set_environment_variable("ORIGIN_DIR",getcstring(path)));
+	call(del(path));
 
-	ASSERT(SUCCESS == set_environment_variable("ORIGIN_DIR",path));
+	ASSERT(SUCCESS == create_tmpdir(path));
+	ASSERT(SUCCESS == set_environment_variable("TMPDIR",getcstring(path)));
+	ASSERT(SUCCESS == set_environment_variable("BINDIR",getcstring(path)));
+	call(del(path));
 
-	ASSERT(SUCCESS == create_tmpdir(path,sizeof(path)));
-
-	ASSERT(SUCCESS == set_environment_variable("TMPDIR",path));
-
-	ASSERT(SUCCESS == set_environment_variable("BINDIR",path));
-
-	ASSERT(SUCCESS == extract_current_executable_directory_name(path,sizeof(path)));
-
-	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",path));
+	ASSERT(SUCCESS == extract_current_executable_directory_name(path));
+	ASSERT(SUCCESS == set_environment_variable("ENVIRONMENT",getcstring(path)));
+	call(del(path));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -60,7 +70,7 @@ Return prepare(void)
 
 	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(absolute_path)));
 
-	del(absolute_path);
+	call(del(absolute_path));
 
 	ASSERT(file_exists == true);
 

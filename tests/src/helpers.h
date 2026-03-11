@@ -9,6 +9,7 @@
 #define _TEST_HELPERS_H
 
 #include "precizer.h"
+#include <stdio.h>
 
 #define FILE_WRITE_APPEND  ((unsigned int)1U)
 #define FILE_WRITE_REPLACE ((unsigned int)2U)
@@ -191,14 +192,28 @@ Return compute_file_sha512(
 /**
  * @brief Append one byte to a file
  *
- * @param[in] file_path File path relative to TMPDIR or absolute path
+ * @param[in] file_path_buffer File path relative to TMPDIR or absolute path
  * @param[in] byte Byte value to append
  *
  * @return Return status code
  */
 Return append_byte_to_file(
-	const char   *file_path,
+	const memory *file_path_buffer,
 	unsigned char byte);
+
+/**
+ * @brief Open writable file stream with explicit create mode 0600
+ *
+ * @param[in] file_path File path relative to TMPDIR or absolute path
+ * @param[in] stream_open_mode Mode string for fdopen()
+ * @param[out] opened_file_stream_out Output writable stream
+ *
+ * @return Return status code
+ */
+Return open_file_stream(
+	const memory *file_path,
+	const char *stream_open_mode,
+	FILE       **opened_file_stream_out);
 
 /**
  * @brief Write string to file with explicit append or replace mode

@@ -1,5 +1,6 @@
 #include "sute.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <ftw.h>
 #include <stdlib.h>
 
@@ -17,6 +18,76 @@ static void reset_nftw_copy_context(void)
 	copy_destination_root_for_nftw = NULL;
 	copy_source_root_length_for_nftw = 0U;
 	copy_destination_root_length_for_nftw = 0U;
+}
+
+/**
+ * @brief Open writable file stream with explicit create mode 0600
+ *
+ * @param[in] file_path File path relative to TMPDIR or absolute path
+ * @param[in] stream_open_mode Mode string for fdopen()
+ * @param[out] opened_file_stream_out Output writable stream
+ *
+ * @return Return status code
+ */
+Return open_file_stream(
+	const memory *file_path,
+	const char *stream_open_mode,
+	FILE       **opened_file_stream_out)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	int writable_file_descriptor = -1;
+	int file_open_flags = 0;
+	const char *file_path_string = NULL;
+
+	if(file_path == NULL || stream_open_mode == NULL || opened_file_stream_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(opened_file_stream_out != NULL)
+	{
+		*opened_file_stream_out = NULL;
+	}
+
+	if(SUCCESS == status)
+	{
+		file_path_string = getcstring(file_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		if(strcmp(stream_open_mode,"ab") == 0)
+		{
+			file_open_flags = O_WRONLY | O_CREAT | O_APPEND;
+		} else if(strcmp(stream_open_mode,"wb") == 0){
+			file_open_flags = O_WRONLY | O_CREAT | O_TRUNC;
+		} else {
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		writable_file_descriptor = open(file_path_string,file_open_flags,0600);
+		if(writable_file_descriptor < 0)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		*opened_file_stream_out = fdopen(writable_file_descriptor,stream_open_mode);
+		if(*opened_file_stream_out == NULL)
+		{
+			(void)close(writable_file_descriptor);
+			status = FAILURE;
+		}
+	}
+
+	return(status);
 }
 
 /**
@@ -497,6 +568,7 @@ Return truncate_file_to_zero_size(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
+	FILE *file = NULL;
 
 	create(char,absolute_path);
 
@@ -512,14 +584,15 @@ Return truncate_file_to_zero_size(
 
 	if(SUCCESS == status)
 	{
-		FILE *file = fopen(getcstring(absolute_path),"wb");
+		status = open_file_stream(
+			absolute_path,
+			"wb",
+			&file);
+	}
 
-		if(file == NULL)
-		{
-			status = FAILURE;
-		} else if(fclose(file) != 0){
-			status = FAILURE;
-		}
+	if(file != NULL && fclose(file) != 0)
+	{
+		status = FAILURE;
 	}
 
 	del(absolute_path);
@@ -922,12 +995,10 @@ Return rewrite_file_dense_with_same_size(
 	if(SUCCESS == status)
 	{
 		// Rewrite the whole file with real bytes while keeping the same logical size
-		file = fopen(getcstring(absolute_path),"wb");
-
-		if(file == NULL)
-		{
-			status = FAILURE;
-		}
+		status = open_file_stream(
+			absolute_path,
+			"wb",
+			&file);
 	}
 
 	off_t written = 0;
@@ -1053,7 +1124,7 @@ Return compute_file_sha512(
 /**
  * @brief Append one byte to a file using native C file I/O
  *
- * @param[in] file_path Path to the file to append
+ * @param[in] file_path_buffer Path to the file to append
  * @param[in] byte Byte value to append
  *
  * @return Return status code:
@@ -1061,27 +1132,25 @@ Return compute_file_sha512(
  *         - FAILURE: Validation or I/O failed
  */
 Return append_byte_to_file(
-	const char   *file_path,
+	const memory *file_path_buffer,
 	unsigned char byte)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
+	FILE *file = NULL;
 
-	if(file_path == NULL)
+	if(file_path_buffer == NULL)
 	{
 		status = FAILURE;
 	}
 
-	FILE *file = NULL;
-
 	if(SUCCESS == status)
 	{
-		file = fopen(file_path,"ab");
-		if(file == NULL)
-		{
-			status = FAILURE;
-		}
+		status = open_file_stream(
+			file_path_buffer,
+			"ab",
+			&file);
 	}
 
 	if(SUCCESS == status)
@@ -1152,11 +1221,10 @@ Return write_string_to_file(
 
 	if(SUCCESS == status)
 	{
-		file = fopen(getcstring(absolute_path),open_mode);
-		if(file == NULL)
-		{
-			status = FAILURE;
-		}
+		status = open_file_stream(
+			absolute_path,
+			open_mode,
+			&file);
 	}
 
 	if(SUCCESS == status)
