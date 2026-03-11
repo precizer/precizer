@@ -380,6 +380,70 @@ Return read_final_sha512_from_db(
 }
 
 /**
+ * @brief Set files.sha512 to NULL for one row in the database
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] relative_path Relative path key in files table
+ *
+ * @return Return status code:
+ *         - SUCCESS: SHA512 value was set to NULL for at least one row
+ *         - FAILURE: Validation, DB access, bind, step, or change check failed
+ */
+Return db_set_sha512_to_null(
+	const char *db_filename,
+	const char *relative_path)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "UPDATE files SET sha512 = NULL WHERE relative_path = ?1;";
+
+	if(db_filename == NULL || relative_path == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READWRITE,&db);
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_DONE != sqlite3_step(stmt))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && sqlite3_changes(db) < 1)
+	{
+		status = FAILURE;
+	}
+
+	if(stmt != NULL)
+	{
+		(void)sqlite3_finalize(stmt);
+	}
+
+	if(db != NULL)
+	{
+		(void)sqlite3_close(db);
+	}
+
+	return(status);
+}
+
+/**
  * @brief Read intermediate offset and mdContext size for one file from DB
  *
  * @param[in] db_filename DB file name relative to TMPDIR
