@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER=3510200
+VER=3520000
 
 echo Downloading...
 wget https://sqlite.org/2026/sqlite-amalgamation-${VER}.zip -O sqlite-amalgamation-${VER}.zip
