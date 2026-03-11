@@ -211,9 +211,9 @@ SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
-SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
 ifeq ($(UNAME_S),Darwin)
-SNTZ_RPATH = -Wl,-rpath,@executable_path,-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
+SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
 endif
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer

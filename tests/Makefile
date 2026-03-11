@@ -166,6 +166,7 @@ DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL_TE
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge gcc-analyzer cppcheck print-%
+.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
 
 # Default build
 all: sanitize
@@ -176,6 +177,18 @@ tests: test
 
 run: sanitize
 
+testlibs-coverage:
+	@$(MAKE) -s -C ../libs/xdiff coverage
+	@$(MAKE) -s -C ../libs/testitall coverage
+
+testlibs-sanitize:
+	@$(MAKE) -s -C ../libs/xdiff sanitize
+	@$(MAKE) -s -C ../libs/testitall sanitize
+
+testlibs-debug:
+	@$(MAKE) -s -C ../libs/xdiff debug
+	@$(MAKE) -s -C ../libs/testitall debug
+
 #
 # Coverage rules
 #
@@ -184,7 +197,7 @@ precizer-coverage:
 
 coverage: hugetestfile coverage-html
 
-$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage
+$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage testlibs-coverage
 	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) $(WRAPFLAGS) -o $(COV_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
 	@echo "$@ linked."
 
@@ -219,7 +232,7 @@ precizer-sanitize:
 sanitize: precizer-sanitize hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
-$(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize
+$(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize testlibs-sanitize
 	@$(CC) $(SNTZ_LIBS) $(SNTZ_LDFLAGS) $(SNTZ_DYNLIB) $(WRAPFLAGS) -o $(SNTZ_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
 	@echo "$@ linked."
 
@@ -243,7 +256,7 @@ precizer-debug:
 debug: precizer-debug hugetestfile $(DBG_EXE)
 	@./$(DBG_EXE)
 
-$(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug
+$(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug testlibs-debug
 	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
