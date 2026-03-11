@@ -2,95 +2,101 @@
 #include <limits.h>
 #include <string.h>
 
-// Local helper to strip trailing slashes, keeping "/" intact.
-static void remove_trailing_slash_local(char *path)
-{
-	if(path == NULL || *path == '\0')
-	{
-		return;
-	}
-
-	size_t len = strlen(path);
-
-	while(len > 1U && path[len - 1U] == '/')
-	{
-		path[--len] = '\0';
-	}
-}
-
 /**
- * @brief Write the parent directory of the current working directory into the buffer.
+ * @brief Write the parent directory of the current working directory into a memory descriptor
  *
- * Example: if CWD is "/tmp/precizer/run", the function writes "/tmp/precizer".
+ * The current working directory is copied into the provided memory descriptor,
+ * trailing slashes are removed, and then the parent directory is kept there
  *
- * @param path Destination buffer (e.g., char path[PATH_MAX] = {0};).
- * @param path_size Size of the destination buffer in bytes (e.g., sizeof(path)).
- * @return SUCCESS on success, FAILURE on error or insufficient space.
+ * Example: if CWD is "/tmp/precizer/run///", the function writes "/tmp/precizer"
+ * The root path "/" is preserved as "/"
+ *
+ * @param path Destination memory descriptor initialized for char elements
+ * @return SUCCESS on success, FAILURE on error
  */
 Return get_origin_dir(
-	char   *path,
-	size_t path_size)
+	memory *path)
 {
-	if(NULL == path || 0U == path_size)
-	{
-		deliver(FAILURE);
-	}
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
 
 	char *cwd = NULL;
 
 #if defined(__GLIBC__)
 	cwd = get_current_dir_name();
 #else
-	// Portable fallback for macOS/BSD.
+	// Portable fallback for evilOS/BSD.
 	cwd = getcwd(NULL,0);
 #endif
 
 	if(NULL == cwd)
 	{
-		path[0] = '\0';
+		del(path);
 		deliver(FAILURE);
 	}
 
-	remove_trailing_slash_local(cwd);
-
-	const char *last_slash = strrchr(cwd,'/');
-
-	if(NULL == last_slash)
+	if(SUCCESS != copy_cstring(path,cwd,strlen(cwd) + 1U))
 	{
-		path[0] = '\0';
 		free(cwd);
+		del(path);
 		deliver(FAILURE);
-	}
-
-	size_t parent_len = 0U;
-
-	if(last_slash == cwd)
-	{
-		/* CWD is "/" or similar; parent is "/" */
-		parent_len = 1U;
-	} else {
-		parent_len = (size_t)(last_slash - cwd);
-	}
-
-	const size_t needed = parent_len + 1U;
-
-	if(needed > path_size)
-	{
-		path[0] = '\0';
-		free(cwd);
-		deliver(FAILURE);
-	}
-
-	if(parent_len == 1U)
-	{
-		path[0] = '/';
-		path[1] = '\0';
-	} else {
-		memcpy(path,cwd,parent_len);
-		path[parent_len] = '\0';
 	}
 
 	free(cwd);
+
+	size_t path_length = 0U;
+
+	if(SUCCESS != string_length(path,&path_length))
+	{
+		del(path);
+		deliver(FAILURE);
+	}
+
+	char *path_string = data(char,path);
+
+	if(path_string == NULL)
+	{
+		del(path);
+		deliver(FAILURE);
+	}
+
+	/*
+	 * Use the visible string length instead of descriptor capacity
+	 * Stop at length 1 so "/" does not become an empty string
+	 */
+	while(path_length > 1U && path_string[path_length - 1U] == '/')
+	{
+		path_string[--path_length] = '\0';
+	}
+
+	char *last_slash = strrchr(path_string,'/');
+
+	if(NULL == last_slash)
+	{
+		del(path);
+		deliver(FAILURE);
+	}
+
+	if(last_slash == path_string)
+	{
+		if(SUCCESS != copy_literal(path,"/"))
+		{
+			del(path);
+			deliver(FAILURE);
+		}
+
+		deliver(SUCCESS);
+	}
+
+	const size_t parent_length = (size_t)(last_slash - path_string);
+
+	path_string[parent_length] = '\0';
+
+	if(SUCCESS != resize(path,parent_length + 1U,RELEASE_UNUSED))
+	{
+		del(path);
+		deliver(FAILURE);
+	}
 
 	deliver(SUCCESS);
 }

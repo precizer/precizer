@@ -2,111 +2,127 @@
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
-/* macOS build flag */
-#ifdef EVIL_EMPIRE_OS
+#ifdef EVIL_EMPIRE_OS // macOS build flag
 #ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1
 #endif
 #include <mach-o/dyld.h>
 #endif
 
-/** @brief Extract the last directory name from the directory containing the executable
+/**
+ * @brief Extract the name of the directory that contains the current executable
  *
- * This function reads the path to the currently running executable from /proc/self/exe,
- * identifies the parent directory of the binary, and extracts the last directory name
- * from that path.
+ * This function determines the directory that contains the currently running
+ * executable and writes only that directory name into @p environment
+ *
+ * In this repository the returned value is used as the build configuration
+ * name, for example `debug`, `sanitize`, or `coverage`
  *
  * Example:
- *   /proc/self/exe -> "../.builds/testitall/sanitize/testitall"
- *   -> directory of executable = "../.builds/testitall/sanitize"
- *   -> extracted = "sanitize"
+ *   executable path = "/worktree/.builds/testitall/debug/testitall"
+ *   containing directory path = "/worktree/.builds/testitall/debug"
+ *   returned directory name = "debug"
  *
- * The output is written into 'environment' buffer (on the caller stack).
+ * A path like "/binary" yields an empty string because the containing
+ * directory is the root path "/"
  *
- * @param environment Pointer to the caller's stack buffer
- * @param environment_size Size of this buffer in bytes
- * @return Return status code (SUCCESS on success, FAILURE on error)
+ * @param environment Output memory descriptor initialized for char elements
+ * @return SUCCESS on success, FAILURE on error
  */
 Return extract_current_executable_directory_name(
-	char   *environment,
-	size_t environment_size)
+	memory *environment)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-
-	char exe_path[PATH_MAX];
-	ssize_t len = 0;
-	const char *last_slash = NULL;
-	const char *before_last_slash = NULL;
-	const char *walker = NULL;
-	const char *directory_start = NULL;
-	size_t directory_length = 0U;
-
-	if(NULL == environment)
-	{
-		status = FAILURE;
-	}
+	char *executable_path = NULL;
 
 	if(SUCCESS == status)
 	{
-		if(0U == environment_size)
-		{
-			status = FAILURE;
-		}
-	}
-
-	if(SUCCESS == status)
-	{
-/* macOS build flag */
-#ifdef EVIL_EMPIRE_OS
-		/* macOS-specific executable path lookup */
-		uint32_t bufsize = (uint32_t)sizeof(exe_path);
-
-		/* _NSGetExecutablePath returns 0 on success, else sets required size. */
-		if(0 != _NSGetExecutablePath(exe_path,&bufsize))
+		if(SUCCESS != resize(environment,(size_t)PATH_MAX))
 		{
 			status = FAILURE;
 		} else {
-			char resolved[PATH_MAX];
+			executable_path = data(char,environment);
 
-			if(NULL == realpath(exe_path,resolved))
+			if(NULL == executable_path)
 			{
 				status = FAILURE;
-			} else {
-				strncpy(exe_path,resolved,sizeof(exe_path) - 1U);
-				exe_path[sizeof(exe_path) - 1U] = '\0';
-				len = (ssize_t)strlen(exe_path);
 			}
 		}
-#else
-		len = readlink("/proc/self/exe",exe_path,(size_t)PATH_MAX - 1U);
+	}
 
-		if(len < 0)
+#ifdef EVIL_EMPIRE_OS // macOS build flag
+	if(SUCCESS == status)
+	{
+		create(char,executable_path_source_buffer);
+		uint32_t executable_path_size = (uint32_t)PATH_MAX;
+		char *executable_path_source = NULL;
+
+		if(SUCCESS != resize(executable_path_source_buffer,(size_t)PATH_MAX))
+		{
+			status = FAILURE;
+		} else {
+			executable_path_source = data(char,executable_path_source_buffer);
+
+			if(NULL == executable_path_source)
+			{
+				status = FAILURE;
+			}
+		}
+
+		/* _NSGetExecutablePath returns 0 on success, else sets required size */
+		if(SUCCESS == status && 0 != _NSGetExecutablePath(executable_path_source,&executable_path_size))
+		{
+			status = FAILURE;
+		}
+
+		if(SUCCESS == status && NULL == realpath(executable_path_source,executable_path))
+		{
+			status = FAILURE;
+		}
+
+		call(del(executable_path_source_buffer));
+	}
+
+#else
+
+	if(SUCCESS == status)
+	{
+		ssize_t executable_path_length = 0;
+
+		executable_path_length = readlink("/proc/self/exe",executable_path,(size_t)PATH_MAX - 1U);
+
+		if(executable_path_length < 0)
 		{
 			status = FAILURE;
 		} else {
 			/* If the returned length hits the limit, the path could be truncated */
-			if(len >= (ssize_t)((size_t)PATH_MAX - 1U))
+			if(executable_path_length >= (ssize_t)((size_t)PATH_MAX - 1U))
 			{
 				status = FAILURE;
+			} else {
+				executable_path[executable_path_length] = '\0';
 			}
 		}
-#endif
 	}
+#endif
 
 	if(SUCCESS == status)
 	{
-		exe_path[len] = '\0';
+		const char *last_slash = NULL;
+		const char *previous_slash = NULL;
+		const char *walker = executable_path;
 
 		/* Identify last and previous '/' */
-		walker = exe_path;
-
 		while('\0' != *walker)
 		{
 			if('/' == *walker)
 			{
-				before_last_slash = last_slash;
+				previous_slash = last_slash;
 				last_slash = walker;
 			}
 			walker++;
@@ -114,43 +130,37 @@ Return extract_current_executable_directory_name(
 
 		if(NULL == last_slash)
 		{
-			/* Should never happen for /proc/self/exe */
-			if(environment_size > 0U)
-			{
-				environment[0] = '\0';
-			} else {
-				status = FAILURE;
-			}
+			status = FAILURE;
 		} else {
 			/* Parent directory ends at last_slash */
-			if(NULL == before_last_slash)
+			if(NULL == previous_slash)
 			{
 				/* Path like "/binary": parent dir is "/" and has no name */
-				if(environment_size > 0U)
+				executable_path[0] = '\0';
+
+				if(SUCCESS != resize(environment,1U,RELEASE_UNUSED))
 				{
-					environment[0] = '\0';
-				} else {
 					status = FAILURE;
 				}
 			} else {
-				/* Directory name starts after before_last_slash */
-				directory_start = before_last_slash + 1;
-				directory_length = (size_t)(last_slash - directory_start);
+				/* Directory name starts after previous_slash */
+				const char *directory_name = previous_slash + 1;
+				const size_t directory_length = (size_t)(last_slash - directory_name);
 
-				if(directory_length + 1U > environment_size)
+				memmove(executable_path,directory_name,directory_length);
+				executable_path[directory_length] = '\0';
+
+				if(SUCCESS != resize(environment,directory_length + 1U,RELEASE_UNUSED))
 				{
 					status = FAILURE;
-				} else {
-					if(directory_length > 0U)
-					{
-						memcpy(environment,directory_start,directory_length);
-						environment[directory_length] = '\0';
-					} else {
-						environment[0] = '\0';
-					}
 				}
 			}
 		}
+	}
+
+	if(SUCCESS != status)
+	{
+		del(environment);
 	}
 
 	deliver(status);
