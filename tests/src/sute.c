@@ -31,6 +31,7 @@ int main(void)
 	TEST(test0023,"extract_relative_path() test set…");
 	SUTE(test0025,"file_buffer_memory() test set…");
 	TEST(test0026,"file_check_access() test set…");
+	TEST(test0035,"create_tmpdir() honors TMPDIR and fallback…");
 
 	HEADER("Unit Testing of precizer");
 	TEST(comprehensive_unit_testing,"Comprehensive Unit testing…");
