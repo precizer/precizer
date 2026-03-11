@@ -15,11 +15,10 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <string.h>
+#include <unistd.h>
 
 #define MAX_LINE_LENGTH 1024
 #define MAX_PATH_LENGTH 4096
-#define TEMP_FILENAME "_temp_file_"
 
 /**
  * @brief Status codes for function returns
@@ -58,6 +57,152 @@ static Return is_target_function(
 	const char *,
 	const FunctionNames *);
 static void free_function_names(FunctionNames *names);
+static Return copy_string(
+	char       *destination,
+	size_t     destination_size,
+	const char *source);
+static Return get_parent_directory(
+	const char *path,
+	char       *directory,
+	size_t     directory_size);
+static Return build_temp_file_template(
+	const char *filename,
+	char       *template_path,
+	size_t     template_size);
+
+/**
+ * @brief Copy string into fixed-size buffer
+ *
+ * @param[out] destination Destination buffer
+ * @param[in]  destination_size Destination buffer size
+ * @param[in]  source Source string
+ *
+ * @return Return status code
+ */
+static Return copy_string(
+	char       *destination,
+	size_t     destination_size,
+	const char *source)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	int written = 0;
+
+	if(NULL == destination || NULL == source || destination_size == 0U)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		written = snprintf(destination,destination_size,"%s",source);
+
+		if(written < 0 || (size_t)written >= destination_size)
+		{
+			destination[0] = '\0';
+			status = FAILURE;
+		}
+	}
+
+	return(status);
+}
+
+/**
+ * @brief Extract parent directory from path
+ *
+ * @param[in]  path Input path
+ * @param[out] directory Output buffer for parent directory
+ * @param[in]  directory_size Output buffer size
+ *
+ * @return Return status code
+ */
+static Return get_parent_directory(
+	const char *path,
+	char       *directory,
+	size_t     directory_size)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	char *last_slash = NULL;
+
+	if(NULL == path || NULL == directory || directory_size == 0U)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = copy_string(directory,directory_size,path);
+	}
+
+	if(SUCCESS == status)
+	{
+		last_slash = strrchr(directory,'/');
+
+		if(NULL == last_slash)
+		{
+			status = copy_string(directory,directory_size,".");
+		} else if(last_slash == directory) {
+			directory[1] = '\0';
+		} else {
+			*last_slash = '\0';
+		}
+	}
+
+	return(status);
+}
+
+/**
+ * @brief Build template for secure temporary file
+ *
+ * @param[in]  filename Target file path
+ * @param[out] template_path Output buffer for temporary file template
+ * @param[in]  template_size Output buffer size
+ *
+ * @return Return status code
+ */
+static Return build_temp_file_template(
+	const char *filename,
+	char       *template_path,
+	size_t     template_size)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	char directory[MAX_PATH_LENGTH];
+	int written = 0;
+
+	if(NULL == filename || NULL == template_path || template_size == 0U)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = get_parent_directory(filename,directory,sizeof(directory));
+	}
+
+	if(SUCCESS == status)
+	{
+		if(strcmp(directory,"/") == 0)
+		{
+			written = snprintf(template_path,template_size,
+				"/.precizer_function_remover_XXXXXX");
+		} else {
+			written = snprintf(template_path,template_size,
+				"%s/.precizer_function_remover_XXXXXX",directory);
+		}
+
+		if(written < 0 || (size_t)written >= template_size)
+		{
+			status = FAILURE;
+		}
+	}
+
+	return(status);
+}
 
 /**
  * @brief Check if file has C source code extension
@@ -251,6 +396,9 @@ static Return remove_functions(
 	char line[MAX_LINE_LENGTH];
 	DeclarationState decl_state;
 	char *p = NULL;
+	char temp_path[MAX_PATH_LENGTH];
+	int temp_fd = -1;
+	int temp_path_ready = 0;
 
 	if(NULL == filename || NULL == names)
 	{
@@ -274,10 +422,29 @@ static Return remove_functions(
 
 	if(SUCCESS == status)
 	{
-		temp = fopen(TEMP_FILENAME,"w");
+		status = build_temp_file_template(filename,temp_path,sizeof(temp_path));
+	}
+
+	if(SUCCESS == status)
+	{
+		temp_fd = mkstemp(temp_path);
+
+		if(temp_fd == -1)
+		{
+			status = FAILURE;
+		} else {
+			temp_path_ready = 1;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		temp = fdopen(temp_fd,"w");
 
 		if(NULL == temp)
 		{
+			(void)close(temp_fd);
+			temp_fd = -1;
 			status = FAILURE;
 		}
 	}
@@ -376,20 +543,15 @@ static Return remove_functions(
 
 	if(SUCCESS == status)
 	{
-		if(remove(filename) != 0)
+		if(rename(temp_path,filename) != 0)
 		{
 			status = FAILURE;
 		}
 	}
 
-	if(SUCCESS == status)
+	if(SUCCESS != status && temp_path_ready)
 	{
-		if(rename(TEMP_FILENAME,filename) != 0)
-		{
-			status = FAILURE;
-		}
-	} else {
-		remove(TEMP_FILENAME);
+		(void)remove(temp_path);
 	}
 
 	return(status);
