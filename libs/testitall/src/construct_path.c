@@ -43,7 +43,7 @@ Return construct_path(
 
 	if(SUCCESS == status)
 	{
-		char *path_data = getstring(full_path);
+		char *path_data = data(char,full_path);
 
 		if(path_data == NULL)
 		{

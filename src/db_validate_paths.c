@@ -119,11 +119,11 @@ Return db_validate_paths(void)
 		}
 	}
 
-	rc = sqlite3_prepare_v2(config->db,getstring(select_sql),-1,&select_stmt,NULL);
+	rc = sqlite3_prepare_v2(config->db,getcstring(select_sql),-1,&select_stmt,NULL);
 
 	if(SQLITE_OK != rc)
 	{
-		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",getstring(select_sql));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",getcstring(select_sql));
 		status = FAILURE;
 	}
 
