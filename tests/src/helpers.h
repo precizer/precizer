@@ -10,6 +10,9 @@
 
 #include "precizer.h"
 
+#define FILE_WRITE_APPEND  ((unsigned int)1U)
+#define FILE_WRITE_REPLACE ((unsigned int)2U)
+
 /**
  * @brief Verify that files.relative_path values in DB match expected list
  *
@@ -81,6 +84,18 @@ Return read_final_sha512_from_db(
 	unsigned char  *sha512_out);
 
 /**
+ * @brief Set files.sha512 to NULL for one row in the database
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] relative_path Relative path key in files table
+ *
+ * @return Return status code
+ */
+Return db_set_sha512_to_null(
+	const char *db_filename,
+	const char *relative_path);
+
+/**
  * @brief Add a new file by truncating the named file to zero size
  *
  * @param[in] relative_path_to_tmpdir File path relative to TMPDIR
@@ -89,6 +104,49 @@ Return read_final_sha512_from_db(
  */
 Return truncate_file_to_zero_size(
 	const char *relative_path_to_tmpdir);
+
+/**
+ * @brief Remove file or directory tree by path relative to TMPDIR
+ *
+ * When relative_path_to_tmpdir is an empty string, the function targets TMPDIR itself
+ * Missing paths are treated as a hard failure to keep test cleanup strict and deterministic
+ *
+ * @param[in] relative_path_to_tmpdir File or directory path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return delete_path(
+	const char *relative_path_to_tmpdir);
+
+/**
+ * @brief Copy file or directory tree by path relative to TMPDIR
+ *
+ * Empty source or destination path resolves to TMPDIR root
+ * The destination path is treated as exact target path and must not be an existing directory
+ *
+ * @param[in] relative_source_path Source file or directory path relative to TMPDIR
+ * @param[in] relative_destination_path Destination file or directory path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return copy_path(
+	const char *relative_source_path,
+	const char *relative_destination_path);
+
+/**
+ * @brief Move file or directory by path relative to TMPDIR using native rename
+ *
+ * Empty source or destination path resolves to TMPDIR root
+ * This operation does not fallback to copy and delete on cross-device moves
+ *
+ * @param[in] relative_source_path Source file or directory path relative to TMPDIR
+ * @param[in] relative_destination_path Destination file or directory path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return move_path(
+	const char *relative_source_path,
+	const char *relative_destination_path);
 
 /**
  * @brief Create sparse growth via hole punch and explicit final size
@@ -141,6 +199,46 @@ Return compute_file_sha512(
 Return append_byte_to_file(
 	const char   *file_path,
 	unsigned char byte);
+
+/**
+ * @brief Write string to file with explicit append or replace mode
+ *
+ * The function writes bytes exactly as provided without adding a trailing newline
+ *
+ * @param[in] file_content String payload to write
+ * @param[in] file_path File path relative to TMPDIR
+ * @param[in] write_flags One of FILE_WRITE_APPEND or FILE_WRITE_REPLACE
+ *
+ * @return Return status code
+ */
+Return write_string_to_file(
+	const char       *file_content,
+	const char       *file_path,
+	const unsigned int write_flags);
+
+/**
+ * @brief Append string bytes to file without newline
+ *
+ * @param[in] file_content String payload to append
+ * @param[in] file_path File path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return add_string_to(
+	const char *file_content,
+	const char *file_path);
+
+/**
+ * @brief Replace file content with string bytes without newline
+ *
+ * @param[in] file_content String payload to write
+ * @param[in] file_path File path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return replase_to_string(
+	const char *file_content,
+	const char *file_path);
 
 /**
  * @brief Set target file mtime based on source mtime plus nanosecond delta

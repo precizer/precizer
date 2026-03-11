@@ -1,9 +1,6 @@
 #include "sute.h"
 #include "db_upgrade.h"
 
-#define LEGACY_V3_UTF8_DB "0015_database_v3 это база данных с пробелами и символами UTF-8.db"
-#define LEGACY_V4_UTF8_DB "0015_database_v4 это база данных с пробелами и символами UTF-8.db"
-
 /**
  * @brief Open SQLite database from TMPDIR by relative filename
  *
@@ -621,20 +618,16 @@ static Return db_create_abort_on_second_stat_update_trigger(
 }
 
 /**
+ * @brief Reject using a legacy v0 DB as the primary database without --update
  *
- * Upgrade a DB from version 0 to the current version as the primary database.
- * Verify the run fails without the --update parameter and prints the proper error.
- *
+ * Verify the run fails and prints the expected warning for the upgrade path
  */
 Return test0015_1(void)
 {
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v0.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v0.db","0015_database_v0.db"));
 
 	const char *arguments = "--database=./0015_database_v0.db tests/fixtures/diffs/diff1";
 
@@ -655,27 +648,20 @@ Return test0015_1(void)
 	del(result);
 
 	// Clean up test results
-	command = "rm \"${TMPDIR}/0015_database_v0.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v0.db"));
 
 	RETURN_STATUS;
 }
 
 /**
+ * @brief Upgrade a legacy v0 DB as the primary database with --update
  *
- * Upgrade a DB from version 0 to the current version as the primary database.
- * Running the test with the --update parameter to ensure the update
- * completes successfully
- *
+ * Verify the upgrade succeeds and produces the expected output
  */
 Return test0015_2(void)
 {
 	INITTEST;
-
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v0.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v0.db","0015_database_v0.db"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -695,9 +681,7 @@ Return test0015_2(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	command = "rm \"${TMPDIR}/0015_database_v0.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v0.db"));
 
 	// Clean to use it iteratively
 	del(pattern);
@@ -707,19 +691,14 @@ Return test0015_2(void)
 }
 
 /**
+ * @brief Upgrade a legacy v0 DB with --watch-timestamps enabled
  *
- * Upgrade a DB from version 0 to the current version as the primary database.
- * Running the test with the --update and --watch-timestamps parameters to ensure
- * the update completes successfully with according details in output
- *
+ * Verify the upgrade succeeds and reports timestamp details in the output
  */
 Return test0015_3(void)
 {
 	INITTEST;
-
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v0.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v0.db","0015_database_v0.db"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -746,10 +725,9 @@ Return test0015_3(void)
 }
 
 /**
+ * @brief Re-run upgrade for the already upgraded v0 DB
  *
- * Run the program again to verify that the database
- * is actually at the current version
- *
+ * Verify the database is treated as current and the run stays successful
  */
 Return test0015_4(void)
 {
@@ -777,18 +755,15 @@ Return test0015_4(void)
 	del(result);
 
 	// Clean up test results
-	const char *command = "rm \"${TMPDIR}/0015_database_v0.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v0.db"));
 
 	RETURN_STATUS;
 }
 
 /**
+ * @brief Create a fresh DB with the default generated filename
  *
- * Run the program again to verify that the database is actually at the current version
- * Create a database with the default name
- *
+ * Verify the application reports the generated DB name in the expected output
  */
 Return test0015_5(void)
 {
@@ -796,13 +771,13 @@ Return test0015_5(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	// Get the output of an external program
+	// Run the application without an explicit DB name
 	const char *arguments = "tests/fixtures/diffs/diff1";
 
-	const char *filename = "templates/0015_004.txt";  // File name
+	const char *filename = "templates/0015_004.txt"; // File name
 	const char *template = "%DB_NAME%";
 
-	const char *replacement = getenv("DBNAME");  // Database name
+	const char *replacement = getenv("DBNAME"); // Database name
 
 	ASSERT(replacement != NULL);
 
@@ -812,11 +787,9 @@ Return test0015_5(void)
 }
 
 /**
+ * @brief Compare a current DB against a legacy v0 DB without --update
  *
- * Run the program with the --compare parameter to compare databases
- * when one of them has an older version — this should generate an
- * appropriate error message
- *
+ * Verify the application warns that the legacy DB must be upgraded first
  */
 Return test0015_6(void)
 {
@@ -824,17 +797,14 @@ Return test0015_6(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	// Get the output of an external program
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v0.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v0.db","0015_database_v0.db"));
 
 	const char *arguments = "--compare $DBNAME 0015_database_v0.db";
 
-	const char *filename = "templates/0015_005.txt";  // File name
+	const char *filename = "templates/0015_005.txt"; // File name
 	const char *template = "%DB_NAME%";
 
-	const char *replacement = getenv("DBNAME");  // Database name
+	const char *replacement = getenv("DBNAME"); // Database name
 
 	ASSERT(replacement != NULL);
 
@@ -844,11 +814,9 @@ Return test0015_6(void)
 }
 
 /**
+ * @brief Compare and upgrade a legacy v0 DB with --compare --update
  *
- * Run the database comparison again using the --compare parameter, but this time with
- * the --update option. The database should be upgraded accordingly.
- * Upgrading from 0 to the last version
- *
+ * Verify the legacy DB is upgraded during comparison and the run completes
  */
 Return test0015_7(void)
 {
@@ -856,42 +824,35 @@ Return test0015_7(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	// Get the output of an external program
+	// Run the comparison and upgrade flow
 	const char *arguments = "--compare --update $DBNAME 0015_database_v0.db";
 
-	const char *filename = "templates/0015_006.txt";  // File name
+	const char *filename = "templates/0015_006.txt"; // File name
 	const char *template = "%DB_NAME%";
 
-	const char *replacement = getenv("DBNAME");  // Database name
+	const char *replacement = getenv("DBNAME"); // Database name
 
 	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	const char *command = "rm \"${TMPDIR}/0015_database_v0.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v0.db"));
 
 	RETURN_STATUS;
 }
 
 /**
+ * @brief Upgrade a legacy v1 DB as the primary database with --update
  *
- * Upgrade a DB from version 1 to the current version as the primary database.
- * Running the test with the --update parameter to ensure the update
- * completes successfully
- *
+ * Verify the upgrade succeeds and produces the expected output
  */
 Return test0015_8(void)
 {
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v1.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v1.db","0015_database_v1.db"));
 
 	const char *arguments = "--update --database=0015_database_v1.db "
 	        "tests/fixtures/diffs/diff1";
@@ -916,10 +877,9 @@ Return test0015_8(void)
 }
 
 /**
+ * @brief Re-run upgrade for the already upgraded v1 DB
  *
- * Run the program again to verify that the database
- * is actually at the current version
- *
+ * Verify the database is treated as current and the run stays successful
  */
 Return test0015_9(void)
 {
@@ -947,18 +907,15 @@ Return test0015_9(void)
 	del(result);
 
 	// Clean up test results
-	const char *command = "rm \"${TMPDIR}/0015_database_v1.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v1.db"));
 
 	RETURN_STATUS;
 }
 
 /**
+ * @brief Compare and upgrade a legacy v1 DB with --compare --update
  *
- * Run the database comparison again using the --compare and --update parameters.
- * Upgrading from 1 to the last version
- *
+ * Verify the legacy DB is upgraded during comparison and the run completes
  */
 Return test0015_10(void)
 {
@@ -966,46 +923,37 @@ Return test0015_10(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	// Get the output of an external program
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v1.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Run the comparison and upgrade flow
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v1.db","0015_database_v1.db"));
 
 	const char *arguments = "--compare --update $DBNAME 0015_database_v1.db";
 
-	const char *filename = "templates/0015_009.txt";  // File name
+	const char *filename = "templates/0015_009.txt"; // File name
 	const char *template = "%DB_NAME%";
 
-	const char *replacement = getenv("DBNAME");  // Database name
+	const char *replacement = getenv("DBNAME"); // Database name
 
 	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	command = "rm \"${TMPDIR}/0015_database_v1.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v1.db"));
 
 	RETURN_STATUS;
 }
 
 /**
+ * @brief Upgrade a legacy v2 DB as the primary database with --update
  *
- * Upgrade a DB from version 2 to the current version as the primary database.
- * Running the test with the --update parameter to ensure the update
- * completes successfully
- *
+ * Verify the upgrade succeeds and prints the verbose migration details
  */
 Return test0015_11(void)
 {
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
-
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v2.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v2.db","0015_database_v2.db"));
 
 	const char *arguments = "--update --database=0015_database_v2.db --verbose "
 	        "tests/fixtures/diffs/diff1";
@@ -1023,9 +971,7 @@ Return test0015_11(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	command = "rm \"${TMPDIR}/0015_database_v2.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v2.db"));
 
 	// Clean to use it iteratively
 	del(pattern);
@@ -1035,10 +981,9 @@ Return test0015_11(void)
 }
 
 /**
+ * @brief Compare and upgrade a legacy v2 DB with --compare --update
  *
- * Run the database comparison again using the --compare and --update parameters.
- * Upgrading from 2 to the last version
- *
+ * Verify the legacy DB is upgraded during comparison and the run completes
  */
 Return test0015_12(void)
 {
@@ -1046,36 +991,31 @@ Return test0015_12(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	// Get the output of an external program
-	const char *command = "cp -a ${ORIGIN_DIR}/tests/templates/0015_database_v2.db ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Run the comparison and upgrade flow
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v2.db","0015_database_v2.db"));
 
 	const char *arguments = "--compare --update $DBNAME 0015_database_v2.db";
 
-	const char *filename = "templates/0015_011.txt";  // File name
+	const char *filename = "templates/0015_011.txt"; // File name
 	const char *template = "%DB_NAME%";
 
-	const char *replacement = getenv("DBNAME");  // Database name
+	const char *replacement = getenv("DBNAME"); // Database name
 
 	ASSERT(replacement != NULL);
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	// Clean up test results
-	command = "rm \"${TMPDIR}/${DBNAME}\" && "
-	        "rm \"${TMPDIR}/0015_database_v2.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(replacement));
+	ASSERT(SUCCESS == delete_path("0015_database_v2.db"));
 
 	RETURN_STATUS;
 }
 
 /**
+ * @brief Upgrade a legacy v3 DB whose filename contains UTF-8 characters
  *
- * Upgrade a DB with UTF-8 name from version 3 to the current version
- * as the primary database using --update.
- *
+ * Verify the primary DB upgrade works with spaces and non-ASCII characters
  */
 Return test0015_13(void)
 {
@@ -1083,9 +1023,7 @@ Return test0015_13(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cp -a \"${ORIGIN_DIR}/tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db\" ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db","0015_database_v3 это база данных с пробелами и символами UTF-8.db"));
 
 	const char *arguments = "--update --database=\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
 	        "tests/fixtures/diffs/diff1";
@@ -1104,9 +1042,7 @@ Return test0015_13(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	command = "rm \"${TMPDIR}/0015_database_v3 это база данных с пробелами и символами UTF-8.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v3 это база данных с пробелами и символами UTF-8.db"));
 
 	// Clean to use it iteratively
 	del(pattern);
@@ -1116,8 +1052,9 @@ Return test0015_13(void)
 }
 
 /**
- * Upgrade from version 3 during database comparison using
- * --compare and --update parameters.
+ * @brief Compare and upgrade a legacy v3 UTF-8 DB with --compare --update
+ *
+ * Verify the upgrade path works when both compared DB filenames contain UTF-8
  */
 Return test0015_14(void)
 {
@@ -1125,10 +1062,9 @@ Return test0015_14(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cp -a \"${ORIGIN_DIR}/tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db\" ${TMPDIR}/ && "
-	        "cp -a \"${ORIGIN_DIR}/tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db\" ${TMPDIR}/";
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db","0015_database_v3 это база данных с пробелами и символами UTF-8.db"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db","0015_database_v4 это база данных с пробелами и символами UTF-8.db"));
 
 	const char *arguments = "--compare --update "
 	        "\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
@@ -1149,23 +1085,17 @@ Return test0015_14(void)
 	del(result);
 	del(pattern);
 
-	command = "rm \"${TMPDIR}/0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
-	        "\"${TMPDIR}/0015_database_v4 это база данных с пробелами и символами UTF-8.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("0015_database_v3 это база данных с пробелами и символами UTF-8.db"));
+	ASSERT(SUCCESS == delete_path("0015_database_v4 это база данных с пробелами и символами UTF-8.db"));
 
 	RETURN_STATUS;
 }
 
 /**
- * Create a fresh database inside tests/fixtures/diffs/ with the UTF-8 name
- * "Это новая база данных.db" and ensure the app can read/write it despite
- * spaces and non-ASCII characters.
- * Then compare it against the legacy database
- * "0015_database_v4 это база данных с пробелами и символами UTF-8.db" that was
- * produced by a well-tested older release when upgraded to the version 4.
- * If the files and checksums match, the current checksum calculation is
- * considered compatible with the legacy well-tested algorithm.
+ * @brief Compare a fresh UTF-8 DB against a legacy UTF-8 v4 reference DB
+ *
+ * Verify the application can create, read, and compare DB filenames with
+ * spaces and non-ASCII characters while keeping checksum compatibility
  */
 Return test0015_15(void)
 {
@@ -1173,9 +1103,7 @@ Return test0015_15(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cp -a \"${ORIGIN_DIR}/tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db\" ${TMPDIR}/";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db","0015_database_v4 это база данных с пробелами и символами UTF-8.db"));
 
 	create(char,pattern);
 	create(char,result);
@@ -1206,39 +1134,36 @@ Return test0015_15(void)
 	del(chunk);
 
 	// Clean up test results
-	command = "rm \"${TMPDIR}/Это новая база данных.db\" \"${TMPDIR}/0015_database_v4 это база данных с пробелами и символами UTF-8.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("Это новая база данных.db"));
+	ASSERT(SUCCESS == delete_path("0015_database_v4 это база данных с пробелами и символами UTF-8.db"));
 
 	RETURN_STATUS;
 }
 
 /**
- * Corrupt one v0 row stat blob and verify that upgrade still completes.
- * The corrupted row must end up as converted "zero source" v4 compact stat.
+ * @brief Upgrade a v0 DB with one corrupted legacy stat blob
+ *
+ * Verify the full upgrade still completes and the corrupted row is converted
+ * into the expected zero-source compact stat representation
  */
 Return test0015_16(void)
 {
 	INITTEST;
+	const char *corrupted_db_filename = "0015_database_v0_corrupt.db";
+	const char *reference_db_filename = "0015_database_v4_reference.db";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-	const char *command =
-	        "cp -a \"${ORIGIN_DIR}/tests/templates/0015_database_v0.db\" "
-	        "\"${TMPDIR}/0015_database_v0_corrupt.db\" && "
-	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V4_UTF8_DB "\" "
-	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v0.db",corrupted_db_filename));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db",reference_db_filename));
 
 	sqlite3_int64 row_id = 0;
-	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob("0015_database_v0_corrupt.db",&row_id));
+
+	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob(corrupted_db_filename,&row_id));
 
 	create(char,result);
 	create(char,pattern);
 
-	const char *arguments = "--compare --update "
-	        "0015_database_v4_reference.db 0015_database_v0_corrupt.db";
+	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v0_corrupt.db";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	const char *filename = "templates/0015_015.txt";
@@ -1246,17 +1171,15 @@ Return test0015_16(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	int db_version = 0;
-	ASSERT(SUCCESS == read_db_version_from_metadata("0015_database_v0_corrupt.db",&db_version));
+	ASSERT(SUCCESS == read_db_version_from_metadata(corrupted_db_filename,&db_version));
 	ASSERT(db_version == 4);
 
 	CmpctStat stat = {0};
-	ASSERT(SUCCESS == db_read_cmpctstat_by_row_id("0015_database_v0_corrupt.db",row_id,&stat));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_row_id(corrupted_db_filename,row_id,&stat));
 	ASSERT(SUCCESS == db_verify_zero_converted_cmpctstat(&stat));
 
-	command = "rm -f \"${TMPDIR}/0015_database_v0_corrupt.db\" "
-	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(corrupted_db_filename));
+	ASSERT(SUCCESS == delete_path(reference_db_filename));
 
 	del(result);
 	del(pattern);
@@ -1265,31 +1188,28 @@ Return test0015_16(void)
 }
 
 /**
- * Corrupt one v3 row stat blob and verify that upgrade still completes.
- * The corrupted row must be stored using zero-source conversion logic.
+ * @brief Upgrade a v3 DB with one corrupted legacy stat blob
+ *
+ * Verify the full upgrade still completes and the corrupted row is stored
+ * using the zero-source conversion logic
  */
 Return test0015_17(void)
 {
 	INITTEST;
+	const char *corrupted_db_filename = "0015_database_v3_corrupt.db";
+	const char *reference_db_filename = "0015_database_v4_reference.db";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-	const char *command =
-	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V3_UTF8_DB "\" "
-	        "\"${TMPDIR}/0015_database_v3_corrupt.db\" && "
-	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V4_UTF8_DB "\" "
-	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db",corrupted_db_filename));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db",reference_db_filename));
 
 	sqlite3_int64 row_id = 0;
-	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob("0015_database_v3_corrupt.db",&row_id));
+	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob(corrupted_db_filename,&row_id));
+
+	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v3_corrupt.db";
 
 	create(char,result);
 	create(char,pattern);
-
-	const char *arguments = "--compare --update "
-	        "0015_database_v4_reference.db 0015_database_v3_corrupt.db";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	const char *filename = "templates/0015_016.txt";
@@ -1297,17 +1217,15 @@ Return test0015_17(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	int db_version = 0;
-	ASSERT(SUCCESS == read_db_version_from_metadata("0015_database_v3_corrupt.db",&db_version));
+	ASSERT(SUCCESS == read_db_version_from_metadata(corrupted_db_filename,&db_version));
 	ASSERT(db_version == 4);
 
 	CmpctStat stat = {0};
-	ASSERT(SUCCESS == db_read_cmpctstat_by_row_id("0015_database_v3_corrupt.db",row_id,&stat));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_row_id(corrupted_db_filename,row_id,&stat));
 	ASSERT(SUCCESS == db_verify_zero_converted_cmpctstat(&stat));
 
-	command = "rm -f \"${TMPDIR}/0015_database_v3_corrupt.db\" "
-	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(corrupted_db_filename));
+	ASSERT(SUCCESS == delete_path(reference_db_filename));
 
 	del(result);
 	del(pattern);
@@ -1316,50 +1234,46 @@ Return test0015_17(void)
 }
 
 /**
- * Regression test: when a SQLite error occurs during 3->4 migration,
- * the opened transaction must be rolled back.
+ * @brief Roll back 3->4 migration when SQLite fails during stat conversion
+ *
+ * Verify the transaction is rolled back and the DB content stays unchanged
  */
 Return test0015_18(void)
 {
 	INITTEST;
+	const char *rollback_db_filename = "0015_database_v3_rollback.db";
+	const char *reference_db_filename = "0015_database_v4_reference.db";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-	const char *command =
-	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V3_UTF8_DB "\" "
-	        "\"${TMPDIR}/0015_database_v3_rollback.db\" && "
-	        "cp -a \"${ORIGIN_DIR}/tests/templates/" LEGACY_V4_UTF8_DB "\" "
-	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db",rollback_db_filename));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db",reference_db_filename));
 
 	int files_count = 0;
-	ASSERT(SUCCESS == db_read_files_count("0015_database_v3_rollback.db",&files_count));
+	ASSERT(SUCCESS == db_read_files_count(rollback_db_filename,&files_count));
 	ASSERT(files_count >= 2);
 
 	sqlite3_int64 row_id = 0;
-	ASSERT(SUCCESS == db_read_first_row_id("0015_database_v3_rollback.db",&row_id));
+	ASSERT(SUCCESS == db_read_first_row_id(rollback_db_filename,&row_id));
 
 	unsigned char before_blob[512];
 	int before_blob_size = 0;
-	ASSERT(SUCCESS == db_read_stat_blob_by_row_id("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_stat_blob_by_row_id(rollback_db_filename,
 	                                           row_id,
 	                                           before_blob,
 	                                           sizeof(before_blob),
 	                                           &before_blob_size));
 
 	int v1_rows_before = 0;
-	ASSERT(SUCCESS == db_read_files_count_with_blob_size("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_files_count_with_blob_size(rollback_db_filename,
 	                                                  (int)sizeof(CmpctStat_v1),
 	                                                  &v1_rows_before));
 
-	ASSERT(SUCCESS == db_create_abort_on_second_stat_update_trigger("0015_database_v3_rollback.db"));
+	ASSERT(SUCCESS == db_create_abort_on_second_stat_update_trigger(rollback_db_filename));
+
+	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v3_rollback.db";
 
 	create(char,result);
 	create(char,pattern);
-
-	const char *arguments = "--compare --update "
-	        "0015_database_v4_reference.db 0015_database_v3_rollback.db";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 	const char *filename = "templates/0015_017.txt";
@@ -1367,12 +1281,12 @@ Return test0015_18(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	int db_version = 0;
-	ASSERT(SUCCESS == read_db_version_from_metadata("0015_database_v3_rollback.db",&db_version));
+	ASSERT(SUCCESS == read_db_version_from_metadata(rollback_db_filename,&db_version));
 	ASSERT(db_version == 3);
 
 	unsigned char after_blob[512];
 	int after_blob_size = 0;
-	ASSERT(SUCCESS == db_read_stat_blob_by_row_id("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_stat_blob_by_row_id(rollback_db_filename,
 	                                           row_id,
 	                                           after_blob,
 	                                           sizeof(after_blob),
@@ -1386,15 +1300,13 @@ Return test0015_18(void)
 	}
 
 	int v1_rows_after = 0;
-	ASSERT(SUCCESS == db_read_files_count_with_blob_size("0015_database_v3_rollback.db",
+	ASSERT(SUCCESS == db_read_files_count_with_blob_size(rollback_db_filename,
 	                                                  (int)sizeof(CmpctStat_v1),
 	                                                  &v1_rows_after));
 	ASSERT(v1_rows_before == v1_rows_after);
 
-	command = "rm -f \"${TMPDIR}/0015_database_v3_rollback.db\" "
-	        "\"${TMPDIR}/0015_database_v4_reference.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(rollback_db_filename));
+	ASSERT(SUCCESS == delete_path(reference_db_filename));
 
 	del(result);
 	del(pattern);
@@ -1403,7 +1315,9 @@ Return test0015_18(void)
 }
 
 /**
- * Generate a fresh database, force future metadata version and verify warning path
+ * @brief Warn when metadata declares a DB version newer than supported
+ *
+ * Verify both testing and non-testing modes keep the future DB unchanged
  */
 Return test0015_19(void)
 {
@@ -1412,10 +1326,6 @@ Return test0015_19(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *db_filename = "0015_database_future_version.db";
-	const char *command = "rm -f \"${TMPDIR}/0015_database_future_version.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-
 	const char *arguments = "--database=0015_database_future_version.db "
 	        "tests/fixtures/diffs/diff1";
 
@@ -1447,7 +1357,7 @@ Return test0015_19(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(db_filename));
 
 	del(result);
 	del(pattern);
@@ -1456,17 +1366,13 @@ Return test0015_19(void)
 }
 
 /**
- * Testing scenario 15
+ * @brief Exercise DB upgrade and migration regressions across legacy formats
  *
- * Database upgrade testing:
- * - Upgrade DBs from versions 0, 1, 2, and 3 to the current version as the primary database using --update
- * - Upgrade DBs from versions 0, 1, 2, and 3 during comparison using --compare --update
- * - Launch the program without specifying a database to ensure that a new database is created with the correct version
- * - Compare a current database with an outdated version (v0) without --update and check for the expected error
- * - Validate UTF-8 database names and checksum compatibility against a legacy v4 database
- * - Verify upgrade resilience for corrupted stat blobs in legacy DB v0 and v3
- * - Regression-check rollback behavior on forced SQLite failure during migration
- * - Generate a fresh DB and verify warning behavior for future DB version
+ * This scenario covers primary DB upgrades from legacy versions 0 through 3,
+ * comparison-driven upgrades, default DB creation, UTF-8 filename handling,
+ * checksum compatibility against a legacy v4 reference DB, resilient handling
+ * of corrupted legacy stat blobs, rollback on forced SQLite migration failure,
+ * and warning behavior for a DB that reports a future metadata version
  */
 Return test0015(void)
 {
@@ -1475,12 +1381,12 @@ Return test0015(void)
 	TEST(test0015_1,"Upgrade a DB from v0 to the current version. Error handling…");
 	TEST(test0015_2,"Upgrade a DB from v0 to the current version as the primary database…");
 	TEST(test0015_3,"Upgrade a DB from v0 to the current version with --watch-timestamps…");
-	TEST(test0015_4,"Verify that the DB is actually at the current version…");
+	TEST(test0015_4,"Verify that the upgraded v0 DB is actually at the current version…");
 	TEST(test0015_5,"Create default name database…");
 	TEST(test0015_6,"Attempting an upgrade with a single --compare parameter…");
 	TEST(test0015_7,"Upgrading from 0 to the last version using the --compare and --update…");
 	TEST(test0015_8,"Upgrade a DB from v1 to the current version as the primary database…");
-	TEST(test0015_9,"Verify that the DB is actually at the current version…");
+	TEST(test0015_9,"Verify that the upgraded v1 DB is actually at the current version…");
 	TEST(test0015_10,"Upgrading from 1 to the last version using the --compare and --update…");
 	TEST(test0015_11,"Upgrade a DB from v2 to the current version as the primary database…");
 	TEST(test0015_12,"Upgrading from 2 to the last version using the --compare and --update…");

@@ -1,11 +1,5 @@
 #include "sute.h"
 
-#define TARGET_REL_PATH "path1/AAA/BCB/CCC/a.txt"
-#define TARGET_FILE_REL "tests/fixtures/diffs/diff1/" TARGET_REL_PATH
-#define TARGET_FILE "${TMPDIR}/tests/fixtures/diffs/diff1/" TARGET_REL_PATH
-#define LOCKED_TAMPER_PATH "path1/AAA/ZAW/A/b/c/a_file.txt"
-#define LOCKED_TAMPER_FILE "tests/fixtures/diffs/diff1/" LOCKED_TAMPER_PATH
-
 /**
  * @brief Corrupt stored SHA512 bytes for one locked file row in DB
  *
@@ -186,8 +180,8 @@ static bool cmpctstat_matches_stat_timestamps(
 }
 
 /**
- * README --lock-checksum example: size differs -> WARNING, independent of
- * --watch-timestamps or --rehash-locked.
+ * @brief README --lock-checksum example: on-disk size change of a locked file
+ * with --rehash-locked triggers WARNING
  */
 static Return test0030_1(void)
 {
@@ -198,11 +192,8 @@ static Return test0030_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s1.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -215,9 +206,9 @@ static Return test0030_1(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	command = "printf 'pad' >> " TARGET_FILE;
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == write_string_to_file("pad",
+	        "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",
+	        FILE_WRITE_APPEND));
 
 	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s1.db tests/fixtures/diffs/diff1";
@@ -232,9 +223,7 @@ static Return test0030_1(void)
 
 	ASSERT(SUCCESS == delete_path("lock_s1.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(pattern);
 	del(result);
@@ -243,8 +232,8 @@ static Return test0030_1(void)
 }
 
 /**
- * README --lock-checksum example: timestamps differ, --watch-timestamps enabled,
- * --rehash-locked disabled -> WARNING.
+ * @brief README --lock-checksum example: timestamp-only drift with
+ * --watch-timestamps and without --rehash-locked triggers WARNING
  */
 static Return test0030_2(void)
 {
@@ -255,10 +244,8 @@ static Return test0030_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s2.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -272,7 +259,7 @@ static Return test0030_2(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
 
 	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s2.db tests/fixtures/diffs/diff1";
@@ -287,9 +274,7 @@ static Return test0030_2(void)
 
 	ASSERT(SUCCESS == delete_path("lock_s2.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(pattern);
 	del(result);
@@ -298,8 +283,8 @@ static Return test0030_2(void)
 }
 
 /**
- * README --lock-checksum example: size matches, --watch-timestamps disabled,
- * --rehash-locked disabled -> SUCCESS (timestamps ignored).
+ * @brief README --lock-checksum example: timestamp-only drift without
+ * --watch-timestamps and without --rehash-locked completes successfully
  */
 static Return test0030_3(void)
 {
@@ -310,10 +295,8 @@ static Return test0030_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s3.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -327,7 +310,7 @@ static Return test0030_3(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
 
 	arguments = "--update --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s3.db tests/fixtures/diffs/diff1";
@@ -342,9 +325,7 @@ static Return test0030_3(void)
 
 	ASSERT(SUCCESS == delete_path("lock_s3.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(pattern);
 	del(result);
@@ -353,8 +334,9 @@ static Return test0030_3(void)
 }
 
 /**
- * README --lock-checksum example: --rehash-locked decides consistency; when the
- * checksum matches, result is SUCCESS regardless of --watch-timestamps.
+ * @brief README --lock-checksum example: timestamp-only drift with
+ * --watch-timestamps and with --rehash-locked completes successfully and
+ * synchronizes DB timestamps
  */
 static Return test0030_4(void)
 {
@@ -370,10 +352,8 @@ static Return test0030_4(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s4.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -386,16 +366,16 @@ static Return test0030_4(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == construct_path(TARGET_FILE_REL,target_path));
+	ASSERT(SUCCESS == construct_path("tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",target_path));
 
-	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s4.db",TARGET_REL_PATH,&db_stat_before));
+	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s4.db","path1/AAA/BCB/CCC/a.txt",&db_stat_before));
 
 	ASSERT(SUCCESS == get_file_stat(getcstring(target_path),&file_stat_before));
 
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
 
 	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
 
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
@@ -409,7 +389,7 @@ static Return test0030_4(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s4.db",TARGET_REL_PATH,&db_stat_after));
+	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s4.db","path1/AAA/BCB/CCC/a.txt",&db_stat_after));
 
 	ASSERT(SUCCESS == get_file_stat(getcstring(target_path),&file_stat_after));
 
@@ -417,10 +397,7 @@ static Return test0030_4(void)
 
 	ASSERT(SUCCESS == delete_path("lock_s4.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(target_path);
 	del(pattern);
@@ -430,8 +407,9 @@ static Return test0030_4(void)
 }
 
 /**
- * README --lock-checksum example extension: rehash compares computed checksum with
- * the stored one; a mismatch should trigger WARNING. Simulate by modifying the DB.
+ * @brief README --lock-checksum example: timestamp-only drift without
+ * --watch-timestamps and with --rehash-locked completes successfully and
+ * synchronizes DB timestamps
  */
 static Return test0030_5(void)
 {
@@ -439,13 +417,16 @@ static Return test0030_5(void)
 
 	create(char,result);
 	create(char,pattern);
+	create(char,target_path);
+	struct stat file_stat_before = {0};
+	struct stat file_stat_after = {0};
+	CmpctStat db_stat_before = {0};
+	CmpctStat db_stat_after = {0};
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s5.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -458,17 +439,21 @@ static Return test0030_5(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == construct_path("tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",target_path));
+
+	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s5.db","path1/AAA/BCB/CCC/a.txt",&db_stat_before));
+
+	ASSERT(SUCCESS == get_file_stat(getcstring(target_path),&file_stat_before));
+
+	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
+
 	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,TARGET_FILE_REL,999));
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
 
-	// Corrupt the stored checksum for a locked file without touching it on disk.
-	ASSERT(SUCCESS == db_tamper_locked_checksum("lock_s5.db",LOCKED_TAMPER_PATH));
+	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
+	        "--database=lock_s5.db tests/fixtures/diffs/diff1";
 
-	arguments = "--update --watch-timestamps --rehash-locked "
-	        "--lock-checksum=\"^path1/.*\" --database=lock_s5.db "
-	        "tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	filename = "templates/0030_005_2.txt";
 
@@ -476,13 +461,17 @@ static Return test0030_5(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s5.db","path1/AAA/BCB/CCC/a.txt",&db_stat_after));
+
+	ASSERT(SUCCESS == get_file_stat(getcstring(target_path),&file_stat_after));
+
+	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
+
 	ASSERT(SUCCESS == delete_path("lock_s5.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-
+	del(target_path);
 	del(pattern);
 	del(result);
 
@@ -490,8 +479,9 @@ static Return test0030_5(void)
 }
 
 /**
- * README --lock-checksum example extension: on-disk content change with
- * --rehash-locked should trigger WARNING.
+ * @brief README --lock-checksum example extension: timestamp-only drift on one
+ * locked file plus a stored checksum mismatch on another locked file triggers
+ * WARNING under --watch-timestamps and --rehash-locked
  */
 static Return test0030_6(void)
 {
@@ -502,10 +492,8 @@ static Return test0030_6(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s6.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -518,10 +506,15 @@ static Return test0030_6(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == tamper_locked_file_bytes(LOCKED_TAMPER_FILE));
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
 
-	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
-	        "--database=lock_s6.db tests/fixtures/diffs/diff1";
+	// Corrupt the stored checksum for a locked file without touching it on disk
+	ASSERT(SUCCESS == db_tamper_locked_checksum("lock_s6.db","path1/AAA/ZAW/A/b/c/a_file.txt"));
+
+	arguments = "--update --watch-timestamps --rehash-locked "
+	        "--lock-checksum=\"^path1/.*\" --database=lock_s6.db "
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -533,10 +526,7 @@ static Return test0030_6(void)
 
 	ASSERT(SUCCESS == delete_path("lock_s6.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(pattern);
 	del(result);
@@ -545,8 +535,8 @@ static Return test0030_6(void)
 }
 
 /**
- * Same as test0030_6 but with --watch-timestamps; per README example, this option
- * does not change the --rehash-locked outcome.
+ * README --lock-checksum example extension: on-disk content change with
+ * --rehash-locked should trigger WARNING
  */
 static Return test0030_7(void)
 {
@@ -557,10 +547,8 @@ static Return test0030_7(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s7.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -573,11 +561,10 @@ static Return test0030_7(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == tamper_locked_file_bytes(LOCKED_TAMPER_FILE));
+	ASSERT(SUCCESS == tamper_locked_file_bytes("tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt"));
 
-	arguments = "--update --watch-timestamps --rehash-locked "
-	        "--lock-checksum=\"^path1/.*\" --database=lock_s7.db "
-	        "tests/fixtures/diffs/diff1";
+	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
+	        "--database=lock_s7.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -589,10 +576,7 @@ static Return test0030_7(void)
 
 	ASSERT(SUCCESS == delete_path("lock_s7.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(pattern);
 	del(result);
@@ -601,8 +585,8 @@ static Return test0030_7(void)
 }
 
 /**
- * README --lock-checksum example: size and timestamps match,
- * --watch-timestamps enabled, --rehash-locked disabled -> SUCCESS.
+ * Same as test0030_7 but with --watch-timestamps; per README example, this option
+ * does not change the --rehash-locked outcome
  */
 static Return test0030_8(void)
 {
@@ -613,10 +597,8 @@ static Return test0030_8(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=lock_s8.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
@@ -629,10 +611,13 @@ static Return test0030_8(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
-	        "--database=lock_s8.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == tamper_locked_file_bytes("tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt"));
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	arguments = "--update --watch-timestamps --rehash-locked "
+	        "--lock-checksum=\"^path1/.*\" --database=lock_s8.db "
+	        "tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	filename = "templates/0030_008_2.txt";
 
@@ -642,10 +627,55 @@ static Return test0030_8(void)
 
 	ASSERT(SUCCESS == delete_path("lock_s8.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * README --lock-checksum example: size and timestamps match,
+ * --watch-timestamps enabled, --rehash-locked disabled -> SUCCESS
+ */
+static Return test0030_9(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+
+	const char *arguments = "--database=lock_s9.db --progress "
+	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0030_009_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
+	        "--database=lock_s9.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0030_009_2.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == delete_path("lock_s9.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(pattern);
 	del(result);
@@ -667,10 +697,11 @@ Return test0030(void)
 	TEST(test0030_2,"Timestamp drift with --watch-timestamps triggers a warning…");
 	TEST(test0030_3,"Timestamp drift without --watch-timestamps completes successfully…");
 	TEST(test0030_4,"Timestamp drift with --watch-timestamps and --rehash-locked completes successfully…");
-	TEST(test0030_5,"Locked checksum mismatch in DB triggers a warning…");
-	TEST(test0030_6,"Locked file content change triggers a warning…");
-	TEST(test0030_7,"Locked file content change with --watch-timestamps triggers a warning…");
-	TEST(test0030_8,"No changes with --watch-timestamps completes successfully…");
+	TEST(test0030_5,"Timestamp drift without --watch-timestamps and with --rehash-locked completes successfully…");
+	TEST(test0030_6,"Locked checksum mismatch in DB triggers a warning…");
+	TEST(test0030_7,"Locked file content change triggers a warning…");
+	TEST(test0030_8,"Locked file content change with --watch-timestamps triggers a warning…");
+	TEST(test0030_9,"No changes with --watch-timestamps completes successfully…");
 
 	RETURN_STATUS;
 }

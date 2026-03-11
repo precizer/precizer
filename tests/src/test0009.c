@@ -8,6 +8,7 @@
 Return test0009_1(void)
 {
 	INITTEST;
+	const char *db_filename = "database0009.db";
 
 	create(char,result);
 	create(char,pattern);
@@ -35,11 +36,9 @@ Return test0009_1(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match("database0009.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 
-	const char *command = "rm \"${TMPDIR}/database0009.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(db_filename));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -50,7 +49,7 @@ Return test0009_1(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(db_filename));
 
 	del(pattern);
 	del(result);
@@ -66,6 +65,7 @@ Return test0009_1(void)
 static Return test0009_2(void)
 {
 	INITTEST;
+	const char *db_filename = "database0009_2.db";
 
 	create(char,result);
 	create(char,pattern);
@@ -95,11 +95,9 @@ static Return test0009_2(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match("database0009_2.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 
-	const char *command = "rm \"${TMPDIR}/database0009_2.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(db_filename));
 
 	del(pattern);
 	del(result);
@@ -115,6 +113,7 @@ static Return test0009_2(void)
 static Return test0009_3(void)
 {
 	INITTEST;
+	const char *db_filename = "database0009_3.db";
 
 	create(char,result);
 	create(char,pattern);
@@ -143,11 +142,9 @@ static Return test0009_3(void)
 		"chaotic_filenames/zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match("database0009_3.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 
-	const char *command = "rm \"${TMPDIR}/database0009_3.db\"";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(db_filename));
 
 	del(pattern);
 	del(result);
@@ -162,18 +159,16 @@ static Return test0009_4(void)
 {
 	INITTEST;
 
+	const char *db_filename = "database0009_4.db";
 	create(char,result);
 	create(char,pattern);
 
 	const char *prepare_fixture_command =
 		"cd \"${TMPDIR}\"; "
-		"rm -rf tests/fixtures/ignore_include_cases/chaotic_filenames_backup; "
 		"mv tests/fixtures/ignore_include_cases/chaotic_filenames tests/fixtures/ignore_include_cases/chaotic_filenames_backup; "
 		"cp -a tests/fixtures/ignore_include_cases/chaotic_filenames_backup tests/fixtures/ignore_include_cases/chaotic_filenames;";
-	ASSERT(SUCCESS == external_call(prepare_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *remove_db_command = "rm -f \"${TMPDIR}/database0009_4.db\"";
-	ASSERT(SUCCESS == external_call(remove_db_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(prepare_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -242,13 +237,13 @@ static Return test0009_4(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match("database0009_4.db",expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
-	ASSERT(SUCCESS == external_call(remove_db_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == delete_path(db_filename));
 
 	const char *restore_fixture_command =
 		"cd \"${TMPDIR}\"; "
-		"rm -rf tests/fixtures/ignore_include_cases/chaotic_filenames; "
 		"mv tests/fixtures/ignore_include_cases/chaotic_filenames_backup tests/fixtures/ignore_include_cases/chaotic_filenames;";
+	ASSERT(SUCCESS == delete_path("tests/fixtures/ignore_include_cases/chaotic_filenames"));
 	ASSERT(SUCCESS == external_call(restore_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(pattern);

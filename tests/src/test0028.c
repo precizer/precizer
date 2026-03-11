@@ -57,38 +57,56 @@ static Return prepare_compare_filter_differences_fixture(void)
 
 	create(char,result);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-	}
+	ASSERT(result->length == 0);
 
-	command = "cd ${TMPDIR};"
-	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;"
-	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
-	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt"));
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
+	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt"));
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-	}
+	ASSERT(result->length == 0);
+
+	del(result);
+
+	deliver(status);
+}
+
+/**
+ * Prepares two databases where only one existence side differs:
+ * database2 contains one extra path compared to database1.
+ */
+static Return prepare_compare_filter_one_sided_fixture(void)
+{
+	INITTEST;
+
+	create(char,result);
+
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(result->length == 0);
+
+	ASSERT(SUCCESS == replase_to_string("ONLY_DB2_FILE","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/only_db2.txt"));
+
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(result->length == 0);
 
 	del(result);
 
@@ -102,12 +120,11 @@ static Return cleanup_compare_filter_differences_fixture(void)
 {
 	INITTEST;
 
-	const char *command = "cd ${TMPDIR} && "
-	        "rm database1.db database2.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	deliver(status);
 }
@@ -126,20 +143,12 @@ static Return prepare_compare_filter_equal_fixture(void)
 	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-	}
+	ASSERT(result->length == 0);
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-	}
+	ASSERT(result->length == 0);
 
 	del(result);
 
@@ -153,10 +162,8 @@ static Return cleanup_compare_filter_equal_fixture(void)
 {
 	INITTEST;
 
-	const char *command = "cd ${TMPDIR} && "
-	        "rm database1.db database2.db;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	deliver(status);
 }
@@ -172,12 +179,9 @@ static Return test0028_1(void)
 	create(char,result);
 	create(char,pattern);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -185,34 +189,17 @@ static Return test0028_1(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
-	command = "cd ${TMPDIR};"
-	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
-	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
-	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt")); // Remove
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt")); // Modify
+	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt")); // New file
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -229,12 +216,11 @@ static Return test0028_1(void)
 	del(result);
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm database1.db database2.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -250,12 +236,9 @@ static Return test0028_2(void)
 	create(char,result);
 	create(char,pattern);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -263,32 +246,15 @@ static Return test0028_2(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
-	command = "cd ${TMPDIR};"
-	        "rm tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt;"; // Remove
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt")); // Remove
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -296,7 +262,7 @@ static Return test0028_2(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *filename = "templates/0028_002.txt";
+	const char *filename = "templates/0028_002_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
@@ -305,12 +271,11 @@ static Return test0028_2(void)
 	del(result);
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm database1.db database2.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -326,12 +291,9 @@ static Return test0028_3(void)
 	create(char,result);
 	create(char,pattern);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -339,32 +301,15 @@ static Return test0028_3(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
-	command = "cd ${TMPDIR};"
-	        "echo -n WNEURHGO > tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt")); // New file
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -372,7 +317,7 @@ static Return test0028_3(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *filename = "templates/0028_003.txt";
+	const char *filename = "templates/0028_003_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
@@ -381,12 +326,11 @@ static Return test0028_3(void)
 	del(result);
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm database1.db database2.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -402,12 +346,9 @@ static Return test0028_4(void)
 	create(char,result);
 	create(char,pattern);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -415,32 +356,15 @@ static Return test0028_4(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
-	command = "cd ${TMPDIR};"
-	        "echo -n AFAKDSJ >> tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"; // Modify
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt")); // Modify
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	if(result->length > 0)
-	{
-		echo(STDERR,"STDOUT buffer is not empty. It contains characters: %zu\n",result->length);
-		status = FAILURE;
-		#if 0
-		echo(STDOUT,"%s\n",getcstring(result));
-		#endif
-	}
+	ASSERT(result->length == 0);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -457,12 +381,11 @@ static Return test0028_4(void)
 	del(result);
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm database1.db database2.db && "
-	        "rm -rf tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -501,10 +424,8 @@ static Return test0028_5(void)
 	del(result);
 
 	// Clean up test results
-	const char *command = "cd ${TMPDIR} && "
-	        "rm database1.db database2.db;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	RETURN_STATUS;
 }
@@ -526,40 +447,49 @@ static Return test0028_6(void)
 	const struct compare_filter_case equal_cases[] = {
 		// Valid combinations with --compare for equal databases
 		{"--compare database1.db database2.db",COMPLETED,"templates/0028_005.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_014.txt",NULL},
-		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_015.txt",NULL},
-		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_015.txt",NULL},
-		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_015.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_016.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_016.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_006_1.txt",NULL},
+		{"--compare database1.db database2.db --compare-filter=checksum-mismatch",COMPLETED,"templates/0028_006_1.txt",NULL},
+		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_2.txt",NULL},
+		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_3.txt",NULL},
+		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_4.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_5.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_6.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_005.txt",NULL}
+	};
+
+	const struct compare_filter_case one_sided_cases[] = {
+		// Regression: one-sided filter must not claim full identity if opposite side has differences
+		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_7.txt",NULL},
+		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_8.txt",NULL},
+		{"--compare database2.db database1.db --compare-filter=first-source-only",COMPLETED,"templates/0028_006_17.txt",NULL},
+		{"--compare database2.db database1.db --compare-filter=second-source-only",COMPLETED,"templates/0028_006_18.txt",NULL}
 	};
 
 	const struct compare_filter_case differences_cases[] = {
 		// Valid combinations with --compare for databases with all difference categories
 		{"--compare database1.db database2.db",COMPLETED,"templates/0028_001.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004.txt",NULL},
-		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_008.txt",NULL},
-		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_009.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_010.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_011.txt",NULL},
-		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006.txt",NULL},
+		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_9.txt",NULL},
+		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_10.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_11.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_12.txt",NULL},
+		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_13.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_001.txt",NULL}
 	};
 
 	const struct compare_filter_case invalid_cases[] = {
 		// Invalid combinations: --compare-filter=value without --compare
-		{"--compare-filter=checksum-mismatch database1.db database2.db",FAILURE,"templates/0028_012_1.txt","templates/0028_012_2.txt"},
-		{"--compare-filter=first-source-only database1.db database2.db",FAILURE,"templates/0028_012_1.txt","templates/0028_012_2.txt"},
-		{"--compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_012_1.txt","templates/0028_012_2.txt"},
-		{"--compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",FAILURE,"templates/0028_012_1.txt","templates/0028_012_2.txt"},
-		{"--compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_012_1.txt","templates/0028_012_2.txt"},
-		{"--compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_012_1.txt","templates/0028_012_2.txt"},
-		{"--compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_012_1.txt","templates/0028_012_2.txt"},
+		{"--compare-filter=checksum-mismatch database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=first-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
 
 		// Invalid combinations: --compare-filter without argument
-		{"--compare database1.db database2.db --compare-filter",FAILURE,NULL,"templates/0028_013.txt"},
-		{"--compare-filter",FAILURE,NULL,"templates/0028_013.txt"}
+		{"--compare database1.db database2.db --compare-filter",FAILURE,NULL,"templates/0028_006_16.txt"},
+		{"--compare-filter",FAILURE,NULL,"templates/0028_006_16.txt"}
 	};
 
 	ASSERT(SUCCESS == prepare_compare_filter_equal_fixture());
@@ -575,6 +505,20 @@ static Return test0028_6(void)
 	}
 
 	ASSERT(SUCCESS == cleanup_compare_filter_equal_fixture());
+
+	ASSERT(SUCCESS == prepare_compare_filter_one_sided_fixture());
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	for(size_t i = 0; (i < sizeof(one_sided_cases) / sizeof(one_sided_cases[0])) && (SUCCESS == status); i++)
+	{
+		ASSERT(SUCCESS == assert_compare_output(
+			one_sided_cases[i].arguments,
+			one_sided_cases[i].expected_return_code,
+			one_sided_cases[i].stdout_pattern_file,
+			one_sided_cases[i].stderr_pattern_file));
+	}
+
+	ASSERT(SUCCESS == cleanup_compare_filter_differences_fixture());
 
 	ASSERT(SUCCESS == prepare_compare_filter_differences_fixture());
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
@@ -615,7 +559,92 @@ static Return test0028_7(void)
 
 	const char *arguments = "--compare --compare-filter=invalid-value database1.db database2.db";
 
-	ASSERT(SUCCESS == assert_compare_output(arguments,FAILURE,NULL,"templates/0028_007.txt"));
+	ASSERT(SUCCESS == assert_compare_output(arguments,FAILURE,NULL,"templates/0028_007_1.txt"));
+
+	RETURN_STATUS;
+}
+
+/**
+ * NULL vs non-NULL SHA512 rows must be reported as checksum mismatches
+ */
+static Return test0028_8(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == prepare_compare_filter_equal_fixture());
+	ASSERT(SUCCESS == db_set_sha512_to_null("database2.db","1/AAA/ZAW/D/e/f/b_file.txt"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == assert_compare_output("--compare database1.db database2.db",COMPLETED,"templates/0028_000.txt",NULL));
+
+	ASSERT(SUCCESS == cleanup_compare_filter_equal_fixture());
+
+	RETURN_STATUS;
+}
+
+/**
+ * NULL SHA512 produced by fixture changes must be reported as a mismatch
+ */
+static Return test0028_9(void)
+{
+	INITTEST;
+
+	create(char,result);
+
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(result->length == 0);
+
+	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
+
+	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(result->length == 0);
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == assert_compare_output(
+		"--compare database1.db database2.db",
+		COMPLETED,
+		"templates/0028_000.txt",
+		NULL));
+
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * Compare mode must support attached database paths containing apostrophes
+ */
+static Return test0028_10(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == prepare_compare_filter_equal_fixture());
+	ASSERT(SUCCESS == move_path("database1.db","database'1.db"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == assert_compare_output(
+		"--compare database\\'1.db database2.db",
+		COMPLETED,
+		"templates/0028_010_1.txt",
+		NULL));
+
+	ASSERT(SUCCESS == delete_path("database'1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	RETURN_STATUS;
 }
@@ -636,6 +665,9 @@ Return test0028(void)
 	TEST(test0028_5,"Nothing changes. The databases should be equivalent…");
 	TEST(test0028_6,"All supported --compare-filter combinations should behave as expected…");
 	TEST(test0028_7,"Invalid --compare-filter value should fail with an argument parsing error…");
+	TEST(test0028_8,"NULL and non-NULL SHA512 values should be reported as mismatches…");
+	TEST(test0028_9,"NULL SHA512 created from fixture changes should be reported as a mismatch…");
+	TEST(test0028_10,"Compare mode should work with database names containing apostrophes…");
 
 	RETURN_STATUS;
 }

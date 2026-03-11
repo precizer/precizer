@@ -18,12 +18,17 @@ static Return compose_sql(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
+	create(char,wrapped_db_path);
 
-	if(asprintf(sql,"ATTACH DATABASE '%s' as db%d;",db_path,db_num) == -1)
+	run(db_sql_wrap_string(wrapped_db_path,db_path));
+
+	if(SUCCESS == status && asprintf(sql,"ATTACH DATABASE %s as db%d;",getcstring(wrapped_db_path),db_num) == -1)
 	{
 		status = FAILURE;
 		report("Memory allocation failed for SQL query string");
 	}
+
+	del(wrapped_db_path);
 
 	provide(status);
 }
@@ -127,14 +132,14 @@ static Return db_detach(const char *db_alias)
  * It identifies files that exist in one database but not the other, updating flags to reflect the comparison results.
  *
  * @param[in] compare_sql SQL query string for comparison.
- * @param[out] files_the_same Flag indicating whether files are identical between the databases.
+ * @param[out] differences_found Flag indicating whether at least one difference was found for this query.
  * @param[in] db_A Index of the first database in the configuration array.
  * @param[in] db_B Index of the second database in the configuration array.
  * @return Return structure indicating the operation status.
  */
 static Return db_changes(
 	const char *compare_sql,
-	bool       *files_the_same,
+	bool       *differences_found,
 	int        db_A,
 	int        db_B)
 {
@@ -154,40 +159,44 @@ static Return db_changes(
 		status = FAILURE;
 	}
 
-	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
+	if(SUCCESS == status)
 	{
-		*files_the_same = false;
-
-		// Interrupt the loop smoothly
-		// Interrupt when Ctrl+C
-		if(global_interrupt_flag == true)
+		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
-			break;
+			*differences_found = true;
+
+			// Interrupt the loop smoothly
+			// Interrupt when Ctrl+C
+			if(global_interrupt_flag == true)
+			{
+				break;
+			}
+
+			if(first_iteration == true)
+			{
+				first_iteration = false;
+				slog(EVERY,BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",config->db_file_names[db_A],config->db_file_names[db_B]);
+			}
+
+			const unsigned char *relative_path = NULL;
+			relative_path = sqlite3_column_text(select_stmt,0);
+
+			if(relative_path != NULL)
+			{
+				slog(EVERY|UNDECOR,"%s\n",relative_path);
+			} else {
+				rc = sqlite3_errcode(config->db);
+				log_sqlite_error(config->db,rc,NULL,"Failed to read relative path from select result");
+				status = FAILURE;
+				break;
+			}
 		}
 
-		if(first_iteration == true)
+		if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
 		{
-			first_iteration = false;
-			slog(EVERY,BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",config->db_file_names[db_A],config->db_file_names[db_B]);
-		}
-
-		const unsigned char *relative_path = NULL;
-		relative_path = sqlite3_column_text(select_stmt,0);
-
-		if(relative_path != NULL)
-		{
-			slog(EVERY|UNDECOR,"%s\n",relative_path);
-		} else {
-			slog(ERROR,"General database error!\n");
+			log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 			status = FAILURE;
-			break;
 		}
-	}
-
-	if(SQLITE_DONE != rc)
-	{
-		log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
-		status = FAILURE;
 	}
 
 	if(select_stmt != NULL)
@@ -307,13 +316,13 @@ Return db_compare(void)
 	        || config->compare_filter_first_source_only == true;
 
 	// Enables "first-source-only" category:
-	// show paths that exist in db2 but are missing in db1.
+	// show paths that exist in db1 but are missing in db2.
 	// This category is active either explicitly by filter or by default mode.
 	const bool check_first_source_only = config->compare_filter_first_source_only == true
 	        || filter_specified == false;
 
 	// Enables "second-source-only" category:
-	// show paths that exist in db1 but are missing in db2.
+	// show paths that exist in db2 but are missing in db1.
 	// This category is active either explicitly by filter or by default mode.
 	const bool check_second_source_only = config->compare_filter_second_source_only == true
 	        || filter_specified == false;
@@ -323,13 +332,16 @@ Return db_compare(void)
 	const bool verify_checksum_consistency = config->compare_filter_checksum_mismatch == true
 	        || filter_specified == false;
 
-	bool files_the_same = true;
+	// Comparison result flags grouped in one place for summary evaluation
+	bool first_source_only_differences_found = false;
+	bool second_source_only_differences_found = false;
+	bool checksum_mismatches_found = false;
 
 	/* Compare files existence between databases */
 	if(check_first_source_only == true)
 	{
 		run(db_changes(compare_B_sql,
-			&files_the_same,
+			&first_source_only_differences_found,
 			1,
 			0));
 	}
@@ -337,7 +349,7 @@ Return db_compare(void)
 	if(check_second_source_only == true)
 	{
 		run(db_changes(compare_A_sql,
-			&files_the_same,
+			&second_source_only_differences_found,
 			0,
 			1));
 	}
@@ -346,7 +358,7 @@ Return db_compare(void)
 	// Old multiPATH solutions
 	const char *compare_checksums = "select a.relative_path from db2.files a inner join db1.files b"
 	        " on b.relative_path = a.relative_path "
-	        " and b.sha512 != a.sha512"
+	        " and b.sha512 is not a.sha512"
 	        " order by a.relative_path asc;";
 
 	const char *compare_checksums = "SELECT p.path,f1.relative_path "
@@ -354,20 +366,20 @@ Return db_compare(void)
 	        "JOIN db1.paths AS p ON f1.path_prefix_index = p.ID "
 	        "JOIN db2.files AS f2 ON f1.relative_path = f2.relative_path "
 	        "JOIN db2.paths AS p2 ON f2.path_prefix_index = p2.ID "
-	        "WHERE f1.sha512 <> f2.sha512 AND p.path = p2.path "
+	        "WHERE f1.sha512 IS NOT f2.sha512 AND p.path = p2.path "
 	        "ORDER BY p.path,f1.relative_path ASC;";
 #else
 	// One PATH solution
 	const char *compare_checksums = "SELECT a.relative_path "
 	        "FROM db2.files AS a "
-	        "INNER JOIN db1.files b on b.relative_path = a.relative_path and b.sha512 != a.sha512 "
+	        "INNER JOIN db1.files AS b ON b.relative_path = a.relative_path "
+	        "WHERE b.sha512 IS NOT a.sha512 "
 	        "ORDER BY a.relative_path ASC;";
 #endif
 
 	/* Compare SHA512 checksums */
 	sqlite3_stmt *select_stmt = NULL;
 	bool first_iteration = true;
-	bool all_checksums_match = true;
 
 	if(verify_checksum_consistency == true)
 	{
@@ -389,7 +401,7 @@ Return db_compare(void)
 			{
 				while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 				{
-					all_checksums_match = false;
+					checksum_mismatches_found = true;
 
 					// Interrupt the loop smoothly
 					// Interrupt when Ctrl+C
@@ -419,13 +431,14 @@ Return db_compare(void)
 					{
 						slog(EVERY|UNDECOR,"%s\n",relative_path);
 					} else {
-						slog(ERROR,"General database error!\n");
+						rc = sqlite3_errcode(config->db);
+						log_sqlite_error(config->db,rc,NULL,"Failed to read relative path from select result");
 						status = FAILURE;
 						break;
 					}
 				}
 
-				if(SQLITE_DONE != rc)
+				if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
 				{
 					log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
 					status = FAILURE;
@@ -457,27 +470,47 @@ Return db_compare(void)
 	/* Output results */
 	if(SUCCESS == status)
 	{
-		if((check_first_source_only == true || check_second_source_only == true)
-		        && files_the_same == true
-		        && all_checksums_match == true)
+		const bool full_compare_scope = check_first_source_only == true
+		        && check_second_source_only == true
+		        && verify_checksum_consistency == true;
+
+		if(full_compare_scope == true
+		        && first_source_only_differences_found == false
+		        && second_source_only_differences_found == false
+		        && checksum_mismatches_found == false)
 		{
 			slog(EVERY,BOLD "All files are identical against %s and %s" RESET "\n",
 				config->db_file_names[0],
 				config->db_file_names[1]);
+		} else if(full_compare_scope == false){
+			if(check_first_source_only == true
+			        && first_source_only_differences_found == false)
+			{
+				slog(EVERY,BOLD "No first-source-only differences found between %s and %s" RESET "\n",
+					config->db_file_names[0],
+					config->db_file_names[1]);
+			}
+
+			if(check_second_source_only == true
+			        && second_source_only_differences_found == false)
+			{
+				slog(EVERY,BOLD "No second-source-only differences found between %s and %s" RESET "\n",
+					config->db_file_names[0],
+					config->db_file_names[1]);
+			}
 		}
 
-		if(verify_checksum_consistency == true && all_checksums_match == true)
+		if(verify_checksum_consistency == true && checksum_mismatches_found == false)
 		{
 			slog(EVERY,BOLD "All SHA512 checksums of files are identical against %s and %s" RESET "\n",
 				config->db_file_names[0],
 				config->db_file_names[1]);
 		}
 
-		if(check_first_source_only == true
-		        && check_second_source_only == true
-		        && verify_checksum_consistency == true
-		        && files_the_same == true
-		        && all_checksums_match == true)
+		if(full_compare_scope == true
+		        && first_source_only_differences_found == false
+		        && second_source_only_differences_found == false
+		        && checksum_mismatches_found == false)
 		{
 			slog(EVERY,BOLD "The databases %s and %s are absolutely equal" RESET "\n",
 				config->db_file_names[0],
