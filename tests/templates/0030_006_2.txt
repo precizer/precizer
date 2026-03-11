@@ -4,6 +4,7 @@ TESTING:argument:paths=tests/fixtures/diffs/diff1
 TESTING:argument:database=lock_s6\.db
 TESTING:argument:db_file_name=lock_s6\.db
 TESTING:argument:lock-checksum=\^path1/.*
+TESTING:argument:watch-timestamps=yes
 TESTING:argument:rehash-locked=yes
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
@@ -45,12 +46,14 @@ TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB lock_s6\.db
 TESTING:File traversal started
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock_s6\.db:(?:\x1B\[[0-9;]*m)*
-locked rehash ok path1/AAA/BCB/CCC/a\.txt
+locked rehash ok, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path1/AAA/BCB/CCC/a\.txt
 (?:\x1B\[[0-9;]*m)*checksum locked & mismatch, data corrupted(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 locked rehash ok path1/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
 TESTING:Returned file_list:\d+ status: WARNING
+TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*checksum locked & mismatch, data corrupted(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed

@@ -49,6 +49,8 @@ TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock
 TESTING:File traversal complete
 TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
 TESTING:Returned file_list:\d+ status: WARNING
+TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)*, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path1/AAA/BCB/CCC/a\.txt
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
