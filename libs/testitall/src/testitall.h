@@ -44,6 +44,14 @@
 #define PATH_MAX 4096
 #endif
 
+#ifdef APP_NAME
+#define TESTITALL_APP_NAME APP_NAME
+#else
+#ifndef TESTITALL_APP_NAME
+#define TESTITALL_APP_NAME "testitall"
+#endif
+#endif
+
 /**
  * @brief Prints a formatted header message if the status check passes.
  * @details Outputs the provided message in cyan if the status equals SUCCESS.
@@ -126,12 +134,10 @@ Return set_environment_variable(
 	const char *);
 
 Return get_origin_dir(
-	char *,
-	size_t);
+	memory *);
 
 Return create_tmpdir(
-	char *,
-	size_t);
+	memory *);
 
 Return function_capture(
 	void (*func)(void),
@@ -190,9 +196,18 @@ Return random_number_generator(
 	uint64_t
 );
 
+/**
+ * @brief Extract the name of the directory that contains the current executable
+ *
+ * Writes the final path segment of the current executable directory into
+ * @p environment, for example `debug` from
+ * `/worktree/.builds/testitall/debug/testitall`
+ *
+ * @param environment Output memory descriptor initialized for char elements
+ * @return SUCCESS on success, FAILURE on error
+ */
 Return extract_current_executable_directory_name(
-	char *,
-	size_t);
+	memory *);
 
 /**
  * @brief Macro for executing a test.
