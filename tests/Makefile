@@ -22,10 +22,15 @@ SRC = src
 STATIC = -static -static-libgcc -Wl,--gc-sections
 
 PRZRSRC = ../src
+TESTED_APP_NAME := $(shell awk '/^#define[[:space:]]+APP_NAME[[:space:]]+"/ { gsub(/"/,"",$$3); print $$3; exit }' $(PRZRSRC)/version.h)
 BUILDS = ../.builds
 BUILDEXE = $(BUILDS)/$(EXE)
 BUILDEXEDIR = $(dir $(BUILDEXE))
 LIBS = testitall mem sha512 rational sqlite3 xdiff
+
+ifeq ($(TESTED_APP_NAME),)
+$(error Failed to extract APP_NAME from $(PRZRSRC)/version.h)
+endif
 
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
@@ -179,15 +184,15 @@ run: sanitize
 
 testlibs-coverage:
 	@$(MAKE) -s -C ../libs/xdiff coverage
-	@$(MAKE) -s -C ../libs/testitall coverage
+	@$(MAKE) -s -C ../libs/testitall coverage TESTITALL_APP_NAME=$(TESTED_APP_NAME)
 
 testlibs-sanitize:
 	@$(MAKE) -s -C ../libs/xdiff sanitize
-	@$(MAKE) -s -C ../libs/testitall sanitize
+	@$(MAKE) -s -C ../libs/testitall sanitize TESTITALL_APP_NAME=$(TESTED_APP_NAME)
 
 testlibs-debug:
 	@$(MAKE) -s -C ../libs/xdiff debug
-	@$(MAKE) -s -C ../libs/testitall debug
+	@$(MAKE) -s -C ../libs/testitall debug TESTITALL_APP_NAME=$(TESTED_APP_NAME)
 
 #
 # Coverage rules

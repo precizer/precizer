@@ -21,6 +21,10 @@ endif
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
+ifneq ($(TESTITALL_APP_NAME),)
+CFLAGS += -DTESTITALL_APP_NAME=\"$(TESTITALL_APP_NAME)\"
+endif
+
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
 
