@@ -618,6 +618,7 @@ Return delete_path(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
+	struct stat path_stat = {0};
 	create(char,absolute_path);
 
 	if(relative_path_to_tmpdir == NULL)
@@ -632,8 +633,21 @@ Return delete_path(
 
 	if(SUCCESS == status)
 	{
-		if(nftw(getcstring(absolute_path),nftw_remove_callback,64,FTW_DEPTH | FTW_PHYS) != 0)
+		if(lstat(getcstring(absolute_path),&path_stat) != 0)
 		{
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		if(S_ISDIR(path_stat.st_mode))
+		{
+			if(nftw(getcstring(absolute_path),nftw_remove_callback,64,FTW_DEPTH | FTW_PHYS) != 0)
+			{
+				status = FAILURE;
+			}
+		} else if(remove(getcstring(absolute_path)) != 0){
 			status = FAILURE;
 		}
 	}
