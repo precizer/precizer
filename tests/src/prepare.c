@@ -80,5 +80,5 @@ Return prepare(void)
 	ASSERT(SUCCESS == set_environment_variable("LANG","C.UTF-8"));
 #endif
 
-	return(status);
+	RETURN_STATUS;
 }

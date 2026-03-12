@@ -84,6 +84,7 @@
 		{ \
 			status = SUCCESS; \
 		} else { \
+			failed_line = __LINE__; \
 			status = FAILURE; \
 		} \
 	}
@@ -93,7 +94,12 @@
 	{ \
 		echo(EXTEND,BOLDGREEN "✓" BOLDWHITE " passed " RESET); \
 	} else { \
-		echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
+		if(failed_line > 0) \
+		{ \
+			echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed on line %d" RESET,failed_line); \
+		} else { \
+			echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
+		} \
 	} \
 	deliver(status); \
 
@@ -263,7 +269,8 @@ Return extract_current_executable_directory_name(
 #define INITTEST \
 	/* The status that will be returned before exiting. */ \
 	/* By default, assumes the function ran without errors. */ \
-	Return status = SUCCESS;
+	Return status = SUCCESS; \
+	int failed_line = 0;
 
 #define SLOWTEST \
 	const char *compare_string = "skip"; \

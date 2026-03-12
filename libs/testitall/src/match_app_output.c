@@ -39,13 +39,13 @@ Return match_app_output(
 	status = get_file_content(filename,pattern);
 
 	// Replace template placeholder with actual value
-	ASSERT(SUCCESS == replace_placeholder(pattern,template,replacement));
+	run(replace_placeholder(pattern,template,replacement));
 
 	// Execute the application and capture output
-	ASSERT(SUCCESS == runit(arguments,result,NULL,expected_return_code,ALLOW_BOTH));
+	run(runit(arguments,result,NULL,expected_return_code,ALLOW_BOTH));
 
 	// Compare application output against modified template
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+	run(match_pattern(result,pattern,filename));
 
 	#if 0
 	write_to_temp_file(result_text ? result_text : "");

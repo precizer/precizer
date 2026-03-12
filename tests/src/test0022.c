@@ -13,20 +13,25 @@ static Return test_remove_trailing_slash(
 	const char *input,
 	const char *expected)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	create(char,temp_buffer);
 	size_t len = strlen(input) + 1; // +1 for null terminator
 
-	ASSERT(SUCCESS == resize(temp_buffer,len));
+	run(resize(temp_buffer,len));
 
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		char *buffer_data = data(char,temp_buffer);
 
-		ASSERT(buffer_data != NULL);
+		if((SUCCESS & status) && buffer_data == NULL)
+		{
+			status = FAILURE;
+		}
 
-		if(SUCCESS == status)
+		if(SUCCESS & status)
 		{
 			memcpy(buffer_data,input,len);
 
@@ -34,15 +39,21 @@ static Return test_remove_trailing_slash(
 
 			const char *buffer_view = cdata(char,temp_buffer);
 
-			ASSERT(buffer_view != NULL);
+			if((SUCCESS & status) && buffer_view == NULL)
+			{
+				status = FAILURE;
+			}
 
-			ASSERT(COMPLETED == strcmp(buffer_view,expected));
+			if((SUCCESS & status) && strcmp(buffer_view,expected) != 0)
+			{
+				status = FAILURE;
+			}
 		}
 	}
 
 	del(temp_buffer);
 
-	return(status);
+	deliver(status);
 }
 
 /**
@@ -94,7 +105,7 @@ Return test0022(void)
 
 	for(size_t i = 0; test_cases[i].input != NULL; i++)
 	{
-		ASSERT(SUCCESS == test_remove_trailing_slash(test_cases[i].input,test_cases[i].expected));
+		ASSERT(SUCCESS & test_remove_trailing_slash(test_cases[i].input,test_cases[i].expected));
 	}
 
 	RETURN_STATUS;

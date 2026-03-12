@@ -4,32 +4,40 @@ static Return assert_information_mode_output(
 	const char *arguments,
 	const char *stdout_pattern_file)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	create(char,stdout_result);
 	create(char,stderr_result);
 	create(char,stdout_pattern);
 	create(char,stderr_pattern);
 
-	ASSERT(arguments != NULL);
-	ASSERT(stdout_pattern_file != NULL);
+	if((SUCCESS & status) && arguments == NULL)
+	{
+		status = FAILURE;
+	}
+	if((SUCCESS & status) && stdout_pattern_file == NULL)
+	{
+		status = FAILURE;
+	}
 
-	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	run(set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,COMPLETED,STDERR_ALLOW));
+	run(runit(arguments,stdout_result,stderr_result,COMPLETED,STDERR_ALLOW));
 
-	ASSERT(SUCCESS == get_file_content(stdout_pattern_file,stdout_pattern));
-	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
+	run(get_file_content(stdout_pattern_file,stdout_pattern));
+	run(match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
 
-	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
-	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+	run(copy_literal(stderr_pattern,"\\A\\Z"));
+	run(match_pattern(stderr_result,stderr_pattern));
 
 	call(del(stderr_pattern));
 	call(del(stdout_pattern));
 	call(del(stderr_result));
 	call(del(stdout_result));
 
-	return(status);
+	deliver(status);
 }
 
 /**
@@ -129,11 +137,11 @@ Return test0003_3(void)
 	const char *version_template = "templates/0003_006.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == assert_information_mode_output("--help",help_template));
-	ASSERT(SUCCESS == assert_information_mode_output("-h",help_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--usage",usage_template));
-	ASSERT(SUCCESS == assert_information_mode_output("-z",usage_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--version",version_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--help",help_template));
+	ASSERT(SUCCESS & assert_information_mode_output("-h",help_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--usage",usage_template));
+	ASSERT(SUCCESS & assert_information_mode_output("-z",usage_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--version",version_template));
 
 	RETURN_STATUS;
 }
@@ -150,15 +158,15 @@ Return test0003_4(void)
 	const char *usage_template = "templates/0003_005.txt";
 	const char *version_template = "templates/0003_006.txt";
 
-	ASSERT(SUCCESS == assert_information_mode_output("--help /definitely/nonexistent/path",help_template));
-	ASSERT(SUCCESS == assert_information_mode_output("-h /definitely/nonexistent/path",help_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--usage /definitely/nonexistent/path",usage_template));
-	ASSERT(SUCCESS == assert_information_mode_output("-z /definitely/nonexistent/path",usage_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--version /definitely/nonexistent/path",version_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare --help",help_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare --usage",usage_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare -z",usage_template));
-	ASSERT(SUCCESS == assert_information_mode_output("--compare --version",version_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--help /definitely/nonexistent/path",help_template));
+	ASSERT(SUCCESS & assert_information_mode_output("-h /definitely/nonexistent/path",help_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--usage /definitely/nonexistent/path",usage_template));
+	ASSERT(SUCCESS & assert_information_mode_output("-z /definitely/nonexistent/path",usage_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--version /definitely/nonexistent/path",version_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--compare --help",help_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--compare --usage",usage_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--compare -z",usage_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--compare --version",version_template));
 
 	RETURN_STATUS;
 }
