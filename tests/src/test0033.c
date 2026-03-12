@@ -100,8 +100,6 @@ static Return test0033_3(void)
 	const char *relative_path = "hugetestfile";
 	const char *first_run_template = "templates/0033_003_1.txt";
 	const char *second_run_template = "templates/0033_003_2.txt";
-	const char *prepare_command = "cd ${TMPDIR};"
-	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -114,7 +112,7 @@ static Return test0033_3(void)
 	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == create_directory("tests/fixtures"));
-	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/huge","tests/fixtures/huge",REQUIRE_SOURCE_EXISTS));
 
 	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
 
@@ -219,8 +217,6 @@ static Return test0033_4(void)
 	const char *relative_path = "hugetestfile";
 	const char *first_run_template = "templates/0033_004_1.txt";
 	const char *second_run_template = "templates/0033_004_2.txt";
-	const char *prepare_command = "cd ${TMPDIR};"
-	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
 
 	create(char,stdout_result);
 	create(char,stderr_result);
@@ -230,7 +226,7 @@ static Return test0033_4(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == create_directory("tests/fixtures"));
-	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/huge","tests/fixtures/huge",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
 
 	const char *arguments = "--progress --database=0033_interrupt_rehash.db tests/fixtures/huge";

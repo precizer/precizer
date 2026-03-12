@@ -129,12 +129,9 @@ static Return test0013_4(void)
 	create(char,pattern);
 	create(char,chunk);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -264,10 +261,7 @@ static Return test0013_4(void)
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -285,15 +279,11 @@ static Return test0013_5(void)
 	create(char,path);
 	create(char,pattern);
 	const char *db_file_name = "database1.db";
-	const char *command = NULL;
 	const char *arguments = NULL;
 
 	// Preparation for tests
-	command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
@@ -320,10 +310,7 @@ static Return test0013_5(void)
 	// Compare against the sample. A message should be displayed indicating
 	// that the --db-drop-ignored option must be specified for permanent
 	// removal of ignored files from the database
-	command = "cd ${TMPDIR};"
-	        "cp -a database1.db database1.db.backup;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("database1.db","database1.db.backup"));
 
 	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
@@ -345,10 +332,7 @@ static Return test0013_5(void)
 
 	// Real live mode permanent deletion of all ignored file
 	// references from the database
-	command = "cd ${TMPDIR};"
-	        "cp -a database1.db.backup database1.db;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("database1.db.backup","database1.db"));
 
 	arguments = "--db-drop-ignored --update"
 	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
@@ -369,10 +353,7 @@ static Return test0013_5(void)
 
 	del(result);
 
-	command = "cd ${TMPDIR};"
-	        "mv database1.db.backup database1.db;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("database1.db.backup","database1.db"));
 
 	arguments = "--watch-timestamps --db-drop-ignored "
 	        "--ignore=\"^path2/AAA/ZAW/.*\" --update "
@@ -399,10 +380,7 @@ static Return test0013_5(void)
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -548,19 +526,14 @@ static Return test0013_8(void)
 	struct stat stat_before_real_update = {0};
 	struct stat stat_after_real_update = {0};
 
-	const char *prepare_command = "cd ${TMPDIR}; "
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup; "
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-	const char *cleanup_command = "cd ${TMPDIR}; "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 	const char *arguments = NULL;
-	const char *command = NULL;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","false"));
 
-	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	/* First run: create DB in normal mode. */
 	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
@@ -573,8 +546,7 @@ static Return test0013_8(void)
 	ASSERT(SUCCESS == construct_path("database1.db",path));
 	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat_before_real_update));
 
-	command = "cd ${TMPDIR}; cp -a database1.db database1.db.backup;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("database1.db","database1.db.backup"));
 
 	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -590,8 +562,7 @@ static Return test0013_8(void)
 	 * Restore pre-update DB snapshot so the next run starts from the same state
 	 * and tests only the simulation hook behavior.
 	 */
-	command = "cd ${TMPDIR}; mv database1.db.backup database1.db;";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("database1.db.backup","database1.db"));
 
 	del(result);
 	del(pattern);
@@ -607,7 +578,7 @@ static Return test0013_8(void)
 	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","false"));
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	del(path);
 	del(pattern);

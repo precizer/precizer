@@ -12,14 +12,11 @@ static Return test0027_1(void)
 	create(char,result);
 	create(char,pattern);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "mv tests/fixtures/diffs/diff2 tests/fixtures/diff2_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
-	        "cp -a tests/fixtures/diff2_backup tests/fixtures/diffs/diff2;";
-
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff2","tests/fixtures/diff2_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff2_backup","tests/fixtures/diffs/diff2"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -52,10 +49,7 @@ static Return test0027_1(void)
 	ASSERT(SUCCESS == add_string_to("corrupted","tests/fixtures/diffs/diff2/path1/AAA/BCB/CCC/b.txt"));
 	ASSERT(SUCCESS == add_string_to("changed","tests/fixtures/diffs/diff2/3/AAA/BBB/CCC/a.txt"));
 
-	command = "cd ${TMPDIR};"
-	        "cp lock.db lock1.db";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == copy_path("lock.db","lock1.db"));
 
 	// Bump file mtime by a nanosecond delta without changing file content
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff2/2/AAA/BBB/CZC/a.txt",999));
@@ -88,11 +82,8 @@ static Return test0027_1(void)
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff2"));
 
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1 && "
-	        "mv tests/fixtures/diff2_backup tests/fixtures/diffs/diff2";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff2_backup","tests/fixtures/diffs/diff2"));
 
 	del(result);
 	del(pattern);

@@ -15,9 +15,11 @@ Return prepare(void)
 
 	INITTEST;
 
-	const char *command = NULL;
+	const char *environment_name = NULL;
 
 	create(char,path);
+	create(char,environment_build_path);
+	create(char,environment_precizer_path);
 
 	ASSERT(SUCCESS == get_origin_dir(path));
 	ASSERT(SUCCESS == set_environment_variable("ORIGIN_DIR",getcstring(path)));
@@ -33,25 +35,36 @@ Return prepare(void)
 	call(del(path));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	environment_name = getenv("ENVIRONMENT");
+	ASSERT(environment_name != NULL);
 
 	ASSERT(SUCCESS == execute_and_set_variable("DBNAME","echo \"$(hostname).db\"",0));
 
 	ASSERT(SUCCESS == create_directory("tests/fixtures/diffs"));
 	ASSERT(SUCCESS == create_directory("tests/templates"));
 	ASSERT(SUCCESS == create_directory(".builds"));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/diffs/diff1","tests/fixtures/diffs/diff1",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/diffs/diff2","tests/fixtures/diffs/diff2",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/'apostrophe","tests/fixtures/'apostrophe",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/apostrophe'","tests/fixtures/apostrophe'",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/levels","tests/fixtures/levels",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/4","tests/fixtures/4",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/ignore_include_cases","tests/fixtures/ignore_include_cases",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/templates/0015_database_v0.db","tests/templates/0015_database_v0.db",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/templates/0015_database_v1.db","tests/templates/0015_database_v1.db",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/templates/0015_database_v2.db","tests/templates/0015_database_v2.db",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db","tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db","tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db",REQUIRE_SOURCE_EXISTS));
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/long","tests/fixtures/long",ALLOW_MISSING_SOURCE));
+	ASSERT(SUCCESS == copy_literal(environment_build_path,".builds/"));
+	ASSERT(SUCCESS == concat_cstring(environment_build_path,environment_name,strlen(environment_name) + 1U));
+	ASSERT(SUCCESS == copy_from_origin(getcstring(environment_build_path),getcstring(environment_build_path),ALLOW_MISSING_SOURCE));
+	ASSERT(SUCCESS == copy(environment_precizer_path,environment_build_path));
+	ASSERT(SUCCESS == concat_literal(environment_precizer_path,"/precizer"));
+	ASSERT(SUCCESS == copy_from_origin(getcstring(environment_precizer_path),"precizer",ALLOW_MISSING_SOURCE));
 
-	command = "cp -a $ORIGIN_DIR/tests/fixtures/diffs/diff* ${TMPDIR}/tests/fixtures/diffs/;"
-	        "cp -a $ORIGIN_DIR/tests/fixtures/*apos* ${TMPDIR}/tests/fixtures/;"
-	        "cp -a $ORIGIN_DIR/tests/fixtures/levels ${TMPDIR}/tests/fixtures/;"
-	        "cp -a $ORIGIN_DIR/tests/fixtures/4 ${TMPDIR}/tests/fixtures/;"
-	        "cp -a $ORIGIN_DIR/tests/fixtures/ignore_include_cases ${TMPDIR}/tests/fixtures/;"
-	        "cp -a \"$ORIGIN_DIR\"/tests/templates/0015_database*.db \"${TMPDIR}/tests/templates/\";"
-	        "test -d $ORIGIN_DIR/.builds/${ENVIRONMENT} && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT} ${TMPDIR}/.builds/;"
-	        "test -f $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer && cp -a $ORIGIN_DIR/.builds/${ENVIRONMENT}/precizer ${TMPDIR};"
-	        "test -d $ORIGIN_DIR/tests/fixtures/long && cp -a $ORIGIN_DIR/tests/fixtures/long ${TMPDIR}/tests/fixtures/;"
-	        "true";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	call(del(environment_precizer_path));
+	call(del(environment_build_path));
 
 	// Bump diff2 fixture mtime relative to diff1 for stat-only test coverage
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt","tests/fixtures/diffs/diff2/1/AAA/BCB/CCC/a.txt",999));

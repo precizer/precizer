@@ -17,11 +17,8 @@ Return test0031(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--database=read_fail.db --progress"
 	        " tests/fixtures/diffs/diff1";
@@ -47,10 +44,7 @@ Return test0031(void)
 	ASSERT(SUCCESS == delete_path("read_fail.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
 
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	/* The wrapper should have injected exactly one read failure. */
 	ASSERT(mocks_fread_call_count() == 1);

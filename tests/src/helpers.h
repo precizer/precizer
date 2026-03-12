@@ -11,6 +11,8 @@
 #include "precizer.h"
 #include <stdio.h>
 
+#define REQUIRE_SOURCE_EXISTS ((unsigned int)0U)
+#define ALLOW_MISSING_SOURCE  ((unsigned int)1U)
 #define FILE_WRITE_APPEND  ((unsigned int)1U)
 #define FILE_WRITE_REPLACE ((unsigned int)2U)
 
@@ -145,6 +147,24 @@ Return delete_path(
 Return copy_path(
 	const char *relative_source_path,
 	const char *relative_destination_path);
+
+/**
+ * @brief Copy file or directory tree from ORIGIN_DIR into TMPDIR
+ *
+ * Empty source or destination path resolves to the corresponding environment root
+ * Missing sources fail by default with @ref REQUIRE_SOURCE_EXISTS
+ * Optional missing sources can be ignored with @ref ALLOW_MISSING_SOURCE
+ *
+ * @param[in] relative_source_path_to_origin_dir Source path relative to ORIGIN_DIR
+ * @param[in] relative_destination_path_to_tmpdir Destination path relative to TMPDIR
+ * @param[in] flags Behavior flags such as @ref REQUIRE_SOURCE_EXISTS or @ref ALLOW_MISSING_SOURCE
+ *
+ * @return Return status code
+ */
+Return copy_from_origin(
+	const char   *relative_source_path_to_origin_dir,
+	const char   *relative_destination_path_to_tmpdir,
+	unsigned int flags);
 
 /**
  * @brief Move file or directory by path relative to TMPDIR using native rename

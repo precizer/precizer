@@ -260,6 +260,61 @@ static int create_directory_if_missing(
 }
 
 /**
+ * @brief Construct absolute path from environment root and relative child path
+ *
+ * @param[in] environment_variable_name Environment variable containing root path
+ * @param[in] relative_path Relative child path to append
+ * @param[out] absolute_path_out Output absolute path buffer
+ *
+ * @return Return status code
+ */
+static Return construct_path_from_environment_variable(
+	const char *environment_variable_name,
+	const char *relative_path,
+	memory     *absolute_path_out)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	const char *root_path = NULL;
+	size_t absolute_path_size = 0U;
+
+	if(environment_variable_name == NULL || relative_path == NULL || absolute_path_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		root_path = getenv(environment_variable_name);
+		if(root_path == NULL)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		absolute_path_size = strlen(root_path) + strlen(relative_path) + 2U;
+		status = resize(absolute_path_out,absolute_path_size);
+	}
+
+	if(SUCCESS == status)
+	{
+		char *absolute_path_data = data(char,absolute_path_out);
+
+		if(absolute_path_data == NULL)
+		{
+			status = FAILURE;
+		} else if(snprintf(absolute_path_data,absolute_path_size,"%s/%s",root_path,relative_path) < 0){
+			status = FAILURE;
+		}
+	}
+
+	return(status);
+}
+
+/**
  * @brief Copy regular file contents into destination path
  *
  * @param[in] source_path Source regular file path
@@ -792,21 +847,18 @@ Return delete_path(
 }
 
 /**
- * @brief Copy file or directory tree by path relative to TMPDIR
+ * @brief Copy filesystem object from one absolute path to another
  *
- * Empty source or destination path resolves to TMPDIR root
- * Directory copy into itself or into its own subtree is rejected
+ * @param[in] source_absolute_path Source absolute path
+ * @param[in] destination_absolute_path Destination absolute path
+ * @param[in] flags Behavior flags such as @ref REQUIRE_SOURCE_EXISTS or @ref ALLOW_MISSING_SOURCE
  *
- * @param[in] relative_source_path Source file or directory path relative to TMPDIR
- * @param[in] relative_destination_path Destination file or directory path relative to TMPDIR
- *
- * @return Return status code:
- *         - SUCCESS: Source path was copied to destination path
- *         - FAILURE: Validation, path resolution, stat lookup, or copy operation failed
+ * @return Return status code
  */
-Return copy_path(
-	const char *relative_source_path,
-	const char *relative_destination_path)
+static Return copy_absolute_path(
+	const char   *source_absolute_path,
+	const char   *destination_absolute_path,
+	unsigned int flags)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -814,42 +866,34 @@ Return copy_path(
 	struct stat source_stat = {0};
 	struct stat destination_stat = {0};
 	bool destination_exists = false;
-	create(char,source_absolute_path);
-	create(char,destination_absolute_path);
 
-	if(relative_source_path == NULL || relative_destination_path == NULL)
+	if(source_absolute_path == NULL || destination_absolute_path == NULL)
 	{
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	if(SUCCESS == status && lstat(source_absolute_path,&source_stat) != 0)
 	{
-		status = construct_path(relative_source_path,source_absolute_path);
-	}
+		if(errno == ENOENT && (flags & ALLOW_MISSING_SOURCE) != 0U)
+		{
+			return(SUCCESS);
+		}
 
-	if(SUCCESS == status)
-	{
-		status = construct_path(relative_destination_path,destination_absolute_path);
-	}
-
-	if(SUCCESS == status && lstat(getcstring(source_absolute_path),&source_stat) != 0)
-	{
 		status = FAILURE;
 	}
 
 	if(SUCCESS == status && S_ISDIR(source_stat.st_mode))
 	{
-		const char *source_path = getcstring(source_absolute_path);
-		const char *destination_path = getcstring(destination_absolute_path);
-		size_t source_length = strlen(source_path);
+		size_t source_length = strlen(source_absolute_path);
 
-		while(source_length > 1U && source_path[source_length - 1U] == '/')
+		while(source_length > 1U && source_absolute_path[source_length - 1U] == '/')
 		{
 			source_length--;
 		}
 
-		if(strncmp(destination_path,source_path,source_length) == 0
-		        && (destination_path[source_length] == '\0' || destination_path[source_length] == '/'))
+		if(strncmp(destination_absolute_path,source_absolute_path,source_length) == 0
+		        && (destination_absolute_path[source_length] == '\0'
+		                || destination_absolute_path[source_length] == '/'))
 		{
 			status = FAILURE;
 		}
@@ -857,7 +901,7 @@ Return copy_path(
 
 	if(SUCCESS == status)
 	{
-		if(lstat(getcstring(destination_absolute_path),&destination_stat) == 0)
+		if(lstat(destination_absolute_path,&destination_stat) == 0)
 		{
 			destination_exists = true;
 		} else if(errno != ENOENT){
@@ -871,8 +915,8 @@ Return copy_path(
 		{
 			status = FAILURE;
 		} else {
-			copy_source_root_for_nftw = getcstring(source_absolute_path);
-			copy_destination_root_for_nftw = getcstring(destination_absolute_path);
+			copy_source_root_for_nftw = source_absolute_path;
+			copy_destination_root_for_nftw = destination_absolute_path;
 			if(copy_source_root_for_nftw == NULL
 			        || copy_destination_root_for_nftw == NULL)
 			{
@@ -897,13 +941,13 @@ Return copy_path(
 	{
 		if(destination_exists == false)
 		{
-			if(nftw(getcstring(source_absolute_path),nftw_copy_callback,64,FTW_PHYS) != 0)
+			if(nftw(source_absolute_path,nftw_copy_callback,64,FTW_PHYS) != 0)
 			{
 				status = FAILURE;
 			}
 
 			if(SUCCESS == status
-			        && nftw(getcstring(source_absolute_path),
+			        && nftw(source_absolute_path,
 			                nftw_sync_directory_mtime_callback,
 			                64,
 			                FTW_DEPTH | FTW_PHYS) != 0)
@@ -919,25 +963,23 @@ Return copy_path(
 
 		if(SUCCESS == status && destination_exists == true && S_ISLNK(destination_stat.st_mode))
 		{
-			// Replace an existing destination symlink instead of truncating the file it points to
-			if(unlink(getcstring(destination_absolute_path)) != 0)
+			if(unlink(destination_absolute_path) != 0)
 			{
 				status = FAILURE;
 			}
 		}
 
 		if(SUCCESS == status
-		        && copy_regular_file_contents(getcstring(source_absolute_path),
-		                                      getcstring(destination_absolute_path),
+		        && copy_regular_file_contents(source_absolute_path,
+		                                      destination_absolute_path,
 		                                      source_stat.st_mode) != 0)
 		{
 			status = FAILURE;
 		}
 
 		if(SUCCESS == status
-		        && apply_mtime_from_source_stat(getcstring(destination_absolute_path),&source_stat,0) != 0)
+		        && apply_mtime_from_source_stat(destination_absolute_path,&source_stat,0) != 0)
 		{
-			// Keep single-file copies aligned with the directory-copy branch that preserves mtime
 			status = FAILURE;
 		}
 	} else if(SUCCESS == status && S_ISLNK(source_stat.st_mode)){
@@ -947,24 +989,22 @@ Return copy_path(
 		}
 
 		if(SUCCESS == status && destination_exists == true
-		        && unlink(getcstring(destination_absolute_path)) != 0)
+		        && unlink(destination_absolute_path) != 0)
 		{
 			status = FAILURE;
 		}
 
-		if(SUCCESS == status && copy_symbolic_link(getcstring(source_absolute_path),
-		                                            getcstring(destination_absolute_path)) != 0)
+		if(SUCCESS == status && copy_symbolic_link(source_absolute_path,destination_absolute_path) != 0)
 		{
 			status = FAILURE;
 		}
 
 #ifdef AT_SYMLINK_NOFOLLOW
 		if(SUCCESS == status
-		        && apply_mtime_from_source_stat(getcstring(destination_absolute_path),
+		        && apply_mtime_from_source_stat(destination_absolute_path,
 		                                        &source_stat,
 		                                        AT_SYMLINK_NOFOLLOW) != 0)
 		{
-			// Preserve link metadata on standalone symlink copies instead of only for nftw-based copies
 			status = FAILURE;
 		}
 #endif
@@ -973,6 +1013,106 @@ Return copy_path(
 	}
 
 	reset_nftw_copy_context();
+
+	return(status);
+}
+
+/**
+ * @brief Copy file or directory tree by path relative to TMPDIR
+ *
+ * Empty source or destination path resolves to TMPDIR root
+ * Directory copy into itself or into its own subtree is rejected
+ *
+ * @param[in] relative_source_path Source file or directory path relative to TMPDIR
+ * @param[in] relative_destination_path Destination file or directory path relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Source path was copied to destination path
+ *         - FAILURE: Validation, path resolution, stat lookup, or copy operation failed
+ */
+Return copy_path(
+	const char *relative_source_path,
+	const char *relative_destination_path)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	create(char,source_absolute_path);
+	create(char,destination_absolute_path);
+
+	if(relative_source_path == NULL || relative_destination_path == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(relative_source_path,source_absolute_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(relative_destination_path,destination_absolute_path);
+	}
+
+	if(SUCCESS == status)
+	{
+			status = copy_absolute_path(getcstring(source_absolute_path),
+			                            getcstring(destination_absolute_path),
+			                            REQUIRE_SOURCE_EXISTS);
+	}
+	del(destination_absolute_path);
+	del(source_absolute_path);
+
+	return(status);
+}
+
+/**
+ * @brief Copy file or directory tree from ORIGIN_DIR into TMPDIR
+ *
+ * @param[in] relative_source_path_to_origin_dir Source path relative to ORIGIN_DIR
+ * @param[in] relative_destination_path_to_tmpdir Destination path relative to TMPDIR
+ * @param[in] flags Behavior flags such as @ref REQUIRE_SOURCE_EXISTS or @ref ALLOW_MISSING_SOURCE
+ *
+ * @return Return status code:
+ *         - SUCCESS: Source path was copied or was absent and allowed to be missing
+ *         - FAILURE: Validation, path resolution, stat lookup, or copy operation failed
+ */
+Return copy_from_origin(
+	const char   *relative_source_path_to_origin_dir,
+	const char   *relative_destination_path_to_tmpdir,
+	unsigned int flags)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	create(char,source_absolute_path);
+	create(char,destination_absolute_path);
+
+	if(relative_source_path_to_origin_dir == NULL || relative_destination_path_to_tmpdir == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path_from_environment_variable("ORIGIN_DIR",
+		                                                  relative_source_path_to_origin_dir,
+		                                                  source_absolute_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(relative_destination_path_to_tmpdir,destination_absolute_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = copy_absolute_path(getcstring(source_absolute_path),
+		                            getcstring(destination_absolute_path),
+		                            flags);
+	}
+
 	del(destination_absolute_path);
 	del(source_absolute_path);
 
