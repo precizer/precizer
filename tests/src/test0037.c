@@ -1,5 +1,6 @@
 #include "sute.h"
-#include <sys/stat.h>
+#include "mocks.h"
+#include <errno.h>
 #include <unistd.h>
 
 static Return assert_stderr_matches(
@@ -157,22 +158,29 @@ static Return test0037_5(void)
 {
 	INITTEST;
 
-	create(char,directory_path);
+	size_t remove_calls = 0;
+	const char *file_path = "0037_read_only_dir/file.txt";
 
-	ASSERT(SUCCESS == construct_path("0037_read_only_dir",directory_path));
-	ASSERT(mkdir(getcstring(directory_path),0700) == 0);
-	ASSERT(SUCCESS == replase_to_string("regular file","0037_read_only_dir/file.txt"));
-	ASSERT(chmod(getcstring(directory_path),0500) == 0);
+#ifdef EVIL_EMPIRE_OS
+	deliver(DONOTHING);
+#endif
+
+	ASSERT(SUCCESS == create_directory("0037_read_only_dir"));
+	ASSERT(SUCCESS == truncate_file_to_zero_size(file_path));
 
 	call(del(STDERR));
+	mocks_remove_reset();
+	mocks_remove_set_target_suffix(file_path);
+	mocks_remove_set_errno(EACCES);
+	mocks_remove_enable(true);
 
-	ASSERT(FAILURE == delete_path("0037_read_only_dir/file.txt"));
+	ASSERT(FAILURE == delete_path(file_path));
 	ASSERT(SUCCESS == assert_stderr_matches("templates/0037_005.txt"));
+	remove_calls = mocks_remove_call_count();
+	mocks_remove_reset();
+	ASSERT(remove_calls == 1U);
 
-	ASSERT(chmod(getcstring(directory_path),0700) == 0);
 	ASSERT(SUCCESS == delete_path("0037_read_only_dir"));
-
-	call(del(directory_path));
 
 	RETURN_STATUS;
 }
@@ -186,23 +194,29 @@ static Return test0037_6(void)
 {
 	INITTEST;
 
-	create(char,locked_directory_path);
-	const char *command = "cd ${TMPDIR} && mkdir -p 0037_locked_tree/a/b";
+	size_t remove_calls = 0;
+	const char *file_path = "0037_locked_tree/a/b/file.txt";
 
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == replase_to_string("tree file","0037_locked_tree/a/b/file.txt"));
-	ASSERT(SUCCESS == construct_path("0037_locked_tree/a/b",locked_directory_path));
-	ASSERT(chmod(getcstring(locked_directory_path),0500) == 0);
+#ifdef EVIL_EMPIRE_OS
+	deliver(DONOTHING);
+#endif
+
+	ASSERT(SUCCESS == create_directory("0037_locked_tree/a/b"));
+	ASSERT(SUCCESS == truncate_file_to_zero_size(file_path));
 
 	call(del(STDERR));
+	mocks_remove_reset();
+	mocks_remove_set_target_suffix(file_path);
+	mocks_remove_set_errno(EACCES);
+	mocks_remove_enable(true);
 
 	ASSERT(FAILURE == delete_path("0037_locked_tree"));
 	ASSERT(SUCCESS == assert_stderr_matches("templates/0037_006.txt"));
+	remove_calls = mocks_remove_call_count();
+	mocks_remove_reset();
+	ASSERT(remove_calls == 1U);
 
-	ASSERT(chmod(getcstring(locked_directory_path),0700) == 0);
 	ASSERT(SUCCESS == delete_path("0037_locked_tree"));
-
-	call(del(locked_directory_path));
 
 	RETURN_STATUS;
 }

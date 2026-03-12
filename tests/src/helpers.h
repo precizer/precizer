@@ -107,6 +107,18 @@ Return truncate_file_to_zero_size(
 	const char *relative_path_to_tmpdir);
 
 /**
+ * @brief Create directory tree relative to TMPDIR using native filesystem calls
+ *
+ * Existing directories are accepted when every path component is a directory
+ *
+ * @param[in] relative_path_to_tmpdir Directory path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return create_directory(
+	const char *relative_path_to_tmpdir);
+
+/**
  * @brief Remove file or directory tree by path relative to TMPDIR
  *
  * When relative_path_to_tmpdir is an empty string, the function targets TMPDIR itself

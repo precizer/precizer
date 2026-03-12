@@ -224,6 +224,42 @@ static int build_copy_destination_path_for_nftw(
 }
 
 /**
+ * @brief Create one directory and accept an existing directory at the same path
+ *
+ * @param[in] directory_path Absolute directory path
+ *
+ * @return 0 on success, non-zero on failure
+ */
+static int create_directory_if_missing(
+	const char *directory_path)
+{
+	int status = 0;
+	struct stat directory_stat = {0};
+
+	if(directory_path == NULL)
+	{
+		status = -1;
+	}
+
+	if(status == 0 && mkdir(directory_path,0700) != 0 && errno != EEXIST)
+	{
+		status = -1;
+	}
+
+	if(status == 0 && lstat(directory_path,&directory_stat) != 0)
+	{
+		status = -1;
+	}
+
+	if(status == 0 && !S_ISDIR(directory_stat.st_mode))
+	{
+		status = -1;
+	}
+
+	return(status);
+}
+
+/**
  * @brief Copy regular file contents into destination path
  *
  * @param[in] source_path Source regular file path
@@ -599,6 +635,89 @@ Return truncate_file_to_zero_size(
 	if(file != NULL && fclose(file) != 0)
 	{
 		status = FAILURE;
+	}
+
+	del(absolute_path);
+
+	return(status);
+}
+
+/**
+ * @brief Create directory tree by path relative to TMPDIR
+ *
+ * Empty path resolves to TMPDIR root
+ * Existing directories are preserved
+ *
+ * @param[in] relative_path_to_tmpdir Directory path relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Directory tree exists after the call
+ *         - FAILURE: Path construction or directory creation failed
+ */
+Return create_directory(
+	const char *relative_path_to_tmpdir)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	char *absolute_path_data = NULL;
+	size_t absolute_path_length = 0U;
+	create(char,absolute_path);
+
+	if(relative_path_to_tmpdir == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(relative_path_to_tmpdir,absolute_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		absolute_path_data = data(char,absolute_path);
+		if(absolute_path_data == NULL)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		absolute_path_length = strlen(absolute_path_data);
+
+		while(absolute_path_length > 1U && absolute_path_data[absolute_path_length - 1U] == '/')
+		{
+			absolute_path_data[absolute_path_length - 1U] = '\0';
+			absolute_path_length--;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		for(char *path_cursor = absolute_path_data + 1;
+		        SUCCESS == status && *path_cursor != '\0';
+		        path_cursor++)
+		{
+			if(*path_cursor == '/')
+			{
+				*path_cursor = '\0';
+				if(create_directory_if_missing(absolute_path_data) != 0)
+				{
+					status = FAILURE;
+				}
+				*path_cursor = '/';
+			}
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		if(create_directory_if_missing(absolute_path_data) != 0)
+		{
+			status = FAILURE;
+		}
 	}
 
 	del(absolute_path);

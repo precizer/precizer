@@ -89,7 +89,7 @@ WFLAGS += -Wmissing-format-attribute
 endif
 
 # Link-time wrappers for cmocka tests (add more functions as needed).
-WRAPFUNCS = fopen fread ferror
+WRAPFUNCS = fopen fread ferror remove
 ifeq ($(UNAME_S),Darwin)
 # macOS with  lld supports -wrap
 WRAPFLAGS =

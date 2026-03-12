@@ -12,6 +12,10 @@ static const char *mock_fread_target_suffix = NULL;
 static FILE *mock_fread_target_stream = NULL;
 static bool mock_fread_error_seen = false;
 static int mock_fread_errno = EIO;
+static bool mock_remove_enabled = false;
+static size_t mock_remove_calls = 0;
+static const char *mock_remove_target_suffix = NULL;
+static int mock_remove_errno = EACCES;
 
 static bool mock_path_matches_suffix(const char *path,const char *suffix)
 {
@@ -74,6 +78,34 @@ void mocks_fread_set_errno(int err)
 	mock_fread_errno = err;
 }
 
+void mocks_remove_set_target_suffix(const char *suffix)
+{
+	mock_remove_target_suffix = suffix;
+}
+
+void mocks_remove_enable(bool enabled)
+{
+	mock_remove_enabled = enabled;
+}
+
+void mocks_remove_reset(void)
+{
+	mock_remove_enabled = false;
+	mock_remove_calls = 0;
+	mock_remove_target_suffix = NULL;
+	mock_remove_errno = EACCES;
+}
+
+size_t mocks_remove_call_count(void)
+{
+	return mock_remove_calls;
+}
+
+void mocks_remove_set_errno(int err)
+{
+	mock_remove_errno = err;
+}
+
 FILE *__real_fopen(const char *path,const char *mode);
 
 FILE *__wrap_fopen(const char *path,const char *mode)
@@ -125,4 +157,22 @@ int __wrap_ferror(FILE *stream)
 	}
 
 	return __real_ferror(stream);
+}
+
+int __real_remove(const char *path);
+
+int __wrap_remove(const char *path)
+{
+	if(mock_remove_enabled
+	        && path != NULL
+	        && mock_remove_target_suffix != NULL
+	        && mock_remove_calls == 0
+	        && mock_path_matches_suffix(path,mock_remove_target_suffix))
+	{
+		mock_remove_calls++;
+		errno = mock_remove_errno;
+		return -1;
+	}
+
+	return __real_remove(path);
 }
