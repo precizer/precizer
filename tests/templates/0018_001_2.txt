@@ -1,56 +1,75 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=/.+/tests/examples/levels
-TESTING:argument:database=database3.db
-TESTING:argument:db_file_name=database3.db
-TESTING:argument:update=yes
+TESTING:argument:paths=/.+/tests/fixtures/levels
+TESTING:argument:database=database4\.db
+TESTING:argument:db_file_name=database4\.db
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path /.+/tests/examples/levels exists
-TESTING:The path /.+/tests/examples/levels is exists and it is a directory
-TESTING:Paths detected
+TESTING:Verify that the path /.+/tests/fixtures/levels exists
+TESTING:The path /.+/tests/fixtures/levels is exists and it is a directory
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: /.*$
-TESTING:Primary database file name: database3.db
-TESTING:Primary database file path: database3.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path database3.db exists
-TESTING:The path database3.db is exists and it is a file
-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
-TESTING:Final value for config->db_initialize_tables: false
+TESTING:Primary database file name: database4\.db
+TESTING:Primary database file path: database4\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database4\.db exists
+TESTING:The path database4\.db doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
-TESTING:Starting database file database3.db integrity check…
-TESTING:The database verification level has been set to FULL
-TESTING:Database database3.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database3.db database file is version 3
-TESTING:The database database3.db is on version 3 and does not require any upgrades
-TESTING:Successfully opened database database3.db
-TESTING:The primary database and tables do not require initialization
-TESTING:The primary database named database3.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database3.db
+TESTING:The primary database file was just created and doesn't require verification
+TESTING:Successfully opened database database4\.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named database4\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The database database3.db has already been created previously
-TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database database3.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB database3.db:(?:\x1B\[[0-9;]*m)*
-add 1/2/3/4/ddd.txt
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database4\.db:(?:\x1B\[[0-9;]*m)*
+new 1/1/2/3/4/ddd\.txt
+new 1/1/2/3/ccc\.txt
+new 1/1/2/bbb\.txt
+new 1/1/aaa\.txt
+new 1/2/3/4/5/eee\.txt
+new 1/2/3/4/ddd\.txt
+new 1/2/3/ccc\.txt
+new 1/2/bbb\.txt
+new 1/aaa\.txt
+new 2/1/2/3/4/ddd\.txt
+new 2/1/2/3/ccc\.txt
+new 2/1/2/bbb\.txt
+new 2/1/aaa\.txt
+new 2/2/3/4/5/eee\.txt
+new 2/2/3/4/ddd\.txt
+new 2/2/3/ccc\.txt
+new 2/2/bbb\.txt
+new 2/aaa\.txt
+new 3/1/2/3/4/ddd\.txt
+new 3/1/2/3/ccc\.txt
+new 3/1/2/bbb\.txt
+new 3/1/aaa\.txt
+new 3/2/3/4/5/eee\.txt
+new 3/2/3/4/ddd\.txt
+new 3/2/3/ccc\.txt
+new 3/2/bbb\.txt
+new 3/aaa\.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-TESTING:Searching for files that no longer exist on the file system…
-TESTING:Missing file search completed
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The database file database3.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database4\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

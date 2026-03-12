@@ -22,13 +22,20 @@ SRC = src
 STATIC = -static -static-libgcc -Wl,--gc-sections
 
 PRZRSRC = ../src
+TESTED_APP_NAME := $(shell awk '/^#define[[:space:]]+APP_NAME[[:space:]]+"/ { gsub(/"/,"",$$3); print $$3; exit }' $(PRZRSRC)/version.h)
 BUILDS = ../.builds
 BUILDEXE = $(BUILDS)/$(EXE)
 BUILDEXEDIR = $(dir $(BUILDEXE))
 LIBS = testitall mem sha512 rational sqlite3 xdiff
 
+ifeq ($(TESTED_APP_NAME),)
+$(error Failed to extract APP_NAME from $(PRZRSRC)/version.h)
+endif
+
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+# cmocka is used in sanitizer/coverage builds.
+CMOCKA_LDLIBS = -lcmocka
 
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
@@ -81,6 +88,15 @@ WFLAGS += -Wsuggest-attribute=format
 WFLAGS += -Wmissing-format-attribute
 endif
 
+# Link-time wrappers for cmocka tests (add more functions as needed).
+WRAPFUNCS = fopen fread ferror
+ifeq ($(UNAME_S),Darwin)
+# macOS with  lld supports -wrap
+WRAPFLAGS =
+else
+WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
+endif
+
 #
 # Project files
 #
@@ -111,7 +127,7 @@ COV_DYNLIB = -Wl,-rpath,@executable_path/$(COV_LIBDIR),-rpath,@executable_path/.
 endif
 
 COV_PRZROBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(PRZROBJS)))
-COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage
+COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS += -lgcov --coverage
 
 #
@@ -151,11 +167,11 @@ DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGI
 ifeq ($(UNAME_S),Darwin)
 DBG_DYNLIB = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
 endif
-
-DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
+DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL_TEST_HOOKS
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge gcc-analyzer cppcheck print-%
+.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
 
 # Default build
 all: sanitize
@@ -166,16 +182,28 @@ tests: test
 
 run: sanitize
 
+testlibs-coverage:
+	@$(MAKE) -s -C ../libs/xdiff coverage
+	@$(MAKE) -s -C ../libs/testitall coverage TESTITALL_APP_NAME=$(TESTED_APP_NAME)
+
+testlibs-sanitize:
+	@$(MAKE) -s -C ../libs/xdiff sanitize
+	@$(MAKE) -s -C ../libs/testitall sanitize TESTITALL_APP_NAME=$(TESTED_APP_NAME)
+
+testlibs-debug:
+	@$(MAKE) -s -C ../libs/xdiff debug
+	@$(MAKE) -s -C ../libs/testitall debug TESTITALL_APP_NAME=$(TESTED_APP_NAME)
+
 #
 # Coverage rules
 #
 precizer-coverage:
 	@$(MAKE) -s -C ../ precizer-coverage
 
-coverage: coverage-html
+coverage: hugetestfile coverage-html
 
-$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage
-	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) -o $(COV_EXE) $^ $(LDLIBS)
+$(COV_EXE): $(COV_OBJS) $(COV_PRZROBJS) | precizer-coverage testlibs-coverage
+	@$(CC) $(COV_LIBS) $(COV_LDFLAGS) $(COV_DYNLIB) $(WRAPFLAGS) -o $(COV_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
 	@echo "$@ linked."
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
@@ -189,15 +217,15 @@ $(COV_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 $(COV_OBJDIR):
 	@mkdir -p "$(COV_OBJDIR)"
 
-coverage-report: $(COV_EXE)
+coverage-report: hugetestfile precizer-coverage $(COV_EXE)
 	@echo "Generating coverage report..."
 	./$(COV_EXE)
 	@echo "Coverage run finished. Inspect .gcda/.gcno outputs for details"
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --directory $(COV_OBJDIR) --directory $(COV_LIBSOBJ) --output-file $(COV_OBJDIR)/coverage.info
-	@genhtml $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
+	@lcov --capture --branch-coverage --rc lcov_excl_br_line='(^\s*RETURN_STATUS|SLOWTEST\s*;)|(\b(?:provide|ASSERT|TEST|SUTE)\s*\()' --directory $(COV_OBJDIR) --directory $(COV_LIBSOBJ) --output-file $(COV_OBJDIR)/coverage.info
+	@genhtml --branch-coverage $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
 #
@@ -206,11 +234,11 @@ coverage-html: coverage-report
 precizer-sanitize:
 	@$(MAKE) -s -C ../ sanitize
 
-sanitize: hugetestfile $(SNTZ_EXE)
+sanitize: precizer-sanitize hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
-$(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize
-	@$(CC) $(SNTZ_LIBS) $(SNTZ_LDFLAGS) $(SNTZ_DYNLIB) -o $(SNTZ_EXE) $^ $(LDLIBS)
+$(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_PRZROBJS) | precizer-sanitize testlibs-sanitize
+	@$(CC) $(SNTZ_LIBS) $(SNTZ_LDFLAGS) $(SNTZ_DYNLIB) $(WRAPFLAGS) -o $(SNTZ_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
 	@echo "$@ linked."
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
@@ -230,11 +258,11 @@ $(SNTZ_OBJDIR):
 precizer-debug:
 	@$(MAKE) -s -C ../ debug
 
-debug: hugetestfile $(DBG_EXE)
+debug: precizer-debug hugetestfile $(DBG_EXE)
 	@./$(DBG_EXE)
 
-$(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug
-	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) -o $(DBG_EXE) $^ $(LDLIBS)
+$(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug testlibs-debug
+	@$(CC) $(DBG_LIBS) $(DBG_DYNLIB) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $^ $(LDLIBS)
 	@echo "$@ linked."
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
@@ -248,7 +276,7 @@ $(DBG_OBJDIR)/%.o: $(PRZRSRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
 $(DBG_OBJDIR):
 	@mkdir -p "$(DBG_OBJDIR)"
 
-HUGETESTFILE = examples/huge/hugetestfile
+HUGETESTFILE = fixtures/huge/hugetestfile
 HUGETESTDIR := $(dir $(HUGETESTFILE))
 
 hugetestfile: $(HUGETESTFILE)
@@ -270,8 +298,10 @@ format:
 	done
 	@echo "All files formatted."
 
-clean:
+clean-hugetestfile:
 	@rm -f $(HUGETESTFILE)
+
+clean: clean-hugetestfile
 	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(COV_EXE)
 	@rm -f $(DBG_OBJS) $(DBG_PRZROBJS)
 	@rm -f $(SNTZ_OBJS) $(SNTZ_PRZROBJS)
@@ -293,7 +323,7 @@ clean:
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
 	@echo $(EXE) cleared
 
-purge:
+purge: clean-hugetestfile
 	@$(MAKE) -s -C ../ purge
 
 # Optional preprocessor files

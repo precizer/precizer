@@ -2,7 +2,7 @@
 .vscode
 doc
 src/*/
-tests/examples/huge/
+tests/fixtures/huge/
 tests/testitall
 tools/tool_*
 precizer
@@ -15,3 +15,5 @@ precizer
 /*.out.*
 /src/tool_*
 .vms/
+A*
+compile_commands.json

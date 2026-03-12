@@ -5,27 +5,25 @@ Return memory_concat_literal(
 	memory     *destination,
 	const char *literal)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; concat_literal destination must be non-NULL");
+		report("Memory management; concat_literal destination must be non-NULL");
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && literal == NULL)
+	if((TRIUMPH & status) && literal == NULL)
 	{
 		/* Treat NULL literals as a no-op to keep destination intact */
-		provide(SUCCESS);
+		provide(status);
 	}
 
-	if(SUCCESS == status && destination->element_size != sizeof(char))
+	if((TRIUMPH & status) && destination->element_size != sizeof(char))
 	{
-		slog(ERROR,"Memory management; concat_literal supports byte-sized elements only");
+		report("Memory management; concat_literal supports byte-sized elements only");
 		status = FAILURE;
 	}
 
@@ -35,25 +33,25 @@ Return memory_concat_literal(
 
 	size_t literal_length = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		literal_length = strlen(literal);
 	}
 
 	size_t new_total_elements = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		if(destination_length > SIZE_MAX - literal_length)
 		{
-			slog(ERROR,"Memory management; Concatenating literal would overflow element count");
+			report("Memory management; Concatenating literal would overflow element count");
 			status = FAILURE;
 		} else {
 			const size_t sum = destination_length + literal_length;
 
 			if(sum == SIZE_MAX)
 			{
-				slog(ERROR,"Memory management; Not enough room for string terminator");
+				report("Memory management; Not enough room for string terminator");
 				status = FAILURE;
 			} else {
 				new_total_elements = sum + 1;
@@ -71,13 +69,13 @@ Return memory_concat_literal(
 
 	run(resize(destination,new_total_elements));
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		unsigned char *destination_bytes = (unsigned char *)destination->data;
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL after resize");
+			report("Memory management; Destination data pointer is NULL after resize");
 			status = FAILURE;
 		} else {
 			if(literal_bytes > 0)

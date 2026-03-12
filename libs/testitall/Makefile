@@ -21,6 +21,10 @@ endif
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
+ifneq ($(TESTITALL_APP_NAME),)
+CFLAGS += -DTESTITALL_APP_NAME=\"$(TESTITALL_APP_NAME)\"
+endif
+
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
 
@@ -107,8 +111,7 @@ COV_LDLIBS = -L$(COV_LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG
-COV_LDFLAGS += -lgcov --coverage
+COV_CFLAGS = $(CFLAGS) -g -O0 -fno-omit-frame-pointer -DDEBUG
 
 #
 # Sanitize build settings
@@ -221,7 +224,7 @@ $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
 	@echo $@ prepared to be static library
 
 $(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
-	@$(CC) -shared $(COV_LDFLAGS) $(COV_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(COV_LDLIBS) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be shared library
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)

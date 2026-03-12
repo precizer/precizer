@@ -4,8 +4,9 @@
  * @brief Copies essential elements from a `struct stat` to a `CmpctStat` structure
  *
  * This function performs a selective copy of key fields from the source `struct stat`
- * object to the destination `CmpctStat` object. The copied fields include file size,
- * modification time (seconds and nanoseconds), and status change time (seconds and nanoseconds)
+ * object to the destination `CmpctStat` object. The copied fields include logical
+ * file size, allocated block count, device/inode identifiers, modification time
+ * (seconds and nanoseconds), and status change time (seconds and nanoseconds)
  *
  * The `CmpctStat` structure is designed to contain only the minimal necessary data
  * required for comparison purposes, making it significantly more space-efficient
@@ -23,6 +24,8 @@ Return stat_copy(
 	const struct stat *source,
 	CmpctStat         *destination)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(source == NULL || destination == NULL)
@@ -32,6 +35,9 @@ Return stat_copy(
 
 	/* Copying essential elements from the stat structure to the new one */
 	destination->st_size = source->st_size;
+	destination->st_blocks = source->st_blocks;
+	destination->st_dev = source->st_dev;
+	destination->st_ino = source->st_ino;
 	destination->mtim_tv_sec = source->st_mtim.tv_sec;
 	destination->mtim_tv_nsec = source->st_mtim.tv_nsec;
 	destination->ctim_tv_sec = source->st_ctim.tv_sec;

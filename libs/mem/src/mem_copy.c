@@ -5,33 +5,31 @@ Return memory_copy(
 	memory       *destination,
 	const memory *source)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(destination == NULL || source == NULL)
 	{
-		slog(ERROR,"Memory management; append arguments must be non-NULL");
+		report("Memory management; append arguments must be non-NULL");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Destination element size is zero (uninitialized)");
+		report("Memory management; Destination element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
 	if(source->element_size == 0)
 	{
-		slog(ERROR,"Memory management; Source element size is zero (uninitialized)");
+		report("Memory management; Source element size is zero (uninitialized)");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size != source->element_size)
 	{
-		slog(ERROR,"Memory management; Element size mismatch (%zu vs %zu)",
+		report("Memory management; Element size mismatch (%zu vs %zu)",
 			destination->element_size,
 			source->element_size);
 		provide(FAILURE);
@@ -41,19 +39,19 @@ Return memory_copy(
 
 	run(memory_guarded_size(source->element_size,source->length,&bytes_to_copy));
 
-	if(FAILURE == status)
+	if(CRITICAL & status)
 	{
-		slog(ERROR,"Memory management; Overflow computing %zu * %zu",
+		report("Memory management; Overflow computing %zu * %zu",
 			source->element_size,
 			source->length);
 	}
 
-	if(SUCCESS == status && destination->length != source->length)
+	if((TRIUMPH & status) && destination->length != source->length)
 	{
 		run(resize(destination,source->length));
 	}
 
-	if(SUCCESS == status && source->length > 0)
+	if((TRIUMPH & status) && source->length > 0)
 	{
 		memcpy(destination->data,source->data,bytes_to_copy);
 	}

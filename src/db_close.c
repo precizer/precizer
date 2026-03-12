@@ -9,12 +9,15 @@ Return db_close(
 	sqlite3    *db,
 	const bool *db_file_modified)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	int rc = SQLITE_OK;
 
 	/* Cleanup and close previously used DB */
 	if(db != NULL)
 	{
+		int rc;
+
 		if(*db_file_modified == true)
 		{
 			sqlite3_stmt *stmt;

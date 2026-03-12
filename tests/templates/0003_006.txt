@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
+TESTING:Exit status » SUCCESS\|INFO\Z

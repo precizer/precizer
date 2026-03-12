@@ -1,0 +1,4 @@
+name: "CodeQL config"
+
+paths-ignore:
+  - libs/sqlite3/src/sqlite3.c

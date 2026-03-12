@@ -8,8 +8,8 @@
  */
 Return db_vacuum(const char *db_file_path)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	sqlite3 *db = NULL;
@@ -30,7 +30,7 @@ Return db_vacuum(const char *db_file_path)
 		provide(status);
 	}
 
-	if(strcmp(db_file_path,config->db_primary_file_path) == 0)
+	if(strcmp(db_file_path,confstr(db_primary_file_path)) == 0)
 	{
 		db_is_primary = true;
 	}

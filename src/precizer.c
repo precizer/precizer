@@ -42,9 +42,17 @@ int test_main(
 	char **argv)
 #endif // TESTITALL
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
+
+	// Stack storage for traversal stats, zero-initialized.
+	TraversalSummary _summary = {0};
+	// Use pointer form for consistency.
+	TraversalSummary *summary = &_summary;
 
 	// Initialize configuration with values
 	init_config();
@@ -53,9 +61,15 @@ int test_main(
 	// parsing command line arguments
 	run(parse_arguments(argc,argv));
 
+	// Print program identity only when argument parsing is not in info mode
+	if((status & INFO) == false)
+	{
+		about();
+	}
+
 	// Verify that the provided paths exist and
 	// are directories
-	run(detect_paths());
+	run(paths_detect());
 
 	// Initialize signals interception like Ctrl+C
 	run(init_signals());
@@ -94,14 +108,27 @@ int test_main(
 	run(db_save_prefixes());
 
 	// Just get a statistic
-	run(file_list(true));
+	summary->stats_only_pass = true;
+	run(file_list(summary));
 
-	// Get file list and their CRC
-	run(file_list(false));
+	// Get file list and their checksums
+	summary->stats_only_pass = false;
+	run(file_list(summary));
 
 	// Update the database. Remove files that
 	// no longer exist.
 	run(db_delete_missing_metadata());
+
+	// Print remembered warning and error lines when delayed output is enabled
+	call(show_remembered_messages());
+
+	// Print final totals and runtime metrics after delayed warnings/errors.
+	// This runs only for successful execution flow.
+	if((SUCCESS|WARNING) & status)
+	{
+		show_statistics(summary);
+		show_elapsed(summary);
+	}
 
 	// Disable journaling, flush the journal to the main database,
 	// clear the cache, and close the database

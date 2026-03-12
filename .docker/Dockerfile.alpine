@@ -1,11 +1,11 @@
 ARG BUILD=production
-FROM alpine:edge AS alpine
+FROM alpine@sha256:9a341ff2287c54b86425cbee0141114d811ae69d88a36019087be6d896cef241 AS alpine
 
 ARG BUILD
 ENV BUILD=${BUILD}
 
 RUN set -eux; \
-     apk add --no-cache build-base llvm pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
+     apk add --no-cache build-base llvm pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx cmocka cmocka-dev
 
 WORKDIR /precizer
 

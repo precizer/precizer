@@ -17,6 +17,8 @@ Return get_file_content(
 	const char *filename,
 	memory     *pattern)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *file = NULL;
 	long file_size_long = 0;
@@ -135,5 +137,5 @@ Return get_file_content(
 		del(pattern);
 	}
 
-	return(status);
+	deliver(status);
 }

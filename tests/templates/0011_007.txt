@@ -1,19 +1,27 @@
-\APrimary database file name: %DB_NAME%
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: %DB_NAME%
 Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
+Update mode enabled for DB %DB_NAME%
+File traversal started
+(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+ignore directory diff1/1/AAA
+ignore directory diff2/1/AAA
+File traversal complete
 Searching for files that no longer exist on the file system…
-The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be deleted against the database %DB_NAME%
-(?:\x1B\[[0-9;]*m)*These files are no longer exist or ignored and will be deleted against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-clean ignored diff1/1/AAA/BCB/CCC/a.txt
-clean ignored diff1/1/AAA/ZAW/A/b/c/a_file.txt
-clean ignored diff1/1/AAA/ZAW/D/e/f/b_file.txt
-clean ignored diff2/1/AAA/BCB/CCC/a.txt
-clean ignored diff2/1/AAA/ZAW/A/b/c/a_file.txt
-clean ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt
+(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+drop ignored diff1/1/AAA/BCB/CCC/a\.txt
+drop ignored diff1/1/AAA/ZAW/A/b/c/a_file\.txt
+drop ignored diff1/1/AAA/ZAW/D/e/f/b_file\.txt
+drop ignored diff2/1/AAA/BCB/CCC/a\.txt
+drop ignored diff2/1/AAA/ZAW/A/b/c/a_file\.txt
+drop ignored diff2/1/AAA/ZAW/D/e/f/b_file\.txt
 Missing file search completed
+Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 Start vacuuming the primary database…
 The primary database has been vacuumed
 (?:\x1B\[[0-9;]*m)*The database file %DB_NAME% has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-The precizer completed its execution without any issues
+The precizer completed as expected
 Exit status » SUCCESS
 Enjoy your life!\Z

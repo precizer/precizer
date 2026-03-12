@@ -5,7 +5,7 @@
  * Attempt to modify files protected by the --lock-checksum
  *
  */
-static Return test0027_1_lock_checksum(void)
+static Return test0027_1(void)
 {
 	INITTEST;
 
@@ -13,25 +13,30 @@ static Return test0027_1_lock_checksum(void)
 	create(char,pattern);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "mv tests/fixtures/diffs/diff2 tests/fixtures/diff2_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;"
+	        "cp -a tests/fixtures/diff2_backup tests/fixtures/diffs/diff2;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--database=lock.db --lock-checksum=\"^diff1/1/.*\" --lock-checksum=\"^diff2/path1/.*\" tests/examples/diffs";
+	const char *arguments = "--database=lock.db --lock-checksum=\"^diff1/1/.*\" "
+	        "--lock-checksum=\"^diff2/path1/.*\" tests/fixtures/diffs";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0027_001_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	arguments = "--update --database=lock.db --lock-checksum=\"^diff1/1/.*\" --lock-checksum=\"^diff2/path1/.*\" tests/examples/diffs";
+	arguments = "--update --database=lock.db --lock-checksum=\"^diff1/1/.*\" "
+	        "--lock-checksum=\"^diff2/path1/.*\" tests/fixtures/diffs";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	filename = "templates/0027_001_2.txt";
 
@@ -43,27 +48,51 @@ static Return test0027_1_lock_checksum(void)
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
+	ASSERT(SUCCESS == add_string_to("corrupted","tests/fixtures/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt"));
+	ASSERT(SUCCESS == add_string_to("corrupted","tests/fixtures/diffs/diff2/path1/AAA/BCB/CCC/b.txt"));
+	ASSERT(SUCCESS == add_string_to("changed","tests/fixtures/diffs/diff2/3/AAA/BBB/CCC/a.txt"));
+
 	command = "cd ${TMPDIR};"
-	        "echo 'corrupted' >> tests/examples/diffs/diff1/1/AAA/ZAW/A/b/c/a_file.txt;"
-	        "echo 'corrupted' >> tests/examples/diffs/diff2/path1/AAA/BCB/CCC/b.txt;"
-	        "echo 'changed' >> tests/examples/diffs/diff2/3/AAA/BBB/CCC/a.txt;"
-	        "touch tests/examples/diffs/diff2/2/AAA/BBB/CZC/a.txt";
+	        "cp lock.db lock1.db";
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--progress --update --database=lock.db --lock-checksum=\"^diff1/1/.*\" --lock-checksum=\"^diff2/path1/.*\" tests/examples/diffs";
+	// Bump file mtime by a nanosecond delta without changing file content
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff2/2/AAA/BBB/CZC/a.txt",999));
 
-	ASSERT(SUCCESS == runit(arguments,result,WARNING,ALLOW_BOTH));
+	arguments = "--progress --update --database=lock.db "
+	        "--lock-checksum=\"^diff1/1/.*\" "
+	        "--lock-checksum=\"^diff2/path1/.*\" tests/fixtures/diffs";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	arguments = "--progress --update --database=lock1.db "
+	        "--lock-checksum=\"^diff1/1/.*\" "
+	        "--lock-checksum=\"^diff2/path1/.*\" tests/fixtures/diffs";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	filename = "templates/0027_001_4.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	command = "cd ${TMPDIR} && "
-	        "rm lock.db && "
-	        "rm -rf tests/examples/ && "
-	        "mv tests/examples_backup/ tests/examples/";
+	ASSERT(SUCCESS == delete_path("lock.db"));
+	ASSERT(SUCCESS == delete_path("lock1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff2"));
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR} && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1 && "
+	        "mv tests/fixtures/diff2_backup tests/fixtures/diffs/diff2";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	del(result);
 	del(pattern);
@@ -75,7 +104,7 @@ Return test0027(void)
 {
 	INITTEST;
 
-	TEST(test0027_1_lock_checksum,"Attempt to modify files protected by the --lock-checksum…");
+	TEST(test0027_1,"Attempt to modify files protected by the --lock-checksum…");
 
 	RETURN_STATUS;
 }

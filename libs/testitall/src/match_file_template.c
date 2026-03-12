@@ -31,8 +31,8 @@ Return match_file_template(
 		return FAILURE;
 	}
 
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Will store template content from file
@@ -48,7 +48,7 @@ Return match_file_template(
 	ASSERT(SUCCESS == replace_placeholder(pattern,template,replacement));
 
 	// Execute command and capture output
-	ASSERT(SUCCESS == execute_command(command,result,expected_return_code,ALLOW_BOTH));
+	ASSERT(SUCCESS == execute_command(command,result,NULL,expected_return_code,ALLOW_BOTH));
 
 	// Compare command output against modified template
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
@@ -61,5 +61,5 @@ Return match_file_template(
 	call(del(result));
 	call(del(pattern));
 
-	return(status);
+	deliver(status);
 }

@@ -1,42 +1,43 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/diffs/diff1
-TESTING:argument:database=database1.db
-TESTING:argument:db_file_name=database1.db
+TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:database=database1\.db
+TESTING:argument:db_file_name=database1\.db
 TESTING:argument:progress=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
+TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
+TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
-TESTING:Primary database file name: database1.db
-TESTING:Primary database file path: database1.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path database1.db exists
-TESTING:The path database1.db is exists and it is a file
+TESTING:Primary database file name: database1\.db
+TESTING:Primary database file path: database1\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database1\.db exists
+TESTING:The path database1\.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting database file database1.db integrity check…
+TESTING:Starting database file database1\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database1.db database file is version 3
-TESTING:The database database1.db is on version 3 and does not require any upgrades
-TESTING:Successfully opened database database1.db
+TESTING:Database database1\.db has been verified and is in good condition
+TESTING:Version number 4 found in database
+TESTING:The database1\.db database file is version 4
+TESTING:The database database1\.db is on version 4 and does not require any upgrades
+TESTING:Successfully opened database database1\.db
 TESTING:The primary database and tables do not require initialization
-TESTING:The primary database named database1.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+TESTING:The primary database named database1\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The database database1.db was previously created and already contains data with files and their checksums. Use the (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option only when you are certain that the database needs to be updated and when file information \(including changes, deletions, and additions\) should be synchronized with the database.
+TESTING:The database database1\.db was previously created and already contains data with files and their checksums. Use the (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option only when you are certain that the database needs to be updated and when file information \(including changes, deletions, and additions\) should be synchronized with the database.
 TESTING:Returned db_contains_data:\d+ status: WARNING
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error

@@ -5,44 +5,42 @@ Return memory_copy_literal(
 	memory     *destination,
 	const char *literal)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(destination == NULL)
 	{
-		slog(ERROR,"Memory management; copy_literal destination must be non-NULL");
+		report("Memory management; copy_literal destination must be non-NULL");
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && literal == NULL)
+	if((TRIUMPH & status) && literal == NULL)
 	{
 		/* Treat NULL literals as a no-op to keep existing payload intact */
 		provide(SUCCESS);
 	}
 
-	if(SUCCESS == status && destination->element_size != sizeof(char))
+	if((TRIUMPH & status) && destination->element_size != sizeof(char))
 	{
-		slog(ERROR,"Memory management; copy_literal supports byte-sized elements only");
+		report("Memory management; copy_literal supports byte-sized elements only");
 		status = FAILURE;
 	}
 
 	size_t literal_length = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		literal_length = strlen(literal);
 	}
 
 	size_t new_total_elements = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		if(literal_length == SIZE_MAX)
 		{
-			slog(ERROR,"Memory management; Not enough room for string terminator");
+			report("Memory management; Not enough room for string terminator");
 			status = FAILURE;
 		} else {
 			new_total_elements = literal_length + 1;
@@ -55,13 +53,13 @@ Return memory_copy_literal(
 
 	run(resize(destination,new_total_elements));
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		unsigned char *destination_bytes = (unsigned char *)destination->data;
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL after resize");
+			report("Memory management; Destination data pointer is NULL after resize");
 			status = FAILURE;
 		} else {
 			if(literal_bytes > 0)

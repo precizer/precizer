@@ -1,146 +1,265 @@
 #include "sute.h"
 
-static void slog_test(void)
-{
-	printf("All available combinations:\n");
-	printf("%s\n",rational_convert(REGULAR));
-	printf("%s\n",rational_convert(VERBOSE));
-	printf("%s\n",rational_convert(TESTING));
-	printf("%s\n",rational_convert(SILENT));
-	printf("%s\n",rational_convert(REGULAR|VERBOSE));
-	printf("%s\n",rational_convert(REGULAR|TESTING));
-	printf("%s\n",rational_convert(VERBOSE|TESTING));
-	printf("%s\n",rational_convert(REGULAR|VERBOSE|TESTING));
-	printf("%s\n",rational_convert(ERROR));
-	printf("%s\n",rational_convert(UNDECOR));
-	printf("%s\n",rational_convert(EVERY|UNDECOR));
-	printf("%s\n",rational_convert(ERROR|UNDECOR));
-
-	/* Test REGULAR mode combinations */
-	rational_logger_mode = REGULAR;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("1.  Must print:"); slog(REGULAR,"true"); printf("\n");
-	printf("2. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
-	printf("3. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
-	printf("4.  Must print:");   slog(ERROR,"true"); printf("\n");
-
-	/* Test VERBOSE mode combinations */
-	rational_logger_mode = VERBOSE;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("5. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
-	printf("6.  Must print:"); slog(VERBOSE,"true"); printf("\n");
-	printf("7. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
-	printf("8.  Must print:");   slog(ERROR,"true"); printf("\n");
-
-	/* Test TESTING mode combinations */
-	rational_logger_mode = TESTING;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("9.  Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
-	printf("10. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
-	printf("11.  Must print:"); slog(TESTING,"true"); printf("\n");
-	printf("12.  Must print:");   slog(ERROR,"true"); printf("\n");
-
-	/* Test SILENT mode combinations */
-	rational_logger_mode = SILENT;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("13. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
-	printf("14. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
-	printf("15. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
-	printf("16. Won't print:");   slog(ERROR,"but printed!"); printf("\n");
-
-	/* Test REGULAR|VERBOSE combinations */
-	rational_logger_mode = REGULAR|VERBOSE;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("17.  Must print:"); slog(REGULAR,"true"); printf("\n");
-	printf("18.  Must print:"); slog(VERBOSE,"true"); printf("\n");
-	printf("19. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
-	printf("20.  Must print:");   slog(ERROR,"true"); printf("\n");
-
-	/* Test REGULAR|TESTING combinations */
-	rational_logger_mode = REGULAR|TESTING;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("21.  Must print:"); slog(REGULAR,"true"); printf("\n");
-	printf("22. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
-	printf("23.  Must print:"); slog(TESTING,"true"); printf("\n");
-	printf("24.  Must print:"); slog(ERROR,"true"); printf("\n");
-
-	/* Test VERBOSE|TESTING combinations */
-	rational_logger_mode = VERBOSE|TESTING;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("25. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
-	printf("26.  Must print:"); slog(VERBOSE,"true"); printf("\n");
-	printf("27.  Must print:"); slog(TESTING,"true"); printf("\n");
-	printf("28.  Must print:");   slog(ERROR,"true"); printf("\n");
-
-	/* Test REGULAR|VERBOSE|TESTING combinations */
-	rational_logger_mode = REGULAR|VERBOSE|TESTING;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("29. Must print:"); slog(REGULAR,"true"); printf("\n");
-	printf("30. Must print:"); slog(VERBOSE,"true"); printf("\n");
-	printf("31. Must print:"); slog(TESTING,"true"); printf("\n");
-	printf("32. Must print:");   slog(ERROR,"true"); printf("\n");
-
-	/* Test ERROR mode combinations */
-	rational_logger_mode = ERROR;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("33. Won't print:"); slog(REGULAR,"but printed!"); printf("\n");
-	printf("34. Won't print:"); slog(VERBOSE,"but printed!"); printf("\n");
-	printf("35. Won't print:"); slog(TESTING,"but printed!"); printf("\n");
-	printf("36.  Must print:");   slog(ERROR,"true"); printf("\n");
-
-	/*
-	 * Test UNDECOR flag: suppress logger prefixes (TESTING:, time/file/line/func, ERROR:)
-	 * The output between the '|' markers should contain only the message payload.
-	 */
-
-	rational_logger_mode = EVERY|ERROR;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("37. Must print no prefixes:|"); slog(EVERY|UNDECOR,"true"); printf("|\n");
-	printf("38. Must print no ERROR prefix:|"); slog(ERROR|UNDECOR,"true"); printf("|\n");
-
-	rational_logger_mode = VERBOSE;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("39. Must print no time/file/line/func:|"); slog(VERBOSE|UNDECOR,"true"); printf("|\n");
-
-	rational_logger_mode = TESTING;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("40. Must print no TESTING prefix:|"); slog(TESTING|UNDECOR,"true"); printf("|\n");
-
-	rational_logger_mode = REGULAR;
-	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
-	printf("41. Must not print (VERBOSE not enabled):|"); slog(VERBOSE|UNDECOR,"but printed!"); printf("|\n");
-}
 /**
- * All available combinations of slog options
+ *
+ * Validate file-level ignore filtering in a mixed directory
  *
  */
+Return test0009_1(void)
+{
+	INITTEST;
+	const char *db_filename = "database0009.db";
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--database=database0009.db "
+		"--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_001_1.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *expected_paths[] =
+	{
+		"alpha_m0n9k2_zz.txt",
+		"hold_a1r9v-0pq.bak",
+		"keep_4xv7__m2.log",
+		"omega_77xy__aa.bin",
+		"xqwe_90210.md",
+		"zeta_z1-9vv.dat"
+	};
+
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+
+	ASSERT(SUCCESS == delete_path(db_filename));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0009_001_2.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == delete_path(db_filename));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * Validate include over ignore with chaotic filenames
+ *
+ */
+static Return test0009_2(void)
+{
+	INITTEST;
+	const char *db_filename = "database0009_2.db";
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--database=database0009_2.db "
+		"--ignore=\"^(?:skip_|tmp_|zeta_|omega_).+\" "
+		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|zeta_z1-9vv\\.dat)$\" "
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_002.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *expected_paths[] =
+	{
+		"alpha_m0n9k2_zz.txt",
+		"hold_a1r9v-0pq.bak",
+		"keep_4xv7__m2.log",
+		"skip_4xv7__m2.log",
+		"tmp_qwe_90210.log",
+		"xqwe_90210.md",
+		"zeta_z1-9vv.dat"
+	};
+
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+
+	ASSERT(SUCCESS == delete_path(db_filename));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * Validate whole-directory ignore with selective include
+ *
+ */
+static Return test0009_3(void)
+{
+	INITTEST;
+	const char *db_filename = "database0009_3.db";
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--database=database0009_3.db "
+		"--ignore=\"^chaotic_filenames(?:/|$)\" "
+		"--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		"tests/fixtures/ignore_include_cases";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_003.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *expected_paths[] =
+	{
+		"chaotic_filenames/alpha_m0n9k2_zz.txt",
+		"chaotic_filenames/hold_a1r9v-0pq.bak",
+		"chaotic_filenames/keep_4xv7__m2.log",
+		"chaotic_filenames/omega_77xy__aa.bin",
+		"chaotic_filenames/xqwe_90210.md",
+		"chaotic_filenames/zeta_z1-9vv.dat"
+	};
+
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+
+	ASSERT(SUCCESS == delete_path(db_filename));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Validate update included branch in three passes
+ */
+static Return test0009_4(void)
+{
+	INITTEST;
+
+	const char *db_filename = "database0009_4.db";
+	create(char,result);
+	create(char,pattern);
+
+	const char *prepare_fixture_command =
+		"cd \"${TMPDIR}\"; "
+		"mv tests/fixtures/ignore_include_cases/chaotic_filenames tests/fixtures/ignore_include_cases/chaotic_filenames_backup; "
+		"cp -a tests/fixtures/ignore_include_cases/chaotic_filenames_backup tests/fixtures/ignore_include_cases/chaotic_filenames;";
+
+	ASSERT(SUCCESS == external_call(prepare_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments_create = "--database=database0009_4.db "
+		"--ignore=\"^(?:skip_|tmp_).+\" "
+		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
+
+	/*
+	 * Create the baseline DB using the same ignore/include rules as the later update passes
+	 * We intentionally build the initial record set as "tracked-after-filters" and not as "all files in directory"
+	 * Update mode processes the current filtered set and does not retroactively delete rows that were inserted earlier
+	 * If this first pass omitted filters, all 12 paths would be stored and the update-included scenario would validate a different logic branch
+	 */
+	ASSERT(SUCCESS == runit(arguments_create,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_004_1.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *change_file_command = "cd \"${TMPDIR}\"; "
+		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log";
+	ASSERT(SUCCESS == external_call(change_file_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *arguments_update = "--update --database=database0009_4.db "
+		"--ignore=\"^(?:skip_|tmp_).+\" "
+		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
+
+	// Update mode pass where only one included file has changed
+	ASSERT(SUCCESS == runit(arguments_update,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0009_004_2.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *change_files_command = "cd \"${TMPDIR}\"; "
+		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log; "
+		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak";
+	ASSERT(SUCCESS == external_call(change_files_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	// Truncate a tracked non-included file to trigger the "update as empty" branch
+	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
+
+	const char *arguments_update_watch = "--watch-timestamps --update --database=database0009_4.db "
+		"--ignore=\"^(?:skip_|tmp_).+\" "
+		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		"tests/fixtures/ignore_include_cases/chaotic_filenames";
+
+	// Update mode with watch-timestamps enabled where one non-included file becomes empty and two included files are updated
+	ASSERT(SUCCESS == runit(arguments_update_watch,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0009_004_3.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	const char *expected_paths[] =
+	{
+		"alpha_m0n9k2_zz.txt",
+		"hold_a1r9v-0pq.bak",
+		"keep_4xv7__m2.log",
+		"omega_77xy__aa.bin",
+		"skip_4xv7__m2.log",
+		"tmp_qwe_90210.log",
+		"tmp_z1-9vv.bak",
+		"xqwe_90210.md",
+		"zeta_z1-9vv.dat"
+	};
+
+	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	ASSERT(SUCCESS == delete_path(db_filename));
+
+	const char *restore_fixture_command =
+		"cd \"${TMPDIR}\"; "
+		"mv tests/fixtures/ignore_include_cases/chaotic_filenames_backup tests/fixtures/ignore_include_cases/chaotic_filenames;";
+	ASSERT(SUCCESS == delete_path("tests/fixtures/ignore_include_cases/chaotic_filenames"));
+	ASSERT(SUCCESS == external_call(restore_fixture_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
 Return test0009(void)
 {
 	INITTEST;
 
-	create(char,captured_stdout);
-	create(char,captured_stderr);
-
-	create(char,pattern);
-
-	ASSERT(SUCCESS == function_capture(slog_test,captured_stdout,captured_stderr));
-
-	#if 0
-	printf("captured_stderr:%s",getcstring(captured_stderr));
-	printf("captured_stdout:%s",getcstring(captured_stdout));
-	#endif
-
-	ASSERT(captured_stderr->length == 0);
-
-	ASSERT(SUCCESS == get_file_content("templates/0009.txt",pattern));
-
-	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern));
-
-	del(pattern);
-
-	del(captured_stdout);
-	del(captured_stderr);
+	TEST(test0009_1,"Ignore regexp splits chaotic filenames into tracked and skipped sets…");
+	TEST(test0009_2,"Ignore most files and include back selected ones…");
+	TEST(test0009_3,"Directory ignore with selective child include…");
+	TEST(test0009_4,"Create then update included files with and without detailed change output…");
 
 	RETURN_STATUS;
 }

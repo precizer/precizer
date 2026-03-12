@@ -19,13 +19,15 @@ Return check_file_exists(
 	bool       *file_exists,
 	const char *filename)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	*file_exists = false;
 
 	if(NULL == filename)
 	{
-		return(FAILURE);
+		deliver(FAILURE);
 	}
 
 	if(0 == access(filename,F_OK))
@@ -33,5 +35,5 @@ Return check_file_exists(
 		*file_exists = true;
 	}
 
-	return(status);
+	deliver(status);
 }

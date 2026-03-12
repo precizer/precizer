@@ -2,19 +2,17 @@
 
 Return memory_delete(memory *memory_structure)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(memory_structure == NULL)
 	{
-		slog(ERROR,"Memory management; Descriptor is NULL");
+		report("Memory management; Descriptor is NULL");
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		const size_t previously_allocated = memory_structure->actually_allocated_bytes;
 		size_t previous_effective_bytes = 0;

@@ -16,6 +16,8 @@ Return get_file_stat(
 	const char  *path,
 	struct stat *stat_buf)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if((NULL == path) || (NULL == stat_buf))
@@ -37,5 +39,5 @@ Return get_file_stat(
 		}
 	}
 
-	return(status);
+	deliver(status);
 }

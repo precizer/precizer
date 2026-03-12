@@ -118,11 +118,11 @@ static int sha512_compress(
 	}
 
 	/* Compress */
-    #define RND(a,b,c,d,e,f,g,h,i) \
-	    t0 = h + Sigma1(e) + Ch(e,f,g) + K[i] + W[i]; \
-	    t1 = Sigma0(a) + Maj(a,b,c); \
-	    d += t0; \
-	    h = t0 + t1;
+	#define RND(a,b,c,d,e,f,g,h,i) \
+		t0 = h + Sigma1(e) + Ch(e,f,g) + K[i] + W[i]; \
+		t1 = Sigma0(a) + Maj(a,b,c); \
+		d += t0; \
+		h = t0 + t1;
 
 	for(i = 0; i < 80; i += 8)
 	{
@@ -136,7 +136,7 @@ static int sha512_compress(
 		RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],i+7);
 	}
 
-    #undef RND
+	#undef RND
 
 	/* feedback */
 	for(i = 0; i < 8; i++)

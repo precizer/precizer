@@ -4,13 +4,13 @@
  * The Example 1 from README:
  * Now some tests could be running:
  * Stage 1. Adding:
- * precizer --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 2. Adding:
- * precizer --progress --database=database2.db tests/examples/diffs/diff2
+ * precizer --progress --database=database2.db tests/fixtures/diffs/diff2
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
-static Return test0011_1_readme(void)
+static Return test0011_1(void)
 {
 	INITTEST;
 
@@ -20,19 +20,21 @@ static Return test0011_1_readme(void)
 	create(char,result);
 	create(char,chunk);
 
-	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--progress --database=database1.db "
+	        "tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	arguments = "--progress --database=database2.db tests/examples/diffs/diff2";
+	arguments = "--progress --database=database2.db "
+	        "tests/fixtures/diffs/diff2";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	create(char,pattern);
@@ -45,8 +47,8 @@ static Return test0011_1_readme(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	del(pattern);
 	del(chunk);
@@ -59,36 +61,40 @@ static Return test0011_1_readme(void)
  * The Example 2 from README
  * Updating the database:
  * Stage 1. Adding:
- * precizer --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 2. Reuse previous example once agan. The first try. The warning message.
- * precizer --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 3. Run of database update without making actual changes to disk:
- * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
- * cp -a tests/examples/ tests/examples_backup
+ * mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup
+ * cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1
  * # Modify a file
- * echo -n "  " >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt
- * # Add a new file
- * touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt
+ * echo -n "  " >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt
+ * # Add a new file by truncating the file with the target name
+ * truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt")
  * # Remove a file
- * rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+ * delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt")
  * Stage 5. Run the precizer once again:
- * precizer --update --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
  * Final stage. Recover from backup:
- * rm -rf tests/examples/
- * mv tests/examples_backup/ tests/examples/
+ * delete_path("tests/fixtures/diffs/diff1")
+ * mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1
  */
-static Return test0011_2_readme(void)
+static Return test0011_2(void)
 {
 	INITTEST;
 
-	// Preparation for tests
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -a tests/examples/ tests/examples_backup;",COMPLETED,ALLOW_BOTH));
+	const char *command = "cd ${TMPDIR};"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
-	const char *arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
-	const char *command = NULL;
+	// Preparation for tests
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *arguments = "--progress --database=database1.db "
+	        "tests/fixtures/diffs/diff1";
 
 	// Create memory for the result
 	create(char,result);
@@ -99,7 +105,7 @@ static Return test0011_2_readme(void)
 
 	const char *filename = "templates/0011_002_1.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -110,11 +116,12 @@ static Return test0011_2_readme(void)
 	del(pattern);
 	del(result);
 
-	arguments = "--progress --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--progress --database=database1.db "
+	        "tests/fixtures/diffs/diff1";
 
 	filename = "templates/0011_002_2.txt";
 
-	ASSERT(SUCCESS == runit(arguments,result,WARNING,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -126,26 +133,30 @@ static Return test0011_2_readme(void)
 
 	create(char,chunk);
 
-	arguments = "--update --progress --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--update --progress --database=database1.db "
+	        "tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	command = "cd ${TMPDIR};"
-	        "echo -n '  ' >> tests/examples/diffs/diff1/1/AAA/BCB/CCC/a.txt;"
-	        "touch tests/examples/diffs/diff1/1/AAA/BCB/CCC/c.txt;"
-	        "rm tests/examples/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt";
+	ASSERT(SUCCESS == add_string_to("  ","tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	// Create the file as empty without using shell touch
+	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt"));
 
-	arguments = "--watch-timestamps --update --progress --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--watch-timestamps --update --progress "
+	        "--database=database1.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	filename = "templates/0011_002_3.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	del(pattern);
@@ -163,11 +174,11 @@ static Return test0011_2_readme(void)
  * anything on the screen. This makes sense when using the program inside scripts.
  * Let's add the --silent option to the previous example:
  *
- * precizer --silent --update --progress --database=database1.db tests/examples/diffs/diff1
+ * precizer --silent --update --progress --database=database1.db tests/fixtures/diffs/diff1
  *
  *
  */
-static Return test0011_3_readme(void)
+static Return test0011_3(void)
 {
 	INITTEST;
 
@@ -176,8 +187,15 @@ static Return test0011_3_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--silent --update --progress --database=database1.db "
+	        "tests/fixtures/diffs/diff1";
 
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	// Verify that silent mode produced no stdout after command execution
+	ASSERT(result->length == 0);
+
+#if 0
 	// Verify that silent mode produced no stdout after command execution
 	if(result->length > 0)
 	{
@@ -185,6 +203,7 @@ static Return test0011_3_readme(void)
 		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET,getcstring(result));
 		status = FAILURE;
 	}
+#endif
 
 	call(del(result));
 
@@ -194,7 +213,7 @@ static Return test0011_3_readme(void)
 
 	const char *filename = "templates/0011_003.txt";
 
-	ASSERT(SUCCESS == runit("--silent --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -210,7 +229,7 @@ static Return test0011_3_readme(void)
  * Additional information with --verbose mode
  *
  */
-static Return test0011_4_readme(void)
+static Return test0011_4(void)
 {
 	INITTEST;
 
@@ -223,7 +242,10 @@ static Return test0011_4_readme(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == runit("--verbose --update --progress --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--verbose --update --progress --database=database1.db "
+	        "tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -231,10 +253,13 @@ static Return test0011_4_readme(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
+	const char *command = "cd ${TMPDIR} && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -246,13 +271,13 @@ static Return test0011_4_readme(void)
  *
  *
  */
-static Return test0011_5_readme(void)
+static Return test0011_5(void)
 {
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--maxdepth=0 tests/examples/4";
+	const char *arguments = "--maxdepth=0 tests/fixtures/4";
 
 	const char *filename = "templates/0011_005_1.txt";
 
@@ -268,13 +293,13 @@ static Return test0011_5_readme(void)
 	   Therefore, all files that were not previously included
 	   will be added to the database. */
 
-	arguments = "--update tests/examples/4";
+	arguments = "--update tests/fixtures/4";
 
 	filename = "templates/0011_005_2.txt";
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(replacement));
 
 	RETURN_STATUS;
 }
@@ -286,13 +311,13 @@ static Return test0011_5_readme(void)
  *
  *
  */
-static Return test0011_6_readme(void)
+static Return test0011_6(void)
 {
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--ignore=\"^diff1/1/.*\" tests/examples/diffs";
+	const char *arguments = "--ignore=\"^diff1/1/.*\" tests/fixtures/diffs";
 
 	const char *filename = "templates/0011_006_1.txt";
 
@@ -306,7 +331,7 @@ static Return test0011_6_readme(void)
 
 	filename = "templates/0011_006_2.txt";
 
-	arguments = "--update tests/examples/diffs";
+	arguments = "--update tests/fixtures/diffs";
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -320,16 +345,15 @@ static Return test0011_6_readme(void)
  * using many --ignore options
  *
  */
-static Return test0011_7_readme(void)
+static Return test0011_7(void)
 {
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--update --db-clean-ignored"
+	const char *arguments = "--update --db-drop-ignored"
 	        " --ignore=\"^diff1/1/.*\""
-	        " --ignore=\"^diff2/1/.*\""
-	        " tests/examples/diffs";
+	        " --ignore=\"^diff2/1/.*\" tests/fixtures/diffs";
 
 	const char *filename = "templates/0011_007.txt";
 
@@ -341,7 +365,7 @@ static Return test0011_7_readme(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(replacement));
 
 	RETURN_STATUS;
 }
@@ -349,29 +373,31 @@ static Return test0011_7_readme(void)
 /**
  *
  * The Example 8 from README
- * Using the --ignore option(s) together with --include
+ * Using the --ignore options together with --include
  *
  *
  */
-static Return test0011_8_readme(void)
+static Return test0011_8(void)
 {
 	INITTEST;
 
-	const char *arguments = NULL;
-
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("tests/examples/diffs",NULL,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "tests/fixtures/diffs";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	arguments = "--update"
-	        " --db-clean-ignored"
+		" --progress"
 	        " --ignore=\"^.*/path2/.*\""
 	        " --ignore=\"^diff2/.*\""
 	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
 	        " --include=\"^diff2/path1/AAA/ZAW/.*\""
-	        " tests/examples/diffs";
+	        " --include=\"^diff1/path2/AAA/ZAW/A/b/c/a_file\\..*\""
+	        " --db-drop-ignored"
+	        " tests/fixtures/diffs";
 
 	const char *filename = "templates/0011_008.txt";
 
@@ -383,7 +409,7 @@ static Return test0011_8_readme(void)
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
-	ASSERT(SUCCESS == external_call("rm \"${TMPDIR}/${DBNAME}\"",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path(replacement));
 
 	RETURN_STATUS;
 }
@@ -399,14 +425,16 @@ Return test0011(void)
 	/// By default, the function worked without errors.
 	INITTEST;
 
-	TEST(test0011_1_readme,"README example 1 Adding and comparing…");
-	TEST(test0011_2_readme,"README example 2 Updating the data in DB…");
-	TEST(test0011_3_readme,"README example 3 --silent mode…");
-	TEST(test0011_4_readme,"README example 4 --verbose mode…");
-	TEST(test0011_5_readme,"README example 5 Disable recursion with --maxdepth…");
-	TEST(test0011_6_readme,"README example 6 Relative path to ignore with --ignore…");
-	TEST(test0011_7_readme,"README example 7 Multiple regexp for ignoring…");
-	TEST(test0011_8_readme,"README example 8 The --ignore option(s) together with --include…");
+	TEST(test0011_1,"README Example 1 Adding and comparing…");
+	TEST(test0011_2,"README Example 2 Updating the data in DB…");
+	TEST(test0011_3,"README Example 3 --silent mode…");
+	TEST(test0011_4,"README Example 4 --verbose mode…");
+	TEST(test0011_5,"README Example 5 Disable recursion with --maxdepth…");
+	TEST(test0011_6,"README Example 6 Relative path to ignore with --ignore…");
+	TEST(test0011_7,"README Example 7 Multiple regexp for ignoring…");
+	TEST(test0011_8,"README Example 8 The --ignore options together with --include…");
+	SUTE(test0030,"README Examples 9 & 10: --lock-checksum with --rehash-locked and --watch-timestamps…");
+	SUTE(test0029,"README Example 11: Testing how the application behaves with inaccessible files…");
 
 	RETURN_STATUS;
 }

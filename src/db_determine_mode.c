@@ -52,8 +52,8 @@ static const char *get_initialize_string_by_code(void)
  */
 Return db_determine_mode(void)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Interrupt the function smoothly */
@@ -131,6 +131,9 @@ Return db_determine_mode(void)
 
 				// In-memory special flag
 				config->sqlite_open_flag = SQL_DRY_RUN_MODE;
+			} else {
+				// Keep the primary database read-only in Dry Run mode
+				config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 			}
 		}
 	}

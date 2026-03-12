@@ -29,6 +29,25 @@ long long int cur_time_ns(void)
 }
 
 /**
+ * @brief Current monotonic time in nanoseconds
+ * @return long long int number of nanoseconds from a monotonic clock source
+ * @details Counter starts at an unspecified point and is intended for interval measurement.
+ * Unlike CLOCK_REALTIME, this source is not affected by wall-clock adjustments.
+ */
+#if defined(CLOCK_MONOTONIC) && (!defined(_POSIX_MONOTONIC_CLOCK) || (_POSIX_MONOTONIC_CLOCK >= 0))
+long long int cur_time_monotonic_ns(void)
+{
+	long long int ns;
+	time_t sec;
+	struct timespec spec;
+	clock_gettime(CLOCK_MONOTONIC,&spec);
+	sec = spec.tv_sec;
+	ns = spec.tv_nsec;
+	return(((long long int)sec * 1000000000LL) + ns);
+}
+#endif
+
+/**
  *
  * @brief Convert from UNIXtime seconds to ISO datetimes
  * @param seconds - if a parameter is passed in the form of milliseconds,
@@ -146,23 +165,38 @@ __attribute__((always_inline)) static inline Date asadate(const long long int na
  * than zero.
  *
  */
-static void catdate(
+static void catdate_r(
 	char *const         result,
+	const size_t        result_size,
+	size_t *const       used_len,
 	const long long int number,
 	const char *const   suffix)
 {
-	if(number > 0LL)
+	if(number <= 0LL || *used_len >= result_size)
 	{
-		// Temporary array
-		char tmp[MAX_CHARACTERS];
-		// Put a number into the temporary string array
-		snprintf(tmp,sizeof(tmp),"%lld",number);
-		// Copy the tmp line to the end of the result line
-		strcat(result,tmp);
-		// Add suffix
-		strcat(result,suffix);
-		// Add a space after the suffix
-		strcat(result," ");
+		return;
+	}
+
+	if(*used_len >= result_size)
+	{
+		return;
+	}
+
+	const int written = snprintf(result + *used_len,result_size - *used_len,"%lld%s ",number,suffix);
+
+	if(written < 0)
+	{
+		return;
+	}
+
+	const size_t write_size = (size_t)written;
+
+	if(write_size >= result_size - *used_len)
+	{
+		*used_len = result_size - 1ULL;
+		result[result_size - 1ULL] = '\0';
+	} else {
+		*used_len += write_size;
 	}
 }
 
@@ -171,47 +205,88 @@ static void catdate(
  * Convert nanoseconds to human-readable date as a string
  *
  */
-char *form_date(const long long int nanoseconds)
+char *form_date_r(
+	const long long int nanoseconds,
+	const ByteFormat    format,
+	char                *buffer,
+	const size_t        buffer_size)
 {
-	// Zero out a static memory area with a string array
-	static char result[MAX_CHARACTERS];
-	result[0] = '\0';  /* Initialize buffer as empty string */
+	if(buffer == NULL || buffer_size == 0ULL)
+	{
+		return(NULL);
+	}
+
+	buffer[0] = '\0';  /* Initialize buffer as empty string */
+	size_t used_len = 0ULL;
 
 	// If the time passed as argument is less than one nanosecond
 	if(nanoseconds == 0LL)
 	{
-		strcat(result,"0ns");
-		return(result);
+		(void)snprintf(buffer,buffer_size,"0ns");
+		return(buffer);
 	}
 
 	Date date = asadate(nanoseconds);
 
-	catdate(result,date.years,"y");
-	catdate(result,date.months,"mon");
-	catdate(result,date.weeks,"w");
-	catdate(result,date.days,"d");
-	catdate(result,date.hours,"h");
-	catdate(result,date.minutes,"min");
-	catdate(result,date.seconds,"s");
-	catdate(result,date.milliseconds,"ms");
-
-	#if 0
-
-	// Print out microseconds and nanoseconds only
-	// when larger units of time are not exist.
-	if(nanoseconds < 1000LL*1000LL)
+	if(format == MAJOR_VIEW)
 	{
-	#endif
-	catdate(result,date.microseconds,"μs");
-	catdate(result,date.nanoseconds,"ns");
-	#if 0
+		if(date.years > 0LL)
+		{
+			catdate_r(buffer,buffer_size,&used_len,date.years,"y");
+		} else if(date.months > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.months,"mon");
+		} else if(date.weeks > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.weeks,"w");
+		} else if(date.days > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.days,"d");
+		} else if(date.hours > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.hours,"h");
+		} else if(date.minutes > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.minutes,"min");
+		} else if(date.seconds > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.seconds,"s");
+		} else if(date.milliseconds > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.milliseconds,"ms");
+		} else if(date.microseconds > 0LL){
+			catdate_r(buffer,buffer_size,&used_len,date.microseconds,"μs");
+		} else {
+			catdate_r(buffer,buffer_size,&used_len,date.nanoseconds,"ns");
+		}
+	} else {
+		catdate_r(buffer,buffer_size,&used_len,date.years,"y");
+		catdate_r(buffer,buffer_size,&used_len,date.months,"mon");
+		catdate_r(buffer,buffer_size,&used_len,date.weeks,"w");
+		catdate_r(buffer,buffer_size,&used_len,date.days,"d");
+		catdate_r(buffer,buffer_size,&used_len,date.hours,"h");
+		catdate_r(buffer,buffer_size,&used_len,date.minutes,"min");
+		catdate_r(buffer,buffer_size,&used_len,date.seconds,"s");
+		catdate_r(buffer,buffer_size,&used_len,date.milliseconds,"ms");
+		catdate_r(buffer,buffer_size,&used_len,date.microseconds,"μs");
+		catdate_r(buffer,buffer_size,&used_len,date.nanoseconds,"ns");
+	}
+
+	// Remove trailing space at the end of the line.
+	if(used_len > 0ULL && buffer[used_len - 1ULL] == ' ')
+	{
+		buffer[used_len - 1ULL] = '\0';
+	}
+
+	return(buffer);
 }
-	#endif
 
-	// Remove space at the end of a line
-	result[strlen(result) - 1ULL] = '\0';
+/**
+ *
+ * Convert nanoseconds to human-readable date as a string
+ *
+ */
+char *form_date(
+	const long long int nanoseconds,
+	const ByteFormat    format)
+{
+	// Zero out a static memory area with a string array
+	static char result[MAX_CHARACTERS];
 
-	return(result);
+	return(form_date_r(nanoseconds,format,result,sizeof(result)));
 }
 #if 0
 /// Test
@@ -224,11 +299,10 @@ char *form_date(const long long int nanoseconds)
 
 int main(void)
 {
-
 	long long int ns = 339800645368118513LL;
-	printf("%s\n",form_date(ns));
+	printf("%s\n",form_date(ns,FULL_VIEW));
 
-	printf("%s\n",form_date(273522528));
+	printf("%s\n",form_date(273522528,FULL_VIEW));
 
 	return 0;
 }

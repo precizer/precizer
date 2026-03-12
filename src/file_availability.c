@@ -1,18 +1,18 @@
 #include "precizer.h"
 
 /**
- *
- * Function to check whether a directory exists or not.
- * @returns Returns EXISTS if given path is directory and exists
- *                  NOT_FOUND otherwise
- *
+ * @brief Check whether the given path exists and matches requested filesystem object type
+ * @param path Path to verify
+ * @param fs_object_type Expected object type: SHOULD_BE_A_FILE or SHOULD_BE_A_DIRECTORY
+ * @return EXISTS when path exists and matches requested type, otherwise NOT_FOUND
+ * @details The special path ":memory:" is treated as not available and returns NOT_FOUND
  */
 FileAvailability file_availability(
 	const char          *path,
 	const unsigned char fs_object_type)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/// The availability status returned by this function
+	/// By default, the path is treated as unavailable until verified
 	FileAvailability presence = NOT_FOUND;
 
 	// Do nothing if the path is not a real path but in-memory database
@@ -31,26 +31,21 @@ FileAvailability file_availability(
 		// Check is it a directory or a file
 		if(fs_object_type == SHOULD_BE_A_FILE)
 		{
+			// Verify that the path points to a regular file
 			if(S_ISREG(stats.st_mode))
 			{
 				slog(TRACE,"The path %s is exists and it is a file\n",path);
 				presence = EXISTS;
-			} else {
-				presence = NOT_FOUND;
 			}
 
-		} else {
+		} else if(fs_object_type == SHOULD_BE_A_DIRECTORY){
+			// Verify that the path points to a directory
 			if(S_ISDIR(stats.st_mode))
 			{
 				slog(TRACE,"The path %s is exists and it is a directory\n",path);
 				presence = EXISTS;
-			} else {
-				presence = NOT_FOUND;
 			}
 		}
-
-	} else {
-		presence = NOT_FOUND;
 	}
 
 	if(EXISTS != presence)
@@ -58,7 +53,7 @@ FileAvailability file_availability(
 		if(fs_object_type == SHOULD_BE_A_FILE)
 		{
 			slog(EVERY,"The path %s doesn't exist or it is not a file\n",path);
-		} else {
+		} else if(fs_object_type == SHOULD_BE_A_DIRECTORY){
 			slog(EVERY,"The path %s doesn't exist or it is not a directory\n",path);
 		}
 	}

@@ -22,8 +22,8 @@ Return testitall(
 	const char *function_name,
 	const char *test_description)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Start time measurement */
@@ -45,13 +45,14 @@ Return testitall(
 	/* Calculate execution time */
 	long long int __end_time = cur_time_ns();
 	long long int elapsed_time = __end_time - __start_time;
+	const char *elapsed_time_text = form_date(elapsed_time,MAJOR_VIEW);
 
 	/* Format and display test results with color coding */
 	if(SUCCESS == status)
 	{
 		/* Green OK for passed tests */
 		fprintf(stdout,WHITE "[  " BOLDGREEN "OK" RESET WHITE  "  ]" RESET );
-		fprintf(stdout,WHITE " %lldns %s %s" RESET,elapsed_time,function_name,test_description);
+		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		const char *extend_buffer = getcstring(EXTEND);
@@ -62,10 +63,10 @@ Return testitall(
 		}
 		fprintf(stdout,"\n");
 
-	} else if(SKIPPED == status){
+	} else if(DONOTHING & status){
 		/* Green OK for passed tests */
 		fprintf(stdout,WHITE "[ " BOLDYELLOW "SKIP" RESET WHITE  " ]" RESET );
-		fprintf(stdout,WHITE " %lldns %s %s" RESET,elapsed_time,function_name,test_description);
+		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		const char *extend_buffer = getcstring(EXTEND);
@@ -79,7 +80,7 @@ Return testitall(
 	} else {
 		/* Red FAIL for failed tests */
 		fprintf(stdout,WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" RESET );
-		fprintf(stdout,WHITE " %lldns %s %s" RESET,elapsed_time,function_name,test_description);
+		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
 		const char *extend_buffer = getcstring(EXTEND);
@@ -114,5 +115,5 @@ Return testitall(
 	call(del(STDERR));
 	call(del(EXTEND));
 
-	return(status);
+	deliver(status);
 }

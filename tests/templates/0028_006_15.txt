@@ -1,0 +1,1 @@
+\A(?:[^:\n]*/)?precizer: ERROR: --compare-filter can only be used together with --compare\. See --help for more information\Z

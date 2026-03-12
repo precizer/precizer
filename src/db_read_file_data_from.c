@@ -12,8 +12,8 @@ Return db_read_file_data_from(
 #endif
 	const char *relative_path)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Read from SQL */
@@ -75,7 +75,7 @@ Return db_read_file_data_from(
 			memcpy(&dbrow->sha512,get_sha512,SHA512_DIGEST_LENGTH);
 		}
 
-		dbrow->relative_path_already_in_db = true;
+		dbrow->relative_path_was_in_db_before_processing = true;
 	}
 
 	if(SQLITE_DONE != rc)

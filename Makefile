@@ -46,6 +46,7 @@
 .SUFFIXES: .c .o .h # Define our suffix list
 
 BUILDDIR = .builds
+COMPILE_COMMANDS = compile_commands.json
 
 #
 # Compiler flags
@@ -82,14 +83,10 @@ EXE = precizer
 
 SRC = src
 STRIP = -Wl,-s
-STRIP_MSG = "-strip"
 STATIC = -static -static-libgcc -Wl,--gc-sections
-STATIC_MSG = "with -static"
 ifeq ($(UNAME_S),Darwin)
 STRIP =
 STATIC =
-STATIC_MSG =
-STRIP_MSG =
 endif
 
 # UPX compression (disabled on macOS)
@@ -122,7 +119,7 @@ WFLAGS += -Wmissing-format-attribute
 endif
 
 # Arguments for the test
-ARGS = tests/examples/diffs
+ARGS = tests/fixtures/diffs
 
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
@@ -137,13 +134,6 @@ TOOLSDIR = tools
 
 # Extra libs for linking
 LDLIBS += -lpcre2-8
-
-# For old gcc versions
-GCC_VERSION := $(shell gcc -dumpversion)
-# Checking if the GCC version is less than 10
-ifeq ($(shell expr $(GCC_VERSION) \< 10), 1)
-LDLIBS += -pthread
-endif
 
 # Additional include headers of external libraries
 DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
@@ -189,7 +179,7 @@ DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
@@ -210,8 +200,8 @@ COV_OBJDIR = $(COV_DIR)/obj
 COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
 COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG
-COV_LDFLAGS =  -lgcov --coverage
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
+COV_LDFLAGS = -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -280,54 +270,71 @@ endif
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+define BUILD_USAGE_BANNER
+printf "Now some tests could be running:\n"
+printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/fixtures/diffs/diff1\n"
+printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/fixtures/diffs/diff2\n"
+printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
+endef
+
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: production-done dynamic-production-done portable-done
+.PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
 # Debug rules
 #
-debug: $(DBG_LIBDIR) $(DBG_EXE) debugfinal
+debug: $(DBG_EXE) debugfinal
 
 debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
-$(DBG_EXE): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked $(STATIC_MSG)"
+debuglibs:
+	@$(MAKE) -s -C libs debug SUBDIRS="$(EXTRA_LIBS)"
+
+$(DBG_EXE): $(DBG_OBJS) debuglibs
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, not stripped"
+else
+	@echo "$@ linked statically, not stripped"
+endif
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with debug flags"
 
 $(DBG_OBJDIR):
 	@mkdir -p $(DBG_OBJDIR)
 
-$(DBG_LIBDIR):
-	@$(MAKE) -s -C libs debug
-
 #
 # Coverage rules
 #
-coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal | test-coverage
-precizer-coverage: $(COV_LIBDIR) $(COV_EXE) coveragefinal
+coverage: test-coverage
+precizer-coverage: $(COV_EXE) coveragefinal
 
 coveragefinal: $(COV_EXE)
 	@echo "The application has been built and is located: $(COV_EXE)"
 
-$(COV_EXE): $(COV_OBJS) | $(COV_LIBDIR)
-	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked $(STATIC_MSG)"
+coveragelibs:
+	@$(MAKE) -s -C libs coverage SUBDIRS="$(EXTRA_LIBS)"
+
+$(COV_EXE): $(COV_OBJS) coveragelibs
+	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(LDLIBS)
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, not stripped"
+else
+	@echo "$@ linked statically, not stripped"
+endif
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with coverage flags"
 
 $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
-
-$(COV_LIBDIR):
-	@$(MAKE) -s -C libs coverage
 
 test-coverage:
 	@$(MAKE) -s -C $(TESTDIR) coverage
@@ -338,69 +345,86 @@ test-coverage:
 run: sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE) $(ARGS)
 
-sanitize: $(SNTZ_LIBDIR) $(SNTZ_EXE) sanitizefinal
+sanitize: $(SNTZ_EXE) sanitizefinal
 
 sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
-$(SNTZ_EXE): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $^ $(LDLIBS)
-	@echo "$@ linked"
+sanitizelibs:
+	@$(MAKE) -s -C libs sanitize SUBDIRS="$(EXTRA_LIBS)"
+
+$(SNTZ_EXE): $(SNTZ_OBJS) sanitizelibs
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $(SNTZ_OBJS) $(LDLIBS)
+	@echo "$@ linked dynamically, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
 	@mkdir -p $(SNTZ_OBJDIR)
-
-$(SNTZ_LIBDIR):
-	@$(MAKE) -s -C libs sanitize
 
 #
 # Production rules
 #
 prod: production
-production: $(PROD_LIBDIR) $(PROD_EXE) prodfinal banner
+production: banner-production
+
+production-done: $(PROD_EXE) prodfinal
+
+banner-production: production-done
+	@$(BUILD_USAGE_BANNER)
 
 prodfinal: $(PROD_EXE)
 	@cp $(PROD_EXE) $(EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
-$(PROD_EXE): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $^ $(LDLIBS)
+prodlibs:
+	@$(MAKE) -s -C libs production SUBDIRS="$(EXTRA_LIBS)"
+
+$(PROD_EXE): $(PROD_OBJS) prodlibs
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(LDLIBS)
 	@strip -x $(PROD_EXE)
-	@echo "$@ linked $(STATIC_MSG) $(STRIP_MSG)"
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, stripped"
+else
+	@echo "$@ linked statically, stripped"
+endif
 
 $(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
-	@echo "$< compiled with $(PROD_CPU)"
+	@echo "$< compiled with release flags"
 
 $(PROD_OBJDIR):
 	@mkdir -p $(PROD_OBJDIR)
 
-$(PROD_LIBDIR):
-	@$(MAKE) -s -C libs production
-
 #
 # Dynamic production rules
 #
-dynamic-production: $(PROD_LIBDIR) $(DYNP_EXE) dynprodfinal banner
+dynamic-production: banner-dynamic-production
+
+dynamic-production-done: $(DYNP_EXE) dynprodfinal
+
+banner-dynamic-production: dynamic-production-done
+	@$(BUILD_USAGE_BANNER)
 
 dynprodfinal: $(DYNP_EXE)
 	@cp $(DYNP_EXE) $(EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
-$(DYNP_EXE): $(DYNP_OBJS)
-	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $^ $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+dynprodlibs:
+	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
+
+$(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
+	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@strip -x $(DYNP_EXE)
-	@echo "$@ linked"
+	@echo "$@ linked dynamically, stripped"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
 	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with release flags"
 
 $(DYNP_OBJDIR):
 	@mkdir -p $(DYNP_OBJDIR)
@@ -408,55 +432,65 @@ $(DYNP_OBJDIR):
 #
 # Portable rules
 #
-portable: $(PRTB_LIBDIR) $(PRTB_EXE) portfinal banner
+portable: banner-portable
+
+portable-done: $(PRTB_EXE) portfinal
+
+banner-portable: portable-done
+	@$(BUILD_USAGE_BANNER)
 
 portfinal: $(PRTB_EXE)
 	@cp $(PRTB_EXE) $(EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
-$(PRTB_EXE): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $^ $(LDLIBS)
+portablelibs:
+	@$(MAKE) -s -C libs portable SUBDIRS="$(EXTRA_LIBS)"
+
+$(PRTB_EXE): $(PRTB_OBJS) portablelibs
+	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(LDLIBS)
 	@strip -x $(PRTB_EXE)
-	@echo "$@ linked $(STATIC_MSG) $(STRIP_MSG)"
+ifeq ($(UNAME_S),Darwin)
+	@echo "$@ linked dynamically, stripped"
+else
+	@echo "$@ linked statically, stripped"
+endif
 
 $(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
-	@echo "$< compiled"
+	@echo "$< compiled with portable flags"
 
 $(PRTB_OBJDIR):
 	@mkdir -p $(PRTB_OBJDIR)
 
-$(PRTB_LIBDIR):
-	@$(MAKE) -s -C libs portable
-
 clean: | clean-preproc clean-asm clean-tests
 	@rm -f *.out.* doc
+	@rm -f $(COMPILE_COMMANDS)
 	@rm -f $(DBG_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
 	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
 
+	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
-	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 
+	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
 	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
-	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 
+	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
-	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
 
+	@test -d $(PROD_LIBDIR) && rm -d $(PROD_LIBDIR) 2>/dev/null || true
 	@test -d $(PROD_OBJDIR) && rm -d $(PROD_OBJDIR) 2>/dev/null || true
 	@test -d $(PROD_DIR) && rm -d $(PROD_DIR) 2>/dev/null || true
-	@test -d $(PROD_LIBDIR) && rm -d $(PROD_LIBDIR) 2>/dev/null || true
 
 	@test -d $(DYNP_OBJDIR) && rm -d $(DYNP_OBJDIR) 2>/dev/null || true
 	@test -d $(DYNP_DIR) && rm -d $(DYNP_DIR) 2>/dev/null || true
 
+	@test -d $(PRTB_LIBDIR) && rm -d $(PRTB_LIBDIR) 2>/dev/null || true
 	@test -d $(PRTB_OBJDIR) && rm -d $(PRTB_OBJDIR) 2>/dev/null || true
 	@test -d $(PRTB_DIR) && rm -d $(PRTB_DIR) 2>/dev/null || true
-	@test -d $(PRTB_LIBDIR) && rm -d $(PRTB_LIBDIR) 2>/dev/null || true
 
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 
@@ -465,6 +499,10 @@ clean: | clean-preproc clean-asm clean-tests
 
 purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
+	@test -f $(COMPILE_COMMANDS) && rm $(COMPILE_COMMANDS) 2>/dev/null || true
+	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
+	@$(MAKE) -C tests clean-hugetestfile
+	@echo Quick cleanup of all artifacts
 
 clean-all: clean-tests clean clean-tools clean-docker
 	@$(MAKE) -C libs clean
@@ -483,10 +521,10 @@ clean-asm:
 
 test: tests
 tests: tests-sanitize
-tests-sanitize: sanitize
+tests-sanitize:
 	@$(MAKE) -s -C $(TESTDIR) sanitize
 
-tests-debug: debug
+tests-debug:
 	@$(MAKE) -s -C $(TESTDIR) debug
 
 #
@@ -494,7 +532,7 @@ tests-debug: debug
 #
 
 # Defaults for high-level docker targets
-DOCKER_DEFAULT_OS    ?= gentoo
+DOCKER_DEFAULT_OS    ?= ubuntu
 DOCKER_DEFAULT_BUILD ?= production
 
 # You can override these:
@@ -590,7 +628,7 @@ tests-in-docker: build-docker
 	done
 
 #
-# Generic docker targets (parsing using make functions only)
+# Generic docker targets
 #
 # Supported:
 #   make docker                           -> docker-export (defaults)
@@ -791,7 +829,8 @@ gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
 cppcheck:
-	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs -i tests $(DYNAMIC_INCPATH) --inconclusive .
+	bear --output $(COMPILE_COMMANDS) -- make -B -s .builds/production/precizer
+	cppcheck --project=$(COMPILE_COMMANDS) --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i libs/sqlite3/src --inconclusive
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
@@ -841,13 +880,10 @@ perf:
 stat: cloc
 cloc:
 #	@cloc --exclude-dir=$(SNTZ_DIR),$(DBG_DIR),$(PROD_DIR) $(PRTB_DIR) ./src
-	@cloc ./src
+	@cloc $(SRC) libs/sha512/src/ libs/mem/src/ libs/rational/src/ libs/testitall/src/
 
 banner:
-	@printf "Now some tests could be running:\n"
-	@printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/examples/diffs/diff1\n"
-	@printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/examples/diffs/diff2\n"
-	@printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
+	@$(BUILD_USAGE_BANNER)
 
 #
 # Print variables

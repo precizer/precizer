@@ -24,19 +24,26 @@ size_t file_buffer_memory(void)
 	const size_t buffer_size = 1024*1024;
 
 	// Number of actually free pages
-	long pages = -1;
+	long pages;
 
 #ifdef _SC_AVPHYS_PAGES
 	pages = sysconf(_SC_AVPHYS_PAGES);
 #elif defined(_SC_PHYS_PAGES)
 	// Fallback for platforms without _SC_AVPHYS_PAGES — use total pages
 	pages = sysconf(_SC_PHYS_PAGES);
+#else
+	pages = -1;
 #endif
+
+	if(pages == -1)
+	{
+		return(buffer_size);
+	}
 
 	/* Page size in bytes */
 	long page_size = sysconf(_SC_PAGESIZE);
 
-	if(pages == -1 || page_size == -1)
+	if(page_size == -1)
 	{
 		return(buffer_size);
 	}
@@ -46,7 +53,7 @@ size_t file_buffer_memory(void)
 
 	size_t one_percent = avail_bytes / 100;
 
-	slog(TRACE,"Bytes that can be allocated for the file buffer: %s\n",bkbmbgbtbpbeb(one_percent));
+	slog(TRACE,"Bytes that can be allocated for the file buffer: %s\n",bkbmbgbtbpbeb(one_percent,FULL_VIEW));
 
 	return(one_percent);
 }

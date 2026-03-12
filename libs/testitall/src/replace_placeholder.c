@@ -1,3 +1,7 @@
+#define PCRE2_STATIC
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+
 #include "testitall.h"
 
 Return replace_placeholder(
@@ -5,6 +9,8 @@ Return replace_placeholder(
 	const char *placeholder,
 	const char *replacement)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if((pattern == NULL) || (placeholder == NULL) || (replacement == NULL))
@@ -147,5 +153,5 @@ Return replace_placeholder(
 		pcre2_code_free(re);
 	}
 
-	return(status);
+	deliver(status);
 }

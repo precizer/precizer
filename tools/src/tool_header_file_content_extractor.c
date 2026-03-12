@@ -56,6 +56,208 @@ int remove_comments = 0;
 IncludePaths include_paths = {{{0}},0};
 
 /**
+ * @brief Copy string into fixed-size path buffer
+ *
+ * @param destination Destination buffer
+ * @param destination_size Destination buffer size
+ * @param source Source string
+ * @return int 1 on success, 0 on truncation or invalid input
+ */
+static int copy_path_string(
+	char       *destination,
+	size_t     destination_size,
+	const char *source)
+{
+	int written = 0;
+
+	if(NULL == destination || NULL == source || destination_size == 0U)
+	{
+		return 0;
+	}
+
+	written = snprintf(destination,destination_size,"%s",source);
+
+	if(written < 0 || (size_t)written >= destination_size)
+	{
+		destination[0] = '\0';
+		return 0;
+	}
+
+	return 1;
+}
+
+/**
+ * @brief Join directory path with relative file name
+ *
+ * @param destination Destination buffer
+ * @param destination_size Destination buffer size
+ * @param directory Directory path
+ * @param file_name Relative file name
+ * @return int 1 on success, 0 on truncation or invalid input
+ */
+static int join_path(
+	char       *destination,
+	size_t     destination_size,
+	const char *directory,
+	const char *file_name)
+{
+	int written = 0;
+
+	if(NULL == destination || NULL == directory || NULL == file_name ||
+		destination_size == 0U)
+	{
+		return 0;
+	}
+
+	if(directory[0] == '\0' || strcmp(directory,".") == 0)
+	{
+		written = snprintf(destination,destination_size,"%s",file_name);
+	} else if(strcmp(directory,"/") == 0) {
+		written = snprintf(destination,destination_size,"/%s",file_name);
+	} else {
+		written = snprintf(destination,destination_size,"%s/%s",
+			directory,file_name);
+	}
+
+	if(written < 0 || (size_t)written >= destination_size)
+	{
+		destination[0] = '\0';
+		return 0;
+	}
+
+	return 1;
+}
+
+/**
+ * @brief Resolve existing path to canonical absolute path
+ *
+ * @param path Input path
+ * @param resolved_path Buffer for canonical path
+ * @return int 1 on success, 0 otherwise
+ */
+static int canonicalize_existing_path(
+	const char *path,
+	char       *resolved_path)
+{
+	if(NULL == path || NULL == resolved_path)
+	{
+		return 0;
+	}
+
+	if(NULL == realpath(path,resolved_path))
+	{
+		resolved_path[0] = '\0';
+		return 0;
+	}
+
+	return 1;
+}
+
+/**
+ * @brief Check whether path contains parent directory traversal
+ *
+ * @param path Path to inspect
+ * @return int 1 if traversal is present, 0 otherwise
+ */
+__attribute__((pure)) static int path_contains_parent_reference(const char *path)
+{
+	const char *segment = NULL;
+
+	if(NULL == path)
+	{
+		return 0;
+	}
+
+	segment = path;
+
+	while(*segment != '\0')
+	{
+		const char *separator = strchr(segment,'/');
+		size_t segment_length = 0U;
+
+		if(NULL == separator)
+		{
+			segment_length = strlen(segment);
+		} else {
+			segment_length = (size_t)(separator - segment);
+		}
+
+		if(segment_length == 2U && segment[0] == '.' && segment[1] == '.')
+		{
+			return 1;
+		}
+
+		if(NULL == separator)
+		{
+			break;
+		}
+
+		segment = separator + 1;
+	}
+
+	return 0;
+}
+
+/**
+ * @brief Check whether canonical path stays within canonical root
+ *
+ * @param path Canonical path
+ * @param root Canonical root path
+ * @return int 1 if path is inside root, 0 otherwise
+ */
+__attribute__((pure)) static int path_is_within_root(
+	const char *path,
+	const char *root)
+{
+	size_t root_length = 0U;
+
+	if(NULL == path || NULL == root)
+	{
+		return 0;
+	}
+
+	if(strcmp(root,"/") == 0)
+	{
+		return path[0] == '/';
+	}
+
+	root_length = strlen(root);
+
+	if(strncmp(path,root,root_length) != 0)
+	{
+		return 0;
+	}
+
+	return path[root_length] == '\0' || path[root_length] == '/';
+}
+
+/**
+ * @brief Check whether header name is safe for local include resolution
+ *
+ * @param header_name Header name from source code
+ * @return int 1 if header name is allowed, 0 otherwise
+ */
+__attribute__((pure)) static int is_allowed_header_name(const char *header_name)
+{
+	if(NULL == header_name || header_name[0] == '\0')
+	{
+		return 0;
+	}
+
+	if(header_name[0] == '/')
+	{
+		return 0;
+	}
+
+	if(path_contains_parent_reference(header_name))
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
+/**
  * @brief Remove C-style comments from a string
  *
  * Handles both single-line (//) and multi-line comments (/ * * /)
@@ -153,18 +355,28 @@ static void strip_comments(
  */
 static int add_include_path(const char *path)
 {
+	char resolved_path[MAX_PATH];
+	struct stat path_status;
+
 	if(include_paths.count >= MAX_INCLUDE_PATHS)
 	{
 		return -1;
 	}
 
-	// Remove trailing slash if present
-	size_t len = strlen(path);
-	strncpy(include_paths.paths[include_paths.count],path,MAX_PATH - 1);
-
-	if(len > 0 && path[len-1] == '/')
+	if(!canonicalize_existing_path(path,resolved_path))
 	{
-		include_paths.paths[include_paths.count][len-1] = '\0';
+		return -2;
+	}
+
+	if(stat(resolved_path,&path_status) != 0 || !S_ISDIR(path_status.st_mode))
+	{
+		return -2;
+	}
+
+	if(!copy_path_string(include_paths.paths[include_paths.count],
+		sizeof(include_paths.paths[include_paths.count]),resolved_path))
+	{
+		return -3;
 	}
 
 	include_paths.count++;
@@ -194,29 +406,33 @@ static int file_exists(const char *path)
 static int find_header_file(
 	const char *header_name,
 	const char *current_dir,
-	char       *result)
+	char       *result,
+	size_t     result_size)
 {
 	char temp_path[MAX_PATH];
+	char resolved_path[MAX_PATH];
+
+	if(!is_allowed_header_name(header_name))
+	{
+		return 0;
+	}
 
 	// First try current directory
-	snprintf(temp_path,sizeof(temp_path),"%s%s",current_dir,header_name);
-
-	if(file_exists(temp_path))
+	if(join_path(temp_path,sizeof(temp_path),current_dir,header_name) &&
+		canonicalize_existing_path(temp_path,resolved_path) &&
+		path_is_within_root(resolved_path,current_dir))
 	{
-		strcpy(result,temp_path);
-		return 1;
+		return copy_path_string(result,result_size,resolved_path);
 	}
 
 	// Then try all include paths
 	for(int i = 0; i < include_paths.count; i++)
 	{
-		snprintf(temp_path,sizeof(temp_path),"%s/%s",
-			include_paths.paths[i],header_name);
-
-		if(file_exists(temp_path))
+		if(join_path(temp_path,sizeof(temp_path),include_paths.paths[i],header_name) &&
+			canonicalize_existing_path(temp_path,resolved_path) &&
+			path_is_within_root(resolved_path,include_paths.paths[i]))
 		{
-			strcpy(result,temp_path);
-			return 1;
+			return copy_path_string(result,result_size,resolved_path);
 		}
 	}
 
@@ -254,7 +470,14 @@ static void add_processed(const char *path)
 		printf("Warning: Too many header files!\n");
 		return;
 	}
-	strcpy(processed_headers[header_count].path,path);
+
+	if(!copy_path_string(processed_headers[header_count].path,
+		sizeof(processed_headers[header_count].path),path))
+	{
+		printf("Warning: Header path is too long: %s\n",path);
+		return;
+	}
+
 	header_count++;
 }
 
@@ -267,16 +490,31 @@ static void add_processed(const char *path)
  */
 static void get_directory(
 	char       *dir,
+	size_t     dir_size,
 	const char *path)
 {
-	strcpy(dir,path);
+	if(!copy_path_string(dir,dir_size,path))
+	{
+		dir[0] = '\0';
+		return;
+	}
+
 	char *last_slash = strrchr(dir,'/');
 
 	if(last_slash)
 	{
-		*(last_slash + 1) = '\0';
+		if(last_slash == dir)
+		{
+			dir[1] = '\0';
+		} else {
+			*last_slash = '\0';
+		}
 	} else {
-		dir[0] = '\0';
+		if(dir_size > 1U)
+		{
+			dir[0] = '.';
+			dir[1] = '\0';
+		}
 	}
 }
 
@@ -315,7 +553,7 @@ static void process_header(const char *file_path)
 	add_processed(file_path);
 
 	char current_dir[MAX_PATH];
-	get_directory(current_dir,file_path);
+	get_directory(current_dir,sizeof(current_dir),file_path);
 
 	printf("\n/* === Content of %s === */\n",file_path);
 
@@ -354,7 +592,8 @@ static void process_header(const char *file_path)
 
 					char include_path[MAX_PATH];
 
-					if(find_header_file(start,current_dir,include_path))
+					if(find_header_file(start,current_dir,include_path,
+						sizeof(include_path)))
 					{
 						process_header(include_path);
 					} else {
@@ -452,7 +691,8 @@ int main(
 	int  argc,
 	char *argv[])
 {
-	char *input_file = NULL;
+	const char *input_file = NULL;
+	char resolved_input_file[MAX_PATH];
 
 	// Parse command line arguments
 	for(int i = 1; i < argc; i++)
@@ -466,9 +706,23 @@ int main(
 				return 1;
 			}
 
-			if(add_include_path(argv[i]) != 0)
+			int include_status = add_include_path(argv[i]);
+
+			if(include_status == -1)
 			{
 				printf("Error: Too many include paths\n");
+				return 1;
+			}
+
+			if(include_status == -2)
+			{
+				printf("Error: Invalid include path: %s\n",argv[i]);
+				return 1;
+			}
+
+			if(include_status == -3)
+			{
+				printf("Error: Include path is too long: %s\n",argv[i]);
 				return 1;
 			}
 		} else if(strcmp(argv[i],"-s") == 0){
@@ -499,11 +753,17 @@ int main(
 		return 1;
 	}
 
+	if(!canonicalize_existing_path(input_file,resolved_input_file))
+	{
+		printf("Error: Cannot resolve file %s\n",input_file);
+		return 1;
+	}
+
 	memset(processed_headers,0,sizeof(processed_headers));
 	header_count = 0;
 	missing_count = 0;
 
-	process_header(input_file);
+	process_header(resolved_input_file);
 
 	if(missing_count > 0)
 	{

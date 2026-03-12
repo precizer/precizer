@@ -18,8 +18,8 @@ Return set_environment_variable(
 	const char *variable,
 	const char *value)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Validate input parameters */
@@ -46,5 +46,5 @@ Return set_environment_variable(
 		echo(STDERR,"ERROR: Failed to set environment variable\n");
 	}
 
-	return(status);
+	deliver(status);
 }

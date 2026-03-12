@@ -25,8 +25,8 @@ Return add_string_to_array(
 	char       ***array_ptr,
 	const char *new_string)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(array_ptr == NULL)
@@ -62,11 +62,8 @@ Return add_string_to_array(
 		// Reallocation failed, free the original array
 		report("Memory allocation failed, requested size: %zu bytes",(size + 2) * sizeof(char *));
 
-		for(size_t i = 0; i < size; i++)
-		{
-			free(array[i]);
-		}
-		free(array);
+		free_string_array(array);
+		*array_ptr = NULL;
 		provide(FAILURE);
 	} else {
 		array = tmp;
@@ -80,11 +77,8 @@ Return add_string_to_array(
 		report("Memory allocation failed, requested size: %zu bytes",(strlen(new_string) + 1) * sizeof(char));
 
 		// Reallocation failed, free the original array
-		for(size_t i = 0; i < size; i++)
-		{
-			free(array[i]);
-		}
-		free(array);
+		free_string_array(array);
+		*array_ptr = NULL;
 		provide(FAILURE);
 	}
 

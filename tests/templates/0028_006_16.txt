@@ -1,0 +1,1 @@
+\A(?:[^:\n]*/)?precizer: option (?:'|`)--compare-filter' requires an argument\nTry `precizer --help' or `precizer --usage' for more information\.\Z

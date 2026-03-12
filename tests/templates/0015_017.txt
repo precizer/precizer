@@ -1,0 +1,63 @@
+\ATESTING:Configuration initialization is finished
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=0015_database_v4_reference\.db, 0015_database_v3_rollback\.db
+TESTING:argument:db_file_paths=0015_database_v4_reference\.db, 0015_database_v3_rollback\.db
+TESTING:argument:db_file_names=0015_database_v4_reference\.db, 0015_database_v3_rollback\.db
+TESTING:argument:update=yes
+TESTING:argument:compare=yes
+TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
+TESTING:Comparing databases. Directory path verification is not required
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: DisposableDB
+TESTING:Primary database file path: :memory:
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Successfully opened database DisposableDB
+TESTING:The primary database and tables do not require initialization
+TESTING:The primary database named DisposableDB is ready for operations
+TESTING:Database initialization process completed
+TESTING:The comparison of 0015_database_v4_reference\.db and 0015_database_v3_rollback\.db databases is starting…
+TESTING:Verify that the path 0015_database_v4_reference\.db exists
+TESTING:The path 0015_database_v4_reference\.db is exists and it is a file
+TESTING:Starting database file 0015_database_v4_reference\.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database 0015_database_v4_reference\.db has been verified and is in good condition
+TESTING:Version number 4 found in database
+TESTING:The 0015_database_v4_reference\.db database file is version 4
+TESTING:The database 0015_database_v4_reference\.db is on version 4 and does not require any upgrades
+TESTING:Verify that the path 0015_database_v3_rollback\.db exists
+TESTING:The path 0015_database_v3_rollback\.db is exists and it is a file
+TESTING:Starting database file 0015_database_v3_rollback\.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database 0015_database_v3_rollback\.db has been verified and is in good condition
+TESTING:Version number 3 found in database
+TESTING:The 0015_database_v3_rollback\.db database file is version 3
+TESTING:The database 0015_database_v3_rollback\.db file has an outdated version 3 and requires updating to the version 4
+TESTING:Warning! The update will be performed in transaction mode for database safety
+TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
+TESTING:Migration from version 3 to version 4 started
+ERROR:Error executing update statement \(\d+\): forced rollback test failure
+TESTING:Returned process_row:\d+ status: FAILURE
+TESTING:Returned process_database:\d+ status: FAILURE
+ERROR:Database processing failed
+TESTING:The transaction has been rolled back
+TESTING:The database connection has been closed
+TESTING:Returned db_migrate_to_version_4:\d+ status: FAILURE
+TESTING:Returned db_upgrade:\d+ status: FAILURE
+ERROR:Database 0015_database_v3_rollback\.db upgrade failed
+TESTING:Returned db_check_version:\d+ status: FAILURE
+TESTING:Returned db_test:\d+ status: FAILURE
+TESTING:Comparison of 0015_database_v4_reference\.db and 0015_database_v3_rollback\.db databases is complete
+TESTING:Returned db_compare:\d+ status: FAILURE
+TESTING:The database connection has been closed
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » FAILURE\Z

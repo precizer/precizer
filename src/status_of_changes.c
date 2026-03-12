@@ -7,10 +7,8 @@
  */
 Return status_of_changes(void)
 {
-	/** @var Return status
-	 *  @brief The status that will be passed to return() before exiting
-	 *  @details By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(config->compare != true && global_interrupt_flag == false)
@@ -24,7 +22,7 @@ Return status_of_changes(void)
 			{
 				slog(EVERY,BOLD "Nothing has changed in the primary database since the program was launched (no files were added, updated, or deleted)" RESET "\n");
 			} else {
-				slog(EVERY,BOLD "The brand-new primary database file %s was created and modified since the program started (files were added, removed, or updated)" RESET "\n",config->db_file_name);
+				slog(EVERY,BOLD "The brand-new primary database file %s was created and modified since the program started (files were added, removed, or updated)" RESET "\n",confstr(db_file_name));
 			}
 		}
 	}

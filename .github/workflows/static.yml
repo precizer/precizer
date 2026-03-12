@@ -42,11 +42,11 @@ jobs:
           rm -rf public
           mkdir -p public
 
-          # Для Project Pages корень сайта = /precizer/
-          # Поэтому редирект должен быть именно в public/index.html
+          # For Project Pages, the site root is /precizer/
+          # Therefore, the redirect must be in public/index.html
           cp -f .html/index.html public/index.html
 
-          # На всякий случай
+          # As a precaution
           touch public/.nojekyll
 
       - name: Setup Pages

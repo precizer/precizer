@@ -1,11 +1,11 @@
 ARG BUILD=production
-FROM archlinux:latest AS arch
+FROM archlinux@sha256:b55ff128e357ad0ce5e0438e2d7bf9b51fb2ce5bdf424109da14ee01c996d571 AS arch
 
 ARG BUILD
 ENV BUILD=${BUILD}
 
 RUN set -eux; \
-     pacman -Syu --noconfirm --needed base-devel gcc-libs sqlite llvm pcre2 upx inetutils; \
+     pacman -Syu --noconfirm --needed base-devel gcc-libs sqlite llvm pcre2 upx inetutils cmocka; \
      pacman -Scc --noconfirm
 
 WORKDIR /precizer

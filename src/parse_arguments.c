@@ -1,61 +1,60 @@
 #include "precizer.h"
 #include <sysexits.h>
 
-#ifdef TESTITALL
-static bool missing_arguments = false;
-#endif
-
 /**
- *
- * @brief Parse arguments with argp lib
- *
+ * @brief Parse command-line arguments and populate global runtime configuration
  */
 
-const char *argp_program_version = APP_NAME " " APP_VERSION;
-
-/* Program documentation. */
+/* Program documentation text used by argp */
 static char doc[] =
-        "\n" APP_NAME " " APP_VERSION " — verify file checksums at scale\n\n"
+        "\nVerify file checksums at scale\n\n"
         BOLD APP_NAME RESET " is a lightweight and blazing-fast CLI application designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program recursively traverses directories, generating a database of files and their checksums for quick and efficient comparisons.\n"
         "\n"
         "Built for both embedded platforms and large-scale clustered mainframes, " BOLD APP_NAME RESET " helps detect synchronization errors by comparing files and their checksums across different sources. It can also be used to analyze historical changes by comparing databases generated at different points in time from the same source.\n"
         "\n"
-        "Glory to Ukraine!\n"
+        "With love for Ukraine\n"
         "\vSIMPLE EXAMPLE\n"
         "\n"
-        "Consider two hosts with large disks containing identical content mounted at /mnt1 and /mnt2 respectively. The task is to verify content identity and identify any differences.\n"
+        "Use this workflow to verify that two mounted directory trees are equivalent.\n"
         "\n"
-        "1. Run the program on the first machine with host name, for example “host1”:\n"
+        "Assume the source trees are mounted at " YELLOW "/mnt1" RESET " and " YELLOW "/mnt2" RESET ".\n"
         "\n"
-        APP_NAME " --progress /mnt1\n"
+        "1. On machine " YELLOW "'host1'" RESET ", run:\n"
         "\n"
-        "The program recursively traverses all directories starting from /mnt1 and the host1.db database will be created in the current directory. The --progress option visualizes progress and will show the amount of space and the number of files being examined.\n"
+        "   " BOLDGREEN "$ " APP_NAME " --progress /mnt1" RESET "\n"
         "\n"
-        "2. Run the program on a second machine with a host name, for example host2:\n"
+        "This traversal scans " YELLOW "/mnt1" RESET " recursively and creates " YELLOW "host1.db" RESET " in the current directory.\n"
+        "The " BOLD "--progress" RESET " option reports processed data volume and file count.\n"
         "\n"
-        APP_NAME " --progress /mnt2\n"
+        "2. On machine " YELLOW "'host2'" RESET ", run:\n"
         "\n"
-        "As a result, the host2.db database will be created in the current directory.\n"
+        "   " BOLDGREEN "$ " APP_NAME " --progress /mnt2" RESET "\n"
         "\n"
-        "3. Transfer the host1.db and host2.db files to either machine and run the program with the appropriate parameters to compare the databases:\n"
+        "This creates " YELLOW "host2.db" RESET " in the current directory.\n"
         "\n"
-        APP_NAME " --compare host1.db host2.db\n"
+        "3. Copy " YELLOW "host1.db" RESET " and " YELLOW "host2.db" RESET " to one machine, then run:\n"
         "\n"
-        "The following information will be displayed on the screen:\n"
+        "   " BOLDGREEN "$ " APP_NAME " --compare host1.db host2.db" RESET "\n"
         "\n"
-        "* Which files are missing on “host1” but present on “host2” and vice versa.\n"
-        "* For which files, present on both hosts, the checksums do NOT match.\n"
+        "Output reports:\n"
         "\n"
-        "Note that " APP_NAME " writes only relative paths to the database. The example file “/mnt1/abc/def/aaa.txt” will be written to the database as “abc/def/aaa.txt” without /mnt1. The same thing will happen with the file “/mnt2/abc/def/aaa.txt”. Despite different mount points and different sources the files can be compared with each other under the same names “abc/def/aaa.txt” with the corresponding checksums.\n"
+        "* Files present on " YELLOW "'host1'" RESET " but missing on " YELLOW "'host2'" RESET ", and vice versa.\n"
+        "* Files present on both hosts whose SHA512 checksums do not match.\n"
         "\n"
-        "All other technical details could be found in README file of the project";
+        "Database paths are stored as relative paths only.\n"
+        "For example, " YELLOW "/mnt1/abc/def/aaa.txt" RESET " is stored as " YELLOW "abc/def/aaa.txt" RESET ". "
+        "The same relative-path rule applies to " YELLOW "/mnt2/abc/def/aaa.txt" RESET ", enabling direct cross-source comparison.\n"
+        "\n"
+        "See the project README for additional technical details.";
 
-/* A description of the arguments we accept. */
+/* Positional-argument description for argp */
 static char args_doc[] = "PATH";
 
-/* The options we understand. */
+static bool information_mode_requested = false;
+
+/* Supported command-line options for argp */
 static struct argp_option options[] = {
-	{ 0,0,0,0,"Protecting immutable archives with:",3},
+	{ 0,0,0,0,"Locked Checksum Protection:",3},
 	{"lock-checksum",'k',"PCRE2_REGEXP",0,"Relative path to be treated as immutable archival data. PCRE2 regular expressions can be used to "
 	 "select files or directories whose checksums are written once to the database and never updated "
 	 "again. If no matching files exist in the database yet, their entries and checksums will still be "
@@ -87,24 +86,31 @@ static struct argp_option options[] = {
 	 "Example:\n"
 	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2024/.*\" --rehash-locked /mnt/storage" RESET "\n",0},
 	{ 0,0,0,0,"Build database options:",2},
+	{ 0,0,0,0,"Path Filtering and Ignore Policy:",4},
 	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions could be used to specify "
 	 "a pattern to ignore files or directories. Attention! All paths for the regular expression must be specified as relative. To understand what a relative path looks like, just run traverses without the "
 	 BOLD "--ignore" RESET " option and look how the terminal will display "
 	 "relative paths that are written to the database.\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --ignore=\"^diff2/1/.*\" tests/examples/diffs" RESET "\n"
+	 BOLD APP_NAME " --ignore=\"^diff2/1/.*\" tests/fixtures/diffs" RESET "\n"
 	 "In this example, the starting path for the traversing "
-	 "is ./tests/examples/diffs and the relative path to ignore will "
-	 "be ./tests/examples/diffs/diff2/1/ and all subdirectories (/.*).\n"
+	 "is ./tests/fixtures/diffs and the relative path to ignore will "
+	 "be ./tests/fixtures/diffs/diff2/1/ and all subdirectories (/.*).\n"
 	 "Multiple regular expressions for ignore could be specified using many "
 	 BOLD "--ignore" RESET " options at once.\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/examples/diffs" RESET "\n",0 },
-	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",0 },
-	{"db-clean-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-clean-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",0},
+	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/fixtures/diffs" RESET "\n",4 },
+	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",4 },
+	{"db-drop-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-drop-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",3},
+	{"db-clean-ignored",'C',0,OPTION_ALIAS | OPTION_HIDDEN,0,3}, // This legacy can be removed in 2036 (10-year Long-Term Support)
+	{"db-drop-inaccessible",'X',0,0,"Allow dropping database records for files that are inaccessible due to permission errors. By default, such paths are reported as \"inaccessible\" and their DB records are kept to avoid accidental loss when permissions change. This option is effective only with " BOLD "--update" RESET ".\n"
+	 "Example:\n"
+	 BOLD APP_NAME " --update --db-drop-inaccessible /mnt/storage" RESET "\n",2},
+	{"drop-inaccessible",'X',0,OPTION_ALIAS | OPTION_HIDDEN,0,0}, // This legacy can be removed in 2036 (10-year Long-Term Support)
 	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.\n",0},
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.\n",0},
-	{"dry-run",'n',0,0,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET "\n",0},
+	{"dry-run",'n',"MODE",OPTION_ARG_OPTIONAL,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET ". "
+	 "Supported mode: " BOLD "--dry-run=with-checksums" RESET " (read files and calculate checksums during dry run).\n",0},
 	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.\n",0 },
 	{"force",'f',0,0,"Use this option only in case when the PATHs that were written into the database as a result of the last scanning really need to be renewed. Warning! If this option will be used in incorrect way, information about files and their checksums against the database would be lost.\n",0},
 	{"update",'u',0,0,"Updates the database to reflect file system changes (new, modified and deleted files). Must be used with the same initial PATH that was used when creating the database, as existing records will be replaced with data from the specified location. This option modifies database consistency. Use with caution, especially in automated scripts, as incorrect usage may lead to loss of file checksums and metadata.\n",0 },
@@ -112,14 +118,59 @@ static struct argp_option options[] = {
 	{"check-level",'l',"FULL|QUICK",0,"Select database validation level: 'quick' for basic structure check, 'full' (default) for comprehensive integrity verification.\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
 	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n",0 },
+	{"compare-filter",'F',"checksum-mismatch|first-source-only|second-source-only",0,
+	 "Filter output categories for " BOLD "--compare" RESET ". "
+	 "Supported values: "
+	 BOLD "checksum-mismatch" RESET ", "
+	 BOLD "first-source-only" RESET ", "
+	 BOLD "second-source-only" RESET ". "
+	 "The option can be specified multiple times in any combination.\n",0},
 	{ 0,0,0,0,"Visualizations options:\n",-1},
 	{"silent",'s',0,0,"Don't produce any output. The option will not affect " BOLD "--compare" RESET,0 },
+	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore/--include" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.\n",0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
+	{"help",'h',0,0,"Give this help list",-1 },
+	{"help",'?',0,OPTION_ALIAS | OPTION_HIDDEN,0,-1 },
+	{"usage",'z',0,0,"Give a short usage message",-1 },
+	{"version",'V',0,0,"Print program version",-1 },
 	{0}
 };
 
-/* Parse a single option. */
+/**
+ * @brief Convert an argp parse error code into human-readable text
+ * @param parse_error Error code returned by argp_parse
+ * @return Pointer to a static descriptive string
+ */
+static const char *argp_error_to_text(const error_t parse_error)
+{
+	if(parse_error == EX_USAGE)
+	{
+		return("command line usage error");
+	}
+
+	if(parse_error == ARGP_ERR_UNKNOWN)
+	{
+		return("unknown argument parsing error");
+	}
+
+	const char *message = strerror(parse_error);
+
+	if(message == NULL || message[0] == '\0')
+	{
+		return("unknown error");
+	}
+
+	return(message);
+}
+
+/**
+ * @brief Handle a single argp parser event
+ * @param key Current option key or argp event key
+ * @param arg Optional value for the current option
+ * @param state Current argp parser state
+ * @return EX_OK on success, EX_USAGE for invalid usage, or errno-style error code
+ */
 static error_t parse_opt(
 	int               key,
 	char              *arg,
@@ -131,34 +182,67 @@ static error_t parse_opt(
 	switch(key)
 	{
 		case 'd':
-			// Full path to DB file
-			config->db_primary_file_path = strdup(arg);
-
-			if(config->db_primary_file_path == NULL)
+		{
+			// Store full path to the DB file
+			if(CRITICAL & copy_literal(conf(db_primary_file_path),arg))
 			{
-				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_path failed!");
-				exit(ARGP_ERR_UNKNOWN);
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_path failed");
+				return(ENOMEM);
 			}
 
-			// Name of DB file only
-			config->db_file_name = strdup(basename(arg));
+			// Store only the DB file basename
+			char *tmp = strdup(arg);
 
-			if(config->db_file_name == NULL)
+			if(tmp == NULL)
 			{
-				free(config->db_primary_file_path);  // Free previously allocated memory
-				config->db_primary_file_path = NULL; // Set to NULL after freeing
-				argp_failure(state,1,0,"ERROR: Memory allocation for db_file_name failed!");
-				exit(ARGP_ERR_UNKNOWN);
+				(void)del(conf(db_primary_file_path));
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed");
+				return(ENOMEM);
 			}
+
+			const char *db_file_basename = basename(tmp);
+
+			if(db_file_basename == NULL)
+			{
+				free(tmp);
+				(void)del(conf(db_primary_file_path));
+				argp_failure(state,0,0,"ERROR: Failed to determine database base name from path '%s'",arg);
+				return(EINVAL);
+			}
+
+			if(CRITICAL & copy_literal(conf(db_file_name),db_file_basename))
+			{
+				free(tmp);
+				(void)del(conf(db_primary_file_path));
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed");
+				return(ENOMEM);
+			}
+
+			free(tmp);
 			break;
+		}
 		case 'e':
 			(void)add_string_to_array(&config->ignore,arg);
 			break;
 		case 'n':
 			config->dry_run = true;
+
+			if(arg != NULL)
+			{
+				if(0 == strcasecmp(arg,"with-checksums"))
+				{
+					config->dry_run_with_checksums = true;
+
+				} else {
+					argp_failure(state,0,0,"ERROR: Unsupported --dry-run mode '%s'. Supported mode: with-checksums. See --help for more information",arg);
+					return(EINVAL);
+				}
+			}
 			break;
 		case 'i':
 			(void)add_string_to_array(&config->include,arg);
+			// Track that at least one --include pattern was provided
+			config->include_specified = true;
 			break;
 		case 'k':
 			(void)add_string_to_array(&config->lock_checksum,arg);
@@ -169,27 +253,44 @@ static error_t parse_opt(
 		case 'c':
 			config->compare = true;
 			break;
+		case 'F':
+			if(arg != NULL && 0 == strcmp(arg,"checksum-mismatch"))
+			{
+				config->compare_filter_checksum_mismatch = true;
+			} else if(arg != NULL && 0 == strcmp(arg,"first-source-only")){
+				config->compare_filter_first_source_only = true;
+			} else if(arg != NULL && 0 == strcmp(arg,"second-source-only")){
+				config->compare_filter_second_source_only = true;
+			} else {
+				argp_failure(state,0,0,"ERROR: Unsupported --compare-filter value '%s'. Supported values: checksum-mismatch, first-source-only, second-source-only. See --help for more information",arg == NULL ? "" : arg);
+				return(EINVAL);
+			}
+			break;
 		case 'o':
 			config->start_device_only = true;
 			break;
 		case 'C':
-			config->db_clean_ignored = true;
+			config->db_drop_ignored = true;
+			break;
+		case 'X':
+			config->db_drop_inaccessible = true;
 			break;
 		case 'm':
 			argument_value = strtol(arg,&ptr,10);
 
-			// Validate if lont int could be casted to short int
-			// and the argument contains a digit only
+			// Accept only non-negative integer values that fit into short int
+			// and reject strings with trailing non-numeric characters
 			if(argument_value >= 0 && argument_value <= 32767 && *ptr == '\0')
 			{
 				config->maxdepth = (short int)argument_value;
 			} else {
-				argp_failure(state,1,0,"ERROR: Wrong --maxdepth (-m) value. Should be an integer from 0 to 32767. See --help for more information");
-				exit(ARGP_ERR_UNKNOWN);
+				argp_failure(state,0,0,"ERROR: Wrong --maxdepth (-m) value. Should be an integer from 0 to 32767. See --help for more information");
+				return(EINVAL);
 			}
 			break;
 		case 'p':
 			config->progress = true;
+			config->show_remembered_messages_at_exit = true;
 			break;
 		case 'T':
 			config->watch_timestamps = true;
@@ -201,114 +302,162 @@ static error_t parse_opt(
 			config->force = true;
 			break;
 		case 'l':
-
 			if(0 == strncasecmp(arg,"QUICK",sizeof("QUICK")))
 			{
 				config->db_check_level = QUICK;
 			} else if(0 == strncasecmp(arg,"FULL",sizeof("FULL"))){
 				config->db_check_level = FULL;
 			} else {
-				return(ARGP_ERR_UNKNOWN);
+				argp_failure(state,0,0,"ERROR: Unsupported --check-level value '%s'. Supported values: FULL or QUICK",arg);
+				return(EINVAL);
 			}
 			break;
 		case 's':
-			// Global variable
+			// Set global logger mode
 			rational_logger_mode = SILENT;
 			break;
+		case 'q':
+			config->quiet_ignored = true;
+			break;
 		case 'v':
-			// Global variable
+			// Set global logger mode
 			rational_logger_mode = VERBOSE;
 			config->verbose = true;
 			break;
+		case 'h':
+		case '?':
+			information_mode_requested = true;
+			about();
+			argp_state_help(state,state->out_stream,ARGP_HELP_STD_HELP & ~(ARGP_HELP_EXIT_OK | ARGP_HELP_EXIT_ERR));
+			break;
+		case 'V':
+			information_mode_requested = true;
+			about();
+			break;
+		case 'z':
+			information_mode_requested = true;
+			about();
+			argp_state_help(state,state->out_stream,ARGP_HELP_USAGE);
+			break;
 		case ARGP_KEY_NO_ARGS:
-#ifdef TESTITALL
-			missing_arguments = true;
-			state->flags |= ARGP_NO_EXIT;
+			if(information_mode_requested == true)
+			{
+				break;
+			}
+
+			if(state->argc == 1)
+			{
+				information_mode_requested = true;
+				about();
+				argp_usage(state);
+				break;
+			}
+
 			argp_usage(state);
 			return(EX_USAGE);
-#else
-			argp_usage(state);
-#endif
 			break;
 		case ARGP_KEY_ARG:
 			config->paths = &state->argv[state->next - 1];
 			state->next = state->argc;
 			break;
 		case ARGP_KEY_END:
+			if(information_mode_requested == true)
+			{
+				break;
+			}
+
+			const bool compare_filter_specified = config->compare_filter_checksum_mismatch == true
+			        || config->compare_filter_first_source_only == true
+			        || config->compare_filter_second_source_only == true;
+
+			if(compare_filter_specified == true && config->compare == false)
+			{
+				argp_failure(state,0,0,"ERROR: --compare-filter can only be used together with --compare. See --help for more information");
+				return(EX_USAGE);
+			}
 
 			if(config->compare == true)
 			{
 				if(state->arg_num < 2)
 				{
-					argp_failure(state,1,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
+					argp_failure(state,0,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
+					return(EX_USAGE);
 				} else if(state->arg_num > 2){
-					argp_failure(state,1,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
+					argp_failure(state,0,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
+					return(EX_USAGE);
 				}
 			} else if(state->arg_num > 1){
 				slog(TRACE,"Caution: multiple PATH arguments received. Multipath mode activated. It’s important to note that when comparison mode is enabled, the ORDER of the paths must be identical for the database comparison to work correctly. Number of paths: %d\n",state->arg_num);
+			}
+
+			if(config->db_drop_inaccessible == true && config->update == false)
+			{
+				argp_failure(state,0,0,"WARNING: --db-drop-inaccessible has no effect without --update; records for inaccessible paths will be kept in the database");
+			}
+
+			if(config->rehash_locked == true && config->lock_checksum == NULL)
+			{
+				argp_failure(state,0,0,"WARNING: --rehash-locked has no effect without --lock-checksum");
 			}
 			break;
 		default:
 			return(ARGP_ERR_UNKNOWN);
 	}
 
-	return(0);
+	return(EX_OK);
 }
 
-/* Our argp parser. */
+/* argp parser definition */
 static struct argp argp = {
 	options,parse_opt,args_doc,doc,0,0,0
 };
 
+/**
+ * @brief Parse command-line arguments and finalize parse-related configuration state
+ * @param argc Number of CLI arguments
+ * @param argv CLI argument vector
+ * @return SUCCESS for normal mode, INFO for informational mode, or failure flags on errors
+ */
 Return parse_arguments(
 	const int argc,
 	char      *argv[])
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
+	unsigned int parse_flags = ARGP_NO_EXIT | ARGP_NO_HELP;
 
-#ifdef TESTITALL
-	missing_arguments = false;
-#endif
+	information_mode_requested = false;
 
-	/* Parse our arguments; every option seen by parse_opt will be
-	   reflected in arguments. */
-	argp_parse(&argp,argc,argv,
+	/* Parse arguments and route each parser event through parse_opt */
+	error_t parse_error = argp_parse(&argp,argc,argv,parse_flags,0,0);
 
-#ifdef TESTITALL
-	ARGP_NO_EXIT,
-#else
-	0,
-#endif
-	0,0);
-
-#ifdef TESTITALL
-	if(true == missing_arguments)
+	if(parse_error != EX_OK)
 	{
-		status = (Return)EX_USAGE;
+		status = FAILURE;
+	} else if(information_mode_requested == true){
+		provide(INFO);
 	}
-#endif
 
-	if(config->paths != NULL)
+	if((SUCCESS & status) && config->paths != NULL)
 	{
 		for(int i = 0; config->paths[i]; i++)
 		{
-			// Remove unnecessary trailing slash at the end of the directory path
+			// Normalize input path by removing trailing slash
 			remove_trailing_slash(config->paths[i]);
 		}
 	}
 
-	if(config->compare == true)
+	if((SUCCESS & status)  && config->compare == true)
 	{
 		if(config->paths != NULL)
 		{
-			// The array with database names
+			// Reuse parsed positional arguments as database file paths
 			config->db_file_paths = config->paths;
 
-			for(int i = 0; config->db_file_paths[i] && (SUCCESS == status); i++)
+			for(int i = 0; config->db_file_paths[i] && (SUCCESS & status); i++)
 			{
-				// Create a copy of the path string for basename
+				// Duplicate the path because basename may modify the buffer
 				char *tmp = strdup(config->db_file_paths[i]);
 
 				if(tmp == NULL)
@@ -318,7 +467,7 @@ Return parse_arguments(
 					break;
 				}
 
-				// Get basename and handle possible NULL return
+				// Resolve basename and handle NULL result
 				const char *db_file_basename = basename(tmp);
 
 				if(db_file_basename == NULL)
@@ -332,7 +481,7 @@ Return parse_arguments(
 				status = add_string_to_array(&config->db_file_names,db_file_basename);
 				free(tmp);
 
-				if(SUCCESS != status)
+				if((SUCCESS & status) == false)
 				{
 					break;
 				}
@@ -340,12 +489,18 @@ Return parse_arguments(
 		}
 	}
 
-	if(SUCCESS != status)
+	if(parse_error != 0)
+	{
+		slog(ERROR,"Argument parsing failed with code %d (%s)\n",parse_error,argp_error_to_text(parse_error));
+		status = FAILURE;
+	}
+
+	if(CRITICAL & status)
 	{
 		provide(status);
 	}
 
-	/* Testing mode */
+	/* Testing-mode diagnostics */
 	{
 		slog(TESTING,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
 
@@ -360,14 +515,16 @@ Return parse_arguments(
 			slog(TESTING|UNDECOR,"\n");
 		}
 
-		if(config->db_primary_file_path != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content
+		if(conf(db_primary_file_path)->length > 1)
 		{
-			slog(TESTING,"argument:database=%s\n",config->db_primary_file_path);
+			slog(TESTING,"argument:database=%s\n",confstr(db_primary_file_path));
 		}
 
-		if(config->db_file_name != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content
+		if(conf(db_file_name)->length > 1)
 		{
-			slog(TESTING,"argument:db_file_name=%s\n",config->db_file_name);
+			slog(TESTING,"argument:db_file_name=%s\n",confstr(db_file_name));
 		}
 
 		if(config->db_file_paths != NULL)
@@ -396,7 +553,7 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:ignore=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->ignore[i] != NULL; ++i)
 			{
 				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
@@ -408,7 +565,7 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:include=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->include[i] != NULL; ++i)
 			{
 				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
@@ -420,7 +577,7 @@ Return parse_arguments(
 		{
 			slog(TESTING,"argument:lock-checksum=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
 			{
 				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
@@ -441,6 +598,11 @@ Return parse_arguments(
 		if(config->verbose)
 		{
 			slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
+		}
+
+		if(config->quiet_ignored)
+		{
+			slog(TESTING,"argument:quiet-ignored=%s\n",config->quiet_ignored ? "yes" : "no");
 		}
 
 		if(config->watch_timestamps)
@@ -473,14 +635,47 @@ Return parse_arguments(
 			slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
 		}
 
-		if(config->db_clean_ignored)
+		if(config->compare_filter_checksum_mismatch == true
+		        || config->compare_filter_first_source_only == true
+		        || config->compare_filter_second_source_only == true)
 		{
-			slog(TESTING,"argument:db-clean-ignored=%s\n",config->db_clean_ignored ? "yes" : "no");
+			bool first_compare_filter = true;
+
+			slog(TESTING,"argument:compare-filter=");
+
+			if(config->compare_filter_checksum_mismatch == true)
+			{
+				slog(TESTING|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_first_source_only == true)
+			{
+				slog(TESTING|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_second_source_only == true)
+			{
+				slog(TESTING|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
+			}
+
+			slog(TESTING|UNDECOR,"\n");
+		}
+
+		if(config->db_drop_ignored)
+		{
+			slog(TESTING,"argument:db-drop-ignored=%s\n",config->db_drop_ignored ? "yes" : "no");
+		}
+
+		if(config->db_drop_inaccessible)
+		{
+			slog(TESTING,"argument:db-drop-inaccessible=%s\n",config->db_drop_inaccessible ? "yes" : "no");
 		}
 
 		if(config->dry_run)
 		{
-			slog(TESTING,"argument:dry-run=%s\n",config->dry_run ? "yes" : "no");
+			slog(TESTING,"argument:dry-run=%s\n",config->dry_run_with_checksums ? "with-checksums" : "yes");
 		}
 
 		if(config->start_device_only)
@@ -490,7 +685,7 @@ Return parse_arguments(
 
 	}
 
-	/* Verbose mode */
+	/* Verbose-mode diagnostics */
 	{
 		slog(VERBOSE,"Configuration: ");
 		slog(VERBOSE|UNDECOR,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
@@ -506,14 +701,16 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
-		if(config->db_primary_file_path != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content
+		if(conf(db_primary_file_path)->length > 1)
 		{
-			slog(VERBOSE|UNDECOR,"database=%s; ",config->db_primary_file_path);
+			slog(VERBOSE|UNDECOR,"database=%s; ",confstr(db_primary_file_path));
 		}
 
-		if(config->db_file_name != NULL)
+		// String descriptor length includes '\0'; >1 means there is actual content
+		if(conf(db_file_name)->length > 1)
 		{
-			slog(VERBOSE|UNDECOR,"db_file_name=%s; ",config->db_file_name);
+			slog(VERBOSE|UNDECOR,"db_file_name=%s; ",confstr(db_file_name));
 		}
 
 		if(config->db_file_paths != NULL)
@@ -542,7 +739,7 @@ Return parse_arguments(
 		{
 			slog(VERBOSE|UNDECOR,"ignore=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->ignore[i] != NULL; ++i)
 			{
 				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
@@ -554,7 +751,7 @@ Return parse_arguments(
 		{
 			slog(VERBOSE|UNDECOR,"include=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->include[i] != NULL; ++i)
 			{
 				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
@@ -566,7 +763,7 @@ Return parse_arguments(
 		{
 			slog(VERBOSE|UNDECOR,"lock-checksum=");
 
-			// Print the contents of the string array
+			// Print string-array contents
 			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
 			{
 				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
@@ -574,20 +771,61 @@ Return parse_arguments(
 			slog(VERBOSE|UNDECOR,"; ");
 		}
 
-		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-clean-ignored=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+		const char *dry_run_mode = "no";
+
+		if(config->dry_run == true)
+		{
+			if(config->dry_run_with_checksums == true)
+			{
+				dry_run_mode = "with-checksums";
+			} else {
+				dry_run_mode = "yes";
+			}
+		}
+
+		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
 			config->verbose ? "yes" : "no",
 			config->maxdepth,
+			config->quiet_ignored ? "yes" : "no",
 			config->force ? "yes" : "no",
 			config->update ? "yes" : "no",
 			config->watch_timestamps ? "yes" : "no",
 			config->rehash_locked ? "yes" : "no",
 			config->progress ? "yes" : "no",
 			config->compare ? "yes" : "no",
-			config->db_clean_ignored ? "yes" : "no",
-			config->dry_run ? "yes" : "no",
+			config->db_drop_ignored ? "yes" : "no",
+			config->db_drop_inaccessible ? "yes" : "no",
+			dry_run_mode,
 			config->start_device_only ? "yes" : "no",
 			config->db_check_level == QUICK ? "QUICK" : "FULL",
 			rational_reconvert(rational_logger_mode));
+
+		if(config->compare_filter_checksum_mismatch == true
+		        || config->compare_filter_first_source_only == true
+		        || config->compare_filter_second_source_only == true)
+		{
+			bool first_compare_filter = true;
+
+			slog(VERBOSE|UNDECOR,"; compare-filter=");
+
+			if(config->compare_filter_checksum_mismatch == true)
+			{
+				slog(VERBOSE|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_first_source_only == true)
+			{
+				slog(VERBOSE|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
+				first_compare_filter = false;
+			}
+
+			if(config->compare_filter_second_source_only == true)
+			{
+				slog(VERBOSE|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
+			}
+		}
+
 		slog(VERBOSE|UNDECOR,"\n");
 	}
 

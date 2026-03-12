@@ -19,10 +19,8 @@
  */
 Return db_primary_file_validate_existence(void)
 {
-	/** @var Return status
-	 *  @brief The status that will be passed to return() before exiting
-	 *  @details By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Interrupt the function smoothly */
@@ -34,17 +32,25 @@ Return db_primary_file_validate_existence(void)
 
 	// Primary DB file exists or not
 	config->db_primary_file_exists = false;
+	const char *db_primary_file_path = confstr(db_primary_file_path);
 
-	// The variable is defined in db_determine_name()
-	// and must not be empty
-	if(config->db_primary_file_path == NULL)
+	// Path is initialized in db_determine_name() and must contain at least one
+	// real character beyond the trailing '\0' terminator
+	if(conf(db_primary_file_path)->length <= 1)
 	{
 		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
 	{
-		char *db_file_full_path = strdup(config->db_primary_file_path);
+		char *db_file_full_path = strdup(db_primary_file_path);
+
+		if(db_file_full_path == NULL)
+		{
+			report("Memory allocation failed for database path copy");
+			provide(FAILURE);
+		}
+
 		char *db_file_dir = dirname(db_file_full_path);
 
 		if(NOT_FOUND == file_availability(db_file_dir,SHOULD_BE_A_DIRECTORY))
@@ -57,15 +63,15 @@ Return db_primary_file_validate_existence(void)
 
 		if(SUCCESS == status)
 		{
-			if(EXISTS == file_availability(config->db_primary_file_path,SHOULD_BE_A_FILE))
+			if(EXISTS == file_availability(db_primary_file_path,SHOULD_BE_A_FILE))
 			{
 				config->db_primary_file_exists = true;
 
-				int rc = stat(config->db_primary_file_path,&config->db_file_stat);
+				int rc = stat(db_primary_file_path,&config->db_file_stat);
 
 				if(rc < 0)
 				{
-					report("Stat of %s failed with error code: %d",config->db_primary_file_path,rc);
+					report("Stat of %s failed with error code: %d",db_primary_file_path,rc);
 					status = FAILURE;
 				}
 

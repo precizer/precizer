@@ -1,37 +1,38 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/diffs/diff1
-TESTING:argument:database=0015_database_v0.db
-TESTING:argument:db_file_name=0015_database_v0.db
+TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:database=0015_database_v0\.db
+TESTING:argument:db_file_name=0015_database_v0\.db
 TESTING:argument:watch-timestamps=yes
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/diffs/diff1 exists
-TESTING:The path tests/examples/diffs/diff1 is exists and it is a directory
-TESTING:Paths detected
+TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
+TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
-TESTING:Primary database file name: 0015_database_v0.db
-TESTING:Primary database file path: 0015_database_v0.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path 0015_database_v0.db exists
-TESTING:The path 0015_database_v0.db is exists and it is a file
+TESTING:Primary database file name: 0015_database_v0\.db
+TESTING:Primary database file path: 0015_database_v0\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path 0015_database_v0\.db exists
+TESTING:The path 0015_database_v0\.db is exists and it is a file
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
-TESTING:Starting database file 0015_database_v0.db integrity check…
+TESTING:Starting database file 0015_database_v0\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database 0015_database_v0.db has been verified and is in good condition
+TESTING:Database 0015_database_v0\.db has been verified and is in good condition
 TESTING:Metadata table not found in database
-TESTING:The 0015_database_v0.db database file is version 0
-TESTING:The database 0015_database_v0.db file has an outdated version 0 and requires updating to the version 3
-TESTING:Caution! The update will be performed in transaction mode for database safety
+TESTING:The 0015_database_v0\.db database file is version 0
+TESTING:The database 0015_database_v0\.db file has an outdated version 0 and requires updating to the version 4
+TESTING:Warning! The update will be performed in transaction mode for database safety
 TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
 TESTING:Migration from version 0 to version 1 started
 TESTING:The database connection has been closed
@@ -39,52 +40,47 @@ TESTING:Store the database version 1 in the metadata table
 TESTING:The database version 1 has been successfully stored in the DB
 TESTING:The database connection has been closed
 TESTING:Migration from version 0 to version 1 completed
-TESTING:Migration from version 1 to version 2 started
+TESTING:Migration from version 1 to version 4 started
 TESTING:The database connection has been closed
-TESTING:Store the database version 2 in the metadata table
-TESTING:The database version 2 has been successfully stored in the DB
+TESTING:Store the database version 4 in the metadata table
+TESTING:The database version 4 has been successfully stored in the DB
 TESTING:The database connection has been closed
-TESTING:Migration from version 1 to version 2 completed
-TESTING:Migration from version 2 to version 3 started
-TESTING:The database connection has been closed
-TESTING:Store the database version 3 in the metadata table
-TESTING:The database version 3 has been successfully stored in the DB
-TESTING:The database connection has been closed
-TESTING:Migration from version 2 to version 3 completed
+TESTING:Migration from version 1 to version 4 completed
 TESTING:The database has been successfully upgraded
 TESTING:The primary database doesn't need to be vacuumed during updates
-TESTING:Successfully opened database 0015_database_v0.db
+TESTING:Successfully opened database 0015_database_v0\.db
 TESTING:The primary database and tables do not require initialization
-TESTING:The primary database named 0015_database_v0.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database 0015_database_v0.db
+TESTING:The primary database named 0015_database_v0\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
-TESTING:The database 0015_database_v0.db has already been created previously
+TESTING:The database 0015_database_v0\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:The (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option has been used, so the information about files will be updated against the database 0015_database_v0.db
+TESTING:Update mode enabled for DB 0015_database_v0\.db
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files were added or changed on disk and will be reflected against the DB 0015_database_v0.db:(?:\x1B\[[0-9;]*m)*
-update & rehash changed ctime was:.+ 1/AAA/BCB/CCC/a.txt$
-update & rehash changed ctime was:.+ 1/AAA/ZAW/A/b/c/a_file.txt$
-update & rehash changed ctime was:.+ 1/AAA/ZAW/D/e/f/b_file.txt$
-update & rehash changed ctime was:.+ 2/AAA/BBB/CZC/a.txt$
-update & rehash changed ctime was:.+ 3/AAA/BBB/CCC/a.txt$
-update & rehash changed ctime was:.+ 4/AAA/BBB/CCC/a.txt$
-update & rehash changed ctime was:.+ path1/AAA/BCB/CCC/a.txt$
-update & rehash changed ctime was:.+ path1/AAA/ZAW/A/b/c/a_file.txt$
-update & rehash changed ctime was:.+ path1/AAA/ZAW/D/e/f/b_file.txt$
-update & rehash changed ctime was:.+ path2/AAA/BCB/CCC/a.txt$
-update & rehash changed ctime was:.+ path2/AAA/ZAW/A/b/c/a_file.txt$
-update & rehash changed ctime was:.+ path2/AAA/ZAW/D/e/f/b_file.txt$
+TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0015_database_v0\.db:(?:\x1B\[[0-9;]*m)*
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ 1/AAA/BCB/CCC/a\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ 1/AAA/ZAW/A/b/c/a_file\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ 1/AAA/ZAW/D/e/f/b_file\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ 2/AAA/BBB/CZC/a\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ 3/AAA/BBB/CCC/a\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ 4/AAA/BBB/CCC/a\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path1/AAA/BCB/CCC/a\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path1/AAA/ZAW/A/b/c/a_file\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path1/AAA/ZAW/D/e/f/b_file\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path2/AAA/BCB/CCC/a\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path2/AAA/ZAW/A/b/c/a_file\.txt$
+update & rehash, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path2/AAA/ZAW/D/e/f/b_file\.txt$
 TESTING:File traversal complete
-TESTING:Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search completed
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The database file 0015_database_v0.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:(?:\x1B\[[0-9;]*m)*The database file 0015_database_v0\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

@@ -1,4 +1,5 @@
 #include "testitall.h"
+#include <time.h>
 
 /*
  * Modification bits
@@ -73,6 +74,8 @@ static int compare_file_metadata_equivalence(
  */
 Return print_stat(const struct stat *st)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	char time_str[20]; /* "YYYY-MM-DD HH:MM:SS" + NUL */
 	struct tm *tm_info;
@@ -160,7 +163,7 @@ Return print_stat(const struct stat *st)
 		echo(STDERR,"\n");
 	}
 
-	return(status);
+	deliver(status);
 }
 
 /**
@@ -176,6 +179,8 @@ Return check_file_identity(
 	const struct stat *stat1,
 	const struct stat *stat2)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(IDENTICAL != compare_file_metadata_equivalence(stat1,stat2))
@@ -185,5 +190,5 @@ Return check_file_identity(
 		status = FAILURE;
 	}
 
-	return(status);
+	deliver(status);
 }

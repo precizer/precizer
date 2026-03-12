@@ -5,10 +5,8 @@ Return memory_guarded_size(
 	size_t right,
 	size_t *product)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(left != 0 && right > SIZE_MAX / left)
@@ -17,7 +15,7 @@ Return memory_guarded_size(
 		telemetry_overflow_guard_failure();
 	}
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		*product = left * right;
 	}

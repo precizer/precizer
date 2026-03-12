@@ -1,3 +1,8 @@
+#define PCRE2_STATIC
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+#include <stdarg.h>
+
 #include "testitall.h"
 
 /**
@@ -12,6 +17,8 @@ Return match_pattern(
 	const memory *pattern,
 	...)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const char *text_view = NULL;
 	const char *pattern_view = NULL;
@@ -184,5 +191,5 @@ Return match_pattern(
 	free(diff);
 #endif
 
-	return(status);
+	deliver(status);
 }

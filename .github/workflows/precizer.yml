@@ -9,7 +9,7 @@ on:
 
 jobs:
   get_tag_info:
-    name: Get annotated tag message
+    name: Get tag info & create release
     runs-on: ubuntu-24.04
 
     outputs:
@@ -34,48 +34,19 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
-  build_linux_x86_64:
-    name: Build & release Linux x86_64
-    runs-on: ubuntu-24.04
-    needs: get_tag_info
-
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-      BODY: ${{ needs.get_tag_info.outputs.body }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
-
-      - name: Build project (Linux x86_64)
-        run: |
-          make portable
-          zip --junk-paths precizer_v${{ env.VERSION }}_linux_x86_64_portable.zip precizer
-          ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
-          echo "$ZIP_COMMENT" | zip -z precizer_v${{ env.VERSION }}_linux_x86_64_portable.zip
-
-      - name: Run tests (Linux x86_64)
-        run: make tests
-
       - name: Create GitHub Release with gh CLI
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release create ${{ github.ref_name }} \
-            "precizer_v${{ env.VERSION }}_linux_x86_64_portable.zip" \
             --title "v${{ github.ref_name }}" \
-            --notes "${{ env.BODY }}" \
+            --notes "${{ steps.tag_message.outputs.body }}" \
             --draft
 
-  build_linux_arm64:
-    name: Build & attach Linux arm64
-    runs-on: ubuntu-24.04-arm
-    needs:
-      - get_tag_info
-      - build_linux_x86_64
+  build_linux_x86_64:
+    name: Build & attach Linux x86_64
+    runs-on: ubuntu-24.04
+    needs: get_tag_info
 
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
@@ -85,67 +56,135 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh libcmocka-dev
+
+      - name: Build project (Linux x86_64)
+        run: |
+          make -j portable
+          mkdir v${{ env.VERSION }}
+          cp -a precizer v${{ env.VERSION }}/
+          zip -r precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/
+          ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
+          echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_portable.zip
+          ./precizer --version
+          make purge
+
+      - name: Run tests (Linux x86_64)
+        run: make -j tests
+
+      - name: Upload Linux x86_64 asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} \
+            "precizer_linux_x86_64_portable.zip" \
+            --clobber
+          #
+          # Testing automation for downloading and unarchiving new versions (example from the README documentation)
+          #
+          # Download
+          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          # Extract the archive
+          unzip -jqo precizer.zip '*/precizer' -d ./
+          # Run
+          ./precizer --version
+
+  build_linux_arm64:
+    name: Build & attach Linux arm64
+    runs-on: ubuntu-24.04-arm
+    needs: get_tag_info
+
+    env:
+      VERSION: ${{ needs.get_tag_info.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh libcmocka-dev
 
       - name: Build project (Linux arm64)
         run: |
-          make portable
-          zip --junk-paths precizer_v${{ env.VERSION }}_linux_aarch64_portable.zip precizer
+          make -j portable
+          mkdir v${{ env.VERSION }}
+          cp -a .builds/portable/precizer v${{ env.VERSION }}/
+          zip -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/
           ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
-          echo "$ZIP_COMMENT" | zip -z precizer_v${{ env.VERSION }}_linux_aarch64_portable.zip
+          echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
+          ./.builds/portable/precizer --version
+          make purge
 
       - name: Run tests (Linux arm64)
-        run: make tests
+        run: make -j tests
 
       - name: Upload Linux arm64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
-            "precizer_v${{ env.VERSION }}_linux_aarch64_portable.zip" \
+            "precizer_linux_aarch64_portable.zip" \
             --clobber
+          #
+          # Testing automation for downloading and unarchiving new versions (example from the README documentation)
+          #
+          # Download
+          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          # Extract the archive
+          unzip -jqo precizer.zip '*/precizer' -d ./
+          # Run
+          ./precizer --version
 
   build_evil_empire_os_arm64:
     name: Build & attach macOS arm64
     runs-on: macos-latest
-    needs:
-      - get_tag_info
-      - build_linux_x86_64
+    needs: get_tag_info
 
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
-      - name: Checkout repository (exclude tests/examples/long)
+      - name: Checkout repository (exclude tests/fixtures/long)
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /*
-            !tests/examples/long/**
+            !tests/fixtures/long/**
 
       - name: Install dependencies
         run: |
           brew update
-          brew install llvm argp-standalone || true
+          brew install llvm argp-standalone cmocka || true
 
       - name: Build project (macOS arm64)
         run: |
-          make dynamic-production
+          make -j dynamic-production
           otool -L precizer
           otool -l precizer
-          zip --junk-paths precizer_v${{ env.VERSION }}_macos_arm64.zip precizer
-          make purge
+          mkdir v${{ env.VERSION }}
+          cp -a precizer v${{ env.VERSION }}/
+          zip -r precizer_macos_arm64.zip v${{ env.VERSION }}/
           ./precizer --version
+          make purge
 
       - name: Run tests (macOS arm64)
-        run: make tests
+        run: make -j tests
 
       - name: Upload macOS arm64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
-            "precizer_v${{ env.VERSION }}_macos_arm64.zip" \
+            "precizer_macos_arm64.zip" \
             --clobber
+          #
+          # Testing automation for downloading and unarchiving new versions (example from the README documentation)
+          #
+          # Download
+          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          # Extract the archive
+          unzip -jqo precizer.zip '*/precizer' -d ./
+          # Run
+          ./precizer --version

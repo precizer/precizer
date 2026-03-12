@@ -44,7 +44,7 @@ static void print_hash(const unsigned char *hash)
  * @retval SUCCESS if test passed
  * @retval FAILURE if test failed
  */
-static Return test0007_1_libmem(void)
+static Return test0007_1(void)
 {
 	INITTEST;
 
@@ -73,7 +73,7 @@ static Return test0007_1_libmem(void)
  * @retval SUCCESS if memory allocation worked and hashes match
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
-static Return test0007_2_libmem(void)
+static Return test0007_2(void)
 {
 	INITTEST;
 
@@ -106,8 +106,7 @@ static Return test0007_2_libmem(void)
 
 	#if SHOW_TEST
 	// Print array summary and hash
-	echo(STDERR,"Test 1 array size: %zu bytes, array_length=%zu, sizeof(int)=%zu bytes\n",
-		array_size,array_length,sizeof(int));
+	echo(STDERR,"Test 1 array size: %zu bytes, array_length=%zu, sizeof(int)=%zu bytes\n",array_size,array_length,sizeof(int));
 	echo(STDERR,"Test 1 SHA-512 hash: ");
 	print_hash(hash_1);
 	#endif
@@ -134,14 +133,12 @@ static Return test0007_2_libmem(void)
 
 	if(test1_view != NULL)
 	{
-		sha512_update(&ctx,(const unsigned char *)test1_view,
-			test1->length * test1->element_size);
+		sha512_update(&ctx,(const unsigned char *)test1_view,test1->length * test1->element_size);
 	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
-	echo(STDERR,"Test 1 Array size: %zu bytes\n",
-		test1->length * test1->element_size);
+	echo(STDERR,"Test 1 Array size: %zu bytes\n",test1->length * test1->element_size);
 	echo(STDERR,"Test 1 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -166,7 +163,7 @@ static Return test0007_2_libmem(void)
  * @retval SUCCESS if memory allocation worked and hashes match
  * @retval FAILURE if memory allocation failed or hashes don't match
  */
-static Return test0007_3_libmem(void)
+static Return test0007_3(void)
 {
 	INITTEST;
 
@@ -199,8 +196,7 @@ static Return test0007_3_libmem(void)
 	sha512_final(&ctx,hash_1);
 
 	#if SHOW_TEST
-	echo(STDERR,"Test 2 array size: %zu bytes, array_length=%zu, sizeof(char)=%zu bytes\n",
-		array_size,array_length,sizeof(char));
+	echo(STDERR,"Test 2 array size: %zu bytes, array_length=%zu, sizeof(char)=%zu bytes\n",array_size,array_length,sizeof(char));
 	echo(STDERR,"Test 2 SHA-512 hash: ");
 	print_hash(hash_1);
 	#endif
@@ -227,14 +223,12 @@ static Return test0007_3_libmem(void)
 
 	if(test2_view != NULL)
 	{
-		sha512_update(&ctx,(const unsigned char *)test2_view,
-			test2->length * test2->element_size);
+		sha512_update(&ctx,(const unsigned char *)test2_view,test2->length * test2->element_size);
 	}
 	sha512_final(&ctx,hash_2);
 
 	#if SHOW_TEST
-	echo(STDERR,"Test 2 array size: %zu bytes\n",
-		test2->length * test2->element_size);
+	echo(STDERR,"Test 2 array size: %zu bytes\n",test2->length * test2->element_size);
 	echo(STDERR,"Test 2 SHA-512 hash: ");
 	print_hash(hash_2);
 	#endif
@@ -265,7 +259,7 @@ static Return test0007_3_libmem(void)
  * @retval SUCCESS if all three tests pass
  * @retval FAILURE if any test fails or memory allocation fails
  */
-static Return test0007_4_5_6_libmem(void)
+static Return test0007_4(void)
 {
 	INITTEST;
 
@@ -278,8 +272,7 @@ static Return test0007_4_5_6_libmem(void)
 	// TEST 4: Large allocation
 	size_t array_length = 4096;
 	size_t array_size = array_length * sizeof(unsigned long long int);
-	unsigned char *ullint_array = (unsigned char *)calloc(array_length,
-		sizeof(unsigned long long int));
+	unsigned char *ullint_array = (unsigned char *)calloc(array_length,sizeof(unsigned long long int));
 
 	if(ullint_array == NULL)
 	{
@@ -480,7 +473,7 @@ static Return test0007_4_5_6_libmem(void)
  * @brief Multiple tests with unsigned long long int type and different array sizes
  *
  */
-static Return test0007_7_libmem_multiple(void)
+static Return test0007_5(void)
 {
 	INITTEST;
 
@@ -497,7 +490,7 @@ static Return test0007_7_libmem_multiple(void)
  * @brief Multiple tests with char type and different array sizes
  *
  */
-static Return test0007_8_libmem_multiple(void)
+static Return test0007_6(void)
 {
 	INITTEST;
 
@@ -514,7 +507,7 @@ static Return test0007_8_libmem_multiple(void)
  * @brief Multiple tests with int type and different array sizes
  *
  */
-static Return test0007_9_libmem_multiple(void)
+static Return test0007_7(void)
 {
 	INITTEST;
 
@@ -531,7 +524,7 @@ static Return test0007_9_libmem_multiple(void)
  * @brief Multiple tests with undigned char type and different array sizes
  *
  */
-static Return test0007_10_libmem_multiple(void)
+static Return test0007_8(void)
 {
 	INITTEST;
 
@@ -540,6 +533,69 @@ static Return test0007_10_libmem_multiple(void)
 	#define TYPE uchar
 	#include "test0007.cc"
 	#undef TYPE
+
+	RETURN_STATUS;
+}
+
+static Return test0007_9(void)
+{
+	INITTEST;
+
+	init_telemetry();
+
+	create(char,buffer);
+
+	ASSERT(telemetry.current_heap_bytes == 0);
+	ASSERT(telemetry.current_payload_bytes == 0);
+	ASSERT(telemetry.active_descriptors == 0);
+
+	const size_t block = MEMORY_BLOCK_BYTES;
+	const size_t big_count = block + 1;
+
+	ASSERT(SUCCESS == resize(buffer,1));
+
+	ASSERT(telemetry.current_heap_bytes == block);
+	ASSERT(telemetry.current_payload_bytes == 1);
+	ASSERT(telemetry.total_heap_bytes_acquired == block);
+	ASSERT(telemetry.total_payload_bytes_acquired == 1);
+	ASSERT(telemetry.fresh_allocations_counter == 1);
+	ASSERT(telemetry.active_descriptors == 1);
+	ASSERT(telemetry.peak_active_descriptors == 1);
+	ASSERT(telemetry.peak_heap_bytes == block);
+	ASSERT(telemetry.current_alignment_overhead_bytes == block - 1);
+	ASSERT(telemetry.total_alignment_overhead_bytes == block - 1);
+	ASSERT(telemetry.peak_alignment_overhead_bytes == block - 1);
+
+	ASSERT(SUCCESS == resize(buffer,big_count));
+
+	ASSERT(telemetry.current_heap_bytes == block * 2);
+	ASSERT(telemetry.total_heap_bytes_acquired == block * 2);
+	ASSERT(telemetry.current_payload_bytes == big_count);
+	ASSERT(telemetry.total_payload_bytes_acquired == big_count);
+	ASSERT(telemetry.heap_reallocations_counter == 1);
+	ASSERT(telemetry.peak_heap_bytes == block * 2);
+
+	ASSERT(SUCCESS == resize(buffer,1,RELEASE_UNUSED));
+
+	ASSERT(telemetry.current_heap_bytes == block);
+	ASSERT(telemetry.current_payload_bytes == 1);
+	ASSERT(telemetry.total_heap_bytes_released == block);
+	ASSERT(telemetry.release_unused_operations_counter == 1);
+	ASSERT(telemetry.release_unused_bytes_total == block);
+	ASSERT(telemetry.heap_reallocations_counter == 2);
+
+	ASSERT(SUCCESS == del(buffer));
+
+	ASSERT(telemetry.current_heap_bytes == 0);
+	ASSERT(telemetry.current_payload_bytes == 0);
+	ASSERT(telemetry.active_descriptors == 0);
+	ASSERT(telemetry.release_operations_counter == 1);
+	ASSERT(telemetry.total_heap_bytes_released == block * 2);
+	ASSERT(telemetry.peak_heap_bytes == block * 2);
+
+	#if SHOW_TEST
+	telemetry_show();
+	#endif
 
 	RETURN_STATUS;
 }
@@ -560,14 +616,15 @@ Return test0007(void)
 {
 	INITTEST;
 
-	TEST(test0007_1_libmem,"Copy an array of 0 size…");
-	TEST(test0007_2_libmem,"libmem Memory allocator test 1…");
-	TEST(test0007_3_libmem,"libmem Memory allocator test 2…");
-	TEST(test0007_4_5_6_libmem,"libmem Memory allocator tests 4,5,6…");
-	TEST(test0007_7_libmem_multiple,"libmem generate multiple tests unsigned long long int type…");
-	TEST(test0007_8_libmem_multiple,"libmem generate multiple tests char type…");
-	TEST(test0007_9_libmem_multiple,"libmem generate multiple tests int type…");
-	TEST(test0007_10_libmem_multiple,"libmem generate multiple tests unsigned char type…");
+	TEST(test0007_1,"Copy an array of 0 size…");
+	TEST(test0007_2,"libmem Memory allocator test 1…");
+	TEST(test0007_3,"libmem Memory allocator test 2…");
+	TEST(test0007_4,"libmem Memory allocator tests 4,5,6…");
+	TEST(test0007_5,"libmem generate multiple tests unsigned long long int type…");
+	TEST(test0007_6,"libmem generate multiple tests char type…");
+	TEST(test0007_7,"libmem generate multiple tests int type…");
+	TEST(test0007_8,"libmem generate multiple tests unsigned char type…");
+	TEST(test0007_9,"libmem telemetry counters…");
 
 	RETURN_STATUS;
 }

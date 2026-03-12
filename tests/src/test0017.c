@@ -1,4 +1,5 @@
 #include "sute.h"
+#include <errno.h>
 
 static void test_conversion(
 	int          value,
@@ -80,6 +81,27 @@ static void test_itoa(void)
 	printf("Base: %d\t\tConverted String: %s\n",2,itoa(1567,str,2));
 	printf("Base: %d\t\tConverted String: %s\n",8,itoa(1567,str,8));
 	printf("Base: %d\tConverted String: %s\n",16,itoa(1567,str,16));
+
+	printf("\n=== Invalid base handling ===\n");
+	char errbuf[4];
+	char *ret = NULL;
+
+	errno = 0;
+	ret = itoa(123,errbuf,0);
+	printf("Base 0 result: '%s', errno: %d\n",ret ? ret : "NULL",errno);
+
+	errno = 0;
+	ret = itoa(123,errbuf,1);
+	printf("Base 1 result: '%s', errno: %d\n",ret ? ret : "NULL",errno);
+
+	errno = 0;
+	ret = itoa(123,errbuf,37);
+	printf("Base 37 result: '%s', errno: %d\n",ret ? ret : "NULL",errno);
+
+	printf("\n=== NULL buffer handling ===\n");
+	errno = 0;
+	ret = itoa(123,NULL,10);
+	printf("NULL buffer result: %s, errno: %d\n",ret ? "non-NULL" : "NULL",errno);
 }
 
 /**
@@ -97,19 +119,45 @@ Return test0017(void)
 
 	ASSERT(SUCCESS == function_capture(test_itoa,captured_stdout,captured_stderr));
 
-	if(captured_stderr->length > 0)
-	{
-		echo(STDERR,"ERROR: Stderr buffer is not empty. It contains characters: %zu\n",captured_stderr->length);
-		status = FAILURE;
-		#if 0
+	ASSERT(captured_stderr->length == 0);
+#if 0
 		echo(STDOUT,"%s\n",getcstring(captured_stderr));
-		#endif
-	}
+#endif
 
-	ASSERT(SUCCESS == get_file_content("templates/0017.txt",pattern));
+	const char *template_name = "templates/0017.txt";
+	ASSERT(SUCCESS == get_file_content(template_name,pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern));
+	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern,template_name));
+
+	char buffer[8];
+	char *result = NULL;
+
+	errno = 0;
+	buffer[0] = 'X';
+	result = itoa(123,buffer,0);
+	ASSERT(result == buffer);
+	ASSERT(errno == EINVAL);
+	ASSERT(buffer[0] == '\0');
+
+	errno = 0;
+	buffer[0] = 'Y';
+	result = itoa(123,buffer,1);
+	ASSERT(result == buffer);
+	ASSERT(errno == EINVAL);
+	ASSERT(buffer[0] == '\0');
+
+	errno = 0;
+	buffer[0] = 'Z';
+	result = itoa(123,buffer,37);
+	ASSERT(result == buffer);
+	ASSERT(errno == EINVAL);
+	ASSERT(buffer[0] == '\0');
+
+	errno = 0;
+	result = itoa(123,NULL,10);
+	ASSERT(result == NULL);
+	ASSERT(errno == EINVAL);
 
 	del(pattern);
 

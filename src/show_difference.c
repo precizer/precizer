@@ -37,10 +37,12 @@ Return show_difference(
 		return(SUCCESS);
 	}
 
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	create(Flags,flags);
-	call(resize(flags,3));
+	call(resize(flags,4));
 
 	Flags *flags_data = data(Flags,flags);
 
@@ -50,9 +52,10 @@ Return show_difference(
 		provide(FAILURE);
 	}
 
-	flags_data[0] = (Flags){SIZE_CHANGED,"size"};
-	flags_data[1] = (Flags){STATUS_CHANGED_TIME,"ctime"};
-	flags_data[2] = (Flags){MODIFICATION_TIME_CHANGED,"mtime"};
+	flags_data[0] = (Flags){SIZE_CHANGED,"lsize"};
+	flags_data[1] = (Flags){ALLOCATED_SIZE_CHANGED,"asize"};
+	flags_data[2] = (Flags){STATUS_CHANGED_TIME,"ctime"};
+	flags_data[3] = (Flags){MODIFICATION_TIME_CHANGED,"mtime"};
 
 	unsigned int flags_found = 0;
 	bool first_word = true;
@@ -93,5 +96,5 @@ Return show_difference(
 
 	del(flags);
 
-	return(SUCCESS);
+	provide(SUCCESS);
 }

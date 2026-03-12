@@ -18,10 +18,8 @@
  */
 Return db_contains_data(void)
 {
-	/** @var Return status
-	 *  @brief The status that will be passed to return() before exiting
-	 *  @details By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Interrupt the function smoothly */
@@ -91,13 +89,13 @@ Return db_contains_data(void)
 		{
 			if(config->update == true)
 			{
-				slog(TRACE,"The database %s has already been created previously\n",config->db_file_name);
+				slog(TRACE,"The database %s has already been created previously\n",confstr(db_file_name));
 			} else {
 				slog(EVERY,"The database %s was previously created and already contains data with files and their checksums."
 					" Use the " BOLD "--update" RESET " option only when you are certain"
 					" that the database needs to be updated and when file information"
 					" (including changes, deletions, and additions) should be synchronized"
-					" with the database.\n",config->db_file_name);
+					" with the database.\n",confstr(db_file_name));
 				status = WARNING;
 			}
 		}

@@ -1,6 +1,6 @@
 #include "sute.h"
 
-Return prefix_path_with_apostrophe_test(void)
+Return test0024_1(void)
 {
 	INITTEST;
 
@@ -13,13 +13,14 @@ Return prefix_path_with_apostrophe_test(void)
 	 * Checking how paths are handled when the directory name starts
 	 * with an apostrophe
 	 */
-	const char *arguments = "--progress --database=database1.db tests/examples/\\'apostrophe";
+	const char *arguments = "--progress --database=database1.db "
+	        "tests/fixtures/\\'apostrophe";
 
 	const char *filename = "templates/0024_001.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -28,12 +29,12 @@ Return prefix_path_with_apostrophe_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	RETURN_STATUS;
 }
 
-Return another_prefix_path_with_apostrophe_test(void)
+Return test0024_2(void)
 {
 	INITTEST;
 
@@ -46,13 +47,13 @@ Return another_prefix_path_with_apostrophe_test(void)
 	 * Checking how paths are handled when the directory name ends
 	 * with an apostrophe
 	 */
-	const char *arguments = "--progress --database=database1.db tests/examples/apostrophe\\'";
+	const char *arguments = "--progress --database=database1.db tests/fixtures/apostrophe\\'";
 
 	const char *filename = "templates/0024_002.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -61,42 +62,47 @@ Return another_prefix_path_with_apostrophe_test(void)
 	del(result);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};rm database1.db;",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	RETURN_STATUS;
 }
 
 /**
  * Stage 1. Adding:
- * precizer --progress --database=database1.db tests/examples/\'apostrophe/\'apostrophe/
+ * precizer --progress --database=database1.db tests/fixtures/\'apostrophe/\'apostrophe/
  * Stage 2. Adding:
- * precizer --progress --database=database2.db tests/examples/apostrophe\'/\'apostrophe/apostrophe\'/
+ * precizer --progress --database=database2.db tests/fixtures/apostrophe\'/\'apostrophe/apostrophe\'/
  * Final stage. Comparing:
  * precizer --compare database1.db database2.db
  */
-static Return adding_and_comparing_with_apostrophe(void)
+static Return test0024_3(void)
 {
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--progress --database=database1.db tests/examples/\\'apostrophe/\\'apostrophe/";
+	const char *arguments = "--progress --database=database1.db "
+	        "tests/fixtures/\\'apostrophe/\\'apostrophe/";
 
 	// Create memory for the result
 	create(char,result);
 	create(char,chunk);
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == copy(result,chunk));
 
-	arguments = "--progress --database=database2.db tests/examples/apostrophe\\'/\\'apostrophe/apostrophe\\'/";
+	arguments = "--progress --database=database2.db "
+	        "tests/fixtures/apostrophe\\'/\\'apostrophe/apostrophe\\'/";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	arguments = "--compare database1.db database2.db";
 
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
+
 	ASSERT(SUCCESS == concat_strings(result,chunk));
 
 	// Create memory for the result
@@ -110,8 +116,8 @@ static Return adding_and_comparing_with_apostrophe(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"rm database1.db database2.db",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	del(pattern);
 	del(chunk);
@@ -125,9 +131,9 @@ Return test0024(void)
 {
 	INITTEST;
 
-	TEST(prefix_path_with_apostrophe_test,"Prefix path with apostrophe…");
-	TEST(another_prefix_path_with_apostrophe_test,"Another prefix and apostrophe combination in the name…");
-	TEST(adding_and_comparing_with_apostrophe,"Adding and comparing with apostrophe…");
+	TEST(test0024_1,"Prefix path with apostrophe…");
+	TEST(test0024_2,"Another prefix and apostrophe combination in the name…");
+	TEST(test0024_3,"Adding and comparing with apostrophe…");
 
 	RETURN_STATUS;
 }

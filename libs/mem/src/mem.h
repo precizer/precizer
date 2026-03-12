@@ -83,7 +83,7 @@ typedef enum
  * @param element_count  New number of elements.
  * @param ...            Optional @ref RESIZEMODES mask controlling zero-fill or shrink behavior.
  * @return `SUCCESS` on success; `FAILURE` otherwise. All failures are reported
- *         through @ref slog for easier diagnostics.
+ *         through @ref report for easier diagnostics.
  *
  * @post If @p element_count is 0, the function frees the block and sets
  *       @ref memory::data to NULL and @ref memory::length to 0.
@@ -119,6 +119,49 @@ Return memory_copy(
 	const memory *source);
 
 /**
+ * @brief Copy a raw byte buffer into a descriptor.
+ *
+ * Interprets @p buffer_size as the exact number of source bytes to import.
+ * The destination is resized to hold the same payload size in descriptor
+ * elements (`buffer_size / element_size`) and then receives a byte-for-byte
+ * copy.
+ *
+ * Behavior details:
+ * - @p destination must be initialized (non-zero @ref memory::element_size).
+ * - @p buffer_size must be divisible by @ref memory::element_size.
+ * - If @p source_buffer is `NULL` and @p buffer_size is 0, the destination is
+ *   cleared (`resize(destination,0)` behavior).
+ * - If @p source_buffer is `NULL` and @p buffer_size is non-zero, the call fails.
+ *
+ * @param destination Pointer to the destination descriptor (resized if needed).
+ * @param source_buffer Pointer to source bytes.
+ * @param buffer_size   Number of bytes to copy from @p source_buffer.
+ * @return `SUCCESS` on success; `FAILURE` otherwise.
+ */
+Return memory_copy_buffer(
+	memory     *destination,
+	const void *source_buffer,
+	size_t     buffer_size);
+
+/**
+ * @brief Copy visible string bytes from a known-size source buffer.
+ *
+ * Interprets @p source_buffer as a bounded C-string region. The visible source
+ * length is computed with @ref memory_string_length semantics (scan up to first
+ * `'\0'` or @p source_buffer_size bytes), then copied into @p destination with
+ * exactly one trailing null terminator.
+ *
+ * @param destination        Pointer to destination descriptor.
+ * @param source_buffer      Pointer to source bytes.
+ * @param source_buffer_size Total bytes available in @p source_buffer.
+ * @return `SUCCESS` on success; `FAILURE` otherwise.
+ */
+Return memory_copy_cstring(
+	memory     *destination,
+	const char *source_buffer,
+	size_t     source_buffer_size);
+
+/**
  * @brief Append the contents of @p source descriptor to @p destination.
  *
  * @param destination Pointer to the destination descriptor to extend.
@@ -143,6 +186,52 @@ Return memory_append(
 Return memory_concat_strings(
 	memory       *destination,
 	const memory *source);
+
+/**
+ * @brief Concatenate visible bytes from a known-size source string buffer.
+ *
+ * Treats @p source_buffer as byte-oriented string data bounded by
+ * @p source_buffer_size bytes. The visible source length is computed with
+ * @ref memory_string_length semantics (scan up to first `'\0'` or the provided
+ * byte bound, whichever comes first), then appended to @p destination.
+ *
+ * The destination is interpreted as a C-style string descriptor and the result
+ * keeps exactly one trailing null terminator.
+ *
+ * @param destination        Pointer to the descriptor receiving appended data.
+ * @param source_buffer      Pointer to source bytes.
+ * @param source_buffer_size Total bytes available in @p source_buffer.
+ * @return `SUCCESS` on success; `FAILURE` otherwise.
+ */
+Return memory_concat_cstring(
+	memory     *destination,
+	const char *source_buffer,
+	size_t     source_buffer_size);
+
+/**
+ * @brief Concatenate a raw byte buffer to a descriptor.
+ *
+ * Interprets @p source_buffer_size as exact bytes and appends them as-is.
+ * No string parsing is performed, embedded `'\0'` bytes are preserved, and no
+ * trailing terminator is injected.
+ *
+ * Behavior details:
+ * - @p destination must be initialized (non-zero @ref memory::element_size).
+ * - @p source_buffer_size must be divisible by @ref memory::element_size.
+ * - If @p source_buffer is `NULL` and @p source_buffer_size is 0, the call is
+ *   treated as a no-op.
+ * - If @p source_buffer is `NULL` and @p source_buffer_size is non-zero, the
+ *   call fails.
+ *
+ * @param destination        Pointer to the descriptor receiving appended data.
+ * @param source_buffer      Pointer to source bytes.
+ * @param source_buffer_size Total bytes available in @p source_buffer.
+ * @return `SUCCESS` on success; `FAILURE` otherwise.
+ */
+Return memory_concat_buffer(
+	memory     *destination,
+	const void *source_buffer,
+	size_t     source_buffer_size);
 
 /**
  * @brief Append a C-style literal string to a descriptor holding byte-sized elements.
@@ -193,12 +282,27 @@ Return memory_guarded_size(
  * @brief Compute the visible length of string data stored in a descriptor.
  *
  * The scan stops either at the first null byte or once @ref memory::length bytes
- * have been inspected. This ensures the function respects both fully utilized blocks
- * and partially filled buffers.
+ * have been inspected. This ensures the function never reads beyond descriptor
+ * bounds while still supporting partially filled buffers.
+ *
+ * Behavior details:
+ * - Invalid arguments (`memory_object == NULL` or `length_out == NULL`) return
+ *   `FAILURE`.
+ * - If @ref memory::length is 0, `*length_out` is set to 0.
+ * - If @ref memory::data is `NULL`, `*length_out` is set to 0.
+ * - Otherwise, `*length_out` receives the visible prefix length in bytes.
+ *
+ * Return-path details:
+ * - The function returns via `provide(...)`.
+ * - If global status (`global_return_status`) is not `SUCCESS`, the returned
+ *   value may be overridden by that global status.
+ * - For control-flow checks that treat graceful non-error statuses as
+ *   acceptable, prefer `(status & TRIUMPH) != 0`.
  *
  * @param memory_object Descriptor whose contents are interpreted as a string.
  * @param length_out    Output pointer that receives the computed length.
- * @return `SUCCESS` on success; `FAILURE` otherwise.
+ * @return Local result is `SUCCESS`/`FAILURE`; final returned value is subject
+ *         to `provide(...)` global-status propagation.
  */
 Return memory_string_length(
 	const memory *memory_object,
@@ -294,7 +398,7 @@ const void *memory_const_data_checked(
  * @param memory_object Pointer to the descriptor.
  * @return Underlying pointer or NULL when @p memory_object itself is NULL.
  */
-static inline void *memory_rawdata(memory * const memory_object)
+static inline void *memory_rawdata(const memory * const memory_object)
 {
 	if(memory_object == NULL)
 	{
@@ -423,6 +527,20 @@ static inline const void *memory_raw_const_data(const memory * const memory_obje
 	memory_copy((destination),(source))
 
 /**
+ * @def copy_buffer(destination, buffer, buffer_size)
+ * @brief Copy a raw byte buffer into a descriptor.
+ */
+#define copy_buffer(destination,buffer,buffer_size) \
+	memory_copy_buffer((destination),(buffer),(buffer_size))
+
+/**
+ * @def copy_cstring(destination, source_buffer, source_buffer_size)
+ * @brief Copy visible string bytes from a known-size source buffer.
+ */
+#define copy_cstring(destination,source_buffer,source_buffer_size) \
+	memory_copy_cstring((destination),(source_buffer),(source_buffer_size))
+
+/**
  * @def append(destination, source)
  * @brief Append @p source contents to @p destination (resizing destination as needed).
  */
@@ -435,6 +553,20 @@ static inline const void *memory_raw_const_data(const memory * const memory_obje
  */
 #define concat_strings(destination,source) \
 	memory_concat_strings((destination),(source))
+
+/**
+ * @def concat_cstring(destination, source_buffer, source_buffer_size)
+ * @brief Concatenate visible bytes from a known-size source string buffer.
+ */
+#define concat_cstring(destination,source_buffer,source_buffer_size) \
+	memory_concat_cstring((destination),(source_buffer),(source_buffer_size))
+
+/**
+ * @def concat_buffer(destination, source_buffer, source_buffer_size)
+ * @brief Concatenate exact bytes from a known-size raw buffer.
+ */
+#define concat_buffer(destination,source_buffer,source_buffer_size) \
+	memory_concat_buffer((destination),(source_buffer),(source_buffer_size))
 
 /**
  * @def concat_literal(destination, literal_string)
@@ -488,10 +620,10 @@ void FREE_AND_RESET(void **pointer_handle);
  * int main(void)
  * {
  *   create(point,points);                 // declare + initialize descriptor
- *   if(resize(points,10) != SUCCESS) { }  // handle error
+ *   if(CRITICAL & resize(points,10)) { }  // handle error
  *   point *p = data(point,points);        // checked typed access
  *   p[0] = (point){1,2};
- *   if(resize(points,20) != SUCCESS) { }  // handle error
+ *   if(CRITICAL & resize(points,20)) { }  // handle error
  *   p = data(point,points);               // refresh pointer after resizing
  *   del(points);
  *   return 0;
@@ -505,5 +637,4 @@ void FREE_AND_RESET(void **pointer_handle);
  *   (`data = NULL`, `length = 0`).
  * - Always go through the helper macros so pointer conversions stay explicit and safe.
  */
-
 #endif /* MEM_H */

@@ -1,23 +1,16 @@
 #include "testitall.h"
 
 /**
- * @brief Runs the tested application and matches its stdout against a template file.
+ * @brief Runs the application and matches its stdout against a template file.
  *
  * @param arguments Command-line arguments passed to the application (without the binary name).
- * @param filename Path to the file that stores the output template/pattern.
- * @param template Placeholder in the template that should be replaced before matching.
- * @param replacement Value that substitutes the placeholder (e.g., dynamic DB names).
- * @param expected_return_code Exit code that the application is expected to return.
+ * @param filename Path to the template file.
+ * @param template Placeholder in the template to replace before matching.
+ * @param replacement Value that substitutes the placeholder.
+ * @param expected_return_code Expected application exit code.
  *
- * @return SUCCESS when the template is loaded, the placeholder is replaced, the
- *         application exits with the expected code, and its stdout matches the pattern.
- *         FAILURE if any of these stages fails.
- *
- * @note Combines several steps:
- *       1. Reads the template from disk.
- *       2. Performs placeholder substitution.
- *       3. Invokes the application via runit() and captures stdout.
- *       4. Matches the captured output against the prepared pattern with match_pattern().
+ * @return SUCCESS when template preparation, runit(), and match_pattern() succeed;
+ *         FAILURE otherwise.
  */
 Return match_app_output(
 	const char *arguments,
@@ -32,8 +25,8 @@ Return match_app_output(
 		return FAILURE;
 	}
 
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Will store template content from file
@@ -49,7 +42,7 @@ Return match_app_output(
 	ASSERT(SUCCESS == replace_placeholder(pattern,template,replacement));
 
 	// Execute the application and capture output
-	ASSERT(SUCCESS == runit(arguments,result,expected_return_code,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,expected_return_code,ALLOW_BOTH));
 
 	// Compare application output against modified template
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
@@ -62,5 +55,5 @@ Return match_app_output(
 	call(del(result));
 	call(del(pattern));
 
-	return(status);
+	deliver(status);
 }

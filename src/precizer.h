@@ -57,10 +57,19 @@
 
 #define SQL_DRY_RUN_MODE ((int)-1)
 
+#define POSIX_STAT_BLOCK_BYTES 512ULL
+/*
+ * st_blocks value used in migrated v4 records when legacy DB versions
+ * (v1..v3) did not store allocated block count.
+ *
+ * This legacy can be removed in 2036 (10-year Long-Term Support)
+ */
+#define BLKCNT_UNKNOWN ((blkcnt_t)-1)
+
 #ifdef TESTITALL
-    #define STATIC
+	#define STATIC
 #else
-    #define STATIC static
+	#define STATIC static
 #endif
 
 /*
@@ -71,6 +80,35 @@
 #define st_mtim st_mtimespec
 #define st_ctim st_ctimespec
 #endif
+
+/*
+ * All the macros are here
+ */
+#define slog_show(level,respect_quiet,first_iteration,summary,...) \
+	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
+	&((summary)->at_least_one_file_was_shown),((summary)->stats_only_pass),__VA_ARGS__)
+
+/**
+ * @brief Get a pointer to a field in the global @ref Config instance.
+ *
+ * Convenience wrapper for `&(config->field)`.
+ * Primarily used with libmem helpers that accept `memory *`.
+ *
+ * @param field Name of a @ref Config field without the `config->` prefix.
+ * @return Pointer to the selected field.
+ */
+#define conf(field) (&(config->field))
+
+/**
+ * @brief Get a C-string view of a string field in the global @ref Config instance.
+ *
+ * Convenience wrapper for `getcstring(&(config->field))`.
+ * The target field is expected to be of type @ref memory and to store string data.
+ *
+ * @param field Name of a @ref Config field without the `config->` prefix.
+ * @return `const char *` returned by @ref getcstring.
+ */
+#define confstr(field) getcstring(&(config->field))
 
 // PCRE2 return codes
 typedef enum
@@ -114,12 +152,13 @@ typedef enum
  */
 typedef enum
 {
-	IDENTICAL                 = 0x00, // 00000
-	NOT_EQUAL                 = 0x01, // 00001
-	SIZE_CHANGED              = 0x02, // 00010
-	STATUS_CHANGED_TIME       = 0x04, // 00100
-	MODIFICATION_TIME_CHANGED = 0x08, // 01000
-	COMPARE_FAILED            = 0x10  // 10000
+	IDENTICAL                 = 0x00, // 000000
+	NOT_EQUAL                 = 0x01, // 000001
+	SIZE_CHANGED              = 0x02, // 000010
+	STATUS_CHANGED_TIME       = 0x04, // 000100
+	MODIFICATION_TIME_CHANGED = 0x08, // 001000
+	ALLOCATED_SIZE_CHANGED    = 0x10, // 010000
+	COMPARE_FAILED            = 0x20  // 100000
 
 } Changed;
 
@@ -173,15 +212,25 @@ typedef struct Flags {
 } Flags;
 
 /**
- * @brief Compact file metadata structure
+ * @brief Compact Stat file metadata structure
  *
- * Contains essential file metadata including size and timestamps.
+ * Contains essential file metadata including logical size, allocated blocks,
+ * and timestamps.
  * Provides high precision timing using separate second and nanosecond fields.
  */
 typedef struct {
 
 	/** File size in bytes */
 	off_t st_size;
+
+	/** Number of 512-byte blocks allocated to the file */
+	blkcnt_t st_blocks;
+
+	/** Filesystem device number */
+	dev_t st_dev;
+
+	/** Inode number on the filesystem */
+	ino_t st_ino;
 
 	/**
 	 * Last file content modification time - seconds portion
@@ -215,8 +264,8 @@ typedef struct {
 /* DB row content */
 typedef struct {
 
-	/* True if the relative path saved against DB */
-	bool relative_path_already_in_db;
+	/* True if the relative path already existed in DB before current file processing */
+	bool relative_path_was_in_db_before_processing;
 
 	/* Offset of a file (man 3 fopen) */
 	sqlite3_int64 saved_offset;
@@ -224,7 +273,8 @@ typedef struct {
 	/* DB row ID */
 	sqlite3_int64 ID;
 
-	/* Metadata of a file (man 2 stat) */
+	/* Compact Stat
+	   Metadata of a file (man 2 stat) */
 	CmpctStat saved_stat;
 
 	/* SHA512 metadata */
@@ -245,8 +295,15 @@ typedef struct {
 	/// A directory where the program was executed
 	char *running_dir;
 
+	/// Application start timestamp in monotonic nanoseconds.
+	/// Used for reporting total process runtime.
+	long long int app_start_time_ns;
+
 	/// Show progress bar
 	bool progress;
+
+	/// Print remembered warnings and errors before exit
+	bool show_remembered_messages_at_exit;
 
 	/// Force update of the database
 	bool force;
@@ -263,17 +320,29 @@ typedef struct {
 	/// Parameter to compare database
 	bool compare;
 
+	/// Show checksum mismatches in --compare output.
+	bool compare_filter_checksum_mismatch;
+
+	/// Show files that exist only in the first compared database.
+	bool compare_filter_first_source_only;
+
+	/// Show files that exist only in the second compared database.
+	bool compare_filter_second_source_only;
+
 	/// An array of paths to traverse
 	char **paths;
 
 	/// The pointer to the primary database
 	sqlite3 *db;
 
-	/// The path of DB file
-	char *db_primary_file_path;
+	/// The path of DB file stored as a managed byte string.
+	memory db_primary_file_path;
 
-	/// The name of DB file
-	char *db_file_name;
+	/// True when primary DB path is the in-memory SQLite marker (":memory:").
+	bool db_primary_path_is_memory;
+
+	/// The name of DB file stored as a managed byte string.
+	memory db_file_name;
 
 	/// Pointers to the array with database paths
 	char **db_file_paths;
@@ -327,7 +396,12 @@ typedef struct {
 	/// passed through the ignore option(s)
 	/// This is special protection against accidental
 	/// deletion of information from the database.
-	bool db_clean_ignored;
+	bool db_drop_ignored;
+
+	/// Allow dropping database records for files that are inaccessible
+	/// (permission denied). Disabled by default to avoid accidental loss
+	/// when access rights temporarily change.
+	bool db_drop_inaccessible;
 
 	/// Select database validation level: 'quick' for basic
 	/// structure check, 'full' for comprehensive
@@ -337,10 +411,6 @@ typedef struct {
 	/// Flag that reflects the presence of any changes
 	/// since the last research
 	bool db_primary_file_modified;
-
-	/// The "Warning about using the update option has already been shown"
-	/// option prevents duplicate notifications from being displayed
-	bool the_update_warning_has_already_been_shown;
 
 	/// Recursion depth limit. The depth of the traversal,
 	/// numbered from 0 to N, where a file could be found.
@@ -354,10 +424,17 @@ typedef struct {
 	/// The string array of PCRE2 regular expressions
 	char **ignore;
 
+	/// Suppress per-file log output for paths matched by --ignore
+	bool quiet_ignored;
+
 	/// Include those relative paths even if
 	/// they were excluded via the --ignore option
 	/// The string array of PCRE2 regular expressions
 	char **include;
+
+	/// True when at least one --include pattern has been specified.
+	/// Used to adjust traversal behavior (e.g., avoid subtree skipping).
+	bool include_specified;
 
 	/// Relative paths whose checksums must never be recalculated
 	/// after the initial write. PCRE2 regular expressions.
@@ -378,6 +455,10 @@ typedef struct {
 	/// data integrity remains untouched.
 	bool dry_run;
 
+	/// Enable SHA512 calculation while staying in Dry Run mode.
+	/// Activated by: --dry-run=with-checksums
+	bool dry_run_with_checksums;
+
 	/// Consider file metadata changes (creation and modification timestamps)
 	/// in addition to file size when detecting changes. By default, only
 	/// file size changes trigger rescanning. When this option is enabled,
@@ -391,6 +472,46 @@ typedef struct {
 	bool start_device_only;
 
 } Config;
+
+/**
+ * @brief Summary of a traversal pass for delayed reporting.
+ */
+typedef struct {
+	/// True for the stats-only pass in main().
+	/// When enabled, the traversal counts and allocated size are collected
+	/// without hashing, database updates, or per-file output.
+	bool stats_only_pass;
+
+	/// Total directories encountered during this traversal.
+	size_t count_dirs;
+
+	/// Total regular files encountered during this traversal.
+	size_t count_files;
+
+	/// Total symlinks encountered during this traversal.
+	size_t count_symlnks;
+
+	/// Total allocated size in bytes for encountered files.
+	/// Computed from st_blocks using POSIX_STAT_BLOCK_BYTES.
+	size_t total_allocated_bytes;
+
+	/// Total bytes actually hashed by SHA512 during this traversal.
+	/// This counts the data passed to sha512_update, not allocated size.
+	size_t total_hashed_bytes;
+
+	/**
+	 * @brief True when current pass emitted at least one visible path-level line.
+	 * Set by slog_show()-based output and reset at start of file_list().
+	 * Used by file_list() to decide whether to print "File traversal complete".
+	 * This is an output marker, not a counter of file changes.
+	 */
+	bool at_least_one_file_was_shown;
+
+	/// Total elapsed hashing time in nanoseconds for this traversal pass.
+	/// Accumulated per-file in sha512sum() from read-loop start to finish.
+	long long int total_hashing_elapsed_ns;
+
+} TraversalSummary;
 
 /*
  *
@@ -408,7 +529,6 @@ typedef struct {
 void remove_leading_dots(char *);
 void remove_trailing_dots(char *);
 #endif
-void free_str_array(char **);
 #endif
 
 /*
@@ -417,7 +537,17 @@ void free_str_array(char **);
  *
  */
 
-Return file_list(const bool);
+Return file_list(TraversalSummary *);
+
+/**
+ * @brief Print aggregated traversal totals from TraversalSummary.
+ */
+void show_statistics(const TraversalSummary *);
+
+/**
+ * @brief Print traversal elapsed time and hashing rate from TraversalSummary.
+ */
+void show_elapsed(const TraversalSummary *);
 
 Return sha512sum(
 	const char *,
@@ -425,10 +555,28 @@ Return sha512sum(
 	memory *,
 	unsigned char *,
 	sqlite3_int64 *,
+	TraversalSummary *,
 	SHA512_Context *,
+#ifdef TESTITALL_TEST_HOOKS
+	const off_t,
+#endif
+	bool *,
+	int *,
 	bool *);
 
+#ifdef TESTITALL_TEST_HOOKS
+/**
+ * @brief Pause execution at a configured test wait point.
+ *
+ * Used only in test builds to delay execution until a signal-driven test
+ * either times out or sets the global interrupt flag.
+ */
+void signal_wait_at_point(unsigned int);
+#endif
+
 size_t file_buffer_memory(void);
+
+void free_string_array(char **);
 
 Return add_string_to_array(
 	char ***,
@@ -450,12 +598,12 @@ Return path_absolute_from_relative(
 	const size_t);
 
 /**
- * @brief Result of checking accessibility for a given path.
+ * @brief Result of checking accessibility for a given path
  *
- * FILE_ACCESS_ALLOWED    — path is readable (direct or resolved absolute check).
- * FILE_ACCESS_DENIED     — path exists but is not readable (or resolved path is not readable).
- * FILE_NOT_FOUND         — path or one of its components does not exist.
- * FILE_ACCESS_ERROR      — unable to complete access check (e.g., failed to resolve absolute path).
+ * FILE_ACCESS_ALLOWED    — path is readable by direct or fallback absolute check
+ * FILE_ACCESS_DENIED     — path exists but is not readable
+ * FILE_NOT_FOUND         — path or one of its components does not exist
+ * FILE_ACCESS_ERROR      — access failed for another reason or fallback path construction failed
  */
 typedef enum FileAccessStatus
 {
@@ -463,13 +611,15 @@ typedef enum FileAccessStatus
 	FILE_ACCESS_DENIED,
 	FILE_NOT_FOUND,
 	FILE_ACCESS_ERROR
+
 } FileAccessStatus;
 
 FileAccessStatus file_check_access(
 	const char *,
-	const size_t);
+	const size_t,
+	const int);
 
-void notify_quit_handler(int);
+void signal_notify_quit_handler(int);
 
 Return determine_running_dir(void);
 
@@ -500,7 +650,7 @@ void free_config(void);
 Return db_delete_missing_metadata(void);
 
 Return db_delete_the_record_by_id(
-	sqlite_int64 *,
+	const sqlite_int64 *,
 	bool *,
 	const bool *,
 	const char *,
@@ -559,15 +709,15 @@ Return db_check_version(
 	const char *);
 
 Return db_upgrade(
-	const int *,
+	int *,
 	const char *,
 	const char *);
 
+/* This legacy can be removed in 2034 (10-year Long-Term Support) */
 Return db_migrate_from_0_to_1(const char *);
 
-Return db_migrate_from_1_to_2(const char *);
-
-Return db_migrate_from_2_to_3(const char *);
+/* This legacy can be removed in 2036 (10-year Long-Term Support) */
+Return db_migrate_to_version_4(const char *);
 
 Return db_specify_version(
 	const char *,
@@ -589,7 +739,9 @@ Return stat_copy(
 	const struct stat *,
 	CmpctStat *);
 
-Changed compare_file_metadata_equivalence(
+size_t blocks_to_bytes(blkcnt_t);
+
+Changed file_compare_metadata_equivalence(
 	const CmpctStat *,
 	const CmpctStat *) __attribute__ ((pure));
 
@@ -597,22 +749,49 @@ Return parse_arguments(
 	const int,
 	char **);
 
-void show_relative_path(
+void about(void);
+
+void slog_show_impl(
 	const char *,
-	const Changed *,
+	const char *,
+	int,
+	const char,
+	const bool,
+	bool *,
+	bool *,
+	const bool,
+	const char *,
+	...);
+
+void show_file(
 	const DBrow *,
+	const char *,
 	const CmpctStat *,
 	bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *,
+	TraversalSummary *,
+	const Changed,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const sqlite3_int64,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const bool,
+	const int);
+
+void directory_show(
+	const char *,
 	bool *,
-	const bool *,
-	const bool *,
-	const bool *,
-	const bool *);
+	TraversalSummary *,
+	const bool,
+	const bool);
 
 void show_metadata(
 	LOGMODES,
@@ -631,18 +810,33 @@ void show_checksum_gracefully_interrupted(
 
 Return status_of_changes(void);
 
+/**
+ * @brief Print remembered warning and error lines captured during the run
+ *        when delayed output is enabled
+ */
+Return show_remembered_messages(void);
+
 Return verify_directory_access(
 	FTS *,
 	FTSENT *,
-	const char *);
+	const char *,
+	bool *,
+	TraversalSummary *);
 
 Return db_check_changes(void);
 
+/**
+ * @brief Check whether the given path exists and matches requested filesystem object type
+ * @param path Path to verify
+ * @param fs_object_type Expected object type: SHOULD_BE_A_FILE or SHOULD_BE_A_DIRECTORY
+ * @return EXISTS when path exists and matches requested type, otherwise NOT_FOUND
+ * @details The special path ":memory:" is treated as not available and returns NOT_FOUND
+ */
 FileAvailability file_availability(
 	const char *,
 	const unsigned char);
 
-Return detect_paths(void);
+Return paths_detect(void);
 
 Ignore match_ignore_pattern(
 	const char *,

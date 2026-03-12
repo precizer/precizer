@@ -1,0 +1,45 @@
+\ATESTING:Configuration initialization is finished
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/fixtures/diffs
+TESTING:argument:database=0033_interrupt_resume\.db
+TESTING:argument:db_file_name=0033_interrupt_resume\.db
+TESTING:argument:progress=yes
+TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/fixtures/diffs exists
+TESTING:The path tests/fixtures/diffs is exists and it is a directory
+TESTING:Path detection is finished
+TESTING:Set signal SIGUSR2 OK:pid:[0-9]+
+TESTING:Set signal SIGINT OK:pid:[0-9]+
+TESTING:Set signal SIGTERM OK:pid:[0-9]+
+TESTING:Signals initialized
+TESTING:Current directory: [^\n]+
+TESTING:Primary database file name: 0033_interrupt_resume\.db
+TESTING:Primary database file path: 0033_interrupt_resume\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path 0033_interrupt_resume\.db exists
+TESTING:The path 0033_interrupt_resume\.db doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists\. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:The primary database file was just created and doesn't require verification
+TESTING:Successfully opened database 0033_interrupt_resume\.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named 0033_interrupt_resume\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled\. Skipping comparison
+TESTING:The brand new database has just been created\. No need to verify the paths stored in the database against those passed as command-line arguments
+TESTING:File system traversal initiated to calculate file count and storage usage
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
+TESTING:Notify quit!
+TESTING:The global return status and exit flag has been set to HALTED
+TESTING:Terminating the application\. Please wait while the database will be closed smoothly…
+TESTING:The database connection has been closed
+TESTING:The precizer has been interrupted smoothly\. All data remain in integrity condition
+TESTING:Exit status » SUCCESS\|HALTED\Z

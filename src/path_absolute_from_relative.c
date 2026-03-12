@@ -15,8 +15,8 @@ Return path_absolute_from_relative(
 	const char   *path,
 	const size_t path_size)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	size_t len = 0;

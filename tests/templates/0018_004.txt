@@ -1,0 +1,56 @@
+\A-TESTING:argument:maxdepth=3
+\+TESTING:argument:update=yes
+-TESTING:The path database3\\.db doesn't exist or it is not a file
+-TESTING:The primary DB file not yet exists. Brand new database will be created
+-TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\\\|SQLITE_OPEN_CREATE
+-TESTING:Final value for config->db_initialize_tables: true
+\+TESTING:The path database3\\.db is exists and it is a file
+\+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+\+TESTING:Final value for config->db_initialize_tables: false
+-TESTING:The primary database file was just created and doesn't require verification
+\+TESTING:Starting database file database3\\.db integrity check…
+\+TESTING:The database verification level has been set to FULL
+\+TESTING:Database database3\\.db has been verified and is in good condition
+\+TESTING:Version number 4 found in database
+\+TESTING:The database3\\.db database file is version 4
+\+TESTING:The database database3\\.db is on version 4 and does not require any upgrades
+-TESTING:The primary database and tables have been successfully initialized
+\+TESTING:The primary database and tables do not require initialization
+-TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
+-TESTING:Recursion depth limited to: 3
+\+TESTING:The database database3\\.db has already been created previously
+\+TESTING:The paths written against the database and the paths passed as arguments are completely identical
+\+TESTING:Update mode enabled for DB database3\\.db
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EItems reported during this traversal against the DB database3\\.db:\Q(?:\x1B\[[0-9;]*m)*\E
+-new 1/1/2/bbb\\.txt
+-new 1/1/aaa\\.txt
+-new 1/2/3/ccc\\.txt
+-new 1/2/bbb\\.txt
+-new 1/aaa\\.txt
+-new 2/1/2/bbb\\.txt
+-new 2/1/aaa\\.txt
+-new 2/2/3/ccc\\.txt
+-new 2/2/bbb\\.txt
+-new 2/aaa\\.txt
+-new 3/1/2/bbb\\.txt
+-new 3/1/aaa\\.txt
+-new 3/2/3/ccc\\.txt
+-new 3/2/bbb\\.txt
+-new 3/aaa\\.txt
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EChanges reported during this scan against the DB database3\\.db:\Q(?:\x1B\[[0-9;]*m)*\E
+\+new 1/1/2/3/4/ddd\\.txt
+\+new 1/1/2/3/ccc\\.txt
+\+new 1/2/3/4/5/eee\\.txt
+\+new 1/2/3/4/ddd\\.txt
+\+new 2/1/2/3/4/ddd\\.txt
+\+new 2/1/2/3/ccc\\.txt
+\+new 2/2/3/4/5/eee\\.txt
+\+new 2/2/3/4/ddd\\.txt
+\+new 3/1/2/3/4/ddd\\.txt
+\+new 3/1/2/3/ccc\\.txt
+\+new 3/2/3/4/5/eee\\.txt
+\+new 3/2/3/4/ddd\\.txt
+\+TESTING:Searching for files that no longer exist on the file system…
+\+TESTING:Missing file search completed
+-TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database3\\.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E
+\+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe database file database3\\.db has been modified since the program was launched\Q(?:\x1B\[[0-9;]*m)*\E\Z

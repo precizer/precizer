@@ -23,19 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <spawn.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <stdarg.h>
 #include <sys/stat.h>
-#define PCRE2_STATIC
-#define PCRE2_CODE_UNIT_WIDTH 8
-#include <pcre2.h>
+#include <stdint.h>
 #include <stdbool.h>
-
-// Functions for working with time.
-#include <time.h>
-#include <sys/time.h>
 
 // Functions for string manipulation.
 #include <string.h>
@@ -49,6 +39,18 @@
 
 // libxdiff library.
 #include "xdiff.h"
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
+#ifdef APP_NAME
+#define TESTITALL_APP_NAME APP_NAME
+#else
+#ifndef TESTITALL_APP_NAME
+#define TESTITALL_APP_NAME "testitall"
+#endif
+#endif
 
 /**
  * @brief Prints a formatted header message if the status check passes.
@@ -93,7 +95,7 @@
 	} else { \
 		echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
 	} \
-	return(status); \
+	deliver(status); \
 
 // Global buffers for capturing output streams.
 extern memory _STDOUT;
@@ -105,6 +107,8 @@ extern memory *EXTEND;
 
 Return external_call(
 	const char *,
+	memory *,
+	memory *,
 	const int,
 	unsigned int);
 
@@ -115,6 +119,7 @@ void echo(
 
 Return execute_command(
 	const char *,
+	memory *,
 	memory *,
 	const int,
 	unsigned int);
@@ -129,15 +134,13 @@ Return set_environment_variable(
 	const char *);
 
 Return get_origin_dir(
-	char *,
-	size_t);
+	memory *);
 
 Return create_tmpdir(
-	char *,
-	size_t);
+	memory *);
 
 Return function_capture(
-	void  (*func)(void),
+	void (*func)(void),
 	memory *,
 	memory *);
 
@@ -193,11 +196,18 @@ Return random_number_generator(
 	uint64_t
 );
 
+/**
+ * @brief Extract the name of the directory that contains the current executable
+ *
+ * Writes the final path segment of the current executable directory into
+ * @p environment, for example `debug` from
+ * `/worktree/.builds/testitall/debug/testitall`
+ *
+ * @param environment Output memory descriptor initialized for char elements
+ * @return SUCCESS on success, FAILURE on error
+ */
 Return extract_current_executable_directory_name(
-	char *,
-	size_t);
-
-#define SKIPPED 100500
+	memory *);
 
 /**
  * @brief Macro for executing a test.
@@ -238,13 +248,14 @@ Return extract_current_executable_directory_name(
 #define SUTEDONE \
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
-	printf(WHITE "Total execution time: %lldns (%s)\n" RESET,_time_spent,form_date(_time_spent)); \
+	printf(WHITE "Total execution time: %s\n" RESET,form_date(_time_spent,FULL_VIEW)); \
 	if(TRIUMPH & status) \
 	{ \
 		printf(WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
-		return(COMPLETED); \
+		return((int)COMPLETED); \
 	} else { \
 		printf(WHITE "Ended " BOLDRED "unsuccessfully\n" RESET); \
+		printf("Exit status » %s\n",show_status(status)); \
 		return((int)status); \
 	}
 
@@ -261,7 +272,7 @@ Return extract_current_executable_directory_name(
 	if(env_var != NULL && strncasecmp(env_var,compare_string,strlen(compare_string)) == 0) \
 	{ \
 		echo(EXTEND,BOLDYELLOW "↯" BOLDWHITE " skipped" RESET); \
-		return(SKIPPED); \
+		deliver(DONOTHING); \
 	}
 
 Return testitall(
@@ -275,22 +286,65 @@ enum run_mode
 	EXTERNAL_CALL = 1
 };
 
-enum buffer_policy_t
+/**
+ * @brief Bitmask flags for stdout/stderr capture.
+ *
+ * Flags are ORed together:
+ * - STDOUT_SUPPRESS: drop captured stdout.
+ * - STDERR_SUPPRESS: drop captured stderr and do not fail on it.
+ * - STDERR_ALLOW: keep stderr without failing; wins over STDERR_SUPPRESS.
+ * - STDOUT_ENABLE/STDERR_ENABLE and ALLOW_BOTH are informational only.
+ * - SUPPRESS_BOTH_BUFFERS is STDOUT_SUPPRESS|STDERR_SUPPRESS.
+ */
+enum capture_policy
 {
 	STDOUT_ENABLE         = 1U << 0,
 	STDOUT_SUPPRESS       = 1U << 1,
 	STDERR_ENABLE         = 1U << 2,
 	STDERR_SUPPRESS       = 1U << 3,
-	ALLOW_BOTH    = STDOUT_ENABLE|STDERR_ENABLE,
+	STDERR_ALLOW          = 1U << 4,
+	ALLOW_BOTH            = STDOUT_ENABLE|STDERR_ENABLE,
 	SUPPRESS_BOTH_BUFFERS = STDOUT_SUPPRESS|STDERR_SUPPRESS
 };
 
 extern enum run_mode run_external;
 
+extern int test_main(
+	int  argc,
+	char **argv) __attribute__((weak));
+
 Return runit(
 	const char *,
 	memory *,
+	memory *,
 	const int,
+	unsigned int);
+
+/**
+ * @brief Run precizer in background and complete signal-driven scenario.
+ *
+ * The helper starts the process, configures delay control environment variables
+ * (`TESTITALL_SIGNAL_WAIT_MS` and `TESTITALL_SIGNAL_WAIT_POINT`), waits
+ * `min_delay_ms`, attempts to send `signal_number` to the child, waits for
+ * completion, and finalizes output capture and exit-code validation.
+ *
+ * If the child exits before signal delivery, the helper returns failure.
+ *
+ * `max_delay_ms` is used both as:
+ * - value for `TESTITALL_SIGNAL_WAIT_MS`
+ * - watchdog timeout (SIGKILL after timeout if child is still alive)
+ *
+ * @note Supports both EXTERNAL_CALL and INTERNAL_TEST modes.
+ */
+Return runit_background(
+	const char *,
+	memory *,
+	memory *,
+	const int,
+	unsigned int,
+	uint64_t,
+	uint64_t,
+	int,
 	unsigned int);
 
 Return trim_trailing_eol(memory *);

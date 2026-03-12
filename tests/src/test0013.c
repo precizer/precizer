@@ -3,7 +3,7 @@
 /**
  * The db file should not be created in the Dry Run mode
  */
-static Return dry_run_mode_1_test(void)
+static Return test0013_1(void)
 {
 	INITTEST;
 
@@ -11,7 +11,9 @@ static Return dry_run_mode_1_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--dry-run --database=database1.db tests/examples/diffs/diff1",result,COMPLETED,ALLOW_BOTH));
+	const char *arguments = "--dry-run --database=database1.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -37,9 +39,86 @@ static Return dry_run_mode_1_test(void)
 }
 
 /**
+ * In dry-run mode with checksums, files are hashed but DB is still not modified
+ */
+static Return test0013_2(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+	create(char,path);
+	bool file_exists = false;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments = "--dry-run --database=dry_run_regular.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0013_001_1.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
+
+	arguments = "--dry-run=with-checksums --database=dry_run_with_checksums.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	filename = "templates/0013_001_2.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
+	del(path);
+
+	/* Dry-run should not create either DB file. */
+	ASSERT(SUCCESS == construct_path("dry_run_regular.db",path));
+	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(path)));
+	ASSERT(file_exists == false);
+
+	del(path);
+	ASSERT(SUCCESS == construct_path("dry_run_with_checksums.db",path));
+	ASSERT(SUCCESS == check_file_exists(&file_exists,getcstring(path)));
+	ASSERT(file_exists == false);
+
+	del(path);
+
+	RETURN_STATUS;
+}
+
+/**
+ * Invalid dry-run mode should fail with error in stderr
+ */
+static Return test0013_3(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	const char *arguments = "--dry-run=bad-mode --database=dry_run_invalid.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,result,FAILURE,STDERR_ALLOW));
+
+	const char *filename = "templates/0013_001_3.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
  * The db file should not be updated in the Dry Run mode
  */
-static Return dry_run_mode_2_test(void)
+static Return test0013_4(void)
 {
 	INITTEST;
 
@@ -51,17 +130,17 @@ static Return dry_run_mode_2_test(void)
 	create(char,chunk);
 
 	const char *command = "cd ${TMPDIR};"
-	        "mv tests/examples/ tests/examples_backup/;"
-	        "cp -a tests/examples_backup/ tests/examples/;";
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--database=database1.db tests/examples/diffs/diff1";
+	const char *arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	printf("Path: %s\n",path);
@@ -76,16 +155,14 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat1));
 
-	command = "cd ${TMPDIR};"
-	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt")); // Remove
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt")); // Modify
+	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt")); // New file
 
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	arguments = "--dry-run --update --database=database1.db"
+	        " tests/fixtures/diffs/diff1";
 
-	arguments = "--dry-run --update --database=database1.db tests/examples/diffs/diff1";
-
-	ASSERT(SUCCESS == runit(arguments,chunk,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == copy(result,chunk));
 
 	#if 0
@@ -101,13 +178,14 @@ static Return dry_run_mode_2_test(void)
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
 	// Compare against the sample. A message should be displayed indicating
-	// that the --db-clean-ignored option must be specified for permanent
+	// that the --db-drop-ignored option must be specified for permanent
 	// removal of ignored files from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update "
+	        "--database=database1.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -130,9 +208,11 @@ static Return dry_run_mode_2_test(void)
 	// references from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1";
+	arguments = "--dry-run --db-drop-ignored --update"
+	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
+	        " --database=database1.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -141,6 +221,7 @@ static Return dry_run_mode_2_test(void)
 	filename = "templates/0013_002_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	del(pattern);
@@ -153,9 +234,11 @@ static Return dry_run_mode_2_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--watch-timestamps --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --dry-run --database=database1.db tests/examples/diffs/diff1",
-		result,
-		COMPLETED,ALLOW_BOTH));
+	arguments = "--dry-run --db-drop-ignored --update --watch-timestamps"
+	        " --ignore=\"^path2/AAA/ZAW/.*\""
+	        " --database=database1.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -164,6 +247,7 @@ static Return dry_run_mode_2_test(void)
 	filename = "templates/0013_002_3.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	del(pattern);
@@ -177,10 +261,13 @@ static Return dry_run_mode_2_test(void)
 	del(path);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
+	command = "cd ${TMPDIR} && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
@@ -190,7 +277,7 @@ static Return dry_run_mode_2_test(void)
  * will now be tested in live mode without simulation, and
  * the results will be compared against each other
  */
-static Return no_dry_run_mode_3_test(void)
+static Return test0013_5(void)
 {
 	INITTEST;
 	// Create memory for the result
@@ -202,27 +289,27 @@ static Return no_dry_run_mode_3_test(void)
 	const char *arguments = NULL;
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};"
-		"cp -a tests/examples/ tests/examples_backup/;",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR};"
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == construct_path(db_file_name,path));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--database=database1.db tests/examples/diffs/diff1";
+	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"Path: %s\n",path);
 	#endif
 
-	command = "cd ${TMPDIR};"
-	        "rm tests/examples/diffs/diff1/2/AAA/BBB/CZC/a.txt;" // Remove
-	        "echo -n AFAKDSJ >> tests/examples/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;" // Modify
-	        "echo -n WNEURHGO > tests/examples/diffs/diff1/2/AAA/BBB/CZC/b.txt;"; // New file
-
-	ASSERT(SUCCESS == external_call(command,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt"));
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
+	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt")); // New file
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -231,13 +318,17 @@ static Return no_dry_run_mode_3_test(void)
 	del(result);
 
 	// Compare against the sample. A message should be displayed indicating
-	// that the --db-clean-ignored option must be specified for permanent
+	// that the --db-drop-ignored option must be specified for permanent
 	// removal of ignored files from the database
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db database1.db.backup;",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR};"
+	        "cp -a database1.db database1.db.backup;";
 
-	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db "
+	        "tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -254,11 +345,16 @@ static Return no_dry_run_mode_3_test(void)
 
 	// Real live mode permanent deletion of all ignored file
 	// references from the database
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};cp -a database1.db.backup database1.db;",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR};"
+	        "cp -a database1.db.backup database1.db;";
 
-	arguments = "--db-clean-ignored --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	arguments = "--db-drop-ignored --update"
+	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
+	        " --database=database1.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -273,11 +369,16 @@ static Return no_dry_run_mode_3_test(void)
 
 	del(result);
 
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR};mv database1.db.backup database1.db;",COMPLETED,ALLOW_BOTH));
+	command = "cd ${TMPDIR};"
+	        "mv database1.db.backup database1.db;";
 
-	arguments = "--watch-timestamps --db-clean-ignored --ignore=\"^path2/AAA/ZAW/.*\" --update --database=database1.db tests/examples/diffs/diff1";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == runit(arguments,result,COMPLETED,ALLOW_BOTH));
+	arguments = "--watch-timestamps --db-drop-ignored "
+	        "--ignore=\"^path2/AAA/ZAW/.*\" --update "
+	        "--database=database1.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	#if 0
 	echo(STDOUT,"%s\n",getcstring(result));
@@ -295,15 +396,18 @@ static Return no_dry_run_mode_3_test(void)
 	del(path);
 
 	// Clean up test results
-	ASSERT(SUCCESS == external_call("cd ${TMPDIR} && "
-		"rm database1.db && "
-		"rm -rf tests/examples/ && "
-		"mv tests/examples_backup/ tests/examples/",COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+
+	command = "cd ${TMPDIR} && "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	RETURN_STATUS;
 }
 
-Return compare_dry_and_real_4_test(void)
+Return test0013_6(void)
 {
 	INITTEST;
 
@@ -376,6 +480,143 @@ Return compare_dry_and_real_4_test(void)
 }
 
 /**
+ * Verifies detection of unexpected database metadata drift in dry-run mode.
+ *
+ * The function performs two runs. First, it creates `database1.db` in normal
+ * mode. Then it enables the testing hook
+ * `PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED=true` and runs the application
+ * with `--dry-run --update`. In test-hook mode this forces a DB timestamp bump
+ * inside the process before `db_check_changes()` compares the saved and current
+ * file metadata.
+ *
+ * The expected outcome of the second run is `WARNING`
+ */
+static Return test0013_7(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+	const char *arguments = NULL;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
+
+	/* First run: create DB in normal mode. */
+	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","true"));
+	arguments = "--dry-run --update --database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	const char *filename = "templates/0013_005.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * Verifies internal consistency check when DB should be modified but appears unchanged.
+ *
+ * The function first validates a real update path: it creates `database1.db`,
+ * modifies one sample file, runs `--update`, compares output with template,
+ * and verifies that DB file metadata has actually changed.
+ *
+ * After that, it restores the pre-update DB state, enables
+ * `PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED=true`, and runs `--update`
+ * again. The hook rewrites the saved baseline database stat to the current
+ * stat right before comparison in db_check_changes(). This simulates a faulty
+ * "no metadata drift" result after a real database update and must trigger
+ * WARNING.
+ */
+static Return test0013_8(void)
+{
+	INITTEST;
+
+	create(char,result);
+	create(char,pattern);
+	create(char,path);
+
+	struct stat stat_before_real_update = {0};
+	struct stat stat_after_real_update = {0};
+
+	const char *prepare_command = "cd ${TMPDIR}; "
+	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup; "
+	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
+	const char *cleanup_command = "cd ${TMPDIR}; "
+	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
+	const char *arguments = NULL;
+	const char *command = NULL;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED","false"));
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","false"));
+
+	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	/* First run: create DB in normal mode. */
+	arguments = "--database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	/* Make at least one real filesystem change so --update modifies DB. */
+	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
+
+	/* Control check: real --update must modify database metadata. */
+	ASSERT(SUCCESS == construct_path("database1.db",path));
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat_before_real_update));
+
+	command = "cd ${TMPDIR}; cp -a database1.db database1.db.backup;";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0013_006_1.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == get_file_stat(getcstring(path),&stat_after_real_update));
+	ASSERT(FAILURE == check_file_identity(&stat_before_real_update,&stat_after_real_update));
+
+	/*
+	 * Restore pre-update DB snapshot so the next run starts from the same state
+	 * and tests only the simulation hook behavior.
+	 */
+	command = "cd ${TMPDIR}; mv database1.db.backup database1.db;";
+	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(result);
+	del(pattern);
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","true"));
+	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+
+	filename = "templates/0013_006_2.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == set_environment_variable("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED","false"));
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == external_call(cleanup_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	del(path);
+	del(pattern);
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
  *
  * Dry Run mode testing
  *
@@ -384,12 +625,14 @@ Return test0013(void)
 {
 	INITTEST;
 
-	TEST(dry_run_mode_1_test,"The DB file should not be created…");
-#ifndef EVIL_EMPIRE_OS
-	TEST(dry_run_mode_2_test,"The DB file should not be updated…");
-#endif
-	TEST(no_dry_run_mode_3_test,"Now run the same without simulation…");
-	TEST(compare_dry_and_real_4_test,"Compare dry and real mode templates…");
+	TEST(test0013_1,"The DB file should not be created…");
+	TEST(test0013_2,"Dry run with checksums hashes files but keeps DB untouched…");
+	TEST(test0013_3,"Invalid dry-run mode should return failure and print stderr error…");
+	TEST(test0013_4,"The DB file should not be updated…");
+	TEST(test0013_5,"Now run the same without simulation…");
+	TEST(test0013_6,"Compare dry and real mode templates…");
+	TEST(test0013_7,"Dry-run DB metadata drift should trigger internal warning path…");
+	TEST(test0013_8,"Live update: force missing DB metadata drift and trigger warning…");
 
 	RETURN_STATUS;
 }

@@ -1,11 +1,12 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/4
+TESTING:argument:paths=tests/fixtures/4
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/4 exists
-TESTING:The path tests/examples/4 is exists and it is a directory
-TESTING:Paths detected
+TESTING:Verify that the path tests/fixtures/4 exists
+TESTING:The path tests/fixtures/4 is exists and it is a directory
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
@@ -13,9 +14,9 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: %DB_NAME%
 TESTING:Primary database file path: %DB_NAME%
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
@@ -26,21 +27,22 @@ TESTING:The primary database file was just created and doesn't require verificat
 TESTING:Successfully opened database %DB_NAME%
 TESTING:The primary database and tables have been successfully initialized
 TESTING:The primary database named %DB_NAME% is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database %DB_NAME%
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:Recursion depth limited to: \d+$
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the %DB_NAME% database:(?:\x1B\[[0-9;]*m)*
-add sss.txt
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
+new sss\.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file %DB_NAME% was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

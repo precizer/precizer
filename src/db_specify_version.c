@@ -21,6 +21,8 @@ Return db_specify_version(
 	const char *db_file_path,
 	int        version)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
@@ -127,7 +129,7 @@ Return db_specify_version(
 		} else {
 			db_file_modified = true;
 
-			if(strcmp(db_file_path,config->db_primary_file_path) == 0)
+			if(strcmp(db_file_path,confstr(db_primary_file_path)) == 0)
 			{
 				/* Changes have been made to the database. Update
 				   this in the global variable value. */

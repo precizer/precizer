@@ -5,26 +5,25 @@ Return memory_concat_strings(
 	memory       *destination,
 	const memory *source)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	if(destination == NULL || source == NULL)
 	{
-		slog(ERROR,"Memory management; concat_strings arguments must be non-NULL");
+		report("Memory management; concat_strings arguments must be non-NULL");
 		provide(FAILURE);
 	}
 
 	if(destination->element_size != source->element_size)
 	{
-		slog(ERROR,
-			"Memory management; Element size mismatch (%zu vs %zu)",
-			destination->element_size,
-			source->element_size);
+		report("Memory management; Element size mismatch (%zu vs %zu)",destination->element_size,source->element_size);
 		provide(FAILURE);
 	}
 
 	if(destination->element_size != sizeof(char))
 	{
-		slog(ERROR,"Memory management; concat_strings supports byte-sized elements only");
+		report("Memory management; concat_strings supports byte-sized elements only");
 		provide(FAILURE);
 	}
 
@@ -36,18 +35,18 @@ Return memory_concat_strings(
 
 	size_t new_total_elements = 0;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		if(destination_length > SIZE_MAX - source_length)
 		{
-			slog(ERROR,"Memory management; Concatenation would overflow element count");
+			report("Memory management; Concatenation would overflow element count");
 			status = FAILURE;
 		} else {
 			const size_t sum = destination_length + source_length;
 
 			if(sum == SIZE_MAX)
 			{
-				slog(ERROR,"Memory management; Not enough room for string terminator");
+				report("Memory management; Not enough room for string terminator");
 				status = FAILURE;
 			} else {
 				new_total_elements = sum + 1;
@@ -62,13 +61,13 @@ Return memory_concat_strings(
 	run(memory_guarded_size(source->element_size,source_length,&source_bytes));
 	run(resize(destination,new_total_elements));
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
 		unsigned char *destination_bytes = (unsigned char *)destination->data;
 
 		if(destination_bytes == NULL)
 		{
-			slog(ERROR,"Memory management; Destination data pointer is NULL after resize");
+			report("Memory management; Destination data pointer is NULL after resize");
 			status = FAILURE;
 		} else {
 			if(source_bytes > 0)
@@ -77,14 +76,14 @@ Return memory_concat_strings(
 
 				if(source_bytes_ptr == NULL)
 				{
-					slog(ERROR,"Memory management; Source data pointer is NULL");
+					report("Memory management; Source data pointer is NULL");
 					status = FAILURE;
 				} else {
 					memmove(destination_bytes + offset_bytes,source_bytes_ptr,source_bytes);
 				}
 			}
 
-			if(SUCCESS == status)
+			if(TRIUMPH & status)
 			{
 				destination_bytes[offset_bytes + source_bytes] = '\0';
 				telemetry_string_padding_event();

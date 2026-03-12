@@ -1,0 +1,61 @@
+\ATESTING:Configuration initialization is finished
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:paths=tests/fixtures/ignore_include_cases/chaotic_filenames
+TESTING:argument:database=database0009\.db
+TESTING:argument:db_file_name=database0009\.db
+TESTING:argument:ignore=\^\(\?:skip_\|tmp_\)\.\*\\\.\(\?:log\|bak\)\$
+TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/fixtures/ignore_include_cases/chaotic_filenames exists
+TESTING:The path tests/fixtures/ignore_include_cases/chaotic_filenames is exists and it is a directory
+TESTING:Path detection is finished
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: database0009\.db
+TESTING:Primary database file path: database0009\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database0009\.db exists
+TESTING:The path database0009\.db doesn't exist or it is not a file
+TESTING:The primary DB file not yet exists. Brand new database will be created
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
+TESTING:Final value for config->db_initialize_tables: true
+TESTING:DB mode determined
+TESTING:The primary database file was just created and doesn't require verification
+TESTING:Successfully opened database database0009\.db
+TESTING:The primary database and tables have been successfully initialized
+TESTING:The primary database named database0009\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
+TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
+TESTING:File traversal started
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009\.db:(?:\x1B\[[0-9;]*m)*
+new alpha_m0n9k2_zz\.txt
+new hold_a1r9v-0pq\.bak
+new keep_4xv7__m2\.log
+new omega_77xy__aa\.bin
+ignore & do not add skip_4xv7__m2\.log
+ignore & do not add skip_a1r9v-0pq\.bak
+ignore & do not add skip_m0n9k2_zz\.log
+ignore & do not add tmp_77xy__aa\.bak
+ignore & do not add tmp_qwe_90210\.log
+ignore & do not add tmp_z1-9vv\.bak
+new xqwe_90210\.md
+new zeta_z1-9vv\.dat
+TESTING:File traversal complete
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+TESTING:The database connection has been closed
+TESTING:Start vacuuming the primary database…
+TESTING:The primary database has been vacuumed
+TESTING:The database connection has been closed
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database0009\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+TESTING:The precizer completed as expected
+TESTING:Exit status » SUCCESS\Z

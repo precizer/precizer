@@ -27,7 +27,7 @@ long testitall_sysconf(int name)
 	}
 }
 
-static Return pages_failure_returns_default(void)
+static Return test0025_1(void)
 {
 	INITTEST;
 	mock_avphys_pages = -1; // Simulate sysconf failure for pages
@@ -38,7 +38,7 @@ static Return pages_failure_returns_default(void)
 	RETURN_STATUS;
 }
 
-static Return pagesize_failure_returns_default(void)
+static Return test0025_2(void)
 {
 	INITTEST;
 	mock_avphys_pages = 1000;
@@ -49,7 +49,7 @@ static Return pagesize_failure_returns_default(void)
 	RETURN_STATUS;
 }
 
-static Return zero_pages_results_in_zero(void)
+static Return test0025_3(void)
 {
 	INITTEST;
 	mock_avphys_pages = 0;
@@ -60,7 +60,7 @@ static Return zero_pages_results_in_zero(void)
 	RETURN_STATUS;
 }
 
-static Return zero_pagesize_results_in_zero(void)
+static Return test0025_4(void)
 {
 	INITTEST;
 	mock_avphys_pages = 12345;
@@ -71,7 +71,7 @@ static Return zero_pagesize_results_in_zero(void)
 	RETURN_STATUS;
 }
 
-static Return tiny_values_integer_division(void)
+static Return test0025_5(void)
 {
 	INITTEST;
 	// 1% of 12,345 is 123 (integer division)
@@ -83,7 +83,7 @@ static Return tiny_values_integer_division(void)
 	RETURN_STATUS;
 }
 
-static Return normal_values_calculation(void)
+static Return test0025_6(void)
 {
 	INITTEST;
 	// 1% of (1,000,000 * 4096) = 40,960,000
@@ -113,12 +113,12 @@ Return test0025(void)
 {
 	INITTEST;
 
-	TEST(pages_failure_returns_default,"file_buffer_memory: returns default on pages failure…");
-	TEST(pagesize_failure_returns_default,"file_buffer_memory: returns default on page size failure…");
-	TEST(zero_pages_results_in_zero,"file_buffer_memory: 0 pages yields 0…");
-	TEST(zero_pagesize_results_in_zero,"file_buffer_memory: 0 page size yields 0…");
-	TEST(tiny_values_integer_division,"file_buffer_memory: integer division rounding down…");
-	TEST(normal_values_calculation,"file_buffer_memory: normal case computation…");
+	TEST(test0025_1,"file_buffer_memory: returns default on pages failure…");
+	TEST(test0025_2,"file_buffer_memory: returns default on page size failure…");
+	TEST(test0025_3,"file_buffer_memory: 0 pages yields 0…");
+	TEST(test0025_4,"file_buffer_memory: 0 page size yields 0…");
+	TEST(test0025_5,"file_buffer_memory: integer division rounding down…");
+	TEST(test0025_6,"file_buffer_memory: normal case computation…");
 
 	RETURN_STATUS;
 }

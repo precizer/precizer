@@ -16,12 +16,9 @@ Return db_finalize(
 	const char   *db_alias,
 	sqlite3_stmt **stmt)
 {
-	/** Return status
-	 *  The status that will be passed to return() before exiting
-	 *  By default, the function worked without errors
-	 */
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	int rc = SQLITE_OK;
 
 	if(db == NULL || db_alias == NULL || stmt == NULL)
 	{
@@ -33,7 +30,7 @@ Return db_finalize(
 	{
 		if(*stmt != NULL)
 		{
-			rc = sqlite3_finalize(*stmt);
+			int rc = sqlite3_finalize(*stmt);
 
 			if(SQLITE_OK != rc)
 			{
@@ -70,7 +67,7 @@ Return db_finalize(
 
 		if(SUCCESS == status)
 		{
-			rc = sqlite3_exec(db,sql,NULL,NULL,NULL);
+			int rc = sqlite3_exec(db,sql,NULL,NULL,NULL);
 
 			if(SQLITE_OK != rc)
 			{
@@ -83,7 +80,7 @@ Return db_finalize(
 
 		if(SUCCESS == status)
 		{
-			rc = sqlite3_db_cacheflush(db);
+			int rc = sqlite3_db_cacheflush(db);
 
 			if(SQLITE_OK != rc)
 			{

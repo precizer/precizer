@@ -39,14 +39,14 @@
  */
 Return db_validate_paths(void)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	// Don't do anything
 	if(config->compare == true)
 	{
-		return(status);
+		provide(status);
 	}
 
 	/* Interrupt the function smoothly */
@@ -119,11 +119,11 @@ Return db_validate_paths(void)
 		}
 	}
 
-	rc = sqlite3_prepare_v2(config->db,getstring(select_sql),-1,&select_stmt,NULL);
+	rc = sqlite3_prepare_v2(config->db,getcstring(select_sql),-1,&select_stmt,NULL);
 
 	if(SQLITE_OK != rc)
 	{
-		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",getstring(select_sql));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",getcstring(select_sql));
 		status = FAILURE;
 	}
 
@@ -139,7 +139,7 @@ Return db_validate_paths(void)
 			{
 				paths_are_equal = false;
 
-				const char *insert_sql = "INSERT INTO runtime_paths_id.the_path_id_does_not_exists (path_id) VALUES (?1);";
+				const char *insert_sql = "INSERT INTO the_path_id_does_not_exists (path_id) VALUES (?1);";
 
 				rc = sqlite3_prepare_v2(config->db,insert_sql,-1,&insert_stmt,NULL);
 
@@ -163,7 +163,9 @@ Return db_validate_paths(void)
 				if(SUCCESS == status)
 				{
 					/* Execute SQL statement */
-					if(sqlite3_step(insert_stmt) != SQLITE_DONE)
+					rc = sqlite3_step(insert_stmt);
+
+					if(rc != SQLITE_DONE)
 					{
 						log_sqlite_error(config->db,rc,NULL,"Insert statement didn't return DONE");
 						status = FAILURE;
@@ -240,7 +242,7 @@ Return db_validate_paths(void)
 				{
 					if(!(rational_logger_mode & SILENT))
 					{
-						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",config->db_file_name);
+						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",confstr(db_file_name));
 
 						for(int i = 0; config->paths[i]; i++)
 						{

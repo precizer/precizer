@@ -1,0 +1,7 @@
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: 0015_database_future_version\.db
+Starting database file 0015_database_future_version\.db integrity check…
+Database 0015_database_future_version\.db has been verified and is in good condition
+ERROR: The database 0015_database_future_version\.db is designed to work with a newer version of the application and cannot be used with the old one\. Please update precizer application to the last version
+ERROR: The precizer process terminated unexpectedly due to an error
+ERROR: Exit status » WARNING\Z

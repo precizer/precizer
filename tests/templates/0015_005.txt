@@ -1,10 +1,11 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=%DB_NAME%, 0015_database_v0.db
-TESTING:argument:db_file_paths=%DB_NAME%, 0015_database_v0.db
-TESTING:argument:db_file_names=%DB_NAME%, 0015_database_v0.db
+TESTING:argument:paths=%DB_NAME%, 0015_database_v0\.db
+TESTING:argument:db_file_paths=%DB_NAME%, 0015_database_v0\.db
+TESTING:argument:db_file_names=%DB_NAME%, 0015_database_v0\.db
 TESTING:argument:compare=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
@@ -13,9 +14,9 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
@@ -23,31 +24,31 @@ TESTING:Successfully opened database DisposableDB
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:Database initialization process completed
-TESTING:The comparison of %DB_NAME% and 0015_database_v0.db databases is starting…
+TESTING:The comparison of %DB_NAME% and 0015_database_v0\.db databases is starting…
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% is exists and it is a file
 TESTING:Starting database file %DB_NAME% integrity check…
 TESTING:The database verification level has been set to FULL
 TESTING:Database %DB_NAME% has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The %DB_NAME% database file is version 3
-TESTING:The database %DB_NAME% is on version 3 and does not require any upgrades
-TESTING:Verify that the path 0015_database_v0.db exists
-TESTING:The path 0015_database_v0.db is exists and it is a file
-TESTING:Starting database file 0015_database_v0.db integrity check…
+TESTING:Version number 4 found in database
+TESTING:The %DB_NAME% database file is version 4
+TESTING:The database %DB_NAME% is on version 4 and does not require any upgrades
+TESTING:Verify that the path 0015_database_v0\.db exists
+TESTING:The path 0015_database_v0\.db is exists and it is a file
+TESTING:Starting database file 0015_database_v0\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database 0015_database_v0.db has been verified and is in good condition
+TESTING:Database 0015_database_v0\.db has been verified and is in good condition
 TESTING:Metadata table not found in database
-TESTING:The 0015_database_v0.db database file is version 0
-TESTING:The database 0015_database_v0.db file has an outdated version 0 and requires updating to the version 3
-TESTING:Caution! The update will be performed in transaction mode for database safety
+TESTING:The 0015_database_v0\.db database file is version 0
+TESTING:The database 0015_database_v0\.db file has an outdated version 0 and requires updating to the version 4
+TESTING:Warning! The update will be performed in transaction mode for database safety
 TESTING:Caution! After the update, the database file will not work correctly with old versions of precizer. Please update all copies of the application that will use the new database version!
 ERROR:Program execution cannot continue. Database update required. Use the (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* flag to perform this action
 TESTING:Returned db_upgrade:\d+ status: WARNING
-ERROR:Database 0015_database_v0.db upgrade failed
+ERROR:Database 0015_database_v0\.db upgrade failed
 TESTING:Returned db_check_version:\d+ status: WARNING
 TESTING:Returned db_test:\d+ status: WARNING
-TESTING:Comparison of %DB_NAME% and 0015_database_v0.db databases is complete
+TESTING:Comparison of %DB_NAME% and 0015_database_v0\.db databases is complete
 TESTING:Returned db_compare:\d+ status: WARNING
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error

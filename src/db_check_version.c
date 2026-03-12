@@ -13,6 +13,8 @@ Return db_check_version(
 	const char *db_file_path,
 	const char *db_file_name)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Interrupt the function smoothly */
@@ -59,7 +61,7 @@ Return db_check_version(
 			slog(ERROR,"The database %s is designed to work with a newer version "
 				"of the application and cannot be used with the old one. "
 				"Please update %s application to the last version\n",db_file_name,APP_NAME);
-			status = FAILURE;
+			status = WARNING;
 		} else {
 			slog(TRACE,"The database %s is on version %d and does not require any upgrades\n",db_file_name,db_version);
 		}
@@ -73,7 +75,7 @@ Return db_check_version(
 			   The primary database doesn't need to be vacuumed during updates.
 			   It will be vacuumed automatically before the Precizer
 			   application session ends */
-			if(strcmp(db_file_path,config->db_primary_file_path) != 0)
+			if(strcmp(db_file_path,confstr(db_primary_file_path)) != 0)
 			{
 				/* Vacuum the database */
 				status = db_vacuum(db_file_path);

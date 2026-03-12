@@ -26,6 +26,8 @@ Return function_capture(
 	memory *stdout_buffer,
 	memory *stderr_buffer)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/* Save original file descriptors */
@@ -204,5 +206,5 @@ Return function_capture(
 	close(stdout_fd);
 	close(stderr_fd);
 
-	return(status);
+	deliver(status);
 }

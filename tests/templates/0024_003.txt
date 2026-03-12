@@ -1,134 +1,139 @@
-\ATESTING:Configuration initialized
+\ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/'apostrophe/'apostrophe
-TESTING:argument:database=database1.db
-TESTING:argument:db_file_name=database1.db
+TESTING:argument:paths=tests/fixtures/'apostrophe/'apostrophe
+TESTING:argument:database=database1\.db
+TESTING:argument:db_file_name=database1\.db
 TESTING:argument:progress=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/'apostrophe/'apostrophe exists
-TESTING:The path tests/examples/'apostrophe/'apostrophe is exists and it is a directory
-TESTING:Paths detected
+TESTING:Verify that the path tests/fixtures/'apostrophe/'apostrophe exists
+TESTING:The path tests/fixtures/'apostrophe/'apostrophe is exists and it is a directory
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
-TESTING:Primary database file name: database1.db
-TESTING:Primary database file path: database1.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path database1.db exists
-TESTING:The path database1.db doesn't exist or it is not a file
+TESTING:Primary database file name: database1\.db
+TESTING:Primary database file path: database1\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database1\.db exists
+TESTING:The path database1\.db doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
 TESTING:The primary database file was just created and doesn't require verification
-TESTING:Successfully opened database database1.db
+TESTING:Successfully opened database database1\.db
 TESTING:The primary database and tables have been successfully initialized
-TESTING:The primary database named database1.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
+TESTING:The primary database named database1\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File system traversal initiated to calculate file count and storage usage
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the database1.db database:(?:\x1B\[[0-9;]*m)*
-add path_with_apo'strophe/1/AAA/BCB/CCC/a.txt
-add path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file.txt
-add path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file.txt
-add path_with_apo'strophe/2/AAA/BBB/CZC/a.txt
-add path_with_apo'strophe/3/AAA/BBB/CCC/a.txt
-add path_with_apo'strophe/4/AAA/BBB/CCC/a.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/a.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/b.txt
-add path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file.txt
-add path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe.txt
-add path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file.txt
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
+new path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
+new path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
+new path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database1\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
-TESTING:Configuration initialized
+TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/examples/apostrophe'/'apostrophe/apostrophe'
-TESTING:argument:database=database2.db
-TESTING:argument:db_file_name=database2.db
+TESTING:argument:paths=tests/fixtures/apostrophe'/'apostrophe/apostrophe'
+TESTING:argument:database=database2\.db
+TESTING:argument:db_file_name=database2\.db
 TESTING:argument:progress=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
-TESTING:Verify that the path tests/examples/apostrophe'/'apostrophe/apostrophe' exists
-TESTING:The path tests/examples/apostrophe'/'apostrophe/apostrophe' is exists and it is a directory
-TESTING:Paths detected
+TESTING:Verify that the path tests/fixtures/apostrophe'/'apostrophe/apostrophe' exists
+TESTING:The path tests/fixtures/apostrophe'/'apostrophe/apostrophe' is exists and it is a directory
+TESTING:Path detection is finished
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
-TESTING:Primary database file name: database2.db
-TESTING:Primary database file path: database2.db
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
-TESTING:Verify that the path database2.db exists
-TESTING:The path database2.db doesn't exist or it is not a file
+TESTING:Primary database file name: database2\.db
+TESTING:Primary database file path: database2\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path database2\.db exists
+TESTING:The path database2\.db doesn't exist or it is not a file
 TESTING:The primary DB file not yet exists. Brand new database will be created
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE\|SQLITE_OPEN_CREATE
 TESTING:Final value for config->db_initialize_tables: true
 TESTING:DB mode determined
 TESTING:The primary database file was just created and doesn't require verification
-TESTING:Successfully opened database database2.db
+TESTING:Successfully opened database database2\.db
 TESTING:The primary database and tables have been successfully initialized
-TESTING:The primary database named database2.db is ready for operations
-TESTING:The in-memory runtime_paths_id database successfully attached to the primary database database2.db
+TESTING:The primary database named database2\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File system traversal initiated to calculate file count and storage usage
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started
-TESTING:(?:\x1B\[[0-9;]*m)*These files will be added against the database2.db database:(?:\x1B\[[0-9;]*m)*
-add path_with_apo'strophe/1/AAA/BCB/CCC/a.txt
-add path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file.txt
-add path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file.txt
-add path_with_apo'strophe/2/AAA/BBB/CZC/a.txt
-add path_with_apo'strophe/3/AAA/BBB/CCC/a.txt
-add path_with_apo'strophe/4/AAA/BBB/CCC/a.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/a.txt
-add path_with_apo'strophe/path1/AAA/BCB/CCC/b.txt
-add path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file.txt
-add path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a.txt
-add path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe.txt
-add path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file.txt
+TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database2\.db:(?:\x1B\[[0-9;]*m)*
+new path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
+new path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
+new path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
+new path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
+new path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:File traversal complete
-TESTING:Total size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
-TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database2.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed its execution without any issues
+TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database2\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
-TESTING:Configuration initialized
+TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=database1.db, database2.db
-TESTING:argument:db_file_paths=database1.db, database2.db
-TESTING:argument:db_file_names=database1.db, database2.db
+TESTING:argument:paths=database1\.db, database2\.db
+TESTING:argument:db_file_paths=database1\.db, database2\.db
+TESTING:argument:db_file_names=database1\.db, database2\.db
 TESTING:argument:compare=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
@@ -137,9 +142,9 @@ TESTING:Signals initialized
 TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: DisposableDB
 TESTING:Primary database file path: :memory:
-TESTING:DB name determined
-TESTING:Verify that the path . exists
-TESTING:The path . is exists and it is a directory
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
 TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
@@ -147,30 +152,30 @@ TESTING:Successfully opened database DisposableDB
 TESTING:The primary database and tables do not require initialization
 TESTING:The primary database named DisposableDB is ready for operations
 TESTING:Database initialization process completed
-TESTING:The comparison of database1.db and database2.db databases is starting…
-TESTING:Verify that the path database1.db exists
-TESTING:The path database1.db is exists and it is a file
-TESTING:Starting database file database1.db integrity check…
+TESTING:The comparison of database1\.db and database2\.db databases is starting…
+TESTING:Verify that the path database1\.db exists
+TESTING:The path database1\.db is exists and it is a file
+TESTING:Starting database file database1\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database database1.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database1.db database file is version 3
-TESTING:The database database1.db is on version 3 and does not require any upgrades
-TESTING:Verify that the path database2.db exists
-TESTING:The path database2.db is exists and it is a file
-TESTING:Starting database file database2.db integrity check…
+TESTING:Database database1\.db has been verified and is in good condition
+TESTING:Version number 4 found in database
+TESTING:The database1\.db database file is version 4
+TESTING:The database database1\.db is on version 4 and does not require any upgrades
+TESTING:Verify that the path database2\.db exists
+TESTING:The path database2\.db is exists and it is a file
+TESTING:Starting database file database2\.db integrity check…
 TESTING:The database verification level has been set to FULL
-TESTING:Database database2.db has been verified and is in good condition
-TESTING:Version number 3 found in database
-TESTING:The database2.db database file is version 3
-TESTING:The database database2.db is on version 3 and does not require any upgrades
-TESTING:(?:\x1B\[[0-9;]*m)*All files are identical against database1.db and database2.db(?:\x1B\[[0-9;]*m)*
-TESTING:(?:\x1B\[[0-9;]*m)*All SHA512 checksums of files are identical against database1.db and database2.db(?:\x1B\[[0-9;]*m)*
-TESTING:(?:\x1B\[[0-9;]*m)*The databases database1.db and database2.db are absolutely equal(?:\x1B\[[0-9;]*m)*
-TESTING:Comparison of database1.db and database2.db databases is complete
+TESTING:Database database2\.db has been verified and is in good condition
+TESTING:Version number 4 found in database
+TESTING:The database2\.db database file is version 4
+TESTING:The database database2\.db is on version 4 and does not require any upgrades
+TESTING:(?:\x1B\[[0-9;]*m)*All files are identical against database1\.db and database2\.db(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*All SHA512 checksums of files are identical against database1\.db and database2\.db(?:\x1B\[[0-9;]*m)*
+TESTING:(?:\x1B\[[0-9;]*m)*The databases database1\.db and database2\.db are absolutely equal(?:\x1B\[[0-9;]*m)*
+TESTING:Comparison of database1\.db and database2\.db databases is complete
 TESTING:Comparison mode is enabled. The primary database verification is not required
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:The database connection has been closed
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
-TESTING:The precizer completed its execution without any issues
+TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

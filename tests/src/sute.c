@@ -18,8 +18,8 @@ int main(void)
 	TEST(test0001,"libsha512 hash check with sha512…");
 	TEST(test0002,"An empty example…");
 	SUTE(test0007,"libmem Memory allocator test set…");
-	TEST(test0008,"librational test report messaging…");
-	TEST(test0009,"librational test slog messaging…");
+	TEST(test0032,"librational formatting test…");
+	SUTE(test0008,"librational report/logger test set…");
 	TEST(test0017,"librational test itoa function…");
 
 	HEADER("Unit Testing of precizer's functions");
@@ -31,12 +31,19 @@ int main(void)
 	TEST(test0023,"extract_relative_path() test set…");
 	SUTE(test0025,"file_buffer_memory() test set…");
 	TEST(test0026,"file_check_access() test set…");
+	TEST(test0035,"create_tmpdir() honors TMPDIR and fallback…");
 
 	HEADER("Unit Testing of precizer");
 	TEST(comprehensive_unit_testing,"Comprehensive Unit testing…");
 
 	HEADER("System Testing of precizer");
 	TEST(comprehensive_system_testing,"Comprehensive System testing…");
+
+	/* Mock only tecting in unit-mode so the linker wraps are active */
+	#ifndef EVIL_EMPIRE_OS
+	HEADER("Mock-Based Testing of precizer");
+	TEST(comprehensive_mock_testing,"Comprehensive Mock testing…");
+	#endif
 
 	HEADER("Clean results");
 	RUN(clean,"Temporary data cleanup…");

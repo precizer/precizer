@@ -12,8 +12,8 @@
  */
 Return init_signals(void)
 {
-	/// The status that will be passed to return() before exiting.
-	/// By default, the function worked without errors.
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
 	/// Disable key echo in terminal
@@ -23,7 +23,7 @@ Return init_signals(void)
 	tcsetattr(fileno(stdin),TCSANOW,&term);
 
 	// kill -USR2 <pid>
-	if((signal(SIGUSR2,&notify_quit_handler)==SIG_ERR)!=0)
+	if((signal(SIGUSR2,&signal_notify_quit_handler)==SIG_ERR)!=0)
 	{
 		slog(ERROR,"Failed set signal SIGUSR2\n");
 		status = FAILURE;
@@ -32,7 +32,7 @@ Return init_signals(void)
 	}
 
 	// Ctrl-C
-	if((signal(SIGINT,&notify_quit_handler)==SIG_ERR)!=0)
+	if((signal(SIGINT,&signal_notify_quit_handler)==SIG_ERR)!=0)
 	{
 		slog(ERROR,"Failed set signal SIGINT\n");
 		status = FAILURE;
@@ -41,7 +41,7 @@ Return init_signals(void)
 	}
 
 	// Default kill Termination signal (15)
-	if((signal(SIGTERM,&notify_quit_handler)==SIG_ERR)!=0)
+	if((signal(SIGTERM,&signal_notify_quit_handler)==SIG_ERR)!=0)
 	{
 		slog(ERROR,"Failed set signal SIGTERM\n");
 		status = FAILURE;
