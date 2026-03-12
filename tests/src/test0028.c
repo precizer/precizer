@@ -10,14 +10,19 @@ static Return assert_compare_output(
 	const char *stdout_pattern_file,
 	const char *stderr_pattern_file)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	create(char,stdout_result);
 	create(char,stderr_result);
 	create(char,stdout_pattern);
 	create(char,stderr_pattern);
 
-	ASSERT(arguments != NULL);
+	if((SUCCESS & status) && arguments == NULL)
+	{
+		status = FAILURE;
+	}
 
 	unsigned int capture_policy = ALLOW_BOTH;
 
@@ -26,18 +31,18 @@ static Return assert_compare_output(
 		capture_policy = STDERR_ALLOW;
 	}
 
-	ASSERT(SUCCESS == runit(arguments,stdout_result,stderr_result,expected_return_code,capture_policy));
+	run(runit(arguments,stdout_result,stderr_result,expected_return_code,capture_policy));
 
 	if(stdout_pattern_file != NULL)
 	{
-		ASSERT(SUCCESS == get_file_content(stdout_pattern_file,stdout_pattern));
-		ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
+		run(get_file_content(stdout_pattern_file,stdout_pattern));
+		run(match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
 	}
 
 	if(stderr_pattern_file != NULL)
 	{
-		ASSERT(SUCCESS == get_file_content(stderr_pattern_file,stderr_pattern));
-		ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,stderr_pattern_file));
+		run(get_file_content(stderr_pattern_file,stderr_pattern));
+		run(match_pattern(stderr_result,stderr_pattern,stderr_pattern_file));
 	}
 
 	del(stderr_pattern);
@@ -53,28 +58,36 @@ static Return assert_compare_output(
  */
 static Return prepare_compare_filter_differences_fixture(void)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	create(char,result);
 
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	run(copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	run(set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	run(runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(result->length == 0);
+	if((SUCCESS & status) && result->length != 0)
+	{
+		status = FAILURE;
+	}
 
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt"));
-	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
-	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt"));
+	run(delete_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt"));
+	run(add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt"));
+	run(replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt"));
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	run(runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(result->length == 0);
+	if((SUCCESS & status) && result->length != 0)
+	{
+		status = FAILURE;
+	}
 
 	del(result);
 
@@ -87,26 +100,34 @@ static Return prepare_compare_filter_differences_fixture(void)
  */
 static Return prepare_compare_filter_one_sided_fixture(void)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	create(char,result);
 
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	run(copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	run(set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	run(runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(result->length == 0);
+	if((SUCCESS & status) && result->length != 0)
+	{
+		status = FAILURE;
+	}
 
-	ASSERT(SUCCESS == replase_to_string("ONLY_DB2_FILE","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/only_db2.txt"));
+	run(replase_to_string("ONLY_DB2_FILE","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/only_db2.txt"));
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	run(runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(result->length == 0);
+	if((SUCCESS & status) && result->length != 0)
+	{
+		status = FAILURE;
+	}
 
 	del(result);
 
@@ -118,13 +139,15 @@ static Return prepare_compare_filter_one_sided_fixture(void)
  */
 static Return cleanup_compare_filter_differences_fixture(void)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
-	ASSERT(SUCCESS == delete_path("database1.db"));
-	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+	run(delete_path("database1.db"));
+	run(delete_path("database2.db"));
+	run(delete_path("tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	deliver(status);
 }
@@ -134,21 +157,29 @@ static Return cleanup_compare_filter_differences_fixture(void)
  */
 static Return prepare_compare_filter_equal_fixture(void)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	create(char,result);
 
-	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	run(set_environment_variable("TESTING","false"));
 
 	const char *arguments = "--silent --database=database1.db tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	run(runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(result->length == 0);
+	if((SUCCESS & status) && result->length != 0)
+	{
+		status = FAILURE;
+	}
 
 	arguments = "--silent --database=database2.db tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	run(runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(result->length == 0);
+	if((SUCCESS & status) && result->length != 0)
+	{
+		status = FAILURE;
+	}
 
 	del(result);
 
@@ -160,10 +191,12 @@ static Return prepare_compare_filter_equal_fixture(void)
  */
 static Return cleanup_compare_filter_equal_fixture(void)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
-	ASSERT(SUCCESS == delete_path("database1.db"));
-	ASSERT(SUCCESS == delete_path("database2.db"));
+	run(delete_path("database1.db"));
+	run(delete_path("database2.db"));
 
 	deliver(status);
 }
@@ -492,53 +525,53 @@ static Return test0028_6(void)
 		{"--compare-filter",FAILURE,NULL,"templates/0028_006_16.txt"}
 	};
 
-	ASSERT(SUCCESS == prepare_compare_filter_equal_fixture());
+	ASSERT(SUCCESS & prepare_compare_filter_equal_fixture());
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	for(size_t i = 0; (i < sizeof(equal_cases) / sizeof(equal_cases[0])) && (SUCCESS == status); i++)
 	{
-		ASSERT(SUCCESS == assert_compare_output(
+		ASSERT(SUCCESS & assert_compare_output(
 			equal_cases[i].arguments,
 			equal_cases[i].expected_return_code,
 			equal_cases[i].stdout_pattern_file,
 			equal_cases[i].stderr_pattern_file));
 	}
 
-	ASSERT(SUCCESS == cleanup_compare_filter_equal_fixture());
+	ASSERT(SUCCESS & cleanup_compare_filter_equal_fixture());
 
-	ASSERT(SUCCESS == prepare_compare_filter_one_sided_fixture());
+	ASSERT(SUCCESS & prepare_compare_filter_one_sided_fixture());
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	for(size_t i = 0; (i < sizeof(one_sided_cases) / sizeof(one_sided_cases[0])) && (SUCCESS == status); i++)
 	{
-		ASSERT(SUCCESS == assert_compare_output(
+		ASSERT(SUCCESS & assert_compare_output(
 			one_sided_cases[i].arguments,
 			one_sided_cases[i].expected_return_code,
 			one_sided_cases[i].stdout_pattern_file,
 			one_sided_cases[i].stderr_pattern_file));
 	}
 
-	ASSERT(SUCCESS == cleanup_compare_filter_differences_fixture());
+	ASSERT(SUCCESS & cleanup_compare_filter_differences_fixture());
 
-	ASSERT(SUCCESS == prepare_compare_filter_differences_fixture());
+	ASSERT(SUCCESS & prepare_compare_filter_differences_fixture());
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	for(size_t i = 0; (i < sizeof(differences_cases) / sizeof(differences_cases[0])) && (SUCCESS == status); i++)
 	{
-		ASSERT(SUCCESS == assert_compare_output(
+		ASSERT(SUCCESS & assert_compare_output(
 			differences_cases[i].arguments,
 			differences_cases[i].expected_return_code,
 			differences_cases[i].stdout_pattern_file,
 			differences_cases[i].stderr_pattern_file));
 	}
 
-	ASSERT(SUCCESS == cleanup_compare_filter_differences_fixture());
+	ASSERT(SUCCESS & cleanup_compare_filter_differences_fixture());
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	for(size_t i = 0; (i < sizeof(invalid_cases) / sizeof(invalid_cases[0])) && (SUCCESS == status); i++)
 	{
-		ASSERT(SUCCESS == assert_compare_output(
+		ASSERT(SUCCESS & assert_compare_output(
 			invalid_cases[i].arguments,
 			invalid_cases[i].expected_return_code,
 			invalid_cases[i].stdout_pattern_file,
@@ -559,7 +592,7 @@ static Return test0028_7(void)
 
 	const char *arguments = "--compare --compare-filter=invalid-value database1.db database2.db";
 
-	ASSERT(SUCCESS == assert_compare_output(arguments,FAILURE,NULL,"templates/0028_007_1.txt"));
+	ASSERT(SUCCESS & assert_compare_output(arguments,FAILURE,NULL,"templates/0028_007_1.txt"));
 
 	RETURN_STATUS;
 }
@@ -571,13 +604,13 @@ static Return test0028_8(void)
 {
 	INITTEST;
 
-	ASSERT(SUCCESS == prepare_compare_filter_equal_fixture());
+	ASSERT(SUCCESS & prepare_compare_filter_equal_fixture());
 	ASSERT(SUCCESS == db_set_sha512_to_null("database2.db","1/AAA/ZAW/D/e/f/b_file.txt"));
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == assert_compare_output("--compare database1.db database2.db",COMPLETED,"templates/0028_000.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--compare database1.db database2.db",COMPLETED,"templates/0028_000.txt",NULL));
 
-	ASSERT(SUCCESS == cleanup_compare_filter_equal_fixture());
+	ASSERT(SUCCESS & cleanup_compare_filter_equal_fixture());
 
 	RETURN_STATUS;
 }
@@ -609,7 +642,7 @@ static Return test0028_9(void)
 	ASSERT(result->length == 0);
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == assert_compare_output(
+	ASSERT(SUCCESS & assert_compare_output(
 		"--compare database1.db database2.db",
 		COMPLETED,
 		"templates/0028_000.txt",
@@ -633,11 +666,11 @@ static Return test0028_10(void)
 {
 	INITTEST;
 
-	ASSERT(SUCCESS == prepare_compare_filter_equal_fixture());
+	ASSERT(SUCCESS & prepare_compare_filter_equal_fixture());
 	ASSERT(SUCCESS == move_path("database1.db","database'1.db"));
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == assert_compare_output(
+	ASSERT(SUCCESS & assert_compare_output(
 		"--compare database\\'1.db database2.db",
 		COMPLETED,
 		"templates/0028_010_1.txt",

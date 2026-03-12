@@ -7,18 +7,32 @@ static Return verify_array_contents(
 	size_t     expected_size)
 {
 
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
-	ASSERT(array != NULL);
+	if((SUCCESS & status) && array == NULL)
+	{
+		status = FAILURE;
+	}
 
 	for(size_t i = 0; i < expected_size; i++)
 	{
-		ASSERT(array[i] != NULL);
-		ASSERT(strcmp(array[i],expected[i]) == 0);
+		if((SUCCESS & status) && array[i] == NULL)
+		{
+			status = FAILURE;
+		}
+		if((SUCCESS & status) && strcmp(array[i],expected[i]) != 0)
+		{
+			status = FAILURE;
+		}
 	}
-	ASSERT(array[expected_size] == NULL);  // Verify NULL termination
+	if((SUCCESS & status) && array[expected_size] != NULL)  // Verify NULL termination
+	{
+		status = FAILURE;
+	}
 
-	return(status);
+	deliver(status);
 }
 
 static Return test0012_1(void)
@@ -54,7 +68,7 @@ static Return test0012_2(void)
 		ASSERT(SUCCESS == add_string_to_array(&array,strings[i]));
 	}
 
-	ASSERT(SUCCESS == verify_array_contents(array,strings,num_strings));
+	ASSERT(SUCCESS & verify_array_contents(array,strings,num_strings));
 
 	free_string_array(array);
 
