@@ -101,7 +101,6 @@ static Return test0033_3(void)
 	const char *first_run_template = "templates/0033_003_1.txt";
 	const char *second_run_template = "templates/0033_003_2.txt";
 	const char *prepare_command = "cd ${TMPDIR};"
-	        "mkdir -p tests/fixtures/;"
 	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
 
 	create(char,stdout_result);
@@ -114,6 +113,7 @@ static Return test0033_3(void)
 	 * Step 1: Prepare isolated test data in TMPDIR and start from a clean DB
 	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == create_directory("tests/fixtures"));
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
@@ -220,7 +220,6 @@ static Return test0033_4(void)
 	const char *first_run_template = "templates/0033_004_1.txt";
 	const char *second_run_template = "templates/0033_004_2.txt";
 	const char *prepare_command = "cd ${TMPDIR};"
-	        "mkdir -p tests/fixtures/;"
 	        "cp -a \"$ORIGIN_DIR/tests/fixtures/huge\" tests/fixtures/;";
 
 	create(char,stdout_result);
@@ -230,6 +229,7 @@ static Return test0033_4(void)
 	create(char,huge_file_path);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == create_directory("tests/fixtures"));
 	ASSERT(SUCCESS == external_call(prepare_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
 
