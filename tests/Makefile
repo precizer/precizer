@@ -22,7 +22,7 @@ SRC = src
 STATIC = -static -static-libgcc -Wl,--gc-sections
 
 PRZRSRC = ../src
-TESTED_APP_NAME := $(shell awk '/^#define[[:space:]]+APP_NAME[[:space:]]+"/ { gsub(/"/,"",$$3); print $$3; exit }' $(PRZRSRC)/version.h)
+TESTED_APP_NAME := $(shell awk '$$2 == "APP_NAME" && $$3 ~ /^"/ { gsub(/"/,"",$$3); print $$3; exit }' $(PRZRSRC)/version.h)
 BUILDS = ../.builds
 BUILDEXE = $(BUILDS)/$(EXE)
 BUILDEXEDIR = $(dir $(BUILDEXE))
