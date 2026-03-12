@@ -145,7 +145,13 @@ static int nftw_remove_callback(
 	(void)type_flag;
 	(void)ftw_buffer;
 
-	return(remove(path));
+	if(remove(path) != 0)
+	{
+		echo(STDERR,"delete_path: remove failed for %s: %s\n",path,strerror(errno));
+		return(-1);
+	}
+
+	return(0);
 }
 
 /**
@@ -623,18 +629,25 @@ Return delete_path(
 
 	if(relative_path_to_tmpdir == NULL)
 	{
+		echo(STDERR,"delete_path: relative path must not be NULL\n");
 		status = FAILURE;
 	}
 
 	if(SUCCESS == status)
 	{
 		status = construct_path(relative_path_to_tmpdir,absolute_path);
+
+		if(SUCCESS != status)
+		{
+			echo(STDERR,"delete_path: failed to construct absolute path for \"%s\"\n",relative_path_to_tmpdir);
+		}
 	}
 
 	if(SUCCESS == status)
 	{
 		if(lstat(getcstring(absolute_path),&path_stat) != 0)
 		{
+			echo(STDERR,"delete_path: lstat failed for %s: %s\n",getcstring(absolute_path),strerror(errno));
 			status = FAILURE;
 		}
 	}
@@ -645,9 +658,11 @@ Return delete_path(
 		{
 			if(nftw(getcstring(absolute_path),nftw_remove_callback,64,FTW_DEPTH | FTW_PHYS) != 0)
 			{
+				echo(STDERR,"delete_path: nftw failed for %s: %s\n",getcstring(absolute_path),strerror(errno));
 				status = FAILURE;
 			}
 		} else if(remove(getcstring(absolute_path)) != 0){
+			echo(STDERR,"delete_path: remove failed for %s: %s\n",getcstring(absolute_path),strerror(errno));
 			status = FAILURE;
 		}
 	}
