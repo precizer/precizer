@@ -226,7 +226,9 @@ static int build_copy_destination_path_for_nftw(
 }
 
 /**
- * @brief Create one directory and accept an existing directory at the same path
+ * @brief Create one directory and accept an existing path that resolves to a directory
+ *
+ * Existing symlinks to directories are treated as valid path components
  *
  * @param[in] directory_path Absolute directory path
  *
@@ -248,7 +250,7 @@ static int create_directory_if_missing(
 		status = -1;
 	}
 
-	if(status == 0 && lstat(directory_path,&directory_stat) != 0)
+	if(status == 0 && stat(directory_path,&directory_stat) != 0)
 	{
 		status = -1;
 	}
@@ -704,6 +706,7 @@ Return truncate_file_to_zero_size(
  *
  * Empty path resolves to TMPDIR root
  * Existing directories are preserved
+ * Existing symlinks to directories in the TMPDIR prefix are accepted
  *
  * @param[in] relative_path_to_tmpdir Directory path relative to TMPDIR
  *

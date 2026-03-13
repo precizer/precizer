@@ -111,7 +111,8 @@ Return truncate_file_to_zero_size(
 /**
  * @brief Create directory tree relative to TMPDIR using native filesystem calls
  *
- * Existing directories are accepted when every path component is a directory
+ * Existing directories are accepted when every path component resolves to a
+ * directory, including symlinks to directories
  *
  * @param[in] relative_path_to_tmpdir Directory path relative to TMPDIR
  *

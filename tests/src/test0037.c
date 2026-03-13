@@ -44,6 +44,63 @@ static Return assert_stderr_matches(
 }
 
 /**
+ * @brief Save the current TMPDIR value and clear the output pointer when unset
+ *
+ * @param[out] saved_tmpdir_out Heap-allocated TMPDIR copy or NULL when unset
+ * @return Return status code
+ */
+static Return save_tmpdir_value(char **saved_tmpdir_out)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	const char *original_tmpdir = NULL;
+
+	if(saved_tmpdir_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		*saved_tmpdir_out = NULL;
+		original_tmpdir = getenv("TMPDIR");
+
+		if(original_tmpdir != NULL)
+		{
+			*saved_tmpdir_out = strdup(original_tmpdir);
+
+			if(*saved_tmpdir_out == NULL)
+			{
+				status = FAILURE;
+			}
+		}
+	}
+
+	deliver(status);
+}
+
+/**
+ * @brief Restore TMPDIR to a previously saved value or unset it when NULL
+ *
+ * @param[in] saved_tmpdir Saved TMPDIR value or NULL when TMPDIR was unset
+ * @return Return status code
+ */
+static Return restore_tmpdir_value(const char *saved_tmpdir)
+{
+	int restore_tmpdir_status = 0;
+
+	if(saved_tmpdir != NULL)
+	{
+		restore_tmpdir_status = setenv("TMPDIR",saved_tmpdir,1);
+	} else {
+		restore_tmpdir_status = unsetenv("TMPDIR");
+	}
+
+	return(restore_tmpdir_status == 0 ? SUCCESS : FAILURE);
+}
+
+/**
  *
  * @brief delete_path() should report a NULL input path
  *
@@ -109,14 +166,8 @@ static Return test0037_4(void)
 
 	create(char,path);
 	char *saved_tmpdir = NULL;
-	const char *original_tmpdir = getenv("TMPDIR");
-	int restore_tmpdir_status = 0;
 
-	if(original_tmpdir != NULL)
-	{
-		saved_tmpdir = strdup(original_tmpdir);
-		ASSERT(saved_tmpdir != NULL);
-	}
+	ASSERT(SUCCESS == save_tmpdir_value(&saved_tmpdir));
 
 	if(SUCCESS == status)
 	{
@@ -131,16 +182,9 @@ static Return test0037_4(void)
 		ASSERT(SUCCESS == assert_stderr_matches("templates/0037_004.txt"));
 	}
 
-	if(saved_tmpdir != NULL)
-	{
-		restore_tmpdir_status = setenv("TMPDIR",saved_tmpdir,1);
-	} else {
-		restore_tmpdir_status = unsetenv("TMPDIR");
-	}
-
 	if(SUCCESS == status)
 	{
-		ASSERT(restore_tmpdir_status == 0);
+		ASSERT(SUCCESS == restore_tmpdir_value(saved_tmpdir));
 	}
 
 	free(saved_tmpdir);
@@ -221,6 +265,111 @@ static Return test0037_6(void)
 	RETURN_STATUS;
 }
 
+/**
+ *
+ * @brief create_directory() should accept a symlinked directory component in TMPDIR
+ *
+ */
+static Return test0037_7(void)
+{
+	INITTEST;
+
+	char *saved_tmpdir = NULL;
+	bool file_exists = false;
+	create(char,symlinked_tmpdir);
+	create(char,link_path);
+	create(char,expected_directory_path);
+	Return restore_status = SUCCESS;
+	Return cleanup_status = SUCCESS;
+
+	ASSERT(SUCCESS == save_tmpdir_value(&saved_tmpdir));
+	ASSERT(SUCCESS == create_directory("0037_symlink_parent"));
+	ASSERT(SUCCESS == create_directory("0037_symlink_parent/real_tmp_root"));
+	ASSERT(SUCCESS == construct_path("0037_symlink_parent/link_tmp_root",link_path));
+	ASSERT(0 == symlink("real_tmp_root",getcstring(link_path)));
+	ASSERT(SUCCESS == construct_path("0037_symlink_parent/link_tmp_root",symlinked_tmpdir));
+	ASSERT(SUCCESS == set_environment_variable("TMPDIR",getcstring(symlinked_tmpdir)));
+	ASSERT(SUCCESS == create_directory("a/b"));
+
+	restore_status = restore_tmpdir_value(saved_tmpdir);
+
+	if(SUCCESS == restore_status)
+	{
+		if(SUCCESS == construct_path("0037_symlink_parent/real_tmp_root/a/b",expected_directory_path)
+		        && SUCCESS == check_file_exists(&file_exists,getcstring(expected_directory_path)))
+		{
+			if(file_exists != true)
+			{
+				if(SUCCESS == status)
+				{
+					status = FAILURE;
+				}
+			}
+		} else if(SUCCESS == status){
+			status = FAILURE;
+		}
+
+		cleanup_status = delete_path("0037_symlink_parent");
+	}
+
+	if(SUCCESS == status)
+	{
+		ASSERT(SUCCESS == restore_status);
+		ASSERT(SUCCESS == cleanup_status);
+	}
+
+	free(saved_tmpdir);
+	call(del(expected_directory_path));
+	call(del(link_path));
+	call(del(symlinked_tmpdir));
+
+	RETURN_STATUS;
+}
+
+/**
+ *
+ * @brief create_directory() should reject a TMPDIR component that resolves to a file
+ *
+ */
+static Return test0037_8(void)
+{
+	INITTEST;
+
+	char *saved_tmpdir = NULL;
+	create(char,symlinked_tmpdir);
+	create(char,link_path);
+	Return restore_status = SUCCESS;
+	Return cleanup_status = SUCCESS;
+
+	ASSERT(SUCCESS == save_tmpdir_value(&saved_tmpdir));
+	ASSERT(SUCCESS == create_directory("0037_symlink_bad_parent"));
+	ASSERT(SUCCESS == truncate_file_to_zero_size("0037_symlink_bad_parent/file_target"));
+	ASSERT(SUCCESS == construct_path("0037_symlink_bad_parent/link_file_root",link_path));
+	ASSERT(0 == symlink("file_target",getcstring(link_path)));
+	ASSERT(SUCCESS == construct_path("0037_symlink_bad_parent/link_file_root",symlinked_tmpdir));
+	ASSERT(SUCCESS == set_environment_variable("TMPDIR",getcstring(symlinked_tmpdir)));
+	ASSERT(FAILURE == create_directory("a/b"));
+
+	restore_status = restore_tmpdir_value(saved_tmpdir);
+
+	if(SUCCESS == restore_status)
+	{
+		cleanup_status = delete_path("0037_symlink_bad_parent");
+	}
+
+	if(SUCCESS == status)
+	{
+		ASSERT(SUCCESS == restore_status);
+		ASSERT(SUCCESS == cleanup_status);
+	}
+
+	free(saved_tmpdir);
+	call(del(link_path));
+	call(del(symlinked_tmpdir));
+
+	RETURN_STATUS;
+}
+
 Return test0037(void)
 {
 	INITTEST;
@@ -231,6 +380,8 @@ Return test0037(void)
 	TEST(test0037_4,"construct_path() reports missing TMPDIR…");
 	TEST(test0037_5,"delete_path() reports remove() failure for a regular file…");
 	TEST(test0037_6,"delete_path() reports nftw() callback remove() failure…");
+	TEST(test0037_7,"create_directory() accepts a symlinked directory in TMPDIR…");
+	TEST(test0037_8,"create_directory() rejects a symlinked file in TMPDIR…");
 
 	RETURN_STATUS;
 }
