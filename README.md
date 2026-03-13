@@ -18,6 +18,8 @@ Comprehensive hybrid test suite:
 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/precizer/precizer/badge)](https://scorecard.dev/viewer/?uri=github.com/precizer/precizer)
+
 ## TL;DR
 
 ### Overview
