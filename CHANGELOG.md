@@ -2,6 +2,21 @@
 
 All notable changes will be documented in this file
 
+# Release 0.9.0 2026-03-12
+
+## Changed
+- Improved `--compare` output so differences between databases are easier to understand, including clearer diagnostics when `--compare-filter` is used
+- Messages related to files matched by `--lock-checksum` are now repeated at the end of the run, making important scan results easier to notice in long output
+- Updated the bundled SQLite library to a newer upstream version
+
+## Fixed
+- Improved compatibility when building precizer on macOS
+
+# v0.8.0 2026-03-05
+
+## Changed
+- precizer is now distributed under the GPLv3 license
+
 # v0.7.0 2026-02-28
 
 This version mainly improves test reliability (including complex `--ignore`/`--include`, interruption, and file metadata change scenarios) and includes minor output and documentation polish without noticeable user-facing CLI behavior changes
