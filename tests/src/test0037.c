@@ -166,8 +166,17 @@ static Return test0037_4(void)
 
 	create(char,path);
 	char *saved_tmpdir = NULL;
+	Return saved_tmpdir_status = FAILURE;
+	Return restore_tmpdir_status = SUCCESS;
+	bool tmpdir_saved = false;
 
-	ASSERT(SUCCESS == save_tmpdir_value(&saved_tmpdir));
+	saved_tmpdir_status = save_tmpdir_value(&saved_tmpdir);
+	ASSERT(SUCCESS == saved_tmpdir_status);
+
+	if(SUCCESS == saved_tmpdir_status)
+	{
+		tmpdir_saved = true;
+	}
 
 	if(SUCCESS == status)
 	{
@@ -182,9 +191,14 @@ static Return test0037_4(void)
 		ASSERT(SUCCESS == assert_stderr_matches("templates/0037_004.txt"));
 	}
 
+	if(tmpdir_saved == true)
+	{
+		restore_tmpdir_status = restore_tmpdir_value(saved_tmpdir);
+	}
+
 	if(SUCCESS == status)
 	{
-		ASSERT(SUCCESS == restore_tmpdir_value(saved_tmpdir));
+		ASSERT(SUCCESS == restore_tmpdir_status);
 	}
 
 	free(saved_tmpdir);
