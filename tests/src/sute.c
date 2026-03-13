@@ -1,5 +1,10 @@
 #include "sute.h"
 
+/**
+ * @brief Run the top-level test suite executable
+ *
+ * @return Process exit status produced by the test runner macros
+ */
 int main(void)
 {
 	SUTESTART;

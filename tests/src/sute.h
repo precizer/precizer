@@ -41,8 +41,26 @@ Return test0030(void);
 Return test0031(void);
 Return test0032(void);
 Return test0033(void);
+
+/**
+ * @brief Run metadata-difference reporting coverage for logical and allocated size changes
+ *
+ * @return Return status code
+ */
 Return test0034(void);
+
+/**
+ * @brief Run `create_tmpdir()` coverage for TMPDIR and fallback selection
+ *
+ * @return Return status code
+ */
 Return test0035(void);
+
+/**
+ * @brief Run `delete_path()` coverage for removing a regular file
+ *
+ * @return Return status code
+ */
 Return test0036(void);
 Return test0037(void);
 
@@ -50,6 +68,17 @@ Return comprehensive_system_testing(void);
 Return comprehensive_unit_testing(void);
 Return comprehensive_mock_testing(void);
 
+/**
+ * @brief Prepare the isolated test environment and fixture workspace
+ *
+ * @return Return status code
+ */
 Return prepare(void);
 Return finish(void);
+
+/**
+ * @brief Attempt cleanup of the temporary test workspace under TMPDIR
+ *
+ * @return Return status code
+ */
 Return clean(void);

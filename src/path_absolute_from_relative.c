@@ -1,14 +1,16 @@
 #include "precizer.h"
 
 /**
- * @brief Constructs an absolute path from a base directory and a relative path.
+ * @brief Allocate a path string suitable for filesystem access
  *
- * This function dynamically allocates memory for the absolute path and combines
- * the given base directory (config->running_dir) with the relative path.
+ * @details When `path` is relative, the function prefixes it with
+ * `config->running_dir`. When `path` is already absolute, the function copies it
+ * as-is into a newly allocated buffer
  *
- * @param absolute_path Pointer to store the dynamically allocated absolute path.
- * @param path Relative path to append.
- * @param path_size Size of the relative path string.
+ * @param[out] absolute_path Pointer that receives the allocated path buffer
+ * @param[in] path Relative or absolute input path
+ * @param[in] path_size Length of `path` without the terminating null byte
+ * @return Return status code
  */
 Return path_absolute_from_relative(
 	char         **absolute_path,

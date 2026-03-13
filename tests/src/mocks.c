@@ -73,6 +73,11 @@ size_t mocks_fread_call_count(void)
 	return mock_fread_calls;
 }
 
+/**
+ * @brief Set errno returned by the simulated fread failure path
+ *
+ * @param[in] err Errno value to expose after the forced read failure
+ */
 void mocks_fread_set_errno(int err)
 {
 	mock_fread_errno = err;
@@ -143,6 +148,12 @@ size_t __wrap_fread(void *ptr,size_t size,size_t nmemb,FILE *stream)
 
 int __real_ferror(FILE *stream);
 
+/**
+ * @brief Report a pending mocked fread error exactly once for the tracked stream
+ *
+ * @param[in] stream Stream passed to `ferror()`
+ * @return `1` for the pending mocked error or the real `ferror()` result otherwise
+ */
 int __wrap_ferror(FILE *stream)
 {
 	if(stream != NULL && stream == mock_fread_target_stream && mock_fread_error_seen)

@@ -216,10 +216,15 @@ static Return db_changes(
 }
 
 /**
- * @brief Compare two databases
- * @details Compares content of two databases specified in Config structure
- *          Checks for file existence, missing files and SHA512 checksums
- * @return Return enum indicating operation status
+ * @brief Compare two databases selected in the global config
+ *
+ * @details Attaches both databases, reports requested difference categories,
+ * and prints summary lines for missing paths and checksum mismatches. The
+ * comparison scope can be limited with `--compare-filter`; without filters the
+ * function checks first-source-only paths, second-source-only paths, and SHA512
+ * mismatches
+ *
+ * @return Return status code
  */
 Return db_compare(void)
 {

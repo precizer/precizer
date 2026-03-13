@@ -21,10 +21,12 @@ static void reset_nftw_copy_context(void)
 }
 
 /**
- * @brief Open writable file stream with explicit create mode 0600
+ * @brief Open a writable file stream with explicit create mode 0600
  *
- * @param[in] file_path File path relative to TMPDIR or absolute path
- * @param[in] stream_open_mode Mode string for fdopen()
+ * Supports only `"ab"` and `"wb"` modes
+ *
+ * @param[in] file_path Managed path string passed directly to `open()`
+ * @param[in] stream_open_mode Mode string for `fdopen()`
  * @param[out] opened_file_stream_out Output writable stream
  *
  * @return Return status code
@@ -1252,7 +1254,7 @@ Return make_sparse_size_change_without_allocated_block_growth(
  * @param[in] blocks_before_rewrite Allocated blocks before rewrite
  *
  * @return Return status code:
- *         - SUCCESS: Dense rewrite completed with unchanged logical size and changed allocated blocks
+ *         - SUCCESS: Dense rewrite completed with unchanged logical size and a different allocated block count
  *         - FAILURE: Validation or filesystem operation failed
  */
 Return rewrite_file_dense_with_same_size(
@@ -1340,7 +1342,7 @@ Return rewrite_file_dense_with_same_size(
 /**
  * @brief Compute SHA512 for a file using the project SHA512 library
  *
- * @param[in] file_path Path to the file to hash
+ * @param[in] file_path File path passed directly to `fopen()`
  * @param[out] sha512_out Output SHA512 digest buffer
  *
  * @return Return status code:
@@ -1412,7 +1414,7 @@ Return compute_file_sha512(
 /**
  * @brief Append one byte to a file using native C file I/O
  *
- * @param[in] file_path_buffer Path to the file to append
+ * @param[in] file_path_buffer Managed path string passed directly to `open_file_stream()`
  * @param[in] byte Byte value to append
  *
  * @return Return status code:

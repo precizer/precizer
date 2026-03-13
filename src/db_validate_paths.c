@@ -1,41 +1,25 @@
 #include "precizer.h"
 
 /**
- * @brief Validates path consistency between database records and provided config variables
+ * @brief Validate stored DB path prefixes against current CLI PATH arguments
  *
- * @details This function performs validation of paths by comparing paths stored
- * in the database against paths provided as config variables. The validation
- * process involves:
+ * @details Skips validation in compare mode. When the primary database has just
+ * been created, no stored-path comparison is needed. Otherwise the function
+ * finds DB prefixes that are missing from the current PATH arguments, stores
+ * their IDs in `the_path_id_does_not_exists`, and reports the mismatch to the
+ * user
  *
- * 1. Checking if paths stored in database match paths passed as config variables
- * 2. Warning user about potential data loss if paths mismatch
- * 3. Handling forced path updates when --force flag is used
+ * If mismatches are found and `--force` is not enabled, the function returns
+ * `WARNING` so the caller can stop before replacing stored path metadata. When
+ * `--force` is enabled, execution continues and the new PATH arguments may be
+ * written to the database
  *
- * The function supports several operational modes:
- * - Normal mode: Validates paths and prevents updates if mismatch detected
- * - Force mode: Allows path updates even when mismatches are detected
- * - Compare mode: Skips validation entirely
+ * @warning Using `--force` incorrectly can replace path, file, and checksum
+ * metadata in the database
  *
- * Database operations:
- * - Queries existing paths from database
- * - Creates temporary tables for tracking mismatched paths
- * - Performs path prefix comparisons
- *
- * @note This function is crucial for preventing accidental data loss by ensuring
- * path consistency before performing database operations.
- *
- * @warning Using --force flag can lead to loss or replacement of file and
- * checksum information if used incorrectly.
- *
- * Error handling:
- * - Memory allocation failures
- * - SQLite preparation and execution errors
- * - Path mismatch detection
- *
- * @provide Return Status code indicating operation result:
- *         - SUCCESS (0): Paths are valid or force flag is used
- *         - FAILURE (1): Path mismatch detected without force flag
- *                       or database operation error occurred
+ * @return `SUCCESS` when paths match or forced path replacement is allowed,
+ *         `WARNING` when mismatches are found without `--force`, or `FAILURE`
+ *         on SQLite or memory errors
  */
 Return db_validate_paths(void)
 {

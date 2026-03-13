@@ -200,7 +200,7 @@ Return make_sparse_size_change_without_allocated_block_growth(
  *
  * @param[in] relative_path_to_tmpdir File path relative to TMPDIR
  * @param[in] target_size Required final file size
- * @param[in] blocks_before_rewrite Expected allocated block count lower bound
+ * @param[in] blocks_before_rewrite Expected allocated block count before the rewrite
  *
  * @return Return status code
  */
@@ -212,7 +212,7 @@ Return rewrite_file_dense_with_same_size(
 /**
  * @brief Calculate SHA512 digest of a file
  *
- * @param[in] file_path File path relative to TMPDIR or absolute path
+ * @param[in] file_path File path passed directly to `fopen()`
  * @param[out] sha512_out Output SHA512 bytes with SHA512_DIGEST_LENGTH size
  *
  * @return Return status code
@@ -224,7 +224,7 @@ Return compute_file_sha512(
 /**
  * @brief Append one byte to a file
  *
- * @param[in] file_path_buffer File path relative to TMPDIR or absolute path
+ * @param[in] file_path_buffer Managed path string passed directly to `open_file_stream()`
  * @param[in] byte Byte value to append
  *
  * @return Return status code
@@ -234,17 +234,19 @@ Return append_byte_to_file(
 	unsigned char byte);
 
 /**
- * @brief Open writable file stream with explicit create mode 0600
+ * @brief Open a writable file stream with explicit create mode 0600
  *
- * @param[in] file_path File path relative to TMPDIR or absolute path
- * @param[in] stream_open_mode Mode string for fdopen()
+ * Supports only `"ab"` and `"wb"` modes
+ *
+ * @param[in] file_path Managed path string passed directly to `open()`
+ * @param[in] stream_open_mode Mode string for `fdopen()`
  * @param[out] opened_file_stream_out Output writable stream
  *
  * @return Return status code
  */
 Return open_file_stream(
 	const memory *file_path,
-	const char *stream_open_mode,
+	const char   *stream_open_mode,
 	FILE       **opened_file_stream_out);
 
 /**
