@@ -57,7 +57,7 @@ Return prepare(void)
 	ASSERT(SUCCESS == copy_from_origin("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db","tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/long","tests/fixtures/long",ALLOW_MISSING_SOURCE));
 	ASSERT(SUCCESS == copy_literal(environment_build_path,".builds/"));
-	ASSERT(SUCCESS == concat_cstring(environment_build_path,environment_name,strlen(environment_name) + 1U));
+	ASSERT(SUCCESS == concat_literal(environment_build_path,environment_name));
 	ASSERT(SUCCESS == copy_from_origin(getcstring(environment_build_path),getcstring(environment_build_path),ALLOW_MISSING_SOURCE));
 	ASSERT(SUCCESS == copy(environment_precizer_path,environment_build_path));
 	ASSERT(SUCCESS == concat_literal(environment_precizer_path,"/precizer"));
