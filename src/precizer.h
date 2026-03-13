@@ -185,15 +185,19 @@ typedef enum
 } DB_CHECK_LEVEL;
 
 /**
- * Compare output filter bits (CF - COMPARE FILTER)
+ * @brief Bitmask that controls which result categories are shown by `--compare`
  *
+ * Stores the output categories selected through `--compare-filter`
+ * Each non-zero bit enables one report category in `db_compare()`
+ * A zero value means that no filter was specified explicitly, so compare mode
+ * uses its default behavior and reports all categories
  */
 typedef enum
 {
-	CF_NONE_SPECIFIED = 0x00,
-	CF_CHECKSUM_MISMATCH = 0x01,
-	CF_FIRST_SOURCE_ONLY = 0x02,
-	CF_SECOND_SOURCE_ONLY = 0x04
+	CF_NONE_SPECIFIED = 0x00, /**< No explicit `--compare-filter` options were provided */
+	CF_CHECKSUM_MISMATCH = 0x01, /**< Report paths present in both databases whose checksums differ */
+	CF_FIRST_SOURCE_ONLY = 0x02, /**< Report paths that exist only in the first compared database */
+	CF_SECOND_SOURCE_ONLY = 0x04 /**< Report paths that exist only in the second compared database */
 
 } CompareFilter;
 
