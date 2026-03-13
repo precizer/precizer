@@ -11,6 +11,8 @@
 #include "precizer.h"
 #include <stdio.h>
 
+#define REQUIRE_SOURCE_EXISTS ((unsigned int)0U)
+#define ALLOW_MISSING_SOURCE  ((unsigned int)1U)
 #define FILE_WRITE_APPEND  ((unsigned int)1U)
 #define FILE_WRITE_REPLACE ((unsigned int)2U)
 
@@ -107,6 +109,19 @@ Return truncate_file_to_zero_size(
 	const char *relative_path_to_tmpdir);
 
 /**
+ * @brief Create directory tree relative to TMPDIR using native filesystem calls
+ *
+ * Existing directories are accepted when every path component resolves to a
+ * directory, including symlinks to directories
+ *
+ * @param[in] relative_path_to_tmpdir Directory path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return create_directory(
+	const char *relative_path_to_tmpdir);
+
+/**
  * @brief Remove file or directory tree by path relative to TMPDIR
  *
  * When relative_path_to_tmpdir is an empty string, the function targets TMPDIR itself
@@ -133,6 +148,24 @@ Return delete_path(
 Return copy_path(
 	const char *relative_source_path,
 	const char *relative_destination_path);
+
+/**
+ * @brief Copy file or directory tree from ORIGIN_DIR into TMPDIR
+ *
+ * Empty source or destination path resolves to the corresponding environment root
+ * Missing sources fail by default with @ref REQUIRE_SOURCE_EXISTS
+ * Optional missing sources can be ignored with @ref ALLOW_MISSING_SOURCE
+ *
+ * @param[in] relative_source_path_to_origin_dir Source path relative to ORIGIN_DIR
+ * @param[in] relative_destination_path_to_tmpdir Destination path relative to TMPDIR
+ * @param[in] flags Behavior flags such as @ref REQUIRE_SOURCE_EXISTS or @ref ALLOW_MISSING_SOURCE
+ *
+ * @return Return status code
+ */
+Return copy_from_origin(
+	const char   *relative_source_path_to_origin_dir,
+	const char   *relative_destination_path_to_tmpdir,
+	unsigned int flags);
 
 /**
  * @brief Move file or directory by path relative to TMPDIR using native rename
@@ -168,7 +201,7 @@ Return make_sparse_size_change_without_allocated_block_growth(
  *
  * @param[in] relative_path_to_tmpdir File path relative to TMPDIR
  * @param[in] target_size Required final file size
- * @param[in] blocks_before_rewrite Expected allocated block count lower bound
+ * @param[in] blocks_before_rewrite Expected allocated block count before the rewrite
  *
  * @return Return status code
  */
@@ -180,7 +213,7 @@ Return rewrite_file_dense_with_same_size(
 /**
  * @brief Calculate SHA512 digest of a file
  *
- * @param[in] file_path File path relative to TMPDIR or absolute path
+ * @param[in] file_path File path passed directly to `fopen()`
  * @param[out] sha512_out Output SHA512 bytes with SHA512_DIGEST_LENGTH size
  *
  * @return Return status code
@@ -192,7 +225,7 @@ Return compute_file_sha512(
 /**
  * @brief Append one byte to a file
  *
- * @param[in] file_path_buffer File path relative to TMPDIR or absolute path
+ * @param[in] file_path_buffer Managed path string passed directly to `open_file_stream()`
  * @param[in] byte Byte value to append
  *
  * @return Return status code
@@ -202,17 +235,19 @@ Return append_byte_to_file(
 	unsigned char byte);
 
 /**
- * @brief Open writable file stream with explicit create mode 0600
+ * @brief Open a writable file stream with explicit create mode 0600
  *
- * @param[in] file_path File path relative to TMPDIR or absolute path
- * @param[in] stream_open_mode Mode string for fdopen()
+ * Supports only `"ab"` and `"wb"` modes
+ *
+ * @param[in] file_path Managed path string passed directly to `open()`
+ * @param[in] stream_open_mode Mode string for `fdopen()`
  * @param[out] opened_file_stream_out Output writable stream
  *
  * @return Return status code
  */
 Return open_file_stream(
 	const memory *file_path,
-	const char *stream_open_mode,
+	const char   *stream_open_mode,
 	FILE       **opened_file_stream_out);
 
 /**

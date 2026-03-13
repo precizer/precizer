@@ -77,7 +77,7 @@ Return test0034(void)
 {
 	INITTEST;
 
-	TEST(test0034_1,"Metadata diff flags: lsize-only and asize-only cases...");
+	TEST(test0034_1,"Metadata diff flags: lsize-only and asize-only cases…");
 
 	RETURN_STATUS;
 }

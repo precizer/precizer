@@ -139,11 +139,23 @@ Return set_environment_variable(
 	const char *,
 	const char *);
 
+/**
+ * @brief Write the parent directory of the current working directory to a buffer
+ *
+ * @param[out] path Destination memory descriptor initialized for char elements
+ * @return SUCCESS on success or FAILURE on error
+ */
 Return get_origin_dir(
-	memory *);
+	memory *path);
 
+/**
+ * @brief Create a unique temporary directory and keep its path in the buffer
+ *
+ * @param[out] path Destination memory descriptor initialized for char elements
+ * @return SUCCESS on success or FAILURE on error
+ */
 Return create_tmpdir(
-	memory *);
+	memory *path);
 
 Return function_capture(
 	void (*func)(void),
@@ -159,19 +171,39 @@ Return match_pattern(
 	const memory *,
 	...);
 
+/**
+ * @brief Execute a shell command and match its output against a file template
+ *
+ * @param[in] command Command string to execute
+ * @param[in] filename Template file path
+ * @param[in] template Placeholder token to replace in the template
+ * @param[in] replacement Replacement text for the placeholder token
+ * @param[in] expected_return_code Expected process exit status
+ * @return SUCCESS when template preparation, command execution, and matching succeed
+ */
 Return match_file_template(
-	const char *,
-	const char *,
-	const char *,
-	const char *,
-	const int);
+	const char *command,
+	const char *filename,
+	const char *template,
+	const char *replacement,
+	const int  expected_return_code);
 
+/**
+ * @brief Run the tested application and match its output against a file template
+ *
+ * @param[in] arguments Command-line arguments passed without the binary name
+ * @param[in] filename Template file path
+ * @param[in] template Placeholder token to replace in the template
+ * @param[in] replacement Replacement text for the placeholder token
+ * @param[in] expected_return_code Expected process exit status
+ * @return SUCCESS when template preparation, application run, and matching succeed
+ */
 Return match_app_output(
-	const char *,
-	const char *,
-	const char *,
-	const char *,
-	const int);
+	const char *arguments,
+	const char *filename,
+	const char *template,
+	const char *replacement,
+	const int  expected_return_code);
 
 Return replace_placeholder(
 	memory *,
@@ -192,14 +224,29 @@ Return check_file_identity(
 	const struct stat *,
 	const struct stat *);
 
+/**
+ * @brief Construct a path by joining `$TMPDIR` and a child path
+ *
+ * @param[in] filename Child path relative to `$TMPDIR`
+ * @param[out] full_path Destination memory descriptor initialized for char elements
+ * @return SUCCESS on success or FAILURE on error
+ */
 Return construct_path(
-	const char *,
-	memory *);
+	const char *filename,
+	memory     *full_path);
 
+/**
+ * @brief Generate a random integer in the inclusive `[start..end]` range
+ *
+ * @param[out] random_number Output random value
+ * @param[in] start Inclusive lower bound
+ * @param[in] end Inclusive upper bound
+ * @return SUCCESS on success or FAILURE on error
+ */
 Return random_number_generator(
-	uint64_t *,
-	uint64_t,
-	uint64_t
+	uint64_t *random_number,
+	uint64_t start,
+	uint64_t end
 );
 
 /**

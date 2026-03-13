@@ -1,6 +1,13 @@
 #include "sute.h"
 
-// Test helper function to verify array contents
+/**
+ * @brief Verify that a NULL-terminated string array matches expected contents
+ *
+ * @param[in] array Actual string array
+ * @param[in] expected Expected strings in order
+ * @param[in] expected_size Number of expected entries before the NULL terminator
+ * @return Return status code
+ */
 static Return verify_array_contents(
 	char       **array,
 	const char **expected,
@@ -53,6 +60,11 @@ static Return test0012_1(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Verify that repeated inserts preserve order in the allocated string array
+ *
+ * @return Return status code
+ */
 static Return test0012_2(void)
 {
 	INITTEST;

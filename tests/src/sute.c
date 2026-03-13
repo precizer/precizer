@@ -1,5 +1,10 @@
 #include "sute.h"
 
+/**
+ * @brief Run the top-level test suite executable
+ *
+ * @return Process exit status produced by the test runner macros
+ */
 int main(void)
 {
 	SUTESTART;
@@ -32,6 +37,8 @@ int main(void)
 	SUTE(test0025,"file_buffer_memory() test set…");
 	TEST(test0026,"file_check_access() test set…");
 	TEST(test0035,"create_tmpdir() honors TMPDIR and fallback…");
+	TEST(test0036,"delete_path() removes a regular file…");
+	SUTE(test0037,"Helper diagnostics for path construction and deletion…");
 
 	HEADER("Unit Testing of precizer");
 	TEST(comprehensive_unit_testing,"Comprehensive Unit testing…");

@@ -1,5 +1,12 @@
 #include "sute.h"
 
+/**
+ * @brief Verify informational-mode output against the expected stdout template
+ *
+ * @param[in] arguments CLI arguments to pass to the application
+ * @param[in] stdout_pattern_file Template file for expected stdout
+ * @return Return status code
+ */
 static Return assert_information_mode_output(
 	const char *arguments,
 	const char *stdout_pattern_file)

@@ -1,9 +1,14 @@
 #include "precizer.h"
 
 /**
+ * @brief Report whether the primary database changed during the current run
  *
- * Reflect global change status against database
+ * @details Skips output in compare mode and after an interrupt. For an existing
+ * primary database the function delegates to `db_check_changes()`. For a
+ * brand-new primary database it prints whether any rows were added, removed, or
+ * updated since startup
  *
+ * @return Return status code
  */
 Return status_of_changes(void)
 {

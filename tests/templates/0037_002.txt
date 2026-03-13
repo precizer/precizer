@@ -1,0 +1,1 @@
+\Adelete_path: lstat failed for [^\r\n]*/delete_path_missing\.txt: No such file or directory\Z

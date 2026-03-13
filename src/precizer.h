@@ -592,10 +592,21 @@ LockChecksum match_checksum_lock_pattern(
 	const char *,
 	bool *);
 
+/**
+ * @brief Allocate an absolute-path string from a relative or absolute input path
+ *
+ * @details Relative paths are prefixed with `config->running_dir`. Absolute
+ * paths are copied as-is into a new buffer owned by the caller
+ *
+ * @param[out] Absolute-path output buffer allocated by the function
+ * @param[in] Input relative or absolute path
+ * @param[in] Length of the input path without the terminating null byte
+ * @return Return status code
+ */
 Return path_absolute_from_relative(
-	char **,
-	const char *,
-	const size_t);
+	char         **absolute_path,
+	const char   *path,
+	const size_t path_size);
 
 /**
  * @brief Result of checking accessibility for a given path
@@ -808,6 +819,11 @@ void show_checksum_gracefully_interrupted(
 	const char *,
 	const sqlite3_int64 *);
 
+/**
+ * @brief Report whether the primary database changed during the current run
+ *
+ * @return Return status code
+ */
 Return status_of_changes(void);
 
 /**

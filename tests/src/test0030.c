@@ -164,6 +164,13 @@ static Return read_cmpctstat_from_db(
 	return(status);
 }
 
+/**
+ * @brief Check whether DB compact-stat timestamps match the current file stat timestamps
+ *
+ * @param[in] db_stat Compact stat loaded from the database
+ * @param[in] file_stat Current filesystem stat structure
+ * @return `true` when both ctime and mtime fields match exactly, otherwise `false`
+ */
 static bool cmpctstat_matches_stat_timestamps(
 	const CmpctStat *db_stat,
 	const struct stat *file_stat)

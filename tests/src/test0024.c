@@ -1,5 +1,10 @@
 #include "sute.h"
 
+/**
+ * @brief Verify traversal output when the source path starts with an apostrophe
+ *
+ * @return Return status code
+ */
 Return test0024_1(void)
 {
 	INITTEST;
@@ -34,6 +39,11 @@ Return test0024_1(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Verify traversal output when the source path ends with an apostrophe
+ *
+ * @return Return status code
+ */
 Return test0024_2(void)
 {
 	INITTEST;

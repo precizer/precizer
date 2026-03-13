@@ -1,5 +1,10 @@
 #include "sute.h"
 
+/**
+ * @brief Verify `--maxdepth` behavior for initial traversal and later update
+ *
+ * @return Return status code
+ */
 Return test0018_1(void)
 {
 	INITTEST;
@@ -56,6 +61,11 @@ Return test0018_1(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Verify update output after rerunning the maxdepth fixture without the depth limit
+ *
+ * @return Return status code
+ */
 Return test0018_2(void)
 {
 	INITTEST;

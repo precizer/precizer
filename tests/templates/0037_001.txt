@@ -1,0 +1,1 @@
+\Adelete_path: relative path must not be NULL\Z

@@ -10,13 +10,11 @@ static Return test0029_1(void)
 	// Create memory for the result
 	create(char,result);
 	create(char,pattern);
-
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
+	const char *command = NULL;
 
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -53,10 +51,7 @@ static Return test0029_1(void)
 	        "chmod -R a+rwX tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -72,12 +67,9 @@ static Return test0029_2(void)
 	create(char,result);
 	create(char,pattern);
 
-	const char *command = "cd ${TMPDIR};"
-	        "mv tests/fixtures/diffs/diff1 tests/fixtures/diff1_backup;"
-	        "cp -a tests/fixtures/diff1_backup tests/fixtures/diffs/diff1;";
-
 	// Preparation for tests
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
+	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -87,7 +79,7 @@ static Return test0029_2(void)
 
 	ASSERT(result->length == 0);
 
-	command = "cd ${TMPDIR};"
+	const char *command = "cd ${TMPDIR};"
 	        "chmod 000 tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
 	        "chmod 000 tests/fixtures/diffs/diff1/2/AAA/BBB/CZC;"; // Change directory permitions
 
@@ -115,10 +107,7 @@ static Return test0029_2(void)
 	        "chmod -R a+rwX tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	command = "cd ${TMPDIR} && "
-	        "mv tests/fixtures/diff1_backup tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }

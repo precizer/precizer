@@ -32,6 +32,17 @@ Config *config = &_config;
  * used to crawl historical changes by comparing databases from the
  * same sources over different times
  */
+/**
+ * @brief Program entry point for normal and TESTITALL builds
+ *
+ * @details Initializes runtime state, executes the main workflow, prints final
+ * diagnostics, and returns the shell exit status. In TESTITALL builds the same
+ * implementation is exposed as `test_main()`
+ *
+ * @param argc Number of CLI arguments
+ * @param argv CLI argument vector
+ * @return Process exit status for the completed run
+ */
 #ifndef TESTITALL // Unit testing library
 int main(
 	int  argc,
