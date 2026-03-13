@@ -147,8 +147,6 @@ static Return db_changes(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	bool first_iteration = true;
-
 	sqlite3_stmt *select_stmt = NULL;
 
 	int rc = sqlite3_prepare_v2(config->db,compare_sql,-1,&select_stmt,NULL);
@@ -161,6 +159,8 @@ static Return db_changes(
 
 	if(SUCCESS == status)
 	{
+		bool first_iteration = true;
+
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
 			*differences_found = true;

@@ -96,7 +96,7 @@ static int sha512_compress(
 	SHA512_Context      *md,
 	const unsigned char *buf)
 {
-	uint64_t S[8],W[80],t0,t1;
+	uint64_t S[8],W[80];
 	int i;
 
 	/* copy state into S */
@@ -126,6 +126,8 @@ static int sha512_compress(
 
 	for(i = 0; i < 80; i += 8)
 	{
+		uint64_t t0,t1;
+
 		RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],i+0);
 		RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],i+1);
 		RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],i+2);
