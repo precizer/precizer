@@ -256,11 +256,11 @@ static error_t parse_opt(
 		case 'F':
 			if(arg != NULL && 0 == strcmp(arg,"checksum-mismatch"))
 			{
-				config->compare_filter_checksum_mismatch = true;
+				config->compare_filter |= CF_CHECKSUM_MISMATCH;
 			} else if(arg != NULL && 0 == strcmp(arg,"first-source-only")){
-				config->compare_filter_first_source_only = true;
+				config->compare_filter |= CF_FIRST_SOURCE_ONLY;
 			} else if(arg != NULL && 0 == strcmp(arg,"second-source-only")){
-				config->compare_filter_second_source_only = true;
+				config->compare_filter |= CF_SECOND_SOURCE_ONLY;
 			} else {
 				argp_failure(state,0,0,"ERROR: Unsupported --compare-filter value '%s'. Supported values: checksum-mismatch, first-source-only, second-source-only. See --help for more information",arg == NULL ? "" : arg);
 				return(EINVAL);
@@ -366,11 +366,7 @@ static error_t parse_opt(
 				break;
 			}
 
-			const bool compare_filter_specified = config->compare_filter_checksum_mismatch == true
-			        || config->compare_filter_first_source_only == true
-			        || config->compare_filter_second_source_only == true;
-
-			if(compare_filter_specified == true && config->compare == false)
+			if(config->compare_filter != CF_NONE_SPECIFIED && config->compare == false)
 			{
 				argp_failure(state,0,0,"ERROR: --compare-filter can only be used together with --compare. See --help for more information");
 				return(EX_USAGE);
@@ -635,27 +631,25 @@ Return parse_arguments(
 			slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
 		}
 
-		if(config->compare_filter_checksum_mismatch == true
-		        || config->compare_filter_first_source_only == true
-		        || config->compare_filter_second_source_only == true)
+		if(config->compare_filter)
 		{
 			bool first_compare_filter = true;
 
 			slog(TESTING,"argument:compare-filter=");
 
-			if(config->compare_filter_checksum_mismatch == true)
+			if((config->compare_filter & CF_CHECKSUM_MISMATCH) != 0u)
 			{
 				slog(TESTING|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
 				first_compare_filter = false;
 			}
 
-			if(config->compare_filter_first_source_only == true)
+			if((config->compare_filter & CF_FIRST_SOURCE_ONLY) != 0u)
 			{
 				slog(TESTING|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
 				first_compare_filter = false;
 			}
 
-			if(config->compare_filter_second_source_only == true)
+			if((config->compare_filter & CF_SECOND_SOURCE_ONLY) != 0u)
 			{
 				slog(TESTING|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
 			}
@@ -800,27 +794,25 @@ Return parse_arguments(
 			config->db_check_level == QUICK ? "QUICK" : "FULL",
 			rational_reconvert(rational_logger_mode));
 
-		if(config->compare_filter_checksum_mismatch == true
-		        || config->compare_filter_first_source_only == true
-		        || config->compare_filter_second_source_only == true)
+		if(config->compare_filter)
 		{
 			bool first_compare_filter = true;
 
 			slog(VERBOSE|UNDECOR,"; compare-filter=");
 
-			if(config->compare_filter_checksum_mismatch == true)
+			if((config->compare_filter & CF_CHECKSUM_MISMATCH) != 0u)
 			{
 				slog(VERBOSE|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
 				first_compare_filter = false;
 			}
 
-			if(config->compare_filter_first_source_only == true)
+			if((config->compare_filter & CF_FIRST_SOURCE_ONLY) != 0u)
 			{
 				slog(VERBOSE|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
 				first_compare_filter = false;
 			}
 
-			if(config->compare_filter_second_source_only == true)
+			if((config->compare_filter & CF_SECOND_SOURCE_ONLY) != 0u)
 			{
 				slog(VERBOSE|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
 			}

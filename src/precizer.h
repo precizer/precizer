@@ -185,6 +185,19 @@ typedef enum
 } DB_CHECK_LEVEL;
 
 /**
+ * Compare output filter bits (CF - COMPARE FILTER)
+ *
+ */
+typedef enum
+{
+	CF_NONE_SPECIFIED = 0x00,
+	CF_CHECKSUM_MISMATCH = 0x01,
+	CF_FIRST_SOURCE_ONLY = 0x02,
+	CF_SECOND_SOURCE_ONLY = 0x04
+
+} CompareFilter;
+
+/**
  * Whether the file exists or not
  *
  */
@@ -320,14 +333,8 @@ typedef struct {
 	/// Parameter to compare database
 	bool compare;
 
-	/// Show checksum mismatches in --compare output.
-	bool compare_filter_checksum_mismatch;
-
-	/// Show files that exist only in the first compared database.
-	bool compare_filter_first_source_only;
-
-	/// Show files that exist only in the second compared database.
-	bool compare_filter_second_source_only;
+	/// Bitmask of enabled --compare output filters
+	unsigned int compare_filter;
 
 	/// An array of paths to traverse
 	char **paths;
