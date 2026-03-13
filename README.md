@@ -14,7 +14,9 @@ Comprehensive hybrid test suite:
 
 <a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/integration-coverage.svg" height="20" alt="Integration Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
 
-[![Precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
+[![precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
+
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)
 
 ## TL;DR
 
