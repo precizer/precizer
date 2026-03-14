@@ -49,6 +49,12 @@ jobs:
     runs-on: ubuntu-24.04
     needs: get_tag_info
 
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
 
@@ -73,12 +79,24 @@ jobs:
       - name: Run tests (Linux x86_64)
         run: make -j tests
 
+      - name: Generate attestation (Linux x86_64)
+        id: attest_linux_x86_64
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_linux_x86_64_portable.zip
+
+      - name: Save Sigstore bundle (Linux x86_64)
+        run: |
+          cp "${{ steps.attest_linux_x86_64.outputs.bundle-path }}" \
+             "precizer_linux_x86_64_portable.zip.sigstore.json"
+
       - name: Upload Linux x86_64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
             "precizer_linux_x86_64_portable.zip" \
+            "precizer_linux_x86_64_portable.zip.sigstore.json" \
             --clobber
           #
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
@@ -94,6 +112,12 @@ jobs:
     name: Build & attach Linux arm64
     runs-on: ubuntu-24.04-arm
     needs: get_tag_info
+
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
 
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
@@ -119,12 +143,24 @@ jobs:
       - name: Run tests (Linux arm64)
         run: make -j tests
 
+      - name: Generate attestation (Linux arm64)
+        id: attest_linux_arm64
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_linux_aarch64_portable.zip
+
+      - name: Save Sigstore bundle (Linux arm64)
+        run: |
+          cp "${{ steps.attest_linux_arm64.outputs.bundle-path }}" \
+             "precizer_linux_aarch64_portable.zip.sigstore.json"
+
       - name: Upload Linux arm64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
             "precizer_linux_aarch64_portable.zip" \
+            "precizer_linux_aarch64_portable.zip.sigstore.json" \
             --clobber
           #
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
@@ -140,6 +176,12 @@ jobs:
     name: Build & attach macOS arm64
     runs-on: macos-latest
     needs: get_tag_info
+
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
 
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
@@ -173,12 +215,24 @@ jobs:
       - name: Run tests (macOS arm64)
         run: make -j tests
 
+      - name: Generate attestation (macOS arm64)
+        id: attest_macos_arm64
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_macos_arm64.zip
+
+      - name: Save Sigstore bundle (macOS arm64)
+        run: |
+          cp "${{ steps.attest_macos_arm64.outputs.bundle-path }}" \
+             "precizer_macos_arm64.zip.sigstore.json"
+
       - name: Upload macOS arm64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
             "precizer_macos_arm64.zip" \
+            "precizer_macos_arm64.zip.sigstore.json" \
             --clobber
           #
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)

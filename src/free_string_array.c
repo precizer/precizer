@@ -1,16 +1,20 @@
 #include "precizer.h"
 
 /**
- * @brief Free a NULL-terminated array of strings.
+ * @brief Free a NULL-terminated string array and reset the caller-owned pointer
  *
- * @param array Array of strings to free.
+ * @param[in,out] array_ptr Pointer to the array pointer to free
+ *
+ * @note Passing `NULL` or a pointer to `NULL` is allowed
  */
-void free_string_array(char **array)
+void free_string_array(char ***array_ptr)
 {
-	if(array == NULL)
+	if(array_ptr == NULL || *array_ptr == NULL)
 	{
 		return;
 	}
+
+	char **array = *array_ptr;
 
 	for(size_t i = 0; array[i] != NULL; i++)
 	{
@@ -19,5 +23,5 @@ void free_string_array(char **array)
 	}
 
 	free(array);
-	array = NULL;
+	*array_ptr = NULL;
 }

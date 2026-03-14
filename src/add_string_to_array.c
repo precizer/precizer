@@ -1,25 +1,22 @@
 #include "precizer.h"
 
 /**
- * @brief Adds a new string to a dynamically allocated NULL-terminated array of strings.
+ * @brief Append a string to a dynamically allocated NULL-terminated string array
  *
- * @details This function dynamically appends a string to an array of strings.
- *          The array must be NULL-terminated to allow safe iteration.
- *          It reallocates memory to accommodate the new entry, ensuring the array
- *          remains NULL-terminated after adding the new string.
+ * @details The array must remain NULL-terminated to allow safe iteration
+ *          The function grows the array as needed and stores the resulting pointer
+ *          back through `array_ptr`
  *
- * @param array_ptr  Pointer to the dynamic array of strings (NULL-terminated).
- *                   The array will be reallocated to fit the new string.
- * @param new_string The string to append to the array.
+ * @param[in,out] array_ptr Pointer to the caller-owned array pointer
+ * @param[in] new_string String to append
  *
- * @return SUCCESS if the string was successfully added.
- *         FAILURE if memory allocation fails at any point.
+ * @return SUCCESS if the string was appended successfully
+ * @return FAILURE if validation or allocation fails
  *
- * @note The provided array must be initialized properly as either NULL or a valid
- *       NULL-terminated array of strings before calling this function.
+ * @note `*array_ptr` may be `NULL` on input
  *
- * @warning Memory allocated by this function is freed by calling the free_config()
- *          function upon program termination.
+ * @warning On allocation failure the function frees the current array and sets
+ *          `*array_ptr` to `NULL`
  */
 Return add_string_to_array(
 	char       ***array_ptr,
@@ -41,7 +38,7 @@ Return add_string_to_array(
 		provide(FAILURE);
 	}
 
-	// Calculate the size of the current string array
+	// Measure the current array length
 	size_t size = 0;
 	char **array = *array_ptr;
 
@@ -53,41 +50,40 @@ Return add_string_to_array(
 		}
 	}
 
-	// Increase the size of the array by 1 and copy existing strings into it
-	// Use a temporary variable to realloc the array
+	// Use a temporary variable so realloc() cannot overwrite the only live pointer
 	char **tmp = (char **)realloc(array,(size + 2) * sizeof(char *));
 
 	if(tmp == NULL)
 	{
-		// Reallocation failed, free the original array
+		// Reallocation failed, free the current array and clear the caller-owned pointer
 		report("Memory allocation failed, requested size: %zu bytes",(size + 2) * sizeof(char *));
 
-		free_string_array(array);
+		free_string_array(&array);
 		*array_ptr = NULL;
 		provide(FAILURE);
 	} else {
 		array = tmp;
 	}
 
-	// Allocate memory for the new string and copy the new string into it
+	// Allocate memory for the appended string
 	array[size] = (char *)malloc((strlen(new_string) + 1) * sizeof(char));
 
 	if(array[size] == NULL)
 	{
 		report("Memory allocation failed, requested size: %zu bytes",(strlen(new_string) + 1) * sizeof(char));
 
-		// Reallocation failed, free the original array
-		free_string_array(array);
+		// String allocation failed, free the current array and clear the caller-owned pointer
+		free_string_array(&array);
 		*array_ptr = NULL;
 		provide(FAILURE);
 	}
 
 	strcpy(array[size],new_string);
 
-	// Set the last element to NULL
+	// Keep the array NULL-terminated
 	array[size + 1] = NULL;
 
-	// Update the array pointer in the calling function
+	// Publish the possibly reallocated array back to the caller
 	*array_ptr = array;
 
 	provide(status);
