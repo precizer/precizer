@@ -175,14 +175,10 @@ Return file_list(TraversalSummary *summary)
 		{
 			provide(status);
 		}
-	}
-
 #ifdef TESTITALL_TEST_HOOKS
-	if(summary->stats_only_pass == false)
-	{
 		signal_wait_at_point(1U);
-	}
 #endif
+	}
 
 	while((p = fts_read(file_systems)) != NULL && continue_the_loop == true)
 	{
@@ -412,13 +408,12 @@ Return file_list(TraversalSummary *summary)
 				}
 
 				// Determine read access for non-ignored paths
-				FileAccessStatus access_status = FILE_ACCESS_DENIED;
 				bool is_readable = false;
 
 				/* Check file access */
 				if(ignore == false)
 				{
-					access_status = file_check_access(p->fts_path,(size_t)p->fts_pathlen,R_OK);
+					FileAccessStatus access_status = file_check_access(p->fts_path,(size_t)p->fts_pathlen,R_OK);
 
 					if(access_status == FILE_ACCESS_ERROR)
 					{

@@ -49,14 +49,8 @@ void init_config(void)
 	// Parameter to compare database
 	config->compare = false;
 
-	// Show checksum mismatch entries in --compare output.
-	config->compare_filter_checksum_mismatch = false;
-
-	// Show files present only in the first compared source DB.
-	config->compare_filter_first_source_only = false;
-
-	// Show files present only in the second compared source DB.
-	config->compare_filter_second_source_only = false;
+	// Show all compare output categories by default
+	config->compare_filter = CF_NONE_SPECIFIED;
 
 	// An array of paths to traverse
 	config->paths = NULL;

@@ -147,8 +147,6 @@ static Return db_changes(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	bool first_iteration = true;
-
 	sqlite3_stmt *select_stmt = NULL;
 
 	int rc = sqlite3_prepare_v2(config->db,compare_sql,-1,&select_stmt,NULL);
@@ -161,6 +159,8 @@ static Return db_changes(
 
 	if(SUCCESS == status)
 	{
+		bool first_iteration = true;
+
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
 			*differences_found = true;
@@ -316,25 +316,23 @@ Return db_compare(void)
 
 	// True when user provided at least one --compare-filter option.
 	// False means default compare mode: all three categories are enabled.
-	const bool filter_specified = config->compare_filter_checksum_mismatch == true
-	        || config->compare_filter_second_source_only == true
-	        || config->compare_filter_first_source_only == true;
+	const bool filter_specified = config->compare_filter != CF_NONE_SPECIFIED;
 
 	// Enables "first-source-only" category:
 	// show paths that exist in db1 but are missing in db2.
 	// This category is active either explicitly by filter or by default mode.
-	const bool check_first_source_only = config->compare_filter_first_source_only == true
+	const bool check_first_source_only = (config->compare_filter & CF_FIRST_SOURCE_ONLY)
 	        || filter_specified == false;
 
 	// Enables "second-source-only" category:
 	// show paths that exist in db2 but are missing in db1.
 	// This category is active either explicitly by filter or by default mode.
-	const bool check_second_source_only = config->compare_filter_second_source_only == true
+	const bool check_second_source_only = (config->compare_filter & CF_SECOND_SOURCE_ONLY)
 	        || filter_specified == false;
 
 	// Enables checksum verification category for common relative paths.
 	// Active either explicitly by checksum filter or by default mode.
-	const bool verify_checksum_consistency = config->compare_filter_checksum_mismatch == true
+	const bool verify_checksum_consistency = (config->compare_filter & CF_CHECKSUM_MISMATCH)
 	        || filter_specified == false;
 
 	// Comparison result flags grouped in one place for summary evaluation
