@@ -587,7 +587,7 @@ void signal_wait_at_point(unsigned int);
 
 size_t file_buffer_memory(void);
 
-void free_string_array(char **);
+void free_string_array(char ***);
 
 Return add_string_to_array(
 	char ***,

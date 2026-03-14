@@ -1,14 +1,11 @@
 #include "precizer.h"
 
 /**
- *
- * Clean up allocated memory
- *
+ * @brief Free global configuration resources and restore terminal state
  */
 void free_config(void)
 {
-	/// Enable key echo in terminal (return back
-	/// default settings)
+	// Restore terminal echo and canonical mode
 	struct termios term;
 	tcgetattr(fileno(stdin),&term);
 	term.c_lflag |= (ICANON|ECHO);
@@ -20,15 +17,15 @@ void free_config(void)
 
 	(void)del(conf(db_file_name));
 
-	// Free memory of string array
-	free_string_array((config)->db_file_names);
+	// Free and reset string arrays stored in the global config
+	free_string_array(&(config->db_file_names));
 
-	// Free memory of string array
-	free_string_array((config)->ignore);
+	// Free and reset string arrays stored in the global config
+	free_string_array(&(config->ignore));
 
-	// Free memory of string array
-	free_string_array((config)->include);
+	// Free and reset string arrays stored in the global config
+	free_string_array(&(config->include));
 
-	// Free memory of string array
-	free_string_array((config)->lock_checksum);
+	// Free and reset string arrays stored in the global config
+	free_string_array(&(config->lock_checksum));
 }

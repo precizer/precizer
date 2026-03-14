@@ -55,7 +55,8 @@ static Return test0012_1(void)
 	ASSERT(strcmp(array[0],test_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_string_array(array);
+	free_string_array(&array);
+	ASSERT(array == NULL);
 
 	RETURN_STATUS;
 }
@@ -82,7 +83,8 @@ static Return test0012_2(void)
 
 	ASSERT(SUCCESS & verify_array_contents(array,strings,num_strings));
 
-	free_string_array(array);
+	free_string_array(&array);
+	ASSERT(array == NULL);
 
 	RETURN_STATUS;
 }
@@ -100,7 +102,8 @@ static Return test0012_3(void)
 	ASSERT(strcmp(array[0],empty_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_string_array(array);
+	free_string_array(&array);
+	ASSERT(array == NULL);
 
 	RETURN_STATUS;
 }
@@ -120,15 +123,14 @@ static Return test0012_4(void)
 	ASSERT(strcmp(array[0],long_string) == 0);
 	ASSERT(array[1] == NULL);
 
-	free_string_array(array);
+	free_string_array(&array);
+	ASSERT(array == NULL);
 
 	RETURN_STATUS;
 }
 
 /**
- *
- * Unit Testing of precizer. add_string_to_array() function test set
- *
+ * @brief Unit tests for add_string_to_array and free_string_array cleanup semantics
  */
 Return test0012(void)
 {
