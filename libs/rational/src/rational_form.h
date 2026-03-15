@@ -32,19 +32,19 @@
  * @return `result` (or "" if `result` is NULL or `result_size` is 0).
  */
 const char *form_real_r(
-	long double val,
-	char        *result,
-	size_t      result_size);
+	long double,
+	char *,
+	size_t);
 
 const char *form_intmax_r(
-	intmax_t val,
-	char     *result,
-	size_t   result_size);
+	intmax_t,
+	char *,
+	size_t);
 
 const char *form_uintmax_r(
-	uintmax_t val,
-	char      *result,
-	size_t    result_size);
+	uintmax_t,
+	char *,
+	size_t);
 
 #define form(x,result,result_size) _Generic((x), \
 	long double: form_real_r, \

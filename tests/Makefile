@@ -26,6 +26,7 @@ TESTED_APP_NAME := $(shell awk '$$2 == "APP_NAME" && $$3 ~ /^"/ { gsub(/"/,"",$$
 BUILDS = ../.builds
 BUILDEXE = $(BUILDS)/$(EXE)
 BUILDEXEDIR = $(dir $(BUILDEXE))
+COMPILE_COMMANDS = compile_commands.json
 LIBS = testitall mem sha512 rational sqlite3 xdiff
 
 ifeq ($(TESTED_APP_NAME),)
@@ -170,8 +171,8 @@ endif
 DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL_TEST_HOOKS
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
-.PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge gcc-analyzer cppcheck print-%
-.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
+.PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge static-analyzers static-analyzers-cli gcc-analyzer cppcheck clang-analyzer clang-analyzer-cli print-%
+.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug debug-build clean-compile-commands
 
 # Default build
 all: sanitize
@@ -258,7 +259,9 @@ $(SNTZ_OBJDIR):
 precizer-debug:
 	@$(MAKE) -s -C ../ debug
 
-debug: precizer-debug hugetestfile $(DBG_EXE)
+debug-build: $(DBG_EXE)
+
+debug: hugetestfile debug-build
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_PRZROBJS) | precizer-debug testlibs-debug
@@ -301,7 +304,10 @@ format:
 clean-hugetestfile:
 	@rm -f $(HUGETESTFILE)
 
-clean: clean-hugetestfile
+clean-compile-commands:
+	@rm -f $(COMPILE_COMMANDS)
+
+clean: clean-hugetestfile clean-compile-commands
 	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(COV_EXE)
 	@rm -f $(DBG_OBJS) $(DBG_PRZROBJS)
 	@rm -f $(SNTZ_OBJS) $(SNTZ_PRZROBJS)
@@ -323,7 +329,7 @@ clean: clean-hugetestfile
 	@test -d $(BUILDS) && rm -d $(BUILDS) 2>/dev/null || true
 	@echo $(EXE) cleared
 
-purge: clean-hugetestfile
+purge: clean-hugetestfile clean-compile-commands
 	@$(MAKE) -s -C ../ purge
 
 # Optional preprocessor files
@@ -349,9 +355,24 @@ print-%:
 #
 # GCC Static Analysis
 #
+static-analyzers: gcc-analyzer cppcheck clang-analyzer
+static-analyzers-cli: gcc-analyzer cppcheck clang-analyzer-cli
+
 gcc-analyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
 gcc-analyzer: CC = gcc
-gcc-analyzer: debug
+gcc-analyzer: debug-build
 
 cppcheck:
-	cppcheck --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force $(INCPATH) --inconclusive ./src
+	bear --output $(COMPILE_COMMANDS) -- make -B -s debug-build
+	cppcheck --project=$(COMPILE_COMMANDS) --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i ../libs/sqlite3/src --inconclusive
+
+clang-analyzer: CC = clang-20
+clang-analyzer: SCAN-BUILD = scan-build-20
+clang-analyzer:
+	# Run clang static analyzer and view analysis results in a web browser when the build command completes
+	$(SCAN-BUILD) --exclude ../libs/sqlite3 -V $(MAKE) -s debug-build
+
+clang-analyzer-cli: CC = clang-20
+clang-analyzer-cli: SCAN-BUILD = scan-build-20
+clang-analyzer-cli:
+	$(SCAN-BUILD) --exclude ../libs/sqlite3 $(MAKE) -s debug-build

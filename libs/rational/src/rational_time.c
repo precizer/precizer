@@ -177,11 +177,6 @@ static void catdate_r(
 		return;
 	}
 
-	if(*used_len >= result_size)
-	{
-		return;
-	}
-
 	const int written = snprintf(result + *used_len,result_size - *used_len,"%lld%s ",number,suffix);
 
 	if(written < 0)

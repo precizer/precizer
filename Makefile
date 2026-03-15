@@ -181,6 +181,7 @@ DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
+LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
 endif
@@ -280,7 +281,7 @@ endef
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done dynamic-production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
-.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif sparse-analyzer clang-analyzer splint doc spellcheck gource perf stat cloc
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
@@ -292,7 +293,7 @@ debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 debuglibs:
-	@$(MAKE) -s -C libs debug SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(EXTRA_LIBS)"
 
 $(DBG_EXE): $(DBG_OBJS) debuglibs
 	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
@@ -819,12 +820,15 @@ remake: clean all
 
 # Static analyzers and sanitizers
 analyze: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
+static-analyzers: gcc-analyzer cppcheck clang-analyzer
+static-analyzers-cli: gcc-analyzer cppcheck clang-analyzer-cli
 
 #
 # GCC Static Analysis
 #
-gcc-analyzer: WFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
+gcc-analyzer: DBG_CFLAGS += -fanalyzer -fno-analyzer-state-purge -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
 # -Wanalyzer-too-complex
+gcc-analyzer: LIBS_GOAL = gcc-analyzer
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 
@@ -848,19 +852,16 @@ massif: debug
 	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 	ms_print ./massif.out.*
 
-SPARSE=sparse
-SPARSE_FLAGS=-Wsparse-all -nostdinc
-sparse-analyzer:
-	$(foreach src,$(SRCS),$(SPARSE) $(SPARSE_FLAGS) $(INCPATH) $(DBG_CFLAGS) $(DBG_LDPATH) $(WFLAGS) $(src);)
-
 clang-analyzer: CC = clang-20
 clang-analyzer: SCAN-BUILD = scan-build-20
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
 	$(SCAN-BUILD) --exclude libs/sqlite3 -V $(MAKE) debug
 
-splint:
-	splint -I /usr/include/x86_64-linux-gnu +posixlib $(SRCS) $(INCPATH)
+clang-analyzer-cli: CC = clang-20
+clang-analyzer-cli: SCAN-BUILD = scan-build-20
+clang-analyzer-cli:
+	$(SCAN-BUILD) --exclude libs/sqlite3 $(MAKE) debug
 
 doc:
 	@doxygen Doxyfile

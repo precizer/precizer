@@ -2,6 +2,11 @@
 
 All notable changes will be documented in this file
 
+# Release 0.10.0 2026-03-14
+
+## Changed
+- All releases are now signed and will be distributed with digital signatures
+
 # Release 0.9.0 2026-03-12
 
 ## Changed

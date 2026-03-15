@@ -1,0 +1,96 @@
+name: PR static analysis
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Static analyzers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc make libpcre2-dev cppcheck bear clang-20 clang-tools-20
+
+      - name: Run static analyzers
+        id: static_analysis
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          ARTIFACT_DIR=artifacts/pr-static-analysis
+          LOG_PATH="${ARTIFACT_DIR}/static-analysis.log"
+          LOG_TAIL_PATH="${ARTIFACT_DIR}/static-analysis-tail.log"
+          REPORT_PATH="${ARTIFACT_DIR}/report.md"
+          RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          mkdir -p "${ARTIFACT_DIR}"
+
+          printf '%s\n' "${{ github.event.pull_request.number }}" > "${ARTIFACT_DIR}/pr_number.txt"
+
+          set +e
+          make -k static-analyzers-cli 2>&1 | tee "${LOG_PATH}"
+          exit_code=${PIPESTATUS[0]}
+          set -e
+
+          printf '%s\n' "${exit_code}" > "${ARTIFACT_DIR}/exit_code.txt"
+          tail -c 30000 "${LOG_PATH}" > "${LOG_TAIL_PATH}"
+
+          if [ "${exit_code}" -eq 0 ]; then
+            status_text="Completed without analyzer failures"
+            status_emoji=":white_check_mark:"
+          else
+            status_text="Completed with findings or tool failures"
+            status_emoji=":warning:"
+          fi
+
+          {
+            echo "# Static analysis"
+            echo
+            echo "${status_emoji} ${status_text}"
+            echo
+            echo "- Pull request: #${{ github.event.pull_request.number }}"
+            echo "- Branch: \`${{ github.event.pull_request.head.ref }}\`"
+            echo "- Commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "- Exit code: \`${exit_code}\`"
+            echo "- Workflow run: ${RUN_URL}"
+            echo
+            echo "<details><summary>Log tail</summary>"
+            echo
+            echo '```text'
+            cat "${LOG_TAIL_PATH}"
+            echo '```'
+            echo
+            echo "</details>"
+          } > "${REPORT_PATH}"
+
+          cat "${REPORT_PATH}" >> "${GITHUB_STEP_SUMMARY}"
+          echo "exit_code=${exit_code}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload static analysis artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr-static-analysis-results
+          path: artifacts/pr-static-analysis
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Keep workflow non-blocking
+        if: always()
+        run: exit 0

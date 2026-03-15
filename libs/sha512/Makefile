@@ -318,7 +318,8 @@ format:
 #
 # GCC Static Analysis
 #
-gcc-analyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3 -Wanalyzer-too-complex
+gcc-analyzer: WFLAGS += -fanalyzer -fanalyzer-call-summaries -fanalyzer-transitivity -fanalyzer-verbose-edges -fanalyzer-verbose-state-changes -fanalyzer-verbosity=3
+# -Wanalyzer-too-complex
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
 

@@ -193,7 +193,7 @@ void telemetry_release_unused_operation(void);
  * @brief Accumulate bytes returned via RELEASE_UNUSED-driven shrink requests.
  * @param amount_of_bytes Number of bytes released in one shrink operation.
  */
-void telemetry_release_unused_bytes(const size_t amount_of_bytes);
+void telemetry_release_unused_bytes(const size_t);
 
 /**
  * @brief Update heap-side metrics after allocating bytes from the OS.
@@ -205,19 +205,19 @@ void telemetry_add(const size_t);
  * @brief Update logical payload metrics after growing the element count.
  * @param amount_of_bytes Number of payload bytes that became addressable.
  */
-void telemetry_effective_add(const size_t amount_of_bytes);
+void telemetry_effective_add(const size_t);
 
 /**
  * @brief Update heap metrics after releasing bytes to the OS.
  * @param amount_of_bytes Amount of aligned bytes returned.
  */
-void telemetry_reduce(const size_t amount_of_bytes);
+void telemetry_reduce(const size_t);
 
 /**
  * @brief Update logical payload metrics after shrinking the element count.
  * @param amount_of_bytes Number of payload bytes no longer addressable.
  */
-void telemetry_effective_reduce(const size_t amount_of_bytes);
+void telemetry_effective_reduce(const size_t);
 
 /**
  * @brief Record a failed allocation attempt.
@@ -233,13 +233,13 @@ void telemetry_reallocation_failure(void);
  * @brief Increase the tracked alignment padding usage.
  * @param amount_of_bytes Alignment overhead bytes that were just added.
  */
-void telemetry_alignment_overhead_add(const size_t amount_of_bytes);
+void telemetry_alignment_overhead_add(const size_t);
 
 /**
  * @brief Decrease the tracked alignment padding usage.
  * @param amount_of_bytes Alignment overhead bytes that were just returned.
  */
-void telemetry_alignment_overhead_reduce(const size_t amount_of_bytes);
+void telemetry_alignment_overhead_reduce(const size_t);
 
 /**
  * @brief Track that a resize resulted in no actual change.

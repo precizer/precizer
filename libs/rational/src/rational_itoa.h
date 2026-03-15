@@ -6,6 +6,6 @@
  *
  */
 char *itoa(
-	int  value,
-	char *str,
+	int,
+	char *,
 	unsigned int);

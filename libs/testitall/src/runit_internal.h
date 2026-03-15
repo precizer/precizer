@@ -21,33 +21,33 @@ struct runit_capture_session {
 	unsigned int buffer_policy;
 };
 
-void runit_capture_session_init(struct runit_capture_session *session);
+void runit_capture_session_init(struct runit_capture_session *);
 
-void runit_capture_close_fds(struct runit_capture_session *session);
+void runit_capture_close_fds(struct runit_capture_session *);
 
 Return runit_capture_prepare(
-	struct runit_capture_session *session,
-	const char                   *tmpdir,
-	const char                   *arguments,
-	const char                   *call_label,
-	memory                       *stdout_result,
-	memory                       *stderr_result,
-	int                          expected_return_code,
-	unsigned int                 buffer_policy);
+	struct runit_capture_session *,
+	const char *,
+	const char *,
+	const char *,
+	memory *,
+	memory *,
+	int,
+	unsigned int);
 
-Return runit_capture_apply_redirect(struct runit_capture_session *session);
+Return runit_capture_apply_redirect(struct runit_capture_session *);
 
 Return runit_capture_finalize(
-	struct runit_capture_session *session,
-	int                          wait_status);
+	struct runit_capture_session *,
+	int);
 
-void runit_capture_cleanup(struct runit_capture_session *session);
+void runit_capture_cleanup(struct runit_capture_session *);
 
 Return runit_reset_result_buffers(
-	memory *stdout_result,
-	memory *stderr_result);
+	memory *,
+	memory *);
 
-Return runit_validate_runtime_mode(enum run_mode mode);
+Return runit_validate_runtime_mode(enum run_mode);
 
 /**
  * @brief Prepared execution context shared by runit() and runit_background().
@@ -70,12 +70,12 @@ struct runit_call {
 /**
  * @brief Initialize a runit_call structure to a clean state.
  */
-void runit_call_init(struct runit_call *call);
+void runit_call_init(struct runit_call *);
 
 /**
  * @brief Release resources owned by runit_call and reset it.
  */
-void runit_call_cleanup(struct runit_call *call);
+void runit_call_cleanup(struct runit_call *);
 
 /**
  * @brief Build executable path and argv for EXTERNAL_CALL or INTERNAL_TEST mode.
@@ -84,9 +84,9 @@ void runit_call_cleanup(struct runit_call *call);
  * and fills the provided runit_call structure.
  */
 Return runit_call_prepare(
-	struct runit_call *call,
-	enum run_mode     mode,
-	const char        *arguments);
+	struct runit_call *,
+	enum run_mode,
+	const char *);
 
 /**
  * @brief Prepare call arguments and capture session for one runit-style execution.
@@ -95,27 +95,27 @@ Return runit_call_prepare(
  * `stderr_result`) before preparing capture files and metadata.
  */
 Return runit_prepare_call_and_capture(
-	struct runit_call            *call,
-	struct runit_capture_session *capture,
-	enum run_mode                mode,
-	const char                   *arguments,
-	const char                   *call_label,
-	memory                       *stdout_result,
-	memory                       *stderr_result,
-	int                          expected_return_code,
-	unsigned int                 buffer_policy);
+	struct runit_call *,
+	struct runit_capture_session *,
+	enum run_mode,
+	const char *,
+	const char *,
+	memory *,
+	memory *,
+	int,
+	unsigned int);
 
 /**
  * @brief Cleanup helper for runit call/capture pair.
  */
 void runit_release_call_and_capture(
-	struct runit_capture_session *capture,
-	struct runit_call            *call);
+	struct runit_capture_session *,
+	struct runit_call *);
 
 /**
  * @brief Wait for a specific child process and handle EINTR retries.
  */
 Return runit_wait_child(
-	pid_t      child_pid,
-	int        *wait_status,
-	const char *context_label);
+	pid_t,
+	int *,
+	const char *);

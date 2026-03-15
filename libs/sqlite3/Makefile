@@ -148,11 +148,18 @@ endef
 all: debug production portable
 
 #
+# GCC Static Analysis
+#
+gcc-analyzer: CC = gcc
+gcc-analyzer: debug
+
+#
 # Debug rules
 #
 memtest: debug
 tests: test
 test: sanitize
+
 debug: $(DBG_SO) $(DBG_STAT)
 
 $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
