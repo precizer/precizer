@@ -29,6 +29,10 @@ jobs:
 
       - name: Run static analyzers
         id: static_analysis
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         shell: bash
         run: |
           set -uo pipefail
@@ -41,7 +45,7 @@ jobs:
 
           mkdir -p "${ARTIFACT_DIR}"
 
-          printf '%s\n' "${{ github.event.pull_request.number }}" > "${ARTIFACT_DIR}/pr_number.txt"
+          printf '%s\n' "${PR_NUMBER}" > "${ARTIFACT_DIR}/pr_number.txt"
 
           set +e
           make -k static-analyzers-cli 2>&1 | tee "${LOG_PATH}"
@@ -64,9 +68,9 @@ jobs:
             echo
             echo "${status_emoji} ${status_text}"
             echo
-            echo "- Pull request: #${{ github.event.pull_request.number }}"
-            echo "- Branch: \`${{ github.event.pull_request.head.ref }}\`"
-            echo "- Commit: \`${{ github.event.pull_request.head.sha }}\`"
+            echo "- Pull request: #${PR_NUMBER}"
+            echo "- Branch: \`${PR_HEAD_REF}\`"
+            echo "- Commit: \`${PR_HEAD_SHA}\`"
             echo "- Exit code: \`${exit_code}\`"
             echo "- Workflow run: ${RUN_URL}"
             echo
