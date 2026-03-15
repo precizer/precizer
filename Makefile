@@ -281,7 +281,7 @@ endef
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done dynamic-production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
-.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer doc spellcheck gource perf stat cloc
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image clean-all-dockers test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
@@ -821,6 +821,7 @@ remake: clean all
 # Static analyzers and sanitizers
 analyze: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest gcc-analyzer perf
 static-analyzers: gcc-analyzer cppcheck clang-analyzer
+static-analyzers-cli: gcc-analyzer cppcheck clang-analyzer-cli
 
 #
 # GCC Static Analysis
@@ -856,6 +857,11 @@ clang-analyzer: SCAN-BUILD = scan-build-20
 clang-analyzer:
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
 	$(SCAN-BUILD) --exclude libs/sqlite3 -V $(MAKE) debug
+
+clang-analyzer-cli: CC = clang-20
+clang-analyzer-cli: SCAN-BUILD = scan-build-20
+clang-analyzer-cli:
+	$(SCAN-BUILD) --exclude libs/sqlite3 $(MAKE) debug
 
 doc:
 	@doxygen Doxyfile
