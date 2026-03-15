@@ -64,17 +64,12 @@ Return memory_append(
 		report("Memory management; Overflow computing append offset");
 	}
 
-	size_t new_total_elements;
-
 	if(TRIUMPH & status)
 	{
-		new_total_elements = destination->length + append_elements;
-	}
+		const size_t new_total_elements = destination->length + append_elements;
 
-	run(resize(destination,new_total_elements));
+		resize(destination,new_total_elements);
 
-	if(TRIUMPH & status)
-	{
 		unsigned char *destination_bytes = (unsigned char *)destination->data;
 
 		if(destination_bytes == NULL || source->data == NULL)

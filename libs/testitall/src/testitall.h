@@ -146,7 +146,7 @@ Return set_environment_variable(
  * @return SUCCESS on success or FAILURE on error
  */
 Return get_origin_dir(
-	memory *path);
+	memory *);
 
 /**
  * @brief Create a unique temporary directory and keep its path in the buffer
@@ -155,10 +155,10 @@ Return get_origin_dir(
  * @return SUCCESS on success or FAILURE on error
  */
 Return create_tmpdir(
-	memory *path);
+	memory *);
 
 Return function_capture(
-	void (*func)(void),
+	void (*)(void),
 	memory *,
 	memory *);
 
@@ -182,11 +182,11 @@ Return match_pattern(
  * @return SUCCESS when template preparation, command execution, and matching succeed
  */
 Return match_file_template(
-	const char *command,
-	const char *filename,
-	const char *template,
-	const char *replacement,
-	const int  expected_return_code);
+	const char *,
+	const char *,
+	const char *,
+	const char *,
+	const int);
 
 /**
  * @brief Run the tested application and match its output against a file template
@@ -199,11 +199,11 @@ Return match_file_template(
  * @return SUCCESS when template preparation, application run, and matching succeed
  */
 Return match_app_output(
-	const char *arguments,
-	const char *filename,
-	const char *template,
-	const char *replacement,
-	const int  expected_return_code);
+	const char *,
+	const char *,
+	const char *,
+	const char *,
+	const int);
 
 Return replace_placeholder(
 	memory *,
@@ -232,8 +232,8 @@ Return check_file_identity(
  * @return SUCCESS on success or FAILURE on error
  */
 Return construct_path(
-	const char *filename,
-	memory     *full_path);
+	const char *,
+	memory *);
 
 /**
  * @brief Generate a random integer in the inclusive `[start..end]` range
@@ -244,9 +244,9 @@ Return construct_path(
  * @return SUCCESS on success or FAILURE on error
  */
 Return random_number_generator(
-	uint64_t *random_number,
-	uint64_t start,
-	uint64_t end
+	uint64_t *,
+	uint64_t,
+	uint64_t
 );
 
 /**
@@ -330,7 +330,7 @@ Return extract_current_executable_directory_name(
 	}
 
 Return testitall(
-	Return (*func)(void),
+	Return (*)(void),
 	const char *,
 	const char *);
 
@@ -364,8 +364,8 @@ enum capture_policy
 extern enum run_mode run_external;
 
 extern int test_main(
-	int  argc,
-	char **argv) __attribute__((weak));
+	int,
+	char **) __attribute__((weak));
 
 Return runit(
 	const char *,

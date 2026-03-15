@@ -92,8 +92,8 @@ typedef enum
  *          pointers after a successful resize.
  */
 Return memory_resize(
-	memory *memory_object,
-	size_t element_count,
+	memory *,
+	size_t,
 	...);
 
 /**
@@ -105,7 +105,7 @@ Return memory_resize(
  *       The @ref memory::element_size remains unchanged so the descriptor can be
  *       allocated again for the same element type.
  */
-Return memory_delete(memory *memory_object);
+Return memory_delete(memory *);
 
 /**
  * @brief Copy the contents of @p source descriptor into @p destination.
@@ -115,8 +115,8 @@ Return memory_delete(memory *memory_object);
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_copy(
-	memory       *destination,
-	const memory *source);
+	memory *,
+	const memory *);
 
 /**
  * @brief Copy a raw byte buffer into a descriptor.
@@ -139,9 +139,9 @@ Return memory_copy(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_copy_buffer(
-	memory     *destination,
-	const void *source_buffer,
-	size_t     buffer_size);
+	memory *,
+	const void *,
+	size_t);
 
 /**
  * @brief Copy visible string bytes from a known-size source buffer.
@@ -157,9 +157,9 @@ Return memory_copy_buffer(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_copy_cstring(
-	memory     *destination,
-	const char *source_buffer,
-	size_t     source_buffer_size);
+	memory *,
+	const char *,
+	size_t);
 
 /**
  * @brief Append the contents of @p source descriptor to @p destination.
@@ -169,8 +169,8 @@ Return memory_copy_cstring(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_append(
-	memory       *destination,
-	const memory *source);
+	memory *,
+	const memory *);
 
 /**
  * @brief Concatenate string data held in descriptors, keeping exactly one trailing NUL.
@@ -184,8 +184,8 @@ Return memory_append(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_concat_strings(
-	memory       *destination,
-	const memory *source);
+	memory *,
+	const memory *);
 
 /**
  * @brief Concatenate visible bytes from a known-size source string buffer.
@@ -204,9 +204,9 @@ Return memory_concat_strings(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_concat_cstring(
-	memory     *destination,
-	const char *source_buffer,
-	size_t     source_buffer_size);
+	memory *,
+	const char *,
+	size_t);
 
 /**
  * @brief Concatenate a raw byte buffer to a descriptor.
@@ -229,9 +229,9 @@ Return memory_concat_cstring(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_concat_buffer(
-	memory     *destination,
-	const void *source_buffer,
-	size_t     source_buffer_size);
+	memory *,
+	const void *,
+	size_t);
 
 /**
  * @brief Append a C-style literal string to a descriptor holding byte-sized elements.
@@ -244,8 +244,8 @@ Return memory_concat_buffer(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_concat_literal(
-	memory     *destination,
-	const char *literal);
+	memory *,
+	const char *);
 
 /**
  * @brief Copy a C-style literal string into a descriptor holding byte-sized elements.
@@ -258,8 +258,8 @@ Return memory_concat_literal(
  * @return `SUCCESS` on success; `FAILURE` otherwise.
  */
 Return memory_copy_literal(
-	memory     *destination,
-	const char *literal);
+	memory *,
+	const char *);
 
 /** @cond INTERNAL */
 /**
@@ -273,9 +273,9 @@ Return memory_copy_literal(
  * @return Return status indicating whether the multiplication succeeded.
  */
 Return memory_guarded_size(
-	size_t left,
-	size_t right,
-	size_t *product);
+	size_t,
+	size_t,
+	size_t *);
 /** @endcond */
 
 /**
@@ -305,8 +305,8 @@ Return memory_guarded_size(
  *         to `provide(...)` global-status propagation.
  */
 Return memory_string_length(
-	const memory *memory_object,
-	size_t       *length_out);
+	const memory *,
+	size_t *);
 
 /**
  * @brief Provide a safe read-only pointer to descriptor-backed string data.
@@ -325,7 +325,7 @@ Return memory_string_length(
  * @param memory_object Descriptor interpreted as a character buffer.
  * @return Pointer to a guaranteed null-terminated string (never NULL).
  */
-const char *memory_getcstring(const memory *memory_object);
+const char *memory_getcstring(const memory *);
 
 /**
  * @brief Provide a writable pointer to descriptor-backed string data, creating
@@ -344,7 +344,7 @@ const char *memory_getcstring(const memory *memory_object);
  * @return Pointer to a writable string (never NULL). When fallbacks are used,
  *         modifications affect only the shared zero byte.
  */
-char *memory_getstring(memory *memory_object);
+char *memory_getstring(memory *);
 
 /**
  * @brief Checked typed access
@@ -361,8 +361,8 @@ char *memory_getstring(memory *memory_object);
  *         @p memory_object is NULL).
  */
 Return memory_verify_type(
-	const memory *memory_object,
-	size_t       expected_element_size);
+	const memory *,
+	size_t);
 
 /**
  * @brief Return a writable data pointer after verifying the element size.
@@ -376,8 +376,8 @@ Return memory_verify_type(
  * @return Non-NULL `void*` on success; `NULL` on error.
  */
 void *memory_data_checked(
-	memory *memory_object,
-	size_t expected_element_size);
+	memory *,
+	size_t);
 
 /**
  * @brief Return a read-only data pointer after verifying the element size.
@@ -389,8 +389,8 @@ void *memory_data_checked(
  * @return Non-NULL `const void*` on success; `NULL` on error.
  */
 const void *memory_const_data_checked(
-	const memory *memory_object,
-	size_t       expected_element_size);
+	const memory *,
+	size_t);
 
 /**
  * @brief Return the descriptor's raw data pointer without additional checks.
@@ -590,7 +590,7 @@ static inline const void *memory_raw_const_data(const memory * const memory_obje
  *
  * @param pointer_handle Address of the pointer to release.
  */
-void FREE_AND_RESET(void **pointer_handle);
+void FREE_AND_RESET(void **);
 
 /**
  * @def reset(pointer_expression)

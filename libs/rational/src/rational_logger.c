@@ -36,7 +36,7 @@ char *rational_reconvert(int mode)
 	/* Define mapping between flag values and their string representations
 	 * The array is terminated with {0, NULL} for easy iteration
 	 */
-	struct {
+	static const struct {
 		int flag;          /* Flag value from LOGMODES enum */
 		const char *name;  /* String representation of the flag */
 	} mapping[] = {

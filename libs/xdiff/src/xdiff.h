@@ -152,42 +152,42 @@ typedef struct s_bdiffparam {
 	long bsize;
 } bdiffparam_t;
 
-int xdl_set_allocator(memallocator_t const *malt);
-void *xdl_malloc(unsigned int size);
-void xdl_free(void *ptr);
+int xdl_set_allocator(memallocator_t const *);
+void *xdl_malloc(unsigned int);
+void xdl_free(void *);
 void *xdl_realloc(
-	void         *ptr,
-	unsigned int size);
+	void *,
+	unsigned int);
 
 int xdl_init_mmfile(
-	mmfile_t      *mmf,
-	long          bsize,
-	unsigned long flags);
-void xdl_free_mmfile(mmfile_t *mmf);
+	mmfile_t *,
+	long,
+	unsigned long);
+void xdl_free_mmfile(mmfile_t *);
 void *xdl_mmfile_writeallocate(
-	mmfile_t *mmf,
-	long     size);
+	mmfile_t *,
+	long);
 void *xdl_mmfile_first(
-	mmfile_t *mmf,
-	long     *size);
+	mmfile_t *,
+	long *);
 void *xdl_mmfile_next(
-	mmfile_t *mmf,
-	long     *size);
-long xdl_mmfile_size(mmfile_t *mmf) __attribute__((pure));
+	mmfile_t *,
+	long *);
+long xdl_mmfile_size(mmfile_t *) __attribute__((pure));
 
 int xdl_diff(
-	mmfile_t           *mf1,
-	mmfile_t           *mf2,
-	xpparam_t const    *xpp,
-	xdemitconf_t const *xecfg,
-	xdemitcb_t         *ecb);
+	mmfile_t *,
+	mmfile_t *,
+	xpparam_t const *,
+	xdemitconf_t const *,
+	xdemitcb_t *);
 
 int xdl_merge3(
-	mmfile_t   *mmfo,
-	mmfile_t   *mmf1,
-	mmfile_t   *mmf2,
-	xdemitcb_t *ecb,
-	xdemitcb_t *rjecb);
+	mmfile_t *,
+	mmfile_t *,
+	mmfile_t *,
+	xdemitcb_t *,
+	xdemitcb_t *);
 
 typedef struct s_chanode {
 	struct s_chanode *next;
@@ -246,70 +246,70 @@ typedef struct s_xdfenv {
 } xdfenv_t;
 
 int xdl_recs_cmp(
-	diffdata_t  *dd1,
-	long        off1,
-	long        lim1,
-	diffdata_t  *dd2,
-	long        off2,
-	long        lim2,
-	long        *kvdf,
-	long        *kvdb,
-	int         need_min,
-	xdalgoenv_t *xenv);
+	diffdata_t *,
+	long,
+	long,
+	diffdata_t *,
+	long,
+	long,
+	long *,
+	long *,
+	int,
+	xdalgoenv_t *);
 int xdl_do_diff(
-	mmfile_t        *mf1,
-	mmfile_t        *mf2,
-	xpparam_t const *xpp,
-	xdfenv_t        *xe);
+	mmfile_t *,
+	mmfile_t *,
+	xpparam_t const *,
+	xdfenv_t *);
 int xdl_build_script(
-	xdfenv_t   *xe,
-	xdchange_t **xscr);
-void xdl_free_script(xdchange_t *xscr);
+	xdfenv_t *,
+	xdchange_t **);
+void xdl_free_script(xdchange_t *);
 int xdl_emit_diff(
-	xdfenv_t           *xe,
-	xdchange_t         *xscr,
-	xdemitcb_t         *ecb,
-	xdemitconf_t const *xecfg);
+	xdfenv_t *,
+	xdchange_t *,
+	xdemitcb_t *,
+	xdemitconf_t const *);
 
 int xdl_emit_diff(
-	xdfenv_t           *xe,
-	xdchange_t         *xscr,
-	xdemitcb_t         *ecb,
-	xdemitconf_t const *xecfg);
+	xdfenv_t *,
+	xdchange_t *,
+	xdemitcb_t *,
+	xdemitconf_t const *);
 
 int xdl_prepare_env(
-	mmfile_t *mf1,
-	mmfile_t *mf2,
-	xdfenv_t *xe);
-void xdl_free_env(xdfenv_t *xe);
+	mmfile_t *,
+	mmfile_t *,
+	xdfenv_t *);
+void xdl_free_env(xdfenv_t *);
 
-long xdl_bogosqrt(long n) __attribute__((const));
+long xdl_bogosqrt(long) __attribute__((const));
 int xdl_emit_diffrec(
-	char const *rec,
-	long       size,
-	char const *pre,
-	long       psize,
-	xdemitcb_t *ecb);
+	char const *,
+	long,
+	char const *,
+	long,
+	xdemitcb_t *);
 int xdl_cha_init(
-	chastore_t *cha,
-	long       isize,
-	long       icount);
-void xdl_cha_free(chastore_t *cha);
-void *xdl_cha_alloc(chastore_t *cha);
-long xdl_guess_lines(mmfile_t *mf);
+	chastore_t *,
+	long,
+	long);
+void xdl_cha_free(chastore_t *);
+void *xdl_cha_alloc(chastore_t *);
+long xdl_guess_lines(mmfile_t *);
 unsigned long xdl_hash_record(
-	char const **data,
-	char const *top);
-unsigned int xdl_hashbits(unsigned int size) __attribute__((const));
+	char const **,
+	char const *);
+unsigned int xdl_hashbits(unsigned int) __attribute__((const));
 int xdl_num_out(
-	char *out,
-	long val);
+	char *,
+	long);
 int xdl_emit_hunk_hdr(
-	long       s1,
-	long       c1,
-	long       s2,
-	long       c2,
-	xdemitcb_t *ecb);
+	long,
+	long,
+	long,
+	long,
+	xdemitcb_t *);
 
 Return compare_texts(
 	char const *,

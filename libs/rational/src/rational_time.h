@@ -39,7 +39,7 @@ long long int cur_time_monotonic_ns(void);
 
 long long int cur_time_ms(void);
 
-char *seconds_to_ISOdate(time_t seconds);
+char *seconds_to_ISOdate(time_t);
 
 /**
  * @brief Convert nanoseconds to a human-readable date string in caller-provided buffer.

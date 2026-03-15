@@ -72,8 +72,8 @@ char *rational_reconvert(int);
  *       Avoid calling slog() inside rational_remember() to prevent recursion.
  */
 __attribute__((weak)) void rational_remember(
-	const char *message,
-	const int  line_len);
+	const char *,
+	const int);
 
 void rational_logger
 (
