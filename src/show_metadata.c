@@ -45,7 +45,7 @@ void show_metadata(
 		case MODIFICATION_TIME_CHANGED:
 			{
 				slog(log_level," was:%s.%ld",seconds_to_ISOdate(was->mtim_tv_sec),was->mtim_tv_nsec);
-			  slog(log_level,", now:%s.%ld",seconds_to_ISOdate(now->mtim_tv_sec),now->mtim_tv_nsec);
+				slog(log_level,", now:%s.%ld",seconds_to_ISOdate(now->mtim_tv_sec),now->mtim_tv_nsec);
 			}
 			break;
 		default:

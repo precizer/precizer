@@ -29,8 +29,7 @@
  * @param environment Output memory descriptor initialized for char elements
  * @return SUCCESS on success, FAILURE on error
  */
-Return extract_current_executable_directory_name(
-	memory *environment)
+Return extract_current_executable_directory_name(memory *environment)
 {
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */
