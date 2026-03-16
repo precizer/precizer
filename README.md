@@ -1,6 +1,7 @@
 [<img src=".html/img/i18n-icon.svg"> Link to the Russian language README page](README.ru.md)
 
-# Precizer — verify file checksums at scale
+# Precizer: data integrity verification for file systems of any scale
+
 A Tiny, High-Performance File Integrity and Comparison Tool
 
 “A truly great application will always fit on a floppy disk. Hopefully, someone out there still remembers what those were… But it’s not about the floppies, it’s about quality software!”<sup>©</sup> :-D
