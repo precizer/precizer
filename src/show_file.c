@@ -42,7 +42,7 @@ static void print_changes(
 	const DBrow     *dbrow,
 	const CmpctStat *stat)
 {
-	const char log_level = (char)(level | UNDECOR);
+	const unsigned int log_level = (unsigned int)(level | UNDECOR);
 
 	if(!((rational_logger_mode & VERBOSE) || config->watch_timestamps == true))
 	{
@@ -174,7 +174,7 @@ void slog_show_impl(
 	const char *filename,
 	const char *funcname,
 	int        line,
-	const char level,
+	const unsigned int level,
 	const bool respect_quiet,
 	bool       *first_iteration,
 	bool       *at_least_one_file_was_shown,

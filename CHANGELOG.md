@@ -2,6 +2,13 @@
 
 All notable changes will be documented in this file
 
+# Release 0.11.0 2026-03-16
+
+## Changed
+- Refined `--silent behavior` in `--compare` mode: compare results remain visible
+- Renamed `--compare-filter` values `first-source-only` and `second-source-only` to `first-source` and `second-source` to make combined filter usage clearer. The old values are no longer accepted
+
+
 # Release 0.10.0 2026-03-14
 
 ## Changed

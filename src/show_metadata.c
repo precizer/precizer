@@ -15,7 +15,7 @@ void show_metadata(
 	const CmpctStat *was,
 	const CmpctStat *now)
 {
-	const char log_level = (char)(level | UNDECOR);
+	const unsigned int log_level = (unsigned int)(level | UNDECOR);
 
 	switch(flag)
 	{
