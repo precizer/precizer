@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   filter:
@@ -69,8 +70,6 @@ jobs:
 
           mkdir -p "${ARTIFACT_DIR}"
 
-          printf '%s\n' "${PR_NUMBER}" > "${ARTIFACT_DIR}/pr_number.txt"
-
           set +e
           make -k static-analyzers-cli 2>&1 | tee "${LOG_PATH}"
           exit_code=${PIPESTATUS[0]}
@@ -110,15 +109,9 @@ jobs:
           cat "${REPORT_PATH}" >> "${GITHUB_STEP_SUMMARY}"
           echo "exit_code=${exit_code}" >> "${GITHUB_OUTPUT}"
 
-      - name: Upload static analysis artifact
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - name: Update sticky PR comment
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
-          name: pr-static-analysis-results
-          path: artifacts/pr-static-analysis
-          retention-days: 7
-          if-no-files-found: error
-
-      - name: Keep workflow non-blocking
-        if: always()
-        run: exit 0
+          header: static-analysis
+          number: ${{ github.event.pull_request.number }}
+          path: artifacts/pr-static-analysis/report.md
