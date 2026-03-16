@@ -124,7 +124,7 @@ static void show_banners(
 		if(stats_only_pass == false)
 		{
 			show_traversal_started = true;
-	
+
 			if(config->db_contains_data == true)
 			{
 				if(config->update == true)
@@ -171,15 +171,15 @@ static void show_banners(
  */
 __attribute__((format(printf,9,10)))
 void slog_show_impl(
-	const char *filename,
-	const char *funcname,
-	int        line,
+	const char         *filename,
+	const char         *funcname,
+	int                line,
 	const unsigned int level,
-	const bool respect_quiet,
-	bool       *first_iteration,
-	bool       *at_least_one_file_was_shown,
-	const bool stats_only_pass,
-	const char *fmt,
+	const bool         respect_quiet,
+	bool               *first_iteration,
+	bool               *at_least_one_file_was_shown,
+	const bool         stats_only_pass,
+	const char         *fmt,
 	...)
 {
 	if(rational_logger_mode & SILENT)

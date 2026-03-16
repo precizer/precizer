@@ -145,8 +145,7 @@ Return set_environment_variable(
  * @param[out] path Destination memory descriptor initialized for char elements
  * @return SUCCESS on success or FAILURE on error
  */
-Return get_origin_dir(
-	memory *);
+Return get_origin_dir(memory *);
 
 /**
  * @brief Create a unique temporary directory and keep its path in the buffer
@@ -154,8 +153,7 @@ Return get_origin_dir(
  * @param[out] path Destination memory descriptor initialized for char elements
  * @return SUCCESS on success or FAILURE on error
  */
-Return create_tmpdir(
-	memory *);
+Return create_tmpdir(memory *);
 
 Return function_capture(
 	void (*)(void),
@@ -259,8 +257,7 @@ Return random_number_generator(
  * @param environment Output memory descriptor initialized for char elements
  * @return SUCCESS on success, FAILURE on error
  */
-Return extract_current_executable_directory_name(
-	memory *);
+Return extract_current_executable_directory_name(memory *);
 
 /**
  * @brief Macro for executing a test.

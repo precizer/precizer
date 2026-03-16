@@ -14,8 +14,7 @@
  * @param path Destination memory descriptor initialized for char elements
  * @return SUCCESS on success, FAILURE on error
  */
-Return create_tmpdir(
-	memory *path)
+Return create_tmpdir(memory *path)
 {
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */

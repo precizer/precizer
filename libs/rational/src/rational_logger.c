@@ -181,14 +181,14 @@ static void logger_line_append(
 
 __attribute__((format(printf,7,0)))
 void logger_line(
-	char              **line,
-	int               *line_len,
+	char               **line,
+	int                *line_len,
 	const unsigned int level,
-	const char *const filename,
-	size_t            line_number,
-	const char *const funcname,
-	const char        *fmt,
-	va_list           args)
+	const char *const  filename,
+	size_t             line_number,
+	const char *const  funcname,
+	const char         *fmt,
+	va_list            args)
 {
 	if(rational_logger_mode & SILENT)
 	{
@@ -265,10 +265,10 @@ void logger_line(
 __attribute__((format(printf,5,6))) // Without this we will get warning
 void rational_logger(
 	const unsigned int level,
-	const char *const filename,
-	size_t            line,
-	const char *const funcname,
-	const char        *fmt,
+	const char *const  filename,
+	size_t             line,
+	const char *const  funcname,
+	const char         *fmt,
 	...)
 {
 
