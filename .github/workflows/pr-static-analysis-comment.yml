@@ -13,9 +13,33 @@ permissions:
   pull-requests: write
 
 jobs:
+  filter:
+    name: Check analyzed branch
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    runs-on: ubuntu-24.04
+
+    outputs:
+      is_version_pr: ${{ steps.branch_filter.outputs.is_version_pr }}
+
+    steps:
+      - name: Check source branch name
+        id: branch_filter
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${HEAD_BRANCH}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is_version_pr=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "is_version_pr=false" >> "${GITHUB_OUTPUT}"
+          fi
+
   comment:
     name: Comment on PR
-    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    needs: filter
+    if: ${{ github.event.workflow_run.event == 'pull_request' && needs.filter.outputs.is_version_pr == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 

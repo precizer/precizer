@@ -11,8 +11,32 @@ permissions:
   contents: read
 
 jobs:
+  filter:
+    name: Check PR source branch
+    runs-on: ubuntu-24.04
+
+    outputs:
+      is_version_pr: ${{ steps.branch_filter.outputs.is_version_pr }}
+
+    steps:
+      - name: Check source branch name
+        id: branch_filter
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${HEAD_REF}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "is_version_pr=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "is_version_pr=false" >> "${GITHUB_OUTPUT}"
+          fi
+
   analyze:
     name: Static analyzers
+    needs: filter
+    if: ${{ needs.filter.outputs.is_version_pr == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
