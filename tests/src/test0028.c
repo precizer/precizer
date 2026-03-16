@@ -482,43 +482,43 @@ static Return test0028_6(void)
 		{"--compare database1.db database2.db",COMPLETED,"templates/0028_005.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_006_1.txt",NULL},
 		{"--compare database1.db database2.db --compare-filter=checksum-mismatch",COMPLETED,"templates/0028_006_1.txt",NULL},
-		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_2.txt",NULL},
-		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_3.txt",NULL},
-		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_4.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_5.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_6.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_19.txt",NULL}
+		{"--compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_2.txt",NULL},
+		{"--compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_3.txt",NULL},
+		{"--compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_4.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_5.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_6.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_19.txt",NULL}
 	};
 
 	const struct compare_filter_case one_sided_cases[] = {
 		// Regression: one-sided filter must not claim full identity if opposite side has differences
-		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_7.txt",NULL},
-		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_8.txt",NULL},
-		{"--compare database2.db database1.db --compare-filter=first-source-only",COMPLETED,"templates/0028_006_17.txt",NULL},
-		{"--compare database2.db database1.db --compare-filter=second-source-only",COMPLETED,"templates/0028_006_18.txt",NULL}
+		{"--compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_7.txt",NULL},
+		{"--compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_8.txt",NULL},
+		{"--compare database2.db database1.db --compare-filter=first-source",COMPLETED,"templates/0028_006_17.txt",NULL},
+		{"--compare database2.db database1.db --compare-filter=second-source",COMPLETED,"templates/0028_006_18.txt",NULL}
 	};
 
 	const struct compare_filter_case differences_cases[] = {
 		// Valid combinations with --compare for databases with all difference categories
 		{"--compare database1.db database2.db",COMPLETED,"templates/0028_001.txt",NULL},
 		{"--compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_006_21.txt",NULL},
-		{"--compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_9.txt",NULL},
-		{"--compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_10.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_006_11.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_12.txt",NULL},
-		{"--compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_13.txt",NULL},
-		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_006_20.txt",NULL}
+		{"--compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_9.txt",NULL},
+		{"--compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_10.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_11.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_12.txt",NULL},
+		{"--compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_13.txt",NULL},
+		{"--compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_20.txt",NULL}
 	};
 
 	const struct compare_filter_case invalid_cases[] = {
 		// Invalid combinations: --compare-filter=value without --compare
 		{"--compare-filter=checksum-mismatch database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
-		{"--compare-filter=first-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
-		{"--compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
-		{"--compare-filter=checksum-mismatch --compare-filter=first-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
-		{"--compare-filter=checksum-mismatch --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
-		{"--compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
-		{"--compare-filter=checksum-mismatch --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=first-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=second-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=first-source --compare-filter=second-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
 
 		// Invalid combinations: --compare-filter without argument
 		{"--compare database1.db database2.db --compare-filter",FAILURE,NULL,"templates/0028_006_16.txt"},
@@ -683,6 +683,42 @@ static Return test0028_10(void)
 }
 
 /**
+ * Silent compare mode should print only compare results
+ */
+static Return test0028_11(void)
+{
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
+	INITTEST;
+
+	create(char,result);
+
+	ASSERT(SUCCESS & prepare_compare_filter_differences_fixture());
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare database1.db database2.db",COMPLETED,"templates/0028_011_1.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_011_2.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_011_5.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_011_3.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_011_4.txt",NULL));
+
+	ASSERT(SUCCESS & cleanup_compare_filter_differences_fixture());
+
+	ASSERT(SUCCESS & prepare_compare_filter_equal_fixture());
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	ASSERT(SUCCESS == runit("--silent --compare database1.db database2.db",result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(result->length == 0);
+
+	ASSERT(SUCCESS & cleanup_compare_filter_equal_fixture());
+
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
  *
  * Testing the --compare mode across different types of responses
  *
@@ -701,6 +737,7 @@ Return test0028(void)
 	TEST(test0028_8,"NULL and non-NULL SHA512 values should be reported as mismatches…");
 	TEST(test0028_9,"NULL SHA512 created from fixture changes should be reported as a mismatch…");
 	TEST(test0028_10,"Compare mode should work with database names containing apostrophes…");
+	TEST(test0028_11,"Silent compare mode should print only compare results…");
 
 	RETURN_STATUS;
 }

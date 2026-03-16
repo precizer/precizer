@@ -26,6 +26,7 @@ static void slog_test(void)
 	printf("%s\n",rational_convert(UNDECOR));
 	printf("%s\n",rational_convert(EVERY|UNDECOR));
 	printf("%s\n",rational_convert(ERROR|UNDECOR));
+	printf("%s\n",rational_convert(VISIBLE_IN_SILENT));
 
 	/* Test REGULAR mode combinations */
 	rational_logger_mode = REGULAR;
@@ -119,6 +120,11 @@ static void slog_test(void)
 	rational_logger_mode = REGULAR;
 	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
 	printf("41. Must not print (VERBOSE not enabled):|"); slog(VERBOSE|UNDECOR,"but printed!"); printf("|\n");
+
+	rational_logger_mode = SILENT;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("42. Must print in SILENT without prefixes:|"); slog(EVERY|VISIBLE_IN_SILENT,"true"); printf("|\n");
+	printf("43. Must print no ERROR prefix in SILENT:|"); slog(ERROR|VISIBLE_IN_SILENT,"true"); printf("|\n");
 }
 
 static void serp_case(void)

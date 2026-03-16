@@ -471,6 +471,8 @@ Any new, deleted, or modified files between application runs will be processed a
 
 Using the `--silent` mode. When this mode is enabled, the program does not produce any output on the screen. This is useful when **precizer** is used in scripts.
 
+An exception is `--compare`: with `--silent`, only compare results remain visible. Paths with differences are printed directly, and category headings are kept only when more than one compare category is active.
+
 Add the **--silent** parameter to the previous example:
 
 ```sh
