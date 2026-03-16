@@ -110,7 +110,7 @@ jobs:
           echo "exit_code=${exit_code}" >> "${GITHUB_OUTPUT}"
 
       - name: Update sticky PR comment
-        uses: marocchino/sticky-pull-request-comment@v3
+        uses: marocchino/sticky-pull-request-comment@70d2764d1a7d5d9560b100cbea0077fc8f633987 # v3.0.2
         with:
           header: static-analysis
           number: ${{ github.event.pull_request.number }}
