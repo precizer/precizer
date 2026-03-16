@@ -11,6 +11,7 @@ ERROR
 UNDECOR
 EVERY\|UNDECOR
 ERROR\|UNDECOR
+VISIBLE_IN_SILENT
 Mode: REGULAR
 1.  Must print:true
 2. Won't print:
@@ -64,4 +65,7 @@ Mode: VERBOSE
 Mode: TESTING
 40. Must print no TESTING prefix:\|true\|
 Mode: REGULAR
-41. Must not print \(VERBOSE not enabled\):\|\|\Z
+41. Must not print \(VERBOSE not enabled\):\|\|
+Mode: SILENT
+42. Must print in SILENT without prefixes:\|true\|
+43. Must print no ERROR prefix in SILENT:\|true\|\Z

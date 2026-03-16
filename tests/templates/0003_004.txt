@@ -3,7 +3,7 @@ TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 Usage: precizer \[OPTION\.\.\.\] PATH
 [\s\S]*? Compare databases options:
 [\s\S]*?  -c, --compare[^\n]*
-[\s\S]*?  -F, --compare-filter=checksum-mismatch\|first-source-only\|second-source-only[ \t]*
+[\s\S]*?  -F, --compare-filter=checksum-mismatch\|first-source\|second-source[ \t]*
 [\s\S]*? Build database options:
 [\s\S]*?  -d, --database=FILE[^\n]*
 [\s\S]*?  -f, --force[^\n]*
@@ -22,7 +22,7 @@ Usage: precizer \[OPTION\.\.\.\] PATH
 [\s\S]*?  -e, --ignore=PCRE2_REGEXP[^\n]*
 [\s\S]*?  -i, --include=PCRE2_REGEXP[^\n]*
 [\s\S]*? Visualizations options:
-[\s\S]*?  -h, --help[^\n]*
+[\s\S]*?  -h, -\?, --help[^\n]*
 [\s\S]*?  -p, --progress[^\n]*
 [\s\S]*?  -q, --quiet-ignored[^\n]*
 [\s\S]*?  -s, --silent[^\n]*

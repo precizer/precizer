@@ -47,6 +47,7 @@ char *rational_reconvert(int mode)
 		{SILENT,"SILENT"},
 		{UNDECOR,"UNDECOR"},
 		{REMEMBER,"REMEMBER"},
+		{VISIBLE_IN_SILENT,"VISIBLE_IN_SILENT"},
 		{0,NULL}   /* Terminator element */
 	};
 
@@ -182,7 +183,7 @@ __attribute__((format(printf,7,0)))
 void logger_line(
 	char              **line,
 	int               *line_len,
-	const char        level,
+	const unsigned int level,
 	const char *const filename,
 	size_t            line_number,
 	const char *const funcname,
@@ -191,7 +192,11 @@ void logger_line(
 {
 	if(rational_logger_mode & SILENT)
 	{
-		// Output nothing
+		if(level & VISIBLE_IN_SILENT)
+		{
+			logger_line_append_va(line,line_len,fmt,args);
+		}
+
 		return;
 	}
 
@@ -259,7 +264,7 @@ void logger_line(
  */
 __attribute__((format(printf,5,6))) // Without this we will get warning
 void rational_logger(
-	const char        level,
+	const unsigned int level,
 	const char *const filename,
 	size_t            line,
 	const char *const funcname,
@@ -308,6 +313,7 @@ int main(void)
 	printf("%s\n",rational_convert(UNDECOR));
 	printf("%s\n",rational_convert(EVERY|UNDECOR));
 	printf("%s\n",rational_convert(ERROR|UNDECOR));
+	printf("%s\n",rational_convert(VISIBLE_IN_SILENT));
 
 	/* Test REGULAR mode combinations */
 	rational_logger_mode = REGULAR;
@@ -402,6 +408,11 @@ int main(void)
 	rational_logger_mode = REGULAR;
 	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
 	printf("41. Must not print (VERBOSE not enabled):|"); slog(VERBOSE|UNDECOR,"but printed!"); printf("|\n");
+
+	rational_logger_mode = SILENT;
+	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
+	printf("42. Must print in SILENT without prefixes:|"); slog(EVERY|VISIBLE_IN_SILENT,"true"); printf("|\n");
+	printf("43. Must print no ERROR prefix in SILENT:|"); slog(ERROR|VISIBLE_IN_SILENT,"true"); printf("|\n");
 
 	return 0;
 }
