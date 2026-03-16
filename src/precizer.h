@@ -196,8 +196,8 @@ typedef enum
 {
 	CF_NONE_SPECIFIED = 0x00, /**< No explicit `--compare-filter` options were provided */
 	CF_CHECKSUM_MISMATCH = 0x01, /**< Report paths present in both databases whose checksums differ */
-	CF_FIRST_SOURCE_ONLY = 0x02, /**< Report paths that exist only in the first compared database */
-	CF_SECOND_SOURCE_ONLY = 0x04 /**< Report paths that exist only in the second compared database */
+	CF_FIRST_SOURCE = 0x02, /**< Report paths that exist in the first compared database but not in the second */
+	CF_SECOND_SOURCE = 0x04 /**< Report paths that exist in the second compared database but not in the first */
 
 } CompareFilter;
 

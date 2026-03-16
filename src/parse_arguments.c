@@ -118,12 +118,12 @@ static struct argp_option options[] = {
 	{"check-level",'l',"FULL|QUICK",0,"Select database validation level: 'quick' for basic structure check, 'full' (default) for comprehensive integrity verification.\n",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
 	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n",0 },
-	{"compare-filter",'F',"checksum-mismatch|first-source-only|second-source-only",0,
+	{"compare-filter",'F',"checksum-mismatch|first-source|second-source",0,
 	 "Filter output categories for " BOLD "--compare" RESET ". "
 	 "Supported values: "
 	 BOLD "checksum-mismatch" RESET ", "
-	 BOLD "first-source-only" RESET ", "
-	 BOLD "second-source-only" RESET ". "
+	 BOLD "first-source" RESET ", "
+	 BOLD "second-source" RESET ". "
 	 "The option can be specified multiple times in any combination.\n",0},
 	{ 0,0,0,0,"Visualizations options:\n",-1},
 	{"silent",'s',0,0,"Don't produce any output. With " BOLD "--compare" RESET ", only paths with differences are shown, and category headings remain visible when multiple compare categories are active.",0 },
@@ -131,7 +131,7 @@ static struct argp_option options[] = {
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
 	{"help",'h',0,0,"Give this help list",-1 },
-	{"help",'?',0,OPTION_ALIAS | OPTION_HIDDEN,0,-1 },
+	{0,'?',0,OPTION_ALIAS,0,-1 },
 	{"usage",'z',0,0,"Give a short usage message",-1 },
 	{"version",'V',0,0,"Print program version",-1 },
 	{0}
@@ -257,12 +257,12 @@ static error_t parse_opt(
 			if(arg != NULL && 0 == strcmp(arg,"checksum-mismatch"))
 			{
 				config->compare_filter |= CF_CHECKSUM_MISMATCH;
-			} else if(arg != NULL && 0 == strcmp(arg,"first-source-only")){
-				config->compare_filter |= CF_FIRST_SOURCE_ONLY;
-			} else if(arg != NULL && 0 == strcmp(arg,"second-source-only")){
-				config->compare_filter |= CF_SECOND_SOURCE_ONLY;
+			} else if(arg != NULL && 0 == strcmp(arg,"first-source")){
+				config->compare_filter |= CF_FIRST_SOURCE;
+			} else if(arg != NULL && 0 == strcmp(arg,"second-source")){
+				config->compare_filter |= CF_SECOND_SOURCE;
 			} else {
-				argp_failure(state,0,0,"ERROR: Unsupported --compare-filter value '%s'. Supported values: checksum-mismatch, first-source-only, second-source-only. See --help for more information",arg == NULL ? "" : arg);
+				argp_failure(state,0,0,"ERROR: Unsupported --compare-filter value '%s'. Supported values: checksum-mismatch, first-source, second-source. See --help for more information",arg == NULL ? "" : arg);
 				return(EINVAL);
 			}
 			break;
@@ -643,15 +643,15 @@ Return parse_arguments(
 				first_compare_filter = false;
 			}
 
-			if((config->compare_filter & CF_FIRST_SOURCE_ONLY) != 0u)
+			if((config->compare_filter & CF_FIRST_SOURCE) != 0u)
 			{
-				slog(TESTING|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
+				slog(TESTING|UNDECOR,"%sfirst-source",first_compare_filter ? "" : ", ");
 				first_compare_filter = false;
 			}
 
-			if((config->compare_filter & CF_SECOND_SOURCE_ONLY) != 0u)
+			if((config->compare_filter & CF_SECOND_SOURCE) != 0u)
 			{
-				slog(TESTING|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
+				slog(TESTING|UNDECOR,"%ssecond-source",first_compare_filter ? "" : ", ");
 			}
 
 			slog(TESTING|UNDECOR,"\n");
@@ -806,15 +806,15 @@ Return parse_arguments(
 				first_compare_filter = false;
 			}
 
-			if((config->compare_filter & CF_FIRST_SOURCE_ONLY) != 0u)
+			if((config->compare_filter & CF_FIRST_SOURCE) != 0u)
 			{
-				slog(VERBOSE|UNDECOR,"%sfirst-source-only",first_compare_filter ? "" : ", ");
+				slog(VERBOSE|UNDECOR,"%sfirst-source",first_compare_filter ? "" : ", ");
 				first_compare_filter = false;
 			}
 
-			if((config->compare_filter & CF_SECOND_SOURCE_ONLY) != 0u)
+			if((config->compare_filter & CF_SECOND_SOURCE) != 0u)
 			{
-				slog(VERBOSE|UNDECOR,"%ssecond-source-only",first_compare_filter ? "" : ", ");
+				slog(VERBOSE|UNDECOR,"%ssecond-source",first_compare_filter ? "" : ", ");
 			}
 		}
 

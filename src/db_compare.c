@@ -231,7 +231,7 @@ static Return db_changes(
  * @details Attaches both databases, reports requested difference categories,
  * and prints summary lines for missing paths and checksum mismatches. The
  * comparison scope can be limited with `--compare-filter`; without filters the
- * function checks first-source-only paths, second-source-only paths, and SHA512
+ * function checks first-source paths, second-source paths, and SHA512
  * mismatches
  *
  * @return Return status code
@@ -328,16 +328,16 @@ Return db_compare(void)
 	// False means default compare mode: all three categories are enabled.
 	const bool filter_specified = config->compare_filter != CF_NONE_SPECIFIED;
 
-	// Enables "first-source-only" category:
+	// Enables "first-source" category:
 	// show paths that exist in db1 but are missing in db2.
 	// This category is active either explicitly by filter or by default mode.
-	const bool check_first_source_only = (config->compare_filter & CF_FIRST_SOURCE_ONLY)
+	const bool check_first_source = (config->compare_filter & CF_FIRST_SOURCE)
 	        || filter_specified == false;
 
-	// Enables "second-source-only" category:
+	// Enables "second-source" category:
 	// show paths that exist in db2 but are missing in db1.
 	// This category is active either explicitly by filter or by default mode.
-	const bool check_second_source_only = (config->compare_filter & CF_SECOND_SOURCE_ONLY)
+	const bool check_second_source = (config->compare_filter & CF_SECOND_SOURCE)
 	        || filter_specified == false;
 
 	// Enables checksum verification category for common relative paths.
@@ -348,12 +348,12 @@ Return db_compare(void)
 	// Counts enabled compare categories so silent mode can decide whether headings are needed
 	unsigned int active_compare_categories = 0u;
 
-	if(check_first_source_only == true)
+	if(check_first_source == true)
 	{
 		active_compare_categories++;
 	}
 
-	if(check_second_source_only == true)
+	if(check_second_source == true)
 	{
 		active_compare_categories++;
 	}
@@ -367,24 +367,24 @@ Return db_compare(void)
 	const bool show_headings_in_silent = active_compare_categories > 1u;
 
 	// Comparison result flags grouped in one place for summary evaluation
-	bool first_source_only_differences_found = false;
-	bool second_source_only_differences_found = false;
+	bool first_source_differences_found = false;
+	bool second_source_differences_found = false;
 	bool checksum_mismatches_found = false;
 
 	/* Compare files existence between databases */
-	if(check_first_source_only == true)
+	if(check_first_source == true)
 	{
 		run(db_changes(compare_B_sql,
-			&first_source_only_differences_found,
+			&first_source_differences_found,
 			show_headings_in_silent,
 			1,
 			0));
 	}
 
-	if(check_second_source_only == true)
+	if(check_second_source == true)
 	{
 		run(db_changes(compare_A_sql,
-			&second_source_only_differences_found,
+			&second_source_differences_found,
 			show_headings_in_silent,
 			0,
 			1));
@@ -510,31 +510,31 @@ Return db_compare(void)
 	/* Output results */
 	if(SUCCESS == status)
 	{
-		const bool full_compare_scope = check_first_source_only == true
-		        && check_second_source_only == true
+		const bool full_compare_scope = check_first_source == true
+		        && check_second_source == true
 		        && verify_checksum_consistency == true;
 
 		if(full_compare_scope == true
-		        && first_source_only_differences_found == false
-		        && second_source_only_differences_found == false
+		        && first_source_differences_found == false
+		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
 			slog(EVERY,BOLD "All files are identical against %s and %s" RESET "\n",
 				config->db_file_names[0],
 				config->db_file_names[1]);
 		} else if(full_compare_scope == false){
-			if(check_first_source_only == true
-			        && first_source_only_differences_found == false)
+			if(check_first_source == true
+			        && first_source_differences_found == false)
 			{
-				slog(EVERY,BOLD "No first-source-only differences found between %s and %s" RESET "\n",
+				slog(EVERY,BOLD "No first-source differences found between %s and %s" RESET "\n",
 					config->db_file_names[0],
 					config->db_file_names[1]);
 			}
 
-			if(check_second_source_only == true
-			        && second_source_only_differences_found == false)
+			if(check_second_source == true
+			        && second_source_differences_found == false)
 			{
-				slog(EVERY,BOLD "No second-source-only differences found between %s and %s" RESET "\n",
+				slog(EVERY,BOLD "No second-source differences found between %s and %s" RESET "\n",
 					config->db_file_names[0],
 					config->db_file_names[1]);
 			}
@@ -548,8 +548,8 @@ Return db_compare(void)
 		}
 
 		if(full_compare_scope == true
-		        && first_source_only_differences_found == false
-		        && second_source_only_differences_found == false
+		        && first_source_differences_found == false
+		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
 			slog(EVERY,BOLD "The databases %s and %s are absolutely equal" RESET "\n",
