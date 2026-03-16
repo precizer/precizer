@@ -683,6 +683,42 @@ static Return test0028_10(void)
 }
 
 /**
+ * Silent compare mode should print only compare results
+ */
+static Return test0028_11(void)
+{
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
+	INITTEST;
+
+	create(char,result);
+
+	ASSERT(SUCCESS & prepare_compare_filter_differences_fixture());
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare database1.db database2.db",COMPLETED,"templates/0028_011_1.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=first-source-only database1.db database2.db",COMPLETED,"templates/0028_011_2.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_011_5.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_011_3.txt",NULL));
+	ASSERT(SUCCESS & assert_compare_output("--silent --compare --compare-filter=first-source-only --compare-filter=second-source-only database1.db database2.db",COMPLETED,"templates/0028_011_4.txt",NULL));
+
+	ASSERT(SUCCESS & cleanup_compare_filter_differences_fixture());
+
+	ASSERT(SUCCESS & prepare_compare_filter_equal_fixture());
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	ASSERT(SUCCESS == runit("--silent --compare database1.db database2.db",result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(result->length == 0);
+
+	ASSERT(SUCCESS & cleanup_compare_filter_equal_fixture());
+
+	del(result);
+
+	RETURN_STATUS;
+}
+
+/**
  *
  * Testing the --compare mode across different types of responses
  *
@@ -701,6 +737,7 @@ Return test0028(void)
 	TEST(test0028_8,"NULL and non-NULL SHA512 values should be reported as mismatches…");
 	TEST(test0028_9,"NULL SHA512 created from fixture changes should be reported as a mismatch…");
 	TEST(test0028_10,"Compare mode should work with database names containing apostrophes…");
+	TEST(test0028_11,"Silent compare mode should print only compare results…");
 
 	RETURN_STATUS;
 }

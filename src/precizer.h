@@ -777,7 +777,7 @@ void slog_show_impl(
 	const char *,
 	const char *,
 	int,
-	const char,
+	const unsigned int,
 	const bool,
 	bool *,
 	bool *,
