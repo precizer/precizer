@@ -1,10 +1,10 @@
 \ATESTING:Configuration initialization is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
-Usage: precizer \[-cfoTuXCr(?:h|\?)pqsvVz\]
-\s+\[-F checksum-mismatch\|first-source-only\|second-source-only\]
-\s+\[-d FILE\] \[-l FULL\|QUICK\] \[-m NUMBER\] \[-n\[MODE\]\] \[-k PCRE2_REGEXP\]
+Usage: precizer \[-cfoTuXCrh\?pqsvVz\]
+\s+\[-F checksum-mismatch\|first-source\|second-source\] \[-d FILE\]
+\s+\[-l FULL\|QUICK\] \[-m NUMBER\] \[-n\[MODE\]\] \[-k PCRE2_REGEXP\]
 \s+\[-e PCRE2_REGEXP\] \[-i PCRE2_REGEXP\] \[--compare\]
-\s+\[--compare-filter=checksum-mismatch\|first-source-only\|second-source-only\]\s+\[--database=FILE\] \[--force\] \[--check-level=FULL\|QUICK\]
+\s+\[--compare-filter=checksum-mismatch\|first-source\|second-source\]\s+\[--database=FILE\] \[--force\] \[--check-level=FULL\|QUICK\]
 \s+\[--maxdepth=NUMBER\] \[--dry-run\[=MODE\]\] \[--start-device-only\]
 \s+\[--watch-timestamps\] \[--update\] \[--db-drop-inaccessible\]
 \s+\[--db-drop-ignored\] \[--lock-checksum=PCRE2_REGEXP\]

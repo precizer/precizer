@@ -26,19 +26,21 @@ extern _Atomic Return global_return_status;
  *           (abbreviation of "UNDECORATED")
  * REMEMBER — pass the formatted log line to optional rational_remember() callback
  * SILENT  — disable all output
+ * VISIBLE_IN_SILENT — when SILENT is active, still print the payload for this call without logger prefixes
  *
  */
 typedef enum
 {
-	REGULAR  = 0x01, // 0000001
-	VERBOSE  = 0x02, // 0000010
-	TESTING  = 0x04, // 0000100
-	TRACE    = 0x06, // 0000110 = VERBOSE|TESTING
-	EVERY    = 0x07, // 0000111 = REGULAR|VERBOSE|TESTING
-	ERROR    = 0x08, // 0001000
-	SILENT   = 0x10, // 0010000
-	UNDECOR  = 0x20, // 0100000
-	REMEMBER = 0x40  // 1000000
+	REGULAR           = 0x01, // 0000001
+	VERBOSE           = 0x02, // 0000010
+	TESTING           = 0x04, // 0000100
+	TRACE             = 0x06, // 0000110 = VERBOSE|TESTING
+	EVERY             = 0x07, // 0000111 = REGULAR|VERBOSE|TESTING
+	ERROR             = 0x08, // 0001000
+	SILENT            = 0x10, // 0010000
+	UNDECOR           = 0x20, // 0100000
+	REMEMBER          = 0x40, // 1000000
+	VISIBLE_IN_SILENT = 0x80 // 10000000
 
 } LOGMODES;
 
@@ -77,7 +79,7 @@ __attribute__((weak)) void rational_remember(
 
 void rational_logger
 (
-	const char,
+	const unsigned int,
 	const char *,
 	size_t,
 	const char *,
