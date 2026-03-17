@@ -266,7 +266,7 @@ Return db_compare(void)
 	/* Validate database paths */
 	for(int i = 0; config->db_file_paths[i]; i++)
 	{
-		if(NOT_FOUND == file_availability(config->db_file_paths[i],SHOULD_BE_A_FILE))
+		if(NOT_FOUND == file_availability(config->db_file_paths[i],NULL,SHOULD_BE_A_FILE))
 		{
 			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",
 				config->db_file_paths[i]);

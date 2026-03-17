@@ -9,11 +9,11 @@
  */
 void signal_notify_quit_handler(int sig)
 {
-	slog(EVERY,"Notify quit!\n");
-
 	atomic_store(&global_interrupt_flag,true);
 
 	atomic_store(&global_return_status,HALTED);
+
+	slog(EVERY,"Notify quit!\n");
 
 	slog(EVERY,"The global return status and exit flag has been set to %s\n",show_status(global_return_status));
 

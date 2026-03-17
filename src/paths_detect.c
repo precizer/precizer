@@ -34,7 +34,7 @@ Return paths_detect(void)
 
 	for(int i = 0; config->paths[i]; i++)
 	{
-		if(SUCCESS == status && NOT_FOUND == file_availability(config->paths[i],SHOULD_BE_A_DIRECTORY))
+		if(SUCCESS == status && NOT_FOUND == file_availability(config->paths[i],NULL,SHOULD_BE_A_DIRECTORY))
 		{
 			status = FAILURE;
 		}
