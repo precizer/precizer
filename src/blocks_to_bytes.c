@@ -18,5 +18,12 @@ extern inline size_t blocks_to_bytes(const blkcnt_t blocks)
 		return 0;
 	}
 
+	// Guard against multiplication overflow: if blocks exceeds the safe range,
+	// return SIZE_MAX as a saturating upper bound instead of wrapping around
+	if((size_t)blocks > SIZE_MAX / POSIX_STAT_BLOCK_BYTES)
+	{
+		return SIZE_MAX;
+	}
+
 	return (size_t)blocks * POSIX_STAT_BLOCK_BYTES;
 }

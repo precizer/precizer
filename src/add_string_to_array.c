@@ -66,11 +66,12 @@ Return add_string_to_array(
 	}
 
 	// Allocate memory for the appended string
-	array[size] = (char *)malloc((strlen(new_string) + 1) * sizeof(char));
+	const size_t new_string_len = strlen(new_string) + 1;
+	array[size] = (char *)malloc(new_string_len * sizeof(char));
 
 	if(array[size] == NULL)
 	{
-		report("Memory allocation failed, requested size: %zu bytes",(strlen(new_string) + 1) * sizeof(char));
+		report("Memory allocation failed, requested size: %zu bytes",new_string_len * sizeof(char));
 
 		// String allocation failed, free the current array and clear the caller-owned pointer
 		free_string_array(&array);
@@ -78,7 +79,7 @@ Return add_string_to_array(
 		provide(FAILURE);
 	}
 
-	strcpy(array[size],new_string);
+	memcpy(array[size],new_string,new_string_len);
 
 	// Keep the array NULL-terminated
 	array[size + 1] = NULL;
