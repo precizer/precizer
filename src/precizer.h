@@ -234,6 +234,14 @@ typedef struct Flags {
  * Contains essential file metadata including logical size, allocated blocks,
  * and timestamps.
  * Provides high precision timing using separate second and nanosecond fields.
+ *
+ * @warning This struct is persisted to SQLite as a raw binary blob via
+ * `sqlite3_bind_blob(..., sizeof(CmpctStat), ...)`. The on-disk layout is
+ * therefore ABI-specific: field sizes (`off_t`, `blkcnt_t`, `dev_t`, `ino_t`,
+ * `time_t`) and compiler-inserted padding vary between platforms and ABIs.
+ * A database file created on a 64-bit x86 Linux system is not readable on
+ * a 32-bit or big-endian platform. No cross-ABI migration path exists;
+ * existing migrations only handle schema changes within the same ABI
  */
 typedef struct {
 
@@ -482,6 +490,21 @@ typedef struct {
 	/// from  which the descent began
 	bool start_device_only;
 
+	/// Pre-compiled PCRE2 patterns for --ignore (parallel to ignore[])
+	/// Compiled once by compile_patterns() after argument parsing
+	/// NULL when no --ignore patterns were provided
+	pcre2_code **ignore_pcre_compiled;
+
+	/// Pre-compiled PCRE2 patterns for --include (parallel to include[])
+	/// Compiled once by compile_patterns() after argument parsing
+	/// NULL when no --include patterns were provided
+	pcre2_code **include_pcre_compiled;
+
+	/// Pre-compiled PCRE2 patterns for --lock-checksum (parallel to lock_checksum[])
+	/// Compiled once by compile_patterns() after argument parsing
+	/// NULL when no --lock-checksum patterns were provided
+	pcre2_code **lock_checksum_pcre_compiled;
+
 } Config;
 
 /**
@@ -589,6 +612,8 @@ size_t file_buffer_memory(void);
 
 void free_string_array(char ***);
 
+void free_compiled_array(pcre2_code ***);
+
 Return add_string_to_array(
 	char ***,
 	const char *);
@@ -615,9 +640,9 @@ LockChecksum match_checksum_lock_pattern(
  * @return Return status code
  */
 Return path_absolute_from_relative(
-	char         **absolute_path,
-	const char   *path,
-	const size_t path_size);
+	char         **,
+	const char   *,
+	const size_t);
 
 /**
  * @brief Result of checking accessibility for a given path
@@ -876,11 +901,21 @@ Include match_include_pattern(
 	const char *,
 	bool *);
 
-REGEXP regexp_match
-(
+REGEXP match_regexp(
+	pcre2_code *,
 	const char *,
-	const char *,
-	bool *);
+	bool       *);
+
+/**
+ * @brief Compile all PCRE2 pattern strings stored in Config into pcre2_code objects
+ *
+ * Must be called once after parse_arguments() and before file_list().
+ * On success every non-NULL string array (ignore, include, lock_checksum) has a
+ * matching compiled array stored in the corresponding _pcre_compiled field of Config.
+ *
+ * @return SUCCESS or FAILURE (invalid pattern text)
+ */
+Return compile_patterns(void);
 
 int exit_status(
 	Return,

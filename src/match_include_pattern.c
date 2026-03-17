@@ -11,15 +11,15 @@ Include match_include_pattern(
 	const char *relative_path,
 	bool       *include_showed_once)
 {
-	if(config->include == NULL)
+	if(config->include_pcre_compiled == NULL)
 	{
 		// Nothing to include
 		return(DO_NOT_INCLUDE);
 	}
 
-	for(int i = 0; config->include[i] != NULL; ++i)
+	for(int i = 0; config->include_pcre_compiled[i] != NULL; ++i)
 	{
-		REGEXP result = regexp_match(config->include[i],relative_path,include_showed_once);
+		REGEXP result = match_regexp(config->include_pcre_compiled[i],relative_path,include_showed_once);
 
 		if(MATCH == result)
 		{

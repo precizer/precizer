@@ -173,6 +173,15 @@ void init_config(void)
 	/// from  which the descent began
 	config->start_device_only = false;
 
+	// Pre-compiled PCRE2 patterns for --ignore, populated by compile_patterns() only if --ignore was specified
+	config->ignore_pcre_compiled = NULL;
+
+	// Pre-compiled PCRE2 patterns for --include, populated by compile_patterns() only if --include was specified
+	config->include_pcre_compiled = NULL;
+
+	// Pre-compiled PCRE2 patterns for --lock-checksum, populated by compile_patterns() only if --lock-checksum was specified
+	config->lock_checksum_pcre_compiled = NULL;
+
 	/// Track both file metadata (created/modified dates) and size changes
 	/// for change detection. Out of the box, only size changes trigger
 	/// a rescan. When enabled, any update to timestamps or file size

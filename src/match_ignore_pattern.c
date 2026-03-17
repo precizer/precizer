@@ -11,15 +11,15 @@ Ignore match_ignore_pattern(
 	const char *relative_path,
 	bool       *ignore_showed_once)
 {
-	if(config->ignore == NULL)
+	if(config->ignore_pcre_compiled == NULL)
 	{
 		// Nothing to ignore
 		return(DO_NOT_IGNORE);
 	}
 
-	for(int i = 0; config->ignore[i] != NULL; ++i)
+	for(int i = 0; config->ignore_pcre_compiled[i] != NULL; ++i)
 	{
-		REGEXP result = regexp_match(config->ignore[i],relative_path,ignore_showed_once);
+		REGEXP result = match_regexp(config->ignore_pcre_compiled[i],relative_path,ignore_showed_once);
 
 		if(MATCH == result)
 		{

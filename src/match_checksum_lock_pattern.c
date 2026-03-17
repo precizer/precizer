@@ -12,15 +12,15 @@ LockChecksum match_checksum_lock_pattern(
 	const char *relative_path,
 	bool       *lock_checksum_showed_once)
 {
-	if(config->lock_checksum == NULL)
+	if(config->lock_checksum_pcre_compiled == NULL)
 	{
 		// Nothing to lock
 		return(DO_NOT_LOCK_CHECKSUM);
 	}
 
-	for(int i = 0; config->lock_checksum[i] != NULL; ++i)
+	for(int i = 0; config->lock_checksum_pcre_compiled[i] != NULL; ++i)
 	{
-		REGEXP result = regexp_match(config->lock_checksum[i],relative_path,lock_checksum_showed_once);
+		REGEXP result = match_regexp(config->lock_checksum_pcre_compiled[i],relative_path,lock_checksum_showed_once);
 
 		if(MATCH == result)
 		{
