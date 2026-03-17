@@ -4,7 +4,9 @@
  * @brief Validates the existence of the primary database file
  * @details Checks if the primary database file exists and is accessible. Updates the
  *    global config->db_primary_file_exists flag based on the check result.
- *    The function attempts to access the file using the path stored
+ *    When the file exists, its metadata is stored in config->db_file_stat in a
+ *    single stat() call to avoid a TOCTOU race between existence check and metadata
+ *    retrieval. The function attempts to access the file using the path stored
  *    in the global configuration config->db_primary_file_path
  *
  * @return Return status code indicating the operation result:
@@ -16,6 +18,7 @@
  *
  * @see config->db_primary_file_exists
  * @see config->db_primary_file_path
+ * @see config->db_file_stat
  */
 Return db_primary_file_validate_existence(void)
 {

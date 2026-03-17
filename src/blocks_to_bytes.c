@@ -9,7 +9,8 @@
  *
  * @param blocks Allocated block count from file metadata.
  * @return Allocated bytes as `blocks * POSIX_STAT_BLOCK_BYTES`, or zero when
- *         @p blocks is less than or equal to zero.
+ *         @p blocks is less than or equal to zero, or SIZE_MAX when the result
+ *         would overflow `size_t`.
  */
 extern inline size_t blocks_to_bytes(const blkcnt_t blocks)
 {
