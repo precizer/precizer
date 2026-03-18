@@ -77,7 +77,7 @@ int test_main(
 	run(compile_patterns());
 
 	// Print program identity only when argument parsing is not in info mode
-	if((status & INFO) == false)
+	if((status & INFO) == 0)
 	{
 		about();
 	}
