@@ -313,7 +313,7 @@ Return file_list(TraversalSummary *summary)
 			{
 				CmpctStat stat = {0};
 
-				(void)stat_copy(p->fts_statp,&stat);
+				run(stat_copy(p->fts_statp,&stat));
 
 				summary->total_allocated_bytes += blocks_to_bytes(stat.st_blocks);
 				summary->count_files++;

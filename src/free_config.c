@@ -8,11 +8,14 @@ void free_config(void)
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */
 
-	// Restore terminal echo and canonical mode
-	struct termios term;
-	tcgetattr(fileno(stdin),&term);
-	term.c_lflag |= (ICANON|ECHO);
-	tcsetattr(fileno(stdin),0,&term);
+	// Restore terminal echo and canonical mode only when stdin is a real terminal
+	if(isatty(fileno(stdin)))
+	{
+		struct termios term;
+		tcgetattr(fileno(stdin),&term);
+		term.c_lflag |= (ICANON|ECHO);
+		tcsetattr(fileno(stdin),0,&term);
+	}
 
 	free(config->running_dir);
 
