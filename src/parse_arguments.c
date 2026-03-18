@@ -302,10 +302,10 @@ static error_t parse_opt(
 			config->force = true;
 			break;
 		case 'l':
-			if(0 == strncasecmp(arg,"QUICK",sizeof("QUICK")))
+			if(0 == strcasecmp(arg,"QUICK"))
 			{
 				config->db_check_level = QUICK;
-			} else if(0 == strncasecmp(arg,"FULL",sizeof("FULL"))){
+			} else if(0 == strcasecmp(arg,"FULL")){
 				config->db_check_level = FULL;
 			} else {
 				argp_failure(state,0,0,"ERROR: Unsupported --check-level value '%s'. Supported values: FULL or QUICK",arg);
