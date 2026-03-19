@@ -386,6 +386,8 @@ Comparison of database1.db and database2.db databases is complete
 The precizer completed its execution without any issues  
 </sub>
 
+In `--compare` mode, `--ignore` and `--include` limit the relative-path scope used to build the comparison report. If filters hide part of the differences, the equality messages apply only to the remaining filtered scope. Any path brought back with `--include` participates again in both the difference lists and the final summaries
+
 ### Example 2
 Database Update
 
@@ -783,6 +785,34 @@ The primary database has been vacuumed
 **The database file myhost.db has been modified since the program was launched**  
 The precizer completed its execution without any issues  
 </sub>
+
+#### The same filters in `--compare`
+
+The same `--ignore` and `--include` combination also applies to database-to-database comparison. These filters do more than hide individual lines on screen: they define which relative paths remain inside the comparison report. As a result, the final summaries and equality messages are evaluated only against that filtered scope
+
+```sh
+# Continuing Example 1, bring back just one path from a hidden group of differences
+
+precizer --compare \
+	--ignore="^(?:2|3|4)/.*" \
+	--ignore="^path1/.*" \
+	--ignore="^path2/.*" \
+	--include="^2/AAA/BBB/CZC/a\.txt$" \
+	database1.db database2.db
+```
+
+<sub>The comparison of database1.db and database2.db databases is starting…  
+Starting database file database1.db integrity check…  
+Database database1.db has been verified and is in good condition  
+Starting database file database2.db integrity check…  
+Database database2.db has been verified and is in good condition  
+**The SHA512 checksums of these files do not match between database1.db and database2.db**  
+2/AAA/BBB/CZC/a.txt  
+Comparison of database1.db and database2.db databases is complete  
+The precizer completed its execution without any issues  
+</sub>
+
+In this example, every difference under `2/`, `3/`, `4/`, `path1/`, and `path2/` is first pushed out of the comparison report, and then `--include` restores only `2/AAA/BBB/CZC/a.txt`. That leaves the report focused on that single restored path while the other hidden differences stay outside the final lists and summaries
 
 ### Example 9
 Protecting immutable archives with `--lock-checksum`

@@ -1,0 +1,12 @@
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+The comparison of database1\.db and database2\.db databases is starting…
+Starting database file database1\.db integrity check…
+Database database1\.db has been verified and is in good condition
+Starting database file database2\.db integrity check…
+Database database2\.db has been verified and is in good condition
+(?:\x1B\[[0-9;]*m)*The SHA512 checksums of these files do not match between database1\.db and database2\.db(?:\x1B\[[0-9;]*m)*
+2/AAA/BBB/CZC/a\.txt
+Comparison of database1\.db and database2\.db databases is complete
+The precizer completed as expected
+Exit status » SUCCESS
+Enjoy your life!\Z

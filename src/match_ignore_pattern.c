@@ -1,15 +1,16 @@
 #include "precizer.h"
 
 /**
+ * @brief Decide whether to ignore a relative path
  *
- * Decide whether or not to ignore the relative
- * path to the file by comparing it with PCRE2 regular
- * expressions passed as arguments with --ignore=
+ * Compares the path against PCRE2 patterns supplied via --ignore=
  *
+ * @param[in] relative_path Relative path to test
+ * @return IGNORE if matched, DO_NOT_IGNORE if not,
+ *         FAIL_REGEXP_IGNORE on PCRE2 error
  */
 Ignore match_ignore_pattern(
-	const char *relative_path,
-	bool       *ignore_showed_once)
+	const char *relative_path)
 {
 	if(config->ignore_pcre_compiled == NULL)
 	{
@@ -19,7 +20,7 @@ Ignore match_ignore_pattern(
 
 	for(int i = 0; config->ignore_pcre_compiled[i] != NULL; ++i)
 	{
-		REGEXP result = match_regexp(config->ignore_pcre_compiled[i],relative_path,ignore_showed_once);
+		REGEXP result = match_regexp(config->ignore_pcre_compiled[i],relative_path);
 
 		if(MATCH == result)
 		{

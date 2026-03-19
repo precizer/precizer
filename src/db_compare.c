@@ -126,26 +126,31 @@ static Return db_detach(const char *db_alias)
 }
 
 /**
- * @brief Reports files that exist in one database but not in the other
+ * @brief Run one compare query and print only the paths that pass output filters
  *
- * Executes the supplied comparison query, marks whether any differences were found,
- * and prints the returned relative paths
- * The category heading is printed before the first path and stays visible in `--silent`
- * only when `show_headings_in_silent` enables it
+ * Executes the supplied comparison query, applies the shared --include/--ignore
+ * decision before reporting each row, and reports only visible relative paths.
+ * Only visible paths contribute to category state, so compare summaries and
+ * equality messages are evaluated against the filtered scope. The category
+ * heading is emitted only before the first visible path and stays visible in
+ * `--silent` only when `show_headings_in_silent` enables it
  *
- * @param[in] compare_sql SQL query that returns relative paths missing from one of the databases
- * @param[out] differences_found Set to `true` after the first reported difference
+ * @param[in] compare_sql SQL query that returns relative paths for one compare category
+ * @param[out] differences_found Set to `true` after the first visible path is printed
+ *             so hidden rows stay outside the reported comparison scope
  * @param[in] show_headings_in_silent True to keep the category heading visible in `--silent`
- * @param[in] db_A Index of the database used as the missing-side reference in the heading
- * @param[in] db_B Index of the database used as the existing-side reference in the heading
+ * @param[in] heading_format Heading format string with two `%s` database-name slots
+ * @param[in] db_A_name First database name for the heading
+ * @param[in] db_B_name Second database name for the heading
  * @return Return structure indicating the operation status
  */
-static Return db_changes(
+static Return db_report_category(
 	const char *compare_sql,
 	bool       *differences_found,
 	const bool show_headings_in_silent,
-	int        db_A,
-	int        db_B)
+	const char *heading_format,
+	const char *db_A_name,
+	const char *db_B_name)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -163,12 +168,10 @@ static Return db_changes(
 
 	if(SUCCESS == status)
 	{
-		bool first_iteration = true;
+		bool first_visible_path = true;
 
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
-			*differences_found = true;
-
 			// Interrupt the loop smoothly
 			// Interrupt when Ctrl+C
 			if(global_interrupt_flag == true)
@@ -176,30 +179,46 @@ static Return db_changes(
 				break;
 			}
 
-			if(first_iteration == true)
+			const unsigned char *relative_path = sqlite3_column_text(select_stmt,0);
+
+			if(relative_path == NULL)
 			{
-				first_iteration = false;
-
-				// Outside --silent the heading is always shown
-				// In --silent it stays only when multiple compare categories can mix together in one output
-				if((rational_logger_mode & SILENT) == 0 || show_headings_in_silent == true)
-				{
-					slog(EVERY|VISIBLE_IN_SILENT,BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",config->db_file_names[db_A],config->db_file_names[db_B]);
-				}
-			}
-
-			const unsigned char *relative_path = NULL;
-			relative_path = sqlite3_column_text(select_stmt,0);
-
-			if(relative_path != NULL)
-			{
-				slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",relative_path);
-			} else {
 				rc = sqlite3_errcode(config->db);
 				log_sqlite_error(config->db,rc,NULL,"Failed to read relative path from select result");
 				status = FAILURE;
 				break;
 			}
+
+			bool ignore = false;
+
+			status = match_include_ignore((const char *)relative_path,
+				NULL,
+				&ignore);
+
+			if(SUCCESS != status)
+			{
+				break;
+			}
+
+			if(ignore == true)
+			{
+				continue;
+			}
+
+			if(first_visible_path == true)
+			{
+				first_visible_path = false;
+
+				// Outside --silent the heading is always shown
+				// In --silent it stays only when multiple compare categories can mix together in one output
+				if((rational_logger_mode & SILENT) == 0 || show_headings_in_silent == true)
+				{
+					slog(EVERY|VISIBLE_IN_SILENT,heading_format,db_A_name,db_B_name);
+				}
+			}
+
+			*differences_found = true;
+			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",relative_path);
 		}
 
 		if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
@@ -230,9 +249,9 @@ static Return db_changes(
  *
  * @details Attaches both databases, reports requested difference categories,
  * and prints summary lines for missing paths and checksum mismatches. The
- * comparison scope can be limited with `--compare-filter`; without filters the
- * function checks first-source paths, second-source paths, and SHA512
- * mismatches
+ * comparison scope can be limited with `--compare-filter` and further narrowed
+ * by `--ignore` and `--include`; without filters the function checks
+ * first-source paths, second-source paths, and SHA512 mismatches
  *
  * @return Return status code
  */
@@ -259,9 +278,7 @@ Return db_compare(void)
 		provide(status);
 	}
 
-	slog(EVERY,"The comparison of %s and %s databases is starting…\n",
-		config->db_file_names[0],
-		config->db_file_names[1]);
+	slog(EVERY,"The comparison of %s and %s databases is starting…\n",config->db_file_names[0],config->db_file_names[1]);
 
 	/* Validate database paths */
 	for(int i = 0; config->db_file_paths[i]; i++)
@@ -279,7 +296,7 @@ Return db_compare(void)
 			/*
 			 * Validate the integrity of the database file
 			 */
-			status = db_test(config->db_file_paths[i]);
+			status = db_integrity_check(config->db_file_paths[i]);
 
 			if(SUCCESS != status)
 			{
@@ -374,30 +391,32 @@ Return db_compare(void)
 	/* Compare files existence between databases */
 	if(check_first_source == true)
 	{
-		run(db_changes(compare_B_sql,
+		run(db_report_category(compare_B_sql,
 			&first_source_differences_found,
 			show_headings_in_silent,
-			1,
-			0));
+			BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",
+			config->db_file_names[1],
+			config->db_file_names[0]));
 	}
 
 	if(check_second_source == true)
 	{
-		run(db_changes(compare_A_sql,
+		run(db_report_category(compare_A_sql,
 			&second_source_differences_found,
 			show_headings_in_silent,
-			0,
-			1));
+			BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",
+			config->db_file_names[0],
+			config->db_file_names[1]));
 	}
 
 #if 0
 	// Old multiPATH solutions
-	const char *compare_checksums = "select a.relative_path from db2.files a inner join db1.files b"
+	const char *compare_checksums_sql = "select a.relative_path from db2.files a inner join db1.files b"
 	        " on b.relative_path = a.relative_path "
 	        " and b.sha512 is not a.sha512"
 	        " order by a.relative_path asc;";
 
-	const char *compare_checksums = "SELECT p.path,f1.relative_path "
+	const char *compare_checksums_sql = "SELECT p.path,f1.relative_path "
 	        "FROM db1.files AS f1 "
 	        "JOIN db1.paths AS p ON f1.path_prefix_index = p.ID "
 	        "JOIN db2.files AS f2 ON f1.relative_path = f2.relative_path "
@@ -406,99 +425,26 @@ Return db_compare(void)
 	        "ORDER BY p.path,f1.relative_path ASC;";
 #else
 	// One PATH solution
-	const char *compare_checksums = "SELECT a.relative_path "
+	const char *compare_checksums_sql = "SELECT a.relative_path "
 	        "FROM db2.files AS a "
 	        "INNER JOIN db1.files AS b ON b.relative_path = a.relative_path "
 	        "WHERE b.sha512 IS NOT a.sha512 "
 	        "ORDER BY a.relative_path ASC;";
 #endif
 
-	/* Compare SHA512 checksums */
-	sqlite3_stmt *select_stmt = NULL;
-	bool first_iteration = true;
-
 	if(verify_checksum_consistency == true)
 	{
-		if(SUCCESS == status)
-		{
-			int rc = sqlite3_prepare_v2(config->db,
-				compare_checksums,
-				-1,
-				&select_stmt,
-				NULL);
-
-			if(SQLITE_OK != rc)
-			{
-				log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement");
-				status = FAILURE;
-			}
-
-			if(SUCCESS == status)
-			{
-				while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
-				{
-					checksum_mismatches_found = true;
-
-					// Interrupt the loop smoothly
-					// Interrupt when Ctrl+C
-					if(global_interrupt_flag == true)
-					{
-						break;
-					}
-
-					if(first_iteration == true)
-					{
-						first_iteration = false;
-
-						// Outside --silent the heading is always shown
-						// In --silent it stays only when multiple compare categories can mix together in one output
-						if((rational_logger_mode & SILENT) == 0 || show_headings_in_silent == true)
-						{
-							slog(EVERY|VISIBLE_IN_SILENT,BOLD "The SHA512 checksums of these files do not match between %s and %s" RESET "\n",config->db_file_names[0],config->db_file_names[1]);
-						}
-					}
-
-#if 0
-					const unsigned char *relative_path = NULL;
-					const unsigned char *path_prefix = NULL;
-					path_prefix = sqlite3_column_text(select_stmt,0);
-					relative_path = sqlite3_column_text(select_stmt,1);
-#endif
-
-					const unsigned char *relative_path = sqlite3_column_text(select_stmt,0);
-
-					if(relative_path != NULL)
-					{
-						slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",relative_path);
-					} else {
-						rc = sqlite3_errcode(config->db);
-						log_sqlite_error(config->db,rc,NULL,"Failed to read relative path from select result");
-						status = FAILURE;
-						break;
-					}
-				}
-
-				if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
-				{
-					log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
-					status = FAILURE;
-				}
-			}
-		}
+		run(db_report_category(compare_checksums_sql,
+			&checksum_mismatches_found,
+			show_headings_in_silent,
+			BOLD "The SHA512 checksums of these files do not match between %s and %s" RESET "\n",
+			config->db_file_names[0],
+			config->db_file_names[1]));
 	}
 
 	/* Cleanup */
-	if(attached_db2 == true)
-	{
-		call(db_finalize(config->db,"db2",&select_stmt));
-	}
-
 	if(attached_db1 == true)
 	{
-		sqlite3_stmt *no_stmt = NULL;
-		call(db_finalize(config->db,"db1",&no_stmt));
-
-		/* Detach databases in attach order */
 		call(db_detach("db1"));
 	}
 
@@ -522,7 +468,9 @@ Return db_compare(void)
 			slog(EVERY,BOLD "All files are identical against %s and %s" RESET "\n",
 				config->db_file_names[0],
 				config->db_file_names[1]);
+
 		} else if(full_compare_scope == false){
+
 			if(check_first_source == true
 			        && first_source_differences_found == false)
 			{

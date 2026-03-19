@@ -5,14 +5,11 @@
  *
  * @param compiled_pattern Pre-compiled PCRE2 pattern (must not be NULL)
  * @param relative_path    Path string to match against the pattern.
- * @param showed_once      Set to true on the first match-data allocation
- *                         failure so that the error is printed only once.
  * @return MATCH, NOT_MATCH, or REGEXP_ERROR
  */
 REGEXP match_regexp(
 	pcre2_code *compiled_pattern,
-	const char *relative_path,
-	bool       *showed_once)
+	const char *relative_path)
 {
 	if(compiled_pattern == NULL || relative_path == NULL)
 	{
@@ -27,11 +24,7 @@ REGEXP match_regexp(
 
 	if(match_data == NULL)
 	{
-		if(*showed_once == false)
-		{
-			*showed_once = true;
-			slog(ERROR,"PCRE2 failed to allocate match data for path: %s\n",relative_path);
-		}
+		slog(ERROR,"PCRE2 failed to allocate match data for path: %s\n",relative_path);
 		return(REGEXP_ERROR);
 	}
 
@@ -51,13 +44,9 @@ REGEXP match_regexp(
 
 	/* match_result == 0: ovector too small (should not happen with create_from_pattern)
 	   match_result < 0 and not NOMATCH: other PCRE2 error */
-	if(*showed_once == false)
-	{
-		*showed_once = true;
-		PCRE2_UCHAR8 error_message_buffer[MAX_CHARACTERS];
-		pcre2_get_error_message(match_result,error_message_buffer,MAX_CHARACTERS);
-		slog(ERROR,"PCRE2 match error %d: %s for path: %s\n",match_result,error_message_buffer,relative_path);
-	}
+	PCRE2_UCHAR8 error_message_buffer[MAX_CHARACTERS];
+	pcre2_get_error_message(match_result,error_message_buffer,MAX_CHARACTERS);
+	slog(ERROR,"PCRE2 match error %d: %s for path: %s\n",match_result,error_message_buffer,relative_path);
 
 	return(REGEXP_ERROR);
 }

@@ -2,6 +2,14 @@
 
 All notable changes will be documented in this file
 
+# Release 0.12.0 2026-03-19
+
+## Added
+- `--compare` now supports the `--ignore` and `--include` path filters, so database comparisons can be limited to the paths that matter. Both options can be repeated, and `--include` takes precedence when a path matches both filters
+
+## Documentation
+- Clarified in the README and CLI help that `--compare` reports, summaries, and equality messages are evaluated against the filtered comparison scope
+
 # Release 0.11.0 2026-03-16
 
 ## Changed

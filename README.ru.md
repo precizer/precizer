@@ -380,6 +380,8 @@ Comparison of database1.db and database2.db databases is complete
 The precizer completed its execution without any issues  
 </sub>
 
+В режиме `--compare` параметры `--ignore` и `--include` ограничивают ту область относительных путей, по которой строится отчёт сравнения. Если фильтры скрывают часть различий, итоговые сообщения об идентичности относятся только к оставшейся отфильтрованной области. Пути, возвращённые через `--include`, снова участвуют и в списках различий, и в итоговых сводках
+
 ### Пример 2
 Актуализация базы данных
 
@@ -777,6 +779,34 @@ The primary database has been vacuumed
 **The database file myhost.db has been modified since the program was launched**  
 The precizer completed its execution without any issues  
 </sub>
+
+#### Те же фильтры в режиме `--compare`
+
+Та же комбинация `--ignore` и `--include` работает и при сравнении двух баз данных. Фильтры определяют не только то, какие строки будут напечатаны, но и то, какая часть относительных путей считается входящей в отчёт сравнения. Поэтому итоговые сводки и сообщения об идентичности относятся только к этой отфильтрованной области
+
+```sh
+# Продолжая Пример 1, вернём в отчёт только один путь из скрытой группы различий
+
+precizer --compare \
+	--ignore="^(?:2|3|4)/.*" \
+	--ignore="^path1/.*" \
+	--ignore="^path2/.*" \
+	--include="^2/AAA/BBB/CZC/a\.txt$" \
+	database1.db database2.db
+```
+
+<sub>The comparison of database1.db and database2.db databases is starting…  
+Starting database file database1.db integrity check…  
+Database database1.db has been verified and is in good condition  
+Starting database file database2.db integrity check…  
+Database database2.db has been verified and is in good condition  
+**The SHA512 checksums of these files do not match between database1.db and database2.db**  
+2/AAA/BBB/CZC/a.txt  
+Comparison of database1.db and database2.db databases is complete  
+The precizer completed its execution without any issues  
+</sub>
+
+В этом примере все различия из путей `2/`, `3/`, `4/`, `path1/` и `path2/` сначала выводятся из области отчёта сравнения, а затем `--include` возвращает обратно только `2/AAA/BBB/CZC/a.txt`. В результате в отчёте снова появится именно этот путь, а остальные скрытые различия останутся вне итоговых списков и сводок
 
 ### Пример 9
 Защита неизменяемых архивов с помощью `--lock-checksum`
