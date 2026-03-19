@@ -14,45 +14,6 @@ static int compare_by_name(
 	return strcmp((*first)->fts_name,(*second)->fts_name);
 }
 
-static Return match_include_ignore(
-	const char *relative_path,
-	bool       *include,
-	bool       *ignore,
-	bool       *include_showed_once,
-	bool       *ignore_showed_once)
-{
-	*include = false;
-	*ignore = false;
-
-	Include match_include_response = match_include_pattern(relative_path,include_showed_once);
-
-	if(DO_NOT_INCLUDE == match_include_response)
-	{
-		Ignore match_ignore_response = match_ignore_pattern(relative_path,ignore_showed_once);
-
-		if(IGNORE == match_ignore_response)
-		{
-			*ignore = true;
-
-		} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
-
-			slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
-			provide(FAILURE);
-		}
-
-	} else if(FAIL_REGEXP_INCLUDE == match_include_response){
-
-		slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
-		provide(FAILURE);
-
-	} else if(INCLUDE == match_include_response){
-
-		*include = true;
-	}
-
-	provide(SUCCESS);
-}
-
 /**
  * @brief Traverse configured paths and process files for one pass.
  *
@@ -86,15 +47,6 @@ Return file_list(TraversalSummary *summary)
 
 	// Print traversal/update banners only once
 	bool first_iteration = true;
-
-	// Prevent duplicate --ignore info messages
-	bool ignore_showed_once = false;
-
-	// Prevent duplicate --include info messages
-	bool include_showed_once = false;
-
-	// Prevent duplicate lock-checksum info messages
-	bool lock_checksum_showed_once = false;
 
 	// Signals integrity issues for locked files
 	bool lock_checksum_violation_detected = false;
@@ -254,11 +206,7 @@ Return file_list(TraversalSummary *summary)
 				// Included with --include=
 				bool include = false;
 
-				status = match_include_ignore(relative_path,
-					&include,
-					&ignore,
-					&include_showed_once,
-					&ignore_showed_once);
+				status = match_include_ignore(relative_path,&include,&ignore);
 
 				if(SUCCESS != status)
 				{
@@ -311,11 +259,7 @@ Return file_list(TraversalSummary *summary)
 			}
 			case FTS_F:
 			{
-				CmpctStat stat = {0};
-
-				run(stat_copy(p->fts_statp,&stat));
-
-				summary->total_allocated_bytes += blocks_to_bytes(stat.st_blocks);
+				summary->total_allocated_bytes += blocks_to_bytes(p->fts_statp->st_blocks);
 				summary->count_files++;
 
 				if(summary->stats_only_pass == true)
@@ -323,18 +267,20 @@ Return file_list(TraversalSummary *summary)
 					continue;
 				}
 
-				/* Write all columns from DB row to the structure DBrow
-				   and clean the structure to prevent reuse */
-				DBrow _dbrow = {0};
-				DBrow *dbrow = &_dbrow;
+				// Keep per-file processing state on the stack and attach
+				// the DB row that will be filled for this path
+				File _file = {0};
+				File *file = &_file;
+				DBrow dbrow = {0};
+				file->db = &dbrow;
 
 				const char *relative_path = extract_relative_path(p->fts_path,runtime_root);
 
 				/* Get all file's metadata from the database */
 #if 0 // Old multiPATH solution
-				run(db_read_file_data_from(dbrow,&runtime_root_index,relative_path));
+				run(db_read_file_data_from(file,&runtime_root_index,relative_path));
 #else
-				run(db_read_file_data_from(dbrow,relative_path));
+				run(db_read_file_data_from(file,relative_path));
 #endif
 
 				if(SUCCESS != status)
@@ -343,29 +289,10 @@ Return file_list(TraversalSummary *summary)
 					break;
 				}
 
-				const bool path_known = dbrow->relative_path_was_in_db_before_processing == true;
-
-				const bool has_saved_offset = dbrow->saved_offset > 0;
-
-				// Validate whether logical size, allocated blocks, and ctime/mtime
-				// changed since the previous scan.
-				// Default value is:
-				Changed db_record_vs_file_metadata_changes = NOT_EQUAL;
-
 				// Tracks whether the current relative path existed in DB before current file processing
-				if(path_known == true)
-				{
-					// Validate whether logical size, allocated blocks, and ctime/mtime
-					// changed since the previous scan.
-					db_record_vs_file_metadata_changes = file_compare_metadata_equivalence(&(dbrow->saved_stat),&stat);
-				}
+				const bool path_known = file->db->relative_path_was_in_db_before_processing == true;
 
-				bool file_metadata_identical = db_record_vs_file_metadata_changes == IDENTICAL;
-
-				// Flag that marks files matched by the checksum lock pattern
-				bool locked_checksum_file = false;
-
-				LockChecksum lock_checksum_response = match_checksum_lock_pattern(relative_path,&lock_checksum_showed_once);
+				LockChecksum lock_checksum_response = match_checksum_lock_pattern(relative_path);
 
 				if(FAIL_REGEXP_LOCK_CHECKSUM == lock_checksum_response)
 				{
@@ -374,26 +301,12 @@ Return file_list(TraversalSummary *summary)
 					continue_the_loop = false;
 					break;
 				} else if(LOCK_CHECKSUM == lock_checksum_response){
-					locked_checksum_file = true;
+					// Mark this file as checksum-locked
+					file->locked_checksum_file = true;
 				}
 
-				// Indicates that the checksum-locked file has already been fully hashed and recorded
-				bool lock_checksum_ready = locked_checksum_file == true
-				        && path_known == true
-				        && has_saved_offset == false;
-
-				// Captures files explicitly skipped or forced by regexp filters
-				// Ignored with --ignore= or admitted with --include=
-				bool ignore = false;
-
-				// Included with --include=
-				bool include = false;
-
-				status = match_include_ignore(relative_path,
-					&include,
-					&ignore,
-					&include_showed_once,
-					&ignore_showed_once);
+				// Store the final --include/--ignore decision in the per-file state
+				status = match_include_ignore(relative_path,&file->include,&file->ignore);
 
 				if(SUCCESS != status)
 				{
@@ -402,16 +315,13 @@ Return file_list(TraversalSummary *summary)
 				}
 
 				// Ensure checksum-locked files are tracked even if matched by ignore pattern
-				if(ignore == true && locked_checksum_file == true && path_known == false)
+				if(file->ignore == true && file->locked_checksum_file == true && path_known == false)
 				{
-					ignore = false;
+					file->ignore = false;
 				}
 
 				// Determine read access for non-ignored paths
-				bool is_readable = false;
-
-				/* Check file access */
-				if(ignore == false)
+				if(file->ignore == false)
 				{
 					FileAccessStatus access_status = file_check_access(p->fts_path,(size_t)p->fts_pathlen,R_OK);
 
@@ -422,8 +332,31 @@ Return file_list(TraversalSummary *summary)
 						break;
 					}
 
-					is_readable = (access_status == FILE_ACCESS_ALLOWED);
+					file->is_readable = (access_status == FILE_ACCESS_ALLOWED);
 				}
+
+				// Copy the current metadata once for comparisons, hashing, logging,
+				// and database writes
+				run(stat_copy(p->fts_statp,&file->stat));
+
+				// Validate whether logical size, allocated blocks, and ctime/mtime
+				// changed since the previous scan.
+				// Default value is:
+				file->db_record_vs_file_metadata_changes = NOT_EQUAL;
+
+				if(path_known == true)
+				{
+					// Validate whether logical size, allocated blocks, and ctime/mtime
+					// changed since the previous scan.
+					file->db_record_vs_file_metadata_changes = file_compare_metadata_equivalence(&file->db->saved_stat,&file->stat);
+				}
+
+				bool file_metadata_identical = file->db_record_vs_file_metadata_changes == IDENTICAL;
+				const bool has_saved_offset = file->db->saved_offset > 0;
+				// Indicates that the checksum-locked file has already been fully hashed and recorded
+				bool lock_checksum_ready = file->locked_checksum_file == true
+				        && path_known == true
+				        && has_saved_offset == false;
 
 				// Used to skip files whose metadata and checksum are already up to date
 				bool unchanged_and_complete = path_known == true
@@ -437,9 +370,9 @@ Return file_list(TraversalSummary *summary)
 				}
 
 				// Derived flags to qualify the type of metadata change
-				bool size_changed = (db_record_vs_file_metadata_changes & SIZE_CHANGED) != 0;
+				bool size_changed = (file->db_record_vs_file_metadata_changes & SIZE_CHANGED) != 0;
 
-				bool timestamps_changed = (db_record_vs_file_metadata_changes & (STATUS_CHANGED_TIME | MODIFICATION_TIME_CHANGED)) != 0;
+				bool timestamps_changed = (file->db_record_vs_file_metadata_changes & (STATUS_CHANGED_TIME | MODIFICATION_TIME_CHANGED)) != 0;
 
 				bool timestamps_only_changed = path_known == true
 				        && file_metadata_identical == false
@@ -449,25 +382,21 @@ Return file_list(TraversalSummary *summary)
 
 				// Decision whether to rehash the file contents using
 				// the SHA512 algorithm. Defaults to rehash.
-				bool rehash = true;
+				file->rehash = true;
 
 				if(timestamps_only_changed == true)
 				{
 					// ctime/mtime changed only: update DB without rehash
-					rehash = false;
+					file->rehash = false;
 				}
 
 				if(lock_checksum_ready == true && config->rehash_locked == true)
 				{
-					rehash = true;
+					file->rehash = true;
 				}
-
-				sqlite3_int64 offset = 0;           // Offset bytes
-				SHA512_Context mdContext = {0};
 
 				/* For a file which had been changed before creation
 				   of its checksum has been already finished */
-				bool rehashing_from_the_beginning = false;
 
 				// Can we resume hashing from a previous partial state?
 				bool can_resume_partial_hash = has_saved_offset == true
@@ -479,46 +408,28 @@ Return file_list(TraversalSummary *summary)
 
 				if(can_resume_partial_hash == true)
 				{
-					// Continue hashing
-					offset = dbrow->saved_offset;
-					memcpy(&mdContext,&(dbrow->saved_mdContext),sizeof(SHA512_Context));
+					// Continue hashing from the saved offset and SHA512 context
+					// Restore byte offset from where the previous pass stopped
+					file->checksum_offset = file->db->saved_offset;
+					// Restore SHA512 state to continue from that offset
+					memcpy(&file->mdContext,&file->db->saved_mdContext,sizeof(SHA512_Context));
 
 				} else if(partial_hash_invalidated == true){
 					/* The SHA512 hashing of the file had not been
 					   finished previously and the file has been changed */
-					rehashing_from_the_beginning = true;
+					// Signal that hashing must restart from byte zero
+					file->rehashing_from_the_beginning = true;
 				}
 
 				// Marks zero-length files to avoid unnecessary hashing
-				bool zero_size_file = false;
-
-				/**
-				 * Indicates files that cannot be read/seeks (e.g. sysfs)
-				 *
-				 * On some special file systems (such as /sys, which has
-				 * the SYSFS_MAGIC constant == 0x62656572), standard
-				 * file operations like fopen, fseek, and lseek
-				 * cannot be used for reading and seeking.
-				 * While information about the file itself will be
-				 * recorded in the primary database, due to the
-				 * nature of such files, their hash sum is never
-				 * read and is stored as NULL
-				 */
-				bool wrong_file_type = false;
-
-				// Read error reported by sha512sum for this path
-				bool read_error = false;
-				// errno snapshot from the read error (valid when read_error is true).
-				int read_errno = 0;
-
-				if(stat.st_size == 0)
+				if(file->stat.st_size == 0)
 				{
-					zero_size_file = true;
-					rehash = false;
+					file->zero_size_file = true;
+					file->rehash = false;
 				}
 
 				// Locked checksum files must not diverge once sealed
-				bool lock_checksum_violation = lock_checksum_ready == true
+				file->lock_checksum_violation = lock_checksum_ready == true
 				        && (size_changed == true
 				        || (config->watch_timestamps == true
 				        && config->rehash_locked == false
@@ -536,44 +447,34 @@ Return file_list(TraversalSummary *summary)
 					break;
 				}
 
-				// Buffer for current file SHA512 digest
-				unsigned char sha512[SHA512_DIGEST_LENGTH] = {0};
-
+				// Hard hashing failure that should stop traversal for this pass
 				bool hash_failed = false;
-				bool hash_interrupted = false;
-				bool locked_checksum_mismatch = false; // Detects corruption when rehashing locked files
+				// Controls whether the final outcome for this file should be shown
+				bool show_log = false;
 
-				bool should_process = is_readable == true
-				        && ignore == false
-				        && lock_checksum_violation == false;
+				bool should_process = file->is_readable == true
+				        && file->ignore == false
+				        && file->lock_checksum_violation == false;
 
 				if(should_process == true)
 				{
-					if(rehash == true)
+					if(file->rehash == true)
 					{
 						if(SUCCESS == status)
 						{
 							status = sha512sum(p->fts_path,
 								(size_t)p->fts_pathlen,
 								file_buffer,
-								sha512,
-								&offset,
 								summary,
-								&mdContext,
-#ifdef TESTITALL_TEST_HOOKS
-								stat.st_size,
-#endif
-								&read_error,
-								&read_errno,
-								&wrong_file_type);
+								file);
 						}
 
 						if(TRIUMPH & status)
 						{
 							/* If the sha512sum has been interrupted smoothly when Ctrl+C */
-							if(offset > 0 && global_interrupt_flag == true)
+							if(file->checksum_offset > 0 && global_interrupt_flag == true)
 							{
-								hash_interrupted = true;
+								file->hash_interrupted = true;
 							}
 
 						} else {
@@ -582,42 +483,40 @@ Return file_list(TraversalSummary *summary)
 						}
 
 					} else {
-						memcpy(&sha512,&(dbrow->sha512),sizeof(sha512));
+						// No rehash: reuse the digest stored in the DB
+						memcpy(file->sha512,file->db->sha512,sizeof(file->sha512));
 					}
 
 					if(hash_failed == false
-					        && read_error == false
+					        && file->read_error == false
 					        && config->rehash_locked == true
 					        && lock_checksum_ready == true
-					        && rehash == true
+					        && file->rehash == true
 					        && (TRIUMPH & status)
-					        && wrong_file_type == false
-					        && zero_size_file == false
-					        && offset == 0)
+					        && file->wrong_file_type == false
+					        && file->zero_size_file == false
+					        && file->checksum_offset == 0)
 					{
-						if(memcmp(sha512,dbrow->sha512,SHA512_DIGEST_LENGTH) != 0)
+						if(memcmp(file->sha512,file->db->sha512,SHA512_DIGEST_LENGTH) != 0)
 						{
-							locked_checksum_mismatch = true;
+							// Detects corruption when rehashing locked files
+							file->locked_checksum_mismatch = true;
 						}
 					}
 				}
 
-				bool db_record_inserted = false;
-				bool db_record_updated = false;
-				bool show_log = false;
-
-				if(is_readable != true
-				        || ignore == true
-				        || lock_checksum_violation == true
+				if(file->is_readable != true
+				        || file->ignore == true
+				        || file->lock_checksum_violation == true
 				        || hash_failed == true
-				        || read_error == true
-				        || locked_checksum_mismatch == true)
+				        || file->read_error == true
+				        || file->locked_checksum_mismatch == true)
 				{
 					show_log = true;
 
 					/* When a checksum-locked file changed;
 					   blocks rehash/DB update and flags corruption */
-					if((lock_checksum_violation == true || locked_checksum_mismatch == true) && read_error == false)
+					if((file->lock_checksum_violation == true || file->locked_checksum_mismatch == true) && file->read_error == false)
 					{
 						lock_checksum_violation_detected = true;
 						config->show_remembered_messages_at_exit = true;
@@ -625,16 +524,17 @@ Return file_list(TraversalSummary *summary)
 
 				} else if(path_known == true){
 					/* Update in DB */
+					show_log = true;
 
-					bool allow_locked_update = lock_checksum_violation == false
-					        && (locked_checksum_file == false
+					bool allow_locked_update = file->lock_checksum_violation == false
+					        && (file->locked_checksum_file == false
 					        || config->rehash_locked == true
 					        || has_saved_offset == true);
 
 					bool should_update_db = path_known == true
 					        && allow_locked_update == true
-					        && (offset > dbrow->saved_offset
-					        || (has_saved_offset == true && offset == 0)
+					        && (file->checksum_offset > file->db->saved_offset
+					        || (has_saved_offset == true && file->checksum_offset == 0)
 					        || file_metadata_identical == false);
 
 					if(should_update_db == true)
@@ -642,25 +542,19 @@ Return file_list(TraversalSummary *summary)
 						/* Update record in DB */
 						if(TRIUMPH & status)
 						{
-							status = db_update_the_record_by_id(&(dbrow->ID),
-								&offset,
-								sha512,
-								&stat,
-								&mdContext,
-								&zero_size_file,
-								&wrong_file_type);
+							status = db_update_the_record_by_id(&file->db->ID,file);
 
 							if((TRIUMPH & status) == 0)
 							{
 								continue_the_loop = false;
 								break;
 							}
-							db_record_updated = true;
+							// Record that the DB row was updated
+							file->db_record_updated = true;
 						}
 					}
-
-					show_log = true;
 				} else {
+					show_log = true;
 
 					/* Insert into DB */
 					if(TRIUMPH & status)
@@ -668,20 +562,9 @@ Return file_list(TraversalSummary *summary)
 #if 0 // Old multiPATH solution
 						status = db_insert_the_record(&runtime_root_index,
 							relative_path,
-							&offset,
-							sha512,
-							&stat,
-							&mdContext,
-							&zero_size_file,
-							&wrong_file_type);
+							file);
 #else
-						status = db_insert_the_record(relative_path,
-							&offset,
-							sha512,
-							&stat,
-							&mdContext,
-							&zero_size_file,
-							&wrong_file_type);
+						status = db_insert_the_record(relative_path,file);
 #endif
 
 						if((TRIUMPH & status) == 0)
@@ -689,36 +572,18 @@ Return file_list(TraversalSummary *summary)
 							continue_the_loop = false;
 							break;
 						}
-						db_record_inserted = true;
+						// Record that a new DB row was inserted
+						file->new_db_record_inserted = true;
 					}
-
-					show_log = true;
 				}
 
 				if(show_log == true)
 				{
 					// Print out of a file name and its changes
-					show_file(dbrow,
-						relative_path,
-						&stat,
+					show_file(relative_path,
 						&first_iteration,
 						summary,
-						db_record_vs_file_metadata_changes,
-						rehashing_from_the_beginning,
-						ignore,
-						include,
-						locked_checksum_file,
-						lock_checksum_violation,
-						locked_checksum_mismatch,
-						hash_interrupted,
-						offset,
-						rehash,
-						is_readable,
-						zero_size_file,
-						db_record_inserted,
-						db_record_updated,
-						read_error,
-						read_errno);
+						file);
 				}
 
 				break;

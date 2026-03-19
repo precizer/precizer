@@ -37,10 +37,8 @@ static const Flags *lookup(
  *
  */
 static void print_changes(
-	LOGMODES        level,
-	Changed         db_record_vs_file_metadata_changes,
-	const DBrow     *dbrow,
-	const CmpctStat *stat)
+	LOGMODES     level,
+	const File  *file)
 {
 	const unsigned int log_level = (unsigned int)(level | UNDECOR);
 
@@ -78,7 +76,7 @@ static void print_changes(
 			break;
 		}
 
-		if(db_record_vs_file_metadata_changes & flag->flag_value)
+		if(file->db_record_vs_file_metadata_changes & flag->flag_value)
 		{
 			/* Add separator if not the first flag */
 			if(flags_found > 0)
@@ -90,7 +88,7 @@ static void print_changes(
 
 			slog(log_level,"%s",flag->flag_name);
 
-			show_metadata(level,flag->flag_value,&dbrow->saved_stat,stat);
+			show_metadata(level,flag->flag_value,&file->db->saved_stat,&file->stat);
 
 			flags_found++;
 		}
@@ -227,60 +225,43 @@ void slog_show_impl(
  *
  */
 void show_file(
-	const DBrow         *dbrow,
-	const char          *relative_path,
-	const CmpctStat     *stat,
-	bool                *first_iteration,
-	TraversalSummary    *summary,
-	const Changed       db_record_vs_file_metadata_changes,
-	const bool          rehashing_from_the_beginning,
-	const bool          ignore,
-	const bool          include,
-	const bool          locked_checksum_file,
-	const bool          lock_checksum_violation,
-	const bool          locked_checksum_mismatch,
-	const bool          hash_interrupted,
-	const sqlite3_int64 checksum_offset,
-	const bool          rehash,
-	const bool          is_readable,
-	const bool          zero_size_file,
-	const bool          db_record_inserted,
-	const bool          db_record_updated,
-	const bool          read_error,
-	const int           read_errno)
+	const char       *relative_path,
+	bool             *first_iteration,
+	TraversalSummary *summary,
+	const File       *file)
 {
-	if(ignore == true)
+	if(file->ignore == true)
 	{
-		if(dbrow->relative_path_was_in_db_before_processing == false)
+		if(file->db->relative_path_was_in_db_before_processing == false)
 		{
 			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignore & do not add %s\n",relative_path);
 		} else {
 			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignored & do not update %s\n",relative_path);
 		}
 
-	} else if(read_error == true){
+	} else if(file->read_error == true){
 
-		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"error \"%s\" when reading %s\n",strerror(read_errno),relative_path);
+		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"error \"%s\" when reading %s\n",strerror(file->read_errno),relative_path);
 
-	} else if(is_readable == false){
+	} else if(file->is_readable == false){
 
 		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible file %s\n",relative_path);
 
-	} else if(dbrow->relative_path_was_in_db_before_processing == false){
+	} else if(file->db->relative_path_was_in_db_before_processing == false){
 
 		/* Add new */
 
-		if(db_record_inserted == true)
+		if(file->new_db_record_inserted == true)
 		{
-			if(include == true)
+			if(file->include == true)
 			{
 				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"add included %s\n",relative_path);
 
-			} else if(locked_checksum_file == true){
+			} else if(file->locked_checksum_file == true){
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"lock checksum %s\n",relative_path);
 
-			} else if(zero_size_file == true){
+			} else if(file->zero_size_file == true){
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"add as empty %s\n",relative_path);
 
@@ -294,78 +275,78 @@ void show_file(
 
 		/* Update existing */
 
-		if(locked_checksum_mismatch == true)
+		if(file->locked_checksum_mismatch == true)
 		{
 
 			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
 
-		} else if(lock_checksum_violation == true){
+		} else if(file->lock_checksum_violation == true){
 
 			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked, data corruption detected" RESET);
 
-			print_changes(EVERY|REMEMBER,db_record_vs_file_metadata_changes,dbrow,stat);
+			print_changes(EVERY|REMEMBER,file);
 
 			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary," %s\n",relative_path);
 
-		} else if(db_record_updated == true && include == true){
+		} else if(file->db_record_updated == true && file->include == true){
 
 			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"update included");
 
-			print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
+			print_changes(EVERY,file);
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
-		} else if(db_record_updated == true && zero_size_file == true){
+		} else if(file->db_record_updated == true && file->zero_size_file == true){
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update as empty");
 
-			print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
+			print_changes(EVERY,file);
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
-		} else if(rehash == true){
+		} else if(file->rehash == true){
 
-			if(rehashing_from_the_beginning == true)
+			if(file->rehashing_from_the_beginning == true)
 			{
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"rehash from the beginning");
 
-				print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
+				print_changes(EVERY,file);
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
-			} else if(dbrow->saved_offset > 0){
+			} else if(file->db->saved_offset > 0){
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"continue to rehash from %s %s\n",bkbmbgbtbpbeb((const size_t)dbrow->saved_offset,FULL_VIEW),relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"continue to rehash from %s %s\n",bkbmbgbtbpbeb((const size_t)file->db->saved_offset,FULL_VIEW),relative_path);
 
-			} else if(locked_checksum_file == true){
+			} else if(file->locked_checksum_file == true){
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"locked rehash ok");
 
-				print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
+				print_changes(EVERY,file);
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 
-			} else if(db_record_updated == true){
+			} else if(file->db_record_updated == true){
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update & rehash");
 
-				print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
+				print_changes(EVERY,file);
 
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 			}
 
-		} else if(db_record_updated == true){
+		} else if(file->db_record_updated == true){
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary,"update stat");
 
-			print_changes(EVERY,db_record_vs_file_metadata_changes,dbrow,stat);
+			print_changes(EVERY,file);
 
 			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
 		}
 	}
 
-	if(hash_interrupted == true)
+	if(file->hash_interrupted == true)
 	{
-		slog_show(EVERY,false,first_iteration,summary,"SHA512 checksum for the file %s has been gracefully interrupted at byte: %s\n",relative_path,bkbmbgbtbpbeb((size_t)checksum_offset,FULL_VIEW));
+		slog_show(EVERY,false,first_iteration,summary,"SHA512 checksum for the file %s has been gracefully interrupted at byte: %s\n",relative_path,bkbmbgbtbpbeb((size_t)file->checksum_offset,FULL_VIEW));
 	}
 }

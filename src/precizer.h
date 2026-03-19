@@ -547,6 +547,90 @@ typedef struct {
 
 } TraversalSummary;
 
+/**
+ * @brief Per-file processing state for one FTS_F iteration
+ *
+ * Carries the database row loaded for the current relative path together with
+ * the transient scan, hashing, and reporting state accumulated while the file
+ * is being processed
+ */
+typedef struct {
+
+	/// Database row loaded for this path before processing begins.
+	/// Points to a stack-allocated row prepared by the caller and attached to File.
+	/// The row starts zeroed, so relative_path_was_in_db_before_processing
+	/// is false when the path is not yet present in the database
+	DBrow *db;
+
+	/// Set when a file changed while its initial hash was not yet complete,
+	/// requiring a full rehash from the beginning
+	bool rehashing_from_the_beginning;
+
+	/// True when this path remains excluded after applying --ignore and --include
+	bool ignore;
+
+	/// True when the path was explicitly selected or restored by --include
+	bool include;
+
+	/// Flag that marks files matched by the checksum lock pattern
+	bool locked_checksum_file;
+
+	/// Locked checksum files must not diverge once sealed
+	bool lock_checksum_violation;
+
+	/// Detects corruption when rehashing locked files
+	bool locked_checksum_mismatch;
+
+	/// Set when SHA512 hashing was gracefully interrupted (e.g. Ctrl+C)
+	/// with a non-zero offset saved for later resumption
+	bool hash_interrupted;
+
+	/// Decision whether to rehash the file contents using the SHA512 algorithm.
+	/// Defaults to true
+	bool rehash;
+
+	/// Read access flag for non-ignored paths
+	bool is_readable;
+
+	/// Marks zero-length files to avoid unnecessary hashing
+	bool zero_size_file;
+
+	/// True when a new database record was successfully inserted for this file
+	bool new_db_record_inserted;
+
+	/// True when an existing database record was successfully updated for this file
+	bool db_record_updated;
+
+	/// Set by sha512sum() when reading this file fails
+	bool read_error;
+
+	/// Bitmask of metadata differences between the saved DB record and the current file.
+	/// Default value is NOT_EQUAL
+	Changed db_record_vs_file_metadata_changes;
+
+	/// Current byte offset into the file for incremental SHA512 hashing.
+	/// Zero means the hash was completed or not yet started
+	sqlite3_int64 checksum_offset;
+
+	/// errno snapshot captured by sha512sum() when read_error is true
+	int read_errno;
+
+	/// Indicates files that cannot be read or seeked, such as sysfs special files.
+	/// When this flag is set, metadata is stored but the checksum is written as NULL
+	bool wrong_file_type;
+
+	/// SHA512 digest computed for this file.
+	/// All-zero when not yet computed, file is empty, or wrong_file_type is set
+	unsigned char sha512[SHA512_DIGEST_LENGTH];
+
+	/// SHA512 incremental hashing context, used for resumable hashing
+	SHA512_Context mdContext;
+
+	/// Current filesystem metadata copied from fts_statp for comparisons and DB writes
+	CmpctStat stat;
+
+} File;
+
 /*
  *
  * Prototypes of internal functions
@@ -584,19 +668,11 @@ void show_statistics(const TraversalSummary *);
 void show_elapsed(const TraversalSummary *);
 
 Return sha512sum(
-	const char *,
+	const char       *,
 	const size_t,
-	memory *,
-	unsigned char *,
-	sqlite3_int64 *,
+	memory           *,
 	TraversalSummary *,
-	SHA512_Context *,
-#ifdef TESTITALL_TEST_HOOKS
-	const off_t,
-#endif
-	bool *,
-	int *,
-	bool *);
+	File             *);
 
 #ifdef TESTITALL_TEST_HOOKS
 /**
@@ -625,8 +701,7 @@ const char *extract_relative_path(
 	const char *) __attribute__ ((pure));
 
 LockChecksum match_checksum_lock_pattern(
-	const char *,
-	bool *);
+	const char *);
 
 /**
  * @brief Allocate an absolute-path string from a relative or absolute input path
@@ -674,11 +749,6 @@ void init_config(void);
 
 Return init_signals(void);
 
-Return db_finalize(
-	sqlite3 *,
-	const char *,
-	sqlite3_stmt **);
-
 void log_sqlite_error(
 	sqlite3 *,
 	int,
@@ -710,26 +780,16 @@ Return db_vacuum(const char *);
 Return db_primary_consider_vacuum(void);
 
 Return db_read_file_data_from(
-	DBrow *,
+	File *,
 	const char *);
 
 Return db_update_the_record_by_id(
 	const sqlite3_int64 *,
-	const sqlite3_int64 *,
-	const unsigned char *,
-	const CmpctStat *,
-	const SHA512_Context *,
-	const bool *,
-	const bool *);
+	const File          *);
 
 Return db_insert_the_record(
 	const char *,
-	const sqlite3_int64 *,
-	const unsigned char *,
-	const CmpctStat *,
-	const SHA512_Context *,
-	const bool *,
-	const bool *);
+	const File *);
 
 Return db_determine_name(void);
 
@@ -745,7 +805,7 @@ Return db_contains_data(void);
 
 Return db_primary_file_validate_existence(void);
 
-Return db_test(const char *);
+Return db_integrity_check(const char *);
 
 Return db_get_version(
 	int *,
@@ -811,27 +871,10 @@ void slog_show_impl(
 	...);
 
 void show_file(
-	const DBrow *,
-	const char *,
-	const CmpctStat *,
-	bool *,
+	const char       *,
+	bool             *,
 	TraversalSummary *,
-	const Changed,
-	const bool,
-	const bool,
-	const bool,
-	const bool,
-	const bool,
-	const bool,
-	const bool,
-	const sqlite3_int64,
-	const bool,
-	const bool,
-	const bool,
-	const bool,
-	const bool,
-	const bool,
-	const int);
+	const File       *);
 
 void directory_show(
 	const char *,
@@ -894,17 +937,19 @@ FileAvailability file_availability(
 Return paths_detect(void);
 
 Ignore match_ignore_pattern(
-	const char *,
-	bool *);
+	const char *);
 
 Include match_include_pattern(
+	const char *);
+
+Return match_include_ignore(
 	const char *,
+	bool *,
 	bool *);
 
 REGEXP match_regexp(
 	pcre2_code *,
-	const char *,
-	bool       *);
+	const char *);
 
 /**
  * @brief Compile all PCRE2 pattern strings stored in Config into pcre2_code objects

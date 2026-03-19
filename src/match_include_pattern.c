@@ -35,6 +35,6 @@ Include match_include_pattern(
 		}
 	}
 
-	// Don't ignore the file
+	// No --include pattern matched
 	return(DO_NOT_INCLUDE);
 }

@@ -34,6 +34,6 @@ Ignore match_ignore_pattern(
 		}
 	}
 
-	// Don't ignore the file
+	// No --ignore pattern matched
 	return(DO_NOT_IGNORE);
 }
