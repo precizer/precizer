@@ -966,9 +966,9 @@ static Return copy_absolute_path(
 			status = FAILURE;
 		}
 
-		if(SUCCESS == status && destination_exists == true && S_ISLNK(destination_stat.st_mode))
+		if(SUCCESS == status)
 		{
-			if(unlink(destination_absolute_path) != 0)
+			if(unlink(destination_absolute_path) != 0 && errno != ENOENT)
 			{
 				status = FAILURE;
 			}
