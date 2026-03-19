@@ -542,7 +542,7 @@ Return file_list(TraversalSummary *summary)
 						/* Update record in DB */
 						if(TRIUMPH & status)
 						{
-							status = db_update_the_record_by_id(&file->db->ID,file);
+							status = db_update_the_record_by_id(file);
 
 							if((TRIUMPH & status) == 0)
 							{

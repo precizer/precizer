@@ -784,8 +784,7 @@ Return db_read_file_data_from(
 	const char *);
 
 Return db_update_the_record_by_id(
-	const sqlite3_int64 *,
-	const File          *);
+	const File *);
 
 Return db_insert_the_record(
 	const char *,
