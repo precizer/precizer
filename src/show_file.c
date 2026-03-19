@@ -37,8 +37,8 @@ static const Flags *lookup(
  *
  */
 static void print_changes(
-	LOGMODES     level,
-	const File  *file)
+	LOGMODES   level,
+	const File *file)
 {
 	const unsigned int log_level = (unsigned int)(level | UNDECOR);
 

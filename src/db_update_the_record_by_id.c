@@ -16,8 +16,7 @@
  *
  * @note In dry run mode, the function returns SUCCESS without modifying the database
  */
-Return db_update_the_record_by_id(
-	const File *file)
+Return db_update_the_record_by_id(const File *file)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */

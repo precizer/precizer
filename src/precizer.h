@@ -668,11 +668,11 @@ void show_statistics(const TraversalSummary *);
 void show_elapsed(const TraversalSummary *);
 
 Return sha512sum(
-	const char       *,
+	const char *,
 	const size_t,
-	memory           *,
+	memory *,
 	TraversalSummary *,
-	File             *);
+	File *);
 
 #ifdef TESTITALL_TEST_HOOKS
 /**
@@ -700,8 +700,7 @@ const char *extract_relative_path(
 	const char *,
 	const char *) __attribute__ ((pure));
 
-LockChecksum match_checksum_lock_pattern(
-	const char *);
+LockChecksum match_checksum_lock_pattern(const char *);
 
 /**
  * @brief Allocate an absolute-path string from a relative or absolute input path
@@ -715,8 +714,8 @@ LockChecksum match_checksum_lock_pattern(
  * @return Return status code
  */
 Return path_absolute_from_relative(
-	char         **,
-	const char   *,
+	char **,
+	const char *,
 	const size_t);
 
 /**
@@ -783,8 +782,7 @@ Return db_read_file_data_from(
 	File *,
 	const char *);
 
-Return db_update_the_record_by_id(
-	const File *);
+Return db_update_the_record_by_id(const File *);
 
 Return db_insert_the_record(
 	const char *,
@@ -870,10 +868,10 @@ void slog_show_impl(
 	...);
 
 void show_file(
-	const char       *,
-	bool             *,
+	const char *,
+	bool *,
 	TraversalSummary *,
-	const File       *);
+	const File *);
 
 void directory_show(
 	const char *,
@@ -935,11 +933,9 @@ FileAvailability file_availability(
 
 Return paths_detect(void);
 
-Ignore match_ignore_pattern(
-	const char *);
+Ignore match_ignore_pattern(const char *);
 
-Include match_include_pattern(
-	const char *);
+Include match_include_pattern(const char *);
 
 Return match_include_ignore(
 	const char *,

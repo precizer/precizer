@@ -27,8 +27,8 @@
  * @note In dry run mode, the function returns SUCCESS without modifying the database
  */
 Return db_insert_the_record(
-	const char     *relative_path,
-	const File     *file)
+	const char *relative_path,
+	const File *file)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
