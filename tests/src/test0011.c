@@ -370,14 +370,13 @@ static Return test0011_7(void)
  *
  * The Example 8 from README
  * Using the --ignore options together with --include
+ * Also covers the compare example that narrows the reported comparison scope
  *
  *
  */
 static Return test0011_8(void)
 {
 	INITTEST;
-
-	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const char *arguments = "tests/fixtures/diffs";
 
@@ -395,7 +394,7 @@ static Return test0011_8(void)
 	        " --db-drop-ignored"
 	        " tests/fixtures/diffs";
 
-	const char *filename = "templates/0011_008.txt";
+	const char *filename = "templates/0011_008_1.txt";
 
 	const char *template = "%DB_NAME%";
 
@@ -406,6 +405,36 @@ static Return test0011_8(void)
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
 	ASSERT(SUCCESS == delete_path(replacement));
+
+	create(char,result);
+	create(char,pattern);
+
+	arguments = "--progress --database=database1.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--progress --database=database2.db tests/fixtures/diffs/diff2";
+
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--compare"
+		" --ignore=\"^(?:2|3|4)/.*\""
+		" --ignore=\"^path1/.*\""
+		" --ignore=\"^path2/.*\""
+		" --include=\"^2/AAA/BBB/CZC/a\\.txt$\""
+		" database1.db database2.db";
+
+	filename = "templates/0011_008_2.txt";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	del(pattern);
+	del(result);
+
+	ASSERT(SUCCESS == delete_path("database1.db"));
+	ASSERT(SUCCESS == delete_path("database2.db"));
 
 	RETURN_STATUS;
 }
@@ -428,7 +457,7 @@ Return test0011(void)
 	TEST(test0011_5,"README Example 5 Disable recursion with --maxdepth…");
 	TEST(test0011_6,"README Example 6 Relative path to ignore with --ignore…");
 	TEST(test0011_7,"README Example 7 Multiple regexp for ignoring…");
-	TEST(test0011_8,"README Example 8 The --ignore options together with --include…");
+	TEST(test0011_8,"README Example 8 The --ignore options together with --include, including the compare-scope example…");
 	SUTE(test0030,"README Examples 9 & 10: --lock-checksum with --rehash-locked and --watch-timestamps…");
 	SUTE(test0029,"README Example 11: Testing how the application behaves with inaccessible files…");
 

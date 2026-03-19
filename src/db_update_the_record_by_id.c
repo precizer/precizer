@@ -5,11 +5,10 @@
  * @details Update information about the file, its
  * metadata and checksum against the database
  *
- * @param[in] ID Database record identifier
- * @param[in] offset File offset value
- * @param[in] sha512 SHA512 checksum
- * @param[in] stat File metadata structure
- * @param[in] mdContext SHA512 context
+ * @param[in] file Per-file state object. Uses db->ID when selecting the row
+ *                 and uses checksum_offset, sha512, stat, mdContext,
+ *                 zero_size_file, and wrong_file_type when binding the updated
+ *                 row values
  *
  * @return Return status code:
  *         - SUCCESS: Record updated successfully
@@ -17,14 +16,7 @@
  *
  * @note In dry run mode, the function returns SUCCESS without modifying the database
  */
-Return db_update_the_record_by_id(
-	const sqlite3_int64  *ID,
-	const sqlite3_int64  *offset,
-	const unsigned char  *sha512,
-	const CmpctStat      *stat,
-	const SHA512_Context *mdContext,
-	const bool           *zero_size_file,
-	const bool           *wrong_file_type)
+Return db_update_the_record_by_id(const File *file)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -54,11 +46,11 @@ Return db_update_the_record_by_id(
 	/* Bind offset value */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0)
+		if(file->checksum_offset == 0)
 		{
 			rc = sqlite3_bind_null(update_stmt,1);
 		} else {
-			rc = sqlite3_bind_int64(update_stmt,1,*offset);
+			rc = sqlite3_bind_int64(update_stmt,1,file->checksum_offset);
 		}
 
 		if(SQLITE_OK != rc)
@@ -70,7 +62,7 @@ Return db_update_the_record_by_id(
 
 	if(SUCCESS == status)
 	{
-		rc = sqlite3_bind_int64(update_stmt,5,*ID);
+		rc = sqlite3_bind_int64(update_stmt,5,file->db->ID);
 
 		if(SQLITE_OK != rc)
 		{
@@ -82,9 +74,9 @@ Return db_update_the_record_by_id(
 	/* Bind SHA512 checksum */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0 && *zero_size_file == false && *wrong_file_type == false)
+		if(file->checksum_offset == 0 && file->zero_size_file == false && file->wrong_file_type == false)
 		{
-			rc = sqlite3_bind_blob(update_stmt,2,sha512,SHA512_DIGEST_LENGTH,NULL);
+			rc = sqlite3_bind_blob(update_stmt,2,file->sha512,SHA512_DIGEST_LENGTH,NULL);
 		} else {
 			rc = sqlite3_bind_null(update_stmt,2);
 		}
@@ -99,7 +91,7 @@ Return db_update_the_record_by_id(
 	/* Copy and bind file metadata */
 	if(SUCCESS == status)
 	{
-		rc = sqlite3_bind_blob(update_stmt,3,stat,sizeof(CmpctStat),NULL);
+		rc = sqlite3_bind_blob(update_stmt,3,&file->stat,sizeof(CmpctStat),NULL);
 
 		if(SQLITE_OK != rc)
 		{
@@ -111,11 +103,11 @@ Return db_update_the_record_by_id(
 	/* Bind SHA512 context */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0)
+		if(file->checksum_offset == 0)
 		{
 			rc = sqlite3_bind_null(update_stmt,4);
 		} else {
-			rc = sqlite3_bind_blob(update_stmt,4,mdContext,sizeof(SHA512_Context),NULL);
+			rc = sqlite3_bind_blob(update_stmt,4,&file->mdContext,sizeof(SHA512_Context),NULL);
 		}
 
 		if(SQLITE_OK != rc)

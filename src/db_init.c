@@ -167,8 +167,7 @@ Return db_init(void)
 			        "PRAGMA synchronous=NORMAL; "        // Balance speed and safety (NORMAL = fsync only for checkpoints)
 			        "PRAGMA temp_store=MEMORY; "         // Store temporary tables in memory (not on disk)
 			        "PRAGMA strict=ON;"                  // Enforce STRICT table schema validation
-			        "PRAGMA locking_mode=EXCLUSIVE;"     // Hold exclusive locks for the session
-			        "PRAGMA fsync=OFF;";                 // Disables fsync() for faster writes but risks data loss on crash
+			        "PRAGMA locking_mode=EXCLUSIVE;";    // Hold exclusive locks for the session
 		}
 
 		// Set SQLite pragmas

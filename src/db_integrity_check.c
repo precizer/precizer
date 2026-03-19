@@ -11,7 +11,7 @@
  *         - SUCCESS: Database validation passed successfully
  *         - FAILURE: Database validation failed or errors occurred
  */
-Return db_test(const char *db_file_path)
+Return db_integrity_check(const char *db_file_path)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */

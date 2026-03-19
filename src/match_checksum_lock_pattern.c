@@ -1,26 +1,25 @@
 #include "precizer.h"
 
 /**
+ * @brief Decide whether to protect a relative path from checksum recalculation
  *
- * Decide whether or not to protect the relative
- * path from checksum recalculation by comparing it
- * with PCRE2 regular expressions passed as arguments
- * with --lock-checksum=
+ * Compares the path against PCRE2 patterns supplied via --lock-checksum=
  *
+ * @param[in] relative_path Relative path to test
+ * @return LOCK_CHECKSUM if matched, DO_NOT_LOCK_CHECKSUM if not,
+ *         FAIL_REGEXP_LOCK_CHECKSUM on PCRE2 error
  */
-LockChecksum match_checksum_lock_pattern(
-	const char *relative_path,
-	bool       *lock_checksum_showed_once)
+LockChecksum match_checksum_lock_pattern(const char *relative_path)
 {
-	if(config->lock_checksum == NULL)
+	if(config->lock_checksum_pcre_compiled == NULL)
 	{
 		// Nothing to lock
 		return(DO_NOT_LOCK_CHECKSUM);
 	}
 
-	for(int i = 0; config->lock_checksum[i] != NULL; ++i)
+	for(int i = 0; config->lock_checksum_pcre_compiled[i] != NULL; ++i)
 	{
-		REGEXP result = regexp_match(config->lock_checksum[i],relative_path,lock_checksum_showed_once);
+		REGEXP result = match_regexp(config->lock_checksum_pcre_compiled[i],relative_path);
 
 		if(MATCH == result)
 		{

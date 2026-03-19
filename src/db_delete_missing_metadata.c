@@ -93,10 +93,7 @@ Return db_delete_missing_metadata(void)
 				 *
 				 */
 
-				// Don't show extra messages
-				bool showed_once = true;
-
-				Include match_include_response = match_include_pattern(relative_path,&showed_once);
+				Include match_include_response = match_include_pattern(relative_path);
 
 				if(DO_NOT_INCLUDE == match_include_response)
 				{
@@ -106,7 +103,7 @@ Return db_delete_missing_metadata(void)
 					 *
 					 */
 
-					Ignore match_ignore_response = match_ignore_pattern(relative_path,&showed_once);
+					Ignore match_ignore_response = match_ignore_pattern(relative_path);
 
 					if(IGNORE == match_ignore_response)
 					{

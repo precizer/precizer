@@ -1,25 +1,26 @@
 #include "precizer.h"
 
 /**
+ * @brief Decide whether to explicitly include a relative path
  *
- * Decide whether or not to include previously ignored relative
- * path to the file by comparing it with PCRE2 regular
- * expressions passed as arguments with --include=
+ * Compares the path against PCRE2 patterns supplied via --include=
+ * A match overrides any --ignore pattern for the same path
  *
+ * @param[in] relative_path Relative path to test
+ * @return INCLUDE if matched, DO_NOT_INCLUDE if not,
+ *         FAIL_REGEXP_INCLUDE on PCRE2 error
  */
-Include match_include_pattern(
-	const char *relative_path,
-	bool       *include_showed_once)
+Include match_include_pattern(const char *relative_path)
 {
-	if(config->include == NULL)
+	if(config->include_pcre_compiled == NULL)
 	{
 		// Nothing to include
 		return(DO_NOT_INCLUDE);
 	}
 
-	for(int i = 0; config->include[i] != NULL; ++i)
+	for(int i = 0; config->include_pcre_compiled[i] != NULL; ++i)
 	{
-		REGEXP result = regexp_match(config->include[i],relative_path,include_showed_once);
+		REGEXP result = match_regexp(config->include_pcre_compiled[i],relative_path);
 
 		if(MATCH == result)
 		{
@@ -33,6 +34,6 @@ Include match_include_pattern(
 		}
 	}
 
-	// Don't ignore the file
+	// No --include pattern matched
 	return(DO_NOT_INCLUDE);
 }

@@ -16,10 +16,9 @@
  *          and partial records where some fields may be NULL.
  *
  * @param[in] relative_path Path to the file relative to the root directory
- * @param[in] offset       File offset value, 0 indicates no offset
- * @param[in] sha512       SHA512 checksum of the file, NULL if offset is non-zero
- * @param[in] stat         File metadata structure
- * @param[in] mdContext    SHA512 context structure, NULL if offset is zero
+ * @param[in] file Per-file state object. Uses checksum_offset, sha512, stat,
+ *                 mdContext, zero_size_file, and wrong_file_type when binding
+ *                 the row values
  *
  * @return Return status code:
  *         - SUCCESS: Record inserted successfully
@@ -28,13 +27,8 @@
  * @note In dry run mode, the function returns SUCCESS without modifying the database
  */
 Return db_insert_the_record(
-	const char           *relative_path,
-	const sqlite3_int64  *offset,
-	const unsigned char  *sha512,
-	const CmpctStat      *stat,
-	const SHA512_Context *mdContext,
-	const bool           *zero_size_file,
-	const bool           *wrong_file_type)
+	const char *relative_path,
+	const File *file)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -68,11 +62,11 @@ Return db_insert_the_record(
 	/* Bind offset value */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0)
+		if(file->checksum_offset == 0)
 		{
 			rc = sqlite3_bind_null(insert_stmt,1);
 		} else {
-			rc = sqlite3_bind_int64(insert_stmt,1,*offset);
+			rc = sqlite3_bind_int64(insert_stmt,1,file->checksum_offset);
 		}
 
 		if(SQLITE_OK != rc)
@@ -97,9 +91,9 @@ Return db_insert_the_record(
 	/* Bind SHA512 checksum */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0 && *zero_size_file == false && *wrong_file_type == false)
+		if(file->checksum_offset == 0 && file->zero_size_file == false && file->wrong_file_type == false)
 		{
-			rc = sqlite3_bind_blob(insert_stmt,3,sha512,SHA512_DIGEST_LENGTH,NULL);
+			rc = sqlite3_bind_blob(insert_stmt,3,file->sha512,SHA512_DIGEST_LENGTH,NULL);
 		} else {
 			rc = sqlite3_bind_null(insert_stmt,3);
 		}
@@ -114,7 +108,7 @@ Return db_insert_the_record(
 	/* Copy and bind file metadata */
 	if(SUCCESS == status)
 	{
-		rc = sqlite3_bind_blob(insert_stmt,4,stat,sizeof(CmpctStat),NULL);
+		rc = sqlite3_bind_blob(insert_stmt,4,&file->stat,sizeof(CmpctStat),NULL);
 
 		if(SQLITE_OK != rc)
 		{
@@ -126,11 +120,11 @@ Return db_insert_the_record(
 	/* Bind SHA512 context */
 	if(SUCCESS == status)
 	{
-		if(*offset == 0)
+		if(file->checksum_offset == 0)
 		{
 			rc = sqlite3_bind_null(insert_stmt,5);
 		} else {
-			rc = sqlite3_bind_blob(insert_stmt,5,mdContext,sizeof(SHA512_Context),NULL);
+			rc = sqlite3_bind_blob(insert_stmt,5,&file->mdContext,sizeof(SHA512_Context),NULL);
 		}
 
 		if(SQLITE_OK != rc)

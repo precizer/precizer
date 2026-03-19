@@ -4,7 +4,9 @@
  * @brief Validates the existence of the primary database file
  * @details Checks if the primary database file exists and is accessible. Updates the
  *    global config->db_primary_file_exists flag based on the check result.
- *    The function attempts to access the file using the path stored
+ *    When the file exists, its metadata is stored in config->db_file_stat in a
+ *    single stat() call to avoid a TOCTOU race between existence check and metadata
+ *    retrieval. The function attempts to access the file using the path stored
  *    in the global configuration config->db_primary_file_path
  *
  * @return Return status code indicating the operation result:
@@ -16,6 +18,7 @@
  *
  * @see config->db_primary_file_exists
  * @see config->db_primary_file_path
+ * @see config->db_file_stat
  */
 Return db_primary_file_validate_existence(void)
 {
@@ -53,7 +56,7 @@ Return db_primary_file_validate_existence(void)
 
 		char *db_file_dir = dirname(db_file_full_path);
 
-		if(NOT_FOUND == file_availability(db_file_dir,SHOULD_BE_A_DIRECTORY))
+		if(NOT_FOUND == file_availability(db_file_dir,NULL,SHOULD_BE_A_DIRECTORY))
 		{
 			slog(ERROR,"Unable to create database file. Directory %s not found\n",db_file_dir);
 			status = FAILURE;
@@ -63,18 +66,9 @@ Return db_primary_file_validate_existence(void)
 
 		if(SUCCESS == status)
 		{
-			if(EXISTS == file_availability(db_primary_file_path,SHOULD_BE_A_FILE))
+			if(EXISTS == file_availability(db_primary_file_path,&config->db_file_stat,SHOULD_BE_A_FILE))
 			{
 				config->db_primary_file_exists = true;
-
-				int rc = stat(db_primary_file_path,&config->db_file_stat);
-
-				if(rc < 0)
-				{
-					report("Stat of %s failed with error code: %d",db_primary_file_path,rc);
-					status = FAILURE;
-				}
-
 			} else {
 				config->db_primary_file_exists = false;
 			}

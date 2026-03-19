@@ -48,36 +48,28 @@ static uint64_t random_stop_byte(const uint64_t file_size)
 /**
  * @brief Calculate SHA512 cryptographic hash of a file, optionally resuming from offset.
  *
- * Reads file data starting from @p offset, updates @p mdContext, increments
- * @p summary->total_hashed_bytes for each processed chunk, and accumulates
+ * Reads file data starting from @p file->checksum_offset, updates @p file->mdContext,
+ * increments @p summary->total_hashed_bytes for each processed chunk, and accumulates
  * per-call hashing elapsed time into @p summary->total_hashing_elapsed_ns.
  *
  * @param path File path (relative or absolute).
  * @param path_size Length of @p path.
  * @param file_buffer Read buffer descriptor.
- * @param sha512 Output digest buffer (written after finalization).
- * @param offset In/out byte offset for resume/interruption handling.
  * @param summary Traversal counters updated with hashed byte count and hashing time.
- * @param mdContext SHA512 context for incremental hashing.
- * @param read_error Output flag set when reading fails.
- * @param read_errno Output errno snapshot for read errors.
- * @param wrong_file_type Output flag for non-seekable/special files.
+ * @param file Per-file state object used as input and output. checksum_offset is the
+ *             starting byte offset for resumption and is updated as bytes are
+ *             hashed. sha512 receives the final digest. mdContext holds the
+ *             incremental hashing state. read_error and read_errno describe
+ *             read failures. wrong_file_type is set for non-seekable or
+ *             otherwise unsupported file types
  * @return SUCCESS or FAILURE.
  */
 Return sha512sum(
 	const char       *path,
 	const size_t     path_size,
 	memory           *file_buffer,
-	unsigned char    *sha512,
-	sqlite3_int64    *offset,
 	TraversalSummary *summary,
-	SHA512_Context   *mdContext,
-#ifdef TESTITALL_TEST_HOOKS
-	const off_t      file_size,
-#endif
-	bool             *read_error,
-	int              *read_errno,
-	bool             *wrong_file_type)
+	File             *file)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -98,9 +90,11 @@ Return sha512sum(
 		// No read permission
 		if(errno == EACCES)
 		{
-			*read_error = true;
+			// Flag the read failure
+			file->read_error = true;
 
-			*read_errno = errno;
+			// Preserve errno before returning
+			file->read_errno = errno;
 
 			provide(status);
 		}
@@ -125,9 +119,9 @@ Return sha512sum(
 			// No read permission
 			if(errno == EACCES)
 			{
-				*read_error = true;
+				file->read_error = true;
 
-				*read_errno = errno;
+				file->read_errno = errno;
 
 				free(absolute_path);
 				provide(status);
@@ -139,14 +133,14 @@ Return sha512sum(
 		}
 	}
 
-	// It moves the file pointer "offset" bytes from the beginning of the file
-	if(fseek(fileptr,*offset,SEEK_SET) != 0)
+	// Move the file pointer checksum_offset bytes from the beginning of the file
+	if(fseek(fileptr,file->checksum_offset,SEEK_SET) != 0)
 	{
 		/*
-		 * Looks like the wrong file type.
+		 * This looks like an unsupported file type.
 		 * Doesn't need to return FAILURE status.
 		 */
-		*wrong_file_type = true;
+		file->wrong_file_type = true;
 		free(absolute_path);
 		fclose(fileptr);
 		provide(status);
@@ -168,9 +162,10 @@ Return sha512sum(
 	bool random_stop_triggered = false;
 #endif
 
-	if(*offset == 0)
+	if(file->checksum_offset == 0)
 	{
-		if(sha512_init(mdContext) == 1)
+		// Fresh hashing pass: initialize the SHA512 state from scratch
+		if(sha512_init(&file->mdContext) == 1)
 		{
 			slog(ERROR,"SHA512 initialization failed\n");
 			free(absolute_path);
@@ -182,12 +177,14 @@ Return sha512sum(
 #ifdef TESTITALL_TEST_HOOKS
 	/*
 	 * Activate random interruption only for a fresh pass of hugetestfile.
-	 * Resume path (*offset > 0 at entry) must continue from saved state
+	 * Resume path (checksum_offset > 0 at entry) must continue from saved state
 	 * without selecting a new random stop point.
 	 */
-	if(*offset == 0 && is_huge_interruption_target(path) == true && file_size > 0)
+	if(file->checksum_offset == 0
+	        && is_huge_interruption_target(path) == true
+	        && file->stat.st_size > 0)
 	{
-		random_stop_limit = (uint64_t)file_size;
+		random_stop_limit = (uint64_t)file->stat.st_size;
 
 		/*
 		 * Select interruption target before the first fread() call so
@@ -229,7 +226,7 @@ Return sha512sum(
 			if(random_stop_limit > 0U
 			        && random_stop_triggered == false
 			        && random_stop_byte_value > 0U
-			        && (uint64_t)(*offset) >= random_stop_byte_value)
+			        && (uint64_t)(file->checksum_offset) >= random_stop_byte_value)
 			{
 				signal_wait_at_point(2U);
 				random_stop_triggered = true;
@@ -254,7 +251,7 @@ Return sha512sum(
 					/* No stop byte yet: wait until at least one block is hashed. */
 					delay_interrupt_for_random_stop = true;
 
-				} else if((uint64_t)(*offset) < random_stop_byte_value){
+				} else if((uint64_t)(file->checksum_offset) < random_stop_byte_value){
 					/* Stop byte is known but not reached yet: keep hashing. */
 					delay_interrupt_for_random_stop = true;
 				}
@@ -281,9 +278,9 @@ Return sha512sum(
 			if(random_stop_limit > 0U
 			        && random_stop_triggered == false
 			        && random_stop_byte_value > 0U
-			        && (uint64_t)(*offset) < random_stop_byte_value)
+			        && (uint64_t)(file->checksum_offset) < random_stop_byte_value)
 			{
-				const uint64_t bytes_left_to_stop = random_stop_byte_value - (uint64_t)(*offset);
+				const uint64_t bytes_left_to_stop = random_stop_byte_value - (uint64_t)(file->checksum_offset);
 
 				if(bytes_left_to_stop < (uint64_t)read_limit)
 				{
@@ -298,8 +295,8 @@ Return sha512sum(
 			{
 				if(ferror(fileptr))
 				{
-					*read_error = true;
-					*read_errno = errno;
+					file->read_error = true;
+					file->read_errno = errno;
 				}
 
 				break;
@@ -307,14 +304,14 @@ Return sha512sum(
 
 			if(SUCCESS == status)
 			{
-				if(sha512_update(mdContext,buffer,len) == 1)
+				if(sha512_update(&file->mdContext,buffer,len) == 1)
 				{
 					slog(ERROR,"SHA512 update failed\n");
 					status = FAILURE;
 					break;
 				}
 
-				*offset += (sqlite3_int64)len;
+				file->checksum_offset += (sqlite3_int64)len;
 				summary->total_hashed_bytes += len;
 			}
 		}
@@ -342,9 +339,9 @@ Return sha512sum(
 	        && perform_file_hashing == true
 	        && loop_was_interrupted == false)
 	{
-		*offset = 0;
+		file->checksum_offset = 0;
 
-		if(sha512_final(mdContext,sha512) == 1)
+		if(sha512_final(&file->mdContext,file->sha512) == 1)
 		{
 			slog(ERROR,"SHA512 finalization failed\n");
 			status = FAILURE;
@@ -354,7 +351,7 @@ Return sha512sum(
 #if 0
 	for(size_t i = 0; i < SHA512_DIGEST_LENGTH; i++)
 	{
-		printf("%02x",sha512[i]);
+		printf("%02x",file->sha512[i]);
 	}
 	putchar('\n');
 #endif

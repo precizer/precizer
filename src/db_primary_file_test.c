@@ -21,7 +21,7 @@ Return db_primary_file_test(void)
 	// The primary database file integrity check
 	if(config->db_primary_file_exists == true)
 	{
-		run(db_test(confstr(db_primary_file_path)));
+		run(db_integrity_check(confstr(db_primary_file_path)));
 
 	} else if(config->sqlite_open_flag & SQLITE_OPEN_CREATE){
 

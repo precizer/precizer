@@ -27,7 +27,7 @@ TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting database file write_protected_database1\.db integrity check…
 ERROR:Can't open database .*: unable to open database file
-TESTING:Returned db_test:\d+ status: FAILURE
+TESTING:Returned db_integrity_check:\d+ status: FAILURE
 TESTING:Returned db_primary_file_test:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » FAILURE\Z

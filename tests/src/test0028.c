@@ -719,6 +719,43 @@ static Return test0028_11(void)
 }
 
 /**
+ * Compare mode must apply --ignore and --include to the reported compare scope
+ *
+ * Hidden paths are treated as out of scope for category listings, category
+ * summaries, and final equality messages. Paths restored with --include become
+ * visible again even when they also match an --ignore pattern
+ */
+static Return test0028_12(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS & prepare_compare_filter_differences_fixture());
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	// All three raw differences are filtered out, so the filtered compare scope is fully identical
+	ASSERT(SUCCESS & assert_compare_output("--compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" database1.db database2.db",COMPLETED,"templates/0028_012_1.txt",NULL));
+
+	// Restore only the first-source path a.txt; the hidden checksum mismatch stays outside the reported scope
+	ASSERT(SUCCESS & assert_compare_output("--compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_012_2.txt",NULL));
+
+	// Keep only the first-source path a.txt visible by filtering out the checksum mismatch and the opposite-side path
+	ASSERT(SUCCESS & assert_compare_output("--compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_012_3.txt",NULL));
+
+	// Hide only a.txt so the remaining reported scope still contains the opposite-side path and the checksum mismatch
+	ASSERT(SUCCESS & assert_compare_output("--compare --ignore=\"^2/AAA/BBB/CZC/a\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_012_4.txt",NULL));
+
+	// Ignore everything, then restore only b.txt; the checksum mismatch remains intentionally out of scope
+	ASSERT(SUCCESS & assert_compare_output("--compare --ignore=\"^.*$\" --include=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_012_5.txt",NULL));
+
+	// Ignore the whole 2/ subtree, then restore both existence-side differences while the 1/ checksum mismatch remains visible
+	ASSERT(SUCCESS & assert_compare_output("--compare --ignore=\"^2/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" --include=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_012_6.txt",NULL));
+
+	ASSERT(SUCCESS & cleanup_compare_filter_differences_fixture());
+
+	RETURN_STATUS;
+}
+
+/**
  *
  * Testing the --compare mode across different types of responses
  *
@@ -738,6 +775,7 @@ Return test0028(void)
 	TEST(test0028_9,"NULL SHA512 created from fixture changes should be reported as a mismatch…");
 	TEST(test0028_10,"Compare mode should work with database names containing apostrophes…");
 	TEST(test0028_11,"Silent compare mode should print only compare results…");
+	TEST(test0028_12,"Compare mode should apply --ignore and --include to the reported comparison scope, including summaries and equality messages…");
 
 	RETURN_STATUS;
 }

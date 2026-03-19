@@ -7,10 +7,10 @@
 
 /* Program documentation text used by argp */
 static char doc[] =
-        "\nVerify file checksums at scale\n\n"
-        BOLD APP_NAME RESET " is a lightweight and blazing-fast CLI application designed for file integrity verification and comparison, making it particularly useful for checking synchronization results. The program recursively traverses directories, generating a database of files and their checksums for quick and efficient comparisons.\n"
+        "\n" BOLD APP_NAME RESET ": data integrity verification for file systems of any scale\n\n"
+        BOLD APP_NAME RESET " is a lightweight, high-performance CLI tool written in pure C. It’s designed for file integrity verification and comparison, making it especially useful for validating synchronization results. The program traverses directory trees and builds a database of files and their checksums for fast, repeatable comparisons.\n"
         "\n"
-        "Built for both embedded platforms and large-scale clustered mainframes, " BOLD APP_NAME RESET " helps detect synchronization errors by comparing files and their checksums across different sources. It can also be used to analyze historical changes by comparing databases generated at different points in time from the same source.\n"
+        "Built for embedded systems and large-scale clustered environments, " BOLD APP_NAME RESET " detects synchronization drift by comparing files and checksums across sources. It can also analyze historical changes by comparing databases captured from the same source at different points in time.\n"
         "\n"
         "With love for Ukraine\n"
         "\vSIMPLE EXAMPLE\n"
@@ -66,7 +66,7 @@ static struct argp_option options[] = {
 	 "regular expressions can be specified using multiple "
 	 BOLD "--lock-checksum" RESET " options.\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2077/.*\" /mnt/storage" RESET "\n",0},
+	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2077/.*\" /mnt/storage" RESET,0},
 	{"rehash-locked",'r',0,0,"Force a full SHA512 rehash for every file that is already stored "
 	 "in the database and protected by any "
 	 BOLD "--lock-checksum" RESET " pattern. "
@@ -84,7 +84,7 @@ static struct argp_option options[] = {
 	 "synchronized with the on-disk timestamps. If the checksum differs, the file is "
 	 "reported as corrupted just like any other locked entry.\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2024/.*\" --rehash-locked /mnt/storage" RESET "\n",0},
+	 BOLD APP_NAME " --update --lock-checksum=\"^archive/2024/.*\" --rehash-locked /mnt/storage" RESET,0},
 	{ 0,0,0,0,"Build database options:",2},
 	{ 0,0,0,0,"Path Filtering and Ignore Policy:",4},
 	{"ignore",'e',"PCRE2_REGEXP",0,"Relative path to ignore. PCRE2 regular expressions could be used to specify "
@@ -99,35 +99,37 @@ static struct argp_option options[] = {
 	 "Multiple regular expressions for ignore could be specified using many "
 	 BOLD "--ignore" RESET " options at once.\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/fixtures/diffs" RESET "\n",4 },
-	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified.\n",4 },
-	{"db-drop-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-drop-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).\n",3},
+	 BOLD APP_NAME " --ignore=\"diff2/1/.*\" --ignore=\"diff2/2/.*\" tests/fixtures/diffs" RESET "\n"
+	 "With " BOLD "--compare" RESET ", ignored paths are treated as out of scope for reported differences and equality summaries.",4 },
+	{"include",'i',"PCRE2_REGEXP",0,"Relative path to be included. PCRE2 regular expressions. Include these relative paths even if they were excluded via the " BOLD "--ignore" RESET " option. Multiple regular expressions could be specified. With " BOLD "--compare" RESET ", included paths are restored back into the reported comparison scope.",4 },
+	{"db-drop-ignored",'C',0,0,"The database is protected from accidental changes by default. The option " BOLD "--db-drop-ignored" RESET " must be specified additionally in order to remove from the database mention of files that matches the regular expression passed through the " BOLD "--ignore=PCRE2_REGEXP" RESET " option(s).",3},
 	{"db-clean-ignored",'C',0,OPTION_ALIAS | OPTION_HIDDEN,0,3}, // This legacy can be removed in 2036 (10-year Long-Term Support)
 	{"db-drop-inaccessible",'X',0,0,"Allow dropping database records for files that are inaccessible due to permission errors. By default, such paths are reported as \"inaccessible\" and their DB records are kept to avoid accidental loss when permissions change. This option is effective only with " BOLD "--update" RESET ".\n"
 	 "Example:\n"
-	 BOLD APP_NAME " --update --db-drop-inaccessible /mnt/storage" RESET "\n",2},
+	 BOLD APP_NAME " --update --db-drop-inaccessible /mnt/storage" RESET,2},
 	{"drop-inaccessible",'X',0,OPTION_ALIAS | OPTION_HIDDEN,0,0}, // This legacy can be removed in 2036 (10-year Long-Term Support)
-	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.\n",0},
-	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.\n",0},
+	{"watch-timestamps",'T',0,0,"Consider file metadata changes (creation and modification timestamps) in addition to file size when detecting changes. By default, only file size changes trigger rescanning. When this option is enabled, any changes to file timestamps or size will cause the file to be rescanned and its checksum updated in the primary database.",0},
+	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.",0},
 	{"dry-run",'n',"MODE",OPTION_ARG_OPTIONAL,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET ". "
-	 "Supported mode: " BOLD "--dry-run=with-checksums" RESET " (read files and calculate checksums during dry run).\n",0},
-	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.\n",0 },
-	{"force",'f',0,0,"Use this option only in case when the PATHs that were written into the database as a result of the last scanning really need to be renewed. Warning! If this option will be used in incorrect way, information about files and their checksums against the database would be lost.\n",0},
-	{"update",'u',0,0,"Updates the database to reflect file system changes (new, modified and deleted files). Must be used with the same initial PATH that was used when creating the database, as existing records will be replaced with data from the specified location. This option modifies database consistency. Use with caution, especially in automated scripts, as incorrect usage may lead to loss of file checksums and metadata.\n",0 },
-	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname.\n",0 },
-	{"check-level",'l',"FULL|QUICK",0,"Select database validation level: 'quick' for basic structure check, 'full' (default) for comprehensive integrity verification.\n",0 },
+	 "Supported mode: " BOLD "--dry-run=with-checksums" RESET " (read files and calculate checksums during dry run).",0},
+	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.",0 },
+	{"force",'f',0,0,"Use this option only in case when the PATHs that were written into the database as a result of the last scanning really need to be renewed. Warning! If this option will be used in incorrect way, information about files and their checksums against the database would be lost.",0},
+	{"update",'u',0,0,"Updates the database to reflect file system changes (new, modified and deleted files). Must be used with the same initial PATH that was used when creating the database, as existing records will be replaced with data from the specified location. This option modifies database consistency. Use with caution, especially in automated scripts, as incorrect usage may lead to loss of file checksums and metadata.",0 },
+	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname.",0 },
+	{"check-level",'l',"FULL|QUICK",0,"Select database validation level: 'quick' for basic structure check, 'full' (default) for comprehensive integrity verification.",0 },
 	{ 0,0,0,0,"Compare databases options:",1},
-	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n",0 },
+	{"compare",'c',0,0,"Compare two databases from different sources. Requires two additional arguments specifying paths to database files, e.g.:\n" BOLD APP_NAME " --compare database1.db database2.db" RESET "\n"
+	 "When combined with " BOLD "--ignore/--include" RESET ", the reported differences and equality summaries are limited to the filtered relative-path scope.",0 },
 	{"compare-filter",'F',"checksum-mismatch|first-source|second-source",0,
 	 "Filter output categories for " BOLD "--compare" RESET ". "
 	 "Supported values: "
 	 BOLD "checksum-mismatch" RESET ", "
 	 BOLD "first-source" RESET ", "
 	 BOLD "second-source" RESET ". "
-	 "The option can be specified multiple times in any combination.\n",0},
-	{ 0,0,0,0,"Visualizations options:\n",-1},
+	 "The option can be specified multiple times in any combination.",0},
+	{ 0,0,0,0,"Visualizations options:",-1},
 	{"silent",'s',0,0,"Don't produce any output. With " BOLD "--compare" RESET ", only paths with differences are shown, and category headings remain visible when multiple compare categories are active.",0 },
-	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore/--include" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.\n",0 },
+	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore/--include" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.",0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
 	{"help",'h',0,0,"Give this help list",-1 },
@@ -302,10 +304,10 @@ static error_t parse_opt(
 			config->force = true;
 			break;
 		case 'l':
-			if(0 == strncasecmp(arg,"QUICK",sizeof("QUICK")))
+			if(0 == strcasecmp(arg,"QUICK"))
 			{
 				config->db_check_level = QUICK;
-			} else if(0 == strncasecmp(arg,"FULL",sizeof("FULL"))){
+			} else if(0 == strcasecmp(arg,"FULL")){
 				config->db_check_level = FULL;
 			} else {
 				argp_failure(state,0,0,"ERROR: Unsupported --check-level value '%s'. Supported values: FULL or QUICK",arg);

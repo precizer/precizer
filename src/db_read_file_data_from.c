@@ -1,12 +1,17 @@
 #include "precizer.h"
 
 /**
+ * @brief Read file data from the database into file->db
  *
- * @brief Read data about the file from DB
+ * Loads the saved row for @p relative_path into the DBrow attached to @p file.
+ * If the path is missing in the database, the attached row stays zeroed and
+ * relative_path_was_in_db_before_processing remains false
  *
+ * @param[in,out] file Per-file state whose attached DB row receives the loaded values
+ * @param[in] relative_path Relative path looked up in the files table
  */
 Return db_read_file_data_from(
-	DBrow *dbrow,
+	File *file,
 #if 0 // Old multiPATH solution
 	const sqlite3_int64 *path_prefix_index,
 #endif
@@ -19,6 +24,8 @@ Return db_read_file_data_from(
 	/* Read from SQL */
 	sqlite3_stmt *select_stmt = NULL;
 	int rc;
+	// Convenience alias for the attached DB row that receives the loaded values
+	DBrow *dbrow = file->db;
 
 	/* Create SQL statement */
 #if 0 // Old multiPATH solution
