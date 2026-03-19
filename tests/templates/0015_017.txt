@@ -55,7 +55,7 @@ TESTING:Returned db_migrate_to_version_4:\d+ status: FAILURE
 TESTING:Returned db_upgrade:\d+ status: FAILURE
 ERROR:Database 0015_database_v3_rollback\.db upgrade failed
 TESTING:Returned db_check_version:\d+ status: FAILURE
-TESTING:Returned db_test:\d+ status: FAILURE
+TESTING:Returned db_integrity_check:\d+ status: FAILURE
 TESTING:Comparison of 0015_database_v4_reference\.db and 0015_database_v3_rollback\.db databases is complete
 TESTING:Returned db_compare:\d+ status: FAILURE
 TESTING:The database connection has been closed

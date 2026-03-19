@@ -29,7 +29,7 @@ TESTING:Verify that the path write_protected_database1\.db exists
 TESTING:The path write_protected_database1\.db is exists and it is a file
 TESTING:Starting database file write_protected_database1\.db integrity check…
 ERROR:Can't open database .* unable to open database file
-TESTING:Returned db_test:\d+ status: FAILURE
+TESTING:Returned db_integrity_check:\d+ status: FAILURE
 TESTING:Comparison of write_protected_database1\.db and database2\.db databases is complete
 TESTING:Returned db_compare:\d+ status: FAILURE
 TESTING:The database connection has been closed

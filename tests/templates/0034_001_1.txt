@@ -21,9 +21,9 @@ paths=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_fil
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode\.c:\d+:db_determine_mode:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode\.c:\d+:db_determine_mode:Final value for config->db_initialize_tables: false
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode\.c:\d+:db_determine_mode:DB mode determined
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_test\.c:\d+:db_test:Starting database file 0034_lsize_vs_asize_flags\.db integrity check…
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_test\.c:\d+:db_test:The database verification level has been set to FULL
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_test\.c:\d+:db_test:Database 0034_lsize_vs_asize_flags\.db has been verified and is in good condition
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Starting database file 0034_lsize_vs_asize_flags\.db integrity check…
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:The database verification level has been set to FULL
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Database 0034_lsize_vs_asize_flags\.db has been verified and is in good condition
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_get_version\.c:\d+:db_get_version:Version number \d+ found in database
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The 0034_lsize_vs_asize_flags\.db database file is version \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The database 0034_lsize_vs_asize_flags\.db is on version \d+ and does not require any upgrades
