@@ -915,6 +915,94 @@ Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually 
 | 2    | precizer --dry-run=with-checksums | Real read + checksum compute speed (no DB writes)                     | Bottleneck: data reads (disk/network/file system) or CPU (more rarely)    | Check disk/network throughput, file system settings, and CPU resource limits (VMs/containers)      |
 | 3    | Normal run (not dry-run)          | Impact of SQLite writes and transactions                              | Often the file system hosting `.db` is the issue (slow/network/compressed)| Check the `.db` file system; try moving `.db` temporarily to a faster medium or `tmpfs`            |
 
+## ALTERNATIVES
+
+Alternatives to **precizer** with open architectures and source code.
+
+* **AIDE** — https://aide.github.io/
+  * Platforms/architectures: Linux/*BSD/macOS (x86_64, arm64, etc.)
+  * Written in: C, actively maintained
+    * Supports selecting/combining different hash algorithms and controlling more non-hash attributes (ACL/xattr/SELinux, etc.) at the rule level.
+    * Snapshot/database uses a text format (optionally gzip), not SQLite: less suited for complex queries/analytics over the database.
+    * No resumption of interrupted hashing inside a large file: a re-scan typically starts over from scratch.
+
+* **Samhain** — https://www.la-samhna.de/samhain/
+  * Platforms/architectures: Linux/Unix/POSIX, Windows (x86_64, arm64, etc.)
+  * Written in: C, actively maintained
+    * Built-in agent + central server model (centralized collection/control), which goes beyond "one local database".
+    * Emphasis on tamper-resistance (signatures/cryptographic protection of some artifacts).
+    * Significantly more complex deployment/maintenance (agents/server/keys) if all you need is a quick comparison of two trees via SQLite.
+
+* **OSSEC** — https://www.ossec.net/
+  * Platforms/architectures: Linux, Windows, macOS, *BSD (x86_64, arm64, etc.)
+  * Written in: C, actively maintained
+    * Event-driven/agent-based HIDS platform: real-time alerts, rules, correlation, response — a different class of tasks than "snapshot + diff".
+    * Centralized architecture out of the box.
+    * Not designed for storing a file snapshot specifically in SQLite or for resuming interrupted checksum computation inside a large file.
+
+* **Open Source Tripwire** — https://github.com/Tripwire/tripwire-open-source
+  * Platforms/architectures: POSIX-like OSes (Linux/macOS/*BSD/Solaris, etc.), Windows via Cygwin (x86_64, arm64, etc.)
+  * Written in: C++, last changes 8 years ago
+    * Advanced policy language and the practice of signing policies/configs/databases (chain of trust around the baseline).
+    * No SQLite database as the primary data format and no resumption of interrupted hashing inside a large file.
+
+* **integrit** — https://github.com/integrit/integrit
+  * Platforms/architectures: Linux/*BSD (x86_64, arm64, etc.)
+  * Written in: C, last changes 2 years ago
+    * Minimalism and low external library dependencies (if a "small utility" matters more than a SQL data model).
+    * Does not use SQLite and, as a result, is less suited for heavy queries/comparisons/analytics over snapshots.
+
+* **mtree (NetBSD mtree)** — https://man.netbsd.org/mtree.8
+  * Platforms/architectures: *BSD, Linux (x86_64, arm64, etc.)
+  * Written in: C, last changes 18 years ago
+    * Tree specification (spec) is convenient in "canonical layout/permissions/ownership" scenarios that call for a declarative format.
+    * Very old codebase (effectively frozen).
+    * Spec-file format/workflow rather than SQLite snapshot + fast SQL diffs; no resumption of interrupted hashing inside a large file.
+
+* **hashdeep (md5deep/sha*deep)** — https://github.com/jessek/hashdeep
+  * Platforms/architectures: Linux, Windows, macOS (x86_64, arm64, etc.)
+  * Written in: C++/C, last changes 9 years ago
+    * Choice of hash families/output formats. Convenient when output must conform to external requirements/standards.
+    * No SQLite snapshot as a product: results are primarily report files/listings, not a database for fast comparisons.
+
+* **hashit** — https://github.com/boyter/hashit
+  * Platforms/architectures: Linux, Windows, macOS (x86_64, arm64, etc.)
+  * Written in: Go, actively maintained
+    * Can compute multiple different hashes for one file in a single pass.
+    * No SQLite snapshot and no database update mechanisms.
+
+* **RHash** — https://github.com/rhash/RHash
+  * Platforms/architectures: Linux, Windows, macOS, *BSD (x86_64, arm64, etc.)
+  * Written in: C, actively maintained
+    * Very wide range of algorithms/output formats (including magnet links, etc.) when compatibility with external ecosystems is required.
+    * Does not maintain a SQLite snapshot of a directory tree as a primary entity (more "compute/verify hashes" than "maintain a snapshot database").
+
+* **rsync** — https://rsync.samba.org/
+  * Platforms/architectures: Linux, *BSD, macOS (x86_64, arm64, etc.), Windows via Cygwin/MSYS2
+  * Written in: C, actively maintained
+    * Combines transfer/synchronization with verification: divergences can be corrected immediately rather than just detected.
+    * Checksums are not persisted between runs: after interruptions or re-checks the computation starts over from scratch.
+
+* **rclone** — https://rclone.org/
+  * Platforms/architectures: Linux, Windows, macOS, *BSD (amd64/arm/arm64, etc.)
+  * Written in: Go, actively maintained
+    * Oriented toward remote/cloud storage: S3/Drive/etc.
+    * Does not maintain a local SQLite snapshot of a directory tree for fast offline A↔B comparisons.
+    * Integrity checking often depends on the capabilities of the specific backend (which hashes/metadata it exposes).
+
+* **QuickHash GUI** — https://www.quickhash-gui.org/
+  * Platforms/architectures: Linux, Windows, macOS (x86_64; macOS arm64)
+  * Written in: FreePascal (Lazarus), last changes 2 years ago
+    * GUI-only tool oriented toward various media/artifacts (e.g., forensics scenarios) where CLI snapshots are not always convenient.
+    * Does not use a SQLite directory-tree snapshot as the core of its workflow.
+
+* **restic** — https://restic.net/
+  * Platforms/architectures: Linux, Windows, macOS, *BSD (x86_64, arm64, etc.)
+  * Written in: Go, actively maintained
+    * Backup repository with snapshots, deduplication, and encryption — if the goal is "store history and transfer it", this is more powerful than simply comparing two trees.
+    * Different approach: chunk/dedup model instead of "SQLite snapshot + diff"; may be overkill for the pure A↔B comparison task.
+    * Does not provide a straightforward model for comparing two local directory trees through a single SQL database.
+
 ## AUTHOR
 Software author: [Dennis V. Razumovsky](https://github.com/dennisrazumovsky)
 
