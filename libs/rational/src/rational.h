@@ -16,14 +16,12 @@
  */
 
 // Need for strdup(), clock_gettime()
-// Have to be at the beginning of the file
+// On FreeBSD, all interfaces are visible by default — no feature test macros needed
+#ifndef __FreeBSD__
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-
 // Request POSIX.1-2008 interfaces (pathconf, clock_gettime, snprintf, etc.)
-// Not needed on FreeBSD: _GNU_SOURCE already enables BSD and POSIX interfaces
-#if !defined(__FreeBSD__)
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
 #endif
