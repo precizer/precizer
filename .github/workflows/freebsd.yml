@@ -32,7 +32,9 @@ jobs:
         with:
           release: "14.2"
           prepare: |
-            pkg install -y gcc gmake llvm pcre2 sqlite3 cmocka upx
+            pkg install -y gmake llvm pcre2 sqlite3 cmocka upx
           run: |
+            export CPATH=/usr/local/include
+            export LIBRARY_PATH=/usr/local/lib
             gmake -j portable
             gmake -j tests-debug
