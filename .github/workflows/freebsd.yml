@@ -1,4 +1,4 @@
-name: FreeBSD portable build
+name: FreeBSD Portable Build
 
 on:
   workflow_dispatch:
