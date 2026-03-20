@@ -1,4 +1,4 @@
-name: PR static analysis
+name: Source Code Static Analysis
 
 on:
   pull_request:
