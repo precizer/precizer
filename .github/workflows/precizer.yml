@@ -1,7 +1,7 @@
 permissions:
   contents: read
 
-name: Precizer
+name: Linux and macOS builds
 
 on:
   push:

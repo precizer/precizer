@@ -911,7 +911,7 @@ precizer --update --db-drop-inaccessible /mnt/storage
 
 ## АЛЬТЕРНАТИВЫ
 
-Альтернативы программе **precizer** с открытыми архитектурами и кодом.
+Альтернативы программе **precizer** с открытыми архитектурами и кодом. Больше альтернатив (актуально): https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/
 
 * **AIDE** — https://aide.github.io/
   * Платформы/архитектуры: Linux/*BSD/macOS (x86_64, arm64 и др.)
