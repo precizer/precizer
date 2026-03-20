@@ -33,6 +33,13 @@
 #endif
 #endif
 
+// Enable BSD extensions (asprintf, vasprintf, etc.) on FreeBSD
+#ifdef __FreeBSD__
+#ifndef __BSD_VISIBLE
+#define __BSD_VISIBLE 1
+#endif
+#endif
+
 // 64bit File Systems
 #ifndef __USE_FILE_OFFSET64
 #define __USE_FILE_OFFSET64 1
