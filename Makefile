@@ -146,6 +146,9 @@ ifeq ($(UNAME_S),Darwin)
 DYNAMIC_INCPATH += -I/opt/homebrew/include
 INCPATH += -I/opt/homebrew/include
 LDPATH += -L/opt/homebrew/lib
+endif
+
+ifneq (,$(filter $(UNAME_S),Darwin FreeBSD))
 LDLIBS += -largp
 endif
 
