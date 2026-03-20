@@ -21,6 +21,11 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !tests/fixtures/long/**
 
       - name: Build and test on FreeBSD 14.2
         uses: vmactions/freebsd-vm@4807432c7cab1c3f97688665332c0b932062d31f # v1.4.3
