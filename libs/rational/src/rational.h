@@ -22,21 +22,17 @@
 #endif
 
 // Request POSIX.1-2008 interfaces (pathconf, clock_gettime, snprintf, etc.)
+// Not needed on FreeBSD: _GNU_SOURCE already enables BSD and POSIX interfaces
+#if !defined(__FreeBSD__)
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
+#endif
 #endif
 
 // Enable full libc surface on macOS even when POSIX macros are set
 #ifdef EVIL_EMPIRE_OS
 #ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1
-#endif
-#endif
-
-// Enable BSD extensions (asprintf, vasprintf, etc.) on FreeBSD
-#ifdef __FreeBSD__
-#ifndef __BSD_VISIBLE
-#define __BSD_VISIBLE 1
 #endif
 #endif
 
