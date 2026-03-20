@@ -917,7 +917,7 @@ Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually 
 
 ## ALTERNATIVES
 
-Alternatives to **precizer** with open architectures and source code.
+Alternatives to **precizer** with open architectures and source code. More alternatives (kept up to date): https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/
 
 * **AIDE** — https://aide.github.io/
   * Platforms/architectures: Linux/*BSD/macOS (x86_64, arm64, etc.)
