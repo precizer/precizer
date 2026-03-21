@@ -16,15 +16,14 @@
  */
 
 // Need for strdup(), clock_gettime()
-// On FreeBSD, all interfaces are visible by default — no feature test macros needed
-#ifndef __FreeBSD__
+// Have to be at the beginning of the file
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+
 // Request POSIX.1-2008 interfaces (pathconf, clock_gettime, snprintf, etc.)
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
-#endif
 #endif
 
 // Enable full libc surface on macOS even when POSIX macros are set
