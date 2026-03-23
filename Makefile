@@ -148,7 +148,7 @@ INCPATH += -I/opt/homebrew/include
 LDPATH += -L/opt/homebrew/lib
 endif
 
-ifneq (,$(filter $(UNAME_S),Darwin FreeBSD))
+ifneq (,$(filter $(UNAME_S),Darwin))
 LDLIBS += -largp
 endif
 
