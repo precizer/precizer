@@ -47,6 +47,9 @@
  */
 #include <stdio.h>
 
+// Time functions (gettimeofday)
+#include <sys/time.h>
+
 // String library
 #include <string.h>
 
