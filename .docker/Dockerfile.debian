@@ -23,6 +23,6 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
-RUN make ${BUILD}
+RUN make -j ${BUILD}
 
-CMD ["sh", "-c", "make tests"]
+CMD ["sh", "-c", "make -j tests"]
