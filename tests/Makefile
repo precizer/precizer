@@ -183,15 +183,15 @@ tests: test
 
 run: sanitize
 
-testlibs-coverage:
+testlibs-coverage: precizer-coverage
 	@$(MAKE) -s -C ../libs/xdiff coverage
 	@$(MAKE) -s -C ../libs/testitall coverage TESTITALL_APP_NAME=$(TESTED_APP_NAME)
 
-testlibs-sanitize:
+testlibs-sanitize: precizer-sanitize
 	@$(MAKE) -s -C ../libs/xdiff sanitize
 	@$(MAKE) -s -C ../libs/testitall sanitize TESTITALL_APP_NAME=$(TESTED_APP_NAME)
 
-testlibs-debug:
+testlibs-debug: precizer-debug
 	@$(MAKE) -s -C ../libs/xdiff debug
 	@$(MAKE) -s -C ../libs/testitall debug TESTITALL_APP_NAME=$(TESTED_APP_NAME)
 
