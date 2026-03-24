@@ -82,11 +82,12 @@ GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 EXE = precizer
 
 SRC = src
-STRIP = -Wl,-s
 STATIC = -static -static-libgcc -Wl,--gc-sections
 ifeq ($(UNAME_S),Darwin)
-STRIP =
 STATIC =
+STRIP ?= -Wl,-x
+else
+STRIP ?= -s
 endif
 
 # UPX compression (disabled on macOS)
@@ -233,11 +234,11 @@ PROD_OBJDIR = $(PROD_DIR)/obj
 PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
-PROD_CPU = -O3 -march=native
-PROD_CFLAGS = $(CFLAGS) -flto=auto $(PROD_CPU) -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x
+PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,-dead_strip
+else
+PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 
 #
@@ -262,10 +263,10 @@ PRTB_OBJDIR = $(PRTB_DIR)/obj
 PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
-PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
+PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
@@ -386,7 +387,6 @@ prodlibs:
 
 $(PROD_EXE): $(PROD_OBJS) prodlibs
 	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(LDLIBS)
-	@strip -x $(PROD_EXE)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
 else
@@ -420,7 +420,6 @@ dynprodlibs:
 
 $(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
 	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
-	@strip -x $(DYNP_EXE)
 	@echo "$@ linked dynamically, stripped"
 
 $(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
@@ -450,7 +449,6 @@ portablelibs:
 
 $(PRTB_EXE): $(PRTB_OBJS) portablelibs
 	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(LDLIBS)
-	@strip -x $(PRTB_EXE)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
 else

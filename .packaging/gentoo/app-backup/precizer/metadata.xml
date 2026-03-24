@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>replace-me@example.invalid</email>
+		<name>Precizer Project</name>
+	</maintainer>
+	<longdescription lang="en">
+		Precizer is a lightweight, high-performance CLI tool written in pure C.
+		It is designed for file integrity verification and comparison, making it
+		especially useful for validating synchronization results. The program
+		walks directory trees and builds a database of files and their checksums
+		for fast, repeatable comparisons.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">precizer/precizer</remote-id>
+		<bugs-to>https://github.com/precizer/precizer/issues</bugs-to>
+	</upstream>
+</pkgmetadata>

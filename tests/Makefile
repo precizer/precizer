@@ -1,6 +1,10 @@
 # Name of the application
 EXE=testitall
 
+# Config settings:
+# The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
+MAKEFLAGS += --no-print-directory
+
 #
 # Compiler flags
 #
@@ -90,7 +94,7 @@ WFLAGS += -Wmissing-format-attribute
 endif
 
 # Link-time wrappers for cmocka tests (add more functions as needed).
-WRAPFUNCS = fopen fread ferror remove
+WRAPFUNCS = fopen fread ferror remove access
 ifeq ($(UNAME_S),Darwin)
 # macOS with  lld supports -wrap
 WRAPFLAGS =
@@ -128,8 +132,8 @@ COV_DYNLIB = -Wl,-rpath,@executable_path/$(COV_LIBDIR),-rpath,@executable_path/.
 endif
 
 COV_PRZROBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(PRZROBJS)))
-COV_CFLAGS += $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL_TEST_HOOKS
-COV_LDFLAGS += -lgcov --coverage
+COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL_TEST_HOOKS
+COV_LDFLAGS = -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -168,7 +172,7 @@ DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGI
 ifeq ($(UNAME_S),Darwin)
 DBG_DYNLIB = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
 endif
-DBG_CFLAGS += $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL_TEST_HOOKS
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge static-analyzers static-analyzers-cli gcc-analyzer cppcheck clang-analyzer clang-analyzer-cli print-%
@@ -342,7 +346,7 @@ purge: clean-hugetestfile clean-compile-commands
 #	@sed -i '/^ *$//d' $@.h
 
 #
-# Printing variables
+# Print of variables
 #
 # If you want to find out the value of a makefile variable, just:
 # make print-VARIABLE

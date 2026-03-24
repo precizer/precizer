@@ -1,39 +1,55 @@
-# Compiler and flags
+# Config settings:
+# The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
+MAKEFLAGS += --no-print-directory
+
 CC := gcc
+
+#
+# Compiler flags
+#
 CFLAGS += -pipe -std=c2x -flto
 CFLAGS += -fbuiltin
 CFLAGS += -O2
-CFLAGS += -Werror
-CFLAGS += -Wall -Wextra -Wpedantic -Wshadow
-CFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
-CFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
-CFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
-CFLAGS += -Wfloat-equal -Wundef -Wshadow
-CFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
-CFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn
-CFLAGS += -Wsuggest-attribute=format -Wmissing-format-attribute
-CFLAGS += -Wwrite-strings
-CFLAGS += -Winline
-# If it is not clang, then these options are for gcc
-ifneq ($(CC), clang)
-CFLAGS += -Wlogical-op
+
+# Detect whether we're using GCC
+GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
+
+# Warning flags for additional checks
+WFLAGS += -Werror
+WFLAGS += -Wall
+WFLAGS += -Wextra
+WFLAGS += -Wpedantic
+WFLAGS += -Wshadow
+WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
+WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
+WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
+WFLAGS += -Wfloat-equal -Wundef
+WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
+WFLAGS += -Wwrite-strings
+WFLAGS += -Winline
+ifneq ($(GCC),)
+WFLAGS += -Wlogical-op
+WFLAGS += -Wsuggest-attribute=const
+WFLAGS += -Wsuggest-attribute=pure
+WFLAGS += -Wsuggest-attribute=noreturn
+WFLAGS += -Wsuggest-attribute=format
+WFLAGS += -Wmissing-format-attribute
 endif
 
-# Directories
-SRC_DIR := src
-BIN_DIR := .
-
-# Find all .c files in src directory
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-# Generate binary names by stripping .c and src/ prefix
-BINS := $(patsubst $(SRC_DIR)/%.c,%,$(SRCS))
+#
+# Project files
+#
+SRC_DIR = src
+BIN_DIR = .
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+BINS = $(patsubst $(SRC_DIR)/%.c,%,$(SRCS))
 
 # Default target
 all: $(BINS)
 
 # Rule to build binaries
 %: $(SRC_DIR)/%.c
-	@$(CC) $(CFLAGS) $< -o $(BIN_DIR)/$@
+	@$(CC) $(CFLAGS) $(WFLAGS) $< -o $(BIN_DIR)/$@
 	@echo $@ done
 
 #

@@ -31,9 +31,10 @@ STATLIB = $(LIBNAME).a
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
-STRIP = -s
 ifeq ($(UNAME_S),Darwin)
-STRIP =
+STRIP ?= -Wl,-x
+else
+STRIP ?= -s
 endif
 
 # Warning flags for additional checks
@@ -77,7 +78,7 @@ LIBS = rational mem xdiff
 INCPATH += -I$(SRC_DIR)
 INCPATH += $(foreach d,$(LIBS),-I../$d/src/)
 ifeq ($(UNAME_S),Darwin)
-INCPATH +=  $(shell pkg-config --cflags libpcre2-8)
+INCPATH += $(shell pkg-config --cflags libpcre2-8)
 endif
 
 LDLIBS = $(foreach l,$(LIBS),-l$(l))
@@ -142,10 +143,10 @@ PROD_LDLIBS = -L$(PROD_LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
-PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
+PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -167,10 +168,10 @@ PRTB_LDLIBS = -L$(PRTB_LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
-PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
+PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
