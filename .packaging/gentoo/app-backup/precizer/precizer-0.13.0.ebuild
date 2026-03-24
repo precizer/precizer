@@ -5,7 +5,7 @@ EAPI=8
 
 DESCRIPTION="Lightweight, high-performance file integrity verification and comparison tool"
 HOMEPAGE="https://github.com/precizer/precizer"
-SRC_URI="https://github.com/precizer/precizer/archive/refs/tags/${PV}.tar.gz -> v${P}.tar.gz"
+SRC_URI="https://github.com/precizer/precizer/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-3"
 SLOT="0"
@@ -18,9 +18,10 @@ DEPEND="
 RDEPEND="${DEPEND}"
 
 S="${WORKDIR}/${P}"
+DOCS=( README.md CHANGELOG.md )
 
 src_compile() {
-	emake dynamic-production \
+	emake dynamic-production-build \
 		PROD_CFLAGS='$(CFLAGS)' \
 		PROD_LDFLAGS='$(LDFLAGS)' \
 		STRIP= \
@@ -28,6 +29,6 @@ src_compile() {
 }
 
 src_install() {
-	dobin precizer
-	dodoc README.md
+	dobin .builds/dynamic-production/precizer
+	einstalldocs
 }

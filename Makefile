@@ -279,8 +279,8 @@ printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
-.PHONY: production-done dynamic-production-done portable-done
+.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
@@ -405,12 +405,12 @@ $(PROD_OBJDIR):
 #
 dynamic-production: banner-dynamic-production
 
-dynamic-production-done: $(DYNP_EXE) dynprodfinal
+dynamic-production-build: $(DYNP_EXE)
 
-banner-dynamic-production: dynamic-production-done
+banner-dynamic-production: dynprodfinal
 	@$(BUILD_USAGE_BANNER)
 
-dynprodfinal: $(DYNP_EXE)
+dynprodfinal: dynamic-production-build
 	@cp $(DYNP_EXE) $(EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
