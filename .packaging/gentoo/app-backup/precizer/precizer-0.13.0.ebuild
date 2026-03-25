@@ -4,7 +4,7 @@
 EAPI=8
 
 DESCRIPTION="Lightweight, high-performance file integrity verification and comparison tool"
-HOMEPAGE="https://github.com/precizer/precizer"
+HOMEPAGE="https://precizer.github.io/"
 SRC_URI="https://github.com/precizer/precizer/archive/refs/tags/${PV}.tar.gz -> ${P}.tar.gz"
 
 LICENSE="GPL-3"
