@@ -10,12 +10,17 @@ SRC_URI="https://github.com/precizer/precizer/archive/refs/tags/${PV}.tar.gz -> 
 LICENSE="GPL-3"
 SLOT="0"
 KEYWORDS="~amd64 ~arm64"
+IUSE="test"
+RESTRICT="!test? ( test )"
 
-DEPEND="
-	dev-libs/libpcre2
+RDEPEND="
 	dev-db/sqlite:3
+	dev-libs/libpcre2
 "
-RDEPEND="${DEPEND}"
+DEPEND="
+	${RDEPEND}
+	test? ( dev-util/cmocka )
+"
 
 S="${WORKDIR}/${P}"
 DOCS=( README.md CHANGELOG.md )
