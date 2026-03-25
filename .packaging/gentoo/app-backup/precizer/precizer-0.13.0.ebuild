@@ -28,6 +28,10 @@ src_compile() {
 		UPX=:
 }
 
+src_test() {
+	emake tests-debug
+}
+
 src_install() {
 	dobin .builds/dynamic-production/precizer
 	einstalldocs
