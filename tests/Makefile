@@ -11,9 +11,6 @@ MAKEFLAGS += --no-print-directory
 
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
-# The definition used to disable the main() function
-# of the tested application
-CFLAGS += -DTESTITALL
 
 UNAME_S := $(shell uname -s)
 
@@ -132,7 +129,11 @@ COV_DYNLIB = -Wl,-rpath,@executable_path/$(COV_LIBDIR),-rpath,@executable_path/.
 endif
 
 COV_PRZROBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(PRZROBJS)))
-COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL_TEST_HOOKS
+# Keep TESTITALL in the test runner build flags only.
+# Adding it to the global CFLAGS leaks it into recursive builds such as
+# `make -C ../ sanitize`, which disables main() in the standalone precizer
+# binary and enables test-only hooks there
+COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS = -lgcov --coverage
 
 #
@@ -172,7 +173,7 @@ DBG_DYNLIB = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGI
 ifeq ($(UNAME_S),Darwin)
 DBG_DYNLIB = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
 endif
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge static-analyzers static-analyzers-cli gcc-analyzer cppcheck clang-analyzer clang-analyzer-cli print-%
