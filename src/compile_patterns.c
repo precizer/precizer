@@ -1,6 +1,39 @@
 #include "precizer.h"
 
 /**
+ * @brief Attempt optional JIT compilation for a compiled PCRE2 pattern
+ *
+ * JIT is a performance optimization only. Its absence must not prevent the
+ * pattern from being used through the normal interpretive matcher.
+ *
+ * @param[in] compiled_pattern Successfully compiled PCRE2 pattern
+ * @param[in] pattern_text     Original pattern text used for logging
+ */
+static void try_jit_compile(
+	pcre2_code *compiled_pattern,
+	const char *pattern_text)
+{
+	if(compiled_pattern == NULL || pattern_text == NULL)
+	{
+		return;
+	}
+
+	int jit_status = pcre2_jit_compile(compiled_pattern,PCRE2_JIT_COMPLETE);
+
+	if(
+		jit_status == 0 ||
+		jit_status == PCRE2_ERROR_JIT_BADOPTION ||
+		jit_status == PCRE2_ERROR_NOMEMORY)
+	{
+		return;
+	}
+
+	PCRE2_UCHAR8 error_message_buffer[MAX_CHARACTERS];
+	pcre2_get_error_message(jit_status,error_message_buffer,MAX_CHARACTERS);
+	slog(ERROR,"PCRE2 JIT compilation error %d for pattern \"%s\": %s\n",jit_status,pattern_text,error_message_buffer);
+}
+
+/**
  * @brief Compile one string array of PCRE2 pattern strings into a pcre2_code array
  *
  * Allocates a NULL-terminated array of pcre2_code pointers parallel to @p patterns.
@@ -68,6 +101,8 @@ static Return compile_one_array(
 			free_compiled_array(&compiled_patterns);
 			provide(FAILURE);
 		}
+
+		try_jit_compile(compiled_patterns[i],patterns[i]);
 	}
 
 	*compiled = compiled_patterns;
