@@ -82,18 +82,24 @@ GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 EXE = precizer
 
 SRC = src
-STATIC = -static -static-libgcc -Wl,--gc-sections
 ifeq ($(UNAME_S),Darwin)
 STATIC =
 STRIP ?= -Wl,-x
 else
+# tests-dynamic disables static linking so the debug test build can use shared libraries
+ifneq ($(TESTS_DYNAMIC),)
+STATIC =
+else
+STATIC = -static -static-libgcc -Wl,--gc-sections
+endif
 STRIP ?= -s
 endif
 
 # UPX compression (disabled on macOS)
-UPX ?= upx --best --lzma -qqq
 ifeq ($(UNAME_S),Darwin)
 UPX = true
+else
+UPX ?= upx --best --lzma -qqq
 endif
 
 # Warning flags for additional checks
@@ -181,10 +187,19 @@ DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
-DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
 LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
+DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
 DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
+else
+DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
+DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
+endif
+# tests-dynamic injects a debug-only rpath so copied test binaries can find shared libraries
+ifneq ($(TESTS_DYNAMIC),)
+DBG_LINK_RPATH = $(DBG_RPATH)
+else
+DBG_LINK_RPATH =
 endif
 # Activate the Gprof profiler.
 # Works incorrectly with Valgrind.
@@ -213,16 +228,15 @@ SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
-SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
-ifeq ($(UNAME_S),Darwin)
-SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
-endif
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
-SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
+SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+else
+SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 endif
 
 #
@@ -264,9 +278,10 @@ PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
 PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip
+else
+PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
@@ -282,7 +297,7 @@ endef
 .PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
-.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image test test-coverage tests-sanitize tests-debug tests-dynamic docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
@@ -297,7 +312,7 @@ debuglibs:
 	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(EXTRA_LIBS)"
 
 $(DBG_EXE): $(DBG_OBJS) debuglibs
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LINK_RPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, not stripped"
 else
@@ -525,6 +540,10 @@ tests-sanitize:
 
 tests-debug:
 	@$(MAKE) -s -C $(TESTDIR) debug
+
+# Run the debug test suite without static linking to avoid requiring static external libraries
+tests-dynamic:
+	@$(MAKE) -s -C $(TESTDIR) debug TESTS_DYNAMIC=1
 
 #
 # Build and test within a Docker container
