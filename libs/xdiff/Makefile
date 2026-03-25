@@ -70,7 +70,7 @@ DBG = debug
 DBG_DIR = $(BUILDDIR)/$(DBG)
 DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_DIR)/obj
-DBG_LDLIBS = -L$(DBG_LIBDIR)
+DBG_LDPATH = -L$(DBG_LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
@@ -88,7 +88,7 @@ COV = coverage
 COV_DIR = $(BUILDDIR)/$(COV)
 COV_LIBDIR = $(COV_DIR)/libs
 COV_OBJDIR = $(COV_DIR)/obj
-COV_LDLIBS = -L$(COV_LIBDIR)
+COV_LDPATH = -L$(COV_LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
@@ -101,7 +101,7 @@ SNTZ = sanitize
 SNTZ_DIR = $(BUILDDIR)/$(SNTZ)
 SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
-SNTZ_LDLIBS = -L$(SNTZ_LIBDIR)
+SNTZ_LDPATH = -L$(SNTZ_LIBDIR)
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
@@ -119,7 +119,7 @@ PROD = production
 PROD_DIR = $(BUILDDIR)/$(PROD)
 PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_DIR)/obj
-PROD_LDLIBS = -L$(PROD_LIBDIR)
+PROD_LDPATH = -L$(PROD_LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
@@ -145,7 +145,7 @@ PRTB = portable
 PRTB_DIR = $(BUILDDIR)/$(PRTB)
 PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_DIR)/obj
-PRTB_LDLIBS = -L$(PRTB_LIBDIR)
+PRTB_LDPATH = -L$(PRTB_LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
@@ -183,7 +183,7 @@ $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@echo $@ prepared to be static library
 
 $(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) -shared $(DBG_LDFLAGS) $(DBG_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(DBG_LDFLAGS) $(DBG_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be shared library
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
@@ -207,7 +207,7 @@ $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
 	@echo $@ prepared to be static library
 
 $(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
-	@$(CC) -shared $(COV_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(COV_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be shared library
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
@@ -231,7 +231,7 @@ $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@echo $@ prepared to be the static library
 
 $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be the shared library
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
@@ -256,7 +256,7 @@ $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@echo $@ prepared to be the static library
 
 $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) $(PROD_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) $(PROD_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be the shared library
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
@@ -280,7 +280,7 @@ $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@echo $@ prepared to be the static library
 
 $(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) $(PRTB_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) $(PRTB_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be the shared library
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)

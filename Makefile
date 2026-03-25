@@ -59,9 +59,9 @@ CFLAGS += -fbuiltin
 # make DEFINES=-DWRITE_CSV=false memtest
 CFLAGS += $(DEFINES)
 
-LIBS = sha512 mem rational
-EXTRA_LIBS = $(LIBS) sqlite3
-LDLIBS = $(foreach d,$(EXTRA_LIBS),-l$d)
+LIBS = sha512 mem rational sqlite3
+STATLIBS = sha512 mem rational
+LDLIBS = $(foreach d,$(LIBS),-l$d)
 
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
@@ -80,8 +80,6 @@ endif
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
-
-SRC = src
 ifeq ($(UNAME_S),Darwin)
 STATIC =
 STRIP ?= -Wl,-x
@@ -134,17 +132,17 @@ MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
 # Test directory
-TESTDIR = tests
+TEST_DIR = tests
 
 # Tools directory
-TOOLSDIR = tools
+TOOLS_DIR = tools
 
 # Extra libs for linking
 LDLIBS += -lpcre2-8
 
 # Additional include headers of external libraries
-DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
-INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
+DYNAMIC_INCPATH += $(foreach d,$(STATLIBS),-Ilibs/$d/src/)
+INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 
 ifeq ($(UNAME_S),Darwin)
 #DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
@@ -265,8 +263,8 @@ DYNP_EXE = $(DYNP_DIR)/$(EXE)
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
 DYNP_CFLAGS = $(PROD_CFLAGS)
 DYNP_LDFLAGS = $(PROD_LDFLAGS)
-DYNP_STATIC_LIBS = $(addprefix $(PROD_LIBDIR)/lib,$(addsuffix .a,$(LIBS)))
-DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
+DYNP_STATIC_LIBS = $(addprefix $(PROD_LIBDIR)/lib,$(addsuffix .a,$(STATLIBS)))
+DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(STATLIBS)),$(LDLIBS))
 
 #
 # Portable build settings
@@ -309,7 +307,7 @@ debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 debuglibs:
-	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(LIBS)"
 
 $(DBG_EXE): $(DBG_OBJS) debuglibs
 	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LINK_RPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
@@ -319,7 +317,7 @@ else
 	@echo "$@ linked statically, not stripped"
 endif
 
-$(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
+$(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
 	@echo "$< compiled with debug flags"
 
@@ -336,7 +334,7 @@ coveragefinal: $(COV_EXE)
 	@echo "The application has been built and is located: $(COV_EXE)"
 
 coveragelibs:
-	@$(MAKE) -s -C libs coverage SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs coverage SUBDIRS="$(LIBS)"
 
 $(COV_EXE): $(COV_OBJS) coveragelibs
 	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(LDLIBS)
@@ -346,7 +344,7 @@ else
 	@echo "$@ linked statically, not stripped"
 endif
 
-$(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
+$(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
 	@echo "$< compiled with coverage flags"
 
@@ -354,7 +352,7 @@ $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
 
 test-coverage:
-	@$(MAKE) -s -C $(TESTDIR) coverage
+	@$(MAKE) -s -C $(TEST_DIR) coverage
 
 #
 # Sanitize rules
@@ -368,13 +366,13 @@ sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
 sanitizelibs:
-	@$(MAKE) -s -C libs sanitize SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs sanitize SUBDIRS="$(LIBS)"
 
 $(SNTZ_EXE): $(SNTZ_OBJS) sanitizelibs
 	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $(SNTZ_OBJS) $(LDLIBS)
 	@echo "$@ linked dynamically, not stripped"
 
-$(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
+$(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
 	@echo "$< compiled with sanitizer flags"
 
@@ -398,7 +396,7 @@ prodfinal: $(PROD_EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 prodlibs:
-	@$(MAKE) -s -C libs production SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
 
 $(PROD_EXE): $(PROD_OBJS) prodlibs
 	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(LDLIBS)
@@ -408,7 +406,7 @@ else
 	@echo "$@ linked statically, stripped"
 endif
 
-$(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
+$(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
 	@echo "$< compiled with release flags"
 
@@ -431,13 +429,13 @@ dynprodfinal: dynamic-production-build
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 dynprodlibs:
-	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
+	@$(MAKE) -s -C libs production SUBDIRS="$(STATLIBS)"
 
 $(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
 	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
 	@echo "$@ linked dynamically, stripped"
 
-$(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
+$(DYNP_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DYNP_OBJDIR)
 	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
 	@echo "$< compiled with release flags"
 
@@ -460,7 +458,7 @@ portfinal: $(PRTB_EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 portablelibs:
-	@$(MAKE) -s -C libs portable SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs portable SUBDIRS="$(LIBS)"
 
 $(PRTB_EXE): $(PRTB_OBJS) portablelibs
 	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(LDLIBS)
@@ -470,7 +468,7 @@ else
 	@echo "$@ linked statically, stripped"
 endif
 
-$(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
+$(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
 	@echo "$< compiled with portable flags"
 
@@ -515,17 +513,17 @@ purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
 	@test -f $(COMPILE_COMMANDS) && rm $(COMPILE_COMMANDS) 2>/dev/null || true
 	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
-	@$(MAKE) -C tests clean-hugetestfile
+	@$(MAKE) -C $(TEST_DIR) clean-hugetestfile
 	@echo Quick cleanup of all artifacts
 
 clean-all: clean-tests clean clean-tools clean-docker
 	@$(MAKE) -C libs clean
 
 clean-tools:
-	@$(MAKE) -C $(TOOLSDIR) clean
+	@$(MAKE) -C $(TOOLS_DIR) clean
 
 clean-tests:
-	@$(MAKE) -C $(TESTDIR) clean
+	@$(MAKE) -C $(TEST_DIR) clean
 
 clean-preproc:
 	@rm -rf $(PREPROC)
@@ -536,14 +534,14 @@ clean-asm:
 test: tests
 tests: tests-sanitize
 tests-sanitize:
-	@$(MAKE) -s -C $(TESTDIR) sanitize
+	@$(MAKE) -s -C $(TEST_DIR) sanitize
 
 tests-debug:
-	@$(MAKE) -s -C $(TESTDIR) debug
+	@$(MAKE) -s -C $(TEST_DIR) debug
 
 # Run the debug test suite without static linking to avoid requiring static external libraries
 tests-dynamic:
-	@$(MAKE) -s -C $(TESTDIR) debug TESTS_DYNAMIC=1
+	@$(MAKE) -s -C $(TEST_DIR) debug TESTS_DYNAMIC=1
 
 #
 # Build and test within a Docker container
@@ -898,7 +896,7 @@ perf:
 stat: cloc
 cloc:
 #	@cloc --exclude-dir=$(SNTZ_DIR),$(DBG_DIR),$(PROD_DIR) $(PRTB_DIR) ./src
-	@cloc $(SRC) libs/sha512/src/ libs/mem/src/ libs/rational/src/ libs/testitall/src/
+	@cloc $(SRC_DIR) libs/sha512/src/ libs/mem/src/ libs/rational/src/ libs/testitall/src/
 
 banner:
 	@$(BUILD_USAGE_BANNER)
