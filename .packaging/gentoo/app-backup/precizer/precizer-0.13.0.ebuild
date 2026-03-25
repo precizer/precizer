@@ -21,6 +21,9 @@ DEPEND="
 	${RDEPEND}
 	test? ( dev-util/cmocka )
 "
+BDEPEND="
+	test? ( llvm-core/llvm )
+"
 
 S="${WORKDIR}/${P}"
 DOCS=( README.md CHANGELOG.md )
@@ -34,7 +37,7 @@ src_compile() {
 }
 
 src_test() {
-	emake tests-debug
+	emake tests
 }
 
 src_install() {
