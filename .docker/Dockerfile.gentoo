@@ -3,7 +3,7 @@ FROM gentoo/stage3@sha256:1fb7567c1f8073aed24fd8a8b5dcad62a20b1dac1df0311f5d7f9e
 # deps: gcc, make, llvm, pcre2 (static), upx, useradd
 RUN mkdir -p /var/db/repos/gentoo; \
     echo 'FEATURES="-ipc-sandbox -network-sandbox -pid-sandbox"' >> /etc/portage/make.conf; \
-    (emerge-webrsync || emerge --sync); \
+    (emerge-webrsync -q || emerge --sync); \
     getuto; \
     emerge --ask=n --getbinpkg --usepkgonly llvm-core/llvm llvm-core/clang; \
     echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2; \
