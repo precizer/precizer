@@ -172,6 +172,7 @@ SCAN_BUILD := scan-build$(CLANG_SUFFIX)
 #   COMPILER=clang make debug
 ifeq ($(COMPILER),clang)
 CC := $(CLANG)
+export CC
 $(info Using compiler: $(CLANG))
 endif
 
@@ -577,9 +578,14 @@ DOCKER_BUILD ?= $(DOCKER_DEFAULT_BUILD)
 DOCKER_COMPILER ?=
 DOCKER_COMPILER_TAG = $(if $(DOCKER_COMPILER),-$(DOCKER_COMPILER),)
 
+# Optional test-type override (e.g. DOCKER_TEST_TYPE=tests-debug).
+# Empty means the Dockerfile default (ENV TEST_TYPE) is used.
+DOCKER_TEST_TYPE ?=
+DOCKER_TEST_TYPE_TAG = $(if $(DOCKER_TEST_TYPE),-$(DOCKER_TEST_TYPE),)
+
 DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
-# Make the container name unique per OS/build/compiler to avoid clobbering
-DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
+# Make the container name unique per OS/build/compiler/test-type to avoid clobbering
+DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)$(DOCKER_TEST_TYPE_TAG)
 
 DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
 DOCKER_CREATE_FLAGS  ?= -it
@@ -605,7 +611,7 @@ build-docker:
 # Create a named container from the image (same container will be used for run+copy)
 create-docker:
 	@docker rm -f "$(DOCKER_CONTAINER)" > /dev/null 2>&1 || true
-	@docker create $(DOCKER_CREATE_FLAGS) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
+	@docker create $(DOCKER_CREATE_FLAGS) $(if $(DOCKER_TEST_TYPE),-e TEST_TYPE="$(DOCKER_TEST_TYPE)",) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
 
 # Start the created container and attach to it
 # Note: this runs the image's default CMD/ENTRYPOINT
@@ -797,6 +803,13 @@ DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug sanitize
 # as DOCKER_COMPILER to the container so the Makefile picks them up.
 DOCKER_MATRIX_COMPILERS ?= default clang
 
+# Test variants to run per OS.  Each entry overrides ENV TEST_TYPE at
+# container runtime (the image is not rebuilt).
+# Per-OS exclusions: define DOCKER_MATRIX_TESTS_EXCLUDE_<os> to remove
+# specific test types (e.g. Alpine has no sanitizer, so "tests" is excluded).
+DOCKER_MATRIX_TESTS ?= tests tests-debug tests-dynamic
+DOCKER_MATRIX_TESTS_EXCLUDE_alpine ?= tests
+
 print-docker-oses:
 	@echo "$(DOCKER_OSES)"
 
@@ -814,10 +827,12 @@ docker-check-every-os:
 		$(MAKE) docker-check-os-$$os; \
 	done
 
-# Run all build variants for a single OS (with every compiler), then cleanup.
+# Run all build variants for a single OS (with every compiler and test type),
+# then cleanup.
 # DOCKER_KEEP_IMAGE=1 prevents each docker-run invocation from removing the image
 # (and its cached base layers) so the same base image is reused across build variants.
 # All images are cleaned up at the end by clean-docker-os-%.
+# Per-OS test list: DOCKER_MATRIX_TESTS minus DOCKER_MATRIX_TESTS_EXCLUDE_<os>.
 docker-check-os-%:
 	@set -e; \
 	os="$*"; \
@@ -825,22 +840,26 @@ docker-check-os-%:
 		dc=""; \
 		if [ "$$compiler" != "default" ]; then dc="$$compiler"; fi; \
 		for b in $(DOCKER_MATRIX_BUILDS); do \
-			echo "---- $$os / $$b / $${compiler} ----"; \
-			$(MAKE) docker-run-$$os-$$b DOCKER_KEEP_IMAGE=1 DOCKER_COMPILER=$$dc; \
+			for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
+				echo "---- $$os / $$b / $${compiler} / $$t ----"; \
+				$(MAKE) docker-run-$$os-$$b DOCKER_KEEP_IMAGE=1 DOCKER_COMPILER=$$dc DOCKER_TEST_TYPE=$$t; \
+			done; \
 		done; \
 	done; \
 	$(MAKE) clean-docker-os-$$os
 
-# Cleanup all images/containers for a single OS (for all build variants and compilers)
+# Cleanup all images/containers for a single OS (all build variants, compilers, test types)
 clean-docker-os-%:
 	@set -e; \
 	os="$*"; \
 	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
-		tag=""; \
-		if [ "$$compiler" != "default" ]; then tag="-$$compiler"; fi; \
+		ctag=""; \
+		if [ "$$compiler" != "default" ]; then ctag="-$$compiler"; fi; \
 		for b in $(DOCKER_MATRIX_BUILDS); do \
-			docker rm -f "$(EXE)-$$os-$$b$$tag" >/dev/null 2>&1 || true; \
-			docker image rm -f "$(EXE):$$os-$$b$$tag" >/dev/null 2>&1 || true; \
+			docker image rm -f "$(EXE):$$os-$$b$$ctag" >/dev/null 2>&1 || true; \
+			for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
+				docker rm -f "$(EXE)-$$os-$$b$$ctag-$$t" >/dev/null 2>&1 || true; \
+			done; \
 		done; \
 	done; \
 	docker image prune -f >/dev/null 2>&1 || true; \

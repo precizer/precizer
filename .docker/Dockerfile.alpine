@@ -12,7 +12,8 @@ USER builder
 ARG BUILD=production
 ARG COMPILER=
 ENV COMPILER=${COMPILER}
+ENV TEST_TYPE=tests-debug
 RUN make -j ${BUILD}
 
-# musl doesn't have working sanitizer at all, that's why:
-CMD ["sh", "-c", "make -j tests-debug"]
+# musl doesn't have working sanitizer at all, that's why tests-debug is the default:
+CMD ["sh", "-c", "make -j ${TEST_TYPE}"]

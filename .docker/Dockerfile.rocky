@@ -34,6 +34,7 @@ USER builder
 ARG BUILD=production
 ARG COMPILER=
 ENV COMPILER=${COMPILER}
+ENV TEST_TYPE=tests
 RUN scl enable gcc-toolset-15 -- make -j ${BUILD}
 
-CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make -j tests"]
+CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make -j ${TEST_TYPE}"]

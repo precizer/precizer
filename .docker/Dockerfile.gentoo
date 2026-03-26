@@ -25,6 +25,7 @@ SHELL ["/bin/bash", "-lc"]
 ARG BUILD=production
 ARG COMPILER=
 ENV COMPILER=${COMPILER}
+ENV TEST_TYPE=tests
 RUN make -j ${BUILD}
 
-CMD ["/bin/bash", "-lc", "make -j tests"]
+CMD ["/bin/bash", "-lc", "make -j ${TEST_TYPE}"]

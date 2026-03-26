@@ -20,6 +20,7 @@ USER builder
 ARG BUILD=production
 ARG COMPILER=
 ENV COMPILER=${COMPILER}
+ENV TEST_TYPE=tests
 RUN make -j ${BUILD}
 
-CMD ["sh", "-c", "make -j tests"]
+CMD ["sh", "-c", "make -j ${TEST_TYPE}"]
