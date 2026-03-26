@@ -719,7 +719,8 @@ docker-run-%:
 # flavor (portable/production/…).
 #
 # This helps ensure the project can be built and tested across multiple Linux
-# distributions and build configurations (static, dynamic, debug).
+# distributions, build configurations (static, dynamic, debug, sanitize),
+# compilers (default, clang), and test types (tests, tests-debug, tests-dynamic).
 #
 # How the OS list is discovered
 # -----------------------------
@@ -738,14 +739,14 @@ docker-run-%:
 #
 # Which build flavors run per OS
 # ------------------------------
-# By default, each OS runs the following targets (in this order):
-#   portable
-#   production
-#   dynamic-production
-#   debug
+# By default, each OS runs the following build types:
+#   portable, production, dynamic-production, debug, sanitize
+#
+# Per-OS exclusions can remove specific builds (e.g. Alpine has no sanitizer):
+#   DOCKER_MATRIX_BUILDS_EXCLUDE_alpine ?= sanitize
 #
 # The list is controlled by DOCKER_MATRIX_BUILDS and can be overridden:
-#   make DOCKER_MATRIX_BUILDS="production sanitize" docker-check-every-os
+#   make DOCKER_MATRIX_BUILDS="production debug" docker-check-every-os
 #
 # Main commands
 # -------------
@@ -763,14 +764,18 @@ docker-run-%:
 #
 # What runs inside the loop
 # -------------------------
-# For each OS "<os>", the following commands are executed:
-#   make docker-<os>-portable
-#   make docker-<os>-production
-#   make docker-<os>-dynamic-production
-#   make docker-<os>-debug
+# For each OS, the matrix iterates over three dimensions:
+#   compiler  × build  × test-type
 #
-# These targets already exist in this Makefile and use the docker-all pipeline:
-#   build image -> create container -> run (tests) -> copy artifact -> cleanup
+# For example (ubuntu):
+#   make docker-run-ubuntu-portable   DOCKER_COMPILER=      DOCKER_TEST_TYPE=tests
+#   make docker-run-ubuntu-portable   DOCKER_COMPILER=      DOCKER_TEST_TYPE=tests-debug
+#   make docker-run-ubuntu-portable   DOCKER_COMPILER=      DOCKER_TEST_TYPE=tests-dynamic
+#   make docker-run-ubuntu-portable   DOCKER_COMPILER=clang DOCKER_TEST_TYPE=tests
+#   ...
+#
+# Each invocation uses the docker-run pipeline:
+#   build image -> create container -> run (tests) -> cleanup
 #
 # Cleanup behavior
 # ----------------
@@ -779,9 +784,9 @@ docker-run-%:
 # are preserved across build variants of the same OS.  This avoids
 # re-downloading large base images (e.g. gentoo/stage3) between variants.
 #
-# After all build flavors complete for a given OS, cleanup is performed:
-# - Containers removed:  $(EXE)-<os>-<build>
-# - Images removed:      $(EXE):<os>-<build>
+# After all variants complete for a given OS, cleanup is performed:
+# - Containers removed:  $(EXE)-<os>-<build>[-<compiler>][-<test-type>]
+# - Images removed:      $(EXE):<os>-<build>[-<compiler>]
 # - docker image prune -f is executed (dangling layers)
 #
 # This is intentional to keep the workspace clean and runs reproducible.
@@ -795,8 +800,11 @@ docker-run-%:
 DOCKER_DOCKERFILES := $(wildcard .docker/Dockerfile.*)
 DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERFILES))))
 
-# Build variants to run per OS (order matters)
+# Build variants to run per OS (order matters).
+# Per-OS exclusions: define DOCKER_MATRIX_BUILDS_EXCLUDE_<os> to remove
+# specific build types (e.g. Alpine has no sanitizer).
 DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug sanitize
+DOCKER_MATRIX_BUILDS_EXCLUDE_alpine ?= sanitize
 
 # Compilers to test per OS.  "default" means the OS-provided compiler
 # (no COMPILER= override).  Additional entries (e.g. clang) are passed
@@ -832,14 +840,14 @@ docker-check-every-os:
 # DOCKER_KEEP_IMAGE=1 prevents each docker-run invocation from removing the image
 # (and its cached base layers) so the same base image is reused across build variants.
 # All images are cleaned up at the end by clean-docker-os-%.
-# Per-OS test list: DOCKER_MATRIX_TESTS minus DOCKER_MATRIX_TESTS_EXCLUDE_<os>.
+# Per-OS lists: DOCKER_MATRIX_{BUILDS,TESTS} minus DOCKER_MATRIX_{BUILDS,TESTS}_EXCLUDE_<os>.
 docker-check-os-%:
 	@set -e; \
 	os="$*"; \
 	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
 		dc=""; \
 		if [ "$$compiler" != "default" ]; then dc="$$compiler"; fi; \
-		for b in $(DOCKER_MATRIX_BUILDS); do \
+		for b in $(filter-out $(DOCKER_MATRIX_BUILDS_EXCLUDE_$*),$(DOCKER_MATRIX_BUILDS)); do \
 			for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
 				echo "---- $$os / $$b / $${compiler} / $$t ----"; \
 				$(MAKE) docker-run-$$os-$$b DOCKER_KEEP_IMAGE=1 DOCKER_COMPILER=$$dc DOCKER_TEST_TYPE=$$t; \
@@ -855,7 +863,7 @@ clean-docker-os-%:
 	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
 		ctag=""; \
 		if [ "$$compiler" != "default" ]; then ctag="-$$compiler"; fi; \
-		for b in $(DOCKER_MATRIX_BUILDS); do \
+		for b in $(filter-out $(DOCKER_MATRIX_BUILDS_EXCLUDE_$*),$(DOCKER_MATRIX_BUILDS)); do \
 			docker image rm -f "$(EXE):$$os-$$b$$ctag" >/dev/null 2>&1 || true; \
 			for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
 				docker rm -f "$(EXE)-$$os-$$b$$ctag-$$t" >/dev/null 2>&1 || true; \
