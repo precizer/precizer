@@ -3,7 +3,7 @@ FROM ubuntu:24.04@sha256:d1e2e92c075e5ca139d51a140fff46f84315c0fdce203eab2807c7e
 RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      gcc make \
+      gcc clang make \
       llvm llvm-dev \
       libpcre2-dev \
       libsqlite3-dev \
@@ -18,6 +18,8 @@ RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
 ARG BUILD=production
+ARG COMPILER=
+ENV COMPILER=${COMPILER}
 RUN make -j ${BUILD}
 
 CMD ["sh", "-c", "make -j tests"]

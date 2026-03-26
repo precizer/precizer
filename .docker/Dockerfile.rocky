@@ -12,6 +12,7 @@ RUN set -eux; \
     dnf -y install \
     which \
     gcc \
+    clang \
     make \
     llvm \
     sqlite sqlite-devel \
@@ -31,6 +32,8 @@ RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
 ARG BUILD=production
+ARG COMPILER=
+ENV COMPILER=${COMPILER}
 RUN scl enable gcc-toolset-15 -- make -j ${BUILD}
 
 CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make -j tests"]

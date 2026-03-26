@@ -379,13 +379,19 @@ cppcheck:
 	bear --output $(COMPILE_COMMANDS) -- make -B -s debug-build
 	cppcheck --project=$(COMPILE_COMMANDS) --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force -i ../libs/sqlite3/src --inconclusive
 
-clang-analyzer: CC = clang-20
-clang-analyzer: SCAN-BUILD = scan-build-20
-clang-analyzer:
-	# Run clang static analyzer and view analysis results in a web browser when the build command completes
-	$(SCAN-BUILD) --exclude ../libs/sqlite3 -V $(MAKE) -s debug-build
+# Find the highest-versioned clang binary available (clang-21, clang-20, …),
+# fall back to plain "clang" when no versioned binary exists
+CLANG := $(notdir $(or $(lastword $(sort $(wildcard $(addsuffix /clang-[0-9]*,$(subst :, ,$(PATH)))))),clang))
+CLANG_SUFFIX := $(patsubst clang%,%,$(CLANG))
+SCAN_BUILD := scan-build$(CLANG_SUFFIX)
 
-clang-analyzer-cli: CC = clang-20
-clang-analyzer-cli: SCAN-BUILD = scan-build-20
+clang-analyzer: CC = $(CLANG)
+clang-analyzer:
+	@echo "Using compiler: $(CLANG), analyzer: $(SCAN_BUILD)"
+	# Run clang static analyzer and view analysis results in a web browser when the build command completes
+	$(SCAN_BUILD) --exclude ../libs/sqlite3 -V $(MAKE) -s debug-build
+
+clang-analyzer-cli: CC = $(CLANG)
 clang-analyzer-cli:
-	$(SCAN-BUILD) --exclude ../libs/sqlite3 $(MAKE) -s debug-build
+	@echo "Using compiler: $(CLANG), analyzer: $(SCAN_BUILD)"
+	$(SCAN_BUILD) --exclude ../libs/sqlite3 $(MAKE) -s debug-build

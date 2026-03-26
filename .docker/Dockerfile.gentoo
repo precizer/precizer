@@ -4,13 +4,10 @@ FROM gentoo/stage3@sha256:1fb7567c1f8073aed24fd8a8b5dcad62a20b1dac1df0311f5d7f9e
 RUN mkdir -p /var/db/repos/gentoo; \
     echo 'FEATURES="-ipc-sandbox -network-sandbox -pid-sandbox"' >> /etc/portage/make.conf; \
     (emerge-webrsync || emerge --sync); \
-    emerge --ask=n --getbinpkg --usepkgonly -pv \
-      llvm-core/llvm; \
+    getuto; \
+    emerge --ask=n --getbinpkg --usepkgonly llvm-core/llvm llvm-core/clang; \
     echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2; \
-    emerge --ask=n \
-      app-arch/upx \
-      dev-libs/libpcre2 \
-      dev-util/cmocka; \
+    emerge --ask=n dev-libs/libpcre2 app-arch/upx dev-util/cmocka; \
     emerge --depclean
 
 WORKDIR /precizer
@@ -19,7 +16,15 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
+# Gentoo installs LLVM tools under /usr/lib/llvm/<ver>/bin/ which is
+# not in the default PATH.  Discover the newest version dynamically and
+# persist it so both RUN and CMD see the updated PATH.
+RUN echo "export PATH=\"\$(ls -1d /usr/lib/llvm/[0-9]*/bin 2>/dev/null | sort -t/ -k5 -n | tail -1):\$PATH\"" \
+    >> ~/.bashrc
+SHELL ["/bin/bash", "-lc"]
 ARG BUILD=production
+ARG COMPILER=
+ENV COMPILER=${COMPILER}
 RUN make -j ${BUILD}
 
-CMD ["sh", "-c", "export PATH=\"$(ls -d /usr/lib/llvm/[0-9]*/bin 2>/dev/null):$PATH\"; echo $PATH; make -j tests"]
+CMD ["/bin/bash", "-lc", "make -j tests"]

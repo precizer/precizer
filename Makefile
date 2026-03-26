@@ -158,8 +158,22 @@ endif
 all: production
 
 # Clang
-clang: CC = clang
-clang: all
+# Find the highest-versioned clang binary available (clang-21, clang-20, …),
+# fall back to plain "clang" when no versioned binary exists
+CLANG := $(notdir $(or $(lastword $(sort $(wildcard $(addsuffix /clang-[0-9]*,$(subst :, ,$(PATH)))))),clang))
+# Extract the version suffix (e.g. "-20") so scan-build and other
+# LLVM tools with the same versioning scheme can be resolved too
+CLANG_SUFFIX := $(patsubst clang%,%,$(CLANG))
+SCAN_BUILD := scan-build$(CLANG_SUFFIX)
+
+# Set COMPILER=clang to build any target with the latest available clang:
+#   make COMPILER=clang production
+#   make COMPILER=clang dynamic-production
+#   COMPILER=clang make debug
+ifeq ($(COMPILER),clang)
+CC := $(CLANG)
+$(info Using compiler: $(CLANG))
+endif
 
 #
 # Project files
@@ -292,7 +306,7 @@ printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: all clean debug remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image test test-coverage tests-sanitize tests-debug tests-dynamic docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
@@ -558,9 +572,14 @@ DOCKER_DEFAULT_BUILD ?= production
 DOCKER_OS    ?= $(DOCKER_DEFAULT_OS)
 DOCKER_BUILD ?= $(DOCKER_DEFAULT_BUILD)
 
-DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)
-# Make the container name unique per OS/build to avoid clobbering
-DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)
+# Optional compiler override passed into the container (e.g. DOCKER_COMPILER=clang).
+# Empty means the Dockerfile/OS default compiler is used.
+DOCKER_COMPILER ?=
+DOCKER_COMPILER_TAG = $(if $(DOCKER_COMPILER),-$(DOCKER_COMPILER),)
+
+DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
+# Make the container name unique per OS/build/compiler to avoid clobbering
+DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
 
 DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
 DOCKER_CREATE_FLAGS  ?= -it
@@ -581,7 +600,7 @@ DOCKER_KEEP_IMAGE ?=
 # Build the image
 build-docker:
 	@test -f "$(DOCKERFILE)" || { echo "No Dockerfile: $(DOCKERFILE)"; exit 2; }
-	@docker build -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" -t "$(DOCKER_IMAGE)" .
+	@docker build -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" --build-arg COMPILER="$(DOCKER_COMPILER)" -t "$(DOCKER_IMAGE)" .
 
 # Create a named container from the image (same container will be used for run+copy)
 create-docker:
@@ -771,7 +790,12 @@ DOCKER_DOCKERFILES := $(wildcard .docker/Dockerfile.*)
 DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERFILES))))
 
 # Build variants to run per OS (order matters)
-DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug
+DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug sanitize
+
+# Compilers to test per OS.  "default" means the OS-provided compiler
+# (no COMPILER= override).  Additional entries (e.g. clang) are passed
+# as DOCKER_COMPILER to the container so the Makefile picks them up.
+DOCKER_MATRIX_COMPILERS ?= default clang
 
 print-docker-oses:
 	@echo "$(DOCKER_OSES)"
@@ -790,28 +814,34 @@ docker-check-every-os:
 		$(MAKE) docker-check-os-$$os; \
 	done
 
-# Run all build variants for a single OS, then cleanup images/containers for this OS.
+# Run all build variants for a single OS (with every compiler), then cleanup.
 # DOCKER_KEEP_IMAGE=1 prevents each docker-run invocation from removing the image
 # (and its cached base layers) so the same base image is reused across build variants.
 # All images are cleaned up at the end by clean-docker-os-%.
 docker-check-os-%:
 	@set -e; \
 	os="$*"; \
-	for b in $(DOCKER_MATRIX_BUILDS); do \
-		echo "---- $$os / $$b ----"; \
-		$(MAKE) docker-run-$$os-$$b DOCKER_KEEP_IMAGE=1; \
+	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
+		dc=""; \
+		if [ "$$compiler" != "default" ]; then dc="$$compiler"; fi; \
+		for b in $(DOCKER_MATRIX_BUILDS); do \
+			echo "---- $$os / $$b / $${compiler} ----"; \
+			$(MAKE) docker-run-$$os-$$b DOCKER_KEEP_IMAGE=1 DOCKER_COMPILER=$$dc; \
+		done; \
 	done; \
 	$(MAKE) clean-docker-os-$$os
 
-# Cleanup all images/containers for a single OS (for all build variants)
+# Cleanup all images/containers for a single OS (for all build variants and compilers)
 clean-docker-os-%:
 	@set -e; \
 	os="$*"; \
-	for b in $(DOCKER_MATRIX_BUILDS); do \
-		# containers are named: $(EXE)-<os>-<build> (per your DOCKER_CONTAINER logic) \
-		docker rm -f "$(EXE)-$$os-$$b" >/dev/null 2>&1 || true; \
-		# images are tagged: $(EXE):<os>-<build> (per your DOCKER_IMAGE logic) \
-		docker image rm -f "$(EXE):$$os-$$b" >/dev/null 2>&1 || true; \
+	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
+		tag=""; \
+		if [ "$$compiler" != "default" ]; then tag="-$$compiler"; fi; \
+		for b in $(DOCKER_MATRIX_BUILDS); do \
+			docker rm -f "$(EXE)-$$os-$$b$$tag" >/dev/null 2>&1 || true; \
+			docker image rm -f "$(EXE):$$os-$$b$$tag" >/dev/null 2>&1 || true; \
+		done; \
 	done; \
 	docker image prune -f >/dev/null 2>&1 || true; \
 	echo "Docker artifacts for $$os cleared"
@@ -882,16 +912,16 @@ massif: debug
 	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 	ms_print ./massif.out.*
 
-clang-analyzer: CC = clang-20
-clang-analyzer: SCAN-BUILD = scan-build-20
+clang-analyzer: CC = $(CLANG)
 clang-analyzer:
+	@echo "Using compiler: $(CLANG), analyzer: $(SCAN_BUILD)"
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
-	$(SCAN-BUILD) --exclude libs/sqlite3 -V $(MAKE) debug
+	$(SCAN_BUILD) --exclude libs/sqlite3 -V $(MAKE) debug
 
-clang-analyzer-cli: CC = clang-20
-clang-analyzer-cli: SCAN-BUILD = scan-build-20
+clang-analyzer-cli: CC = $(CLANG)
 clang-analyzer-cli:
-	$(SCAN-BUILD) --exclude libs/sqlite3 $(MAKE) debug
+	@echo "Using compiler: $(CLANG), analyzer: $(SCAN_BUILD)"
+	$(SCAN_BUILD) --exclude libs/sqlite3 $(MAKE) debug
 
 doc:
 	@doxygen Doxyfile

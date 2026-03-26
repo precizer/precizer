@@ -4,6 +4,7 @@ RUN set -eux; \
       apt-get update; \
       DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       gcc \
+      clang \
       make \
       llvm \
       llvm-dev \
@@ -20,6 +21,8 @@ RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
 ARG BUILD=production
+ARG COMPILER=
+ENV COMPILER=${COMPILER}
 RUN make -j ${BUILD}
 
 CMD ["sh", "-c", "make -j tests"]
