@@ -567,6 +567,13 @@ DOCKER_CREATE_FLAGS  ?= -it
 DOCKER_RUN_FLAGS     ?= -it
 DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
 
+# When non-empty, pipeline targets (docker-run, docker-export, docker-all) skip
+# image removal so that the base layer cache is preserved across repeated builds
+# for the same OS.  The caller is responsible for cleaning up afterwards.
+# Used by docker-check-os-% to avoid re-downloading large base images between
+# build variants of the same OS.
+DOCKER_KEEP_IMAGE ?=
+
 .PHONY: build-docker create-docker start-docker copy-from-docker
 .PHONY: docker-export docker-run docker-all docker docker-% docker-export-% docker-run-%
 .PHONY: clean-docker clean-docker-image clean-all-docker tests-in-docker
@@ -611,30 +618,30 @@ clean-all-docker:
 # Ordered pipelines (guaranteed sequence)
 #
 
-# Build -> Create -> Copy -> Clean container -> Clean image
+# Build -> Create -> Copy -> Clean container [-> Clean image]
 docker-export:
 	@$(MAKE) build-docker
 	@$(MAKE) create-docker
 	@$(MAKE) copy-from-docker
 	@$(MAKE) clean-docker
-	@$(MAKE) clean-docker-image
+	$(if $(DOCKER_KEEP_IMAGE),,@$(MAKE) clean-docker-image)
 
-# Build -> Create -> Run (attach) -> Clean container -> Clean image
+# Build -> Create -> Run (attach) -> Clean container [-> Clean image]
 docker-run:
 	@$(MAKE) build-docker
 	@$(MAKE) create-docker
 	@$(MAKE) start-docker
 	@$(MAKE) clean-docker
-	@$(MAKE) clean-docker-image
+	$(if $(DOCKER_KEEP_IMAGE),,@$(MAKE) clean-docker-image)
 
-# Build -> Create -> Run -> Copy -> Clean container -> Clean image
+# Build -> Create -> Run -> Copy -> Clean container [-> Clean image]
 docker-all:
 	@$(MAKE) build-docker
 	@$(MAKE) create-docker
 	@$(MAKE) start-docker
 	@$(MAKE) copy-from-docker
 	@$(MAKE) clean-docker
-	@$(MAKE) clean-docker-image
+	$(if $(DOCKER_KEEP_IMAGE),,@$(MAKE) clean-docker-image)
 
 # Run the image in a fresh throwaway container 1000 times (build once, then run many)
 tests-in-docker: build-docker
@@ -742,6 +749,11 @@ docker-run-%:
 #
 # Cleanup behavior
 # ----------------
+# During the matrix run, DOCKER_KEEP_IMAGE=1 is passed to each docker-run
+# invocation so that built images (and the cached base layers they depend on)
+# are preserved across build variants of the same OS.  This avoids
+# re-downloading large base images (e.g. gentoo/stage3) between variants.
+#
 # After all build flavors complete for a given OS, cleanup is performed:
 # - Containers removed:  $(EXE)-<os>-<build>
 # - Images removed:      $(EXE):<os>-<build>
@@ -778,13 +790,16 @@ docker-check-every-os:
 		$(MAKE) docker-check-os-$$os; \
 	done
 
-# Run all build variants for a single OS, then cleanup images/containers for this OS
+# Run all build variants for a single OS, then cleanup images/containers for this OS.
+# DOCKER_KEEP_IMAGE=1 prevents each docker-run invocation from removing the image
+# (and its cached base layers) so the same base image is reused across build variants.
+# All images are cleaned up at the end by clean-docker-os-%.
 docker-check-os-%:
 	@set -e; \
 	os="$*"; \
 	for b in $(DOCKER_MATRIX_BUILDS); do \
 		echo "---- $$os / $$b ----"; \
-		$(MAKE) docker-run-$$os-$$b; \
+		$(MAKE) docker-run-$$os-$$b DOCKER_KEEP_IMAGE=1; \
 	done; \
 	$(MAKE) clean-docker-os-$$os
 

@@ -1,8 +1,4 @@
-ARG BUILD=production
 FROM almalinux:9@sha256:4e5f333756e39943fe66e3b55ee4c303805eebd7c6da372f07f2418f79b23d87 AS almalinux
-
-ARG BUILD
-ENV BUILD=${BUILD}
 
 RUN set -eux; \
     dnf -y update; \
@@ -35,6 +31,7 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
+ARG BUILD=production
 RUN scl enable gcc-toolset-15 -- make -j ${BUILD}
 
 CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make -j tests"]

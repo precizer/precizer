@@ -1,8 +1,4 @@
-ARG BUILD=production
 FROM archlinux@sha256:70aace0bf67d14280ca54bc2c7ee15c5fff62684131b34ab38f99f730b643733 AS arch
-
-ARG BUILD
-ENV BUILD=${BUILD}
 
 RUN set -eux; \
      pacman -Syu --noconfirm --needed base-devel gcc-libs sqlite llvm pcre2 upx inetutils cmocka; \
@@ -14,6 +10,7 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
+ARG BUILD=production
 RUN make -j ${BUILD}
 
 CMD ["sh", "-c", "make -j tests"]

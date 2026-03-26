@@ -1,8 +1,4 @@
-ARG BUILD=production
 FROM rockylinux:9@sha256:d7be1c094cc5845ee815d4632fe377514ee6ebcf8efaed6892889657e5ddaaa6 AS rocky
-
-ARG BUILD
-ENV BUILD=${BUILD}
 
 RUN set -eux; \
     dnf -y update; \
@@ -34,6 +30,7 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
+ARG BUILD=production
 RUN scl enable gcc-toolset-15 -- make -j ${BUILD}
 
 CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make -j tests"]
