@@ -588,8 +588,11 @@ DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
 DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)$(DOCKER_TEST_TYPE_TAG)
 
 DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
-DOCKER_CREATE_FLAGS  ?= -it
-DOCKER_RUN_FLAGS     ?= -it
+# Docker flags are empty by default so automation targets do not require a TTY.
+# To enable interactive mode manually, for example:
+#   make DOCKER_CREATE_FLAGS=-it DOCKER_RUN_FLAGS=-it docker-run-ubuntu-production
+DOCKER_CREATE_FLAGS  ?=
+DOCKER_RUN_FLAGS     ?=
 DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
 
 # When non-empty, pipeline targets (docker-run, docker-export, docker-all) skip
@@ -671,7 +674,7 @@ docker-all:
 # Run the image in a fresh throwaway container 1000 times (build once, then run many)
 tests-in-docker: build-docker
 	@i=1; while [ $$i -le 1000 ]; do \
-		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || break; \
+		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || exit $$?; \
 		i=$$((i + 1)); \
 	done
 
