@@ -575,6 +575,8 @@ DOCKER_BUILD ?= $(DOCKER_DEFAULT_BUILD)
 
 # Optional compiler override passed into the container (e.g. DOCKER_COMPILER=clang).
 # Empty means the Dockerfile/OS default compiler is used.
+# Do not pass the literal value "default". Leave DOCKER_COMPILER empty to use
+# the default compiler selected by the Dockerfile or OS
 DOCKER_COMPILER ?=
 DOCKER_COMPILER_TAG = $(if $(DOCKER_COMPILER),-$(DOCKER_COMPILER),)
 
@@ -687,6 +689,13 @@ tests-in-docker: build-docker
 #   make docker-ubuntu-dynamic-production -> docker-all
 #   make docker-export-alpine-portable    -> docker-export
 #   make docker-run-gentoo-production     -> docker-run
+# Example variants for alpine / portable / default / tests-debug:
+#   make docker-run-alpine-portable DOCKER_TEST_TYPE=tests-debug
+#       build image -> create container -> run tests -> cleanup
+#   make docker-alpine-portable DOCKER_TEST_TYPE=tests-debug
+#       build image -> create container -> run tests -> copy ./precizer -> cleanup
+#   make docker-run-alpine-portable
+#       same as the first command because .docker/Dockerfile.alpine defaults TEST_TYPE to tests-debug
 #
 docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
 
