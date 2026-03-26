@@ -36,6 +36,6 @@ ARG BUILD=production
 ARG COMPILER=
 ENV COMPILER=${COMPILER}
 ENV TEST_TYPE=tests
-RUN scl enable gcc-toolset-15 -- make -j ${BUILD}
+RUN if [ -n "$COMPILER" ]; then make -j ${BUILD}; else scl enable gcc-toolset-15 -- make -j ${BUILD}; fi
 
-CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make -j ${TEST_TYPE}"]
+CMD ["sh", "-c", "if [ -n \"$COMPILER\" ]; then make -j ${TEST_TYPE}; else scl enable gcc-toolset-15 -- make -j ${TEST_TYPE}; fi"]
