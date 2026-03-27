@@ -1,9 +1,12 @@
 # How to install dependencies and build the app:
 #
 # GCC
-# sudo apt -y install gcc make libpcre2-dev llvm
+# sudo apt -y install gcc make libpcre2-dev
 #
-# LLVM for sanitizer
+# Clang (LLVM linker and tools are needed for LTO)
+# sudo apt -y install clang lld llvm
+#
+# Sanitizer support (llvm-symbolizer for readable stack traces)
 # sudo apt -y install llvm libubsan1
 #
 # Support XXH3_128bits algorithm
@@ -180,6 +183,14 @@ USE_LLD := -fuse-ld=lld$(CLANG_SUFFIX)
 else ifneq ($(shell which ld.lld 2>/dev/null),)
 USE_LLD := -fuse-ld=lld
 endif
+export USE_LLD
+# Use LLVM's own archiver so ar can index LTO bitcode without the BFD plugin
+ifneq ($(shell which llvm-ar$(CLANG_SUFFIX) 2>/dev/null),)
+AR := llvm-ar$(CLANG_SUFFIX)
+else ifneq ($(shell which llvm-ar 2>/dev/null),)
+AR := llvm-ar
+endif
+export AR
 endif
 
 #

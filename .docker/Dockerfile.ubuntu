@@ -3,8 +3,9 @@ FROM ubuntu:24.04@sha256:d1e2e92c075e5ca139d51a140fff46f84315c0fdce203eab2807c7e
 RUN set -eux; \
     apt-get update; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      gcc clang-20 lld-20 libclang-rt-20-dev make \
-      llvm llvm-dev \
+      # lld-20 + llvm-20: LLVM linker and tools (llvm-ar, llvm-symbolizer)
+      # required for clang-20 LTO builds and sanitizer stack traces
+      gcc clang-20 lld-20 llvm-20 libclang-rt-20-dev make \
       libpcre2-dev \
       libsqlite3-dev \
       libcmocka0 libcmocka-dev \

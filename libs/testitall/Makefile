@@ -18,6 +18,8 @@ endif
 #
 # Compiler flags
 #
+# USE_LLD and AR are exported by the root Makefile when COMPILER=clang
+# to use LLVM's own linker and archiver, avoiding gold plugin version mismatch.
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
@@ -97,9 +99,9 @@ DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
 ifeq ($(UNAME_S),Darwin)
-DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
+DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
 else
-DBG_LDFLAGS = -Wl,-z,defs
+DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs
 endif
 
 #
@@ -131,7 +133,7 @@ ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO)
 endif
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
-SNTZ_LDFLAGS += $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS += $(USE_LLD) $(SNTZ_OPTIONS)
 
 #
 # Production build settings
@@ -146,9 +148,9 @@ PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
 PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
 else
-PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -172,9 +174,9 @@ PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
 else
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
