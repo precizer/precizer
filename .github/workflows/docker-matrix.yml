@@ -1,3 +1,9 @@
+# Complete build & test matrix across all platforms.
+#
+# 1) "discover" scans .docker/Dockerfile.* and emits a JSON list of OS names.
+# 2) "test" uses strategy.matrix to spawn one parallel job per OS — each job
+#    runs on its own runner simultaneously.  fail-fast is disabled so that
+#    a failure in one OS does not cancel the others.
 name: Complete build & test matrix across all platforms
 
 on:
@@ -7,16 +13,42 @@ permissions:
   contents: read
 
 jobs:
-  docker-matrix:
-    name: Build and test on every OS
+  discover:
+    name: Discover OS list
+    runs-on: ubuntu-24.04
+    outputs:
+      os-list: ${{ steps.scan.outputs.os-list }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          sparse-checkout: .docker
+
+      - name: Scan .docker/Dockerfile.* for OS names
+        id: scan
+        run: |
+          os_list=$(ls .docker/Dockerfile.* 2>/dev/null \
+            | sed 's|.*/Dockerfile\.||' \
+            | sort \
+            | jq -Rsc 'split("\n") | map(select(. != ""))')
+          echo "os-list=$os_list" >> "$GITHUB_OUTPUT"
+          echo "Discovered: $os_list"
+
+  test:
+    name: ${{ matrix.os }}
+    needs: discover
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJson(needs.discover.outputs.os-list) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
 
-      - name: Run Docker matrix
-        run: make docker-check-every-os
+      - name: Build and test (${{ matrix.os }})
+        run: make docker-check-os-${{ matrix.os }}
