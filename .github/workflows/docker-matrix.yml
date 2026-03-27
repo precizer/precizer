@@ -7,6 +7,8 @@
 name: Complete build & test matrix across all platforms
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
