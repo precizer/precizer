@@ -29,25 +29,42 @@ Return function_capture(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
+	int stdout_fd = -1;
+	int stderr_fd = -1;
+	FILE *stdout_tmp = NULL;
+	FILE *stderr_tmp = NULL;
+
+	/* Flush pending output before redirecting streams */
+	if(fflush(stdout) != 0 || fflush(stderr) != 0)
+	{
+		slog(ERROR,"Failed to flush streams before redirect\n");
+		status = FAILURE;
+	}
 
 	/* Save original file descriptors */
-	int stdout_fd = dup(STDOUT_FILENO);
-	int stderr_fd = dup(STDERR_FILENO);
-
-	if(stdout_fd == -1 || stderr_fd == -1)
+	if(SUCCESS == status)
 	{
-		slog(ERROR,"Failed to save original file descriptors\n");
-		return FAILURE;
+		stdout_fd = dup(STDOUT_FILENO);
+		stderr_fd = dup(STDERR_FILENO);
+
+		if(stdout_fd == -1 || stderr_fd == -1)
+		{
+			slog(ERROR,"Failed to save original file descriptors\n");
+			status = FAILURE;
+		}
 	}
 
 	/* Create temporary files for redirection */
-	FILE *stdout_tmp = tmpfile();
-	FILE *stderr_tmp = tmpfile();
-
-	if(stdout_tmp == NULL || stderr_tmp == NULL)
+	if(SUCCESS == status)
 	{
-		slog(ERROR,"Failed to create temporary files for redirection\n");
-		status = FAILURE;
+		stdout_tmp = tmpfile();
+		stderr_tmp = tmpfile();
+
+		if(stdout_tmp == NULL || stderr_tmp == NULL)
+		{
+			slog(ERROR,"Failed to create temporary files for redirection\n");
+			status = FAILURE;
+		}
 	}
 
 	/* Disable buffering for temporary files */
@@ -61,24 +78,21 @@ Return function_capture(
 		}
 	}
 
-	/* Disable buffering for stdout and stderr */
+	/* Redirect streams */
 	if(SUCCESS == status)
 	{
-		if(setvbuf(stdout,NULL,_IONBF,0) != 0 ||
-		        setvbuf(stderr,NULL,_IONBF,0) != 0)
+		if(dup2(fileno(stdout_tmp),STDOUT_FILENO) == -1)
 		{
-			slog(ERROR,"Failed to disable buffering\n");
+			slog(ERROR,"Failed to redirect stdout stream\n");
 			status = FAILURE;
 		}
 	}
 
-	/* Redirect streams */
 	if(SUCCESS == status)
 	{
-		if(dup2(fileno(stdout_tmp),STDOUT_FILENO) == -1 ||
-		        dup2(fileno(stderr_tmp),STDERR_FILENO) == -1)
+		if(dup2(fileno(stderr_tmp),STDERR_FILENO) == -1)
 		{
-			slog(ERROR,"Failed to redirect streams\n");
+			slog(ERROR,"Failed to redirect stderr stream\n");
 			status = FAILURE;
 		}
 	}
@@ -87,17 +101,29 @@ Return function_capture(
 	if(SUCCESS == status)
 	{
 		func();
-		fflush(stdout);
-		fflush(stderr);
+
+		if(fflush(stdout) != 0 || fflush(stderr) != 0)
+		{
+			slog(ERROR,"Failed to flush redirected streams\n");
+			status = FAILURE;
+		}
 	}
 
 	/* Restore original streams */
-	if(SUCCESS == status)
+	if(stdout_fd != -1)
 	{
-		if(dup2(stdout_fd,STDOUT_FILENO) == -1 ||
-		        dup2(stderr_fd,STDERR_FILENO) == -1)
+		if(dup2(stdout_fd,STDOUT_FILENO) == -1)
 		{
-			slog(ERROR,"Failed to restore original streams\n");
+			slog(ERROR,"Failed to restore original stdout stream\n");
+			status = FAILURE;
+		}
+	}
+
+	if(stderr_fd != -1)
+	{
+		if(dup2(stderr_fd,STDERR_FILENO) == -1)
+		{
+			slog(ERROR,"Failed to restore original stderr stream\n");
 			status = FAILURE;
 		}
 	}

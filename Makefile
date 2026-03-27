@@ -1,9 +1,12 @@
 # How to install dependencies and build the app:
 #
 # GCC
-# sudo apt -y install gcc make libpcre2-dev llvm
+# sudo apt -y install gcc make libpcre2-dev
 #
-# LLVM for sanitizer
+# Clang (LLVM linker and tools are needed for LTO)
+# sudo apt -y install clang lld llvm
+#
+# Sanitizer support (llvm-symbolizer for readable stack traces)
 # sudo apt -y install llvm libubsan1
 #
 # Support XXH3_128bits algorithm
@@ -59,9 +62,9 @@ CFLAGS += -fbuiltin
 # make DEFINES=-DWRITE_CSV=false memtest
 CFLAGS += $(DEFINES)
 
-LIBS = sha512 mem rational
-EXTRA_LIBS = $(LIBS) sqlite3
-LDLIBS = $(foreach d,$(EXTRA_LIBS),-l$d)
+LIBS = sha512 mem rational sqlite3
+STATLIBS = sha512 mem rational
+LDLIBS = $(foreach d,$(LIBS),-l$d)
 
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
@@ -80,19 +83,24 @@ endif
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
-
-SRC = src
-STRIP = -Wl,-s
-STATIC = -static -static-libgcc -Wl,--gc-sections
 ifeq ($(UNAME_S),Darwin)
-STRIP =
 STATIC =
+STRIP ?= -Wl,-x
+else
+# tests-dynamic disables static linking so the debug test build can use shared libraries
+ifneq ($(TESTS_DYNAMIC),)
+STATIC =
+else
+STATIC = -static -static-libgcc -Wl,--gc-sections
+endif
+STRIP ?= -s
 endif
 
 # UPX compression (disabled on macOS)
-UPX ?= upx --best --lzma -qqq
 ifeq ($(UNAME_S),Darwin)
 UPX = true
+else
+UPX ?= upx --best --lzma -qqq
 endif
 
 # Warning flags for additional checks
@@ -127,17 +135,17 @@ MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
 # Test directory
-TESTDIR = tests
+TEST_DIR = tests
 
 # Tools directory
-TOOLSDIR = tools
+TOOLS_DIR = tools
 
 # Extra libs for linking
 LDLIBS += -lpcre2-8
 
 # Additional include headers of external libraries
-DYNAMIC_INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
-INCPATH += $(foreach d,$(EXTRA_LIBS),-Ilibs/$d/src/)
+DYNAMIC_INCPATH += $(foreach d,$(STATLIBS),-Ilibs/$d/src/)
+INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 
 ifeq ($(UNAME_S),Darwin)
 #DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
@@ -153,8 +161,37 @@ endif
 all: production
 
 # Clang
-clang: CC = clang
-clang: all
+# Find the highest-versioned clang binary available (clang-21, clang-20, …),
+# fall back to plain "clang" when no versioned binary exists
+CLANG := $(notdir $(or $(lastword $(sort $(wildcard $(addsuffix /clang-[0-9]*,$(subst :, ,$(PATH)))))),clang))
+# Extract the version suffix (e.g. "-20") so scan-build and other
+# LLVM tools with the same versioning scheme can be resolved too
+CLANG_SUFFIX := $(patsubst clang%,%,$(CLANG))
+SCAN_BUILD := scan-build$(CLANG_SUFFIX)
+
+# Set COMPILER=clang to build any target with the latest available clang:
+#   make COMPILER=clang production
+#   make COMPILER=clang dynamic-production
+#   COMPILER=clang make debug
+ifeq ($(COMPILER),clang)
+CC := $(CLANG)
+export CC
+$(info Using compiler: $(CLANG))
+# Use LLVM's own linker to avoid gold plugin version mismatch with LTO
+ifneq ($(shell which ld.lld$(CLANG_SUFFIX) 2>/dev/null),)
+USE_LLD := -fuse-ld=lld$(CLANG_SUFFIX)
+else ifneq ($(shell which ld.lld 2>/dev/null),)
+USE_LLD := -fuse-ld=lld
+endif
+export USE_LLD
+# Use LLVM's own archiver so ar can index LTO bitcode without the BFD plugin
+ifneq ($(shell which llvm-ar$(CLANG_SUFFIX) 2>/dev/null),)
+AR := llvm-ar$(CLANG_SUFFIX)
+else ifneq ($(shell which llvm-ar 2>/dev/null),)
+AR := llvm-ar
+endif
+export AR
+endif
 
 #
 # Project files
@@ -180,10 +217,19 @@ DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
-DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
 LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
-DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
+DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
+DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
+else
+DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
+DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs -Wl,--as-needed
+endif
+# tests-dynamic injects a debug-only rpath so copied test binaries can find shared libraries
+ifneq ($(TESTS_DYNAMIC),)
+DBG_LINK_RPATH = $(DBG_RPATH)
+else
+DBG_LINK_RPATH =
 endif
 # Activate the Gprof profiler.
 # Works incorrectly with Valgrind.
@@ -202,7 +248,7 @@ COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
 COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
 COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
-COV_LDFLAGS = -lgcov --coverage
+COV_LDFLAGS = $(USE_LLD) -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -212,16 +258,15 @@ SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
-SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
-ifeq ($(UNAME_S),Darwin)
-SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
-endif
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
-SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
-SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
+SNTZ_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+else
+SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_LDFLAGS = $(USE_LLD) -Wl,-z,defs $(SNTZ_OPTIONS)
 endif
 
 #
@@ -233,11 +278,18 @@ PROD_OBJDIR = $(PROD_DIR)/obj
 PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
-PROD_CPU = -O3 -march=native
-PROD_CFLAGS = $(CFLAGS) -flto=auto $(PROD_CPU) -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+# PROD_LDFLAGS and PROD_CFLAGS use ?= so that distribution package managers
+# (Gentoo Portage, Debian dpkg-buildflags, RPM macros, etc.) can override them
+# with system-wide hardening and optimization flags via the command line:
+#   emake PROD_LDFLAGS='$(LDFLAGS)' PROD_CFLAGS='$(CFLAGS)'
+# When overridden, $(LDFLAGS) is replaced by the value from the package manager;
+# when not overridden, it expands to empty (LDFLAGS is not set in this project).
+# See .packaging/gentoo/ for a real-world example.
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,-dead_strip
+else
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 
 #
@@ -250,8 +302,8 @@ DYNP_EXE = $(DYNP_DIR)/$(EXE)
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
 DYNP_CFLAGS = $(PROD_CFLAGS)
 DYNP_LDFLAGS = $(PROD_LDFLAGS)
-DYNP_STATIC_LIBS = $(addprefix $(PROD_LIBDIR)/lib,$(addsuffix .a,$(LIBS)))
-DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
+DYNP_STATIC_LIBS = $(addprefix $(PROD_LIBDIR)/lib,$(addsuffix .a,$(STATLIBS)))
+DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(STATLIBS)),$(LDLIBS))
 
 #
 # Portable build settings
@@ -262,10 +314,11 @@ PRTB_OBJDIR = $(PRTB_DIR)/obj
 PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
-PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,-dead_strip
+else
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
@@ -278,10 +331,10 @@ printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug remake clang tests sanitize banner run format portable production prod dynamic-production debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
-.PHONY: production-done dynamic-production-done portable-done
+.PHONY: all clean debug remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
-.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image test test-coverage tests-sanitize tests-debug docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm test test-coverage tests-sanitize tests-debug tests-dynamic analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
@@ -293,17 +346,17 @@ debugfinal: $(DBG_EXE)
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 debuglibs:
-	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(LIBS)"
 
 $(DBG_EXE): $(DBG_OBJS) debuglibs
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LINK_RPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, not stripped"
 else
 	@echo "$@ linked statically, not stripped"
 endif
 
-$(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DBG_OBJDIR)
+$(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
 	@echo "$< compiled with debug flags"
 
@@ -320,7 +373,7 @@ coveragefinal: $(COV_EXE)
 	@echo "The application has been built and is located: $(COV_EXE)"
 
 coveragelibs:
-	@$(MAKE) -s -C libs coverage SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs coverage SUBDIRS="$(LIBS)"
 
 $(COV_EXE): $(COV_OBJS) coveragelibs
 	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(LDLIBS)
@@ -330,7 +383,7 @@ else
 	@echo "$@ linked statically, not stripped"
 endif
 
-$(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(COV_OBJDIR)
+$(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
 	@echo "$< compiled with coverage flags"
 
@@ -338,7 +391,7 @@ $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
 
 test-coverage:
-	@$(MAKE) -s -C $(TESTDIR) coverage
+	@$(MAKE) -s -C $(TEST_DIR) coverage
 
 #
 # Sanitize rules
@@ -352,13 +405,13 @@ sanitizefinal: $(SNTZ_EXE)
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
 sanitizelibs:
-	@$(MAKE) -s -C libs sanitize SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs sanitize SUBDIRS="$(LIBS)"
 
 $(SNTZ_EXE): $(SNTZ_OBJS) sanitizelibs
 	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $(SNTZ_OBJS) $(LDLIBS)
 	@echo "$@ linked dynamically, not stripped"
 
-$(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(SNTZ_OBJDIR)
+$(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
 	@echo "$< compiled with sanitizer flags"
 
@@ -382,18 +435,17 @@ prodfinal: $(PROD_EXE)
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 prodlibs:
-	@$(MAKE) -s -C libs production SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
 
 $(PROD_EXE): $(PROD_OBJS) prodlibs
 	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(LDLIBS)
-	@strip -x $(PROD_EXE)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
 else
 	@echo "$@ linked statically, stripped"
 endif
 
-$(PROD_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PROD_OBJDIR)
+$(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
 	@echo "$< compiled with release flags"
 
@@ -405,25 +457,24 @@ $(PROD_OBJDIR):
 #
 dynamic-production: banner-dynamic-production
 
-dynamic-production-done: $(DYNP_EXE) dynprodfinal
+dynamic-production-build: $(DYNP_EXE)
 
-banner-dynamic-production: dynamic-production-done
+banner-dynamic-production: dynprodfinal
 	@$(BUILD_USAGE_BANNER)
 
-dynprodfinal: $(DYNP_EXE)
+dynprodfinal: dynamic-production-build
 	@cp $(DYNP_EXE) $(EXE)
 	@$(UPX) $(EXE)
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 dynprodlibs:
-	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
+	@$(MAKE) -s -C libs production SUBDIRS="$(STATLIBS)"
 
 $(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
 	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
-	@strip -x $(DYNP_EXE)
 	@echo "$@ linked dynamically, stripped"
 
-$(DYNP_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(DYNP_OBJDIR)
+$(DYNP_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DYNP_OBJDIR)
 	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
 	@echo "$< compiled with release flags"
 
@@ -446,18 +497,17 @@ portfinal: $(PRTB_EXE)
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 portablelibs:
-	@$(MAKE) -s -C libs portable SUBDIRS="$(EXTRA_LIBS)"
+	@$(MAKE) -s -C libs portable SUBDIRS="$(LIBS)"
 
 $(PRTB_EXE): $(PRTB_OBJS) portablelibs
 	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(LDLIBS)
-	@strip -x $(PRTB_EXE)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
 else
 	@echo "$@ linked statically, stripped"
 endif
 
-$(PRTB_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) | $(PRTB_OBJDIR)
+$(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
 	@echo "$< compiled with portable flags"
 
@@ -502,17 +552,17 @@ purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
 	@test -f $(COMPILE_COMMANDS) && rm $(COMPILE_COMMANDS) 2>/dev/null || true
 	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
-	@$(MAKE) -C tests clean-hugetestfile
+	@$(MAKE) -C $(TEST_DIR) clean-hugetestfile
 	@echo Quick cleanup of all artifacts
 
 clean-all: clean-tests clean clean-tools clean-docker
 	@$(MAKE) -C libs clean
 
 clean-tools:
-	@$(MAKE) -C $(TOOLSDIR) clean
+	@$(MAKE) -C $(TOOLS_DIR) clean
 
 clean-tests:
-	@$(MAKE) -C $(TESTDIR) clean
+	@$(MAKE) -C $(TEST_DIR) clean
 
 clean-preproc:
 	@rm -rf $(PREPROC)
@@ -523,10 +573,14 @@ clean-asm:
 test: tests
 tests: tests-sanitize
 tests-sanitize:
-	@$(MAKE) -s -C $(TESTDIR) sanitize
+	@$(MAKE) -s -C $(TEST_DIR) sanitize
 
 tests-debug:
-	@$(MAKE) -s -C $(TESTDIR) debug
+	@$(MAKE) -s -C $(TEST_DIR) debug
+
+# Run the debug test suite without static linking to avoid requiring static external libraries
+tests-dynamic:
+	@$(MAKE) -s -C $(TEST_DIR) debug TESTS_DYNAMIC=1
 
 #
 # Build and test within a Docker container
@@ -543,28 +597,52 @@ DOCKER_DEFAULT_BUILD ?= production
 DOCKER_OS    ?= $(DOCKER_DEFAULT_OS)
 DOCKER_BUILD ?= $(DOCKER_DEFAULT_BUILD)
 
-DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)
-# Make the container name unique per OS/build to avoid clobbering
-DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)
+# Optional compiler override passed into the container (e.g. DOCKER_COMPILER=clang).
+# Empty means the Dockerfile/OS default compiler is used.
+# Do not pass the literal value "default". Leave DOCKER_COMPILER empty to use
+# the default compiler selected by the Dockerfile or OS
+DOCKER_COMPILER ?=
+DOCKER_COMPILER_TAG = $(if $(DOCKER_COMPILER),-$(DOCKER_COMPILER),)
+
+# Optional test-type override (e.g. DOCKER_TEST_TYPE=tests-debug).
+# Empty means the Dockerfile default (ENV TEST_TYPE) is used.
+DOCKER_TEST_TYPE ?=
+DOCKER_TEST_TYPE_TAG = $(if $(DOCKER_TEST_TYPE),-$(DOCKER_TEST_TYPE),)
+
+DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
+# Make the container name unique per OS/build/compiler/test-type to avoid clobbering
+DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)$(DOCKER_TEST_TYPE_TAG)
 
 DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
-DOCKER_CREATE_FLAGS  ?= -it
-DOCKER_RUN_FLAGS     ?= -it
+# Docker flags are empty by default so automation targets do not require a TTY.
+# DOCKER_CREATE_FLAGS applies to docker-{export,run,test,all}-* because they use docker create/start.
+# DOCKER_RUN_FLAGS applies only to tests-in-docker because it uses docker run directly.
+# To enable interactive mode for docker-run-ubuntu-production, for example:
+#   make DOCKER_CREATE_FLAGS=-it docker-run-ubuntu-production
+# To pass flags to the direct docker run loop, for example:
+#   make DOCKER_RUN_FLAGS=-it tests-in-docker
+DOCKER_CREATE_FLAGS  ?=
+DOCKER_RUN_FLAGS     ?=
 DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
+# Labels mark Docker artifacts created by this project.
+# A single key/value pair keeps filtering simple during cleanup
+DOCKER_LABEL_KEY    ?= io.github.precizer
+DOCKER_LABEL_VALUE  ?= 1
+DOCKER_LABEL_ARGS    = --label "$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)"
 
 .PHONY: build-docker create-docker start-docker copy-from-docker
-.PHONY: docker-export docker-run docker-all docker docker-% docker-export-% docker-run-%
-.PHONY: clean-docker clean-docker-image clean-all-docker tests-in-docker
+.PHONY: docker-export docker-run docker-test docker-all docker docker-% docker-export-% docker-run-% docker-build-% docker-test-%
+.PHONY: clean-docker clean-docker-image clean-docker-project clean-docker-project-deep docker-nuke-host tests-in-docker
 
 # Build the image
 build-docker:
 	@test -f "$(DOCKERFILE)" || { echo "No Dockerfile: $(DOCKERFILE)"; exit 2; }
-	@docker build -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" -t "$(DOCKER_IMAGE)" .
+	@docker build $(DOCKER_LABEL_ARGS) -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" --build-arg COMPILER="$(DOCKER_COMPILER)" -t "$(DOCKER_IMAGE)" .
 
 # Create a named container from the image (same container will be used for run+copy)
 create-docker:
 	@docker rm -f "$(DOCKER_CONTAINER)" > /dev/null 2>&1 || true
-	@docker create $(DOCKER_CREATE_FLAGS) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
+	@docker create $(DOCKER_CREATE_FLAGS) $(DOCKER_LABEL_ARGS) $(if $(DOCKER_TEST_TYPE),-e TEST_TYPE="$(DOCKER_TEST_TYPE)",) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
 
 # Start the created container and attach to it
 # Note: this runs the image's default CMD/ENTRYPOINT
@@ -585,12 +663,29 @@ clean-docker-image:
 	@docker image prune -f > /dev/null 2>&1 || true
 	@echo Docker image $(DOCKER_IMAGE) cleared
 
-clean-all-docker:
-	@docker image prune -f > /dev/null 2>&1 || true
+# Remove Docker containers and images created by this project.
+# Dangling layers left behind by image removal are pruned afterwards
+clean-docker-project:
+	@docker rm -f $$(docker ps -aq --filter "label=$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)") > /dev/null 2>&1 || true; \
+	docker image rm -f $$(docker images -q --filter "label=$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)") > /dev/null 2>&1 || true; \
+	docker image prune -f > /dev/null 2>&1 || true; \
+	echo Docker artifacts for label $(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE) cleared
+
+# Extend project cleanup by also removing base images referenced by .docker/Dockerfile.*
+clean-docker-project-deep: clean-docker-project
+	@for image in $(DOCKER_BASE_IMAGES); do \
+		docker image rm -f "$$image" > /dev/null 2>&1 || true; \
+	done; \
+	docker image prune -f > /dev/null 2>&1 || true; \
+	echo Docker base images from .docker cleared
+
+# Remove all Docker artifacts from the host.
+# This target is intentionally destructive and is not scoped to this project
+docker-nuke-host:
+	@docker rm -f $$(docker ps -aq) > /dev/null 2>&1 || true
+	@docker rmi -f $$(docker images -q) > /dev/null 2>&1 || true
 	@docker image prune -af > /dev/null 2>&1 || true
-	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1 || true
-	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1 || true
-	@echo All docker images cleared
+	@echo All Docker artifacts on the host cleared
 
 #
 # Ordered pipelines (guaranteed sequence)
@@ -598,35 +693,52 @@ clean-all-docker:
 
 # Build -> Create -> Copy -> Clean container -> Clean image
 docker-export:
-	@$(MAKE) build-docker
-	@$(MAKE) create-docker
-	@$(MAKE) copy-from-docker
-	@$(MAKE) clean-docker
-	@$(MAKE) clean-docker-image
+	@rc=0; \
+	$(MAKE) build-docker && \
+	$(MAKE) create-docker && \
+	$(MAKE) copy-from-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
 
 # Build -> Create -> Run (attach) -> Clean container -> Clean image
 docker-run:
-	@$(MAKE) build-docker
-	@$(MAKE) create-docker
-	@$(MAKE) start-docker
-	@$(MAKE) clean-docker
-	@$(MAKE) clean-docker-image
+	@rc=0; \
+	$(MAKE) build-docker && \
+	$(MAKE) create-docker && \
+	$(MAKE) start-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
+
+# Create -> Run (attach) -> Clean container (image must already exist)
+docker-test:
+	@rc=0; \
+	$(MAKE) create-docker && \
+	$(MAKE) start-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	exit $$rc
 
 # Build -> Create -> Run -> Copy -> Clean container -> Clean image
 docker-all:
-	@$(MAKE) build-docker
-	@$(MAKE) create-docker
-	@$(MAKE) start-docker
-	@$(MAKE) copy-from-docker
-	@$(MAKE) clean-docker
-	@$(MAKE) clean-docker-image
+	@rc=0; \
+	$(MAKE) build-docker && \
+	$(MAKE) create-docker && \
+	$(MAKE) start-docker && \
+	$(MAKE) copy-from-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
 
 # Run the image in a fresh throwaway container 1000 times (build once, then run many)
 tests-in-docker: build-docker
-	@i=1; while [ $$i -le 1000 ]; do \
-		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || break; \
+	@rc=0; \
+	i=1; while [ $$i -le 1000 ]; do \
+		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || { rc=$$?; break; }; \
 		i=$$((i + 1)); \
-	done
+	done; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
 
 #
 # Generic docker targets
@@ -637,12 +749,22 @@ tests-in-docker: build-docker
 #   make docker-ubuntu-dynamic-production -> docker-all
 #   make docker-export-alpine-portable    -> docker-export
 #   make docker-run-gentoo-production     -> docker-run
+# Example variants for alpine / portable / default / tests-debug:
+#   make docker-run-alpine-portable DOCKER_TEST_TYPE=tests-debug
+#       build image -> create container -> run tests -> cleanup
+#   make docker-build-alpine-portable
+#       build image only (no container run)
+#   make docker-test-alpine-debug DOCKER_TEST_TYPE=tests-debug
+#       create container -> run tests -> cleanup (image must already exist)
+#   make docker-alpine-portable DOCKER_TEST_TYPE=tests-debug
+#       build image -> create container -> run tests -> copy ./precizer -> cleanup
 #
 docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
 
 # $1 = "ubuntu" or "ubuntu-dynamic-production"
-docker_os_from_target    = $(firstword $(subst -, ,$1))
-docker_build_from_target = $(if $(findstring -,$1),$(patsubst $(call docker_os_from_target,$1)-%,%,$1),$(DOCKER_DEFAULT_BUILD))
+# Match $1 against known OS names discovered from .docker/Dockerfile.*
+docker_os_from_target    = $(firstword $(foreach os,$(DOCKER_OSES),$(if $(filter $(os) $(os)-%,$1),$(os))))
+docker_build_from_target = $(if $(filter $(call docker_os_from_target,$1),$1),$(DOCKER_DEFAULT_BUILD),$(patsubst $(call docker_os_from_target,$1)-%,%,$1))
 
 # Default "docker-<os>[-<build>]" does the full pipeline (run + copy + cleanup)
 docker-%:
@@ -661,8 +783,18 @@ docker-run-%:
 	DOCKER_OS=$(call docker_os_from_target,$*) \
 	DOCKER_BUILD=$(call docker_build_from_target,$*)
 
+docker-build-%:
+	@$(MAKE) build-docker \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
+docker-test-%:
+	@$(MAKE) docker-test \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
 #
-# Docker matrix build & test: run all build variants
+# Docker matrix: build all variants and run all test types
 # for each OS found in .docker/
 #
 # Purpose
@@ -672,7 +804,8 @@ docker-run-%:
 # flavor (portable/production/…).
 #
 # This helps ensure the project can be built and tested across multiple Linux
-# distributions and build configurations (static, dynamic, debug).
+# distributions, build configurations (static, dynamic, debug, sanitize),
+# compilers (default, clang), and test types (tests, tests-debug, tests-dynamic).
 #
 # How the OS list is discovered
 # -----------------------------
@@ -691,14 +824,14 @@ docker-run-%:
 #
 # Which build flavors run per OS
 # ------------------------------
-# By default, each OS runs the following targets (in this order):
-#   portable
-#   production
-#   dynamic-production
-#   debug
+# By default, each OS runs the following build types:
+#   portable, production, dynamic-production, debug, sanitize
+#
+# Per-OS exclusions can remove specific builds (e.g. Alpine has no sanitizer):
+#   DOCKER_MATRIX_BUILDS_EXCLUDE_alpine ?= sanitize
 #
 # The list is controlled by DOCKER_MATRIX_BUILDS and can be overridden:
-#   make DOCKER_MATRIX_BUILDS="production sanitize" docker-check-every-os
+#   make DOCKER_MATRIX_BUILDS="production debug" docker-check-every-os
 #
 # Main commands
 # -------------
@@ -708,28 +841,39 @@ docker-run-%:
 # 2) Run the matrix for a single OS (example: ubuntu):
 #      make docker-check-os-ubuntu
 #
-# 3) Run only specific build flavors:
-#      make DOCKER_MATRIX_BUILDS="portable production" docker-check-every-os
+# 3) Run only specific build flavors and use one of them for tests:
+#      make DOCKER_MATRIX_BUILDS="portable production" DOCKER_MATRIX_TEST_BUILD=production docker-check-every-os
 #
 # 4) Cleanup Docker artifacts for a single OS (containers/images for all flavors):
 #      make clean-docker-os-ubuntu
 #
 # What runs inside the loop
 # -------------------------
-# For each OS "<os>", the following commands are executed:
-#   make docker-<os>-portable
-#   make docker-<os>-production
-#   make docker-<os>-dynamic-production
-#   make docker-<os>-debug
+# For each OS and compiler, two separate loops run:
+#   1) Builds: verify each build variant compiles (image only, no tests)
+#   2) Tests:  run each test type on DOCKER_MATRIX_TEST_BUILD image
 #
-# These targets already exist in this Makefile and use the docker-all pipeline:
-#   build image -> create container -> run (tests) -> copy artifact -> cleanup
+# For example (ubuntu, default compiler):
+#   make docker-build-ubuntu-portable             # build only
+#   make docker-build-ubuntu-production            # build only
+#   make docker-build-ubuntu-dynamic-production    # build only
+#   make docker-build-ubuntu-debug                 # build only
+#   make docker-build-ubuntu-sanitize              # build only
+#   make docker-test-ubuntu-debug  DOCKER_TEST_TYPE=tests          # test only
+#   make docker-test-ubuntu-debug  DOCKER_TEST_TYPE=tests-debug    # test only
+#   make docker-test-ubuntu-debug  DOCKER_TEST_TYPE=tests-dynamic  # test only
+#   ... then the same for clang ...
 #
 # Cleanup behavior
 # ----------------
-# After all build flavors complete for a given OS, cleanup is performed:
-# - Containers removed:  $(EXE)-<os>-<build>
-# - Images removed:      $(EXE):<os>-<build>
+# During the matrix run, images are preserved naturally: docker-build only
+# creates images, docker-test only runs containers — neither removes images.
+# This avoids re-downloading large base images (e.g. gentoo/stage3) between
+# variants.
+#
+# After all variants complete for a given OS, cleanup is performed:
+# - Images removed:      $(EXE):<os>-<build>[-<compiler>]  (all build variants)
+# - Containers removed:  $(EXE)-<os>-<test-build>[-<compiler>]-<test-type>
 # - docker image prune -f is executed (dangling layers)
 #
 # This is intentional to keep the workspace clean and runs reproducible.
@@ -741,10 +885,30 @@ docker-run-%:
 
 # Find OS list from .docker/Dockerfile.<os>
 DOCKER_DOCKERFILES := $(wildcard .docker/Dockerfile.*)
+# Collect unique base images from project Dockerfiles for deep cleanup
+DOCKER_BASE_IMAGES = $(shell awk '/^FROM[[:space:]]/ { print $$2 }' $(DOCKER_DOCKERFILES) | sort -u)
 DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERFILES))))
 
-# Build variants to run per OS (order matters)
-DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug
+# Build variants to run per OS (order matters).
+# Per-OS exclusions: define DOCKER_MATRIX_BUILDS_EXCLUDE_<os> to remove
+# specific build types (e.g. Alpine has no sanitizer).
+DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug sanitize
+DOCKER_MATRIX_BUILDS_EXCLUDE_alpine ?= sanitize
+
+# Compilers to test per OS.  "default" means the OS-provided compiler
+# (no COMPILER= override).  Additional entries (e.g. clang) are passed
+# as DOCKER_COMPILER to the container so the Makefile picks them up.
+DOCKER_MATRIX_COMPILERS ?= default clang
+
+# Test variants to run per OS.  Each entry overrides ENV TEST_TYPE at
+# container runtime (the image is not rebuilt).
+# Per-OS exclusions: define DOCKER_MATRIX_TESTS_EXCLUDE_<os> to remove
+# specific test types (e.g. Alpine has no sanitizer, so "tests" is excluded).
+DOCKER_MATRIX_TESTS ?= tests tests-debug tests-dynamic
+DOCKER_MATRIX_TESTS_EXCLUDE_alpine ?= tests
+
+# Which build variant to use when running the test-only loop
+DOCKER_MATRIX_TEST_BUILD ?= debug
 
 print-docker-oses:
 	@echo "$(DOCKER_OSES)"
@@ -763,25 +927,42 @@ docker-check-every-os:
 		$(MAKE) docker-check-os-$$os; \
 	done
 
-# Run all build variants for a single OS, then cleanup images/containers for this OS
+# Run all build variants and test types for a single OS, then cleanup.
+# Two separate loops per compiler:
+#   1) Builds: verify each build variant compiles (image only, no container run)
+#   2) Tests:  run each test type on DOCKER_MATRIX_TEST_BUILD image (no rebuild)
+# Images are preserved until clean-docker-os-% runs at the end.
+# Per-OS exclusions: DOCKER_MATRIX_{BUILDS,TESTS}_EXCLUDE_<os>.
 docker-check-os-%:
-	@set -e; \
+	@rc=0; \
 	os="$*"; \
-	for b in $(DOCKER_MATRIX_BUILDS); do \
-		echo "---- $$os / $$b ----"; \
-		$(MAKE) docker-run-$$os-$$b; \
+	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
+		dc=""; \
+		if [ "$$compiler" != "default" ]; then dc="$$compiler"; fi; \
+		for b in $(filter-out $(DOCKER_MATRIX_BUILDS_EXCLUDE_$*),$(DOCKER_MATRIX_BUILDS)); do \
+			echo "---- $$os / $$b / $${compiler} / build ----"; \
+			$(MAKE) docker-build-$$os-$$b DOCKER_COMPILER=$$dc || { rc=$$?; break 2; }; \
+		done; \
+		for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
+			echo "---- $$os / $(DOCKER_MATRIX_TEST_BUILD) / $${compiler} / $$t ----"; \
+			$(MAKE) docker-test-$$os-$(DOCKER_MATRIX_TEST_BUILD) DOCKER_COMPILER=$$dc DOCKER_TEST_TYPE=$$t || { rc=$$?; break 2; }; \
+		done; \
 	done; \
-	$(MAKE) clean-docker-os-$$os
+	$(MAKE) clean-docker-os-$$os; \
+	exit $$rc
 
-# Cleanup all images/containers for a single OS (for all build variants)
+# Cleanup all images and containers for a single OS
 clean-docker-os-%:
-	@set -e; \
-	os="$*"; \
-	for b in $(DOCKER_MATRIX_BUILDS); do \
-		# containers are named: $(EXE)-<os>-<build> (per your DOCKER_CONTAINER logic) \
-		docker rm -f "$(EXE)-$$os-$$b" >/dev/null 2>&1 || true; \
-		# images are tagged: $(EXE):<os>-<build> (per your DOCKER_IMAGE logic) \
-		docker image rm -f "$(EXE):$$os-$$b" >/dev/null 2>&1 || true; \
+	@os="$*"; \
+	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
+		ctag=""; \
+		if [ "$$compiler" != "default" ]; then ctag="-$$compiler"; fi; \
+		for b in $(filter-out $(DOCKER_MATRIX_BUILDS_EXCLUDE_$*),$(DOCKER_MATRIX_BUILDS)); do \
+			docker image rm -f "$(EXE):$$os-$$b$$ctag" >/dev/null 2>&1 || true; \
+		done; \
+		for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
+			docker rm -f "$(EXE)-$$os-$(DOCKER_MATRIX_TEST_BUILD)$$ctag-$$t" >/dev/null 2>&1 || true; \
+		done; \
 	done; \
 	docker image prune -f >/dev/null 2>&1 || true; \
 	echo "Docker artifacts for $$os cleared"
@@ -852,16 +1033,16 @@ massif: debug
 	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 	ms_print ./massif.out.*
 
-clang-analyzer: CC = clang-20
-clang-analyzer: SCAN-BUILD = scan-build-20
+clang-analyzer: CC = $(CLANG)
 clang-analyzer:
+	@echo "Using compiler: $(CLANG), analyzer: $(SCAN_BUILD)"
 	# Run clang static analyzer and view analysis results in a web browser when the build command completes
-	$(SCAN-BUILD) --exclude libs/sqlite3 -V $(MAKE) debug
+	$(SCAN_BUILD) --exclude libs/sqlite3 -V $(MAKE) debug
 
-clang-analyzer-cli: CC = clang-20
-clang-analyzer-cli: SCAN-BUILD = scan-build-20
+clang-analyzer-cli: CC = $(CLANG)
 clang-analyzer-cli:
-	$(SCAN-BUILD) --exclude libs/sqlite3 $(MAKE) debug
+	@echo "Using compiler: $(CLANG), analyzer: $(SCAN_BUILD)"
+	$(SCAN_BUILD) --exclude libs/sqlite3 $(MAKE) debug
 
 doc:
 	@doxygen Doxyfile
@@ -881,7 +1062,7 @@ perf:
 stat: cloc
 cloc:
 #	@cloc --exclude-dir=$(SNTZ_DIR),$(DBG_DIR),$(PROD_DIR) $(PRTB_DIR) ./src
-	@cloc $(SRC) libs/sha512/src/ libs/mem/src/ libs/rational/src/ libs/testitall/src/
+	@cloc $(SRC_DIR) libs/sha512/src/ libs/mem/src/ libs/rational/src/ libs/testitall/src/
 
 banner:
 	@$(BUILD_USAGE_BANNER)

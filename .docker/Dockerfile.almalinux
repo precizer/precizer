@@ -1,8 +1,4 @@
-ARG BUILD=production
 FROM almalinux:9@sha256:4e5f333756e39943fe66e3b55ee4c303805eebd7c6da372f07f2418f79b23d87 AS almalinux
-
-ARG BUILD
-ENV BUILD=${BUILD}
 
 RUN set -eux; \
     dnf -y update; \
@@ -17,6 +13,7 @@ RUN set -eux; \
       gcc-toolset-15-libubsan-devel \
       gcc-toolset-15-libasan-devel \
       gcc \
+      clang \
       make \
       llvm \
       llvm-devel \
@@ -35,6 +32,10 @@ COPY . /precizer
 RUN useradd -m builder && chown -R builder:builder /precizer
 
 USER builder
-RUN scl enable gcc-toolset-15 -- make ${BUILD}
+ARG BUILD=production
+ARG COMPILER=
+ENV COMPILER=${COMPILER}
+ENV TEST_TYPE=tests
+RUN if [ -n "$COMPILER" ]; then make -j ${BUILD}; else scl enable gcc-toolset-15 -- make -j ${BUILD}; fi
 
-CMD ["sh", "-c", "scl enable gcc-toolset-15 -- make tests"]
+CMD ["sh", "-c", "if [ -n \"$COMPILER\" ]; then make -j ${TEST_TYPE}; else scl enable gcc-toolset-15 -- make -j ${TEST_TYPE}; fi"]

@@ -5,7 +5,7 @@ src/*/
 tests/fixtures/huge/
 tests/testitall
 tools/tool_*
-precizer
+/precizer
 /*.old
 *~
 *.backup

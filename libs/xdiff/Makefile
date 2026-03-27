@@ -8,6 +8,8 @@ UNAME_S := $(shell uname -s)
 #
 # Compiler flags
 #
+# USE_LLD and AR are exported by the root Makefile when COMPILER=clang
+# to use LLVM's own linker and archiver, avoiding gold plugin version mismatch.
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
@@ -17,9 +19,10 @@ STATLIB = $(LIBNAME).a
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
-STRIP = -s
 ifeq ($(UNAME_S),Darwin)
-STRIP =
+STRIP ?= -Wl,-x
+else
+STRIP ?= -s
 endif
 
 # Warning flags for additional checks
@@ -69,14 +72,15 @@ DBG = debug
 DBG_DIR = $(BUILDDIR)/$(DBG)
 DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_DIR)/obj
-DBG_LDLIBS = -L$(DBG_LIBDIR)
+DBG_LDPATH = -L$(DBG_LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
-DBG_LDFLAGS = -Wl,-z,defs
 ifeq ($(UNAME_S),Darwin)
-DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
+DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
+else
+DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs
 endif
 
 #
@@ -86,7 +90,7 @@ COV = coverage
 COV_DIR = $(BUILDDIR)/$(COV)
 COV_LIBDIR = $(COV_DIR)/libs
 COV_OBJDIR = $(COV_DIR)/obj
-COV_LDLIBS = -L$(COV_LIBDIR)
+COV_LDPATH = -L$(COV_LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
@@ -99,7 +103,7 @@ SNTZ = sanitize
 SNTZ_DIR = $(BUILDDIR)/$(SNTZ)
 SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
-SNTZ_LDLIBS = -L$(SNTZ_LIBDIR)
+SNTZ_LDPATH = -L$(SNTZ_LIBDIR)
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
@@ -108,7 +112,7 @@ ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO)
 endif
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
-SNTZ_LDFLAGS += $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS += $(USE_LLD) $(SNTZ_OPTIONS)
 
 #
 # Production build settings
@@ -117,14 +121,15 @@ PROD = production
 PROD_DIR = $(BUILDDIR)/$(PROD)
 PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_DIR)/obj
-PROD_LDLIBS = -L$(PROD_LIBDIR)
+PROD_LDPATH = -L$(PROD_LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
-PROD_CFLAGS = $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS = -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+else
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -142,14 +147,15 @@ PRTB = portable
 PRTB_DIR = $(BUILDDIR)/$(PRTB)
 PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_DIR)/obj
-PRTB_LDLIBS = -L$(PRTB_LIBDIR)
+PRTB_LDPATH = -L$(PRTB_LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
-PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer -DNDEBUG
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-x -Wl,-undefined,dynamic_lookup
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+else
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -179,7 +185,7 @@ $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@echo $@ prepared to be static library
 
 $(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) -shared $(DBG_LDFLAGS) $(DBG_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(DBG_LDFLAGS) $(DBG_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be shared library
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
@@ -203,7 +209,7 @@ $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
 	@echo $@ prepared to be static library
 
 $(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
-	@$(CC) -shared $(COV_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(COV_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be shared library
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
@@ -227,7 +233,7 @@ $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@echo $@ prepared to be the static library
 
 $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be the shared library
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
@@ -252,7 +258,7 @@ $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@echo $@ prepared to be the static library
 
 $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) $(PROD_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) $(PROD_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be the shared library
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
@@ -276,7 +282,7 @@ $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@echo $@ prepared to be the static library
 
 $(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) $(PRTB_LDLIBS) -o $@ $^ $(LDLIBS)
+	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) $(PRTB_LDPATH) -o $@ $^ $(LDLIBS)
 	@echo $@ prepared to be the shared library
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)

@@ -835,7 +835,12 @@ Return delete_path(
 	{
 		if(S_ISDIR(path_stat.st_mode))
 		{
-			if(nftw(getcstring(absolute_path),nftw_remove_callback,64,FTW_DEPTH | FTW_PHYS) != 0)
+			long sc_open_max = sysconf(_SC_OPEN_MAX);
+			if(sc_open_max <= 0)
+			{
+				sc_open_max = 512;
+			}
+			if(nftw(getcstring(absolute_path),nftw_remove_callback,(int)sc_open_max,FTW_DEPTH | FTW_PHYS) != 0)
 			{
 				echo(STDERR,"delete_path: nftw failed for %s: %s\n",getcstring(absolute_path),strerror(errno));
 				status = FAILURE;

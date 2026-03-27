@@ -373,6 +373,15 @@ Return runit_background(
 
 	if(SUCCESS == status)
 	{
+		if(0 != fflush(stdout) || 0 != fflush(stderr))
+		{
+			serp("Failed to flush STDOUT/STDERR before forking background process");
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
 		app_pid = fork();
 
 		if(app_pid < 0)

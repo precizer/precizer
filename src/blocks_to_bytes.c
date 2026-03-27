@@ -12,7 +12,7 @@
  *         @p blocks is less than or equal to zero, or SIZE_MAX when the result
  *         would overflow `size_t`.
  */
-extern inline size_t blocks_to_bytes(const blkcnt_t blocks)
+size_t blocks_to_bytes(const blkcnt_t blocks)
 {
 	if(blocks <= 0)
 	{
