@@ -310,7 +310,7 @@ endef
 .PHONY: all clean debug remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
-.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm clean-docker clean-docker-image test test-coverage tests-sanitize tests-debug tests-dynamic docker docker-portable docker-dynamic-production docker-start-build build-docker copy-from-docker run-docker tests-in-docker analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
+.PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm test test-coverage tests-sanitize tests-debug tests-dynamic analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: docker-check-every-os docker-check-os-% clean-docker-os-% print-docker-oses
 
 #
@@ -591,32 +591,34 @@ DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)$(DO
 
 DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
 # Docker flags are empty by default so automation targets do not require a TTY.
-# To enable interactive mode manually, for example:
-#   make DOCKER_CREATE_FLAGS=-it DOCKER_RUN_FLAGS=-it docker-run-ubuntu-production
+# DOCKER_CREATE_FLAGS applies to docker-{export,run,test,all}-* because they use docker create/start.
+# DOCKER_RUN_FLAGS applies only to tests-in-docker because it uses docker run directly.
+# To enable interactive mode for docker-run-ubuntu-production, for example:
+#   make DOCKER_CREATE_FLAGS=-it docker-run-ubuntu-production
+# To pass flags to the direct docker run loop, for example:
+#   make DOCKER_RUN_FLAGS=-it tests-in-docker
 DOCKER_CREATE_FLAGS  ?=
 DOCKER_RUN_FLAGS     ?=
 DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
-
-# When non-empty, pipeline targets (docker-run, docker-export, docker-all) skip
-# image removal so that the base layer cache is preserved across repeated builds
-# for the same OS.  The caller is responsible for cleaning up afterwards.
-# Used by docker-check-os-% to avoid re-downloading large base images between
-# build variants of the same OS.
-DOCKER_KEEP_IMAGE ?=
+# Labels mark Docker artifacts created by this project.
+# A single key/value pair keeps filtering simple during cleanup
+DOCKER_LABEL_KEY    ?= io.github.precizer
+DOCKER_LABEL_VALUE  ?= 1
+DOCKER_LABEL_ARGS    = --label "$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)"
 
 .PHONY: build-docker create-docker start-docker copy-from-docker
-.PHONY: docker-export docker-run docker-all docker docker-% docker-export-% docker-run-%
-.PHONY: clean-docker clean-docker-image clean-all-docker tests-in-docker
+.PHONY: docker-export docker-run docker-test docker-all docker docker-% docker-export-% docker-run-% docker-build-% docker-test-%
+.PHONY: clean-docker clean-docker-image clean-docker-project clean-docker-project-deep docker-nuke-host tests-in-docker
 
 # Build the image
 build-docker:
 	@test -f "$(DOCKERFILE)" || { echo "No Dockerfile: $(DOCKERFILE)"; exit 2; }
-	@docker build -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" --build-arg COMPILER="$(DOCKER_COMPILER)" -t "$(DOCKER_IMAGE)" .
+	@docker build $(DOCKER_LABEL_ARGS) -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" --build-arg COMPILER="$(DOCKER_COMPILER)" -t "$(DOCKER_IMAGE)" .
 
 # Create a named container from the image (same container will be used for run+copy)
 create-docker:
 	@docker rm -f "$(DOCKER_CONTAINER)" > /dev/null 2>&1 || true
-	@docker create $(DOCKER_CREATE_FLAGS) $(if $(DOCKER_TEST_TYPE),-e TEST_TYPE="$(DOCKER_TEST_TYPE)",) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
+	@docker create $(DOCKER_CREATE_FLAGS) $(DOCKER_LABEL_ARGS) $(if $(DOCKER_TEST_TYPE),-e TEST_TYPE="$(DOCKER_TEST_TYPE)",) --name "$(DOCKER_CONTAINER)" "$(DOCKER_IMAGE)" > /dev/null
 
 # Start the created container and attach to it
 # Note: this runs the image's default CMD/ENTRYPOINT
@@ -637,48 +639,82 @@ clean-docker-image:
 	@docker image prune -f > /dev/null 2>&1 || true
 	@echo Docker image $(DOCKER_IMAGE) cleared
 
-clean-all-docker:
-	@docker image prune -f > /dev/null 2>&1 || true
+# Remove Docker containers and images created by this project.
+# Dangling layers left behind by image removal are pruned afterwards
+clean-docker-project:
+	@docker rm -f $$(docker ps -aq --filter "label=$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)") > /dev/null 2>&1 || true; \
+	docker image rm -f $$(docker images -q --filter "label=$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)") > /dev/null 2>&1 || true; \
+	docker image prune -f > /dev/null 2>&1 || true; \
+	echo Docker artifacts for label $(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE) cleared
+
+# Extend project cleanup by also removing base images referenced by .docker/Dockerfile.*
+clean-docker-project-deep: clean-docker-project
+	@for image in $(DOCKER_BASE_IMAGES); do \
+		docker image rm -f "$$image" > /dev/null 2>&1 || true; \
+	done; \
+	docker image prune -f > /dev/null 2>&1 || true; \
+	echo Docker base images from .docker cleared
+
+# Remove all Docker artifacts from the host.
+# This target is intentionally destructive and is not scoped to this project
+docker-nuke-host:
+	@docker rm -f $$(docker ps -aq) > /dev/null 2>&1 || true
+	@docker rmi -f $$(docker images -q) > /dev/null 2>&1 || true
 	@docker image prune -af > /dev/null 2>&1 || true
-	@docker rm -f $(shell docker ps -aq) > /dev/null 2>&1 || true
-	@docker rmi -f $(shell docker images -q) > /dev/null 2>&1 || true
-	@echo All docker images cleared
+	@echo All Docker artifacts on the host cleared
 
 #
 # Ordered pipelines (guaranteed sequence)
 #
 
-# Build -> Create -> Copy -> Clean container [-> Clean image]
+# Build -> Create -> Copy -> Clean container -> Clean image
 docker-export:
-	@$(MAKE) build-docker
-	@$(MAKE) create-docker
-	@$(MAKE) copy-from-docker
-	@$(MAKE) clean-docker
-	$(if $(DOCKER_KEEP_IMAGE),,@$(MAKE) clean-docker-image)
+	@rc=0; \
+	$(MAKE) build-docker && \
+	$(MAKE) create-docker && \
+	$(MAKE) copy-from-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
 
-# Build -> Create -> Run (attach) -> Clean container [-> Clean image]
+# Build -> Create -> Run (attach) -> Clean container -> Clean image
 docker-run:
-	@$(MAKE) build-docker
-	@$(MAKE) create-docker
-	@$(MAKE) start-docker
-	@$(MAKE) clean-docker
-	$(if $(DOCKER_KEEP_IMAGE),,@$(MAKE) clean-docker-image)
+	@rc=0; \
+	$(MAKE) build-docker && \
+	$(MAKE) create-docker && \
+	$(MAKE) start-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
 
-# Build -> Create -> Run -> Copy -> Clean container [-> Clean image]
+# Create -> Run (attach) -> Clean container (image must already exist)
+docker-test:
+	@rc=0; \
+	$(MAKE) create-docker && \
+	$(MAKE) start-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	exit $$rc
+
+# Build -> Create -> Run -> Copy -> Clean container -> Clean image
 docker-all:
-	@$(MAKE) build-docker
-	@$(MAKE) create-docker
-	@$(MAKE) start-docker
-	@$(MAKE) copy-from-docker
-	@$(MAKE) clean-docker
-	$(if $(DOCKER_KEEP_IMAGE),,@$(MAKE) clean-docker-image)
+	@rc=0; \
+	$(MAKE) build-docker && \
+	$(MAKE) create-docker && \
+	$(MAKE) start-docker && \
+	$(MAKE) copy-from-docker || rc=$$?; \
+	$(MAKE) clean-docker; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
 
 # Run the image in a fresh throwaway container 1000 times (build once, then run many)
 tests-in-docker: build-docker
-	@i=1; while [ $$i -le 1000 ]; do \
-		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || exit $$?; \
+	@rc=0; \
+	i=1; while [ $$i -le 1000 ]; do \
+		docker run $(DOCKER_RUN_FLAGS) --rm "$(DOCKER_IMAGE)" || { rc=$$?; break; }; \
 		i=$$((i + 1)); \
-	done
+	done; \
+	$(MAKE) clean-docker-image; \
+	exit $$rc
 
 #
 # Generic docker targets
@@ -692,16 +728,19 @@ tests-in-docker: build-docker
 # Example variants for alpine / portable / default / tests-debug:
 #   make docker-run-alpine-portable DOCKER_TEST_TYPE=tests-debug
 #       build image -> create container -> run tests -> cleanup
+#   make docker-build-alpine-portable
+#       build image only (no container run)
+#   make docker-test-alpine-debug DOCKER_TEST_TYPE=tests-debug
+#       create container -> run tests -> cleanup (image must already exist)
 #   make docker-alpine-portable DOCKER_TEST_TYPE=tests-debug
 #       build image -> create container -> run tests -> copy ./precizer -> cleanup
-#   make docker-run-alpine-portable
-#       same as the first command because .docker/Dockerfile.alpine defaults TEST_TYPE to tests-debug
 #
 docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
 
 # $1 = "ubuntu" or "ubuntu-dynamic-production"
-docker_os_from_target    = $(firstword $(subst -, ,$1))
-docker_build_from_target = $(if $(findstring -,$1),$(patsubst $(call docker_os_from_target,$1)-%,%,$1),$(DOCKER_DEFAULT_BUILD))
+# Match $1 against known OS names discovered from .docker/Dockerfile.*
+docker_os_from_target    = $(firstword $(foreach os,$(DOCKER_OSES),$(if $(filter $(os) $(os)-%,$1),$(os))))
+docker_build_from_target = $(if $(filter $(call docker_os_from_target,$1),$1),$(DOCKER_DEFAULT_BUILD),$(patsubst $(call docker_os_from_target,$1)-%,%,$1))
 
 # Default "docker-<os>[-<build>]" does the full pipeline (run + copy + cleanup)
 docker-%:
@@ -720,8 +759,18 @@ docker-run-%:
 	DOCKER_OS=$(call docker_os_from_target,$*) \
 	DOCKER_BUILD=$(call docker_build_from_target,$*)
 
+docker-build-%:
+	@$(MAKE) build-docker \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
+docker-test-%:
+	@$(MAKE) docker-test \
+	DOCKER_OS=$(call docker_os_from_target,$*) \
+	DOCKER_BUILD=$(call docker_build_from_target,$*)
+
 #
-# Docker matrix build & test: run all build variants
+# Docker matrix: build all variants and run all test types
 # for each OS found in .docker/
 #
 # Purpose
@@ -768,37 +817,39 @@ docker-run-%:
 # 2) Run the matrix for a single OS (example: ubuntu):
 #      make docker-check-os-ubuntu
 #
-# 3) Run only specific build flavors:
-#      make DOCKER_MATRIX_BUILDS="portable production" docker-check-every-os
+# 3) Run only specific build flavors and use one of them for tests:
+#      make DOCKER_MATRIX_BUILDS="portable production" DOCKER_MATRIX_TEST_BUILD=production docker-check-every-os
 #
 # 4) Cleanup Docker artifacts for a single OS (containers/images for all flavors):
 #      make clean-docker-os-ubuntu
 #
 # What runs inside the loop
 # -------------------------
-# For each OS, the matrix iterates over three dimensions:
-#   compiler  × build  × test-type
+# For each OS and compiler, two separate loops run:
+#   1) Builds: verify each build variant compiles (image only, no tests)
+#   2) Tests:  run each test type on DOCKER_MATRIX_TEST_BUILD image
 #
-# For example (ubuntu):
-#   make docker-run-ubuntu-portable   DOCKER_COMPILER=      DOCKER_TEST_TYPE=tests
-#   make docker-run-ubuntu-portable   DOCKER_COMPILER=      DOCKER_TEST_TYPE=tests-debug
-#   make docker-run-ubuntu-portable   DOCKER_COMPILER=      DOCKER_TEST_TYPE=tests-dynamic
-#   make docker-run-ubuntu-portable   DOCKER_COMPILER=clang DOCKER_TEST_TYPE=tests
-#   ...
-#
-# Each invocation uses the docker-run pipeline:
-#   build image -> create container -> run (tests) -> cleanup
+# For example (ubuntu, default compiler):
+#   make docker-build-ubuntu-portable             # build only
+#   make docker-build-ubuntu-production            # build only
+#   make docker-build-ubuntu-dynamic-production    # build only
+#   make docker-build-ubuntu-debug                 # build only
+#   make docker-build-ubuntu-sanitize              # build only
+#   make docker-test-ubuntu-debug  DOCKER_TEST_TYPE=tests          # test only
+#   make docker-test-ubuntu-debug  DOCKER_TEST_TYPE=tests-debug    # test only
+#   make docker-test-ubuntu-debug  DOCKER_TEST_TYPE=tests-dynamic  # test only
+#   ... then the same for clang ...
 #
 # Cleanup behavior
 # ----------------
-# During the matrix run, DOCKER_KEEP_IMAGE=1 is passed to each docker-run
-# invocation so that built images (and the cached base layers they depend on)
-# are preserved across build variants of the same OS.  This avoids
-# re-downloading large base images (e.g. gentoo/stage3) between variants.
+# During the matrix run, images are preserved naturally: docker-build only
+# creates images, docker-test only runs containers — neither removes images.
+# This avoids re-downloading large base images (e.g. gentoo/stage3) between
+# variants.
 #
 # After all variants complete for a given OS, cleanup is performed:
-# - Containers removed:  $(EXE)-<os>-<build>[-<compiler>][-<test-type>]
-# - Images removed:      $(EXE):<os>-<build>[-<compiler>]
+# - Images removed:      $(EXE):<os>-<build>[-<compiler>]  (all build variants)
+# - Containers removed:  $(EXE)-<os>-<test-build>[-<compiler>]-<test-type>
 # - docker image prune -f is executed (dangling layers)
 #
 # This is intentional to keep the workspace clean and runs reproducible.
@@ -810,6 +861,8 @@ docker-run-%:
 
 # Find OS list from .docker/Dockerfile.<os>
 DOCKER_DOCKERFILES := $(wildcard .docker/Dockerfile.*)
+# Collect unique base images from project Dockerfiles for deep cleanup
+DOCKER_BASE_IMAGES = $(shell awk '/^FROM[[:space:]]/ { print $$2 }' $(DOCKER_DOCKERFILES) | sort -u)
 DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERFILES))))
 
 # Build variants to run per OS (order matters).
@@ -830,6 +883,9 @@ DOCKER_MATRIX_COMPILERS ?= default clang
 DOCKER_MATRIX_TESTS ?= tests tests-debug tests-dynamic
 DOCKER_MATRIX_TESTS_EXCLUDE_alpine ?= tests
 
+# Which build variant to use when running the test-only loop
+DOCKER_MATRIX_TEST_BUILD ?= debug
+
 print-docker-oses:
 	@echo "$(DOCKER_OSES)"
 
@@ -847,39 +903,41 @@ docker-check-every-os:
 		$(MAKE) docker-check-os-$$os; \
 	done
 
-# Run all build variants for a single OS (with every compiler and test type),
-# then cleanup.
-# DOCKER_KEEP_IMAGE=1 prevents each docker-run invocation from removing the image
-# (and its cached base layers) so the same base image is reused across build variants.
-# All images are cleaned up at the end by clean-docker-os-%.
-# Per-OS lists: DOCKER_MATRIX_{BUILDS,TESTS} minus DOCKER_MATRIX_{BUILDS,TESTS}_EXCLUDE_<os>.
+# Run all build variants and test types for a single OS, then cleanup.
+# Two separate loops per compiler:
+#   1) Builds: verify each build variant compiles (image only, no container run)
+#   2) Tests:  run each test type on DOCKER_MATRIX_TEST_BUILD image (no rebuild)
+# Images are preserved until clean-docker-os-% runs at the end.
+# Per-OS exclusions: DOCKER_MATRIX_{BUILDS,TESTS}_EXCLUDE_<os>.
 docker-check-os-%:
-	@set -e; \
+	@rc=0; \
 	os="$*"; \
 	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
 		dc=""; \
 		if [ "$$compiler" != "default" ]; then dc="$$compiler"; fi; \
 		for b in $(filter-out $(DOCKER_MATRIX_BUILDS_EXCLUDE_$*),$(DOCKER_MATRIX_BUILDS)); do \
-			for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
-				echo "---- $$os / $$b / $${compiler} / $$t ----"; \
-				$(MAKE) docker-run-$$os-$$b DOCKER_KEEP_IMAGE=1 DOCKER_COMPILER=$$dc DOCKER_TEST_TYPE=$$t; \
-			done; \
+			echo "---- $$os / $$b / $${compiler} / build ----"; \
+			$(MAKE) docker-build-$$os-$$b DOCKER_COMPILER=$$dc || { rc=$$?; break 2; }; \
+		done; \
+		for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
+			echo "---- $$os / $(DOCKER_MATRIX_TEST_BUILD) / $${compiler} / $$t ----"; \
+			$(MAKE) docker-test-$$os-$(DOCKER_MATRIX_TEST_BUILD) DOCKER_COMPILER=$$dc DOCKER_TEST_TYPE=$$t || { rc=$$?; break 2; }; \
 		done; \
 	done; \
-	$(MAKE) clean-docker-os-$$os
+	$(MAKE) clean-docker-os-$$os; \
+	exit $$rc
 
-# Cleanup all images/containers for a single OS (all build variants, compilers, test types)
+# Cleanup all images and containers for a single OS
 clean-docker-os-%:
-	@set -e; \
-	os="$*"; \
+	@os="$*"; \
 	for compiler in $(DOCKER_MATRIX_COMPILERS); do \
 		ctag=""; \
 		if [ "$$compiler" != "default" ]; then ctag="-$$compiler"; fi; \
 		for b in $(filter-out $(DOCKER_MATRIX_BUILDS_EXCLUDE_$*),$(DOCKER_MATRIX_BUILDS)); do \
 			docker image rm -f "$(EXE):$$os-$$b$$ctag" >/dev/null 2>&1 || true; \
-			for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
-				docker rm -f "$(EXE)-$$os-$$b$$ctag-$$t" >/dev/null 2>&1 || true; \
-			done; \
+		done; \
+		for t in $(filter-out $(DOCKER_MATRIX_TESTS_EXCLUDE_$*),$(DOCKER_MATRIX_TESTS)); do \
+			docker rm -f "$(EXE)-$$os-$(DOCKER_MATRIX_TEST_BUILD)$$ctag-$$t" >/dev/null 2>&1 || true; \
 		done; \
 	done; \
 	docker image prune -f >/dev/null 2>&1 || true; \

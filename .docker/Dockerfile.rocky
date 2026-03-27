@@ -22,8 +22,8 @@ RUN set -eux; \
     libcmocka libcmocka-devel \
     upx; \
     dnf -y --enablerepo=devel install pcre2-static glibc-static; \
-  dnf -y clean all; \
-  rm -rf /var/cache/dnf
+    dnf -y clean all; \
+    rm -rf /var/cache/dnf
 
 WORKDIR /precizer
 

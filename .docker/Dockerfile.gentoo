@@ -20,7 +20,7 @@ USER builder
 # not in the default PATH.  Discover the newest version dynamically and
 # persist it so both RUN and CMD see the updated PATH.
 RUN echo "export PATH=\"\$(ls -1d /usr/lib/llvm/[0-9]*/bin 2>/dev/null | sort -t/ -k5 -n | tail -1):\$PATH\"" \
-    >> ~/.bashrc
+    >> ~/.bash_profile
 SHELL ["/bin/bash", "-lc"]
 ARG BUILD=production
 ARG COMPILER=
