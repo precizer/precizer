@@ -174,6 +174,12 @@ ifeq ($(COMPILER),clang)
 CC := $(CLANG)
 export CC
 $(info Using compiler: $(CLANG))
+# Use LLVM's own linker to avoid gold plugin version mismatch with LTO
+ifneq ($(shell which ld.lld$(CLANG_SUFFIX) 2>/dev/null),)
+USE_LLD := -fuse-ld=lld$(CLANG_SUFFIX)
+else ifneq ($(shell which ld.lld 2>/dev/null),)
+USE_LLD := -fuse-ld=lld
+endif
 endif
 
 #
@@ -203,10 +209,10 @@ DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer
 LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
-DBG_LDFLAGS = -Wl,-undefined,dynamic_lookup
+DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
-DBG_LDFLAGS = -Wl,-z,defs -Wl,--as-needed
+DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs -Wl,--as-needed
 endif
 # tests-dynamic injects a debug-only rpath so copied test binaries can find shared libraries
 ifneq ($(TESTS_DYNAMIC),)
@@ -231,7 +237,7 @@ COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
 COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
 COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
-COV_LDFLAGS = -lgcov --coverage
+COV_LDFLAGS = $(USE_LLD) -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -246,10 +252,10 @@ SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
 SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
-SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
 else
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
-SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS = $(USE_LLD) -Wl,-z,defs $(SNTZ_OPTIONS)
 endif
 
 #
@@ -262,10 +268,17 @@ PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
 PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+# PROD_LDFLAGS and PROD_CFLAGS use ?= so that distribution package managers
+# (Gentoo Portage, Debian dpkg-buildflags, RPM macros, etc.) can override them
+# with system-wide hardening and optimization flags via the command line:
+#   emake PROD_LDFLAGS='$(LDFLAGS)' PROD_CFLAGS='$(CFLAGS)'
+# When overridden, $(LDFLAGS) is replaced by the value from the package manager;
+# when not overridden, it expands to empty (LDFLAGS is not set in this project).
+# See .packaging/gentoo/ for a real-world example.
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,-dead_strip
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,-dead_strip
 else
-PROD_LDFLAGS ?= $(LDFLAGS) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 
 #
@@ -292,9 +305,9 @@ PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,-dead_strip
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,-dead_strip
 else
-PRTB_LDFLAGS = -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
