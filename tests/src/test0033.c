@@ -289,6 +289,8 @@ Return test0033(void)
 {
 	INITTEST;
 
+	SLOWTEST;
+
 	TEST(test0033_1,"Background run receives SIGTERM and exits with HALTED…");
 	TEST(test0033_2,"Background run receives SIGINT and exits with HALTED…");
 	TEST(test0033_3,"Random interruption on hugetestfile with resume and SHA512 verification…");

@@ -470,6 +470,8 @@ static Return test0028_6(void)
 {
 	INITTEST;
 
+	SLOWTEST;
+
 	struct compare_filter_case {
 		const char *arguments;
 		int expected_return_code;
