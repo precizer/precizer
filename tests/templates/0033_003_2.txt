@@ -49,7 +49,7 @@ TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0033
 continue to rehash from .+ hugetestfile
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
-TESTING:Missing file search completed
+TESTING:Missing file search finished
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed

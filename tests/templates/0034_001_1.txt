@@ -42,7 +42,7 @@ paths=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_fil
 update & rehash, changed: lsize was:[^\n]*, now:[^\n]* path1/AAA/BCB/CCC/a\.txt
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_list\.c:\d+:file_list:File traversal complete
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Missing file search completed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Missing file search finished
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_statistics\.c:\d+:show_statistics:Total allocated size: [^\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_elapsed\.c:\d+:show_elapsed:Total runtime: [^\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close\.c:\d+:db_close:The database connection has been closed
