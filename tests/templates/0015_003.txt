@@ -41,7 +41,7 @@ TESTING:The database 0015_database_v0\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Searching for files that no longer exist on the file system…
-TESTING:Missing file search completed
+TESTING:Missing file search finished
 TESTING:The database connection has been closed
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file 0015_database_v0\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*

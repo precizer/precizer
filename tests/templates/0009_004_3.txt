@@ -54,7 +54,7 @@ update included, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:
 update included, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:[^\r\n]* tmp_z1-9vv\.bak
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
-TESTING:Missing file search completed
+TESTING:Missing file search finished
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed

@@ -51,7 +51,7 @@ ignore & do not add skip_m0n9k2_zz\.log
 ignore & do not add tmp_77xy__aa\.bak
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
-TESTING:Missing file search completed
+TESTING:Missing file search finished
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
