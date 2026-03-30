@@ -169,6 +169,7 @@ static Return db_report_category(
 	if(SUCCESS == status)
 	{
 		bool first_visible_path = true;
+		create(char,relative_path);
 
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
@@ -179,9 +180,9 @@ static Return db_report_category(
 				break;
 			}
 
-			const unsigned char *relative_path = sqlite3_column_text(select_stmt,0);
+			const unsigned char *db_relative_path = sqlite3_column_text(select_stmt,0);
 
-			if(relative_path == NULL)
+			if(db_relative_path == NULL)
 			{
 				rc = sqlite3_errcode(config->db);
 				log_sqlite_error(config->db,rc,NULL,"Failed to read relative path from select result");
@@ -189,9 +190,18 @@ static Return db_report_category(
 				break;
 			}
 
+			size_t relative_path_size = (size_t)sqlite3_column_bytes(select_stmt,0) + 1U;
+
+			run(copy_buffer(relative_path,db_relative_path,relative_path_size));
+
+			if(SUCCESS != status)
+			{
+				break;
+			}
+
 			bool ignore = false;
 
-			status = match_include_ignore((const char *)relative_path,
+			status = match_include_ignore(relative_path,
 				NULL,
 				&ignore);
 
@@ -218,8 +228,10 @@ static Return db_report_category(
 			}
 
 			*differences_found = true;
-			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",relative_path);
+			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",getcstring(relative_path));
 		}
+
+		del(relative_path);
 
 		if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
 		{
