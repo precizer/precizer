@@ -1,27 +1,28 @@
 #include "precizer.h"
 
 /**
- * @brief Read file data from the database into file->db
+ * @brief Read one file row from the database into file->db
  *
  * Loads the saved row for @p relative_path into the DBrow attached to @p file.
- * If the path is missing in the database, the attached row stays zeroed and
+ * If the path is absent from the database, the attached row stays zeroed and
  * relative_path_was_in_db_before_processing remains false
  *
  * @param[in,out] file Per-file state whose attached DB row receives the loaded values
- * @param[in] relative_path Relative path looked up in the files table
+ * @param[in] relative_path Relative path descriptor looked up in the files table
+ * @return SUCCESS on a completed lookup, otherwise FAILURE
  */
 Return db_read_file_data_from(
 	File *file,
 #if 0 // Old multiPATH solution
 	const sqlite3_int64 *path_prefix_index,
 #endif
-	const char *relative_path)
+	const memory *relative_path)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	/* Read from SQL */
+	/* Read from the database */
 	sqlite3_stmt *select_stmt = NULL;
 	int rc;
 	// Convenience alias for the attached DB row that receives the loaded values
@@ -50,7 +51,14 @@ Return db_read_file_data_from(
 		status = FAILURE;
 	}
 #endif
-	rc = sqlite3_bind_text(select_stmt,1,relative_path,(int)strlen(relative_path),NULL);
+	int relative_path_length = 0;
+
+	if(relative_path->length > 0)
+	{
+		relative_path_length = (int)(relative_path->length - 1);
+	}
+
+	rc = sqlite3_bind_text(select_stmt,1,getcstring(relative_path),relative_path_length,NULL);
 
 	if(SQLITE_OK != rc)
 	{

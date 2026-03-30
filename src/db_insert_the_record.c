@@ -1,33 +1,27 @@
 /**
  * @file db_insert_the_record.c
- * @brief Implementation of database record insertion functionality
- * @details Contains functions for inserting new records into the SQLite database
- *          including file metadata, checksums and offset information
+ * @brief Insert new file rows into the SQLite database
+ * @details Contains the implementation that binds relative path, checksum, offset,
+ *          and metadata fields for a new files table record
  */
 
 #include "precizer.h"
 
 /**
- * @brief Inserts a new record into the database
+ * @brief Insert one file record into the database
  *
- * @details This function inserts information about a file including its relative path,
- *          file offset, SHA512 checksum, file metadata (stat), and SHA512 context
- *          into the SQLite database. The function handles both complete file records
- *          and partial records where some fields may be NULL.
+ * Binds the relative path, checksum offset, SHA512 digest, compact stat payload,
+ * and saved hashing context for one files-table row.
+ * Some bound fields may be NULL when the current file state does not have data for them
  *
- * @param[in] relative_path Path to the file relative to the root directory
- * @param[in] file Per-file state object. Uses checksum_offset, sha512, stat,
- *                 mdContext, zero_size_file, and wrong_file_type when binding
- *                 the row values
+ * @param[in] relative_path Descriptor containing the file path relative to the traversal root
+ * @param[in] file Per-file state object used to bind the row payload
+ * @return SUCCESS when the record was handled cleanly, otherwise FAILURE
  *
- * @return Return status code:
- *         - SUCCESS: Record inserted successfully
- *         - FAILURE: Error occurred during insertion
- *
- * @note In dry run mode, the function returns SUCCESS without modifying the database
+ * @note In dry-run mode, the function returns SUCCESS without modifying the database
  */
 Return db_insert_the_record(
-	const char *relative_path,
+	const memory *relative_path,
 	const File *file)
 {
 	/* Status returned by this function through provide()
@@ -79,7 +73,14 @@ Return db_insert_the_record(
 	/* Bind relative path */
 	if(SUCCESS == status)
 	{
-		rc = sqlite3_bind_text(insert_stmt,2,relative_path,(int)strlen(relative_path),NULL);
+		int relative_path_length = 0;
+
+		if(relative_path->length > 0)
+		{
+			relative_path_length = (int)(relative_path->length - 1);
+		}
+
+		rc = sqlite3_bind_text(insert_stmt,2,getcstring(relative_path),relative_path_length,NULL);
 
 		if(SQLITE_OK != rc)
 		{
