@@ -2,9 +2,9 @@
 #include <stdarg.h>
 
 /**
- * @brief Retrieve a const pointer to a flag descriptor by index.
+ * @brief Retrieve a const pointer to a flag descriptor by index
  *
- * Uses the mem helper to obtain a typed readonly view of the Flags array and
+ * Uses the mem helper to obtain a typed read-only view of the Flags array and
  * performs bounds checking. Returns NULL if the descriptor is missing, type
  * verification fails, or the index is out of range.
  */
@@ -216,36 +216,40 @@ void slog_show_impl(
 }
 
 /**
- * @brief Displays the relative path of a file with additional contextual information.
+ * @brief Show the visible status line for one file path
  *
- * This function prints the relative path of a file along with explanations of what actions
- * will be taken regarding the file (e.g., ignore, updated, added, or rehashed). It also handles
- * initial messages for traversal, updates, and warnings, emitted once before the first visible
- * file or directory log, including read errors with errno.
+ * Prints the relative path together with the action or warning that applies to the file.
+ * Also triggers the shared traversal banner before the first visible file or directory line
  *
+ * @param[in] relative_path Relative path descriptor being reported
+ * @param[in,out] first_iteration Banner sentinel for the first visible output line
+ * @param[in,out] summary Traversal state used by slog_show()
+ * @param[in] file Per-file state that determines which message is printed
  */
 void show_file(
-	const char       *relative_path,
+	const memory     *relative_path,
 	bool             *first_iteration,
 	TraversalSummary *summary,
 	const File       *file)
 {
+	const char *runtime_relative_path = getcstring(relative_path);
+
 	if(file->ignore == true)
 	{
 		if(file->db->relative_path_was_in_db_before_processing == false)
 		{
-			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignore & do not add %s\n",relative_path);
+			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignore & do not add %s\n",runtime_relative_path);
 		} else {
-			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignored & do not update %s\n",relative_path);
+			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignored & do not update %s\n",runtime_relative_path);
 		}
 
 	} else if(file->read_error == true){
 
-		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"error \"%s\" when reading %s\n",strerror(file->read_errno),relative_path);
+		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"error \"%s\" when reading %s\n",strerror(file->read_errno),runtime_relative_path);
 
 	} else if(file->is_readable == false){
 
-		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible file %s\n",relative_path);
+		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible file %s\n",runtime_relative_path);
 
 	} else if(file->db->relative_path_was_in_db_before_processing == false){
 
@@ -255,19 +259,19 @@ void show_file(
 		{
 			if(file->include == true)
 			{
-				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"add included %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"add included %s\n",runtime_relative_path);
 
 			} else if(file->locked_checksum_file == true){
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"lock checksum %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"lock checksum %s\n",runtime_relative_path);
 
 			} else if(file->zero_size_file == true){
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"add as empty %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"add as empty %s\n",runtime_relative_path);
 
 			} else {
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"new %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"new %s\n",runtime_relative_path);
 			}
 		}
 
@@ -278,7 +282,7 @@ void show_file(
 		if(file->locked_checksum_mismatch == true)
 		{
 
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",relative_path);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",runtime_relative_path);
 
 		} else if(file->lock_checksum_violation == true){
 
@@ -286,7 +290,7 @@ void show_file(
 
 			print_changes(EVERY|REMEMBER,file);
 
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary," %s\n",relative_path);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary," %s\n",runtime_relative_path);
 
 		} else if(file->db_record_updated == true && file->include == true){
 
@@ -294,7 +298,7 @@ void show_file(
 
 			print_changes(EVERY,file);
 
-			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
+			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 
 		} else if(file->db_record_updated == true && file->zero_size_file == true){
 
@@ -302,7 +306,7 @@ void show_file(
 
 			print_changes(EVERY,file);
 
-			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
+			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 
 		} else if(file->rehash == true){
 
@@ -312,11 +316,11 @@ void show_file(
 
 				print_changes(EVERY,file);
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 
 			} else if(file->db->saved_offset > 0){
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"continue to rehash from %s %s\n",bkbmbgbtbpbeb((const size_t)file->db->saved_offset,FULL_VIEW),relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"continue to rehash from %s %s\n",bkbmbgbtbpbeb((const size_t)file->db->saved_offset,FULL_VIEW),runtime_relative_path);
 
 			} else if(file->locked_checksum_file == true){
 
@@ -324,7 +328,7 @@ void show_file(
 
 				print_changes(EVERY,file);
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 
 			} else if(file->db_record_updated == true){
 
@@ -332,7 +336,7 @@ void show_file(
 
 				print_changes(EVERY,file);
 
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 			}
 
 		} else if(file->db_record_updated == true){
@@ -341,12 +345,12 @@ void show_file(
 
 			print_changes(EVERY,file);
 
-			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",relative_path);
+			slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 		}
 	}
 
 	if(file->hash_interrupted == true)
 	{
-		slog_show(EVERY,false,first_iteration,summary,"SHA512 checksum for the file %s has been gracefully interrupted at byte: %s\n",relative_path,bkbmbgbtbpbeb((size_t)file->checksum_offset,FULL_VIEW));
+		slog_show(EVERY,false,first_iteration,summary,"SHA512 checksum for the file %s has been gracefully interrupted at byte: %s\n",runtime_relative_path,bkbmbgbtbpbeb((size_t)file->checksum_offset,FULL_VIEW));
 	}
 }
