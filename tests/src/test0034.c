@@ -12,7 +12,6 @@ static Return test0034_1(void)
 	create(char,pattern);
 
 	const char *fixture_path = "tests/fixtures/diffs/diff1";
-	const char *fixture_backup_path = "tests/fixtures/diff1_backup";
 	const char *tracked_file_in_source_fixture = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
 
 	off_t sparse_file_size = 0;
@@ -21,9 +20,8 @@ static Return test0034_1(void)
 	// First pass runs in TESTING mode without verbose output
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	// Prepare fixture copy using native move and copy helpers
-	ASSERT(SUCCESS == move_path(fixture_path,fixture_backup_path));
-	ASSERT(SUCCESS == copy_path(fixture_backup_path,fixture_path));
+	// Prepare a mutable working copy while keeping a pristine backup hidden from traversal
+	ASSERT(SUCCESS == prepare_mutable_fixture(fixture_path));
 
 	ASSERT(SUCCESS == runit("--database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1",NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -64,8 +62,7 @@ static Return test0034_1(void)
 	ASSERT(NULL != strstr(getcstring(result),"path1/AAA/BCB/CCC/a.txt"));
 
 	ASSERT(SUCCESS == delete_path("0034_lsize_vs_asize_flags.db"));
-	ASSERT(SUCCESS == delete_path(fixture_path));
-	ASSERT(SUCCESS == move_path(fixture_backup_path,fixture_path));
+	ASSERT(SUCCESS == restore_mutable_fixture(fixture_path));
 
 	del(pattern);
 	del(result);

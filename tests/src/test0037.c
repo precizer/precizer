@@ -291,7 +291,6 @@ static Return test0037_7(void)
 	char *saved_tmpdir = NULL;
 	bool file_exists = false;
 	create(char,symlinked_tmpdir);
-	create(char,link_path);
 	create(char,expected_directory_path);
 	Return restore_status = SUCCESS;
 	Return cleanup_status = SUCCESS;
@@ -299,8 +298,7 @@ static Return test0037_7(void)
 	ASSERT(SUCCESS == save_tmpdir_value(&saved_tmpdir));
 	ASSERT(SUCCESS == create_directory("0037_symlink_parent"));
 	ASSERT(SUCCESS == create_directory("0037_symlink_parent/real_tmp_root"));
-	ASSERT(SUCCESS == construct_path("0037_symlink_parent/link_tmp_root",link_path));
-	ASSERT(0 == symlink("real_tmp_root",getcstring(link_path)));
+	ASSERT(SUCCESS == create_symlink("real_tmp_root","0037_symlink_parent/link_tmp_root"));
 	ASSERT(SUCCESS == construct_path("0037_symlink_parent/link_tmp_root",symlinked_tmpdir));
 	ASSERT(SUCCESS == set_environment_variable("TMPDIR",getcstring(symlinked_tmpdir)));
 	ASSERT(SUCCESS == create_directory("a/b"));
@@ -334,7 +332,6 @@ static Return test0037_7(void)
 
 	free(saved_tmpdir);
 	call(del(expected_directory_path));
-	call(del(link_path));
 	call(del(symlinked_tmpdir));
 
 	RETURN_STATUS;
@@ -351,15 +348,13 @@ static Return test0037_8(void)
 
 	char *saved_tmpdir = NULL;
 	create(char,symlinked_tmpdir);
-	create(char,link_path);
 	Return restore_status = SUCCESS;
 	Return cleanup_status = SUCCESS;
 
 	ASSERT(SUCCESS == save_tmpdir_value(&saved_tmpdir));
 	ASSERT(SUCCESS == create_directory("0037_symlink_bad_parent"));
 	ASSERT(SUCCESS == truncate_file_to_zero_size("0037_symlink_bad_parent/file_target"));
-	ASSERT(SUCCESS == construct_path("0037_symlink_bad_parent/link_file_root",link_path));
-	ASSERT(0 == symlink("file_target",getcstring(link_path)));
+	ASSERT(SUCCESS == create_symlink("file_target","0037_symlink_bad_parent/link_file_root"));
 	ASSERT(SUCCESS == construct_path("0037_symlink_bad_parent/link_file_root",symlinked_tmpdir));
 	ASSERT(SUCCESS == set_environment_variable("TMPDIR",getcstring(symlinked_tmpdir)));
 	ASSERT(FAILURE == create_directory("a/b"));
@@ -378,7 +373,6 @@ static Return test0037_8(void)
 	}
 
 	free(saved_tmpdir);
-	call(del(link_path));
 	call(del(symlinked_tmpdir));
 
 	RETURN_STATUS;
