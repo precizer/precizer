@@ -163,8 +163,7 @@ static Return test0009_4(void)
 	create(char,result);
 	create(char,pattern);
 
-	ASSERT(SUCCESS == move_path("tests/fixtures/ignore_include_cases/chaotic_filenames","tests/fixtures/ignore_include_cases/chaotic_filenames_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/ignore_include_cases/chaotic_filenames_backup","tests/fixtures/ignore_include_cases/chaotic_filenames"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/ignore_include_cases/chaotic_filenames"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -185,9 +184,7 @@ static Return test0009_4(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	const char *change_file_command = "cd \"${TMPDIR}\"; "
-		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log";
-	ASSERT(SUCCESS == external_call(change_file_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log"));
 
 	const char *arguments_update = "--update --database=database0009_4.db "
 		"--ignore=\"^(?:skip_|tmp_).+\" "
@@ -201,10 +198,8 @@ static Return test0009_4(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	const char *change_files_command = "cd \"${TMPDIR}\"; "
-		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log; "
-		"printf ' ' >> tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak";
-	ASSERT(SUCCESS == external_call(change_files_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log"));
+	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak"));
 	// Truncate a tracked non-included file to trigger the "update as empty" branch
 	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
 
@@ -236,8 +231,7 @@ static Return test0009_4(void)
 	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 	ASSERT(SUCCESS == delete_path(db_filename));
 
-	ASSERT(SUCCESS == delete_path("tests/fixtures/ignore_include_cases/chaotic_filenames"));
-	ASSERT(SUCCESS == move_path("tests/fixtures/ignore_include_cases/chaotic_filenames_backup","tests/fixtures/ignore_include_cases/chaotic_filenames"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/ignore_include_cases/chaotic_filenames"));
 
 	del(pattern);
 	del(result);
