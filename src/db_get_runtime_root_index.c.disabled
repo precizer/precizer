@@ -1,8 +1,8 @@
 #include "precizer.h"
 
-Return db_get_runtime_root_index
+Return db_get_runtime_root_path_index
 (
-	const char *runtime_path_prefix,
+	const char *runtime_root_path,
 	sqlite3_int64 *path_prefix_index
 ){
 	/* Status returned by this function through provide()
@@ -24,7 +24,7 @@ Return db_get_runtime_root_index
 	}
 
 	/* Prepare to read */
-	rc = sqlite3_bind_text(select_stmt, 1, runtime_path_prefix, (int)strlen(runtime_path_prefix), NULL);
+	rc = sqlite3_bind_text(select_stmt, 1, runtime_root_path, (int)strlen(runtime_root_path), NULL);
 	if(SQLITE_OK != rc) {
 		printf("Error binding value in select (%i): %s\n", rc, sqlite3_errmsg(config->db));
 		status = FAILURE;
