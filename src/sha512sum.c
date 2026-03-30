@@ -103,7 +103,7 @@ Return sha512sum(
 
 		if(absolute_path == NULL || (TRIUMPH & status) == 0)
 		{
-			slog(ERROR,"Can't constructs an absolute path from the base directory %s and a relative path %s\n",config->running_dir,path);
+			slog(ERROR,"Can't constructs an absolute path from the base directory %s and a relative path %s\n",confstr(running_dir),path);
 
 			if(absolute_path != NULL)
 			{
