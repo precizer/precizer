@@ -64,8 +64,7 @@ static Return prepare_compare_filter_differences_fixture(void)
 
 	create(char,result);
 
-	run(move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	run(copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	run(set_environment_variable("TESTING","false"));
 
@@ -106,8 +105,7 @@ static Return prepare_compare_filter_one_sided_fixture(void)
 
 	create(char,result);
 
-	run(move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	run(copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	run(set_environment_variable("TESTING","false"));
 
@@ -145,9 +143,7 @@ static Return cleanup_compare_filter_differences_fixture(void)
 
 	run(delete_path("database1.db"));
 	run(delete_path("database2.db"));
-	run(delete_path("tests/fixtures/diffs/diff1"));
-
-	run(move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	deliver(status);
 }
@@ -213,8 +209,7 @@ static Return test0028_1(void)
 	create(char,pattern);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -251,9 +246,7 @@ static Return test0028_1(void)
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -270,8 +263,7 @@ static Return test0028_2(void)
 	create(char,pattern);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -306,9 +298,7 @@ static Return test0028_2(void)
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -325,8 +315,7 @@ static Return test0028_3(void)
 	create(char,pattern);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -361,9 +350,7 @@ static Return test0028_3(void)
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -380,8 +367,7 @@ static Return test0028_4(void)
 	create(char,pattern);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -416,9 +402,7 @@ static Return test0028_4(void)
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -626,8 +610,7 @@ static Return test0028_9(void)
 
 	create(char,result);
 
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -652,9 +635,7 @@ static Return test0028_9(void)
 
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	del(result);
 
