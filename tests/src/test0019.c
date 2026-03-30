@@ -14,9 +14,6 @@ Return test0019(void)
 {
 	INITTEST;
 
-	const char *create_symlinks_command = "cd ${TMPDIR} && ln -s ../../../../1/AAA/BCB/CCC/a.txt tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt && "
-	        "ln -s ../../../../AAA/ZAW/D/e/f tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f && "
-	        "ln -s /to/nowhere tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/broken_symlink";
 	const char *update_arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
 
 	create(char,pattern);
@@ -25,12 +22,12 @@ Return test0019(void)
 	create(char,result);
 
 	// Preparation for the test
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
-	ASSERT(SUCCESS == external_call(create_symlinks_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == create_symlink("../../../../1/AAA/BCB/CCC/a.txt","tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt"));
+	ASSERT(SUCCESS == create_symlink("../../../../AAA/ZAW/D/e/f","tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f"));
+	ASSERT(SUCCESS == create_symlink("/to/nowhere","tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/broken_symlink"));
 
 	const char *arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
@@ -58,7 +55,9 @@ Return test0019(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call(create_symlinks_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == create_symlink("../../../../1/AAA/BCB/CCC/a.txt","tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt"));
+	ASSERT(SUCCESS == create_symlink("../../../../AAA/ZAW/D/e/f","tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f"));
+	ASSERT(SUCCESS == create_symlink("/to/nowhere","tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/broken_symlink"));
 
 	filename = "templates/0019_003.txt";
 
@@ -72,9 +71,7 @@ Return test0019(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
