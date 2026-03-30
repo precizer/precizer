@@ -76,14 +76,13 @@ Return test0020_2(void)
 Return test0020_3(void)
 {
 	INITTEST;
-	const char *create_write_protected_directory_command = "cd ${TMPDIR} && mkdir write_protected_directory && chmod a-rwx write_protected_directory";
-	const char *unlock_write_protected_directory_command = "cd ${TMPDIR} && chmod a+rwx write_protected_directory";
 
 	create(char,result);
 
 	create(char,pattern);
 
-	ASSERT(SUCCESS == external_call(create_write_protected_directory_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == create_directory("write_protected_directory"));
+	ASSERT(SUCCESS == change_mode("write_protected_directory",0000));
 
 	const char *filename = "templates/0020_003.txt";
 
@@ -103,7 +102,7 @@ Return test0020_3(void)
 	del(pattern);
 	del(result);
 
-	ASSERT(SUCCESS == external_call(unlock_write_protected_directory_command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == change_mode("write_protected_directory",0777));
 	ASSERT(SUCCESS == delete_path("write_protected_directory"));
 
 	RETURN_STATUS;
@@ -133,10 +132,7 @@ Return test0020_4(void)
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *command = "cd ${TMPDIR} && "
-	        "chmod a-rwx write_protected_database1.db";
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == change_mode("write_protected_database1.db",0000));
 
 	const char *filename = "templates/0020_004.txt";
 
@@ -189,6 +185,7 @@ Return test0020_5(void)
 	del(pattern);
 	del(result);
 
+	ASSERT(SUCCESS == change_mode("write_protected_database1.db",0666));
 	ASSERT(SUCCESS == delete_path("write_protected_database1.db"));
 
 	RETURN_STATUS;
