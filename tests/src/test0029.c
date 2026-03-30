@@ -10,11 +10,9 @@ static Return test0029_1(void)
 	// Create memory for the result
 	create(char,result);
 	create(char,pattern);
-	const char *command = NULL;
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -24,11 +22,8 @@ static Return test0029_1(void)
 
 	ASSERT(result->length == 0);
 
-	command = "cd ${TMPDIR};"
-	        "chmod 000 tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
-	        "chmod 000 tests/fixtures/diffs/diff1/2/AAA/BBB/CZC;"; // Change directory permitions
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt",0000));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC",0000));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -46,12 +41,9 @@ static Return test0029_1(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
-
-	command = "cd ${TMPDIR} && "
-	        "chmod -R a+rwX tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt",0666));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC",0777));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -68,8 +60,7 @@ static Return test0029_2(void)
 	create(char,pattern);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -79,11 +70,8 @@ static Return test0029_2(void)
 
 	ASSERT(result->length == 0);
 
-	const char *command = "cd ${TMPDIR};"
-	        "chmod 000 tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt;"
-	        "chmod 000 tests/fixtures/diffs/diff1/2/AAA/BBB/CZC;"; // Change directory permitions
-
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt",0000));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC",0000));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -102,12 +90,9 @@ static Return test0029_2(void)
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database2.db"));
-
-	command = "cd ${TMPDIR} && "
-	        "chmod -R a+rwX tests/fixtures/diffs/diff1";
-	ASSERT(SUCCESS == external_call(command,NULL,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt",0666));
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC",0777));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
