@@ -17,7 +17,7 @@ void free_config(void)
 		tcsetattr(fileno(stdin),0,&term);
 	}
 
-	free(config->running_dir);
+	(void)del(conf(running_dir));
 
 	(void)del(conf(db_primary_file_path));
 
