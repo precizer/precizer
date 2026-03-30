@@ -17,9 +17,7 @@ Return test0016(void)
 
 	// Preparation for the test
 	const char *diff1_fixture_path = "tests/fixtures/diffs/diff1";
-	const char *diff1_backup_path = "tests/fixtures/diff1_backup";
-	ASSERT(SUCCESS == move_path(diff1_fixture_path,diff1_backup_path));
-	ASSERT(SUCCESS == copy_path(diff1_backup_path,diff1_fixture_path));
+	ASSERT(SUCCESS == prepare_mutable_fixture(diff1_fixture_path));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -90,9 +88,7 @@ Return test0016(void)
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path(diff1_fixture_path));
-
-	ASSERT(SUCCESS == move_path(diff1_backup_path,diff1_fixture_path));
+	ASSERT(SUCCESS == restore_mutable_fixture(diff1_fixture_path));
 
 	RETURN_STATUS;
 }

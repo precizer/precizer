@@ -68,8 +68,7 @@ static Return test0011_1(void)
  * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
- * move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup")
- * copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1")
+ * prepare_mutable_fixture("tests/fixtures/diffs/diff1")
  * # Modify a file
  * echo -n "  " >> tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt
  * # Add a new file by truncating the file with the target name
@@ -79,16 +78,14 @@ static Return test0011_1(void)
  * Stage 5. Run the precizer once again:
  * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
  * Final stage. Recover from backup:
- * delete_path("tests/fixtures/diffs/diff1")
- * move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1")
+ * restore_mutable_fixture("tests/fixtures/diffs/diff1")
  */
 static Return test0011_2(void)
 {
 	INITTEST;
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	const char *arguments = "--progress --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
@@ -254,8 +251,7 @@ static Return test0011_4(void)
 	del(result);
 
 	ASSERT(SUCCESS == delete_path("database1.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
