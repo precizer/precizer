@@ -21,12 +21,9 @@ void init_config(void)
 	// Application start time for total runtime reporting.
 	config->app_start_time_ns = cur_time_monotonic_ns();
 
-	// Max available size of a path
-	config->running_dir_size = 0;
-
 	// Absolute path name of the working directory
 	// A directory where the program was executed
-	config->running_dir = NULL;
+	config->running_dir.element_size = sizeof(char);
 
 	// Show progress bar
 	config->progress = false;
