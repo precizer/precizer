@@ -161,6 +161,9 @@ DYNAMIC_INCPATH += -I/opt/homebrew/include
 INCPATH += -I/opt/homebrew/include
 LDPATH += -L/opt/homebrew/lib
 LDLIBS += -largp
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+# argp is not part of Cygwin's C library
+LDLIBS += -largp
 endif
 
 # Default build
