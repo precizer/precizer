@@ -79,6 +79,8 @@ DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+DBG_LDFLAGS = $(USE_LLD)
 else
 DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs
 endif
@@ -128,6 +130,8 @@ PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
 PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
 PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--gc-sections
 else
 PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
@@ -154,6 +158,8 @@ PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
 PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--gc-sections
 else
 PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif

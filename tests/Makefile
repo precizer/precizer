@@ -161,6 +161,8 @@ SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
 else
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 endif

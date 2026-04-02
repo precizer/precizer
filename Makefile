@@ -221,6 +221,9 @@ LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
 DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
+DBG_LDFLAGS = $(USE_LLD) -Wl,--as-needed
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
 DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs -Wl,--as-needed
@@ -264,6 +267,9 @@ SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
 SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
 SNTZ_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
+SNTZ_LDFLAGS = $(USE_LLD) $(SNTZ_OPTIONS)
 else
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
 SNTZ_LDFLAGS = $(USE_LLD) -Wl,-z,defs $(SNTZ_OPTIONS)
@@ -288,6 +294,8 @@ PROD_CFLAGS ?= $(CFLAGS) -flto=auto -O3 -march=native -funroll-loops -pipe -ffun
 # See .packaging/gentoo/ for a real-world example.
 ifeq ($(UNAME_S),Darwin)
 PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,-dead_strip
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--gc-sections
 else
 PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) -flto=auto -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
@@ -317,6 +325,8 @@ PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_CFLAGS = $(CFLAGS) -flto=auto -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
 PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,-dead_strip
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--gc-sections
 else
 PRTB_LDFLAGS = $(USE_LLD) -flto=auto -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
