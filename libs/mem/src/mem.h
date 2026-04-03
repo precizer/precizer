@@ -398,7 +398,7 @@ const void *memory_const_data_checked(
  * @param memory_object Pointer to the descriptor.
  * @return Underlying pointer or NULL when @p memory_object itself is NULL.
  */
-static inline void *memory_rawdata(const memory * const memory_object)
+static inline __attribute__((always_inline)) void *memory_rawdata(const memory * const memory_object)
 {
 	if(memory_object == NULL)
 	{
@@ -413,7 +413,7 @@ static inline void *memory_rawdata(const memory * const memory_object)
  * @param memory_object Pointer to the descriptor.
  * @return Underlying pointer or NULL when @p memory_object itself is NULL.
  */
-static inline const void *memory_raw_const_data(const memory * const memory_object)
+static inline __attribute__((always_inline)) const void *memory_raw_const_data(const memory * const memory_object)
 {
 	if(memory_object == NULL)
 	{
