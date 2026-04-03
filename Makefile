@@ -83,6 +83,7 @@ endif
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
+ROOT_EXE = ./$(EXE)
 ifeq ($(UNAME_S),Darwin)
 STATIC =
 STRIP ?= -Wl,-x
@@ -225,7 +226,9 @@ DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_LIB_OBJS = $(DBG_LIBDIR)/obj/*.o
+DBG_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
+DBG_CFLAGS = $(CFLAGS) -g -ggdb3 -Og -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
@@ -259,6 +262,8 @@ COV_OBJDIR = $(COV_DIR)/obj
 COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
 COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
+COV_LIB_OBJS = $(COV_LIBDIR)/obj/*.o
+COV_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS = $(USE_LLD) -lgcov --coverage
 
@@ -271,6 +276,8 @@ SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
+SNTZ_LIB_OBJS = $(SNTZ_LIBDIR)/obj/*.o
+SNTZ_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
@@ -293,6 +300,8 @@ PROD_OBJDIR = $(PROD_DIR)/obj
 PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
+PROD_LIB_OBJS = $(PROD_LIBDIR)/obj/*.o
+PROD_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 PROD_CFLAGS ?= $(CFLAGS) $(LTO) -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 # PROD_LDFLAGS and PROD_CFLAGS use ?= so that distribution package managers
 # (Gentoo Portage, Debian dpkg-buildflags, RPM macros, etc.) can override them
@@ -317,9 +326,10 @@ DYNP_OBJDIR = $(DYNP_DIR)/obj
 DYNP_LDPATH = $(LDPATH)
 DYNP_EXE = $(DYNP_DIR)/$(EXE)
 DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
+DYNP_LIB_SRCS = $(foreach lib,$(STATLIBS),$(wildcard libs/$(lib)/src/*.c))
+DYNP_LIB_OBJS = $(addprefix $(PROD_LIBDIR)/obj/,$(notdir $(DYNP_LIB_SRCS:.c=.o)))
 DYNP_CFLAGS = $(PROD_CFLAGS)
 DYNP_LDFLAGS = $(PROD_LDFLAGS)
-DYNP_STATIC_LIBS = $(addprefix $(PROD_LIBDIR)/lib,$(addsuffix .a,$(STATLIBS)))
 DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(STATLIBS)),$(LDLIBS))
 
 #
@@ -331,6 +341,8 @@ PRTB_OBJDIR = $(PRTB_DIR)/obj
 PRTB_LDPATH = -L$(PRTB_LIBDIR) $(LDPATH)
 PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
+PRTB_LIB_OBJS = $(PRTB_LIBDIR)/obj/*.o
+PRTB_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 PRTB_CFLAGS = $(CFLAGS) $(LTO) -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
 ifeq ($(UNAME_S),Darwin)
 PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,-dead_strip
@@ -362,13 +374,14 @@ endef
 debug: $(DBG_EXE) debugfinal
 
 debugfinal: $(DBG_EXE)
+	@$(DBG_EXE) --version
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 debuglibs:
 	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(LIBS)"
 
 $(DBG_EXE): $(DBG_OBJS) debuglibs
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LINK_RPATH) $(DBG_LDFLAGS) -o $@ $(DBG_OBJS) $(LDLIBS)
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LINK_RPATH) $(DBG_LDFLAGS) $(DBG_OBJS) $(DBG_LIB_OBJS) $(DBG_EXT_LDLIBS) -o $@
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, not stripped"
 else
@@ -389,13 +402,14 @@ coverage: test-coverage
 precizer-coverage: $(COV_EXE) coveragefinal
 
 coveragefinal: $(COV_EXE)
+	@$(COV_EXE) --version
 	@echo "The application has been built and is located: $(COV_EXE)"
 
 coveragelibs:
 	@$(MAKE) -s -C libs coverage SUBDIRS="$(LIBS)"
 
 $(COV_EXE): $(COV_OBJS) coveragelibs
-	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(LDLIBS)
+	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(COV_LIB_OBJS) $(COV_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, not stripped"
 else
@@ -421,13 +435,14 @@ run: sanitize
 sanitize: $(SNTZ_EXE) sanitizefinal
 
 sanitizefinal: $(SNTZ_EXE)
+	@$(SNTZ_EXE) --version
 	@echo "The application has been built and is located: $(SNTZ_EXE)"
 
 sanitizelibs:
 	@$(MAKE) -s -C libs sanitize SUBDIRS="$(LIBS)"
 
 $(SNTZ_EXE): $(SNTZ_OBJS) sanitizelibs
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) -o $@ $(SNTZ_OBJS) $(LDLIBS)
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(SNTZ_EXT_LDLIBS) -o $@
 	@echo "$@ linked dynamically, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
@@ -449,15 +464,16 @@ banner-production: production-done
 	@$(BUILD_USAGE_BANNER)
 
 prodfinal: $(PROD_EXE)
-	@cp $(PROD_EXE) $(EXE)
-	@$(UPX) $(EXE)
+	@cp $(PROD_EXE) $(ROOT_EXE)
+	@$(UPX) $(ROOT_EXE)
+	@$(ROOT_EXE) --version
 	@echo "The $(PROD_EXE) has been copied to the current directory"
 
 prodlibs:
 	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)"
 
 $(PROD_EXE): $(PROD_OBJS) prodlibs
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(LDLIBS)
+	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(PROD_LIB_OBJS) $(PROD_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
 else
@@ -482,15 +498,16 @@ banner-dynamic-production: dynprodfinal
 	@$(BUILD_USAGE_BANNER)
 
 dynprodfinal: dynamic-production-build
-	@cp $(DYNP_EXE) $(EXE)
-	@$(UPX) $(EXE)
+	@cp $(DYNP_EXE) $(ROOT_EXE)
+	@$(UPX) $(ROOT_EXE)
+	@$(ROOT_EXE) --version
 	@echo "The $(DYNP_EXE) has been copied to the current directory"
 
 dynprodlibs:
 	@$(MAKE) -s -C libs production SUBDIRS="$(STATLIBS)"
 
 $(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
-	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_STATIC_LIBS) $(DYNP_SHARED_LIBS)
+	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_LIB_OBJS) $(DYNP_SHARED_LIBS)
 	@echo "$@ linked dynamically, stripped"
 
 $(DYNP_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DYNP_OBJDIR)
@@ -511,15 +528,16 @@ banner-portable: portable-done
 	@$(BUILD_USAGE_BANNER)
 
 portfinal: $(PRTB_EXE)
-	@cp $(PRTB_EXE) $(EXE)
-	@$(UPX) $(EXE)
+	@cp $(PRTB_EXE) $(ROOT_EXE)
+	@$(UPX) $(ROOT_EXE)
+	@$(ROOT_EXE) --version
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
 portablelibs:
 	@$(MAKE) -s -C libs portable SUBDIRS="$(LIBS)"
 
 $(PRTB_EXE): $(PRTB_OBJS) portablelibs
-	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(LDLIBS)
+	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(PRTB_LIB_OBJS) $(PRTB_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, stripped"
 else
@@ -539,18 +557,22 @@ clean: | clean-preproc clean-asm clean-tests
 	@rm -f $(DBG_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
 	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
 
+	@test -d $(DBG_LIBDIR)/obj && rm -d $(DBG_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 
+	@test -d $(COV_LIBDIR)/obj && rm -d $(COV_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
 	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
 
+	@test -d $(SNTZ_LIBDIR)/obj && rm -d $(SNTZ_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
 
+	@test -d $(PROD_LIBDIR)/obj && rm -d $(PROD_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(PROD_LIBDIR) && rm -d $(PROD_LIBDIR) 2>/dev/null || true
 	@test -d $(PROD_OBJDIR) && rm -d $(PROD_OBJDIR) 2>/dev/null || true
 	@test -d $(PROD_DIR) && rm -d $(PROD_DIR) 2>/dev/null || true
@@ -558,6 +580,7 @@ clean: | clean-preproc clean-asm clean-tests
 	@test -d $(DYNP_OBJDIR) && rm -d $(DYNP_OBJDIR) 2>/dev/null || true
 	@test -d $(DYNP_DIR) && rm -d $(DYNP_DIR) 2>/dev/null || true
 
+	@test -d $(PRTB_LIBDIR)/obj && rm -d $(PRTB_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(PRTB_LIBDIR) && rm -d $(PRTB_LIBDIR) 2>/dev/null || true
 	@test -d $(PRTB_OBJDIR) && rm -d $(PRTB_OBJDIR) 2>/dev/null || true
 	@test -d $(PRTB_DIR) && rm -d $(PRTB_DIR) 2>/dev/null || true
