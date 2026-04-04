@@ -42,6 +42,7 @@ endif
 LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
 # cmocka is used in sanitizer/coverage builds.
 CMOCKA_LDLIBS = -lcmocka
+EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 
 SYS := $(shell gcc -dumpmachine)
 ifneq (, $(findstring alpine, $(SYS)))
@@ -134,11 +135,13 @@ COV_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(COV_LIBDIR),-rpath,\$$ORIGIN
 endif
 
 COV_APP_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(APP_OBJS)))
+COV_LIB_OBJDIR = $(ROOT_BUILDDIR)/$(COV)/libs/obj
+COV_LIB_OBJS = $(COV_LIB_OBJDIR)/*.o
 # Keep TESTITALL in the test runner build flags only.
 # Adding it to the global CFLAGS leaks it into recursive builds such as
 # `make -C ../ sanitize`, which disables main() in the standalone precizer
 # binary and enables test-only hooks there
-COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL -DTESTITALL_TEST_HOOKS
+COV_CFLAGS = $(CFLAGS) -g -ggdb3 -O0 -fno-omit-frame-pointer -fprofile-arcs -ftest-coverage -DTESTITALL -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS = -lgcov --coverage
 
 #
@@ -150,6 +153,8 @@ SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_APP_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(APP_OBJS)))
+SNTZ_LIB_OBJDIR = $(ROOT_BUILDDIR)/$(SNTZ)/libs/obj
+SNTZ_LIB_OBJS = $(SNTZ_LIB_OBJDIR)/*.o
 SNTZ_LIBDIR = $(ROOT_BUILDDIR)/$(SNTZ)/libs
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 ifeq ($(UNAME_S),Darwin)
@@ -161,6 +166,8 @@ SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
 SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
 ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
 else
 SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
 endif
@@ -174,6 +181,8 @@ DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_APP_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(APP_OBJS)))
+DBG_LIB_OBJDIR = $(ROOT_BUILDDIR)/$(DBG)/libs/obj
+DBG_LIB_OBJS = $(DBG_LIB_OBJDIR)/*.o
 DBG_LIBDIR = $(ROOT_BUILDDIR)/$(DBG)/libs
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 ifeq ($(UNAME_S),Darwin)
@@ -181,7 +190,7 @@ DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/..
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
 endif
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+DBG_CFLAGS = $(CFLAGS) -g -ggdb3 -Og -fno-omit-frame-pointer -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge static-analyzers static-analyzers-cli gcc-analyzer cppcheck clang-analyzer clang-analyzer-cli print-%
@@ -217,8 +226,8 @@ precizer-coverage:
 coverage: hugetestfile coverage-html
 
 $(COV_EXE): $(COV_OBJS) $(COV_APP_OBJS) | precizer-coverage testlibs-coverage
-	@$(CC) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) $(WRAPFLAGS) -o $(COV_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
-	@echo "$@ linked."
+	@$(CC) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) $(WRAPFLAGS) $(COV_OBJS) $(COV_APP_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) $(CMOCKA_LDLIBS) -o $(COV_EXE)
+	@echo "$@ linked"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
@@ -252,8 +261,8 @@ sanitize: precizer-sanitize hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_APP_OBJS) | precizer-sanitize testlibs-sanitize
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) -o $(SNTZ_EXE) $^ $(LDLIBS) $(CMOCKA_LDLIBS)
-	@echo "$@ linked."
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS) $(CMOCKA_LDLIBS) -o $(SNTZ_EXE)
+	@echo "$@ linked"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
@@ -278,8 +287,8 @@ debug: hugetestfile debug-build
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_APP_OBJS) | precizer-debug testlibs-debug
-	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $^ $(LDLIBS)
-	@echo "$@ linked."
+	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) $(DBG_OBJS) $(DBG_APP_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS) -o $(DBG_EXE)
+	@echo "$@ linked"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
 	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<

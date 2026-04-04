@@ -8,8 +8,13 @@
  *         respectively, to be less than, to match, or be greater than second
  */
 static int compare_by_name(
+#ifdef __CYGWIN__
+	const FTSENT * const *first,
+	const FTSENT * const *second)
+#else
 	const FTSENT **first,
 	const FTSENT **second)
+#endif
 {
 	return strcmp((*first)->fts_name,(*second)->fts_name);
 }
