@@ -19,10 +19,10 @@ typedef struct {
 /**
  * @brief Output style for byte formatting.
  */
-typedef enum
+typedef enum ByteFormat : unsigned int
 {
-	FULL_VIEW = 0,
-	MAJOR_VIEW = 1
+	FULL_VIEW = 0u,
+	MAJOR_VIEW = 1u
 } ByteFormat;
 
 /**

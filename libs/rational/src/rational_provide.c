@@ -1,6 +1,6 @@
 #include "rational.h"
 
-/// Converts Return enum to a string
+/// Converts Return status flags to a string
 const char *show_status(const Return status)
 {
 	const char *status_label = "UNKNOWN";
@@ -13,7 +13,7 @@ const char *show_status(const Return status)
 		static char buffer[MAX_CHARACTERS];
 		buffer[0] = '\0';
 
-		struct {
+		static const struct {
 			Return flag;
 			const char *name;
 		} mapping[] = {

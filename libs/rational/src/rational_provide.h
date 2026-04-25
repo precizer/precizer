@@ -95,7 +95,7 @@ const char *show_status(const Return);
 #define run(func) \
 	{ \
 		/* Execute only when current status does not request skipping */ \
-		if((SKIP & status) == false) \
+		if((SKIP & status) == 0) \
 		{ \
 			/* Evaluate callee once and capture its returned flag set */ \
 			Return __returned_status = (func); \

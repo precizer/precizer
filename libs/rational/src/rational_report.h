@@ -21,5 +21,5 @@ void REPORT(
 	const char *,
 	...);
 
-// Convenience macro to automatically include source file, function, and line information
+/* Convenience macro for heap-independent error reporting with source location */
 #define report(...) REPORT(__FILE__,__func__,__LINE__,__VA_ARGS__)

@@ -1,18 +1,18 @@
 /**
  * @file
- * @brief Common usage structures and enumerations
+ * @brief Common usage enumerations and bit flags
  *
  */
 
 /*
  *
- * Initialization of enumerations
+ * Common flag type definitions
  *
  */
 
 /// Function exit status
-/// Formatted as an enumeration
-typedef enum : unsigned int
+/// Formatted as fixed-underlying unsigned bit flags
+typedef enum Return : unsigned int
 {
 	/// Excellent, great, fine, valuable,
 	/// proper, graceful, successful
@@ -28,7 +28,7 @@ typedef enum : unsigned int
 	FAILURE = 0x0001u,   // 0000 0000 0000 0001
 
 	/// Boolean value: `true`
-	YES = 0x0002u,       // 0000 0000 0100 0000
+	YES = 0x0002u,       // 0000 0000 0000 0010
 
 	/// Unsuccessful
 	UNSUCCESS = 0x0004u, // 0000 0000 0000 0100
@@ -49,13 +49,18 @@ typedef enum : unsigned int
 	INFO = 0x0080u,      // 0000 0000 1000 0000
 
 	/// Critical set
-	CRITICAL = WARNING | UNSUCCESS | FAILURE,  // Hex: 0x0026. Dec: 38, Bin: 0000 0000 0010 0110
+  // Hex: 0x0025. Dec: 37. Bin: 0000 0000 0010 0101
+	CRITICAL = WARNING | UNSUCCESS | FAILURE,
 
 	/// Graceful outcome
-	TRIUMPH = SUCCESS | HALTED | DONOTHING | INFO,   // Hex: 0x00D8, Dec: 216, Bin: 0000 0000 1101 1000
+  // Hex: 0x00D8. Dec: 216. Bin: 0000 0000 1101 1000
+	TRIUMPH = SUCCESS | HALTED | DONOTHING | INFO,
 
 	/// Skip the normal function call based on the status flag
-	SKIP = INFO | WARNING | UNSUCCESS | FAILURE | HALTED      // Hex: 0x00B5. Dec: 181, Bin: 0000 0000 1011 0101
+  // Hex: 0x00B5. Dec: 181. Bin: 0000 0000 1011 0101
+	SKIP = INFO | WARNING | UNSUCCESS | FAILURE | HALTED
+
+} Return;
 
 #if 0
 /*
@@ -88,4 +93,18 @@ typedef enum : unsigned int
  */
 #endif
 
-} Return;
+/*
+ * File metadata change bits
+ *
+ */
+typedef enum Changed : unsigned int
+{
+	IDENTICAL = 0x00u,                 // 000000
+	NOT_EQUAL = 0x01u,                 // 000001
+	SIZE_CHANGED = 0x02u,              // 000010
+	STATUS_CHANGED_TIME = 0x04u,       // 000100
+	MODIFICATION_TIME_CHANGED = 0x08u, // 001000
+	ALLOCATED_SIZE_CHANGED = 0x10u,    // 010000
+	COMPARE_FAILED = 0x20u             // 100000
+
+} Changed;

@@ -12,7 +12,21 @@
 
 // Global flag to manage output of all logging messages
 // in an application
-extern _Atomic char rational_logger_mode;
+typedef enum LOGMODES : unsigned int
+{
+	REGULAR = 0x01u,           // 0000001
+	VERBOSE = 0x02u,           // 0000010
+	TESTING = 0x04u,           // 0000100
+	TRACE = VERBOSE | TESTING, // Hex: 0x06. Dec: 6. Bin: 0000110
+	EVERY = REGULAR | VERBOSE | TESTING,   // Hex: 0x07. Dec: 7. Bin: 0000111
+	ERROR = 0x08u,             // 0001000
+	SILENT = 0x10u,            // 0010000
+	UNDECOR = 0x20u,           // 0100000
+	REMEMBER = 0x40u,          // 1000000
+	VISIBLE_IN_SILENT = 0x80u  // 10000000
+} LOGMODES;
+
+extern _Atomic LOGMODES rational_logger_mode;
 extern _Atomic Return global_return_status;
 
 /**
@@ -29,22 +43,7 @@ extern _Atomic Return global_return_status;
  * VISIBLE_IN_SILENT — when SILENT is active, still print the payload for this call without logger prefixes
  *
  */
-typedef enum
-{
-	REGULAR           = 0x01, // 0000001
-	VERBOSE           = 0x02, // 0000010
-	TESTING           = 0x04, // 0000100
-	TRACE             = 0x06, // 0000110 = VERBOSE|TESTING
-	EVERY             = 0x07, // 0000111 = REGULAR|VERBOSE|TESTING
-	ERROR             = 0x08, // 0001000
-	SILENT            = 0x10, // 0010000
-	UNDECOR           = 0x20, // 0100000
-	REMEMBER          = 0x40, // 1000000
-	VISIBLE_IN_SILENT = 0x80 // 10000000
-
-} LOGMODES;
-
-char *rational_reconvert(int);
+char *rational_reconvert(LOGMODES);
 
 /**
  * @brief Converts a macro name to a string representation
@@ -79,7 +78,7 @@ __attribute__((weak)) void rational_remember(
 
 void rational_logger
 (
-	const unsigned int,
+	const LOGMODES,
 	const char *,
 	size_t,
 	const char *,

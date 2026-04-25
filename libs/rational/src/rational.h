@@ -103,10 +103,10 @@
 
 /**
  *
- * Common usage structures and enumerations
+ * Common usage enumerations and bit flags
  *
  */
-#include "rational_strenum.h"
+#include "rational_enumerations.h"
 
 /**
  *
