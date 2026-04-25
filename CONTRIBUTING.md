@@ -23,6 +23,8 @@ Using AI assistants while working on the code is strongly encouraged! They catch
 
 That said, as the local demiurge of your own little system, you shouldn’t let an assistant steer the wheel or make decisions for you. Any AI-generated code must be reviewed manually—think it through, verify it, and make sure it matches your intent before it lands in the codebase.
 
+And please do not use weak AI models for programming.
+
 ## Local Environment
 
 ### Dependencies by Scenario
