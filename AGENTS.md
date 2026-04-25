@@ -77,10 +77,6 @@ Tabs only
   3. validation commands run (for example, `make tests`);
   4. known limitations/follow-ups.
 
-## Artifacts, Security, and Config Hygiene
-- Never commit generated artifacts (`.builds/`, `precizer`, temporary `.db` files, coverage outputs).
-- Prefer Docker targets (`make docker-<os>-<build>`) when reproducing CI-like environments.
-
 # Стандартные статусы возврата
 - Ни в коем случае не использовать goto
 - Стараться избегать использования тернарных операторов
