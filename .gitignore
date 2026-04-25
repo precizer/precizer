@@ -15,5 +15,3 @@ tools/tool_*
 /*.out.*
 /src/tool_*
 .vms/
-A*
-compile_commands.json
