@@ -17,7 +17,7 @@
 - Clarity, practical usefulness, and ease of understanding take priority over formal completeness alone
 
 # Indentation
-Tabs only
+Use tabs for indentation. Spaces may be used for alignment when needed, for example when a line with all function arguments would otherwise be too long.
 
 # Change Policy
 - Provide a numbered implementation plan for approval before making any code changes
@@ -56,7 +56,7 @@ Tabs only
 
 ## Coding Style & Naming Conventions
 - Language standard is `C2x`; builds use strict warnings and `-Werror`.
-- Formatting is enforced with `uncrustify` (`Uncrustify.cfg`): tabs for indentation (`indent_with_tabs = 1`, tab size 4), no backup files.
+- Formatting is enforced with `uncrustify` (`Uncrustify.cfg`)
 - Follow existing naming: lowercase snake_case for files/functions (for example `db_check_changes.c`, `parse_arguments`).
 - Keep changes localized; avoid broad refactors in feature PRs.
 - Variable, function, and struct names should be self-explanatory, even if that makes them long
@@ -77,12 +77,18 @@ Tabs only
   3. validation commands run (for example, `make tests`);
   4. known limitations/follow-ups.
 
-# Стандартные статусы возврата
-- Ни в коем случае не использовать goto
-- Стараться избегать использования тернарных операторов
-- Обычне функции возвращают Return и начинаются с установки флага по умолчанию с соответствующим коментарием:
+# Standard Return Statuses and librational
+- Never use `goto`; avoid ternary operators when practical
+- Regular functions return `Return` and start with a default local status:
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-- status = FAILURE ставится только тогда, когда происходит неуправляемая ошибка. Например, не удалось выделить память. Эта ошибка не
-  зависит от приложения и его логики.
+- `FAILURE` is used only for technical errors inside a function: out of memory, damaged state, or inability to continue. A normal negative logical answer is not `FAILURE`
+- Check functions may return `SUCCESS | GOOD` or `SUCCESS | NOTGOOD`. `GOOD` and `NOTGOOD` are local binary answers; they should not be inherited automatically through a call chain. Return them outward only from functions that themselves answer a yes/no question
+- Caller code analyzes the technical layer first (`CRITICAL`, `TRIUMPH`, `SKIP`), then the binary answer (`GOOD`, `NOTGOOD`)
+- Use `if(TRIUMPH & status)` for sequential steps. For loops that should stop after an error, warning, informational result, or halt, use `if((SKIP & status) == 0)` or an equivalent condition
+- `run(func)` is for work steps that may be skipped after a failure or stop. `func` must return `Return`. `run()` calls `func` only while local `status` does not contain `SKIP`, then adds the return from `func` into `status` and normalizes it
+- `call(func)` is for cleanup and mandatory final actions. `func` must return `Return`. `call()` always calls `func`, even when local `status` is already not `SUCCESS`, but the return from `func` is still added into `status` and affects the final result
+- Function return goes through `provide(status)` or `deliver(status)`. `provide()` additionally writes TRACE for a critical return; `deliver()` returns without that TRACE
+- `global_return_status` is for program-level events. Only `GLOBAL` flags propagate from it into a regular return: `INFO`, `WARNING`, `HALTED`. `GOOD` and `NOTGOOD` do not propagate through global status
+- If a status can contain several bits, do not compare the whole value exactly with one flag. Use bit masks for compound returns
