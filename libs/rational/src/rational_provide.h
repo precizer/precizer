@@ -2,6 +2,7 @@
 void provide(const Return);
 void deliver(const Return);
 const char *show_status(const Return);
+Return normalize_return_status(Return);
 
 /**
  * @def deliver(status)
@@ -12,32 +13,14 @@ const char *show_status(const Return);
  *
  * Behavior:
  * - Evaluates `status` once
- * - Clears `SUCCESS` in `global_return_status` if global state is `CRITICAL`
- * - If local status is `CRITICAL`, merges global non-`TRIUMPH` bits
- * - If local status is `TRIUMPH`, merges global non-`CRITICAL` bits
- * - Returns merged flags without printing TRACE logs
+ * - Normalizes local status and global_return_status
+ * - Merges only GLOBAL bits from global_return_status into the return value
+ * - Returns normalized merged flags without printing TRACE logs
  */
 #define deliver(status) \
 	{ \
-		/* Evaluate the input once and work on a local mutable copy */ \
-		Return __returned_status = status; \
-		/* If global state is already critical, drop SUCCESS to avoid contradictory flags */ \
-		if(CRITICAL & global_return_status) \
-		{ \
-			/* Keep all global bits except SUCCESS */ \
-			global_return_status &= ~SUCCESS; \
-		} \
-		/* Critical local exit path: prioritize critical global context over graceful global bits */ \
-		if(CRITICAL & __returned_status) \
-		{ \
-			/* Merge all global non-TRIUMPH bits (e.g., FAILURE/WARNING/UNSUCCESS) */ \
-			__returned_status |= (global_return_status & ~TRIUMPH); \
-		} else if(TRIUMPH & __returned_status){ \
-			/* Graceful local exit path: keep global graceful context, suppress global critical bits */ \
-			__returned_status |= (global_return_status & ~CRITICAL); \
-		} \
-		/* Return the normalized and merged status flags */ \
-		return(__returned_status); \
+		/* Evaluate, normalize, merge global context, and return once */ \
+		return(normalize_return_status(status)); \
 	}
 
 /**
@@ -46,36 +29,22 @@ const char *show_status(const Return);
  *
  * Intended for function exit paths. The macro normalizes conflicting flags and
  * merges local and global state before returning:
- * - If `global_return_status` is already critical, `SUCCESS` is removed from it.
- * - If local `status` contains any `CRITICAL` bit, all non-`TRIUMPH` global bits
- *   are merged into the return value.
- * - If local `status` contains any `TRIUMPH` bit, all non-`CRITICAL` global bits
- *   are merged into the return value.
+ * - Local status is normalized
+ * - `global_return_status` is normalized and stored back
+ * - Only GLOBAL bits from `global_return_status` are merged into the result
+ * - The final result is normalized before return
  *
  * Critical returns also emit a TRACE log record.
  */
 #define provide(status) \
 	{ \
-		/* Evaluate the input once and work on a local mutable copy */ \
-		Return __returned_status = status; \
-		/* If global state is already critical, drop SUCCESS to avoid contradictory flags */ \
-		if(CRITICAL & global_return_status) \
-		{ \
-			/* Keep all global bits except SUCCESS */ \
-			global_return_status &= ~SUCCESS; \
-		} \
-		/* Critical local exit path: prioritize critical global context over graceful global bits */ \
+		/* Evaluate, normalize, and merge global context once */ \
+		Return __returned_status = normalize_return_status(status); \
+		/* Critical final status is traced by provide(), but not by deliver() */ \
 		if(CRITICAL & __returned_status) \
 		{ \
-			/* Merge all global non-TRIUMPH bits (e.g., FAILURE/WARNING/UNSUCCESS) */ \
-			__returned_status |= (global_return_status & ~TRIUMPH); \
-			/* Emit trace for final critical return composition */ \
 			slog(TRACE,"Returned %s:%d status: %s\n",__func__,__LINE__,show_status(__returned_status)); \
-		} else if(TRIUMPH & __returned_status){ \
-			/* Graceful local exit path: keep global graceful context, suppress global critical bits */ \
-			__returned_status |= (global_return_status & ~CRITICAL); \
 		} \
-		/* Return the normalized and merged status flags */ \
 		return(__returned_status); \
 	}
 
@@ -88,9 +57,8 @@ const char *show_status(const Return);
  * This macro expects a writable `Return status` variable in scope.
  *
  * Merge rules:
- * - If the callee returns `CRITICAL`, `SUCCESS` is removed from both the callee
- *   result and current `status`.
- * - The callee result is then OR-merged into `status`
+ * - The callee result is OR-merged into `status`
+ * - The accumulated status is normalized after the callee returns
  */
 #define run(func) \
 	{ \
@@ -99,16 +67,8 @@ const char *show_status(const Return);
 		{ \
 			/* Evaluate callee once and capture its returned flag set */ \
 			Return __returned_status = (func); \
-			/* Detect any critical bit returned by the callee */ \
-			if(CRITICAL & __returned_status) \
-			{ \
-				/* Remove SUCCESS from callee status to avoid SUCCESS|CRITICAL combination */ \
-				__returned_status &= ~SUCCESS; \
-				/* Remove SUCCESS from accumulated status for the same reason */ \
-				status &= ~SUCCESS; \
-			} \
-			/* Merge returned flags into current accumulated status */ \
-			status |= __returned_status; \
+			/* Merge returned flags into current status, then normalize accumulated flags */ \
+			status = normalize_return_status(status | __returned_status); \
 		} \
 	}
 
@@ -121,30 +81,13 @@ const char *show_status(const Return);
  * It expects a writable `Return status` variable in scope.
  *
  * Merge rules:
- * - If the callee returns `CRITICAL`, `SUCCESS` is removed from both the callee
- *   result and current `status`.
- * - If current `status` is already critical, `SUCCESS` is removed from the callee
- *   result before merge.
- * - The callee result is then OR-merged into `status`.
+ * - The callee result is OR-merged into `status`.
+ * - The accumulated status is normalized after the callee returns
  */
 #define call(func) \
 	{ \
 		/* Always evaluate the callee and capture its returned flag set */ \
 		Return __returned_status = (func); \
-		/* Detect any critical bit returned by the callee */ \
-		if(CRITICAL & __returned_status) \
-		{ \
-			/* Remove SUCCESS from callee status to avoid SUCCESS|CRITICAL combination */ \
-			__returned_status &= ~SUCCESS; \
-			/* Remove SUCCESS from accumulated status for the same reason */ \
-			status &= ~SUCCESS; \
-		} \
-		/* If accumulated status is already critical, keep callee non-successful */ \
-		if(CRITICAL & status) \
-		{ \
-			/* Remove SUCCESS from callee status before merging */ \
-			__returned_status &= ~SUCCESS; \
-		} \
-		/* Merge returned flags into current accumulated status */ \
-		status |= __returned_status; \
+		/* Merge returned flags into current status, then normalize accumulated flags */ \
+		status = normalize_return_status(status | __returned_status); \
 	}
