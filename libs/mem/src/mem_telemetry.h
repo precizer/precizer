@@ -14,12 +14,13 @@ typedef struct {
 	/**
 	 * @brief Total aligned bytes currently owned by every descriptor.
 	 * @details Grows whenever the helper acquires memory from the OS and shrinks only
-	 *          when a descriptor releases its buffer via @ref memory_delete or `resize(...,0)`.
+	 *          when a descriptor releases its buffer via @ref mem_delete or a zero-length
+	 *          @ref m_resize request.
 	 */
 	size_t current_heap_bytes;
 	/**
 	 * @brief Logical payload bytes that callers can actually use.
-	 * @details Equals `sum(length * element_size)` across descriptors and ignores
+	 * @details Equals `sum(length * single_element_size)` across descriptors and ignores
 	 *          alignment padding so that business logic can track real data pressure.
 	 */
 	size_t current_payload_bytes;
@@ -30,7 +31,7 @@ typedef struct {
 	size_t fresh_allocations_counter;
 	/**
 	 * @brief Count of calloc-style growth events.
-	 * @details Incremented when the helper both allocates fresh memory and zeroes it (e.g., first resize after create + calloc semantics).
+	 * @details Incremented when the helper both allocates fresh memory and zeroes it (e.g., first m_resize after create + calloc semantics).
 	 */
 	size_t zero_initialized_allocations_counter;
 	/**
@@ -55,7 +56,7 @@ typedef struct {
 	size_t optimized_resizes_counter;
 	/**
 	 * @brief Number of times buffers were freed back to the operating system.
-	 * @details Each successful `memory_delete` contributes exactly once, enabling leak detection.
+	 * @details Each successful `mem_delete` contributes exactly once, enabling leak detection.
 	 */
 	size_t release_operations_counter;
 	/**
@@ -79,8 +80,8 @@ typedef struct {
 	 */
 	size_t peak_heap_bytes;
 	/**
-	 * @brief Count of resize requests that exactly matched the current logical size.
-	 * @details Correlates with redundant `resize` calls and feeds the no-op streak metrics.
+	 * @brief Count of m_resize requests that exactly matched the current logical size.
+	 * @details Correlates with redundant `m_resize` calls and feeds the no-op streak metrics.
 	 */
 	size_t exact_size_resizes_counter;
 	/**
@@ -109,13 +110,13 @@ typedef struct {
 	 */
 	size_t peak_alignment_overhead_bytes;
 	/**
-	 * @brief Current length of the latest consecutive no-op resize streak.
-	 * @details Resets whenever a resize actually changes the allocation; helpful for spotting hot code that polls the allocator.
+	 * @brief Current length of the latest consecutive no-op m_resize streak.
+	 * @details Resets whenever a m_resize actually changes the allocation; helpful for spotting hot code that polls the allocator.
 	 */
 	size_t noop_resize_streak_current;
 	/**
 	 * @brief Longest observed streak of consecutive no-op resizes.
-	 * @details Provides context for @ref noop_resize_streak_current, showing whether redundant resize storms occur.
+	 * @details Provides context for @ref noop_resize_streak_current, showing whether redundant m_resize storms occur.
 	 */
 	size_t noop_resize_streak_peak;
 	/**
@@ -123,6 +124,16 @@ typedef struct {
 	 * @details Each concatenation that writes an explicit '\0' increments this counter, exposing unsafe string sources.
 	 */
 	size_t concat_zero_padding_counter;
+	/**
+	 * @brief Count of operations that converted a descriptor mode from data to string.
+	 * @details Incremented only when `destination->is_string` changes from `false` to `true` after a successful operation.
+	 */
+	size_t descriptor_mode_converted_to_string_counter;
+	/**
+	 * @brief Count of operations that converted a destination descriptor from a string to generic data
+	 * @details Incremented only when `destination->is_string` changes from `true` to `false` after a successful operation
+	 */
+	size_t destination_promoted_to_data_counter;
 	/**
 	 * @brief Number of descriptors that currently own heap memory.
 	 * @details Moves in tandem with successful first-time allocations and deletions, mirroring the live descriptor set.
@@ -134,17 +145,18 @@ typedef struct {
 	 */
 	size_t peak_active_descriptors;
 	/**
-	 * @brief Count of arithmetic overflows prevented by @ref memory_guarded_size.
-	 * @details Every overflow that is caught before it reaches the allocator increments this counter, proving the safety net works.
+	 * @brief Count of arithmetic range violations prevented by guarded helpers.
+	 * @details Every overflow or underflow caught by @ref mem_guarded_byte_size,
+	 *          @ref mem_guarded_add, or @ref mem_guarded_subtract increments this counter
 	 */
-	size_t overflow_guard_failures_counter;
+	size_t arithmetic_guard_failures_counter;
 } Telemetry;
 
 extern Telemetry telemetry;
 
 /**
  * @brief Increment the optimized reallocation counter.
- * @details Use when a resize request is satisfied without touching the OS allocator.
+ * @details Use when a m_resize request is satisfied without touching the OS allocator.
  */
 void telemetry_realloc_optimized_counter(void);
 
@@ -167,7 +179,7 @@ void telemetry_new_callocations_counter(void);
 void telemetry_aligned_reallocations_counter(void);
 
 /**
- * @brief Increment the counter for no-op resize requests.
+ * @brief Increment the counter for no-op m_resize requests.
  * @details Use when the requested logical size matches the current size exactly.
  */
 void telemetry_realloc_noop_counter(void);
@@ -242,12 +254,12 @@ void telemetry_alignment_overhead_add(const size_t);
 void telemetry_alignment_overhead_reduce(const size_t);
 
 /**
- * @brief Track that a resize resulted in no actual change.
+ * @brief Track that a m_resize resulted in no actual change.
  */
 void telemetry_noop_resize_event(void);
 
 /**
- * @brief Reset the consecutive no-op resize streak counter.
+ * @brief Reset the consecutive no-op m_resize streak counter.
  */
 void telemetry_reset_noop_streak(void);
 
@@ -255,6 +267,16 @@ void telemetry_reset_noop_streak(void);
  * @brief Record that the concatenation helper had to inject a string terminator.
  */
 void telemetry_string_padding_event(void);
+
+/**
+ * @brief Record that a descriptor mode was converted from data to string.
+ */
+void telemetry_descriptor_mode_converted_to_string(void);
+
+/**
+ * @brief Record that a destination descriptor transitioned from string to generic data mode
+ */
+void telemetry_destination_promoted_to_data(void);
 
 /**
  * @brief Track that a descriptor has acquired heap memory.
@@ -267,9 +289,9 @@ void telemetry_active_descriptor_acquire(void);
 void telemetry_active_descriptor_release(void);
 
 /**
- * @brief Record an overflow that was caught by memory_guarded_size.
+ * @brief Record an arithmetic guard failure caught by a guarded helper
  */
-void telemetry_overflow_guard_failure(void);
+void telemetry_arithmetic_guard_failure(void);
 
 /**
  * @brief Print a human-readable snapshot of telemetry counters.
