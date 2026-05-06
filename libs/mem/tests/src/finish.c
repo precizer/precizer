@@ -2,7 +2,11 @@
 
 Return finish(void)
 {
-	printf(CYAN "\nTelemetry\n");
+	Return status = SUCCESS;
+	/* HEADER emits a leading \n only when first_header is false */
+	bool first_header = false;
+
+	HEADER("Telemetry");
 	printf(WHITE);
 	telemetry_show();
 	printf(RESET);

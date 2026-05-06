@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-#if SHOW_TEST
 /**
  * @brief Prints SHA-512 hash in hexadecimal format
  * @details Outputs each byte of the hash as a two-digit hexadecimal number
@@ -18,7 +17,6 @@ void print_hash(const unsigned char *hash)
 	}
 	echo(STDERR,"\n");
 }
-#endif
 
 /**
  * @brief Fill the descriptor with sequential point data

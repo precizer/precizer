@@ -9,11 +9,6 @@
  */
 
 Return test_libmem_all(void);
-Return test_libmem_foundation(void);
-Return test_libmem_typed_data(void);
-Return test_libmem_data_mode(void);
-Return test_libmem_string_mode(void);
-Return test_libmem_mode_boundaries(void);
 
 Return test_libmem_0001(void);
 Return test_libmem_0002(void);
@@ -28,9 +23,11 @@ Return test_libmem_0010(void);
 Return test_libmem_0011(void);
 Return test_libmem_0012(void);
 Return test_libmem_0013(void);
+
 Return test_libmem_0015(void);
 Return test_libmem_0016(void);
 Return test_libmem_0017(void);
+
 Return test_libmem_0020(void);
 Return test_libmem_0021(void);
 Return test_libmem_0022(void);
@@ -79,6 +76,7 @@ Return test_libmem_0064(void);
 Return test_libmem_0065(void);
 Return test_libmem_0066(void);
 Return test_libmem_0067(void);
+
 Return test_libmem_0069(void);
 Return test_libmem_0070(void);
 
