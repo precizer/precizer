@@ -32,7 +32,7 @@ Return mem_guarded_add(
 	if(left > SIZE_MAX - right)
 	{
 		status = FAILURE;
-		telemetry_arithmetic_guard_failure();
+		telemetry_arithmetic_guard_failures();
 	}
 
 	if(TRIUMPH & status)

@@ -29,7 +29,7 @@ Return mem_guarded_subtract(
 	if(left < right)
 	{
 		status = FAILURE;
-		telemetry_arithmetic_guard_failure();
+		telemetry_arithmetic_guard_failures();
 	}
 
 	if(TRIUMPH & status)

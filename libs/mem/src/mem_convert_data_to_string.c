@@ -143,7 +143,7 @@ Return mem_convert_data_to_string(memory *memory_structure)
 
 	if(TRIUMPH & status)
 	{
-		telemetry_descriptor_mode_converted_to_string();
+		telemetry_data_to_string_conversions();
 	}
 
 	provide(status);

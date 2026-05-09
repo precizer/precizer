@@ -41,7 +41,7 @@ Return mem_guarded_byte_size(
 	if(element_count > SIZE_MAX / memory_structure->single_element_size)
 	{
 		status = FAILURE;
-		telemetry_arithmetic_guard_failure();
+		telemetry_arithmetic_guard_failures();
 	}
 
 	if(TRIUMPH & status)

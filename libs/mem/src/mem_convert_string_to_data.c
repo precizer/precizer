@@ -84,8 +84,8 @@ Return mem_convert_string_to_data(memory *memory_structure)
 				{
 					const size_t terminator_bytes = memory_structure->single_element_size;
 					memory_structure->length--;
-					telemetry_effective_reduce(terminator_bytes);
-					telemetry_alignment_overhead_add(terminator_bytes);
+					telemetry_current_payload_bytes_removed(terminator_bytes);
+					telemetry_block_overhead_bytes_added(terminator_bytes);
 				}
 			}
 		}
@@ -95,7 +95,7 @@ Return mem_convert_string_to_data(memory *memory_structure)
 	{
 		if(memory_structure->is_string == true)
 		{
-			telemetry_destination_promoted_to_data();
+			telemetry_string_to_data_conversions();
 		}
 
 		memory_structure->string_length = 0;

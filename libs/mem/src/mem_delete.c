@@ -38,16 +38,15 @@ Return mem_delete(memory *memory_structure)
 	if(TRIUMPH & status)
 	{
 		const size_t previously_allocated = memory_structure->actually_allocated_bytes;
-		size_t previous_effective_bytes = 0;
-		size_t previous_alignment_overhead = 0;
+		size_t previous_payload_bytes = 0;
+		size_t previous_block_overhead = 0;
 
-		run(mem_guarded_byte_size(memory_structure,memory_structure->length,&previous_effective_bytes));
+		run(mem_guarded_byte_size(memory_structure,memory_structure->length,&previous_payload_bytes));
 
-		if(previously_allocated > previous_effective_bytes)
+		if(previously_allocated > previous_payload_bytes)
 		{
-			run(mem_guarded_subtract(previously_allocated,
-				previous_effective_bytes,
-				&previous_alignment_overhead));
+			/* Direct subtraction is safe because the if-guard above proves no underflow */
+			previous_block_overhead = previously_allocated - previous_payload_bytes;
 		}
 
 		if(memory_structure->data != NULL)
@@ -56,22 +55,22 @@ Return mem_delete(memory *memory_structure)
 
 			if(previously_allocated > 0)
 			{
-				telemetry_reduce(previously_allocated);
-				telemetry_free_total_bytes(previously_allocated);
+				telemetry_current_heap_reserved_bytes_released(previously_allocated);
+				telemetry_total_heap_reserved_bytes_released(previously_allocated);
 			}
 
-			telemetry_free_counter();
-			telemetry_active_descriptor_release();
+			telemetry_heap_buffer_releases();
+			telemetry_active_descriptors_released();
 		}
 
-		if(previous_effective_bytes > 0)
+		if(previous_payload_bytes > 0)
 		{
-			telemetry_effective_reduce(previous_effective_bytes);
+			telemetry_current_payload_bytes_removed(previous_payload_bytes);
 		}
 
-		if(previous_alignment_overhead > 0)
+		if(previous_block_overhead > 0)
 		{
-			telemetry_alignment_overhead_reduce(previous_alignment_overhead);
+			telemetry_current_block_overhead_bytes_removed(previous_block_overhead);
 		}
 
 		memory_structure->data = NULL;
