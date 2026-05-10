@@ -1,23 +1,22 @@
 #include "test_libmem_utils.h"
 
 /**
- * @brief Tests copying of empty memory unsigned long long int structures
- * @details Verifies that copying an empty memory structure works correctly
- *         by creating two unsigned long long int memory structures and copying one to another
+ * @brief Copy an unsigned long long int descriptor whose array has size 0
  *
- * @return Return enum indicating success or failure of the test
- * @retval SUCCESS if test passed
- * @retval FAILURE if test failed
+ * Creates a source and a destination descriptor, resizes the source to size 0,
+ * copies it into the destination, and frees both
+ *
+ * @return Return describing success or failure
  */
 Return test_libmem_0001(void)
 {
 	INITTEST;
 
-	// Allocate memory for the structure int
+	// Create the source and destination descriptors
 	m_create(unsigned long long int,test0_0);
 	m_create(unsigned long long int,test0_1);
 
-	// Create and copy of an unsigned long long int memory arrays
+	// Resize the source to size 0 and copy it into the destination
 	ASSERT(SUCCESS == m_resize(test0_0,0));
 	ASSERT(SUCCESS == m_copy(test0_1,test0_0));
 

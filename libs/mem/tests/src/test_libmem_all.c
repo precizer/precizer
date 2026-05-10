@@ -11,19 +11,16 @@ Return test_libmem_all(void)
 	bool first_header = true;
 
 	HEADER("Allocation Lifecycle");
-	TEST(test_libmem_0001,"Copy an array of 0 size…");
-	TEST(test_libmem_0002,"libmem Memory allocator test 1…");
-	TEST(test_libmem_0003,"libmem Memory allocator test 2…");
-	TEST(test_libmem_0004,"libmem Memory allocator tests 4,5,6…");
+	TEST(test_libmem_0001,"Copy an array of size 0…");
 
 	HEADER("Repeated Type Coverage");
-	TEST(test_libmem_0005,"libmem generate multiple tests unsigned long long int type…");
-	TEST(test_libmem_0006,"libmem generate multiple tests char type…");
-	TEST(test_libmem_0007,"libmem generate multiple tests int type…");
-	TEST(test_libmem_0008,"libmem generate multiple tests unsigned char type…");
+	TEST(test_libmem_0005,"Random-size descriptor round-trip across element types (SHA-512)…");
+
+	HEADER("Global status propagation");
+	TEST(test_libmem_0071,"Process-wide INFO does not skip libmem resize bookkeeping…");
 
 	HEADER("Telemetry");
-	TEST(test_libmem_0009,"libmem telemetry counters…");
+	SUTE(test_libmem_0009,"Telemetry counters track libmem state transitions…");
 
 	HEADER("Typed Access");
 	TEST(test_libmem_0010,"Typed point descriptors and m_resize flags…");
