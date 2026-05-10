@@ -32,7 +32,7 @@ static Telemetry suite_baseline;
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_01_baseline(void)
+static Return test_libmem_0009_01(void)
 {
 	INITTEST;
 
@@ -66,7 +66,7 @@ static Return test_libmem_0009_01_baseline(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_02_first_allocation(void)
+static Return test_libmem_0009_02(void)
 {
 	INITTEST;
 
@@ -126,7 +126,7 @@ static Return test_libmem_0009_02_first_allocation(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_03_grow_beyond_block(void)
+static Return test_libmem_0009_03(void)
 {
 	INITTEST;
 
@@ -172,7 +172,7 @@ static Return test_libmem_0009_03_grow_beyond_block(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_04_release_unused_shrink(void)
+static Return test_libmem_0009_04(void)
 {
 	INITTEST;
 
@@ -212,7 +212,7 @@ static Return test_libmem_0009_04_release_unused_shrink(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_05_in_place_grow(void)
+static Return test_libmem_0009_05(void)
 {
 	INITTEST;
 
@@ -248,7 +248,7 @@ static Return test_libmem_0009_05_in_place_grow(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_06_noop_streak(void)
+static Return test_libmem_0009_06(void)
 {
 	INITTEST;
 
@@ -290,7 +290,7 @@ static Return test_libmem_0009_06_noop_streak(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_07_streak_reset(void)
+static Return test_libmem_0009_07(void)
 {
 	INITTEST;
 
@@ -324,7 +324,7 @@ static Return test_libmem_0009_07_streak_reset(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_08_zero_new_memory(void)
+static Return test_libmem_0009_08(void)
 {
 	INITTEST;
 
@@ -351,18 +351,23 @@ static Return test_libmem_0009_08_zero_new_memory(void)
 }
 
 /**
- * @brief Cover peak_active_descriptors growing past the suite baseline
+ * @brief Cover peak_active_descriptors at the entry of a second live descriptor
  *
  * Brings a second descriptor of a different element type into life
  * while the first one is still active. After the fresh allocation,
  * current_active_descriptors must be exactly two above the suite
- * baseline, and peak_active_descriptors must be at least as high.
+ * baseline. peak_active_descriptors is verified only as the basic
+ * peak >= current invariant, because the counter is global and
+ * monotonic across the runner: when earlier tests have already pushed
+ * the peak above the value reached here it stays unchanged, and only
+ * when this fresh acquisition sets a new high does peak track current.
+ * The test does not assert that this subtest itself lifted the peak.
  * fresh_heap_allocations advances by one to count the second fresh
  * acquisition
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_09_peak_active_descriptors(void)
+static Return test_libmem_0009_09(void)
 {
 	INITTEST;
 
@@ -393,7 +398,7 @@ static Return test_libmem_0009_09_peak_active_descriptors(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_10_arithmetic_guard_failures(void)
+static Return test_libmem_0009_10(void)
 {
 	INITTEST;
 
@@ -425,7 +430,7 @@ static Return test_libmem_0009_10_arithmetic_guard_failures(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_11_data_to_string_conversion(void)
+static Return test_libmem_0009_11(void)
 {
 	INITTEST;
 
@@ -458,7 +463,7 @@ static Return test_libmem_0009_11_data_to_string_conversion(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_12_string_to_data_conversion(void)
+static Return test_libmem_0009_12(void)
 {
 	INITTEST;
 
@@ -493,7 +498,7 @@ static Return test_libmem_0009_12_string_to_data_conversion(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_13_resize_to_zero_retain(void)
+static Return test_libmem_0009_13(void)
 {
 	INITTEST;
 
@@ -544,7 +549,7 @@ static Return test_libmem_0009_13_resize_to_zero_retain(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_14_resize_to_zero_release(void)
+static Return test_libmem_0009_14(void)
 {
 	INITTEST;
 
@@ -583,15 +588,18 @@ static Return test_libmem_0009_14_resize_to_zero_release(void)
  * which actually frees the second slab block. After the calls every
  * "current" counter must be back to its suite baseline value, the
  * "total" counters must be at least at their suite baseline values,
- * and the peak counters must reflect the fresh maxima reached during
- * the suite. The dead D.1 counter (string_terminator_injections) and
- * the unreachable-from-public-API counters (heap_allocation_failures,
+ * and peak_noop_resize_streak must be at least three because subtest
+ * 06 directly drives that streak inside the suite. The remaining peak
+ * counters (peak_heap_reserved_bytes, peak_block_overhead_bytes,
+ * peak_active_descriptors) are global and monotonic across the runner,
+ * so this finalization step does not re-check them. The unreachable-
+ * from-public-API counters (heap_allocation_failures,
  * heap_reallocation_failures) are explicitly checked to remain at
  * their suite baseline values
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0009_15_delete_descriptors_and_finalize(void)
+static Return test_libmem_0009_15(void)
 {
 	INITTEST;
 
@@ -651,9 +659,13 @@ static Return test_libmem_0009_15_delete_descriptors_and_finalize(void)
 	   so when the suite runs alongside other tests an earlier high mark
 	   can already exceed anything this suite produces. The meaningful
 	   peak driven by the suite itself (the three-long no-op streak) is
-	   verified directly. The other peaks were already asserted as
-	   suite-internal new highs by the per-subtest deltas in subtests 02,
-	   03, and 09 */
+	   verified directly. The remaining peak counters
+	   (peak_heap_reserved_bytes, peak_block_overhead_bytes,
+	   peak_active_descriptors) are not asserted here because no subtest
+	   enforces a suite-driven lift: subtests 02 and 09 check only the
+	   peak >= current invariant, and the full-struct memcmp in
+	   subtest 03 pins peak to its conditional post-state without
+	   requiring the suite to be the source of the maximum */
 	ASSERT(telemetry.peak_noop_resize_streak >= 3);
 
 	/* The runner framework (testitall) lazily allocates and frees its own
@@ -680,13 +692,12 @@ static Return test_libmem_0009_15_delete_descriptors_and_finalize(void)
 	ASSERT(telemetry.string_to_data_conversions == suite_baseline.string_to_data_conversions + 1);
 	ASSERT(telemetry.arithmetic_guard_failures == suite_baseline.arithmetic_guard_failures + 3);
 
-	/* D.1: telemetry_string_terminator_injections() is declared but
-	   currently has no call sites in the library, so the counter
-	   cannot be moved through the public API. Asserting that the
-	   counter never advanced past the suite baseline documents the
-	   dead counter until a separate change wires up the increment in
-	   the terminator write paths */
-	ASSERT(telemetry.string_terminator_injections == suite_baseline.string_terminator_injections);
+	/* mem_write_zero_terminator centralized helper fires for every successful
+	   terminator write across the library. Inside this suite the only
+	   guaranteed write is the terminator placement during subtest 11's
+	   m_to_string flip. The runner framework drives additional writes between
+	   subtests, so the assert uses >= rather than == */
+	ASSERT(telemetry.string_terminator_writes >= suite_baseline.string_terminator_writes + 1);
 
 	/* D.2: heap_allocation_failures and heap_reallocation_failures
 	   fire only when malloc or realloc actually return NULL. There is
@@ -707,6 +718,92 @@ static Return test_libmem_0009_15_delete_descriptors_and_finalize(void)
 }
 
 /**
+ * @brief Cover the two finalize-string terminator branches under WRITE_TERMINATOR_IF_MISSING and the centralized terminator-write counter
+ *
+ * Drives a fresh local string descriptor through three cases of
+ * mem_finalize_string. The first case places a zero element at the
+ * boundary slot, so finalize must skip the write and bump
+ * finalize_string_terminator_already_present by one while leaving
+ * finalize_string_terminator_written_when_missing and
+ * string_terminator_writes untouched. The second case places a
+ * non-zero element at the boundary slot, so finalize must write the
+ * terminator itself and bump finalize_string_terminator_written_when_missing
+ * and string_terminator_writes by one each while leaving
+ * finalize_string_terminator_already_present untouched. The third
+ * case forces WRITE_TERMINATOR_ALWAYS to confirm that branch does
+ * not move either IF_MISSING counter but still bumps
+ * string_terminator_writes by one because the centralized helper
+ * ran the memset
+ *
+ * @return Return describing success or failure
+ */
+static Return test_libmem_0009_16(void)
+{
+	INITTEST;
+
+	const size_t baseline_already_present = telemetry.finalize_string_terminator_already_present;
+	const size_t baseline_written_when_missing = telemetry.finalize_string_terminator_written_when_missing;
+
+	/* Local string descriptor with capacity for two visible payload elements
+	   and one terminator slot. Owned by this subtest so the suite finalization
+	   in test_libmem_0009_15 stays unaffected by the activity here */
+	m_create(char,string_buffer,MEMORY_STRING);
+
+	ASSERT(SUCCESS == m_resize(string_buffer,3));
+	ASSERT(string_buffer->is_string == true);
+	ASSERT(string_buffer->length == 3);
+
+	/* Capture string_terminator_writes after m_resize so the per-case
+	   asserts below depend only on the three explicit m_finalize_string
+	   calls below and not on whatever the string-mode resize did
+	   internally through mem_string_truncate */
+	const size_t baseline_terminator_writes = telemetry.string_terminator_writes;
+
+	char *raw = m_data(char,string_buffer);
+	ASSERT(raw != NULL);
+
+	/* Case 16a: slot already holds a zero element, IF_MISSING skips the write */
+	raw[0] = 'A';
+	raw[1] = 'B';
+	raw[2] = '\0';
+
+	ASSERT(SUCCESS == m_finalize_string(string_buffer,2,WRITE_TERMINATOR_IF_MISSING));
+	ASSERT(telemetry.finalize_string_terminator_already_present == baseline_already_present + 1);
+	ASSERT(telemetry.finalize_string_terminator_written_when_missing == baseline_written_when_missing);
+	ASSERT(telemetry.string_terminator_writes == baseline_terminator_writes);
+	ASSERT(string_buffer->string_length == 2);
+
+	/* Case 16b: slot holds a non-zero element, IF_MISSING compensates by writing */
+	raw[0] = 'C';
+	raw[1] = 'D';
+	raw[2] = 'X';
+
+	ASSERT(SUCCESS == m_finalize_string(string_buffer,2,WRITE_TERMINATOR_IF_MISSING));
+	ASSERT(telemetry.finalize_string_terminator_already_present == baseline_already_present + 1);
+	ASSERT(telemetry.finalize_string_terminator_written_when_missing == baseline_written_when_missing + 1);
+	ASSERT(telemetry.string_terminator_writes == baseline_terminator_writes + 1);
+	ASSERT(string_buffer->string_length == 2);
+	ASSERT(raw[2] == '\0');
+
+	/* Case 16c: WRITE_TERMINATOR_ALWAYS writes unconditionally and must
+	   not move either of the new IF_MISSING counters */
+	raw[0] = 'E';
+	raw[1] = 'F';
+	raw[2] = 'Y';
+
+	ASSERT(SUCCESS == m_finalize_string(string_buffer,2,WRITE_TERMINATOR_ALWAYS));
+	ASSERT(telemetry.finalize_string_terminator_already_present == baseline_already_present + 1);
+	ASSERT(telemetry.finalize_string_terminator_written_when_missing == baseline_written_when_missing + 1);
+	ASSERT(telemetry.string_terminator_writes == baseline_terminator_writes + 2);
+	ASSERT(string_buffer->string_length == 2);
+	ASSERT(raw[2] == '\0');
+
+	ASSERT(SUCCESS == m_del(string_buffer));
+
+	RETURN_STATUS;
+}
+
+/**
  * @brief End-to-end suite that exercises reachable libmem telemetry counters and asserts unreachable counters stay unchanged
  *
  * Drives a shared unsigned-char descriptor and an auxiliary uint32_t
@@ -718,9 +815,8 @@ static Return test_libmem_0009_15_delete_descriptors_and_finalize(void)
  * the canonical proof that telemetry stays consistent with descriptor
  * state across every supported transition. Counters whose increment
  * paths are currently unreachable from the public API
- * (string_terminator_injections, heap_allocation_failures,
- * heap_reallocation_failures) are explicitly checked to stay at their
- * suite baseline values
+ * (heap_allocation_failures, heap_reallocation_failures) are
+ * explicitly checked to stay at their suite baseline values
  *
  * @return Return describing success or failure
  */
@@ -728,21 +824,22 @@ Return test_libmem_0009(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0009_01_baseline,"Suite baseline captured and shared descriptors reset…");
-	TEST(test_libmem_0009_02_first_allocation,"First allocation populates fresh heap and payload counters…");
-	TEST(test_libmem_0009_03_grow_beyond_block,"Growth across a slab boundary registers a heap reallocation…");
-	TEST(test_libmem_0009_04_release_unused_shrink,"RELEASE_UNUSED shrink returns one slab block to the OS…");
-	TEST(test_libmem_0009_05_in_place_grow,"In-place grow inside the retained slab block bumps in_place_resizes…");
-	TEST(test_libmem_0009_06_noop_streak,"Three consecutive no-op resizes build a streak of length three…");
-	TEST(test_libmem_0009_07_streak_reset,"Effective resize resets the noop streak and preserves the peak…");
-	TEST(test_libmem_0009_08_zero_new_memory,"ZERO_NEW_MEMORY growth zero-fills the newly exposed payload…");
-	TEST(test_libmem_0009_09_peak_active_descriptors,"Second live descriptor lifts peak_active_descriptors past the baseline…");
-	TEST(test_libmem_0009_10_arithmetic_guard_failures,"Guarded arithmetic helpers reject invalid math three times…");
-	TEST(test_libmem_0009_11_data_to_string_conversion,"m_to_string flips the buffer into string mode…");
-	TEST(test_libmem_0009_12_string_to_data_conversion,"m_to_data flips the buffer back into data mode…");
-	TEST(test_libmem_0009_13_resize_to_zero_retain,"m_resize to zero without flags keeps the underlying block…");
-	TEST(test_libmem_0009_14_resize_to_zero_release,"m_resize to zero with RELEASE_UNUSED frees the buffer…");
-	TEST(test_libmem_0009_15_delete_descriptors_and_finalize,"m_del tears down both descriptors and finalizes the suite…");
+	TEST(test_libmem_0009_01,"Suite baseline captured and shared descriptors reset…");
+	TEST(test_libmem_0009_02,"First allocation populates fresh heap and payload counters…");
+	TEST(test_libmem_0009_03,"Growth across a slab boundary registers a heap reallocation…");
+	TEST(test_libmem_0009_04,"RELEASE_UNUSED shrink returns one slab block to the OS…");
+	TEST(test_libmem_0009_05,"In-place grow inside the retained slab block bumps in_place_resizes…");
+	TEST(test_libmem_0009_06,"Three consecutive no-op resizes build a streak of length three…");
+	TEST(test_libmem_0009_07,"Effective resize resets the noop streak and preserves the peak…");
+	TEST(test_libmem_0009_08,"ZERO_NEW_MEMORY growth zero-fills the newly exposed payload…");
+	TEST(test_libmem_0009_09,"Second live descriptor brings active count to two above the suite baseline…");
+	TEST(test_libmem_0009_10,"Guarded arithmetic helpers reject invalid math three times…");
+	TEST(test_libmem_0009_11,"m_to_string flips the buffer into string mode…");
+	TEST(test_libmem_0009_12,"m_to_data flips the buffer back into data mode…");
+	TEST(test_libmem_0009_13,"m_resize to zero without flags keeps the underlying block…");
+	TEST(test_libmem_0009_14,"m_resize to zero with RELEASE_UNUSED frees the buffer…");
+	TEST(test_libmem_0009_15,"m_del tears down both descriptors and finalizes the suite…");
+	TEST(test_libmem_0009_16,"m_finalize_string IF_MISSING records present-vs-written terminator counters…");
 
 	RETURN_STATUS;
 }

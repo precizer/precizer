@@ -128,6 +128,13 @@ Return mem_finalize_string(
 			if(mem_is_zero_element(destination_data_view + terminator_offset,destination->single_element_size) == false)
 			{
 				run(mem_write_zero_terminator(destination,written_length));
+
+				if(TRIUMPH & status)
+				{
+					telemetry_finalize_string_terminator_written_when_missing();
+				}
+			} else {
+				telemetry_finalize_string_terminator_already_present();
 			}
 		}
 	}

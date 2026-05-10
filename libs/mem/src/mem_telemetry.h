@@ -120,11 +120,6 @@ typedef struct {
 	 */
 	size_t peak_noop_resize_streak;
 	/**
-	 * @brief Count of times the library had to append a missing string terminator.
-	 * @details Each concatenation that writes an explicit '\0' increments this counter, exposing unsafe string sources.
-	 */
-	size_t string_terminator_injections;
-	/**
 	 * @brief Count of operations that converted a descriptor mode from data to string.
 	 * @details Incremented only when `destination->is_string` changes from `false` to `true` after a successful operation.
 	 */
@@ -134,6 +129,21 @@ typedef struct {
 	 * @details Incremented only when `destination->is_string` changes from `true` to `false` after a successful operation
 	 */
 	size_t string_to_data_conversions;
+	/**
+	 * @brief Count of mem_finalize_string calls in WRITE_TERMINATOR_IF_MISSING mode where the terminator slot already held a zero element
+	 * @details Signals that caller code wrote its own terminator before finalize, so the helper only updated string_length without writing
+	 */
+	size_t finalize_string_terminator_already_present;
+	/**
+	 * @brief Count of mem_finalize_string calls in WRITE_TERMINATOR_IF_MISSING mode where the helper had to write the terminator itself
+	 * @details Signals that caller code did not place a terminator at the expected slot, so finalize compensated by writing one
+	 */
+	size_t finalize_string_terminator_written_when_missing;
+	/**
+	 * @brief Cumulative count of zero-terminator writes performed by the centralized helper
+	 * @details Each successful mem_write_zero_terminator memset increments this counter, so the value reflects every terminator write the library executes regardless of whether the source had its own terminator
+	 */
+	size_t string_terminator_writes;
 	/**
 	 * @brief Number of descriptors that currently own heap memory.
 	 * @details Moves in tandem with successful first-time allocations and deletions, mirroring the live descriptor set.
@@ -264,11 +274,6 @@ void telemetry_noop_resize_streak_advanced(void);
 void telemetry_current_noop_resize_streak_reset(void);
 
 /**
- * @brief Increment @ref Telemetry::string_terminator_injections.
- */
-void telemetry_string_terminator_injections(void);
-
-/**
  * @brief Increment @ref Telemetry::data_to_string_conversions.
  */
 void telemetry_data_to_string_conversions(void);
@@ -277,6 +282,21 @@ void telemetry_data_to_string_conversions(void);
  * @brief Increment @ref Telemetry::string_to_data_conversions
  */
 void telemetry_string_to_data_conversions(void);
+
+/**
+ * @brief Increment @ref Telemetry::finalize_string_terminator_already_present
+ */
+void telemetry_finalize_string_terminator_already_present(void);
+
+/**
+ * @brief Increment @ref Telemetry::finalize_string_terminator_written_when_missing
+ */
+void telemetry_finalize_string_terminator_written_when_missing(void);
+
+/**
+ * @brief Increment @ref Telemetry::string_terminator_writes
+ */
+void telemetry_string_terminator_writes(void);
 
 /**
  * @brief Update active-descriptor metrics after acquiring heap memory.

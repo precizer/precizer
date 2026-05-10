@@ -246,11 +246,6 @@ void telemetry_current_noop_resize_streak_reset(void)
 	__atomic_store_n(&telemetry.current_noop_resize_streak,0,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_string_terminator_injections(void)
-{
-	__atomic_fetch_add(&telemetry.string_terminator_injections,1,__ATOMIC_SEQ_CST);
-}
-
 void telemetry_data_to_string_conversions(void)
 {
 	__atomic_fetch_add(&telemetry.data_to_string_conversions,1,__ATOMIC_SEQ_CST);
@@ -259,6 +254,21 @@ void telemetry_data_to_string_conversions(void)
 void telemetry_string_to_data_conversions(void)
 {
 	__atomic_fetch_add(&telemetry.string_to_data_conversions,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_finalize_string_terminator_already_present(void)
+{
+	__atomic_fetch_add(&telemetry.finalize_string_terminator_already_present,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_finalize_string_terminator_written_when_missing(void)
+{
+	__atomic_fetch_add(&telemetry.finalize_string_terminator_written_when_missing,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_string_terminator_writes(void)
+{
+	__atomic_fetch_add(&telemetry.string_terminator_writes,1,__ATOMIC_SEQ_CST);
 }
 
 void telemetry_active_descriptors_acquired(void)
@@ -325,9 +335,11 @@ void telemetry_final_summary(void)
 	printf("Peak no-op resize streak: %s\n",form(telemetry.peak_noop_resize_streak,buf,sizeof(buf)));
 
 	printf("\n" BOLD "String and mode conversions" RESET WHITE "\n");
-	printf("String terminator injections: %s\n",form(telemetry.string_terminator_injections,buf,sizeof(buf)));
 	printf("Data-to-string conversions: %s\n",form(telemetry.data_to_string_conversions,buf,sizeof(buf)));
 	printf("String-to-data conversions: %s\n",form(telemetry.string_to_data_conversions,buf,sizeof(buf)));
+	printf("Finalize string terminator already present: %s\n",form(telemetry.finalize_string_terminator_already_present,buf,sizeof(buf)));
+	printf("Finalize string terminator written when missing: %s\n",form(telemetry.finalize_string_terminator_written_when_missing,buf,sizeof(buf)));
+	printf("String terminator writes: %s\n",form(telemetry.string_terminator_writes,buf,sizeof(buf)));
 
 	printf("\n" BOLD "Descriptor activity" RESET WHITE "\n");
 	printf("Peak active descriptors: %s\n",form(telemetry.peak_active_descriptors,buf,sizeof(buf)));

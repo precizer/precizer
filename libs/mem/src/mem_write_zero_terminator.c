@@ -55,6 +55,7 @@ Return mem_write_zero_terminator(
 	if(TRIUMPH & status)
 	{
 		memset((unsigned char *)memory_structure->data + terminator_offset,0,memory_structure->single_element_size);
+		telemetry_string_terminator_writes();
 	}
 
 	provide(status);
