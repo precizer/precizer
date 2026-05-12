@@ -50,6 +50,9 @@ typedef enum Return : unsigned int
 	/// Negative local answer from a check function
 	NO = 0x0200u,       // 0000 0010 0000 0000
 
+	/// Internal marker for an unhandled local yes/no answer
+	AWAITING = 0x0400u, // 0000 0100 0000 0000
+
 	/// Technical status bits that report internal or blocking problems
   // Hex: 0x0021. Dec: 33. Bin: 0000 0000 0010 0001
 	CRITICAL = WARNING | FAILURE,
@@ -67,8 +70,8 @@ typedef enum Return : unsigned int
 	BOOLEAN = YES | NO,
 
 	/// Skip the normal function call based on the status flag
-  // Hex: 0x00B1. Dec: 177. Bin: 0000 0000 1011 0001
-	SKIP = INFO | WARNING | FAILURE | HALTED
+  // Hex: 0x0031. Dec: 49. Bin: 0000 0000 0011 0001
+	SKIP = WARNING | FAILURE | HALTED
 
 } Return;
 
@@ -76,7 +79,6 @@ typedef enum Return : unsigned int
 /*
 
    // The next flag values
-   0x0400 - 0000 0100 0000 0000
    0x0800 - 0000 1000 0000 0000
    0x1000 - 0001 0000 0000 0000
    0x2000 - 0010 0000 0000 0000

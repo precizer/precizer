@@ -1,7 +1,7 @@
 #include "rational.h"
 
 /**
- * @brief Normalize one function Return status with global context
+ * @brief Normalize one function Return value with global context
  *
  * @details The function normalizes @p status, normalizes global_return_status,
  *          stores the normalized global status back, merges only GLOBAL bits
@@ -12,7 +12,7 @@
  * @param status Status flags to normalize
  * @return Normalized status flags
  */
-Return normalize_return_status(Return status)
+Return rational_normalize_return(Return status)
 {
 	/* CRITICAL marks an internal or blocking problem.
 	   Such a status cannot also be SUCCESS, even if SUCCESS was ORed in earlier */
@@ -69,6 +69,65 @@ Return normalize_return_status(Return status)
 	return(status);
 }
 
+/**
+ * @brief Consume a yes/no Return answer and merge its technical status
+ *
+ * @details The returned status must contain a pending yes/no answer. The
+ *          function reads YES or NO, removes AWAITING and BOOLEAN from the
+ *          caller's local status, merges only the technical status bits, and
+ *          returns a regular C bool for direct use in conditions
+ *
+ * @param status Local caller status that accumulates technical return flags
+ * @param returned Return value produced by a check function
+ * @param func Name of the caller function for diagnostics
+ * @param line Source line of the ask() call for diagnostics
+ * @return true when @p returned contains a non-critical YES answer
+ */
+bool rational_ask(
+	Return     *status,
+	Return      returned,
+	const char *func,
+	const int   line)
+{
+	bool answer = false;
+
+	if(status == NULL)
+	{
+		slog(ERROR,"%s:%d ask() received NULL status storage\n",func,line);
+
+		return(false);
+	}
+
+	returned = rational_normalize_return(returned);
+
+	if((AWAITING & returned) == 0)
+	{
+		slog(ERROR,"%s:%d ask() expected a yes/no Return answer\n",func,line);
+		*status = rational_normalize_return((*status & ~(AWAITING | BOOLEAN)) | FAILURE);
+
+		return(false);
+	}
+
+	if((BOOLEAN & returned) == 0)
+	{
+		slog(ERROR,"%s:%d ask() received a pending Return answer without YES or NO\n",func,line);
+		*status = rational_normalize_return((*status & ~(AWAITING | BOOLEAN)) | FAILURE);
+
+		return(false);
+	}
+
+	if((CRITICAL & returned) == 0 && (YES & returned))
+	{
+		answer = true;
+	}
+
+	*status = rational_normalize_return(
+		(*status & ~(AWAITING | BOOLEAN))
+		| (returned & ~(AWAITING | BOOLEAN)));
+
+	return(answer);
+}
+
 /// Converts Return status flags to a string
 const char *show_status(const Return status)
 {
@@ -94,6 +153,7 @@ const char *show_status(const Return status)
 			{INFO,"INFO"},
 			{YES,"YES"},
 			{NO,"NO"},
+			{AWAITING,"AWAITING"},
 			{0,NULL}
 		};
 
