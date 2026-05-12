@@ -11,6 +11,20 @@ This is useful when code needs to know separately:
 * what logical answer the function produced, if it checked something;
 * whether a global process context should affect later returns.
 
+## Contents
+
+1. [Core idea](#core-idea)
+2. [Quick start](#quick-start)
+3. [Status layers](#status-layers)
+4. [Basic function](#basic-function)
+5. [Check function with YES and NO](#check-function-with-yes-and-no)
+6. [Reading the result correctly](#reading-the-result-correctly)
+7. [Sequential Checks Through status](#sequential-checks-through-status)
+8. [Call chains: run() and call()](#call-chains-run-and-call)
+9. [Global status](#global-status)
+10. [Technical Details](#technical-details)
+11. [Practical rules](#practical-rules)
+
 ## Core idea
 
 A plain `int` return code often mixes different meanings. For example, `access()` returns `0` when a file is accessible and `-1` when it is not accessible or when an error happened. That is enough for a small API, but in a larger application it is useful to distinguish:
@@ -35,6 +49,64 @@ SUCCESS | NO
 
 It means: the function completed without an internal error, but the logical check result is negative. For example, a file is not accessible, a record was not found, or a condition is not satisfied.
 
+## Quick start
+
+A regular function starts with local `status` and exits through `provide(status)`.
+
+```c
+Return load_settings(void)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	provide(status);
+}
+```
+
+A check function returns a regular technical result together with a local `YES` or `NO` answer.
+
+```c
+Return path_is_readable(const char *path)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	status |= YES; /* or NO */
+
+	provide(status);
+}
+```
+
+Caller code reads that answer through `ask(...)`.
+
+```c
+if(ask(path_is_readable(path)))
+{
+	run(print_file(path));
+}
+```
+
+Short cheat sheet:
+
+| Need | Use |
+|---|---|
+| return status from a regular function | `provide(status)` |
+| return status without TRACE log | `deliver(status)` |
+| run a work step that may be skipped after failure | `run(func())` |
+| run cleanup or mandatory final action | `call(func())` |
+| read `YES` or `NO` | `ask(check_func())` |
+| manually continue only on normal status | `if(TRIUMPH & status)` |
+| stop a loop after any `SKIP` status | `if((SKIP & status) == 0)` |
+
+Do not confuse:
+
+* `NO` is not `false` or `0`;
+* `NO` is not `FAILURE`;
+* `YES` and `NO` are not passed through `run()` and `call()`;
+* `YES` and `NO` are not returned upward if the current function is not itself a check function.
+
 ## Status layers
 
 ### Technical layer
@@ -52,6 +124,20 @@ The technical layer reports what happened to the function itself.
 
 Use `FAILURE` only for problems that are not normal application logic. Examples: memory allocation failed, an internal structure is in an unexpected state, or a library function received an invalid descriptor.
 
+A status can contain several flags at once, so code usually checks it with bit masks.
+
+```c
+if(CRITICAL & status)
+{
+	/* Technical problem: WARNING or FAILURE is present */
+}
+
+if(WARNING & status)
+{
+	/* WARNING is present, even if other flags are present too */
+}
+```
+
 ### Binary layer
 
 The binary layer is for yes/no answers without mixing them with technical success or technical failure.
@@ -62,11 +148,13 @@ The binary layer is for yes/no answers without mixing them with technical succes
 | `NO` | local answer from a check function: no, the condition is false |
 | `BOOLEAN` | binary flag mask: `YES | NO` |
 
-Important: `YES` and `NO` are not C `bool` values. They are bit flags inside `Return`. That means `NO` is not equal to `0`. It can be checked with a mask just like the other flags: `if(NO & status)`.
+Important: `YES` and `NO` are not C `bool` values. They are bit flags inside `Return`. That means `NO` is not equal to `0`, and code like `if(path_is_readable(path))` is not the correct way to read the answer.
 
 Example: a function checks whether a path is readable. If the check runs normally and the path is readable, it can return `SUCCESS | YES`. If the check runs normally but the path is not readable, it can return `SUCCESS | NO`.
 
-A simple rule: `YES` and `NO` fit functions that ask a question by their meaning. For example: `is_*`, `has_*`, `can_*`, `check_*`, `validate_*`. Caller code usually reads that answer right after the call. If the current function has already decided what to do next, the binary answer has been handled. Return `YES` or `NO` upward only when the current function itself also promises a yes/no answer.
+A simple rule: `YES` and `NO` fit functions that ask a question by their meaning. For example: `is_*`, `has_*`, `can_*`, `check_*`, `validate_*`. Such an answer is read through `ask(...)`, which returns a regular C `true` or `false` result.
+
+`YES` and `NO` are not meant to be inherited automatically through a chain of regular functions. Return them upward only when the current function itself also promises a yes/no answer.
 
 ### Global layer
 
@@ -80,19 +168,6 @@ The global layer is for process state that can be set outside the current functi
 | `GLOBAL` | mask of flags that may propagate from `global_return_status` into a regular return |
 
 Only `GLOBAL` bits are propagated from `global_return_status` into a function result. Binary answers `YES` and `NO` do not leak between functions through global status.
-
-## Normalization
-
-Before a value is returned, it goes through `normalize_return_status()`. Normalization removes contradictory combinations:
-
-* if `CRITICAL` is set, `SUCCESS` is removed;
-* if `NO` is set, `YES` is removed;
-* `global_return_status` is also normalized and stored back;
-* after `GLOBAL` is merged, the status is normalized once again.
-
-This means code may accidentally build `SUCCESS | FAILURE`, but that combination should not leave a function as “both success and failure”. A problematic technical flag is stronger than `SUCCESS`.
-
-The same rule applies to the binary layer: if `YES | NO` appears, `NO` remains. If at least one check answered “no”, the final binary answer can no longer be “yes”.
 
 ## Basic function
 
@@ -188,9 +263,34 @@ A detailed walkthrough of this pattern is below in [“Sequential Checks Through
 
 ## Reading the result correctly
 
-Check the technical layer first. Only then read the binary answer. In the example below, `path_is_readable()` returns `YES` or `NO` because its meaning is to answer the question “is this file readable?”. `print_file_if_readable()` no longer answers that question. It only decides whether to print the file, so it does not return `YES` or `NO` further upward.
+### What a check function returns
+
+A check function returns a regular `Return`. If the check itself completed without a technical failure, `YES` or `NO` is added to `SUCCESS`.
+
+In the example below, `path_is_readable()` returns `YES` or `NO` because its meaning is to answer the question “is this file readable?”. `print_file_if_readable()` no longer answers that question. It only decides whether to print the file, so it does not return `YES` or `NO` further upward.
+
+The main rule: do not read `NO` as a technical failure. It is a negative logical answer. If a check function returns a technical error, `ask(...)` adds that error to the local `status` and returns `false`. If a check function returns a normal `NO`, `ask(...)` also returns `false`, but the local `status` remains technically successful.
+
+### What ask(...) does
+
+Check functions are called through `ask(...)`. The `ask(...)` macro accepts an expression that returns `Return`, checks the technical part of the result, reads the `YES` or `NO` answer, clears binary flags from the local `status`, and returns a regular C `true` or `false` result.
+
+`ask(...)` expects a local `Return status` in the current scope. It uses that variable to carry the technical part of the check-function return.
+
+The behavior of `ask(...)` can be read this way:
+
+* if the check function returned a normal `YES`, `ask(...)` returns `true`, and local `status` remains technically successful;
+* if the check function returned a normal `NO`, `ask(...)` returns `false`, and local `status` also remains technically successful;
+* if the check function returned a technical error, `ask(...)` returns `false` and adds that error to local `status`;
+* after `ask(...)`, the binary answer is considered handled and must not move further into regular `run()`, `call()`, `provide()`, or `deliver()`.
+
+`ask(...)` is intended for a real check-function return, not for a manually assembled mask in caller code. A correct check function sets `YES` or `NO` itself and exits through `provide(status)` or `deliver(status)`.
 
 This example uses `run(...)` for the first time. In short: `run(print_file(path))` calls `print_file(path)`, merges its `Return` into the local `status`, and normalizes the result. If `print_file()` returns a technical error, the current `status` becomes problematic too. See the detailed explanation below in [“Call chains: run() and call()”](#call-chains-run-and-call).
+
+### Allowed call forms
+
+#### Example 1: direct check-function call
 
 ```c
 Return print_file_if_readable(const char *path)
@@ -199,57 +299,125 @@ Return print_file_if_readable(const char *path)
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	Return readable = path_is_readable(path);
-
-	if(CRITICAL & readable)
+	if(ask(path_is_readable(path)))
 	{
-		/* The check itself failed.
-		   This function cannot continue either */
-		provide(FAILURE);
-	}
+		/* path_is_readable() returned a technical success and YES.
+		   ask() consumed YES and returned true.
+		   The local status no longer carries the binary answer */
 
-	if(YES & readable)
-	{
-		/* YES is used only as a local decision.
-		   The file is readable, so this function may print it */
-		/* run() merges print_file() return status into local status */
+		/* print_file() is a regular Return function.
+		   run() may merge its technical result into local status */
 		run(print_file(path));
 
 	} else {
-		/* In this example NO is not interesting as a returned answer.
-		   It only means there is nothing to print */
+		/* ask() returned false in one of two cases.
+		   Case 1: path_is_readable() returned SUCCESS | NO.
+		   The file is not readable, but local status is still technically successful.
+		   Case 2: path_is_readable() returned FAILURE.
+		   The local status now contains the technical failure */
 	}
 
 	provide(status);
 }
 ```
 
-For a short technical-success check, use `TRIUMPH`. The logic is the same: a technical error becomes `FAILURE` for the current function, and `YES` is used only for the local decision.
+#### Example 2: separate variable for the check result
+
+`ask(...)` can also be used with an already stored `Return` when that is clearer for reading or debugging. In this form, the check-function result is stored separately, and local `status` receives the technical part only when `ask(readable)` is called.
 
 ```c
-Return result = path_is_readable(path);
-
-if((TRIUMPH & result) == 0)
+Return print_file_if_readable_later(const char *path)
 {
-	/* There is no successful or graceful technical outcome */
-	return(FAILURE);
-}
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
 
-if(YES & result)
-{
-	/* The condition is true, so the caller may do the useful work */
-	return(print_file(path));
-}
+	Return readable = path_is_readable(path);
 
-/* NO is handled here as "nothing to do", not as a returned answer */
-return(SUCCESS);
+	/* readable contains the full Return from the check function.
+	   ask(readable) consumes the YES or NO answer.
+	   Technical FAILURE, if present, is copied into local status */
+	if(ask(readable))
+	{
+		/* The answer was YES and the technical layer was successful */
+		run(print_file(path));
+	}
+
+	provide(status);
+}
 ```
 
-The main rule: do not read `NO` as a technical failure. It is a negative logical answer. Technical failure is checked through `CRITICAL`, `FAILURE`, `WARNING`, or through the absence of the expected `TRIUMPH`. Do not pass `YES` and `NO` through a call chain automatically. If a function received a binary answer and already chose an action from it, that binary answer has been handled for this function.
+If the result is stored in a separate variable, consume it near the call. C does not let the library automatically know that a separate local variable was forgotten and will never be used.
+
+#### Example 3: reading an answer already stored in status
+
+Sometimes it is convenient to write the full check-function return directly into local `status` and then read it with `ask(status)`. This is allowed, but the difference matters: `status = path_is_readable(path)` replaces everything that was previously in `status`. Use this style only when that is the intended behavior.
+
+```c
+Return print_file_if_readable_resetting_status(const char *path)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	/* This assignment replaces the previous local status.
+	   After the call, status temporarily contains both the technical layer
+	   and the binary YES or NO answer from path_is_readable() */
+	status = path_is_readable(path);
+
+	if(ask(status))
+	{
+		/* ask(status) consumed YES and left only the technical layer.
+		   The condition is true only for a technically successful YES */
+		run(print_file(path));
+
+	} else {
+		/* For SUCCESS | NO, ask(status) returns false and leaves status successful.
+		   For FAILURE, ask(status) returns false and leaves status critical */
+	}
+
+	provide(status);
+}
+```
+
+### What counts as an error
+
+`run(...)` and `call(...)` are not meant for check functions that return `YES` or `NO`. If code accidentally writes `run(path_is_readable(path))`, the library reports an error and changes local `status` to `FAILURE`. The same happens when a function receives a binary answer in local `status` and tries to exit through `provide(status)` or `deliver(status)` before handling that answer with `ask(...)`.
+
+The correct algorithm looks like this:
+
+```c
+if(ask(path_is_readable(path)))
+{
+	run(print_file(path));
+}
+```
+
+The incorrect algorithm looks like this:
+
+```c
+run(path_is_readable(path));
+```
+
+In the second case, the check function returned an answer to “yes or no”, not a regular work status. `run()` does not accept such answers because that would let `YES` or `NO` leak accidentally through regular call chains. The library reports an error and changes local `status` to `FAILURE`.
+
+If a check-function result should intentionally be discarded completely, use an explicit cast to `void`.
+
+```c
+(void)path_is_readable(path);
+```
+
+This code deliberately ignores the whole `Return`: both the technical part and the `YES` or `NO` answer. The library does not try to recover a result that has already been discarded.
 
 ## Sequential Checks Through status
 
 The same algorithm can be written in several ways. Suppose a function must copy two strings with `strdup()`. `strdup()` allocates memory itself and returns `NULL` on failure. If the first string has already been copied and the second copy fails, the first copy must be released before return.
+
+| Approach | Result |
+|---|---|
+| nested `if` | works, but code quickly moves to the right and becomes harder to read |
+| `goto cleanup` | solves shared cleanup, but adds a forbidden jump style |
+| sequential `status` | keeps code flat, readable, and clear about final cleanup |
 
 The first version works, but it quickly turns into a ladder of nested conditions. The more steps the function has, the farther the code drifts to the right.
 
@@ -399,6 +567,8 @@ In short: `run()` is for work that may be skipped after a failure. `call()` is f
 
 The only mandatory condition is that `func` must return `Return`. These macros take the returned status, add it to the local `status`, and normalize the result. Unfortunately, they cannot be used directly with functions that return `void`, `bool`, `int`, or any other type. Such functions need a small wrapper that returns `Return`.
 
+Check functions that return `YES` or `NO` are not called through `run()` or `call()`. They use `ask(...)`, because the binary answer must be handled immediately next to the call. If such an answer accidentally reaches `run()` or `call()`, the library reports an error and sets `FAILURE`.
+
 ```c
 Return process_file(const char *path)
 {
@@ -436,6 +606,14 @@ A regular `Return status` describes the state of one specific function. When tha
 After that, any function that exits through `provide()` or `deliver()` receives that global context in its return value. `run()` and `call()` also see it after status normalization.
 
 Important: only flags from `GLOBAL` are copied from `global_return_status` into a regular return: `INFO`, `WARNING`, and `HALTED`. Local binary answers `YES` and `NO` do not propagate through global status.
+
+The shortest form looks like this:
+
+```c
+atomic_store(&global_return_status,HALTED);
+```
+
+After that, the nearest return through `provide()` or `deliver()` receives `HALTED` as global context.
 
 ```c
 #include <signal.h>
@@ -520,6 +698,101 @@ Return process_items(void)
 }
 ```
 
+## Technical Details
+
+This section describes internal librational mechanisms. In regular user code, they are hidden behind `provide()`, `deliver()`, `run()`, `call()`, and `ask(...)`, so there is no need to use them directly.
+
+These technical details stay in the README for cases where the library itself needs to be improved, its behavior needs to be verified, or a specific return result needs deeper investigation.
+
+### Normalization
+
+Before a function exits, its status goes through internal normalization. Normalization removes contradictory combinations:
+
+* if `CRITICAL` is set, `SUCCESS` is removed;
+* if `NO` is set, `YES` is removed;
+* `global_return_status` is also normalized and stored back;
+* after `GLOBAL` is merged, the status is normalized once again.
+
+This means code may accidentally build `SUCCESS | FAILURE`, but that combination should not leave a function as “both success and failure”. A problematic technical flag is stronger than `SUCCESS`.
+
+The same rule applies to the binary layer: if `YES | NO` appears, `NO` remains. If at least one check answered “no”, the final binary answer can no longer be “yes”.
+
+### Internal YES/NO Algorithm
+
+User code usually sees only `YES`, `NO`, and `ask(...)`. Internally, the library adds one service step: it marks a binary answer as waiting to be handled. This uses the internal `AWAITING` flag.
+
+This flag is not needed in regular application code. The library uses it to distinguish two different states:
+
+* a check function has just returned `YES` or `NO`, and that answer still needs to be consumed with `ask(...)`;
+* caller code has already consumed the answer, and only the regular technical `status` should continue through the call chain.
+
+The flow looks like this:
+
+```text
+check function -> SUCCESS | YES or SUCCESS | NO
+provide()/deliver() -> marks the answer as waiting for ask(...)
+ask(...) -> reads YES/NO, returns true/false, clears binary flags
+regular code -> continues with technical status only
+```
+
+For example, `path_is_readable()` from [“Check function with YES and NO”](#check-function-with-yes-and-no) sets `YES` or `NO` itself. When it exits through `provide(status)`, the library understands that this is a binary answer from a check function and must not be accidentally mixed into a regular call chain.
+
+Caller code should then do this:
+
+```c
+if(ask(path_is_readable(path)))
+{
+	run(print_file(path));
+}
+```
+
+In this form, `ask(...)` performs all answer handling:
+
+* checks that the function really returned a waiting binary answer;
+* reads which answer was returned: `YES` or `NO`;
+* returns a regular C `true` or `false` result;
+* copies technical errors into local `status`;
+* clears binary flags so they are not inherited further.
+
+If `path_is_readable(path)` returned `SUCCESS | YES`, the condition is true. If it returned `SUCCESS | NO`, the condition is false, but local `status` stays successful. If it returned `FAILURE`, the condition is also false, and local `status` becomes critical.
+
+The protection mechanism exists for incorrectly built algorithms. For example:
+
+```c
+run(path_is_readable(path));
+```
+
+This code tries to pass a binary answer into `run()`, but `run()` is for regular work steps. In this case, the library reports an error and changes local `status` to `FAILURE`. The same rule applies to `call()`.
+
+Another protected case is leaving a function with an unhandled binary answer:
+
+```c
+status = path_is_readable(path);
+
+provide(status);
+```
+
+Here the function received `YES` or `NO`, but it did not call `ask(status)`. Because of that, `provide(status)` does not let this value leave as a regular return. It reports an error and returns `FAILURE`.
+
+The correct form for that style is shown in [the third result-reading example](#example-3-reading-an-answer-already-stored-in-status):
+
+```c
+status = path_is_readable(path);
+
+if(ask(status))
+{
+	run(print_file(path));
+}
+```
+
+An explicit cast to `void` is a separate case:
+
+```c
+(void)path_is_readable(path);
+```
+
+This code intentionally discards the whole function return: the technical part and `YES` or `NO`. After such a call, the library no longer sees the result and does not try to recover it. This is expected behavior when the programmer really wants to ignore the answer completely.
+
 ## Practical rules
 
 1. A regular function starts with `Return status = SUCCESS`.
@@ -527,7 +800,8 @@ Return process_items(void)
 3. `FAILURE` is used only for technical errors inside a function.
 4. `YES` and `NO` are used only for a local logical answer from a check function.
 5. `YES` and `NO` are returned outward only when the current function itself is a check function and must answer “yes” or “no”. These are local flags that do not need to be inherited automatically through a chain of function calls.
-6. Caller code checks the technical layer first, then the binary answer.
+6. Caller code reads check functions through `ask(...)`.
 7. `run()` is used for work steps that may be skipped after an error or stop.
 8. `call()` is used for cleanup and mandatory final actions.
-9. If a status can contain several bits, exact comparison with one flag value is not used. Compound returns are checked with bit masks.
+9. `run()` and `call()` are not used for check functions that return `YES` or `NO`.
+10. If a status can contain several bits, exact comparison with one flag value is not used. Compound returns are checked with bit masks.
