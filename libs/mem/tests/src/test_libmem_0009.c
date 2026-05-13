@@ -1,4 +1,5 @@
 #include "test_libmem_utils.h"
+#include "mocks_libmem.h"
 
 /* Shared descriptors of the telemetry suite.
    The descriptors live for the whole suite so each subtest observes the
@@ -10,11 +11,29 @@ static memory *buffer = &shared_buffer;
 static memory *sentinel = &shared_sentinel;
 
 /* Suite-wide baseline of the global Telemetry struct, captured by the
-   first subtest. Counters are global and are also moved by the testitall
-   framework between subtests (m_del of STDOUT/STDERR/EXTEND), so the
-   suite asserts deltas relative to this baseline rather than absolute
-   counter values */
+   first subtest. Counters are global, and the testitall framework can
+   also move them while clearing its STDOUT, STDERR, and EXTEND
+   descriptors between subtests, so the suite asserts deltas relative
+   to this baseline rather than absolute counter values */
 static Telemetry suite_baseline;
+
+/* Expected stderr layout for subtest 17. mem_resize is forced to a
+   failed malloc by the libmem allocator mock and is expected to emit a
+   single report() line. The pattern leaves the source line number
+   flexible with \\d+ and the errno description flexible with [^\\n]+,
+   but pins the message body byte for byte */
+static const char expected_stderr_pattern_libmem_0009_17[] =
+	"\\A"
+	"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 4096 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	"\\Z";
+
+/* Expected stderr layout for subtest 18. The realloc path inside
+   mem_resize prints the same report() format as the malloc path, only
+   the slab-rounded byte count differs */
+static const char expected_stderr_pattern_libmem_0009_18[] =
+	"\\A"
+	"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 8192 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	"\\Z";
 
 /**
  * @brief Reinitialize the shared descriptors and snapshot the suite baseline
@@ -420,13 +439,14 @@ static Return test_libmem_0009_10(void)
 /**
  * @brief Cover data_to_string_conversions through m_to_string
  *
- * Writes a known three-byte prefix into the buffer through m_data and
- * relies on the trailing zero bytes from the previous ZERO_NEW_MEMORY
- * subtest to act as the terminator. m_to_string must measure
- * string_length as three, flip the descriptor into string mode, and
- * bump data_to_string_conversions exactly once. The logical length
- * stays at eight because the existing reserve already covers the
- * payload plus the terminator
+ * Writes a known three-byte prefix into the buffer through m_data.
+ * The trailing zero bytes from the previous ZERO_NEW_MEMORY subtest
+ * let m_to_string measure string_length as three before it writes the
+ * canonical terminator at that boundary. m_to_string must flip the
+ * descriptor into string mode and bump data_to_string_conversions
+ * exactly once. The logical length stays at eight because the current
+ * descriptor span already has room for the visible payload and the
+ * terminator
  *
  * @return Return describing success or failure
  */
@@ -585,17 +605,17 @@ static Return test_libmem_0009_14(void)
  *
  * Calls m_del on the already-empty buffer, which must be accepted
  * without bumping any counter, and then calls m_del on the sentinel,
- * which actually frees the second slab block. After the calls every
+ * which actually frees the sentinel's slab block. After the calls every
  * "current" counter must be back to its suite baseline value, the
  * "total" counters must be at least at their suite baseline values,
  * and peak_noop_resize_streak must be at least three because subtest
  * 06 directly drives that streak inside the suite. The remaining peak
  * counters (peak_heap_reserved_bytes, peak_block_overhead_bytes,
  * peak_active_descriptors) are global and monotonic across the runner,
- * so this finalization step does not re-check them. The unreachable-
- * from-public-API counters (heap_allocation_failures,
- * heap_reallocation_failures) are explicitly checked to remain at
- * their suite baseline values
+ * so this finalization step does not re-check them. Allocator-failure
+ * counters (heap_allocation_failures, heap_reallocation_failures) are
+ * exercised by dedicated subtests 17 and 18 through the libmem
+ * allocator mock, not by this finalization step
  *
  * @return Return describing success or failure
  */
@@ -610,7 +630,7 @@ static Return test_libmem_0009_15(void)
 	   whole Telemetry struct has to stay byte-for-byte unchanged */
 	const Telemetry before_buffer_del = telemetry;
 
-	ASSERT(SUCCESS == m_del(buffer));
+	call(m_del(buffer));
 
 	ASSERT(buffer->length == 0);
 	ASSERT(buffer->string_length == 0);
@@ -631,7 +651,7 @@ static Return test_libmem_0009_15(void)
 	const size_t sentinel_payload_bytes = sizeof(uint32_t);
 	const size_t sentinel_block_overhead_bytes = block - sentinel_payload_bytes;
 
-	ASSERT(SUCCESS == m_del(sentinel));
+	call(m_del(sentinel));
 
 	ASSERT(sentinel->length == 0);
 	ASSERT(sentinel->string_length == 0);
@@ -668,14 +688,14 @@ static Return test_libmem_0009_15(void)
 	   requiring the suite to be the source of the maximum */
 	ASSERT(telemetry.peak_noop_resize_streak >= 3);
 
-	/* The runner framework (testitall) lazily allocates and frees its own
-	   STDOUT/STDERR/EXTEND capture descriptors between subtests, so the
-	   monotonic byte and "fresh"/"release" counters can carry framework
-	   contributions on top of the test-driven moves. The asserts below
-	   use >= for those counters and == for the counters that only the
-	   test itself can move (mode conversions, guarded-arithmetic
-	   failures, RELEASE_UNUSED counters, ZERO_NEW_MEMORY growths, no-op
-	   resizes) */
+	/* The runner framework (testitall) may allocate and free its own
+	   STDOUT, STDERR, and EXTEND capture descriptors between subtests,
+	   so the monotonic byte and "fresh"/"release" counters can carry
+	   framework contributions on top of the test-driven moves. The
+	   asserts below use >= for those counters and == for the counters
+	   that only this suite can move here: mode conversions,
+	   guarded-arithmetic failures, RELEASE_UNUSED counters,
+	   ZERO_NEW_MEMORY growths, and no-op resizes */
 	ASSERT(telemetry.total_heap_reserved_bytes_acquired >= suite_baseline.total_heap_reserved_bytes_acquired + block * 3);
 	ASSERT(telemetry.total_heap_reserved_bytes_released >= suite_baseline.total_heap_reserved_bytes_released + block * 3);
 	ASSERT(telemetry.total_release_unused_heap_reserved_bytes_released == suite_baseline.total_release_unused_heap_reserved_bytes_released + block * 2);
@@ -692,23 +712,14 @@ static Return test_libmem_0009_15(void)
 	ASSERT(telemetry.string_to_data_conversions == suite_baseline.string_to_data_conversions + 1);
 	ASSERT(telemetry.arithmetic_guard_failures == suite_baseline.arithmetic_guard_failures + 3);
 
-	/* mem_write_zero_terminator centralized helper fires for every successful
-	   terminator write across the library. Inside this suite the only
-	   guaranteed write is the terminator placement during subtest 11's
-	   m_to_string flip. The runner framework drives additional writes between
-	   subtests, so the assert uses >= rather than == */
+	/* mem_write_zero_terminator centralized helper fires for every
+	   successful terminator write across the library. Up to this
+	   checkpoint, before the dedicated finalize-string subtest runs,
+	   the only suite-guaranteed write is the terminator placement
+	   during subtest 11's m_to_string flip. The runner framework drives
+	   additional writes between subtests, so the assert uses >= rather
+	   than == */
 	ASSERT(telemetry.string_terminator_writes >= suite_baseline.string_terminator_writes + 1);
-
-	/* D.2: heap_allocation_failures and heap_reallocation_failures
-	   fire only when malloc or realloc actually return NULL. There is
-	   no deterministic public-API path to that branch (overflow is
-	   caught earlier by the guarded arithmetic helpers, and Linux
-	   overcommit makes huge requests unreliable triggers). Asserting
-	   that the counters never advanced past the suite baseline
-	   documents the gap until a separate change introduces an
-	   allocator-failure injection hook */
-	ASSERT(telemetry.heap_allocation_failures == suite_baseline.heap_allocation_failures);
-	ASSERT(telemetry.heap_reallocation_failures == suite_baseline.heap_reallocation_failures);
 
 	#if SHOW_TEST
 	telemetry_final_summary();
@@ -798,25 +809,144 @@ static Return test_libmem_0009_16(void)
 	ASSERT(string_buffer->string_length == 2);
 	ASSERT(raw[2] == '\0');
 
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }
 
 /**
- * @brief End-to-end suite that exercises reachable libmem telemetry counters and asserts unreachable counters stay unchanged
+ * @brief Capture function for subtest 17 — force malloc to return NULL inside mem_resize
+ *
+ * Activates the libmem allocator mock for one malloc call, then asks
+ * m_resize to grow a fresh descriptor from zero to one element. The
+ * library must observe the NULL return, bump heap_allocation_failures
+ * by one, and leave the descriptor in a clean unallocated state. Runs
+ * through match_function_output in the driver, so the report() emission
+ * that mem_resize makes lands in captured stderr instead of polluting
+ * the suite output
+ *
+ * @return Return describing success or failure
+ */
+static Return capture_libmem_0009_17_malloc_fail(void)
+{
+	INITTEST;
+
+	const size_t baseline = telemetry.heap_allocation_failures;
+
+	m_create(char,fail_buf,MEMORY_STRING);
+
+	mocks_libmem_alloc_fail_next_malloc(1);
+	const Return result = m_resize(fail_buf,1);
+	mocks_libmem_alloc_disable();
+
+	ASSERT(FAILURE == result);
+	ASSERT(telemetry.heap_allocation_failures == baseline + 1);
+	ASSERT(fail_buf->data == NULL);
+	ASSERT(fail_buf->length == 0);
+	ASSERT(fail_buf->actually_allocated_bytes == 0);
+
+	deliver(status);
+}
+
+/**
+ * @brief Cover heap_allocation_failures by forcing malloc to return NULL
+ *
+ * Runs capture_libmem_0009_17_malloc_fail under match_function_output
+ * so the expected report() output from mem_resize stays inside captured
+ * stderr and away from the visible suite log. The driver asserts that
+ * stdout was silent, that stderr matches the expected single ERROR line
+ * for a 4096-byte malloc failure (line-number flexible, errno
+ * description system-dependent). The subtest is gated by
+ * SKIP_ON_EVIL_EMPIRE_OS because Apple ld does not honor -Wl,--wrap, so
+ * the mock cannot fire there and the assertions would not hold
+ *
+ * @return Return describing success or failure
+ */
+static Return test_libmem_0009_17(void)
+{
+	INITTEST;
+	SKIP_ON_EVIL_EMPIRE_OS;
+
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0009_17,capture_libmem_0009_17_malloc_fail));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Capture function for subtest 18 — force realloc to return NULL inside mem_resize
+ *
+ * First grows a fresh descriptor through a successful initial malloc so
+ * the next size change becomes a realloc instead of a fresh allocation.
+ * Then activates the realloc mock for one call and asks m_resize to
+ * grow past one slab block, which forces the library to call realloc.
+ * The library must observe the NULL return, bump
+ * heap_reallocation_failures by one, leave heap_allocation_failures
+ * untouched, and keep the descriptor's previous allocation valid
+ * because realloc returning NULL does not free the original block.
+ * Runs through match_function_output in the driver
+ *
+ * @return Return describing success or failure
+ */
+static Return capture_libmem_0009_18_realloc_fail(void)
+{
+	INITTEST;
+
+	const size_t baseline_alloc = telemetry.heap_allocation_failures;
+	const size_t baseline_realloc = telemetry.heap_reallocation_failures;
+
+	m_create(char,grow_buf,MEMORY_STRING);
+
+	ASSERT(SUCCESS == m_resize(grow_buf,1));
+
+	mocks_libmem_alloc_fail_next_realloc(1);
+	const Return result = m_resize(grow_buf,MEMORY_BLOCK_BYTES + 1);
+	mocks_libmem_alloc_disable();
+
+	ASSERT(FAILURE == result);
+	ASSERT(telemetry.heap_reallocation_failures == baseline_realloc + 1);
+	ASSERT(telemetry.heap_allocation_failures == baseline_alloc);
+	ASSERT(grow_buf->data != NULL);
+	ASSERT(grow_buf->length == 1);
+
+	call(m_del(grow_buf));
+
+	deliver(status);
+}
+
+/**
+ * @brief Cover heap_reallocation_failures by forcing realloc to return NULL
+ *
+ * Runs capture_libmem_0009_18_realloc_fail under match_function_output
+ * so the expected report() output from mem_resize stays inside captured
+ * stderr. The driver asserts that stdout was silent and that stderr
+ * matches the expected single ERROR line for an 8192-byte realloc failure.
+ * Same SKIP_ON_EVIL_EMPIRE_OS gating as subtest 17
+ *
+ * @return Return describing success or failure
+ */
+static Return test_libmem_0009_18(void)
+{
+	INITTEST;
+	SKIP_ON_EVIL_EMPIRE_OS;
+
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0009_18,capture_libmem_0009_18_realloc_fail));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief End-to-end suite that exercises every libmem telemetry counter at least once
  *
  * Drives a shared unsigned-char descriptor and an auxiliary uint32_t
  * descriptor through every transition that a Telemetry counter
- * observes. Each counter in the Telemetry struct that the public API
- * can reach is exercised at least once by the actions of one of the
- * subtests below and is then asserted as a delta relative to the
- * entry baseline of the corresponding subtest, so the suite serves as
- * the canonical proof that telemetry stays consistent with descriptor
- * state across every supported transition. Counters whose increment
- * paths are currently unreachable from the public API
- * (heap_allocation_failures, heap_reallocation_failures) are
- * explicitly checked to stay at their suite baseline values
+ * observes. Each counter in the Telemetry struct is exercised at least
+ * once by the actions of one of the subtests below and is then
+ * asserted as a delta relative to the entry baseline of the
+ * corresponding subtest, so the suite serves as the canonical proof
+ * that telemetry stays consistent with descriptor state across every
+ * supported transition. Allocator-failure counters
+ * (heap_allocation_failures, heap_reallocation_failures) are driven
+ * deterministically by the libmem allocator mock in subtests 17 and 18
  *
  * @return Return describing success or failure
  */
@@ -840,6 +970,8 @@ Return test_libmem_0009(void)
 	TEST(test_libmem_0009_14,"m_resize to zero with RELEASE_UNUSED frees the buffer…");
 	TEST(test_libmem_0009_15,"m_del tears down both descriptors and finalizes the suite…");
 	TEST(test_libmem_0009_16,"m_finalize_string IF_MISSING records present-vs-written terminator counters…");
+	TEST(test_libmem_0009_17,"Allocator returns NULL on initial malloc and bumps heap_allocation_failures…");
+	TEST(test_libmem_0009_18,"Allocator returns NULL on grow realloc and bumps heap_reallocation_failures…");
 
 	RETURN_STATUS;
 }

@@ -21,8 +21,8 @@ Return test_libmem_0001(void)
 	ASSERT(SUCCESS == m_copy(test0_1,test0_0));
 
 	// Cleanup
-	ASSERT(SUCCESS == m_del(test0_0));
-	ASSERT(SUCCESS == m_del(test0_1));
+	call(m_del(test0_0));
+	call(m_del(test0_1));
 
 	RETURN_STATUS;
 }
