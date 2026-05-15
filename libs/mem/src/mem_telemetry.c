@@ -291,11 +291,6 @@ void telemetry_arithmetic_guard_failures(void)
 	__atomic_fetch_add(&telemetry.arithmetic_guard_failures,1,__ATOMIC_SEQ_CST);
 }
 
-void init_telemetry(void)
-{
-	memset(&telemetry,0x0,sizeof(Telemetry));
-}
-
 void telemetry_final_summary(void)
 {
 	char buf[FORM_OUTPUT_BUFFER_SIZE];

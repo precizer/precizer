@@ -321,8 +321,3 @@ void telemetry_arithmetic_guard_failures(void);
  * and in red when they did not, so a leftover allocation or payload imbalance is immediately visible
  */
 void telemetry_final_summary(void);
-
-/**
- * @brief Reset all telemetry counters to zero.
- */
-void init_telemetry(void);
