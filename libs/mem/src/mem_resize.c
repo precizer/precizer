@@ -75,12 +75,16 @@ static int round_up_to_block_size(
  * and `length == 4`; after `m_resize(text,64)` the visible text is still
  * `"abc"` and `string_length` stays `3`, while `length` becomes `64`
  *
- * Without @ref RELEASE_UNUSED the helper tries to reuse the current slab-rounded
- * reserve whenever possible. That means a shrink may change only the logical
- * length while the underlying allocation stays in place for future growth.
- * With @ref RELEASE_UNUSED the helper is allowed to return spare slab-rounded
- * capacity to the allocator during shrink. A resize to zero clears the logical
- * contents and may either keep or release the reserve, depending on that flag
+ * Without @ref RELEASE_UNUSED the helper reuses the current slab-rounded
+ * reserve whenever possible. That includes `m_resize(desc,0)`: for a valid
+ * descriptor it clears the logical contents, resets the cached string length,
+ * keeps string descriptors in string mode, keeps data descriptors in data mode,
+ * and keeps the allocated storage available for later reuse. With
+ * @ref RELEASE_UNUSED the helper is allowed to
+ * return spare slab-rounded capacity to the allocator during shrink. A resize
+ * to zero with @ref RELEASE_UNUSED clears the logical contents, keeps the
+ * descriptor in its previous string or data mode, and physically releases the
+ * descriptor storage
  *
  * Supported behavior flags (combine with `|`):
  * - @ref ZERO_NEW_MEMORY zero-fills only the bytes that become newly
