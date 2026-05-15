@@ -1,0 +1,28 @@
+#include "sute.h"
+
+/**
+ * @brief Run all public librational test suites
+ *
+ * @return Return status code
+ */
+Return test_librational_all(void)
+{
+	INITTEST;
+
+	bool first_header = true;
+
+	HEADER("Formatting");
+	SUTE(test_librational_0001,"librational formatting helper test set…");
+	TEST(test_librational_0002,"librational itoa conversion helpers…");
+
+	HEADER("Time");
+	SUTE(test_librational_0003,"librational wall-clock time helpers…");
+
+	HEADER("Report and Logger");
+	SUTE(test_librational_0004,"librational report/logger test set…");
+
+	HEADER("Return Handling");
+	SUTE(test_librational_0005,"librational yes/no Return handling…");
+
+	RETURN_STATUS;
+}
