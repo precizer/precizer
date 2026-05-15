@@ -15,6 +15,13 @@
  * against an expected element type, and it does not rewrite `is_string` or
  * `string_length`
  *
+ * On success the returned pointer is the descriptor's live @ref memory::data
+ * pointer, not a copy and not a detached view. A read-only raw view obtained
+ * from the same descriptor exposes the same backing storage. The pointer stays
+ * valid only until an operation that may replace or release the descriptor
+ * storage, such as @ref mem_resize, @ref mem_delete, or a descriptor-copy or
+ * concat operation that targets this descriptor
+ *
  * @param memory_object Pointer to a descriptor
  * @return Writable storage pointer on success. `NULL` when the descriptor is too broken to expose safely
  */
