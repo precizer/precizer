@@ -3,10 +3,9 @@ EXE=testitall
 
 # Name of the library under test
 LIBNAME=libmem
-LIBDIR = $(patsubst lib%,%,$(LIBNAME))
 
 # Config settings:
-# The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory.
+# The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory
 MAKEFLAGS += --no-print-directory
 
 #
@@ -17,6 +16,11 @@ CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
 UNAME_S := $(shell uname -s)
+
+# macOS-specific code
+ifeq ($(UNAME_S),Darwin)
+CFLAGS += -DEVIL_EMPIRE_OS
+endif
 
 SRC = src
 # tests-dynamic clears STATIC so the test runner uses shared libraries during debug runs
@@ -30,16 +34,32 @@ endif
 # directory standalone. The parent Makefile of libs/mem overrides BUILDDIR
 # with the same path, so both entrypoints write to one artifact tree
 BUILDDIR ?= ../.builds
+LIBDIR = $(patsubst lib%,%,$(LIBNAME))
 TEST_BUILDDIR = $(BUILDDIR)/$(LIBDIR)/$(EXE)
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
-LIBS = rational xdiff sha512 testitall
-LINK_LIBS = testitall $(LIBDIR) sha512 xdiff rational
+LIBS = rational xdiff sha512 testitall testmocking
+LINK_LIBS = testitall $(LIBDIR) sha512 xdiff rational testmocking
 TESTEDLIB_BUILDDIR = tests/$(BUILDDIR)
 DEPLIB_BUILDDIR = ../$(LIBDIR)/tests/$(BUILDDIR)
 
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LINK_LIBS),-l$d)
 LDLIBS += -lpcre2-8
+# External libraries only — the internal ones are filtered out so they
+# can be linked through direct .o object files instead, which lets
+# -Wl,--wrap reach malloc/realloc calls made from inside them
+EXT_LDLIBS = $(filter-out $(foreach d,$(LINK_LIBS),-l$d),$(LDLIBS))
+
+# Link-time wrappers for mock-based allocator failure injection. Add
+# more function names to WRAPFUNCS as new mocks are introduced
+WRAPFUNCS = malloc realloc
+ifeq ($(UNAME_S),Darwin)
+# macOS lld does not honor -Wl,--wrap; mocks degrade to a no-op and the
+# affected subtests early-return through #ifdef EVIL_EMPIRE_OS
+WRAPFLAGS =
+else
+WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
+endif
 
 # Additional include paths for external libraries
 INCPATH += -I../src/
@@ -88,6 +108,8 @@ COV_OBJDIR = $(COV_DIR)/obj
 COV_REPORTDIR = $(COV_OBJDIR)/../report/
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
 COV_LIBDIR = $(BUILDDIR)/$(COV)/libs
+COV_LIB_OBJDIR = $(COV_LIBDIR)/obj
+COV_LIB_OBJS = $(foreach lib,$(LINK_LIBS),$(COV_LIB_OBJDIR)/$(lib)/*.o)
 COV_LDPATH = -L$(COV_LIBDIR) $(LDPATH)
 ifeq ($(UNAME_S),Darwin)
 COV_RPATH = -Wl,-rpath,@executable_path/../../../$(COV)/libs,-rpath,@executable_path
@@ -107,6 +129,8 @@ SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
 SNTZ_OBJDIR = $(SNTZ_DIR)/obj
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_LIBDIR = $(BUILDDIR)/$(SNTZ)/libs
+SNTZ_LIB_OBJDIR = $(SNTZ_LIBDIR)/obj
+SNTZ_LIB_OBJS = $(foreach lib,$(LINK_LIBS),$(SNTZ_LIB_OBJDIR)/$(lib)/*.o)
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR) $(LDPATH)
 ifeq ($(UNAME_S),Darwin)
 SNTZ_RPATH = -Wl,-rpath,@executable_path/../../../$(SNTZ)/libs,-rpath,@executable_path
@@ -153,13 +177,13 @@ tests: test
 run: sanitize
 
 testlibs-coverage: testedlib-coverage
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-sanitize: testedlib-sanitize
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-debug: testedlib-debug
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 #
 # Coverage rules
@@ -172,7 +196,7 @@ memlib-coverage: testedlib-coverage
 coverage: coverage-html
 
 $(COV_EXE): $(COV_OBJS) testlibs-coverage
-	@$(CC) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) -o $(COV_EXE) $(COV_OBJS) $(LDLIBS)
+	@$(CC) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) $(WRAPFLAGS) -o $(COV_EXE) $(COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS)
 	@echo "$@ linked dynamically with coverage flags, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(COV_OBJDIR)
@@ -189,7 +213,7 @@ coverage-report: $(COV_EXE)
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --branch-coverage --rc lcov_excl_br_line='(^\s*RETURN_STATUS|SLOWTEST\s*;)|(\b(?:provide|ASSERT|TEST|SUTE)\s*\()' --directory $(COV_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
+	@lcov --capture --branch-coverage --rc lcov_excl_br_line='(^\s*RETURN_STATUS|SLOWTEST\s*;)|(\b(?:provide|ASSERT|IF|TEST|SUTE)\s*\()' --directory $(COV_OBJDIR) --directory $(COV_LIB_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
 	@genhtml --branch-coverage $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
@@ -205,7 +229,7 @@ sanitize: $(SNTZ_EXE) | testlibs-sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) testlibs-sanitize
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) -o $(SNTZ_EXE) $(SNTZ_OBJS) $(LDLIBS)
+	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) -o $(SNTZ_EXE) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS)
 	@echo "$@ linked dynamically with sanitizer flags, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
@@ -229,7 +253,7 @@ debug: debug-build | testlibs-debug
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) testlibs-debug
-	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) -o $(DBG_EXE) $(DBG_OBJS) $(LDLIBS)
+	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $(DBG_OBJS) $(LDLIBS)
 ifneq ($(TESTS_DYNAMIC),)
 	@echo "$@ linked dynamically with debug flags, not stripped"
 else

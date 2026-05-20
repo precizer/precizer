@@ -3,7 +3,7 @@ LIBNAME=libmem
 
 # Defaults to a local .builds when running `make` from this directory.
 # When the umbrella project drives the build, BUILDDIR is overridden via the
-# library dispatcher Makefile to point at the project-wide .builds.
+# library dispatcher Makefile to point at the project-wide .builds
 BUILDDIR ?= .builds
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 
@@ -13,7 +13,7 @@ UNAME_S := $(shell uname -s)
 # Compiler flags
 #
 # USE_LLD and AR are exported by the root Makefile when COMPILER=clang
-# to use LLVM's own linker and archiver, avoiding gold plugin version mismatch.
+# to use LLVM's own linker and archiver, avoiding gold plugin version mismatch
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
@@ -85,7 +85,7 @@ LDLIBS = $(foreach l,$(LIBS),-l$(l))
 DBG = debug
 DBG_DIR = $(BUILDDIR)/$(DBG)
 DBG_LIBDIR = $(DBG_DIR)/libs
-DBG_OBJDIR = $(DBG_LIBDIR)/obj
+DBG_OBJDIR = $(DBG_LIBDIR)/obj/$(LIBDIR)
 DBG_LDPATH = -L$(DBG_LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
@@ -105,7 +105,7 @@ endif
 COV = coverage
 COV_DIR = $(BUILDDIR)/$(COV)
 COV_LIBDIR = $(COV_DIR)/libs
-COV_OBJDIR = $(COV_LIBDIR)/obj
+COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_LDPATH = -L$(COV_LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
@@ -119,7 +119,7 @@ COV_LDFLAGS += $(USE_LLD) -lgcov --coverage
 SNTZ = sanitize
 SNTZ_DIR = $(BUILDDIR)/$(SNTZ)
 SNTZ_LIBDIR = $(SNTZ_DIR)/libs
-SNTZ_OBJDIR = $(SNTZ_LIBDIR)/obj
+SNTZ_OBJDIR = $(SNTZ_LIBDIR)/obj/$(LIBDIR)
 SNTZ_LDPATH = -L$(SNTZ_LIBDIR)
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
@@ -137,7 +137,7 @@ SNTZ_LDFLAGS += $(USE_LLD) $(SNTZ_OPTIONS)
 PROD = production
 PROD_DIR = $(BUILDDIR)/$(PROD)
 PROD_LIBDIR = $(PROD_DIR)/libs
-PROD_OBJDIR = $(PROD_LIBDIR)/obj
+PROD_OBJDIR = $(PROD_LIBDIR)/obj/$(LIBDIR)
 PROD_LDPATH = -L$(PROD_LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
@@ -165,7 +165,7 @@ endif
 PRTB = portable
 PRTB_DIR = $(BUILDDIR)/$(PRTB)
 PRTB_LIBDIR = $(PRTB_DIR)/libs
-PRTB_OBJDIR = $(PRTB_LIBDIR)/obj
+PRTB_OBJDIR = $(PRTB_LIBDIR)/obj/$(LIBDIR)
 PRTB_LDPATH = -L$(PRTB_LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
@@ -212,19 +212,19 @@ tests-coverage:
 	@$(MAKE) -s -C tests/ coverage BUILDDIR=../$(BUILDDIR)
 
 testlibs-debug:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-coverage:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-sanitize:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-production:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) production BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) production BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-portable:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) portable BUILDDIR="$(DEPLIB_BUILDDIR)";)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) portable BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 debug: $(DBG_SO) $(DBG_STAT)
 
@@ -400,7 +400,7 @@ compile-commands: $(COMPILE_COMMANDS)
 
 $(COMPILE_COMMANDS):
 	@mkdir -p "$(BUILDDIR)"
-	bear --output $@ -- $(MAKE) -B -s -C tests/ debug-build BUILDDIR=../$(BUILDDIR)
+	bear --output $@ -- $(MAKE) -B -s debug
 
 cppcheck: compile-commands
 	cppcheck --check-level=exhaustive --project=$(COMPILE_COMMANDS) --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force --inconclusive
