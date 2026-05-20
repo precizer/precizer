@@ -76,6 +76,10 @@ The second option is to copy the contents of `libs/mem/src/` into your project, 
 
 The frame is what the programmer creates. The programmer can accidentally use the library incorrectly, and the library guarantees that it informs the programmer about such mistakes through error messages.
 
+#### Example 01. Frame error when a string operation is called on a data descriptor
+
+Covered by [`test_libmem_0000_01`](tests/src/test_libmem_0000.c#L11)
+
 For example, calling a string-mode helper on a descriptor that was declared for raw binary data is a frame error. The library reports it.
 
 1. Create a descriptor with default settings:
@@ -105,7 +109,13 @@ ERROR
 
 4. Why the library reacts this way. Library functions behave differently for string descriptors and for data descriptors because of the nature of the payloads. Strings are zero-terminated, which has to be respected explicitly during operations such as concatenation or resize. Raw data must never be silently truncated or extended, and that requires its own algorithms. The library therefore provides separate paths for the two descriptor kinds. By default (as in the example above), a descriptor is created in data mode. The example missed the important step of declaring it as a string descriptor.
 
-5. There are two ways to fix it. Either declare the descriptor as a string descriptor at creation time:
+5. There are two ways to fix it.
+
+#### Example 02. Descriptor created directly in string mode
+
+Covered by [`test_libmem_0000_02`](tests/src/test_libmem_0000.c#L54)
+
+Either declare the descriptor as a string descriptor at creation time:
 
 ```c
 // No errors here — the descriptor is created with the flag that marks it as a
@@ -116,6 +126,10 @@ const char *source_string = "Hello world";
 m_copy_string(destinations_string,source_string);
 m_del(destinations_string);
 ```
+
+#### Example 03. Data descriptor converted to string mode
+
+Covered by [`test_libmem_0000_03`](tests/src/test_libmem_0000.c#L80)
 
 Or convert an existing data descriptor into a string descriptor:
 
@@ -203,9 +217,11 @@ terminators.
 
 ### Mode-agnostic operations
 
-These work regardless of mode. Checked `m_data(...)` keeps the current mode
+These work regardless of mode. Checked `m_data(...)` keeps the current string/data mode
 unchanged. `m_raw_data(...)` returns an unchecked writable pointer without
-changing descriptor mode or cached string metadata.
+changing descriptor mode or cached string metadata. On success the raw helpers
+return the live `descriptor->data` pointer, not a copy; writable and read-only
+raw views of the same descriptor expose the same backing storage.
 
 | API | Description |
 |---|---|
@@ -213,11 +229,11 @@ changing descriptor mode or cached string metadata.
 | `m_init_static(T, mode)` | Build an initializer list for a global or static descriptor; when the second argument is omitted, `MEMORY_DATA` is used |
 | `m_create(T, name)` | Declare a descriptor for element type `T` |
 | `m_resize(desc, n[, flags])` / `mem_resize(desc, n, flags)` | Allocate or resize to `n` elements |
-| `m_del(desc)` | Free a valid descriptor's allocation, clear the lengths, and preserve the current mode. If the descriptor is inconsistent, return `FAILURE`, report the problem, and leave the descriptor unchanged |
-| `m_data(T, desc)` | Checked writable pointer; keeps the current mode unchanged |
+| `m_del(desc)` | Free a valid descriptor's allocation, clear the lengths, and preserve the current string/data mode. If the descriptor is inconsistent, return `FAILURE`, report the problem, and leave the descriptor unchanged |
+| `m_data(T, desc)` | Checked writable pointer; keeps the current string/data mode unchanged |
 | `m_data_ro(T, desc)` | Checked read-only pointer |
-| `m_raw_data(desc)` | Unchecked writable pointer |
-| `m_raw_data_ro(desc)` | Unchecked read-only pointer |
+| `m_raw_data(desc)` | Unchecked writable pointer to the live descriptor buffer |
+| `m_raw_data_ro(desc)` | Unchecked read-only pointer to the same live descriptor buffer |
 | `m_guarded_byte_size(desc, n, &bytes)` | Safely convert a descriptor element count into bytes with overflow detection |
 | `m_guarded_add(left, right, &sum)` | Safely add two `size_t` values with overflow detection |
 | `m_guarded_subtract(left, right, &diff)` | Safely subtract one `size_t` from another with underflow detection |
@@ -235,6 +251,10 @@ as a string descriptor of the requested element type width, and copies either a
 zero-terminated source or the visible prefix of a bounded source buffer into
 it. `m_string_array_del(...)` later walks all child strings, calls `m_del(...)`
 for each one, and finally clears the root descriptor
+
+#### Example 19. Appending strings to an array of string descriptors
+
+Covered by [`test_libmem_0000_19`](tests/src/test_libmem_0000.c#L668)
 
 Small example without a separate size argument:
 
@@ -254,7 +274,7 @@ for(size_t index = 0; index < names->length; ++index)
 if((TRIUMPH & m_string_array_del(names)) == 0) { return 1; }
 ```
 
-Small example with a bounded source buffer:
+The same example also covers a bounded source buffer:
 
 ```c
 const char source[] = {'z','e','t','a','\0','x'};
@@ -265,6 +285,25 @@ if((TRIUMPH & m_string_array_append(names,char,sizeof(source),source)) == 0) { r
 if((TRIUMPH & m_string_array_del(names)) == 0) { return 1; }
 ```
 
+#### Example 20. Iterating over an array of string descriptors
+
+Covered by [`test_libmem_0000_20`](tests/src/test_libmem_0000.c#L708)
+
+```c
+m_create(memory,names);
+
+if((TRIUMPH & m_string_array_append(names,char,"alpha")) == 0) { return 1; }
+if((TRIUMPH & m_string_array_append(names,char,"beta")) == 0) { return 1; }
+if((TRIUMPH & m_string_array_append(names,char,"gamma")) == 0) { return 1; }
+
+m_string_array_foreach(names,item)
+{
+	printf("%s\n",m_text(item));
+}
+
+if((TRIUMPH & m_array_del(names)) == 0) { return 1; }
+```
+
 ## Features
 
 - **Safe self-aliasing as a mandatory rule:** library operations are expected to behave correctly when the source points into `destination`. If a specific helper still fails that case, it is treated as a defect or migration debt rather than as an alternative API rule.
@@ -273,10 +312,10 @@ if((TRIUMPH & m_string_array_del(names)) == 0) { return 1; }
 - **Safe resizing:** `m_resize` and `mem_resize(..., flags)` recalculate the required byte size with overflow detection and can grow without shrinking already reserved blocks. For string descriptors, growing only extends the logical capacity — the visible string and its `string_length` stay unchanged. For example, a descriptor holding `"Hi"` has `length == 3` and `string_length == 2`; after `m_resize(&d, 10)` it reports `length == 10` and `string_length == 2`, so the visible string is still `"Hi"` with seven extra slots available for future writes. Always read `string_length` rather than `length` when you need the actual string size. Resize now also rejects descriptors whose `actually_allocated_bytes` no longer cover the current logical payload.
 - **Optional m_resize flags:** `m_resize` accepts an optional `RESIZEMODES` mask, while `mem_resize(desc,n,flags)` receives the same mask explicitly. `ZERO_NEW_MEMORY` zero-fills fresh bytes, while `RELEASE_UNUSED` releases surplus capacity immediately. Combine them when both behaviors are desired.
 - **Data mode keeps string metadata cleared:** when a descriptor is used as raw bytes or typed elements, `m_resize` and `mem_resize(..., flags)` expect `string_length == 0` and keep writing `0` there after a successful resize. If low-level code leaves stale string metadata in a data descriptor, resize fails instead of silently treating raw bytes as text.
-- **Logical clearing without releasing reserve:** `m_resize(desc,0)` clears the logical length and resets the cached string length to zero, while preserving the current string/data mode. It may keep the existing reserved buffer and data pointer in place. Use `m_del(desc)` when memory must be physically released; `m_del(desc)` also preserves the current descriptor mode. If the descriptor is already inconsistent, `m_del(desc)` returns `FAILURE`, reports the problem through `report(...)`, and does not try to repair the descriptor fields.
+- **Logical clearing without releasing reserve:** `m_resize(desc,0)` clears the logical length and resets the cached string length to zero, while preserving the current string/data mode. Without `RELEASE_UNUSED`, it keeps the already allocated storage available for reuse. `m_resize(desc,0,RELEASE_UNUSED)` also clears the logical contents but physically releases the storage as a resize operation. Use `m_del(desc)` when code is done with the current buffer regardless of its current logical length; `m_del(desc)` frees descriptor-owned storage, clears the lengths, and preserves the element type and current string/data mode. If the descriptor is already inconsistent, `m_del(desc)` returns `FAILURE`, reports the problem through `report(...)`, and does not try to repair the descriptor fields.
 - **String truncation without realloc:** `mem_string_truncate(desc,len)` makes the string shorter only at the logical level. It moves the terminating zero element to the new position and updates `string_length`, but it does not reduce the descriptor's total `length` and does not throw away already reserved memory. In practical terms, if the buffer currently holds `alphabet` and you request length `5`, callers will see `alpha` after the call even though the buffer itself keeps the same size. If the requested visible length is already in place, the helper is usually a no-op from the caller's point of view, but it may still rewrite the zero terminator so the string stays well-formed
 - **Convenience operations:** `m_copy`, `m_copy_buffer`, `m_copy_string`, `m_copy_fixed_string`, `m_copy_literal`, `m_finalize_string`, `m_formatted_string`, `m_concat_data`, `m_concat_buffer`, `m_concat_strings`, `m_concat_string`, `m_concat_fixed_string`, `m_concat_literal`, `m_string_array_append`, and `m_array_del` reuse the same metadata to duplicate descriptors within one mode, import raw byte payloads, replace strings from bounded, unbounded, fixed-size terminated, true literal, or formatted sources, finalize direct string writes, append one string descriptor to another using cached lengths, append one descriptor-backed data-mode memory block to another, build arrays of inline string descriptors, and choose explicit bounded, unbounded, fixed-string, or literal string concatenation
-- **Raw access helpers:** `m_raw_data(...)`/`m_raw_data_ro(...)` expose raw pointers when you already trust the descriptor, while checked variants remain available for safer code paths. They do not change descriptor mode and do not rewrite cached string metadata on their own.
+- **Raw access helpers:** `m_raw_data(...)`/`m_raw_data_ro(...)` expose raw pointers when you already trust the descriptor, while checked variants remain available for safer code paths. Successful raw access returns the live descriptor buffer, so writable and read-only raw views of the same descriptor point at the same storage. They do not change descriptor mode and do not rewrite cached string metadata on their own.
 
 ### TODO: Memory Allocation And Reallocation
 
@@ -320,7 +359,7 @@ If Huge Pages are unavailable on the current platform, the HugeTLB pool is exhau
 
 Alignment and Huge Pages are not universal speedups. The Huge Pages mechanism can reduce page-table pressure and improve large working sets, but it can also increase memory use, worsen fragmentation, add copying during resize, and introduce kernel-side delays. Enable these modes only after profiling the concrete application on the concrete target platform.
 
-`m_resize(...)` remains the high-level API. Its job is to validate the descriptor, store the logical size in `length`, preserve string invariants, apply flags such as `ZERO_NEW_MEMORY` and `RELEASE_UNUSED`, call `mem_resize_calculate_allocation_bytes(...)`, and then delegate the physical memory change to `mem_resize_storage(...)`. `m_resize(...)` does not replace `m_del(...)`: full buffer release and descriptor reset are still performed through `m_del(...)`. This separation lets the library grow multiple memory backends without complicating the application-facing API.
+`m_resize(...)` remains the high-level API. Its job is to validate the descriptor, store the logical size in `length`, preserve string invariants, apply flags such as `ZERO_NEW_MEMORY` and `RELEASE_UNUSED`, call `mem_resize_calculate_allocation_bytes(...)`, and then delegate the physical memory change to `mem_resize_storage(...)`. `m_resize(...)` and `m_del(...)` express different intentions. `m_resize(desc,0,RELEASE_UNUSED)` clears the logical size and returns the reserve as a resize operation. `m_del(desc)` is used when work with the current buffer is finished and the storage must be released regardless of the current logical length. Both paths leave the descriptor initialized: the element type and string/data mode are preserved. This separation lets the library grow multiple memory backends without complicating the application-facing API.
 
 ## Descriptor Fields
 
@@ -335,9 +374,13 @@ The `memory` struct tracks all state for a managed block:
 | `is_string` | `bool` | Current mode flag. `true` means string mode, `false` means generic data mode. |
 | `data` | `void *` | Pointer to the beginning of the allocated block, or `NULL` if none. A valid descriptor must not combine `data == NULL` with `length > 0`. |
 
-## Usage Example
+## Usage Examples
 
-Maintained usage examples for `libmem` live in `libs/mem/tests`
+Maintained usage examples for `libmem` live in `libs/mem/tests`. The links below point to stable `README-ID` markers in the regression tests, so each README example has a directly clickable test counterpart.
+
+#### Example 04. Typed data descriptor and self-aliased concatenation
+
+Covered by [`test_libmem_0000_04`](tests/src/test_libmem_0000.c#L108)
 
 ```c
 #include "mem.h"
@@ -367,16 +410,116 @@ int main(void)
 }
 ```
 
+#### Example 05. Log record built as data, then converted to string mode
+
+Covered by [`test_libmem_0000_05`](tests/src/test_libmem_0000.c#L163)
+
+```c
+m_create(char,log,MEMORY_DATA);
+
+if((TRIUMPH & m_copy_buffer(log,5,"GET /")) == 0) { return 1; }
+if((TRIUMPH & m_concat_buffer(log,4,"api ")) == 0) { return 1; }
+
+if((TRIUMPH & m_to_string(log)) == 0) { return 1; }
+if((TRIUMPH & m_concat_literal(log,"200 OK")) == 0) { return 1; }
+
+printf("%s\n",m_text(log)); /* "GET /api 200 OK" */
+m_del(log);
+```
+
+#### Example 06. Reusing a descriptor after `m_del`
+
+Covered by [`test_libmem_0000_06`](tests/src/test_libmem_0000.c#L198)
+
+```c
+m_create(char,greeting,MEMORY_STRING);
+
+if((TRIUMPH & m_copy_literal(greeting,"alive")) == 0) { return 1; }
+printf("%s\n",m_text(greeting)); /* "alive" */
+
+m_del(greeting);
+
+if((TRIUMPH & m_copy_literal(greeting,"reborn")) == 0) { return 1; }
+printf("%s\n",m_text(greeting)); /* "reborn" */
+
+m_del(greeting);
+```
+
+#### Example 08. Copying a string literal and an equivalent fixed-size string
+
+Covered by [`test_libmem_0000_08`](tests/src/test_libmem_0000.c#L259)
+
+```c
+if((TRIUMPH & m_copy_literal(title,"hello")) == 0) { return 1; }
+
+/* Same meaning without the literal convenience macro. */
+if((TRIUMPH & m_copy_fixed_string(title,sizeof("hello"),"hello")) == 0) { return 1; }
+```
+
+#### Example 09. Formatted string
+
+Covered by [`test_libmem_0000_09`](tests/src/test_libmem_0000.c#L286)
+
+```c
+m_formatted_string(title,"file-%u.txt",7U);
+```
+
+#### Example 10. Direct write through `m_data` and string-state finalization
+
+Covered by [`test_libmem_0000_10`](tests/src/test_libmem_0000.c#L310)
+
+```c
+char *writable = m_data(char,buffer);
+writable[0] = 'A';
+writable[1] = 'L';
+writable[2] = 'P';
+writable[3] = 'H';
+writable[4] = 'A';
+m_finalize_string(buffer,5);
+```
+
+#### Example 11. Copying a fixed-size string
+
+Covered by [`test_libmem_0000_11`](tests/src/test_libmem_0000.c#L348)
+
+```c
+const char text[] = {'H','e','l','l','o','\0'};
+m_copy_fixed_string(dest,sizeof(text),text);
+```
+
+#### Example 12. Appending a fixed-size string
+
+Covered by [`test_libmem_0000_12`](tests/src/test_libmem_0000.c#L374)
+
+```c
+const char suffix[] = {'-','e','n','d','\0'};
+m_concat_fixed_string(dest,sizeof(suffix),suffix);
+```
+
+#### Example 13. Appending a string literal
+
+Covered by [`test_libmem_0000_13`](tests/src/test_libmem_0000.c#L401)
+
+```c
+m_concat_literal(dest,"-suffix");
+/* Equivalent to:
+   m_concat_fixed_string(dest,sizeof("-suffix"),"-suffix"); */
+```
+
 ### String Concatenation Helper
+
+#### Example 14. Concatenating string descriptors
+
+Covered by [`test_libmem_0000_14`](tests/src/test_libmem_0000.c#L430)
 
 ```c
 #include "mem.h"
-#include <string.h>
+#include <stdio.h>
 
 int main(void)
 {
-	m_create(char,first);
-	m_create(char,second);
+	m_create(char,first,MEMORY_STRING);
+	m_create(char,second,MEMORY_STRING);
 
 	/* Provision raw space (includes room for null terminator). */
 	if((TRIUMPH & m_resize(first,16)) == 0) { return 1; }
@@ -387,17 +530,21 @@ int main(void)
 	char *second_buf = m_raw_data(second);
 	if(first_buf == NULL || second_buf == NULL) { return 1; }
 
-	strcpy(first_buf,"Hello");
-	strcpy(second_buf," world!");
+	int first_written = snprintf(first_buf,first->length,"Hello");
+	if(first_written < 0 || (size_t)first_written >= first->length) { return 1; }
+
+	int second_written = snprintf(second_buf,second->length," world!");
+	if(second_written < 0 || (size_t)second_written >= second->length) { return 1; }
+
+	if((TRIUMPH & m_finalize_string(first,(size_t)first_written)) == 0) { return 1; }
+	if((TRIUMPH & m_finalize_string(second,(size_t)second_written)) == 0) { return 1; }
 
 	if((TRIUMPH & m_concat_strings(first,second)) == 0) { return 1; }
 
-	if((TRIUMPH & m_concat_literal(first," (safe helper)")) == 0) { return 1; }
+	const char safe_suffix[] = " (safe suffix)";
+	if((TRIUMPH & m_concat_fixed_string(first,sizeof(safe_suffix),safe_suffix)) == 0) { return 1; }
 
-	const char *result = m_raw_data_ro(first);
-	if(result != NULL) {
-		printf("%s\n",result); /* Prints “Hello world! (safe helper)” */
-	}
+	printf("%s\n",m_text(first)); /* Prints "Hello world! (safe suffix)" */
 
 	m_del(first);
 	m_del(second);
@@ -421,20 +568,24 @@ descriptor and want a `const char *` result instead of the generic
 the same soft-access behavior as `m_string(...)`.
 
 Writable string construction is now explicit. Use `m_data(char,...)` when you need
-checked writable access that keeps the current mode unchanged, then call
+checked writable access that keeps the current string/data mode unchanged, then call
 `m_finalize_string(...)` to cache the visible length after direct writes into a
 string descriptor. Use `m_raw_data(...)` when you intentionally want an
 unchecked writable pointer and already trust the descriptor state.
 
+#### Example 15. Safe string view through `m_text`
+
+Covered by [`test_libmem_0000_15`](tests/src/test_libmem_0000.c#L505)
+
 ```c
 #include "mem.h"
 #include <stdio.h>
-#include <string.h>
 
 int main(void)
 {
 	m_create(char,buffer,MEMORY_STRING);
 	m_create(char,scratch,MEMORY_STRING);
+	size_t scratch_length = 0;
 
 	if((TRIUMPH & m_resize(buffer,32,ZERO_NEW_MEMORY)) == 0) { return 1; }
 
@@ -442,17 +593,18 @@ int main(void)
 	char *writable = m_data(char,buffer);
 	if(writable == NULL) { return 1; }
 
-	strcpy(writable,"Hello");
-	strncat(writable," world!",buffer->length - strlen(writable) - 1);
+	int written = snprintf(writable,buffer->length,"Hello world!");
+	if(written < 0 || (size_t)written >= buffer->length) { return 1; }
 
-	if((TRIUMPH & m_finalize_string(buffer,strlen(writable))) == 0) { return 1; }
+	if((TRIUMPH & m_finalize_string(buffer,(size_t)written)) == 0) { return 1; }
 
 	/* Read-only pointer never returns NULL. */
 	const char *view = m_text(buffer);
 	printf("%s\n",view); /* Prints “Hello world!” */
 
 	/* Even empty initialized string descriptors degrade to an empty string safely. */
-	printf("scratch length: %zu\n",strlen(m_text(scratch)));
+	if((TRIUMPH & m_string_length(scratch,&scratch_length)) == 0) { return 1; }
+	printf("scratch length: %zu\n",scratch_length);
 
 	m_del(buffer);
 	m_del(scratch);
@@ -478,6 +630,10 @@ already work with arbitrary-width string descriptors.
 `destination`'s own buffer: this operation replaces the descriptor contents and
 is not currently a self-aliasing operation. Future `m_formatted_string(...)`
 behavior should be brought in line with the library-wide self-aliasing rule.
+
+#### Example 16. Formatted message
+
+Covered by [`test_libmem_0000_16`](tests/src/test_libmem_0000.c#L576)
 
 ```c
 #include "mem.h"
@@ -508,8 +664,8 @@ When string payload length is already known, descriptors can be used as explicit
 
 - Allocate exact capacity with `m_resize(buffer,n)` for raw bytes or `m_resize(buffer,n + 1)` when a trailing null terminator is required.
 - Write/read directly through `m_data(char,buffer)` (checked) or `m_raw_data(buffer)` (unchecked raw pointer) when exact writable byte-range access is needed
-- Checked writable access through `m_data(...)` keeps the current mode unchanged, so direct writes into a string descriptor can be followed by `m_finalize_string(...)`
-- Writable access through `m_raw_data(...)` does not change descriptor mode and does not rewrite cached string metadata, so caller code is responsible for preserving any string invariants it relies on
+- Checked writable access through `m_data(...)` keeps the current string/data mode unchanged, so direct writes into a string descriptor can be followed by `m_finalize_string(...)`
+- Writable access through `m_raw_data(...)` does not change descriptor mode and does not rewrite cached string metadata, so caller code is responsible for preserving any string invariants it relies on. The returned pointer is the live descriptor buffer and remains valid only until a resize, delete, copy, concat, or other operation that can replace or release that descriptor's storage.
 - Prefer `m_data(char,buffer)` when bounded writes must fail explicitly on invalid descriptors, including `length > 0` with `data == NULL`
 - Use `m_concat_data(destination,source)` to append the exact element payload stored in one data descriptor to the end of another data descriptor. The helper rejects strings, never interprets either operand as a string, and never injects terminators
 - Use `m_copy_buffer(destination,n,ptr)` when a bounded external buffer should be copied into a data descriptor and exactly `n` bytes must be preserved byte for byte.
@@ -524,6 +680,10 @@ When string payload length is already known, descriptors can be used as explicit
 - Use `m_to_string(buffer)` when a mutable descriptor should be promoted from data mode into cached string mode. The helper measures the visible prefix once in whole elements. In data mode it treats the first zero-valued element as the terminator, where every byte in that element is zero. For non-empty descriptors it appends a terminator when the current allocation does not already contain one, while empty descriptors remain unallocated. Descriptors with `length > 0` and `data == NULL` are rejected as inconsistent. Data-mode descriptors are also expected to keep `string_length == 0`; if low-level code leaves a stale cached string length there, the conversion fails instead of guessing which string state should be trusted. Descriptors that are already in string mode are accepted as a no-op only when their cached string metadata is internally consistent
 - Use `m_to_data(buffer)` when a byte-sized string descriptor should be demoted back to data mode. The current implementation supports this direction only when `single_element_size == sizeof(char)`. In string mode the zero terminator is stored in the same buffer as the text, but it remains a service element: it exists so C strings have an end marker and is not part of the useful payload. During conversion to data mode, the library therefore removes that service element from the logical length. If the terminator was the last logical element, `->length` is decreased by one. For example, a string buffer containing `"abc"` usually has `->length == 4`: three characters plus the terminating zero. After `m_to_data(buffer)`, the useful payload is a three-element data sequence `a`, `b`, `c`; the zero terminator no longer belongs to the payload
 
+#### Example 17. Copying and appending strings from bounded buffers
+
+Covered by [`test_libmem_0000_17`](tests/src/test_libmem_0000.c#L602)
+
 ```c
 m_create(char,db_path,MEMORY_STRING);
 const char in_memory_db_path[] = ":memory:";
@@ -533,6 +693,10 @@ if((TRIUMPH & m_copy_string(db_path,sizeof(in_memory_db_path),in_memory_db_path)
 const char bounded_suffix[] = {'-','n','e','w','\0','x','x'};
 if((TRIUMPH & m_concat_string(db_path,sizeof(bounded_suffix),bounded_suffix)) == 0) { return 1; }
 ```
+
+#### Example 18. Direct write into a preallocated string buffer
+
+Covered by [`test_libmem_0000_18`](tests/src/test_libmem_0000.c#L632)
 
 ```c
 m_create(char,title,MEMORY_STRING);
@@ -574,7 +738,9 @@ if((TRIUMPH & m_finalize_string(title,sizeof(draft) - 1U)) == 0) { return 1; }
 - `m_string_length(source,&len)`: Returns the cached `string_length` when `source->is_string == true`; otherwise treats the descriptor as a bounded element buffer and measures the visible prefix up to the first zero-valued element or `source->length`. The reported length is measured in elements, not bytes. Descriptors with `length > 0` and `data == NULL` are rejected as inconsistent. Return value is propagated through `provide(...)`.
 - `m_to_string(destination)`: Converts a mutable descriptor from data mode into cached string mode by measuring the visible prefix once in elements. In data mode the first zero-valued element acts as the terminator, so this helper also supports arbitrary non-zero element sizes. For non-empty descriptors it ensures a terminating zero element exists, while empty descriptors remain unallocated. Descriptors with `length > 0` and `data == NULL` are rejected as inconsistent. The helper also expects `string_length == 0` while the descriptor is still in data mode; stale cached string metadata causes a clean failure instead of an implicit repair. If the descriptor is already in string mode, the call remains a no-op only when `single_element_size > 0`, empty strings keep `string_length == 0`, and non-empty strings keep `string_length < length`
 
-Small example:
+#### Example 07. Converting copied raw bytes to string mode
+
+Covered by [`test_libmem_0000_07`](tests/src/test_libmem_0000.c#L231)
 
 ```c
 m_create(char,buffer);
@@ -589,7 +755,7 @@ if((TRIUMPH & m_to_string(buffer)) == 0) { return 1; }
 
 ### Resize Behavior Flags
 
-`RESIZEMODES` fine-tune how `m_resize` and `mem_resize(desc,n,flags)` behave. `ZERO_NEW_MEMORY` mirrors `calloc` semantics by clearing any bytes that become newly addressable, while `RELEASE_UNUSED` lets the helper return excess capacity to the OS when you trim a buffer. Separately, `m_resize(desc,0)` clears only the logical contents and does not have to free the reserved buffer. Use `m_del(desc)` when you need an actual release; `m_del(desc)` frees the buffer, clears the lengths, and preserves the current string/data mode. The masks can be OR-ed together.
+`RESIZEMODES` fine-tune how `m_resize` and `mem_resize(desc,n,flags)` behave. `ZERO_NEW_MEMORY` mirrors `calloc` semantics by clearing any bytes that become newly addressable, while `RELEASE_UNUSED` lets the helper return excess capacity to the OS when you trim a buffer. Separately, `m_resize(desc,0)` clears the logical contents and resets the lengths, but without `RELEASE_UNUSED` it keeps the already allocated storage available for reuse. `m_resize(desc,0,RELEASE_UNUSED)` clears the logical contents and physically releases the storage. That path is close to `m_del(desc)` in terms of releasing memory, but it remains a resize operation: it expresses the intent to set the logical size to zero and return the reserve. In both cases, a string descriptor stays a string descriptor, and a data descriptor stays a data descriptor. Use `m_del(desc)` when code is done with the current buffer regardless of its current logical length; `m_del(desc)` frees descriptor-owned storage, clears the lengths, and preserves the element type and current string/data mode. The masks can be OR-ed together.
 
 For string descriptors, `m_resize` only extends or reduces the logical capacity — the visible string stays intact. After growing, `length` reflects the new capacity while `string_length` still equals the original visible payload. For instance, `"Hi"` with `length == 3` and `string_length == 2` becomes `length == 10` and `string_length == 2` after `m_resize(&d, 10)`. The seven extra slots are available for future writes, but the visible string is still `"Hi"`. Always use `string_length` when you need the actual string size.
 
@@ -605,6 +771,10 @@ if((TRIUMPH & m_resize(packet,64)) == 0) { return 1; }
 /* packet->is_string == false and packet->string_length == 0 here */
 ```
 
+#### Example 21. `m_resize` behavior flags
+
+Covered by [`test_libmem_0000_21`](tests/src/test_libmem_0000.c#L764)
+
 Most examples in this README check `TRIUMPH`. The next two intentionally use `CRITICAL` to show the narrower hard-failure style.
 
 ```c
@@ -613,8 +783,8 @@ if(CRITICAL & m_resize(points,10,ZERO_NEW_MEMORY)) {
 	return 1;
 }
 
-/* Later, shrink aggressively and keep zero-fill enabled for future growth. */
-if(CRITICAL & m_resize(points,4,ZERO_NEW_MEMORY | RELEASE_UNUSED)) {
+/* Later, shrink aggressively and release unused reserve immediately. */
+if(CRITICAL & m_resize(points,4,RELEASE_UNUSED)) {
 	return 1;
 }
 ```
