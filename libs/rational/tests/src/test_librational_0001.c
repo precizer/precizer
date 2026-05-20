@@ -1,4 +1,5 @@
 #include "sute.h"
+#include "testmocking.h"
 
 #include <errno.h>
 #include <float.h>
@@ -408,6 +409,7 @@ static Return test_librational_0001_3(void)
 	   nonzero-value case do not share initial contents between assertions */
 	char tiny_real_2[2] = {'X','Y'};
 	char tiny_real_2_nonzero[2] = {'X','Y'};
+	char tiny_real_zero_1[1] = {'X'};
 	char tiny_real_group_fail[5] = {'X','X','X','X','X'};
 	char tiny_real_group_ok[6] = {'X','X','X','X','X','X'};
 	char tiny_real_frac_fail[7] = {'X','X','X','X','X','X','X'};
@@ -415,6 +417,7 @@ static Return test_librational_0001_3(void)
 	char tiny_uint_1[1] = {'X'};
 	char tiny_uint_2[2] = {'X','Y'};
 	char tiny_uint_3[3] = {'X','Y','Z'};
+	char tiny_uint_comma_fail[5] = {'X','Y','Z','Q','W'};
 	char tiny_uint_7[7] = {'X','Y','Z','Q','W','E','R'};
 	char tiny_int_1[1] = {'X'};
 	char tiny_int_2[2] = {'X','Y'};
@@ -433,6 +436,8 @@ static Return test_librational_0001_3(void)
 	/* Real formatting must either fit, reduce precision, or write an empty terminated string */
 	(void)form_real_r(1234.5L,tiny_real_1,sizeof(tiny_real_1));
 	ASSERT(tiny_real_1[0] == '\0');
+	(void)form_real_r(0.0L,tiny_real_zero_1,sizeof(tiny_real_zero_1));
+	ASSERT(tiny_real_zero_1[0] == '\0');
 	ASSERT(0 == strcmp(form_real_r(1.25L,tiny_real_2_nonzero,sizeof(tiny_real_2_nonzero)),"1"));
 	ASSERT(0 == strcmp(form_real_r(0.0L,tiny_real_2,sizeof(tiny_real_2)),"0"));
 
@@ -451,12 +456,14 @@ static Return test_librational_0001_3(void)
 	ASSERT(0 == strcmp(form_real_r(NAN,formatted,sizeof(formatted)),""));
 	ASSERT(0 == strcmp(form_real_r(INFINITY,formatted,sizeof(formatted)),""));
 	ASSERT(0 == strcmp(form_real_r(-INFINITY,formatted,sizeof(formatted)),""));
+	ASSERT(0 == strcmp(form_real_r((long double)UINTMAX_MAX * 2.0L,formatted,sizeof(formatted)),""));
 
 	/* Unsigned integer formatting must not leave unterminated sentinel data in too-small buffers */
 	(void)form_uintmax_r(UINTMAX_MAX,tiny_uint_1,sizeof(tiny_uint_1));
 	ASSERT(tiny_uint_1[0] == '\0');
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_2,sizeof(tiny_uint_2)),""));
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_3,sizeof(tiny_uint_3)),""));
+	ASSERT(0 == strcmp(form_uintmax_r(1234U,tiny_uint_comma_fail,sizeof(tiny_uint_comma_fail)),""));
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_7,sizeof(tiny_uint_7)),"12,345"));
 
 	/* Signed integer formatting has separate sign-capacity boundaries */
@@ -494,6 +501,7 @@ static Return test_librational_0001_4(void)
 	char bkb_r_tiny_6[6] = {'X','X','X','X','X','X'};
 	char bkb_r_tiny_9[9] = {'X','X','X','X','X','X','X','X','X'};
 	char bkb_r_tiny_10[10] = {'X','X','X','X','X','X','X','X','X','X'};
+	char bkb_r_snprintf_failure[MAX_CHARACTERS] = "not empty";
 	const size_t kibibyte = 1024ULL;
 	const size_t mebibyte = kibibyte * 1024ULL;
 	const size_t gibibyte = mebibyte * 1024ULL;
@@ -536,6 +544,8 @@ static Return test_librational_0001_4(void)
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(tebibyte,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1TiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(pebibyte,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1PiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(exbibyte,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1EiB"));
+	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(tebibyte,MAJOR_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1TiB"));
+	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(exbibyte,MAJOR_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1EiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(exbibyte - 1ULL,MAJOR_VIEW,bkb_r_a,sizeof(bkb_r_a)),"1023PiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(mixed_units,FULL_VIEW,bkb_r_a,sizeof(bkb_r_a)),"4EiB 5PiB 6TiB 7GiB 8MiB 9KiB 10B"));
 
@@ -552,6 +562,12 @@ static Return test_librational_0001_4(void)
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_6,sizeof(bkb_r_tiny_6)),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_9,sizeof(bkb_r_tiny_9)),"1KiB 512"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_10,sizeof(bkb_r_tiny_10)),"1KiB 512B"));
+	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(mixed_units,FULL_VIEW,bkb_r_tiny_10,sizeof(bkb_r_tiny_10)),"4EiB 5PiB"));
+
+	/* Simulated snprintf() failure must leave the caller with an empty, terminated result */
+	testmocking_snprintf_fail_next(1);
+	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(kibibyte,FULL_VIEW,bkb_r_snprintf_failure,sizeof(bkb_r_snprintf_failure)),""));
+	testmocking_snprintf_disable();
 
 	RETURN_STATUS;
 }
@@ -575,6 +591,7 @@ static Return test_librational_0001_5(void)
 	char date_r_tiny_1[1] = {'X'};
 	char date_r_tiny_2[2] = {'X','Y'};
 	char date_r_tiny_3[3] = {'X','Y','Z'};
+	char date_r_tiny_truncated_unit[4] = {'X','X','X','X'};
 	const long long int ns_in_microsecond = 1000LL;
 	const long long int ns_in_millisecond = 1000000LL;
 	const long long int ns_in_second = 1000000000LL;
@@ -619,6 +636,7 @@ static Return test_librational_0001_5(void)
 	ASSERT('\0' == date_r_tiny_1[0]);
 	ASSERT(0 == strcmp(form_date_r(0LL,FULL_VIEW,date_r_tiny_2,sizeof(date_r_tiny_2)),"0"));
 	ASSERT(0 == strcmp(form_date_r(0LL,FULL_VIEW,date_r_tiny_3,sizeof(date_r_tiny_3)),"0n"));
+	ASSERT(0 == strcmp(form_date_r(ns_in_year + 1LL,FULL_VIEW,date_r_tiny_truncated_unit,sizeof(date_r_tiny_truncated_unit)),"1y"));
 
 	RETURN_STATUS;
 }

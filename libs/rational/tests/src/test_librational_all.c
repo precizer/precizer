@@ -16,7 +16,7 @@ Return test_librational_all(void)
 	TEST(test_librational_0002,"librational itoa conversion helpers…");
 
 	HEADER("Time");
-	SUTE(test_librational_0003,"librational wall-clock time helpers…");
+	SUTE(test_librational_0003,"librational time helpers, duration formatter and ISO date helper…");
 
 	HEADER("Report and Logger");
 	SUTE(test_librational_0004,"librational report/logger test set…");

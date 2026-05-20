@@ -2,20 +2,67 @@
 #include <errno.h>
 #include <limits.h>
 
-/* The expected stdout pattern is intentionally selective.
- * The exact text of unsigned bit-pattern output and of INT_MIN in non-decimal
- * bases depends on the platform width of int. The regex pins only the lines
- * that are stable on the supported targets, while the strong textual invariants
- * (extreme values in base 10, zero handling, unsigned bit-pattern for negatives
- * in bases other than 10, and the maximum supported base) are covered by the
- * direct ASSERT block at the bottom of test_librational_0002() */
+/* The expected stdout pattern is strict and covers the whole demonstration output.
+ * Non-decimal negative output depends on the platform width of int, so
+ * test_librational_0002() uses a static assertion to keep these expectations
+ * tied to the supported 32-bit int targets */
 static const char expected_itoa_stdout_pattern[] =
 	"\\A"
 	"=== Testing extreme values ===\n"
 	"Value: 2147483647 \\(decimal\\)\n"
 	"Base 10 result: 2147483647, 2147483647\n"
 	"-------------------\n"
-	".*"
+	"Value: -2147483648 \\(decimal\\)\n"
+	"Base 10 result: -2147483648, -2147483648\n"
+	"-------------------\n"
+	"Value: -2147483648 \\(decimal\\)\n"
+	"Base 16 result: 80000000, Should show in hex\n"
+	"-------------------\n"
+	"\n"
+	"=== Testing regular values ===\n"
+	"Value: 255 \\(decimal\\)\n"
+	"Base 16 result: FF, FF\n"
+	"-------------------\n"
+	"Value: 255 \\(decimal\\)\n"
+	"Base  2 result: 11111111, 11111111\n"
+	"-------------------\n"
+	"Value: -255 \\(decimal\\)\n"
+	"Base 10 result: -255, -255\n"
+	"-------------------\n"
+	"\n"
+	"=== Testing zero ===\n"
+	"Value: 0 \\(decimal\\)\n"
+	"Base 10 result: 0, 0\n"
+	"-------------------\n"
+	"Value: 0 \\(decimal\\)\n"
+	"Base 16 result: 0, 0\n"
+	"-------------------\n"
+	"Value: 0 \\(decimal\\)\n"
+	"Base  2 result: 0, 0\n"
+	"-------------------\n"
+	"\n"
+	"=== Testing different bases ===\n"
+	"Value: 12345 \\(decimal\\)\n"
+	"Base 36 result: 9IX, Maximum supported base\n"
+	"-------------------\n"
+	"Value: 12345 \\(decimal\\)\n"
+	"Base 16 result: 3039, Common hex value\n"
+	"-------------------\n"
+	"Value: 12345 \\(decimal\\)\n"
+	"Base  8 result: 30071, Octal\n"
+	"-------------------\n"
+	"\n"
+	"=== Testing negative values ===\n"
+	"Value: -12345 \\(decimal\\)\n"
+	"Base 10 result: -12345, Only base 10 shows negative sign\n"
+	"-------------------\n"
+	"Value: -12345 \\(decimal\\)\n"
+	"Base 16 result: FFFFCFC7, Should show unsigned hex\n"
+	"-------------------\n"
+	"Value: -1 \\(decimal\\)\n"
+	"Base  2 result: 11111111111111111111111111111111, All bits set\n"
+	"-------------------\n"
+	"\n"
 	"=== Few more examples ===\n"
 	"12345\n"
 	"FF\n"
@@ -39,14 +86,14 @@ static const char expected_itoa_stdout_pattern[] =
 static void test_conversion(
 	int          value,
 	unsigned int base,
-	const char   *string)
+	const char   *reference_text)
 {
 	char buffer[66];  /* 64 bits + sign + null terminator */
 	itoa(value,buffer,base);
 
-	/* Print original value in decimal and result in specified base */
+	/* Print the converted value next to reference text for the strict stdout pattern */
 	printf("Value: %d (decimal)\n",value);
-	printf("Base %2u result: %s, %s\n",base,buffer,string);
+	printf("Base %2u result: %s, %s\n",base,buffer,reference_text);
 	printf("-------------------\n");
 }
 
@@ -152,15 +199,14 @@ static Return capture_librational_itoa_output(void)
  * @brief Run librational itoa conversion tests
  *
  * @details The suite runs in two independent layers. First it captures
- * the stdout produced by test_itoa() and matches it against a selective
- * regex that pins only platform-stable lines. Second, a direct ASSERT
- * block exercises the strong textual invariants that the regex
- * intentionally skips: INT_MIN and INT_MAX in base 10 (which exercise
- * the UB-avoidance path documented in rational_itoa.c), zero handling
- * across multiple bases, the unsigned bit-pattern representation of
- * negative values in bases other than 10, the use of letters A-Z by the
- * maximum supported base 36, and the four documented error paths
- * (base = 0, 1, 37, and a NULL output buffer)
+ * the stdout produced by test_itoa() and matches it against a strict
+ * full-output regex. Second, a direct ASSERT block exercises the key
+ * textual invariants without relying on demonstration text: INT_MIN and
+ * INT_MAX in base 10 (which exercise the UB-avoidance path documented
+ * in rational_itoa.c), zero handling across multiple bases, the unsigned
+ * bit-pattern representation of negative values in bases other than 10,
+ * the use of letters A-Z by the maximum supported base 36, and the four
+ * documented error paths (base = 0, 1, 37, and a NULL output buffer)
  *
  * @return Return describing success or failure
  */
@@ -190,6 +236,10 @@ Return test_librational_0002(void)
 	ASSERT(iret == ibuf);
 	ASSERT(0 == strcmp(ibuf,"-2147483648"));
 
+	iret = itoa(INT_MIN,ibuf,16);
+	ASSERT(iret == ibuf);
+	ASSERT(0 == strcmp(ibuf,"80000000"));
+
 	/* Zero must format as "0" regardless of base */
 	iret = itoa(0,ibuf,10);
 	ASSERT(iret == ibuf);
@@ -211,6 +261,27 @@ Return test_librational_0002(void)
 	iret = itoa(-1,ibuf,2);
 	ASSERT(iret == ibuf);
 	ASSERT(0 == strcmp(ibuf,"11111111111111111111111111111111"));
+
+	iret = itoa(-12345,ibuf,16);
+	ASSERT(iret == ibuf);
+	ASSERT(0 == strcmp(ibuf,"FFFFCFC7"));
+
+	/* Common non-decimal bases must use the expected digits for positive values */
+	iret = itoa(255,ibuf,16);
+	ASSERT(iret == ibuf);
+	ASSERT(0 == strcmp(ibuf,"FF"));
+
+	iret = itoa(255,ibuf,2);
+	ASSERT(iret == ibuf);
+	ASSERT(0 == strcmp(ibuf,"11111111"));
+
+	iret = itoa(12345,ibuf,16);
+	ASSERT(iret == ibuf);
+	ASSERT(0 == strcmp(ibuf,"3039"));
+
+	iret = itoa(12345,ibuf,8);
+	ASSERT(iret == ibuf);
+	ASSERT(0 == strcmp(ibuf,"30071"));
 
 	/* Base 36 is the maximum supported base and must use letters A-Z for digits >= 10 */
 	iret = itoa(35,ibuf,36);
