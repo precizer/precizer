@@ -96,8 +96,21 @@ static void catbyte_r(
 
 	if(write_size >= result_size - *used_len)
 	{
-		*used_len = result_size - 1ULL;
+		/*
+		 * snprintf() has already written the largest prefix that fits.
+		 * Mark the buffer as full so later units do not try to append text
+		 */
+		*used_len = result_size;
 		result[result_size - 1ULL] = '\0';
+
+		/*
+		 * If the visible prefix ends right after a unit separator, hide that
+		 * separator so callers get a clean partial value
+		 */
+		if(result_size > 1ULL && result[result_size - 2ULL] == ' ')
+		{
+			result[result_size - 2ULL] = '\0';
+		}
 	} else {
 		*used_len += write_size;
 	}
