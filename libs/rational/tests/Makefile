@@ -35,7 +35,7 @@ LDLIBS += $(foreach d,$(LINK_LIBS),-l$d)
 LDLIBS += -lpcre2-8
 EXT_LDLIBS = $(filter-out $(foreach d,$(LINK_LIBS),-l$d),$(LDLIBS))
 
-WRAPFUNCS = snprintf write malloc realloc
+WRAPFUNCS = snprintf vsnprintf write malloc realloc gettimeofday localtime_r
 ifeq ($(UNAME_S),Darwin)
 WRAPFLAGS =
 else
