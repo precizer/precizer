@@ -3,54 +3,121 @@
 #include <errno.h>
 
 static const char expected_report_stderr_pattern[] =
-	"\\A"
-	"ERROR: [^\\n]*src/test_librational_0004\\.c:report_test:\\d+ Memory reallocation failed with bytes 10 Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-	"ERROR: [^\\n]*src/test_librational_0004\\.c:report_test:\\d+ Buffer overflow at position 42 with value overflow Errno: [^\\n]+ \\(errno: [0-9]+\\)\\Z";
+        "\\A"
+        "ERROR: [^\\n]*src/test_librational_0004\\.c:report_test:\\d+ Memory reallocation failed with bytes 10 Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+        "ERROR: [^\\n]*src/test_librational_0004\\.c:report_test:\\d+ Buffer overflow at position 42 with value overflow Errno: [^\\n]+ \\(errno: [0-9]+\\)\\Z";
+
+/* Regex fragments for slog() output fields that change between source layouts and test runs */
+#define SLOG_TIME_PATTERN "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3} "
+#define SLOG_SOURCE_PATTERN "[^\\n]*src/test_librational_0004\\.c:[0-9]+:slog_test:"
+#define SLOG_DECORATED_PATTERN SLOG_TIME_PATTERN SLOG_SOURCE_PATTERN
 
 static const char expected_slog_stdout_pattern[] =
-	"\\A"
-	"All available combinations:\n"
-	"REGULAR\n"
-	"VERBOSE\n"
-	"TESTING\n"
-	"SILENT\n"
-	"REGULAR\\|VERBOSE\n"
-	"REGULAR\\|TESTING\n"
-	"VERBOSE\\|TESTING\n"
-	"REGULAR\\|VERBOSE\\|TESTING\n"
-	"ERROR\n"
-	"UNDECOR\n"
-	"EVERY\\|UNDECOR\n"
-	"ERROR\\|UNDECOR\n"
-	"VISIBLE_IN_SILENT\n"
-	".*"
-	"Mode: SILENT\n"
-	"42\\. Must print in SILENT without prefixes:\\|true\\|\n"
-	"43\\. Must print no ERROR prefix in SILENT:\\|true\\|\\Z";
+        "\\A"
+        "All available combinations:\n"
+        "REGULAR\n"
+        "VERBOSE\n"
+        "TESTING\n"
+        "SILENT\n"
+        "REGULAR\\|VERBOSE\n"
+        "REGULAR\\|TESTING\n"
+        "VERBOSE\\|TESTING\n"
+        "REGULAR\\|VERBOSE\\|TESTING\n"
+        "ERROR\n"
+        "UNDECOR\n"
+        "EVERY\\|UNDECOR\n"
+        "ERROR\\|UNDECOR\n"
+        "VISIBLE_IN_SILENT\n"
+        "Mode: REGULAR\n"
+        "1\\.  Must print:true\n"
+        "2\\. Won't print:\n"
+        "3\\. Won't print:\n"
+        "4\\.  Must print:ERROR: true\n"
+        "Mode: VERBOSE\n"
+        "5\\. Won't print:\n"
+        "6\\.  Must print:" SLOG_DECORATED_PATTERN "true\n"
+        "7\\. Won't print:\n"
+        "8\\.  Must print:" SLOG_DECORATED_PATTERN "ERROR:true\n"
+        "Mode: TESTING\n"
+        "9\\.  Won't print:\n"
+        "10\\. Won't print:\n"
+        "11\\.  Must print:TESTING:true\n"
+        "12\\.  Must print:ERROR:true\n"
+        "Mode: SILENT\n"
+        "13\\. Won't print:\n"
+        "14\\. Won't print:\n"
+        "15\\. Won't print:\n"
+        "16\\. Won't print:\n"
+        "Mode: REGULAR \\| VERBOSE\n"
+        "17\\.  Must print:true\n"
+        "18\\.  Must print:" SLOG_DECORATED_PATTERN "true\n"
+        "19\\. Won't print:\n"
+        "20\\.  Must print:" SLOG_DECORATED_PATTERN "ERROR: true\n"
+        "Mode: REGULAR \\| TESTING\n"
+        "21\\.  Must print:true\n"
+        "22\\. Won't print:\n"
+        "23\\.  Must print:TESTING:true\n"
+        "24\\.  Must print:ERROR: true\n"
+        "Mode: VERBOSE \\| TESTING\n"
+        "25\\. Won't print:\n"
+        "26\\.  Must print:" SLOG_DECORATED_PATTERN "true\n"
+        "27\\.  Must print:TESTING:true\n"
+        "28\\.  Must print:" SLOG_DECORATED_PATTERN "ERROR:true\n"
+        "Mode: REGULAR \\| VERBOSE \\| TESTING\n"
+        "29\\. Must print:true\n"
+        "30\\. Must print:" SLOG_DECORATED_PATTERN "true\n"
+        "31\\. Must print:TESTING:true\n"
+        "32\\. Must print:" SLOG_DECORATED_PATTERN "ERROR: true\n"
+        "Mode: ERROR\n"
+        "33\\. Won't print:\n"
+        "34\\. Won't print:\n"
+        "35\\. Won't print:\n"
+        "36\\.  Must print:ERROR: true\n"
+        "Mode: REGULAR \\| VERBOSE \\| TESTING \\| ERROR\n"
+        "37\\. Must print no prefixes:\\|true\\|\n"
+        "38\\. Must print no ERROR prefix:\\|true\\|\n"
+        "Mode: VERBOSE\n"
+        "39\\. Must print no time/file/line/func:\\|true\\|\n"
+        "Mode: TESTING\n"
+        "40\\. Must print no TESTING prefix:\\|true\\|\n"
+        "Mode: REGULAR\n"
+        "41\\. Must not print \\(VERBOSE not enabled\\):\\|\\|\n"
+        "Mode: SILENT\n"
+        "42\\. Must print in SILENT without prefixes:\\|true\\|\n"
+        "43\\. Must print no ERROR prefix in SILENT:\\|true\\|\\Z";
 
 static const char expected_serp_stderr_pattern[] =
-	"\\A"
-	"ERROR: Failed to open file \\[File: [^\\n]*src/test_librational_0004\\.c, Function: serp_case\\] Errno: \\(2\\) No such file or directory\\Z";
+        "\\A"
+        "ERROR: Failed to open file \\[File: [^\\n]*src/test_librational_0004\\.c, Function: serp_case\\] Errno: \\(2\\) No such file or directory\\Z";
 
 static const char expected_write_fallback_stderr_pattern[] =
-	"\\AERROR: Failed to write error message\n\\Z";
+        "\\AERROR: Failed to write error message\n\\Z";
 
 static const char expected_logger_time_failure_stdout_pattern[] =
-	"\\A"
-	" [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:gettimeofday failure\n"
-	" [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:localtime_r failure\n"
-	" [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:snprintf failure\\Z";
+        "\\A"
+        " [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:gettimeofday failure\n"
+        " [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:localtime_r failure\n"
+        " [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:snprintf failure\\Z";
 
+/**
+ * @brief Emit two report() messages with controlled errno values
+ */
 static void report_test(void)
 {
 	errno = ENOMEM;
-	// Report an error with formatted message
+
+	/* report() must include the formatted message and decoded errno */
 	report("Memory reallocation failed with bytes %d",10);
+
 	errno = EOVERFLOW;
-	// Report an error with multiple arguments
+
+	/* The second call verifies that several printf arguments are preserved */
 	report("Buffer overflow at position %d with value %s",42,"overflow");
 }
 
+/**
+ * @brief Emit the complete slog() mode matrix used by the strict stdout pattern
+ */
 static void slog_test(void)
 {
 	printf("All available combinations:\n");
@@ -167,30 +234,42 @@ static void slog_test(void)
 	printf("43. Must print no ERROR prefix in SILENT:|"); slog(ERROR|VISIBLE_IN_SILENT,"true"); printf("|\n");
 }
 
+/**
+ * @brief Emit one serp() message with a controlled missing-file errno
+ */
 static void serp_case(void)
 {
 	errno = ENOENT;
 	serp("Failed to open file");
 }
 
+/**
+ * @brief Do nothing while function_capture() checks pending stdout behavior
+ */
 static void no_output_test(void)
 {
 }
 
+/**
+ * @brief Exercise slog() when timestamp construction helpers fail
+ */
 static void logger_time_failure_cases(void)
 {
 	rational_logger_mode = VERBOSE;
 
+	/* Missing timestamp data should leave an empty prefix slot but keep the message */
 	testmocking_gettimeofday_fail_next(1);
 	slog(VERBOSE,"gettimeofday failure");
 	printf("\n");
 	testmocking_gettimeofday_disable();
 
+	/* localtime_r() failure follows the same fallback path */
 	testmocking_localtime_r_fail_next(1);
 	slog(VERBOSE,"localtime_r failure");
 	printf("\n");
 	testmocking_localtime_r_disable();
 
+	/* snprintf() failure while formatting the timestamp must not hide the payload */
 	testmocking_snprintf_fail_next(1);
 	slog(VERBOSE,"snprintf failure");
 	testmocking_snprintf_disable();
@@ -198,12 +277,18 @@ static void logger_time_failure_cases(void)
 	rational_logger_mode = REGULAR;
 }
 
+/**
+ * @brief Emit one report() message with a controlled I/O errno
+ */
 static void report_single_case(void)
 {
 	errno = EIO;
 	report("Mocked report output");
 }
 
+/**
+ * @brief Emit one report() message while snprintf is forced to truncate
+ */
 static void report_truncated_case(void)
 {
 	testmocking_snprintf_truncate_next(1);
@@ -211,10 +296,16 @@ static void report_truncated_case(void)
 	testmocking_snprintf_disable();
 }
 
+/**
+ * @brief Capture slog() output when logger line allocation fails
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_logger_realloc_failure(void)
 {
 	INITTEST;
 
+	/* The logger should stay silent when it cannot grow the output line */
 	testmocking_realloc_fail_next(1);
 	rational_logger_mode = REGULAR;
 	slog(REGULAR|UNDECOR,"hidden");
@@ -224,10 +315,16 @@ static Return capture_librational_logger_realloc_failure(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture slog() output from timestamp failure scenarios
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_logger_time_failures(void)
 {
 	INITTEST;
 
+	/* Cleanup disables every mock in case the captured scenario exits early */
 	logger_time_failure_cases();
 	rational_logger_mode = REGULAR;
 	testmocking_gettimeofday_disable();
@@ -238,10 +335,16 @@ static Return capture_librational_logger_time_failures(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture slog() output when vsnprintf fails before line allocation
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_logger_vsnprintf_failure(void)
 {
 	INITTEST;
 
+	/* A failed payload size calculation should suppress the incomplete line */
 	testmocking_vsnprintf_fail_next(1);
 	rational_logger_mode = REGULAR;
 	slog(REGULAR|UNDECOR,"hidden");
@@ -251,10 +354,16 @@ static Return capture_librational_logger_vsnprintf_failure(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture an ERROR log while no logger mode accepts it
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_logger_disabled_error_mode(void)
 {
 	INITTEST;
 
+	/* With no active mode bits, even ERROR must stay silent */
 	rational_logger_mode = (LOGMODES)0;
 	slog(ERROR,"hidden");
 	rational_logger_mode = REGULAR;
@@ -262,13 +371,20 @@ static Return capture_librational_logger_disabled_error_mode(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture REMEMBER calls that have no usable payload
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_logger_remember_without_payload(void)
 {
 	INITTEST;
 
+	/* Empty payload produces no remembered or printed line */
 	rational_logger_mode = REGULAR;
 	slog(REGULAR|UNDECOR|REMEMBER,"");
 
+	/* Failed formatting also leaves REMEMBER without a payload to deliver */
 	testmocking_vsnprintf_fail_next(1);
 	slog(REGULAR|UNDECOR|REMEMBER,"hidden");
 	testmocking_vsnprintf_disable();
@@ -278,6 +394,11 @@ static Return capture_librational_logger_remember_without_payload(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture the basic report() stderr contract
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_report_test(void)
 {
 	INITTEST;
@@ -287,16 +408,27 @@ static Return capture_librational_report_test(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture the full slog() mode matrix
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_slog_test(void)
 {
 	INITTEST;
 
+	/* Reset the global logger mode after the matrix leaves it in SILENT */
 	slog_test();
 	rational_logger_mode = REGULAR;
 
 	deliver(status);
 }
 
+/**
+ * @brief Capture one serp() stderr message
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_serp_case(void)
 {
 	INITTEST;
@@ -306,10 +438,16 @@ static Return capture_librational_serp_case(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture report() when formatting the final message fails
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_report_snprintf_failure(void)
 {
 	INITTEST;
 
+	/* REPORT() should avoid writing a malformed message after snprintf failure */
 	testmocking_snprintf_fail_next(1);
 	report_single_case();
 	testmocking_snprintf_disable();
@@ -317,10 +455,16 @@ static Return capture_librational_report_snprintf_failure(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture report() when the primary write fails but fallback write works
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_report_write_fallback(void)
 {
 	INITTEST;
 
+	/* The first write fails, so REPORT() should emit its fixed fallback text */
 	testmocking_write_fail_next(1,EIO);
 	report_single_case();
 	testmocking_write_disable();
@@ -328,10 +472,16 @@ static Return capture_librational_report_write_fallback(void)
 	deliver(status);
 }
 
+/**
+ * @brief Capture report() when both primary and fallback writes fail
+ *
+ * @return Return describing success or failure
+ */
 static Return capture_librational_report_write_full_failure(void)
 {
 	INITTEST;
 
+	/* Both writes fail, so REPORT() must give up without leaking partial output */
 	testmocking_write_fail_next(2,EIO);
 	report_single_case();
 	testmocking_write_disable();
@@ -339,10 +489,16 @@ static Return capture_librational_report_write_full_failure(void)
 	deliver(status);
 }
 
+/**
+ * @brief Check report() formatting with errno and source location
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_1(void)
 {
 	INITTEST;
 
+	/* report() output goes to stderr and includes file, function, line, message, and errno */
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		expected_report_stderr_pattern,
@@ -351,10 +507,16 @@ static Return test_librational_0004_1(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check slog() mode filtering, prefixes, and silent visibility
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_2(void)
 {
 	INITTEST;
 
+	/* The pattern covers every printed line; variable fields are limited to time, path, and line */
 	ASSERT(SUCCESS == match_function_output(
 		expected_slog_stdout_pattern,
 		NULL,
@@ -363,10 +525,16 @@ static Return test_librational_0004_2(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check serp() formatting with errno and source location
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_3(void)
 {
 	INITTEST;
 
+	/* serp() writes directly to stderr without printf-style formatting */
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		expected_serp_stderr_pattern,
@@ -375,12 +543,18 @@ static Return test_librational_0004_3(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that report() stays silent when message formatting fails
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_4(void)
 {
 	INITTEST;
 
 	SKIP_ON_EVIL_EMPIRE_OS;
 
+	/* NULL patterns require both captured streams to stay empty */
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		NULL,
@@ -389,6 +563,11 @@ static Return test_librational_0004_4(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check the exact buffer state after report() truncation
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_5(void)
 {
 	INITTEST;
@@ -398,6 +577,7 @@ static Return test_librational_0004_5(void)
 	m_create(char,captured_stdout,MEMORY_STRING);
 	m_create(char,captured_stderr,MEMORY_STRING);
 
+	/* This test inspects raw buffer lengths, so it uses function_capture() directly */
 	ASSERT(SUCCESS == function_capture(
 		report_truncated_case,
 		captured_stdout,
@@ -414,6 +594,7 @@ static Return test_librational_0004_5(void)
 	{
 		const char expected_tail[MAX_CHARACTERS] = {0};
 
+		/* The snprintf mock writes one visible byte and leaves the rest zero-filled */
 		ASSERT(stderr_data[0] == 'T');
 		ASSERT(0 == memcmp(stderr_data + 1,expected_tail,MAX_CHARACTERS));
 	}
@@ -424,6 +605,11 @@ static Return test_librational_0004_5(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check the report() fallback message after primary write failure
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_6(void)
 {
 	INITTEST;
@@ -438,6 +624,11 @@ static Return test_librational_0004_6(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that report() stays silent when both writes fail
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_7(void)
 {
 	INITTEST;
@@ -452,6 +643,11 @@ static Return test_librational_0004_7(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check rational_reconvert() edge cases around empty and REMEMBER modes
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_8(void)
 {
 	INITTEST;
@@ -465,6 +661,36 @@ static Return test_librational_0004_8(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check rational_reconvert() names every logger mode flag
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0004_9(void)
+{
+	INITTEST;
+
+	/* Pin all single-flag names and the full mapping order used in diagnostics */
+	ASSERT(0 == strcmp(rational_reconvert(REGULAR),"REGULAR"));
+	ASSERT(0 == strcmp(rational_reconvert(VERBOSE),"VERBOSE"));
+	ASSERT(0 == strcmp(rational_reconvert(TESTING),"TESTING"));
+	ASSERT(0 == strcmp(rational_reconvert(ERROR),"ERROR"));
+	ASSERT(0 == strcmp(rational_reconvert(SILENT),"SILENT"));
+	ASSERT(0 == strcmp(rational_reconvert(UNDECOR),"UNDECOR"));
+	ASSERT(0 == strcmp(rational_reconvert(REMEMBER),"REMEMBER"));
+	ASSERT(0 == strcmp(rational_reconvert(VISIBLE_IN_SILENT),"VISIBLE_IN_SILENT"));
+	ASSERT(0 == strcmp(
+		rational_reconvert(REGULAR|VERBOSE|TESTING|ERROR|SILENT|UNDECOR|REMEMBER|VISIBLE_IN_SILENT),
+		"REGULAR | VERBOSE | TESTING | ERROR | SILENT | UNDECOR | REMEMBER | VISIBLE_IN_SILENT"));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check that slog() stays silent when logger line allocation fails
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_10(void)
 {
 	INITTEST;
@@ -479,6 +705,11 @@ static Return test_librational_0004_10(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check slog() output when timestamp helper calls fail
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_11(void)
 {
 	INITTEST;
@@ -493,6 +724,11 @@ static Return test_librational_0004_11(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that slog() stays silent when vsnprintf fails
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_12(void)
 {
 	INITTEST;
@@ -507,6 +743,11 @@ static Return test_librational_0004_12(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that slog(ERROR) stays silent when no mode accepts ERROR
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_13(void)
 {
 	INITTEST;
@@ -519,6 +760,11 @@ static Return test_librational_0004_13(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that REMEMBER has no output when no payload is available
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_14(void)
 {
 	INITTEST;
@@ -533,6 +779,11 @@ static Return test_librational_0004_14(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that function_capture() flushes pending stdout before redirection
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0004_capture_flush(void)
 {
 	INITTEST;
@@ -545,6 +796,7 @@ static Return test_librational_0004_capture_flush(void)
 	saved_stdout_fd = dup(STDOUT_FILENO);
 	ASSERT(saved_stdout_fd != -1);
 
+	/* Redirect stdout away from the terminal, then leave text pending in stdio */
 	if(SUCCESS == status)
 	{
 		stdout_tmp = tmpfile();
@@ -554,6 +806,8 @@ static Return test_librational_0004_capture_flush(void)
 	ASSERT(0 == fflush(stdout));
 	ASSERT(dup2(fileno(stdout_tmp),STDOUT_FILENO) != -1);
 	ASSERT(fprintf(stdout,"pending stdout before function_capture") > 0);
+
+	/* function_capture() should flush that pending text before installing its own redirection */
 	ASSERT(SUCCESS == function_capture(no_output_test,captured_stdout,captured_stderr));
 	ASSERT(captured_stdout->length == 0);
 	ASSERT(captured_stderr->length == 0);
@@ -586,7 +840,12 @@ static Return test_librational_0004_capture_flush(void)
 }
 
 /**
- * @brief librational report and logger tests
+ * @brief Exercise report(), serp(), slog(), and logger mode conversion
+ *
+ * The suite checks formatted report output, plain errno reporting through serp(),
+ * slog() mode filtering and decoration, logger conversion helpers, failure paths
+ * for formatting/allocation/time/write helpers, and the output-capture guard that
+ * flushes pending stdout before redirecting streams
  *
  * @return SUCCESS when all subtests pass
  */
@@ -594,20 +853,21 @@ Return test_librational_0004(void)
 {
 	INITTEST;
 
-	TEST(test_librational_0004_capture_flush,"function_capture flushes pending stdout before redirection…");
-	TEST(test_librational_0004_1,"librational test report messaging…");
-	TEST(test_librational_0004_2,"librational test slog messaging…");
-	TEST(test_librational_0004_3,"librational test serp messaging…");
-	TEST(test_librational_0004_4,"librational report handles formatting failure without output…");
-	TEST(test_librational_0004_5,"librational report writes a truncated fixed-size message…");
-	TEST(test_librational_0004_6,"librational report writes fallback text after write failure…");
-	TEST(test_librational_0004_7,"librational report stays silent when primary and fallback writes fail…");
-	TEST(test_librational_0004_8,"librational mode reconversion covers empty and REMEMBER modes…");
-	TEST(test_librational_0004_10,"librational logger stays silent when line allocation fails…");
-	TEST(test_librational_0004_11,"librational logger handles time formatting failures…");
-	TEST(test_librational_0004_12,"librational logger stays silent when vsnprintf fails…");
-	TEST(test_librational_0004_13,"librational logger keeps ERROR silent when no mode accepts it…");
-	TEST(test_librational_0004_14,"librational logger skips REMEMBER without payload…");
+	TEST(test_librational_0004_capture_flush,"function_capture() flushes pending stdout before redirection…");
+	TEST(test_librational_0004_1,"report() writes formatted errno messages with source location…");
+	TEST(test_librational_0004_2,"slog() honors logger modes, decorations and silent visibility…");
+	TEST(test_librational_0004_3,"serp() writes errno, source file and function name…");
+	TEST(test_librational_0004_4,"report() stays silent when final message formatting fails…");
+	TEST(test_librational_0004_5,"report() keeps a truncated fixed-size message buffer terminated…");
+	TEST(test_librational_0004_6,"report() writes fallback text after primary write failure…");
+	TEST(test_librational_0004_7,"report() stays silent when primary and fallback writes fail…");
+	TEST(test_librational_0004_8,"rational_reconvert() covers empty and REMEMBER edge cases…");
+	TEST(test_librational_0004_9,"rational_reconvert() names every logger flag…");
+	TEST(test_librational_0004_10,"slog() stays silent when line allocation fails…");
+	TEST(test_librational_0004_11,"slog() keeps payloads visible when time formatting fails…");
+	TEST(test_librational_0004_12,"slog() stays silent when vsnprintf fails…");
+	TEST(test_librational_0004_13,"slog(ERROR) stays silent when no mode accepts ERROR…");
+	TEST(test_librational_0004_14,"slog(REMEMBER) skips empty or unformatted payloads…");
 
 	RETURN_STATUS;
 }

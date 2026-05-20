@@ -124,6 +124,10 @@ static Return test_librational_0003_3(void)
 {
 	INITTEST;
 
+	/* Both helpers map to CLOCK_REALTIME under the hood, so their numerical drift is
+	   on the order of nanoseconds. The 1-second tolerance is therefore not a numerical
+	   slack but a safety margin against a wall-clock adjustment (NTP step, manual set)
+	   landing exactly between the three samples taken below */
 	const long long int tolerance_ms = 1000LL;
 
 	/* cur_time_ns() should represent the same wall-clock epoch as cur_time_ms() */
@@ -289,8 +293,10 @@ static Return test_librational_0003_7(void)
  * @details Two calls bracket a short nanosleep(). The interval must be strictly
  * positive (rules out a stuck clock or a wrong unit) and bounded above by a
  * generous ceiling that tolerates loaded CI runners without becoming a flaky
- * test. Positivity of the absolute values protects against accidental zero
- * initialization rather than against any guarantee from the monotonic clock
+ * test. On platforms without CLOCK_MONOTONIC, cur_time_monotonic_ns() falls
+ * back to cur_time_ns(), so this test checks the public helper contract rather
+ * than proving that a monotonic clock source exists. Positivity of the absolute
+ * values protects against accidental zero initialization
  *
  * @return Return describing success or failure
  */
@@ -317,13 +323,14 @@ static Return test_librational_0003_8(void)
 }
 
 /**
- * @brief Check seconds_to_ISOdate() shape, character classes and buffer stability
+ * @brief Check seconds_to_ISOdate() shape, character classes and static-buffer overwrite behavior
  *
  * @details Verifies that the returned text has the fixed
  * "YYYY-MM-DD HH:MM:SS" shape, that every position the format reserves for a
  * decimal digit actually contains a digit, that the separator characters land
- * on the documented positions, and that the function returns a stable static
- * buffer (the same pointer on consecutive calls)
+ * on the documented positions, that the function returns a stable static buffer
+ * (the same pointer on consecutive calls), and that a later call overwrites the
+ * same storage with text for the new input
  *
  * @return Return describing success or failure
  */
@@ -332,17 +339,23 @@ static Return test_librational_0003_9(void)
 	INITTEST;
 
 	const char *iso_date = seconds_to_ISOdate(0);
+	char first_iso_date[sizeof "1970-01-01 00:00:00"];
 
 	/* seconds_to_ISOdate() returns a stable static buffer in YYYY-MM-DD HH:MM:SS shape */
 	ASSERT(iso_date != NULL);
 	ASSERT(strlen(iso_date) == strlen("1970-01-01 00:00:00"));
+	memcpy(first_iso_date,iso_date,sizeof(first_iso_date));
 	ASSERT(iso_date[4] == '-');
 	ASSERT(iso_date[7] == '-');
 	ASSERT(iso_date[10] == ' ');
 	ASSERT(iso_date[13] == ':');
 	ASSERT(iso_date[16] == ':');
 
-	/* Positions reserved for decimal digits in YYYY-MM-DD HH:MM:SS must hold a digit */
+	/* Positions reserved for decimal digits in YYYY-MM-DD HH:MM:SS must hold a digit.
+	   The indices below are tied to the exact format string used by seconds_to_ISOdate()
+	   (currently "%Y-%m-%d %H:%M:%S") — any change to that strftime() format must be
+	   mirrored here, otherwise this assertion will either miss new digit slots or
+	   wrongly flag separators */
 	const size_t digit_positions[] = {0U,1U,2U,3U,5U,6U,8U,9U,11U,12U,14U,15U,17U,18U};
 	for(size_t i = 0U; i < sizeof(digit_positions) / sizeof(digit_positions[0]); i++)
 	{
@@ -351,8 +364,32 @@ static Return test_librational_0003_9(void)
 	}
 
 	/* The documented stable static buffer must be reused across consecutive calls */
-	const char *iso_date_again = seconds_to_ISOdate(0);
+	const char *iso_date_again = seconds_to_ISOdate(86400);
 	ASSERT(iso_date_again == iso_date);
+	ASSERT(0 != strcmp(iso_date_again,first_iso_date));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check that form_date_r() rejects invalid output buffers
+ *
+ * @details Covers the public validation contract for the reentrant duration
+ * formatter: a NULL destination or zero-sized destination is rejected with a
+ * NULL return value
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0003_10(void)
+{
+	INITTEST;
+
+	char date_buffer[MAX_CHARACTERS] = "unchanged";
+
+	/* Invalid output buffer arguments must be rejected before formatting starts */
+	ASSERT(NULL == form_date_r(1LL,FULL_VIEW,NULL,sizeof(date_buffer)));
+	ASSERT(NULL == form_date_r(1LL,FULL_VIEW,date_buffer,0U));
+	ASSERT(0 == strcmp(date_buffer,"unchanged"));
 
 	RETURN_STATUS;
 }
@@ -369,7 +406,7 @@ static Return test_librational_0003_9(void)
  *
  * @return Return describing success or failure
  */
-static Return test_librational_0003_10(void)
+static Return test_librational_0003_11(void)
 {
 	INITTEST;
 
@@ -395,13 +432,14 @@ static Return test_librational_0003_10(void)
  * The suite verifies the time-related public API of librational. It checks
  * that cur_time_ms() and cur_time_ns() return positive epoch values, use the
  * documented time units, and agree with each other within a tolerance
- * suitable for wall-clock calls; that cur_time_monotonic_ns() returns
- * non-decreasing values over a measurable interval; that form_date() and
+ * suitable for wall-clock calls; that cur_time_monotonic_ns() or its fallback
+ * returns ordered values over a measurable interval; that form_date() and
  * form_date_r() decompose nanoseconds into a human-readable string, select
- * the largest unit in MAJOR_VIEW, and survive snprintf failures and
- * truncation injected through the link-time mocks; that seconds_to_ISOdate()
- * returns a fixed-width ISO-like timestamp from a stable static buffer; and
- * that form_date_r() leaves the destination empty for negative input
+ * the largest unit in MAJOR_VIEW, reject invalid output buffers, and survive
+ * snprintf failures and truncation injected through the link-time mocks; that
+ * seconds_to_ISOdate() returns a fixed-width ISO-like timestamp from a stable
+ * static buffer and overwrites that buffer on later calls; and that
+ * form_date_r() leaves the destination empty for negative input
  *
  * Covered API surface:
  * - cur_time_ms(), cur_time_ns(), cur_time_monotonic_ns()
@@ -421,9 +459,10 @@ Return test_librational_0003(void)
 	TEST(test_librational_0003_5,"form_date() selects the largest requested duration unit…");
 	TEST(test_librational_0003_6,"form_date_r() tolerates snprintf failure inside duration assembly…");
 	TEST(test_librational_0003_7,"form_date_r() keeps truncated duration buffers terminated…");
-	TEST(test_librational_0003_8,"cur_time_monotonic_ns() returns ordered monotonic nanoseconds…");
-	TEST(test_librational_0003_9,"seconds_to_ISOdate() returns a fixed-width ISO-like timestamp…");
-	TEST(test_librational_0003_10,"form_date_r() returns an empty string for negative input…");
+	TEST(test_librational_0003_8,"cur_time_monotonic_ns() returns ordered nanosecond samples…");
+	TEST(test_librational_0003_9,"seconds_to_ISOdate() returns and overwrites a fixed-width static timestamp…");
+	TEST(test_librational_0003_10,"form_date_r() rejects invalid output buffers…");
+	TEST(test_librational_0003_11,"form_date_r() returns an empty string for negative input…");
 
 	RETURN_STATUS;
 }

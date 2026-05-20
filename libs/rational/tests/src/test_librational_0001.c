@@ -288,12 +288,17 @@ static bool form_real_matches_portable(
  * @brief Check real-number formatting through the generic form() macro
  *
  * @details Exercises stable text expectations (zero handling, near-zero
- * normalization, rounding, grouped integer parts, sign and trailing
- * fractional zero stripping) and portable equivalence for long double
- * values whose exact decimal text is platform dependent. Also verifies
- * that the generic dispatch correctly routes plain double and float
- * arguments to the real formatter, and that a successful call returns
- * the caller-provided buffer pointer
+ * normalization where magnitudes below 1e-10 collapse to "0", rounding
+ * to at most 9 fractional digits, grouped integer parts using ',' as
+ * thousands separator and '.' as decimal point regardless of the
+ * current locale, sign placement, and stripping of trailing fractional
+ * zeros) and portable equivalence for long double values whose exact
+ * decimal text is platform dependent — those are parsed back through
+ * strtold() and compared against the original value with an LDBL_EPSILON
+ * tolerance. Also verifies that the generic dispatch correctly routes
+ * plain double and float arguments to the real formatter, and that a
+ * successful call returns the caller-provided buffer pointer (not an
+ * internal static or a literal "")
  *
  * @return Return describing success or failure
  */
@@ -390,11 +395,16 @@ static Return test_librational_0001_2(void)
 /**
  * @brief Check numeric formatter behavior with tiny destination buffers
  *
- * @details Covers both shrink-to-fit behavior (form_real_r() silently
- * reduces fractional precision until the result fits, or writes an
- * empty terminated string), the non-finite branch (NaN, +-Inf become
- * empty strings), graceful behavior of the unsigned integer formatter
- * when the buffer is too small, and explicit NULL/size=0 input
+ * @details Covers shrink-to-fit behavior of form_real_r() (silent
+ * reduction of fractional precision until the result fits, or fallback
+ * to an empty terminated string when even the integer part cannot be
+ * written), the non-finite branch (NaN, +-Inf and values larger than
+ * UINTMAX_MAX become empty strings), the all-or-nothing behavior of
+ * the integer formatters (either the full grouped value fits or the
+ * result is empty — no partial digits are ever returned), the extra
+ * byte that the leading '-' demands for signed integers, the rule that
+ * a successful shrink-to-fit result still returns the caller-provided
+ * buffer pointer instead of a literal, and explicit NULL/size=0 input
  * validation for form_real_r(), form_intmax_r() and form_uintmax_r()
  *
  * @return Return describing success or failure
@@ -433,7 +443,15 @@ static Return test_librational_0001_3(void)
 	ASSERT(0 == strcmp(form_uintmax_r((uintmax_t)1U,NULL,sizeof(formatted)),""));
 	ASSERT(0 == strcmp(form_uintmax_r((uintmax_t)1U,formatted,0U),""));
 
-	/* Real formatting must either fit, reduce precision, or write an empty terminated string */
+	/* Real formatting must either fit, reduce precision, or write an empty terminated string.
+	   A 1-byte buffer cannot even hold a terminator behind a digit, so both the zero
+	   fast path and the regular path write only '\0'. A 2-byte buffer exercises two
+	   different code paths in form_real_r() that both happen to produce a single-digit
+	   result:
+	   - 1.25 takes the regular path that calls shrink-to-fit until the fractional part
+	     is fully dropped, leaving "1"
+	   - 0.0 takes the dedicated form_write_zero() fast path, which requires
+	     result_size > 1 to write "0" */
 	(void)form_real_r(1234.5L,tiny_real_1,sizeof(tiny_real_1));
 	ASSERT(tiny_real_1[0] == '\0');
 	(void)form_real_r(0.0L,tiny_real_zero_1,sizeof(tiny_real_zero_1));
@@ -445,12 +463,24 @@ static Return test_librational_0001_3(void)
 	   - 5 bytes cannot fit "1,234" plus its terminator (6 bytes total), so the result must be empty
 	   - 6 bytes fit "1,234" plus its terminator exactly
 	   - 7 bytes still cannot fit "1,234.5" plus its terminator (8 bytes total), so the fractional part is dropped with rounding ("1,235")
-	   - 8 bytes fit "1,234.5" plus its terminator exactly */
+	   - 8 bytes fit "1,234.5" plus its terminator exactly.
+	   For every shrink-to-fit branch the function must still return the caller-provided
+	   buffer pointer, not a literal "" — this guards against a silent fallthrough into
+	   form_write_empty() when shrink-to-fit succeeds */
 	(void)form_real_r(1234.0L,tiny_real_group_fail,sizeof(tiny_real_group_fail));
 	ASSERT(tiny_real_group_fail[0] == '\0');
-	ASSERT(0 == strcmp(form_real_r(1234.0L,tiny_real_group_ok,sizeof(tiny_real_group_ok)),"1,234"));
-	ASSERT(0 == strcmp(form_real_r(1234.5L,tiny_real_frac_fail,sizeof(tiny_real_frac_fail)),"1,235"));
-	ASSERT(0 == strcmp(form_real_r(1234.5L,tiny_real_frac_ok,sizeof(tiny_real_frac_ok)),"1,234.5"));
+
+	const char *group_ok_result = form_real_r(1234.0L,tiny_real_group_ok,sizeof(tiny_real_group_ok));
+	ASSERT(group_ok_result == tiny_real_group_ok);
+	ASSERT(0 == strcmp(group_ok_result,"1,234"));
+
+	const char *frac_fail_result = form_real_r(1234.5L,tiny_real_frac_fail,sizeof(tiny_real_frac_fail));
+	ASSERT(frac_fail_result == tiny_real_frac_fail);
+	ASSERT(0 == strcmp(frac_fail_result,"1,235"));
+
+	const char *frac_ok_result = form_real_r(1234.5L,tiny_real_frac_ok,sizeof(tiny_real_frac_ok));
+	ASSERT(frac_ok_result == tiny_real_frac_ok);
+	ASSERT(0 == strcmp(frac_ok_result,"1,234.5"));
 
 	/* Non-finite real values are intentionally represented as empty strings */
 	ASSERT(0 == strcmp(form_real_r(NAN,formatted,sizeof(formatted)),""));
@@ -458,7 +488,13 @@ static Return test_librational_0001_3(void)
 	ASSERT(0 == strcmp(form_real_r(-INFINITY,formatted,sizeof(formatted)),""));
 	ASSERT(0 == strcmp(form_real_r((long double)UINTMAX_MAX * 2.0L,formatted,sizeof(formatted)),""));
 
-	/* Unsigned integer formatting must not leave unterminated sentinel data in too-small buffers */
+	/* Unsigned integer formatting has no truncation mode: either the full value with its
+	   thousands separators fits, or the buffer is left as an empty NUL-terminated string.
+	   The "X"/"Y"/"Z" sentinels in the destination buffers must not be left visible:
+	   - 1 byte: holds only the terminator, even for UINTMAX_MAX
+	   - 2 and 3 bytes: too small for "12,345" (which needs 7 bytes including the terminator), result must be empty
+	   - 5 bytes: enough for the digits of "1234" but not for the comma in "1,234" (6 bytes), so empty
+	   - 7 bytes: exactly fits "12,345" plus its terminator */
 	(void)form_uintmax_r(UINTMAX_MAX,tiny_uint_1,sizeof(tiny_uint_1));
 	ASSERT(tiny_uint_1[0] == '\0');
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_2,sizeof(tiny_uint_2)),""));
@@ -466,7 +502,13 @@ static Return test_librational_0001_3(void)
 	ASSERT(0 == strcmp(form_uintmax_r(1234U,tiny_uint_comma_fail,sizeof(tiny_uint_comma_fail)),""));
 	ASSERT(0 == strcmp(form_uintmax_r(12345U,tiny_uint_7,sizeof(tiny_uint_7)),"12,345"));
 
-	/* Signed integer formatting has separate sign-capacity boundaries */
+	/* Signed integer formatting follows the same all-or-nothing rule, but the leading
+	   '-' takes one extra byte and shifts every boundary by one:
+	   - 1 byte: holds only the terminator
+	   - 2 bytes: enough digits for "-1" by digit count, but no room for the sign byte, so empty
+	   - 3 bytes: exactly fits "-1" with its terminator
+	   - 6 bytes: enough for "1,234" but not for "-1,234" (7 bytes with the terminator), so empty
+	   - 7 bytes: exactly fits "-1,234" with its terminator */
 	(void)form_intmax_r((intmax_t)-1,tiny_int_1,sizeof(tiny_int_1));
 	ASSERT(tiny_int_1[0] == '\0');
 	ASSERT(0 == strcmp(form_intmax_r((intmax_t)-1,tiny_int_2,sizeof(tiny_int_2)),""));
@@ -481,11 +523,14 @@ static Return test_librational_0001_3(void)
  * @brief Check byte-size formatting in static and caller-provided buffers
  *
  * @details Validates both the static-buffer variant bkbmbgbtbpbeb()
- * (FULL_VIEW vs MAJOR_VIEW output styles) and the reentrant variant
- * bkbmbgbtbpbeb_r() (NULL/size=0 rejection, caller-buffer isolation
- * between consecutive calls, return of the caller-provided buffer
- * pointer for successful calls, and well-terminated truncation when
- * the destination buffer is too small to hold the full decomposition)
+ * (FULL_VIEW for the full decomposition, MAJOR_VIEW for the largest
+ * unit only with floor semantics — a 1.2 GiB input must produce "1GiB",
+ * never "2GiB") and the reentrant variant bkbmbgbtbpbeb_r() (NULL/size=0
+ * rejection, caller-buffer isolation between consecutive calls, return
+ * of the caller-provided buffer pointer for successful calls, and
+ * well-terminated truncation when the destination buffer is too small
+ * to hold the full decomposition). The simulated snprintf() failure
+ * branch is also exercised through the testmocking helpers
  *
  * @return Return describing success or failure
  */
@@ -516,7 +561,10 @@ static Return test_librational_0001_4(void)
 	                           + 9ULL * kibibyte
 	                           + 10ULL;
 
-	/* Static-buffer formatting must support full output and largest-unit-only output */
+	/* Static-buffer formatting must support full output and largest-unit-only output.
+	   The last assertion uses 1,291,845,632 bytes = 1 GiB + 208 MiB; in MAJOR_VIEW the
+	   formatter must show only the largest unit ("1GiB") and never round upward despite
+	   the sizable remainder, otherwise a 1.5 GiB value would mislead callers as "2GiB" */
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(0,FULL_VIEW),"0B"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(1024,FULL_VIEW),"1KiB"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb(1536,FULL_VIEW),"1KiB 512B"));
@@ -575,11 +623,15 @@ static Return test_librational_0001_4(void)
 /**
  * @brief Check duration formatting in static and caller-provided buffers
  *
- * @details Symmetric to the byte-size formatter checks but applied to
- * nanosecond durations via form_date() and form_date_r(). Confirms zero
- * handling, mixed-unit FULL_VIEW output, single-unit MAJOR_VIEW output,
- * NULL/size=0 rejection, return of the caller-provided buffer pointer
- * for successful calls, and terminated truncation in tiny buffers
+ * @details Exercises form_date() and form_date_r() over nanosecond inputs.
+ * Confirms zero handling, mixed-unit FULL_VIEW output, single-unit
+ * MAJOR_VIEW output across every supported unit from nanoseconds through
+ * years, NULL/size=0 rejection of the reentrant variant, return of the
+ * caller-provided buffer pointer for successful calls, isolation between
+ * two consecutive caller buffers, and terminated truncation in tiny
+ * buffers down to a single byte. Link-time snprintf mock coverage for
+ * form_date_r() lives separately in the test_librational_0003 suite to
+ * keep this test runnable on platforms that lack GNU ld --wrap
  *
  * @return Return describing success or failure
  */
@@ -588,6 +640,7 @@ static Return test_librational_0001_5(void)
 	INITTEST;
 
 	char date_r_a[MAX_CHARACTERS];
+	char date_r_b[MAX_CHARACTERS];
 	char date_r_tiny_1[1] = {'X'};
 	char date_r_tiny_2[2] = {'X','Y'};
 	char date_r_tiny_3[3] = {'X','Y','Z'};
@@ -632,6 +685,21 @@ static Return test_librational_0001_5(void)
 	ASSERT(0 == strcmp(form_date_r(ns_in_week,MAJOR_VIEW,date_r_a,sizeof(date_r_a)),"1w"));
 	ASSERT(0 == strcmp(form_date_r(ns_in_month,MAJOR_VIEW,date_r_a,sizeof(date_r_a)),"1mon"));
 	ASSERT(0 == strcmp(form_date_r(ns_in_year,MAJOR_VIEW,date_r_a,sizeof(date_r_a)),"1y"));
+
+	/* Writing into a second caller buffer must not modify the first one.
+	   Two values are picked from different unit branches so an accidental shared
+	   static buffer would visibly leak the latter value into the former */
+	ASSERT(0 == strcmp(form_date_r(ns_in_second,FULL_VIEW,date_r_a,sizeof(date_r_a)),"1s"));
+	ASSERT(0 == strcmp(form_date_r(ns_in_minute,FULL_VIEW,date_r_b,sizeof(date_r_b)),"1min"));
+	ASSERT(0 == strcmp(date_r_a,"1s"));
+
+	/* The next group walks tiny destination buffers for form_date_r():
+	   - 1 byte holds only the terminator, so any nonzero duration yields an empty string
+	   - 2 bytes fit the literal "0" for the zero-time fast path, but not the trailing "ns" unit
+	   - 3 bytes fit "0n" — zero plus a truncated unit suffix, still NUL terminated
+	   - 4 bytes fit "1y" plus its terminator for the largest unit, and any further units
+	     produced by FULL_VIEW past that point are dropped because catdate_r() refuses
+	     to write into a buffer that is already full */
 	(void)form_date_r(273000528LL,FULL_VIEW,date_r_tiny_1,sizeof(date_r_tiny_1));
 	ASSERT('\0' == date_r_tiny_1[0]);
 	ASSERT(0 == strcmp(form_date_r(0LL,FULL_VIEW,date_r_tiny_2,sizeof(date_r_tiny_2)),"0"));
@@ -661,11 +729,11 @@ Return test_librational_0001(void)
 {
 	INITTEST;
 
-	TEST(test_librational_0001_1,"form() formats real values with grouping and rounding…");
-	TEST(test_librational_0001_2,"integer formatters add grouping and preserve caller buffers…");
-	TEST(test_librational_0001_3,"numeric formatters handle tiny destination buffers…");
-	TEST(test_librational_0001_4,"byte-size formatters support full, major, and bounded outputs…");
-	TEST(test_librational_0001_5,"duration formatters support full, major, and bounded outputs…");
+	TEST(test_librational_0001_1,"form() formats real values with grouping, rounding, _Generic dispatch and caller-buffer return…");
+	TEST(test_librational_0001_2,"integer formatters add grouping, cover platform extremes and preserve caller buffers…");
+	TEST(test_librational_0001_3,"numeric formatters validate NULL/size=0, non-finite values and tiny destination buffers…");
+	TEST(test_librational_0001_4,"byte-size formatters cover full and major views, tiny buffers and snprintf failure…");
+	TEST(test_librational_0001_5,"duration formatters cover full and major views, two-buffer isolation and tiny buffers…");
 
 	RETURN_STATUS;
 }

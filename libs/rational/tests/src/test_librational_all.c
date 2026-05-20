@@ -13,16 +13,16 @@ Return test_librational_all(void)
 
 	HEADER("Formatting");
 	SUTE(test_librational_0001,"librational formatting helper test set…");
-	TEST(test_librational_0002,"librational itoa conversion helpers…");
+	SUTE(test_librational_0002,"librational itoa conversion helpers…");
 
 	HEADER("Time");
 	SUTE(test_librational_0003,"librational time helpers, duration formatter and ISO date helper…");
 
 	HEADER("Report and Logger");
-	SUTE(test_librational_0004,"librational report/logger test set…");
+	SUTE(test_librational_0004,"librational report(), serp() and slog() helpers…");
 
 	HEADER("Return Handling");
-	SUTE(test_librational_0005,"librational yes/no Return handling…");
+	SUTE(test_librational_0005,"librational Return flow, normalization and status text…");
 
 	RETURN_STATUS;
 }

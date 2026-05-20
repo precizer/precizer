@@ -4,84 +4,84 @@
 
 /* The expected stdout pattern is strict and covers the whole demonstration output.
  * Non-decimal negative output depends on the platform width of int, so
- * test_librational_0002() uses a static assertion to keep these expectations
+ * the test_librational_0002 suite uses a static assertion to keep these expectations
  * tied to the supported 32-bit int targets */
 static const char expected_itoa_stdout_pattern[] =
-	"\\A"
-	"=== Testing extreme values ===\n"
-	"Value: 2147483647 \\(decimal\\)\n"
-	"Base 10 result: 2147483647, 2147483647\n"
-	"-------------------\n"
-	"Value: -2147483648 \\(decimal\\)\n"
-	"Base 10 result: -2147483648, -2147483648\n"
-	"-------------------\n"
-	"Value: -2147483648 \\(decimal\\)\n"
-	"Base 16 result: 80000000, Should show in hex\n"
-	"-------------------\n"
-	"\n"
-	"=== Testing regular values ===\n"
-	"Value: 255 \\(decimal\\)\n"
-	"Base 16 result: FF, FF\n"
-	"-------------------\n"
-	"Value: 255 \\(decimal\\)\n"
-	"Base  2 result: 11111111, 11111111\n"
-	"-------------------\n"
-	"Value: -255 \\(decimal\\)\n"
-	"Base 10 result: -255, -255\n"
-	"-------------------\n"
-	"\n"
-	"=== Testing zero ===\n"
-	"Value: 0 \\(decimal\\)\n"
-	"Base 10 result: 0, 0\n"
-	"-------------------\n"
-	"Value: 0 \\(decimal\\)\n"
-	"Base 16 result: 0, 0\n"
-	"-------------------\n"
-	"Value: 0 \\(decimal\\)\n"
-	"Base  2 result: 0, 0\n"
-	"-------------------\n"
-	"\n"
-	"=== Testing different bases ===\n"
-	"Value: 12345 \\(decimal\\)\n"
-	"Base 36 result: 9IX, Maximum supported base\n"
-	"-------------------\n"
-	"Value: 12345 \\(decimal\\)\n"
-	"Base 16 result: 3039, Common hex value\n"
-	"-------------------\n"
-	"Value: 12345 \\(decimal\\)\n"
-	"Base  8 result: 30071, Octal\n"
-	"-------------------\n"
-	"\n"
-	"=== Testing negative values ===\n"
-	"Value: -12345 \\(decimal\\)\n"
-	"Base 10 result: -12345, Only base 10 shows negative sign\n"
-	"-------------------\n"
-	"Value: -12345 \\(decimal\\)\n"
-	"Base 16 result: FFFFCFC7, Should show unsigned hex\n"
-	"-------------------\n"
-	"Value: -1 \\(decimal\\)\n"
-	"Base  2 result: 11111111111111111111111111111111, All bits set\n"
-	"-------------------\n"
-	"\n"
-	"=== Few more examples ===\n"
-	"12345\n"
-	"FF\n"
-	"1111\n"
-	"-789\n"
-	"0\n"
-	"Number: 1567\n"
-	"Base: 10\tConverted String: 1567\n"
-	"Base: 2\t\tConverted String: 11000011111\n"
-	"Base: 8\t\tConverted String: 3037\n"
-	"Base: 16\tConverted String: 61F\n"
-	"\n"
-	"=== Invalid base handling ===\n"
-	"Base 0 result: '', errno: 22\n"
-	"Base 1 result: '', errno: 22\n"
-	"Base 37 result: '', errno: 22\n"
-	"\n"
-	"=== NULL buffer handling ===\n"
-	"NULL buffer result: NULL, errno: 22\\Z";
+        "\\A"
+        "=== Testing extreme values ===\n"
+        "Value: 2147483647 \\(decimal\\)\n"
+        "Base 10 result: 2147483647, 2147483647\n"
+        "-------------------\n"
+        "Value: -2147483648 \\(decimal\\)\n"
+        "Base 10 result: -2147483648, -2147483648\n"
+        "-------------------\n"
+        "Value: -2147483648 \\(decimal\\)\n"
+        "Base 16 result: 80000000, Should show in hex\n"
+        "-------------------\n"
+        "\n"
+        "=== Testing regular values ===\n"
+        "Value: 255 \\(decimal\\)\n"
+        "Base 16 result: FF, FF\n"
+        "-------------------\n"
+        "Value: 255 \\(decimal\\)\n"
+        "Base  2 result: 11111111, 11111111\n"
+        "-------------------\n"
+        "Value: -255 \\(decimal\\)\n"
+        "Base 10 result: -255, -255\n"
+        "-------------------\n"
+        "\n"
+        "=== Testing zero ===\n"
+        "Value: 0 \\(decimal\\)\n"
+        "Base 10 result: 0, 0\n"
+        "-------------------\n"
+        "Value: 0 \\(decimal\\)\n"
+        "Base 16 result: 0, 0\n"
+        "-------------------\n"
+        "Value: 0 \\(decimal\\)\n"
+        "Base  2 result: 0, 0\n"
+        "-------------------\n"
+        "\n"
+        "=== Testing different bases ===\n"
+        "Value: 12345 \\(decimal\\)\n"
+        "Base 36 result: 9IX, Maximum supported base\n"
+        "-------------------\n"
+        "Value: 12345 \\(decimal\\)\n"
+        "Base 16 result: 3039, Common hex value\n"
+        "-------------------\n"
+        "Value: 12345 \\(decimal\\)\n"
+        "Base  8 result: 30071, Octal\n"
+        "-------------------\n"
+        "\n"
+        "=== Testing negative values ===\n"
+        "Value: -12345 \\(decimal\\)\n"
+        "Base 10 result: -12345, Only base 10 shows negative sign\n"
+        "-------------------\n"
+        "Value: -12345 \\(decimal\\)\n"
+        "Base 16 result: FFFFCFC7, Should show unsigned hex\n"
+        "-------------------\n"
+        "Value: -1 \\(decimal\\)\n"
+        "Base  2 result: 11111111111111111111111111111111, All bits set\n"
+        "-------------------\n"
+        "\n"
+        "=== Few more examples ===\n"
+        "12345\n"
+        "FF\n"
+        "1111\n"
+        "-789\n"
+        "0\n"
+        "Number: 1567\n"
+        "Base: 10\tConverted String: 1567\n"
+        "Base: 2\t\tConverted String: 11000011111\n"
+        "Base: 8\t\tConverted String: 3037\n"
+        "Base: 16\tConverted String: 61F\n"
+        "\n"
+        "=== Invalid base handling ===\n"
+        "Base 0 result: '', errno: 22\n"
+        "Base 1 result: '', errno: 22\n"
+        "Base 37 result: '', errno: 22\n"
+        "\n"
+        "=== NULL buffer handling ===\n"
+        "NULL buffer result: NULL, errno: 22\\Z";
 
 static void test_conversion(
 	int          value,
@@ -196,33 +196,37 @@ static Return capture_librational_itoa_output(void)
 }
 
 /**
- * @brief Run librational itoa conversion tests
- *
- * @details The suite runs in two independent layers. First it captures
- * the stdout produced by test_itoa() and matches it against a strict
- * full-output regex. Second, a direct ASSERT block exercises the key
- * textual invariants without relying on demonstration text: INT_MIN and
- * INT_MAX in base 10 (which exercise the UB-avoidance path documented
- * in rational_itoa.c), zero handling across multiple bases, the unsigned
- * bit-pattern representation of negative values in bases other than 10,
- * the use of letters A-Z by the maximum supported base 36, and the four
- * documented error paths (base = 0, 1, 37, and a NULL output buffer)
+ * @brief Check that the itoa() demonstration output remains unchanged
  *
  * @return Return describing success or failure
  */
-Return test_librational_0002(void)
+static Return test_librational_0002_1(void)
 {
 	INITTEST;
-
-	/* The hex and binary representations of negative ints below assume 32-bit int.
-	 * The supported targets (Linux x86_64) satisfy this; the static assertion
-	 * prevents silent breakage on any future port to a target with a wider int */
-	_Static_assert(sizeof(int) * CHAR_BIT == 32,"test_librational_0002 expects a 32-bit int for stable hex and binary expectations");
 
 	ASSERT(SUCCESS == match_function_output(
 		expected_itoa_stdout_pattern,
 		NULL,
 		capture_librational_itoa_output));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check itoa() conversions and error paths directly
+ *
+ * @details This block exercises the key textual invariants without relying
+ * on demonstration text: INT_MIN and INT_MAX in base 10 (which exercise
+ * the UB-avoidance path documented in rational_itoa.c), zero handling
+ * across multiple bases, the unsigned bit-pattern representation of
+ * negative values in bases other than 10, the use of letters A-Z by the
+ * maximum supported base 36, and the documented error paths
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0002_2(void)
+{
+	INITTEST;
 
 	char ibuf[64];  /* Large enough to hold a 32-bit value printed in base 2 (32 chars + terminator) */
 	char *iret = NULL;
@@ -324,6 +328,31 @@ Return test_librational_0002(void)
 	result = itoa(123,NULL,10);
 	ASSERT(result == NULL);
 	ASSERT(errno == EINVAL);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Run librational itoa conversion tests
+ *
+ * @details The suite runs in two independent blocks. The first captures
+ * the stdout produced by test_itoa() and matches it against a strict
+ * full-output regex. The second uses direct ASSERT checks for boundary
+ * values, supported bases, negative values, and error paths
+ *
+ * @return Return describing success or failure
+ */
+Return test_librational_0002(void)
+{
+	INITTEST;
+
+	/* The hex and binary representations of negative ints below assume 32-bit int.
+	 * The supported targets (Linux x86_64) satisfy this; the static assertion
+	 * prevents silent breakage on any future port to a target with a wider int */
+	_Static_assert(sizeof(int) * CHAR_BIT == 32,"test_librational_0002 expects a 32-bit int for stable hex and binary expectations");
+
+	TEST(test_librational_0002_1,"itoa() demonstration output matches the strict full pattern…");
+	TEST(test_librational_0002_2,"itoa() converts boundaries, bases, negatives and error paths…");
 
 	RETURN_STATUS;
 }
