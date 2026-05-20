@@ -2,9 +2,11 @@
 
 # librational — shared return statuses for C code
 
-`librational` is a small internal library with shared flags, return macros, logging, and helper functions. Its most visible part is the `Return` type, which lets a function return several independent signals in one value instead of one flat numeric code.
+`librational` is a small internal library with shared flags, return macros, logging, value formatting, and helper functions for C code. Its most visible part is the `Return` type, which lets a function return several independent signals in one value instead of one flat numeric code.
 
-This is useful when code needs to know separately:
+Besides `Return` handling, the library can write messages through a shared report/logger layer, read the current time, format numbers with thousands separators, convert byte counts into human-readable text, and convert nanosecond durations into strings with years, months, weeks, days, hours, and smaller units.
+
+This return style is useful when code needs to know separately:
 
 * whether a technical error happened inside the function;
 * whether the function completed normally;
@@ -15,15 +17,16 @@ This is useful when code needs to know separately:
 
 1. [Core idea](#core-idea)
 2. [Quick start](#quick-start)
-3. [Status layers](#status-layers)
-4. [Basic function](#basic-function)
-5. [Check function with YES and NO](#check-function-with-yes-and-no)
-6. [Reading the result correctly](#reading-the-result-correctly)
-7. [Sequential Checks Through status](#sequential-checks-through-status)
-8. [Call chains: run() and call()](#call-chains-run-and-call)
-9. [Global status](#global-status)
-10. [Technical Details](#technical-details)
-11. [Practical rules](#practical-rules)
+3. [Formatting helpers](#formatting-helpers)
+4. [Status layers](#status-layers)
+5. [Basic function](#basic-function)
+6. [Check function with YES and NO](#check-function-with-yes-and-no)
+7. [Reading the result correctly](#reading-the-result-correctly)
+8. [Sequential Checks Through status](#sequential-checks-through-status)
+9. [Call chains: run() and call()](#call-chains-run-and-call)
+10. [Global status](#global-status)
+11. [Technical Details](#technical-details)
+12. [Practical rules](#practical-rules)
 
 ## Core idea
 
@@ -106,6 +109,37 @@ Do not confuse:
 * `NO` is not `FAILURE`;
 * `YES` and `NO` are not passed through `run()` and `call()`;
 * `YES` and `NO` are not returned upward if the current function is not itself a check function.
+
+## Formatting helpers
+
+`librational` also contains small functions for preparing values for human-readable output. They are useful in logs, reports, test messages, and CLI output, where clear text is more useful than rebuilding the same formatting in caller code each time.
+
+The numeric macro `form(value,buffer,buffer_size)` chooses the matching formatter from the argument type. Real values are formatted with a comma as the thousands separator, a dot as the decimal separator, rounding to at most 9 fractional digits, and removal of trailing fractional zeros. Integer values are formatted in groups of three digits. For example:
+
+```c
+char text[FORM_OUTPUT_BUFFER_SIZE];
+
+printf("%s\n",form(1234567.125L,text,sizeof(text))); /* 1,234,567.125 */
+printf("%s\n",form((int)-12345,text,sizeof(text)));  /* -12,345 */
+```
+
+The reentrant functions `form_real_r()`, `form_intmax_r()`, and `form_uintmax_r()` are available for explicit calls. They write the result into caller-provided storage. If the buffer for `form_real_r()` is too small, the function first reduces fractional precision. If the value still does not fit, it writes an empty string. Integer formatters write an empty string when the complete integer value cannot fit.
+
+The `bkbmbgbtbpbeb()` and `bkbmbgbtbpbeb_r()` functions convert a byte count into a string with binary units: `B`, `KiB`, `MiB`, `GiB`, `TiB`, `PiB`, and `EiB`. `FULL_VIEW` shows all non-zero units, while `MAJOR_VIEW` keeps only the largest unit:
+
+```c
+printf("%s\n",bkbmbgbtbpbeb(1536,FULL_VIEW));  /* 1KiB 512B */
+printf("%s\n",bkbmbgbtbpbeb(1536,MAJOR_VIEW)); /* 1KiB */
+```
+
+The `form_date()` and `form_date_r()` functions convert a nanosecond duration into a string with time units. `FULL_VIEW` prints all non-zero parts, while `MAJOR_VIEW` prints only the largest part:
+
+```c
+printf("%s\n",form_date(3600000000001LL,FULL_VIEW));  /* 1h 1ns */
+printf("%s\n",form_date(3600000000001LL,MAJOR_VIEW)); /* 1h */
+```
+
+Functions without the `_r` suffix return a pointer to an internal static buffer. This is convenient for short output, but the next call to the same function overwrites the previous string. Functions with the `_r` suffix accept caller-provided storage and are the right choice when several formatted results must live at the same time or when shared static state should be avoided.
 
 ## Status layers
 
