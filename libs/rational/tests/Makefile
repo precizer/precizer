@@ -142,16 +142,16 @@ tests: test
 run: sanitize
 
 testlibs-coverage: testedlib-coverage
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1 || exit $$?;)
 
 testlibs-sanitize: testedlib-sanitize
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1 || exit $$?;)
 
 testlibs-debug: testedlib-debug
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1 || exit $$?;)
 
 testedlib-coverage:
-	@$(MAKE) -s -C ../ coverage BUILDDIR="$(TESTEDLIB_BUILDDIR)"
+	@$(MAKE) -s -C ../ coverage BUILDDIR="$(TESTEDLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1
 
 coverage: coverage-html
 
@@ -178,7 +178,7 @@ coverage-html: coverage-report
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
 testedlib-sanitize:
-	@$(MAKE) -s -C ../ sanitize BUILDDIR="$(TESTEDLIB_BUILDDIR)"
+	@$(MAKE) -s -C ../ sanitize BUILDDIR="$(TESTEDLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1
 
 sanitize: $(SNTZ_EXE) | testlibs-sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
@@ -195,7 +195,7 @@ $(SNTZ_OBJDIR):
 	@mkdir -p "$(SNTZ_OBJDIR)"
 
 testedlib-debug:
-	@$(MAKE) -s -C ../ debug BUILDDIR="$(TESTEDLIB_BUILDDIR)"
+	@$(MAKE) -s -C ../ debug BUILDDIR="$(TESTEDLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1
 
 debug-build: $(DBG_EXE)
 

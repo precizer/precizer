@@ -66,6 +66,18 @@
 // String functions
 #include <string.h>
 
+/* STATIC keeps internal helpers private in normal builds.
+   Test builds define TESTITALL_TEST_HOOKS when they need to call selected
+   internal helpers directly. In that mode STATIC expands to nothing, so the
+   function names are exported from the object file. This does not make them
+   public API; only matching TESTITALL_TEST_HOOKS declarations expose specific
+   helpers to tests */
+#ifdef TESTITALL_TEST_HOOKS
+	#define STATIC
+#else
+	#define STATIC static
+#endif
+
 /**
  *
  * Macros and preprocessor constants

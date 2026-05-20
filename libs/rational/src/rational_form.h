@@ -7,6 +7,15 @@
 #include <stdint.h>
 #include <stddef.h>
 
+/* These declarations are visible only in test-hook builds.
+   The functions are internal form() helpers; tests use them directly to cover
+   guard branches that are hard to reach through the public formatting API.
+   They are intentionally not part of the librational public API */
+#ifdef TESTITALL_TEST_HOOKS
+const char *form_write_empty(char *,size_t);
+const char *form_write_zero(char *,size_t);
+#endif
+
 /*
  * Reentrant formatter buffer size used by both real and integer formatters.
  *

@@ -520,6 +520,48 @@ static Return test_librational_0001_3(void)
 }
 
 /**
+ * @brief Check test-visible private form helper guards
+ *
+ * @details Directly calls helpers that are normally static. These branches are
+ * defensive guards behind the public form API and cannot all be reached through
+ * the public entry points alone
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0001_6(void)
+{
+	INITTEST;
+
+	char buffer[2] = {'X','Y'};
+
+	/* form_write_empty() returns a literal for invalid storage and clears valid storage */
+	ASSERT(0 == strcmp(form_write_empty(NULL,sizeof(buffer)),""));
+	ASSERT(0 == strcmp(form_write_empty(buffer,0U),""));
+	ASSERT(form_write_empty(buffer,sizeof(buffer)) == buffer);
+	ASSERT(buffer[0] == '\0');
+	ASSERT(buffer[1] == 'Y');
+
+	/* form_write_zero() delegates invalid and too-small storage to form_write_empty() */
+	buffer[0] = 'X';
+	buffer[1] = 'Y';
+	ASSERT(0 == strcmp(form_write_zero(NULL,sizeof(buffer)),""));
+	ASSERT(0 == strcmp(form_write_zero(buffer,0U),""));
+	ASSERT(buffer[0] == 'X');
+	ASSERT(buffer[1] == 'Y');
+
+	ASSERT(form_write_zero(buffer,1U) == buffer);
+	ASSERT(buffer[0] == '\0');
+	ASSERT(buffer[1] == 'Y');
+
+	buffer[0] = 'X';
+	buffer[1] = 'Y';
+	ASSERT(form_write_zero(buffer,sizeof(buffer)) == buffer);
+	ASSERT(0 == strcmp(buffer,"0"));
+
+	RETURN_STATUS;
+}
+
+/**
  * @brief Check byte-size formatting in static and caller-provided buffers
  *
  * @details Validates both the static-buffer variant bkbmbgbtbpbeb()
@@ -732,6 +774,7 @@ Return test_librational_0001(void)
 	TEST(test_librational_0001_1,"form() formats real values with grouping, rounding, _Generic dispatch and caller-buffer return…");
 	TEST(test_librational_0001_2,"integer formatters add grouping, cover platform extremes and preserve caller buffers…");
 	TEST(test_librational_0001_3,"numeric formatters validate NULL/size=0, non-finite values and tiny destination buffers…");
+	TEST(test_librational_0001_6,"private form helpers guard invalid storage and tiny zero buffers…");
 	TEST(test_librational_0001_4,"byte-size formatters cover full and major views, tiny buffers and snprintf failure…");
 	TEST(test_librational_0001_5,"duration formatters cover full and major views, two-buffer isolation and tiny buffers…");
 

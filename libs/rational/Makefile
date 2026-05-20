@@ -22,6 +22,12 @@ endif
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
+# Test builds may pass TESTITALL_TEST_HOOKS=1 when they need direct access to
+# selected internal helpers. Normal builds leave those helpers private
+ifneq ($(TESTITALL_TEST_HOOKS),)
+CFLAGS += -DTESTITALL_TEST_HOOKS
+endif
+
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
 
