@@ -1,5 +1,5 @@
 #include "sute.h"
-#include "mocks_librational.h"
+#include "testmocking.h"
 
 /**
  * @brief Convert a struct timeval into integer milliseconds
@@ -110,6 +110,16 @@ static Return test_librational_0003_2(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that cur_time_ms() and cur_time_ns() share the same epoch
+ *
+ * @details Brackets a cur_time_ns() sample with two cur_time_ms() calls and
+ * verifies that the nanosecond reading, converted to milliseconds, lands
+ * inside the bracketed range. This protects against silent drift between
+ * the two helpers if their clock sources ever diverge
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0003_3(void)
 {
 	INITTEST;
@@ -130,6 +140,17 @@ static Return test_librational_0003_3(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check the complete duration decomposition through form_date_r()
+ *
+ * @details Uses one carefully constructed nanosecond value that exercises every
+ * non-zero unit (years, months, weeks, days, hours, minutes, seconds,
+ * milliseconds, microseconds, nanoseconds) in a single FULL_VIEW string. Also
+ * verifies pointer equality with the caller-provided buffer and that the
+ * static-buffer wrapper form_date() yields the same text
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0003_4(void)
 {
 	INITTEST;
@@ -152,6 +173,16 @@ static Return test_librational_0003_4(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check MAJOR_VIEW unit selection across the full unit ladder
+ *
+ * @details Feeds form_date() exactly one nanosecond count per unit and confirms
+ * that MAJOR_VIEW renders only the matching unit. Covers every branch of the
+ * if-else chain in form_date_r() so any future regression in unit ordering
+ * is caught here rather than at higher-level usage sites
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0003_5(void)
 {
 	INITTEST;
@@ -160,36 +191,54 @@ static Return test_librational_0003_5(void)
 	const long long int ns_in_month = 2628000000000000LL;
 	const long long int ns_in_week = 604800000000000LL;
 	const long long int ns_in_day = 86400000000000LL;
+	const long long int ns_in_hour = 3600000000000LL;
 	const long long int ns_in_minute = 60000000000LL;
 	const long long int ns_in_second = 1000000000LL;
+	const long long int ns_in_millisecond = 1000000LL;
+	const long long int ns_in_microsecond = 1000LL;
 
-	/* Exercise the MAJOR_VIEW decision chain for units not reached by shorter tests */
+	/* Exercise every branch of the MAJOR_VIEW decision chain so unit ordering regressions surface here */
 	ASSERT(0 == strcmp(form_date(ns_in_year,MAJOR_VIEW),"1y"));
 	ASSERT(0 == strcmp(form_date(ns_in_month,MAJOR_VIEW),"1mon"));
 	ASSERT(0 == strcmp(form_date(ns_in_week,MAJOR_VIEW),"1w"));
 	ASSERT(0 == strcmp(form_date(ns_in_day,MAJOR_VIEW),"1d"));
+	ASSERT(0 == strcmp(form_date(ns_in_hour,MAJOR_VIEW),"1h"));
 	ASSERT(0 == strcmp(form_date(ns_in_minute,MAJOR_VIEW),"1min"));
 	ASSERT(0 == strcmp(form_date(ns_in_second,MAJOR_VIEW),"1s"));
+	ASSERT(0 == strcmp(form_date(ns_in_millisecond,MAJOR_VIEW),"1ms"));
+	ASSERT(0 == strcmp(form_date(ns_in_microsecond,MAJOR_VIEW),"1μs"));
+	ASSERT(0 == strcmp(form_date(1LL,MAJOR_VIEW),"1ns"));
 
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that form_date_r() tolerates a failing snprintf
+ *
+ * @details Arms the link-time snprintf mock to return -1 for the next call,
+ * invokes form_date_r() and verifies that the caller buffer is left as an
+ * empty terminated string. SKIP_ON_EVIL_EMPIRE_OS is required because the
+ * mocks rely on GNU ld --wrap, which is not available on Windows targets
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0003_6(void)
 {
 	INITTEST;
 
+	/* The link-time snprintf mock used below relies on GNU ld --wrap, unavailable on Windows */
 	SKIP_ON_EVIL_EMPIRE_OS;
 
 	char date_buffer[MAX_CHARACTERS] = {0};
 
 	/* A failed snprintf inside catdate_r() leaves the caller buffer empty */
-	mocks_librational_snprintf_fail_next(1);
+	testmocking_snprintf_fail_next(1);
 	const char *formatted_date = form_date_r(
 		1000LL,
 		FULL_VIEW,
 		date_buffer,
 		sizeof(date_buffer));
-	mocks_librational_disable();
+	testmocking_snprintf_disable();
 
 	ASSERT(formatted_date == date_buffer);
 	ASSERT(date_buffer[0] == '\0');
@@ -197,22 +246,35 @@ static Return test_librational_0003_6(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that form_date_r() keeps truncated buffers terminated
+ *
+ * @details Arms the link-time snprintf mock to report truncation for the next
+ * call. The mock writes a sentinel 'T' at buffer[0] and reports a length that
+ * forces the production code onto the truncation path. The assertions verify
+ * that the destination is filled up to its last byte and remains NUL
+ * terminated. SKIP_ON_EVIL_EMPIRE_OS is required because the mocks rely on
+ * GNU ld --wrap, which is not available on Windows targets
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0003_7(void)
 {
 	INITTEST;
 
+	/* The link-time snprintf mock used below relies on GNU ld --wrap, unavailable on Windows */
 	SKIP_ON_EVIL_EMPIRE_OS;
 
 	char date_buffer[8] = {0};
 
 	/* Truncation marks the destination as full and preserves NUL termination */
-	mocks_librational_snprintf_truncate_next(1);
+	testmocking_snprintf_truncate_next(1);
 	const char *formatted_date = form_date_r(
 		1001LL,
 		FULL_VIEW,
 		date_buffer,
 		sizeof(date_buffer));
-	mocks_librational_disable();
+	testmocking_snprintf_disable();
 
 	ASSERT(formatted_date == date_buffer);
 	ASSERT(date_buffer[0] == 'T');
@@ -221,21 +283,50 @@ static Return test_librational_0003_7(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check that cur_time_monotonic_ns() returns ordered samples around a measurable interval
+ *
+ * @details Two calls bracket a short nanosleep(). The interval must be strictly
+ * positive (rules out a stuck clock or a wrong unit) and bounded above by a
+ * generous ceiling that tolerates loaded CI runners without becoming a flaky
+ * test. Positivity of the absolute values protects against accidental zero
+ * initialization rather than against any guarantee from the monotonic clock
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0003_8(void)
 {
 	INITTEST;
 
-	/* The monotonic helper is for intervals, so only ordering and positivity are asserted */
+	/* A measurable sleep between samples lets the test assert a strictly positive interval */
 	const long long int before_ns = cur_time_monotonic_ns();
+	const struct timespec sleep_request = { .tv_sec = 0, .tv_nsec = 1000000LL };
+	(void)nanosleep(&sleep_request,NULL);
 	const long long int after_ns = cur_time_monotonic_ns();
 
 	ASSERT(before_ns > 0LL);
 	ASSERT(after_ns > 0LL);
-	ASSERT(after_ns >= before_ns);
+
+	const long long int delta_ns = after_ns - before_ns;
+
+	/* Upper bound is intentionally generous (10 seconds) to keep the test reliable under load */
+	ASSERT(delta_ns > 0LL);
+	ASSERT(delta_ns < 10000000000LL);
 
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check seconds_to_ISOdate() shape, character classes and buffer stability
+ *
+ * @details Verifies that the returned text has the fixed
+ * "YYYY-MM-DD HH:MM:SS" shape, that every position the format reserves for a
+ * decimal digit actually contains a digit, that the separator characters land
+ * on the documented positions, and that the function returns a stable static
+ * buffer (the same pointer on consecutive calls)
+ *
+ * @return Return describing success or failure
+ */
 static Return test_librational_0003_9(void)
 {
 	INITTEST;
@@ -250,6 +341,50 @@ static Return test_librational_0003_9(void)
 	ASSERT(iso_date[10] == ' ');
 	ASSERT(iso_date[13] == ':');
 	ASSERT(iso_date[16] == ':');
+
+	/* Positions reserved for decimal digits in YYYY-MM-DD HH:MM:SS must hold a digit */
+	const size_t digit_positions[] = {0U,1U,2U,3U,5U,6U,8U,9U,11U,12U,14U,15U,17U,18U};
+	for(size_t i = 0U; i < sizeof(digit_positions) / sizeof(digit_positions[0]); i++)
+	{
+		const char ch = iso_date[digit_positions[i]];
+		ASSERT(ch >= '0' && ch <= '9');
+	}
+
+	/* The documented stable static buffer must be reused across consecutive calls */
+	const char *iso_date_again = seconds_to_ISOdate(0);
+	ASSERT(iso_date_again == iso_date);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check that form_date_r() returns an empty string for negative input
+ *
+ * @details The library does not currently document a meaningful rendering for
+ * negative nanosecond counts. asadate() produces non-positive components for
+ * negative inputs, catdate_r() skips non-positive numbers, and the early
+ * zero-handling branch only matches exactly nanoseconds == 0. The test pins
+ * the current behaviour (empty terminated string for both FULL_VIEW and
+ * MAJOR_VIEW) so any unintended change is detected immediately
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0003_10(void)
+{
+	INITTEST;
+
+	char date_buffer[MAX_CHARACTERS];
+
+	/* Sentinel fill verifies that form_date_r() actually wrote the terminator on the negative-input path */
+	memset(date_buffer,'X',sizeof(date_buffer));
+	const char *formatted_full = form_date_r(-1LL,FULL_VIEW,date_buffer,sizeof(date_buffer));
+	ASSERT(formatted_full == date_buffer);
+	ASSERT(date_buffer[0] == '\0');
+
+	memset(date_buffer,'Y',sizeof(date_buffer));
+	const char *formatted_major = form_date_r(-1LL,MAJOR_VIEW,date_buffer,sizeof(date_buffer));
+	ASSERT(formatted_major == date_buffer);
+	ASSERT(date_buffer[0] == '\0');
 
 	RETURN_STATUS;
 }

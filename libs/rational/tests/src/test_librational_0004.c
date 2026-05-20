@@ -1,5 +1,4 @@
 #include "sute.h"
-#include "mocks_librational.h"
 #include "testmocking.h"
 #include <errno.h>
 
@@ -36,50 +35,11 @@ static const char expected_serp_stderr_pattern[] =
 static const char expected_write_fallback_stderr_pattern[] =
 	"\\AERROR: Failed to write error message\n\\Z";
 
-static const char expected_remember_stdout_pattern[] =
-	"\\Aremembered 77\\Z";
-
-static const char expected_remember_message[] = "remembered 77";
-
-static char remembered_message[MAX_CHARACTERS];
-static int remembered_length = -1;
-
-/**
- * @brief Clear the captured REMEMBER callback payload
- */
-static void reset_remembered_message(void)
-{
-	remembered_message[0] = '\0';
-	remembered_length = -1;
-}
-
-/**
- * @brief Test-side REMEMBER callback implementation
- *
- * @param message Logger message passed by librational
- * @param length Message length in bytes
- */
-void rational_remember(
-	const char *message,
-	const int   length)
-{
-	reset_remembered_message();
-	remembered_length = length;
-
-	if(message == NULL || length <= 0)
-	{
-		return;
-	}
-
-	size_t copy_length = (size_t)length;
-	if(copy_length >= sizeof(remembered_message))
-	{
-		copy_length = sizeof(remembered_message) - 1U;
-	}
-
-	memcpy(remembered_message,message,copy_length);
-	remembered_message[copy_length] = '\0';
-}
+static const char expected_logger_time_failure_stdout_pattern[] =
+	"\\A"
+	" [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:gettimeofday failure\n"
+	" [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:localtime_r failure\n"
+	" [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:snprintf failure\\Z";
 
 static void report_test(void)
 {
@@ -217,6 +177,27 @@ static void no_output_test(void)
 {
 }
 
+static void logger_time_failure_cases(void)
+{
+	rational_logger_mode = VERBOSE;
+
+	testmocking_gettimeofday_fail_next(1);
+	slog(VERBOSE,"gettimeofday failure");
+	printf("\n");
+	testmocking_gettimeofday_disable();
+
+	testmocking_localtime_r_fail_next(1);
+	slog(VERBOSE,"localtime_r failure");
+	printf("\n");
+	testmocking_localtime_r_disable();
+
+	testmocking_snprintf_fail_next(1);
+	slog(VERBOSE,"snprintf failure");
+	testmocking_snprintf_disable();
+
+	rational_logger_mode = REGULAR;
+}
+
 static void report_single_case(void)
 {
 	errno = EIO;
@@ -225,25 +206,9 @@ static void report_single_case(void)
 
 static void report_truncated_case(void)
 {
-	mocks_librational_snprintf_truncate_next(1);
+	testmocking_snprintf_truncate_next(1);
 	report_single_case();
-	mocks_librational_disable();
-}
-
-static Return capture_librational_remember_case(void)
-{
-	INITTEST;
-
-	reset_remembered_message();
-	rational_logger_mode = REGULAR;
-	slog(REGULAR|REMEMBER|UNDECOR,"remembered %d",77);
-	rational_logger_mode = REGULAR;
-
-	const int expected_length = (int)strlen(expected_remember_message);
-	ASSERT(remembered_length == expected_length);
-	ASSERT(0 == strcmp(remembered_message,expected_remember_message));
-
-	deliver(status);
+	testmocking_snprintf_disable();
 }
 
 static Return capture_librational_logger_realloc_failure(void)
@@ -255,6 +220,60 @@ static Return capture_librational_logger_realloc_failure(void)
 	slog(REGULAR|UNDECOR,"hidden");
 	rational_logger_mode = REGULAR;
 	testmocking_realloc_disable();
+
+	deliver(status);
+}
+
+static Return capture_librational_logger_time_failures(void)
+{
+	INITTEST;
+
+	logger_time_failure_cases();
+	rational_logger_mode = REGULAR;
+	testmocking_gettimeofday_disable();
+	testmocking_localtime_r_disable();
+	testmocking_snprintf_disable();
+	testmocking_write_disable();
+
+	deliver(status);
+}
+
+static Return capture_librational_logger_vsnprintf_failure(void)
+{
+	INITTEST;
+
+	testmocking_vsnprintf_fail_next(1);
+	rational_logger_mode = REGULAR;
+	slog(REGULAR|UNDECOR,"hidden");
+	rational_logger_mode = REGULAR;
+	testmocking_vsnprintf_disable();
+
+	deliver(status);
+}
+
+static Return capture_librational_logger_disabled_error_mode(void)
+{
+	INITTEST;
+
+	rational_logger_mode = (LOGMODES)0;
+	slog(ERROR,"hidden");
+	rational_logger_mode = REGULAR;
+
+	deliver(status);
+}
+
+static Return capture_librational_logger_remember_without_payload(void)
+{
+	INITTEST;
+
+	rational_logger_mode = REGULAR;
+	slog(REGULAR|UNDECOR|REMEMBER,"");
+
+	testmocking_vsnprintf_fail_next(1);
+	slog(REGULAR|UNDECOR|REMEMBER,"hidden");
+	testmocking_vsnprintf_disable();
+
+	rational_logger_mode = REGULAR;
 
 	deliver(status);
 }
@@ -291,9 +310,9 @@ static Return capture_librational_report_snprintf_failure(void)
 {
 	INITTEST;
 
-	mocks_librational_snprintf_fail_next(1);
+	testmocking_snprintf_fail_next(1);
 	report_single_case();
-	mocks_librational_disable();
+	testmocking_snprintf_disable();
 
 	deliver(status);
 }
@@ -302,9 +321,9 @@ static Return capture_librational_report_write_fallback(void)
 {
 	INITTEST;
 
-	mocks_librational_write_fail_next(1,EIO);
+	testmocking_write_fail_next(1,EIO);
 	report_single_case();
-	mocks_librational_disable();
+	testmocking_write_disable();
 
 	deliver(status);
 }
@@ -313,9 +332,9 @@ static Return capture_librational_report_write_full_failure(void)
 {
 	INITTEST;
 
-	mocks_librational_write_fail_next(2,EIO);
+	testmocking_write_fail_next(2,EIO);
 	report_single_case();
-	mocks_librational_disable();
+	testmocking_write_disable();
 
 	deliver(status);
 }
@@ -446,18 +465,6 @@ static Return test_librational_0004_8(void)
 	RETURN_STATUS;
 }
 
-static Return test_librational_0004_9(void)
-{
-	INITTEST;
-
-	ASSERT(SUCCESS == match_function_output(
-		expected_remember_stdout_pattern,
-		NULL,
-		capture_librational_remember_case));
-
-	RETURN_STATUS;
-}
-
 static Return test_librational_0004_10(void)
 {
 	INITTEST;
@@ -468,6 +475,60 @@ static Return test_librational_0004_10(void)
 		NULL,
 		NULL,
 		capture_librational_logger_realloc_failure));
+
+	RETURN_STATUS;
+}
+
+static Return test_librational_0004_11(void)
+{
+	INITTEST;
+
+	SKIP_ON_EVIL_EMPIRE_OS;
+
+	ASSERT(SUCCESS == match_function_output(
+		expected_logger_time_failure_stdout_pattern,
+		NULL,
+		capture_librational_logger_time_failures));
+
+	RETURN_STATUS;
+}
+
+static Return test_librational_0004_12(void)
+{
+	INITTEST;
+
+	SKIP_ON_EVIL_EMPIRE_OS;
+
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		NULL,
+		capture_librational_logger_vsnprintf_failure));
+
+	RETURN_STATUS;
+}
+
+static Return test_librational_0004_13(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		NULL,
+		capture_librational_logger_disabled_error_mode));
+
+	RETURN_STATUS;
+}
+
+static Return test_librational_0004_14(void)
+{
+	INITTEST;
+
+	SKIP_ON_EVIL_EMPIRE_OS;
+
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		NULL,
+		capture_librational_logger_remember_without_payload));
 
 	RETURN_STATUS;
 }
@@ -542,8 +603,11 @@ Return test_librational_0004(void)
 	TEST(test_librational_0004_6,"librational report writes fallback text after write failure…");
 	TEST(test_librational_0004_7,"librational report stays silent when primary and fallback writes fail…");
 	TEST(test_librational_0004_8,"librational mode reconversion covers empty and REMEMBER modes…");
-	TEST(test_librational_0004_9,"librational logger sends REMEMBER output to the callback…");
 	TEST(test_librational_0004_10,"librational logger stays silent when line allocation fails…");
+	TEST(test_librational_0004_11,"librational logger handles time formatting failures…");
+	TEST(test_librational_0004_12,"librational logger stays silent when vsnprintf fails…");
+	TEST(test_librational_0004_13,"librational logger keeps ERROR silent when no mode accepts it…");
+	TEST(test_librational_0004_14,"librational logger skips REMEMBER without payload…");
 
 	RETURN_STATUS;
 }

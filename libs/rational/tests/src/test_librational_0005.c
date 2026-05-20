@@ -1,5 +1,5 @@
 #include "sute.h"
-#include "mocks_librational.h"
+#include "testmocking.h"
 
 static Return return_yes(void)
 {
@@ -437,15 +437,15 @@ static Return test_librational_0005_14(void)
 
 	SKIP_ON_EVIL_EMPIRE_OS;
 
-	mocks_librational_snprintf_fail_next(1);
+	testmocking_snprintf_fail_next(1);
 	const char *failed_format_status = show_status(FAILURE);
-	mocks_librational_disable();
+	testmocking_snprintf_disable();
 
 	ASSERT(0 == strcmp(failed_format_status,"UNKNOWN"));
 
-	mocks_librational_snprintf_truncate_next(1);
+	testmocking_snprintf_truncate_next(1);
 	const char *truncated_format_status = show_status(FAILURE);
-	mocks_librational_disable();
+	testmocking_snprintf_disable();
 
 	ASSERT(0 == strcmp(truncated_format_status,"T"));
 
