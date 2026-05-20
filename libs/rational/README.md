@@ -18,15 +18,18 @@ This return style is useful when code needs to know separately:
 1. [Core idea](#core-idea)
 2. [Quick start](#quick-start)
 3. [Formatting helpers](#formatting-helpers)
-4. [Status layers](#status-layers)
-5. [Basic function](#basic-function)
-6. [Check function with YES and NO](#check-function-with-yes-and-no)
-7. [Reading the result correctly](#reading-the-result-correctly)
-8. [Sequential Checks Through status](#sequential-checks-through-status)
-9. [Call chains: run() and call()](#call-chains-run-and-call)
-10. [Global status](#global-status)
-11. [Technical Details](#technical-details)
-12. [Practical rules](#practical-rules)
+4. [Time helpers](#time-helpers)
+5. [Status text helpers](#status-text-helpers)
+6. [Reports and logging](#reports-and-logging)
+7. [Status layers](#status-layers)
+8. [Basic function](#basic-function)
+9. [Check function with YES and NO](#check-function-with-yes-and-no)
+10. [Reading the result correctly](#reading-the-result-correctly)
+11. [Sequential Checks Through status](#sequential-checks-through-status)
+12. [Call chains: run() and call()](#call-chains-run-and-call)
+13. [Global status](#global-status)
+14. [Technical Details](#technical-details)
+15. [Practical rules](#practical-rules)
 
 ## Core idea
 
@@ -125,6 +128,15 @@ printf("%s\n",form((int)-12345,text,sizeof(text)));  /* -12,345 */
 
 The reentrant functions `form_real_r()`, `form_intmax_r()`, and `form_uintmax_r()` are available for explicit calls. They write the result into caller-provided storage. If the buffer for `form_real_r()` is too small, the function first reduces fractional precision. If the value still does not fit, it writes an empty string. Integer formatters write an empty string when the complete integer value cannot fit.
 
+The `itoa(value,buffer,base)` function converts an `int` to a string in bases from 2 to 36. In base 10, negative numbers are printed with a leading `-`. In other bases, negative values are printed as an unsigned bit pattern, which is useful for hexadecimal and binary dumps. The buffer must be large enough: the function does not receive its size and cannot protect itself from overflow. For an invalid base, the function writes an empty string, sets `errno = EINVAL`, and returns `buffer`; for a `NULL` buffer, it sets `errno = EINVAL` and returns `NULL`.
+
+```c
+char number[33];
+
+printf("%s\n",itoa(255,number,16));  /* FF */
+printf("%s\n",itoa(-789,number,10)); /* -789 */
+```
+
 The `bkbmbgbtbpbeb()` and `bkbmbgbtbpbeb_r()` functions convert a byte count into a string with binary units: `B`, `KiB`, `MiB`, `GiB`, `TiB`, `PiB`, and `EiB`. `FULL_VIEW` shows all non-zero units, while `MAJOR_VIEW` keeps only the largest unit:
 
 ```c
@@ -140,6 +152,63 @@ printf("%s\n",form_date(3600000000001LL,MAJOR_VIEW)); /* 1h */
 ```
 
 Functions without the `_r` suffix return a pointer to an internal static buffer. This is convenient for short output, but the next call to the same function overwrites the previous string. Functions with the `_r` suffix accept caller-provided storage and are the right choice when several formatted results must live at the same time or when shared static state should be avoided.
+
+## Time helpers
+
+`librational` contains a few small functions for reading time and formatting timestamps. They are useful in logs, tests, and measurements where repeating the same system-clock boilerplate would add noise to caller code.
+
+`cur_time_ms()` returns milliseconds since the Unix epoch from the system wall clock. `cur_time_ns()` returns nanoseconds since the Unix epoch from `CLOCK_REALTIME`. These values are tied to real calendar time and may jump if the system clock is adjusted.
+
+`cur_time_monotonic_ns()` returns nanoseconds from a monotonic clock source when one is available on the target platform. This value is not a calendar timestamp: it is meant for measuring intervals between two events. If a monotonic clock is not available at build time, the name transparently falls back to `cur_time_ns()`.
+
+`seconds_to_ISOdate(seconds)` converts Unix time in seconds to a local-time string shaped as `YYYY-MM-DD HH:MM:SS`. The function returns a pointer to an internal static buffer, so the next call overwrites the previous result. To format the current time, pass `time(NULL)`; the value `0` is the Unix epoch itself, not “now”.
+
+```c
+printf("%lld\n",cur_time_ms());
+printf("%s\n",seconds_to_ISOdate(time(NULL)));
+```
+
+## Status Text Helpers
+
+`show_status(status)` converts a `Return` value to a short string for logs, debug messages, and tests. The zero `OK` status is printed as `OK`, and known flags are joined with `|`, for example `SUCCESS|YES` or `FAILURE|WARNING`. If the value has no known flags, the function returns `UNKNOWN`.
+
+For compound statuses, the function uses an internal static buffer. Copy the string into caller-owned storage if it must survive the next `show_status()` call.
+
+```c
+Return status = SUCCESS | YES;
+printf("%s\n",show_status(status)); /* SUCCESS|YES */
+```
+
+## Reports and Logging
+
+Two low-level report helpers are available for diagnostic messages. `serp(prefix)` prints a message to `stderr` with the current `errno`, source file, and function name. `report(format,...)` prints a formatted error message with source file, function, source line, and decoded `errno`. These helpers are meant for error paths and do not require heap allocation.
+
+```c
+errno = EINVAL;
+serp("Invalid input");
+report("Failed to process item %d",item_id);
+```
+
+The main logger is called through `slog(level,format,...)`. The macro automatically adds the source file, line, and function name, while output is controlled by the global atomic `rational_logger_mode`.
+
+Main modes:
+
+* `REGULAR` — regular messages
+* `VERBOSE` — detailed messages with timestamp and call site
+* `TESTING` — messages for test output
+* `ERROR` — error messages
+* `SILENT` — suppress regular output
+* `UNDECOR` — print only the payload without logger prefixes
+* `REMEMBER` — pass the prepared line to the optional `rational_remember()` callback
+* `VISIBLE_IN_SILENT` — allow a specific message to appear even in `SILENT`
+
+`rational_reconvert(mode)` returns a human-readable string with mode flag names, for example `REGULAR | VERBOSE`. `rational_convert(NAME)` is a simple macro-stringify helper that turns a macro name into text.
+
+```c
+rational_logger_mode = REGULAR | VERBOSE;
+slog(REGULAR,"Started\n");
+slog(VERBOSE,"Detailed value: %d\n",value);
+```
 
 ## Status layers
 
