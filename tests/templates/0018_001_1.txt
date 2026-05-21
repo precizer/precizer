@@ -1,6 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=/.+/tests/fixtures/levels
+TESTING:argument:roots=/.+/tests/fixtures/levels
 TESTING:argument:database=database3\.db
 TESTING:argument:db_file_name=database3\.db
 TESTING:argument:maxdepth=3
