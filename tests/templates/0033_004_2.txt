@@ -1,6 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/huge
+TESTING:argument:roots=tests/fixtures/huge
 TESTING:argument:database=0033_interrupt_rehash\.db
 TESTING:argument:db_file_name=0033_interrupt_rehash\.db
 TESTING:argument:update=yes

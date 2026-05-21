@@ -1,5 +1,5 @@
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-paths=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_file_name=0034_lsize_vs_asize_flags\.db; verbose=yes; [^\n]*update=yes; [^\n]*rational_logger_mode=VERBOSE
+roots=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_file_name=0034_lsize_vs_asize_flags\.db; verbose=yes; [^\n]*update=yes; [^\n]*rational_logger_mode=VERBOSE
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is complete
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Checking directory paths provided as arguments
