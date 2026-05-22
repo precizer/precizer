@@ -8,27 +8,26 @@
 Return test_libmem_all(void)
 {
 	INITTEST;
+
 	bool first_header = true;
 
 	HEADER("Allocation Lifecycle");
+	SUTE(test_libmem_0000,"Numbered README examples for public libmem usage...");
 	TEST(test_libmem_0001,"Copy an array of size 0…");
 
 	HEADER("Repeated Type Coverage");
-	TEST(test_libmem_0005,"Random-size descriptor round-trip across element types (SHA-512)…");
-
-	HEADER("Global status propagation");
-	TEST(test_libmem_0071,"Process-wide INFO does not skip libmem resize bookkeeping…");
+	SUTE(test_libmem_0005,"Random-size descriptor round-trip across element types (SHA-512)…");
 
 	HEADER("Telemetry");
 	SUTE(test_libmem_0009,"Telemetry counters track libmem state transitions…");
 
 	HEADER("Typed Access");
 	TEST(test_libmem_0010,"Typed point descriptors and m_resize flags…");
-	TEST(test_libmem_0011,"Typed point raw access and descriptor copying…");
-	TEST(test_libmem_0012,"Typed point raw concat with shrink and regrow…");
+	SUTE(test_libmem_0011,"Typed point raw access and descriptor copying…");
+	SUTE(test_libmem_0012,"Typed point m_concat_data after RELEASE_UNUSED shrink and regrow…");
 
 	HEADER("Initial Modes");
-	TEST(test_libmem_0013,"create supports optional data or string initial mode…");
+	SUTE(test_libmem_0013,"m_create initial modes and fixed-string appends for byte and wide descriptors…");
 
 	HEADER("Descriptor Collections");
 	TEST(test_libmem_0069,"Descriptor-backed arrays support item access and foreach traversal…");
@@ -51,8 +50,8 @@ Return test_libmem_all(void)
 	TEST(test_libmem_0062,"libmem data wrappers reject incompatible cross-type payloads…");
 
 	HEADER("String Access");
-	TEST(test_libmem_0015,"String resize and raw writable access keep cached metadata coherent…");
-	TEST(test_libmem_0016,"String copy and concat helpers from the example…");
+	SUTE(test_libmem_0015,"String conversion, resize, raw access, and cleanup keep metadata coherent…");
+	SUTE(test_libmem_0016,"String copy and concat helpers cover fixed, bounded, and descriptor sources…");
 	TEST(test_libmem_0017,"String m_resize flags preserve terminators and zero-fill…");
 	TEST(test_libmem_0067,"m_string returns soft read-only views for byte and wide string descriptors…");
 
@@ -104,6 +103,9 @@ Return test_libmem_all(void)
 
 	HEADER("Aliasing");
 	TEST(test_libmem_0066,"libmem aliasing scenarios for string and data descriptors…");
+
+	HEADER("Global status propagation");
+	TEST(test_libmem_0071,"Process-wide INFO does not skip libmem resize bookkeeping…");
 
 	RETURN_STATUS;
 }

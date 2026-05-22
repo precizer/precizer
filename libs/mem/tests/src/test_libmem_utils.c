@@ -1,5 +1,6 @@
 #include "test_libmem_utils.h"
 
+#if SHOW_TEST
 /**
  * @brief Prints SHA-512 hash in hexadecimal format
  * @details Outputs each byte of the hash as a two-digit hexadecimal number
@@ -17,6 +18,7 @@ void print_hash(const unsigned char *hash)
 	}
 	echo(STDERR,"\n");
 }
+#endif
 
 /**
  * @brief Fill the descriptor with sequential point data
@@ -32,17 +34,17 @@ Return fill_points(memory *points)
 	point *typed_points = m_data(point,points);
 
 	if(typed_points == NULL)
-	{
-		status = FAILURE;
-	} else {
-		for(size_t point_index = 0; point_index < points->length; ++point_index)
-		{
-			typed_points[point_index] = (point){
-				(int)(point_index * 2 + 1),
-				(int)(point_index * 2 + 2)
-			};
-		}
-	}
+  {
+    provide(FAILURE);
+  }
+
+  for(size_t point_index = 0; point_index < points->length; ++point_index)
+  {
+    typed_points[point_index] = (point){
+      (int)(point_index * 2 + 1),
+      (int)(point_index * 2 + 2)
+    };
+  }
 
 	provide(status);
 }
@@ -61,11 +63,9 @@ Return set_raw_descriptor_bytes(
 	size_t              byte_count)
 {
 	Return status = SUCCESS;
-	int failed_line = 0;
 
 	ASSERT(SUCCESS == m_copy_buffer(descriptor,byte_count,bytes));
 
-	(void)failed_line;
 	return(status);
 }
 
@@ -85,7 +85,6 @@ Return expect_raw_descriptor_bytes(
 	size_t              expected_length)
 {
 	Return status = SUCCESS;
-	int failed_line = 0;
 
 	size_t actual_size = 0;
 
@@ -101,13 +100,12 @@ Return expect_raw_descriptor_bytes(
 		const unsigned char *actual_bytes = (const unsigned char *)m_raw_data_ro(descriptor);
 		ASSERT(actual_bytes != NULL);
 
-		if(actual_bytes != NULL)
+		IF(actual_bytes != NULL)
 		{
 			ASSERT(0 == memcmp(actual_bytes,expected_bytes,expected_size));
 		}
 	}
 
-	(void)failed_line;
 	return(status);
 }
 
@@ -123,7 +121,6 @@ Return run_mem_core_data_case(
 	const mem_core_data_case *case_data)
 {
 	Return status = SUCCESS;
-	int failed_line = 0;
 
 	ASSERT(descriptors != NULL);
 	ASSERT(case_data != NULL);
@@ -144,6 +141,5 @@ Return run_mem_core_data_case(
 		case_data->expected_size,
 		case_data->expected_length));
 
-	(void)failed_line;
 	return(status);
 }

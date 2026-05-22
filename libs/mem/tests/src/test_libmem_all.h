@@ -10,11 +10,11 @@
 
 Return test_libmem_all(void);
 
+Return test_libmem_0000(void);
 Return test_libmem_0001(void);
 
 Return test_libmem_0005(void);
 Return test_libmem_0009(void);
-Return test_libmem_0071(void);
 Return test_libmem_0010(void);
 Return test_libmem_0011(void);
 Return test_libmem_0012(void);
@@ -75,5 +75,6 @@ Return test_libmem_0067(void);
 
 Return test_libmem_0069(void);
 Return test_libmem_0070(void);
+Return test_libmem_0071(void);
 
 #endif
