@@ -140,6 +140,108 @@ static Return check_sha512_boundary_size(size_t message_size)
 }
 
 /**
+ * @brief Check the byte just before the SHA-512 padding threshold
+ * @details A 111-byte message leaves exactly enough room for padding and the
+ * length field in one final block, so one-shot and chunked hashing must agree
+ *
+ * @return SUCCESS when the 111-byte digest is stable across input styles
+ */
+static Return test_libsha512_0004_1(void)
+{
+	INITTEST;
+
+	/* Exercise the byte immediately before the 112-byte padding boundary */
+	run(check_sha512_boundary_size(111U));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check the SHA-512 padding threshold itself
+ * @details A 112-byte message reaches the point where final padding must spill
+ * into an additional block, which is a classic edge for SHA-512 implementations
+ *
+ * @return SUCCESS when the 112-byte digest is stable across input styles
+ */
+static Return test_libsha512_0004_2(void)
+{
+	INITTEST;
+
+	/* Exercise the exact boundary where SHA-512 final padding changes shape */
+	run(check_sha512_boundary_size(112U));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check the byte just after the SHA-512 padding threshold
+ * @details A 113-byte message confirms that the post-threshold finalization
+ * path still produces the same digest for one-shot and chunked callers
+ *
+ * @return SUCCESS when the 113-byte digest is stable across input styles
+ */
+static Return test_libsha512_0004_3(void)
+{
+	INITTEST;
+
+	/* Exercise the first byte after the 112-byte padding boundary */
+	run(check_sha512_boundary_size(113U));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check the byte just before a full SHA-512 block
+ * @details A 127-byte message leaves one byte to complete the 128-byte block
+ * size, making it a useful streaming boundary for chunked updates
+ *
+ * @return SUCCESS when the 127-byte digest is stable across input styles
+ */
+static Return test_libsha512_0004_4(void)
+{
+	INITTEST;
+
+	/* Exercise the byte immediately before a full SHA-512 block */
+	run(check_sha512_boundary_size(127U));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check an exact full SHA-512 block
+ * @details A 128-byte message verifies the path where update processing can
+ * compress a full block before final padding is added
+ *
+ * @return SUCCESS when the 128-byte digest is stable across input styles
+ */
+static Return test_libsha512_0004_5(void)
+{
+	INITTEST;
+
+	/* Exercise the exact 128-byte SHA-512 block size */
+	run(check_sha512_boundary_size(128U));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check the byte just after a full SHA-512 block
+ * @details A 129-byte message proves that hashing remains stable immediately
+ * after a block is compressed and new buffered input begins
+ *
+ * @return SUCCESS when the 129-byte digest is stable across input styles
+ */
+static Return test_libsha512_0004_6(void)
+{
+	INITTEST;
+
+	/* Exercise the first byte after a full SHA-512 block */
+	run(check_sha512_boundary_size(129U));
+
+	RETURN_STATUS;
+}
+
+/**
  * @brief Check SHA-512 behavior around block and padding boundaries
  * @details The selected sizes sit on both sides of important internal limits:
  * 112 bytes for final padding and 128 bytes for a full SHA-512 block
@@ -150,16 +252,14 @@ Return test_libsha512_0004(void)
 {
 	INITTEST;
 
-	/* These sizes sit just before, on, and just after SHA-512 padding and block
-	   limits. That keeps the test small while touching the important edges */
-	const size_t boundary_sizes[] = {111U,112U,113U,127U,128U,129U};
-
 	/* Exercise each boundary independently so a failure points to the exact
 	   message size that broke the one-shot versus chunked guarantee */
-	for(size_t size_index = 0U; SUCCESS == status && size_index < sizeof(boundary_sizes) / sizeof(boundary_sizes[0]); size_index++)
-	{
-		run(check_sha512_boundary_size(boundary_sizes[size_index]));
-	}
+	TEST(test_libsha512_0004_1,"111-byte input stays stable just before SHA-512 padding spillover...");
+	TEST(test_libsha512_0004_2,"112-byte input stays stable at SHA-512 padding spillover...");
+	TEST(test_libsha512_0004_3,"113-byte input stays stable just after SHA-512 padding spillover...");
+	TEST(test_libsha512_0004_4,"127-byte input stays stable just before a full SHA-512 block...");
+	TEST(test_libsha512_0004_5,"128-byte input stays stable at a full SHA-512 block...");
+	TEST(test_libsha512_0004_6,"129-byte input stays stable just after a full SHA-512 block...");
 
 	RETURN_STATUS;
 }

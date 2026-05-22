@@ -1,7 +1,7 @@
 #include "test_libsha512_utils.h"
 
-/* Largest SHA-512 bit count that still represents a whole number of bytes */
-#define SHA512_TEST_MAX_BYTE_ALIGNED_BITS UINT64_C(0xfffffffffffffff8)
+/* Largest byte-aligned bit count; relies on SHA512_MAX_BIT_COUNT == UINT64_MAX */
+#define SHA512_TEST_MAX_BYTE_ALIGNED_BITS (UINT64_MAX & ~(uint64_t)7U)
 
 /**
  * @brief Check that the public API rejects missing pointers
@@ -10,11 +10,9 @@
  *
  * @return SUCCESS when each NULL argument is rejected cleanly
  */
-static Return check_sha512_rejects_missing_arguments(void)
+static Return test_libsha512_0003_1(void)
 {
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
+	INITTEST;
 
 	static const unsigned char sample_bytes[] = {0x61};
 	SHA512_Context context = {0};
@@ -47,7 +45,7 @@ static Return check_sha512_rejects_missing_arguments(void)
 	call(m_del(input));
 	call(m_del(digest));
 
-	provide(status);
+	RETURN_STATUS;
 }
 
 /**
@@ -58,11 +56,9 @@ static Return check_sha512_rejects_missing_arguments(void)
  *
  * @return SUCCESS when damaged buffer state is rejected
  */
-static Return check_sha512_rejects_damaged_buffer_length(void)
+static Return test_libsha512_0003_2(void)
 {
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
+	INITTEST;
 
 	static const unsigned char sample_bytes[] = {0x61};
 	SHA512_Context context = {0};
@@ -93,7 +89,7 @@ static Return check_sha512_rejects_damaged_buffer_length(void)
 	call(m_del(input));
 	call(m_del(digest));
 
-	provide(status);
+	RETURN_STATUS;
 }
 
 /**
@@ -104,11 +100,9 @@ static Return check_sha512_rejects_damaged_buffer_length(void)
  *
  * @return SUCCESS when update and finalization both report CRYPT_HASH_OVERFLOW
  */
-static Return check_sha512_rejects_length_overflow(void)
+static Return test_libsha512_0003_3(void)
 {
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
+	INITTEST;
 
 	static const unsigned char sample_bytes[] = {0x61};
 	SHA512_Context context = {0};
@@ -145,7 +139,7 @@ static Return check_sha512_rejects_length_overflow(void)
 	call(m_del(input));
 	call(m_del(digest));
 
-	provide(status);
+	RETURN_STATUS;
 }
 
 /**
@@ -162,9 +156,9 @@ Return test_libsha512_0003(void)
 
 	/* Keep invalid-use checks split by user story: missing storage, damaged
 	   context state, and input that is too large to represent safely */
-	run(check_sha512_rejects_missing_arguments());
-	run(check_sha512_rejects_damaged_buffer_length());
-	run(check_sha512_rejects_length_overflow());
+	TEST(test_libsha512_0003_1,"Missing SHA-512 pointers return CRYPT_INVALID_ARG...");
+	TEST(test_libsha512_0003_2,"A damaged SHA-512 buffer length is rejected before hashing continues...");
+	TEST(test_libsha512_0003_3,"SHA-512 length overflow returns CRYPT_HASH_OVERFLOW before wraparound...");
 
 	RETURN_STATUS;
 }

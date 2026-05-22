@@ -41,6 +41,8 @@ Return test_libsha512_0002(void)
 		{ plan_byte_at_a_time, sizeof(plan_byte_at_a_time) / sizeof(plan_byte_at_a_time[0]) }
 	};
 
+	size_t message_length = 0U;
+
 	/* Allocate all test data through libmem, matching the style used by the
 	   other library test suites */
 	m_create(char,message,MEMORY_STRING);
@@ -48,12 +50,14 @@ Return test_libsha512_0002(void)
 	m_create(unsigned char,one_shot_digest);
 	m_create(unsigned char,chunked_digest);
 
-	/* Prepare the message and compute the one-shot reference digest that every
-	   chunked variant below must reproduce byte-for-byte */
+	/* Prepare the message, resolve its libmem-tracked length through the public
+	   helper, and compute the one-shot reference digest that every chunked
+	   variant below must reproduce byte-for-byte */
 	ASSERT(SUCCESS == m_copy_fixed_string(message,sizeof(message_text),message_text));
+	ASSERT(SUCCESS == m_string_length(message,&message_length));
 	ASSERT(SUCCESS == calculate_sha512_digest(
 		(const unsigned char *)m_text(message),
-		message->string_length,
+		message_length,
 		one_shot_digest));
 
 	/* Replay the message through every chunk plan. m_copy_buffer rewrites the
@@ -67,7 +71,7 @@ Return test_libsha512_0002(void)
 			chunk_plans[plan_index].sizes));
 		ASSERT(SUCCESS == calculate_sha512_digest_in_chunks(
 			(const unsigned char *)m_text(message),
-			message->string_length,
+			message_length,
 			chunks,
 			chunked_digest));
 		ASSERT(SUCCESS == assert_sha512_digest_matches(one_shot_digest,chunked_digest));

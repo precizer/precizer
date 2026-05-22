@@ -186,6 +186,8 @@ Return check_sha512_vector(const sha512_digest_vector *vector)
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
+	size_t message_length = 0U;
+
 	m_create(char,message,MEMORY_STRING);
 	m_create(unsigned char,digest);
 	m_create(unsigned char,expected_digest);
@@ -196,13 +198,14 @@ Return check_sha512_vector(const sha512_digest_vector *vector)
 	ASSERT(vector->message_text != NULL);
 	ASSERT(vector->expected_digest != NULL);
 	ASSERT(SUCCESS == m_copy_fixed_string(message,vector->message_size + 1U,vector->message_text));
-	ASSERT(message->string_length == vector->message_size);
+	ASSERT(SUCCESS == m_string_length(message,&message_length));
+	ASSERT(message_length == vector->message_size);
 
 	/* Hash the prepared message and copy the expected digest into the same
 	   descriptor style before comparing both byte arrays */
 	ASSERT(SUCCESS == calculate_sha512_digest(
 		(const unsigned char *)m_text(message),
-		message->string_length,
+		message_length,
 		digest));
 	ASSERT(SUCCESS == m_copy_buffer(
 		expected_digest,

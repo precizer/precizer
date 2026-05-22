@@ -62,6 +62,118 @@ static const unsigned char fips_multi_block_digest[SHA512_DIGEST_LENGTH] = {
 	0x5e,0x96,0xe5,0x5b,0x87,0x4b,0xe9,0x09
 };
 
+/* Use recognizable messages so the expected digests can be checked against
+   common SHA-512 references without extra project context */
+static const char empty_message[] = "";
+static const char abc_message[] = "abc";
+static const char hello_world_message[] = "Hello World";
+
+/* FIPS-180-2 Appendix C.2 sequence: 112 ASCII bytes that, together with
+   SHA-512 padding, span two 128-byte compression blocks */
+static const char fips_multi_block_message[] =
+	"abcdefghbcdefghicdefghijdefghijkefghijkl"
+	"fghijklmghijklmnhijklmnoijklmnopjklmnopq"
+	"klmnopqrlmnopqrsmnopqrstnopqrstu";
+
+/**
+ * @brief Check the published SHA-512 digest for empty input
+ * @details Empty input is a useful user-facing baseline: callers can hash zero
+ * bytes and still expect a stable, standard 64-byte SHA-512 digest
+ *
+ * @return SUCCESS when the empty message matches the FIPS reference digest
+ */
+static Return test_libsha512_0001_1(void)
+{
+	INITTEST;
+
+	/* Keep the message and expected digest together so this subtest reads as one
+	   small reference example */
+	const sha512_digest_vector vector = {
+		.message_text = empty_message,
+		.message_size = sizeof(empty_message) - 1U,
+		.expected_digest = empty_digest
+	};
+
+	/* Run the vector through the shared helper used by every reference case */
+	run(check_sha512_vector(&vector));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check the canonical SHA-512 digest for "abc"
+ * @details The "abc" vector is the short SHA-512 example most developers know.
+ * It proves that ordinary single-block text input reaches the expected digest
+ *
+ * @return SUCCESS when "abc" matches the FIPS reference digest
+ */
+static Return test_libsha512_0001_2(void)
+{
+	INITTEST;
+
+	/* Keep this compact reference vector local to the subtest that reports it */
+	const sha512_digest_vector vector = {
+		.message_text = abc_message,
+		.message_size = sizeof(abc_message) - 1U,
+		.expected_digest = abc_digest
+	};
+
+	/* The common helper handles libmem setup, hashing, and byte comparison */
+	run(check_sha512_vector(&vector));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check the widely cited SHA-512 digest for "Hello World"
+ * @details This vector is not a FIPS appendix case, but it is easy to reproduce
+ * with common SHA-512 tools and helps people sanity-check the library quickly
+ *
+ * @return SUCCESS when "Hello World" matches the expected public digest
+ */
+static Return test_libsha512_0001_3(void)
+{
+	INITTEST;
+
+	/* Use an informal but recognizable message that is convenient to verify
+	   outside the project */
+	const sha512_digest_vector vector = {
+		.message_text = hello_world_message,
+		.message_size = sizeof(hello_world_message) - 1U,
+		.expected_digest = hello_world_digest
+	};
+
+	/* Hash and compare the vector through the same route as the FIPS examples */
+	run(check_sha512_vector(&vector));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check the FIPS multi-block SHA-512 example
+ * @details The 896-bit FIPS vector forces SHA-512 finalization to process more
+ * than one block, so it protects behavior that short examples cannot reach
+ *
+ * @return SUCCESS when the 896-bit message matches the FIPS reference digest
+ */
+static Return test_libsha512_0001_4(void)
+{
+	INITTEST;
+
+	/* Keep the long FIPS vector in one descriptor so a failure names this exact
+	   multi-block reference case in the test output */
+	const sha512_digest_vector vector = {
+		.message_text = fips_multi_block_message,
+		.message_size = sizeof(fips_multi_block_message) - 1U,
+		.expected_digest = fips_multi_block_digest
+	};
+
+	/* The shared vector helper keeps this check consistent with the short cases */
+	run(check_sha512_vector(&vector));
+
+	RETURN_STATUS;
+}
+
 /**
  * @brief Check SHA-512 answers that users can verify from public references
  * @details Three compact messages (the empty string, "abc" and "Hello World")
@@ -76,49 +188,12 @@ Return test_libsha512_0001(void)
 {
 	INITTEST;
 
-	/* Use recognizable messages so the expected digests can be checked against
-	   common SHA-512 references without extra project context. The last one is
-	   the FIPS-180-2 Appendix C.2 sequence: 112 ASCII bytes that, together
-	   with SHA-512 padding, span two 128-byte compression blocks */
-	static const char empty_message[] = "";
-	static const char abc_message[] = "abc";
-	static const char hello_world_message[] = "Hello World";
-	static const char fips_multi_block_message[] =
-		"abcdefghbcdefghicdefghijdefghijkefghijkl"
-		"fghijklmghijklmnhijklmnoijklmnopjklmnopq"
-		"klmnopqrlmnopqrsmnopqrstnopqrstu";
-
-	/* Keep each message beside its known digest. If one vector fails, the
-	   failing case is easy to identify and compare by hand */
-	const sha512_digest_vector vectors[] = {
-		{
-			.message_text = empty_message,
-			.message_size = sizeof(empty_message) - 1U,
-			.expected_digest = empty_digest
-		},
-		{
-			.message_text = abc_message,
-			.message_size = sizeof(abc_message) - 1U,
-			.expected_digest = abc_digest
-		},
-		{
-			.message_text = hello_world_message,
-			.message_size = sizeof(hello_world_message) - 1U,
-			.expected_digest = hello_world_digest
-		},
-		{
-			.message_text = fips_multi_block_message,
-			.message_size = sizeof(fips_multi_block_message) - 1U,
-			.expected_digest = fips_multi_block_digest
-		}
-	};
-
-	/* Run every public reference vector through the same helper so all standard
-	   examples are checked in exactly the same way */
-	for(size_t vector_index = 0U; SUCCESS == status && vector_index < sizeof(vectors) / sizeof(vectors[0]); vector_index++)
-	{
-		run(check_sha512_vector(&vectors[vector_index]));
-	}
+	/* Each vector is its own SUTE test so the output names the exact reference
+	   message that failed */
+	TEST(test_libsha512_0001_1,"Empty input hashes to the FIPS SHA-512 digest...");
+	TEST(test_libsha512_0001_2,"The canonical abc message hashes to the FIPS SHA-512 digest...");
+	TEST(test_libsha512_0001_3,"Hello World hashes to the widely cited SHA-512 digest...");
+	TEST(test_libsha512_0001_4,"The 896-bit FIPS message exercises multi-block SHA-512 hashing...");
 
 	RETURN_STATUS;
 }
