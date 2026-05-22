@@ -8,7 +8,7 @@ Return finish(void)
 
 	HEADER("Telemetry");
 	printf(WHITE);
-	telemetry_final_summary();
+	telemetry_summary();
 	printf(RESET);
 
 	return(SUCCESS);
