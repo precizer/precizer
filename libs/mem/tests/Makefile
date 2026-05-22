@@ -37,8 +37,8 @@ BUILDDIR ?= ../.builds
 LIBDIR = $(patsubst lib%,%,$(LIBNAME))
 TEST_BUILDDIR = $(BUILDDIR)/$(LIBDIR)/$(EXE)
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
-LIBS = rational xdiff sha512 testitall testmocking
-LINK_LIBS = testitall $(LIBDIR) sha512 xdiff rational testmocking
+LIBS = testitall xdiff rational testmocking sha512
+LINK_LIBS = $(LIBDIR) $(LIBS)
 TESTEDLIB_BUILDDIR = tests/$(BUILDDIR)
 DEPLIB_BUILDDIR = ../$(LIBDIR)/tests/$(BUILDDIR)
 
@@ -52,7 +52,7 @@ EXT_LDLIBS = $(filter-out $(foreach d,$(LINK_LIBS),-l$d),$(LDLIBS))
 
 # Link-time wrappers for mock-based allocator failure injection. Add
 # more function names to WRAPFUNCS as new mocks are introduced
-WRAPFUNCS = malloc realloc
+WRAPFUNCS = malloc realloc snprintf vsnprintf write gettimeofday localtime_r
 ifeq ($(UNAME_S),Darwin)
 # macOS lld does not honor -Wl,--wrap; mocks degrade to a no-op and the
 # affected subtests early-return through #ifdef EVIL_EMPIRE_OS
@@ -63,7 +63,7 @@ endif
 
 # Additional include paths for external libraries
 INCPATH += -I../src/
-INCPATH += $(foreach d,$(LIBS),-I../../$(d)/src/)
+INCPATH += $(foreach d,$(LINK_LIBS),-I../../$(d)/src/)
 
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
@@ -116,7 +116,6 @@ COV_RPATH = -Wl,-rpath,@executable_path/../../../$(COV)/libs,-rpath,@executable_
 else
 COV_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(COV)/libs
 endif
-
 COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS = -lgcov --coverage
 
@@ -154,6 +153,8 @@ DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
 DBG_LIBDIR = $(BUILDDIR)/$(DBG)/libs
+DBG_LIB_OBJDIR = $(DBG_LIBDIR)/obj
+DBG_LIB_OBJS = $(foreach lib,$(LINK_LIBS),$(DBG_LIB_OBJDIR)/$(lib)/*.o)
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/../../../$(DBG)/libs,-rpath,@executable_path
@@ -164,7 +165,7 @@ DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL -DT
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: testedlib-coverage testedlib-sanitize testedlib-debug
-.PHONY: memlib-coverage memlib-sanitize memlib-debug testlibs-coverage testlibs-sanitize testlibs-debug
+.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
 .PHONY: debug-build compile-commands clean-compile-commands cppcheck print-%
 
 # Default build
@@ -173,6 +174,12 @@ all: sanitize
 test: sanitize
 
 tests: test
+
+tests-sanitize: sanitize
+
+tests-debug: debug
+
+tests-coverage: coverage
 
 run: sanitize
 
@@ -190,8 +197,6 @@ testlibs-debug: testedlib-debug
 #
 testedlib-coverage:
 	@$(MAKE) -s -C ../ coverage BUILDDIR="$(TESTEDLIB_BUILDDIR)"
-
-memlib-coverage: testedlib-coverage
 
 coverage: coverage-html
 
@@ -213,7 +218,7 @@ coverage-report: $(COV_EXE)
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --branch-coverage --rc lcov_excl_br_line='(^\s*RETURN_STATUS|SLOWTEST\s*;)|(\b(?:provide|ASSERT|IF|TEST|SUTE)\s*\()' --directory $(COV_OBJDIR) --directory $(COV_LIB_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
+	@lcov --capture --branch-coverage --rc lcov_excl_br_line='(^\s*RETURN_STATUS|SLOWTEST\s*;)|(\b(?:provide|deliver|ask|run|call|ASSERT|IF|HEADER|TEST|SUTE)\s*\()' --directory $(COV_OBJDIR) --directory $(COV_LIB_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
 	@genhtml --branch-coverage $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
@@ -222,8 +227,6 @@ coverage-html: coverage-report
 #
 testedlib-sanitize:
 	@$(MAKE) -s -C ../ sanitize BUILDDIR="$(TESTEDLIB_BUILDDIR)"
-
-memlib-sanitize: testedlib-sanitize
 
 sanitize: $(SNTZ_EXE) | testlibs-sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
@@ -245,15 +248,13 @@ $(SNTZ_OBJDIR):
 testedlib-debug:
 	@$(MAKE) -s -C ../ debug BUILDDIR="$(TESTEDLIB_BUILDDIR)"
 
-memlib-debug: testedlib-debug
-
 debug-build: $(DBG_EXE)
 
 debug: debug-build | testlibs-debug
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) testlibs-debug
-	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $(DBG_OBJS) $(LDLIBS)
+	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $(DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS)
 ifneq ($(TESTS_DYNAMIC),)
 	@echo "$@ linked dynamically with debug flags, not stripped"
 else

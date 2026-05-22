@@ -2,7 +2,7 @@
 EXE=testitall
 
 # Name of the library under test
-LIBNAME=librational
+LIBNAME=libsha512
 
 # Config settings:
 # The --no-print-directory option of make tells make not to print the message about entering and leaving the working directory
@@ -37,7 +37,7 @@ BUILDDIR ?= ../.builds
 LIBDIR = $(patsubst lib%,%,$(LIBNAME))
 TEST_BUILDDIR = $(BUILDDIR)/$(LIBDIR)/$(EXE)
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
-LIBS = testitall xdiff testmocking mem
+LIBS = testitall xdiff rational testmocking mem
 LINK_LIBS = $(LIBDIR) $(LIBS)
 TESTEDLIB_BUILDDIR = tests/$(BUILDDIR)
 DEPLIB_BUILDDIR = ../$(LIBDIR)/tests/$(BUILDDIR)
@@ -163,7 +163,7 @@ DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(DBG)/libs
 endif
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 
-.PHONY: all clean debug sanitize coverage run test tests tests-sanitize tests-debug tests-coverage coverage-report coverage-html format
+.PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: testedlib-coverage testedlib-sanitize testedlib-debug
 .PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
 .PHONY: debug-build compile-commands clean-compile-commands cppcheck print-%
