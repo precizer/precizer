@@ -9,6 +9,7 @@
 #define SHORTTAB "\033[?5W"     /* 2 bytes tab */
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
+#define GRAY    "\033[90m"      /* Gray */
 #define RED     "\033[31m"      /* Red */
 #define GREEN   "\033[32m"      /* Green */
 #define YELLOW  "\033[33m"      /* Yellow */
