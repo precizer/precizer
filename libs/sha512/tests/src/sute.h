@@ -6,3 +6,5 @@
 #include "mem.h"
 #include "sha512.h"
 #include "test_libsha512_all.h"
+
+Return finish(void);

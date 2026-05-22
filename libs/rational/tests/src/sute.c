@@ -12,6 +12,8 @@ int main(void)
 	HEADER("Testing of librational");
 	TEST(test_librational_all,"librational test set…");
 
+	RUN(finish,"Telemetry");
+
 	HEADER("Finishing");
 	SUTEDONE;
 }

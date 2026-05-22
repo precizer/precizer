@@ -11,5 +11,8 @@
 #include <string.h>
 #include <stdatomic.h>
 #include "testitall.h"
+#include "mem.h"
 #include "rational.h"
 #include "test_librational_all.h"
+
+Return finish(void);
