@@ -228,12 +228,12 @@ Return mem_resize(
 		if(new_count != 0 || allow_shrink == false || previous_allocated_bytes == 0)
 		{
 			telemetry_noop_resizes();
-			telemetry_noop_resize_streak_advanced();
+			telemetry_consecutive_noop_resizes_advanced();
 			provide(status);
 		}
 	}
 
-	telemetry_current_noop_resize_streak_reset();
+	telemetry_current_consecutive_noop_resizes_reset();
 
 	if(TRIUMPH & status)
 	{

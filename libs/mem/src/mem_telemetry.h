@@ -80,8 +80,8 @@ typedef struct {
 	 */
 	size_t peak_heap_reserved_bytes;
 	/**
-	 * @brief Count of m_resize requests that exactly matched the current logical size.
-	 * @details Correlates with redundant `m_resize` calls and feeds the no-op streak metrics.
+	 * @brief Count of m_resize requests that exactly matched the current logical size
+	 * @details Correlates with redundant `m_resize` calls and feeds the consecutive no-op resize metrics
 	 */
 	size_t noop_resizes;
 	/**
@@ -90,10 +90,20 @@ typedef struct {
 	 */
 	size_t heap_allocation_failures;
 	/**
+	 * @brief Number of failed `malloc`/`calloc` style calls expected by tests
+	 * @details Lets negative tests mark intentional allocation failures so the final summary can compare expected and observed failures
+	 */
+	size_t expected_heap_allocation_failures;
+	/**
 	 * @brief Number of failed `realloc` attempts.
 	 * @details Highlights pressure scenarios where existing buffers could not grow because the OS refused the request.
 	 */
 	size_t heap_reallocation_failures;
+	/**
+	 * @brief Number of failed `realloc` attempts expected by tests
+	 * @details Lets negative tests mark intentional reallocation failures so the final summary can compare expected and observed failures
+	 */
+	size_t expected_heap_reallocation_failures;
 	/**
 	 * @brief Block-overhead bytes currently wasted across all descriptors.
 	 * @details Equals `sum(slab_size_bytes - payload_bytes)` and exposes how much memory sits idle due to slab-style block sizing.
@@ -110,15 +120,15 @@ typedef struct {
 	 */
 	size_t peak_block_overhead_bytes;
 	/**
-	 * @brief Current length of the latest consecutive no-op m_resize streak.
-	 * @details Resets whenever a m_resize actually changes the allocation; helpful for spotting hot code that polls the allocator.
+	 * @brief Current count of consecutive no-op m_resize calls
+	 * @details Resets whenever a m_resize actually changes the allocation; helpful for spotting hot code that polls the allocator
 	 */
-	size_t current_noop_resize_streak;
+	size_t current_consecutive_noop_resizes;
 	/**
-	 * @brief Longest observed streak of consecutive no-op resizes.
-	 * @details Provides context for @ref current_noop_resize_streak, showing whether redundant m_resize storms occur.
+	 * @brief Longest observed count of consecutive no-op resizes
+	 * @details Provides context for @ref current_consecutive_noop_resizes, showing whether redundant m_resize storms occur
 	 */
-	size_t peak_noop_resize_streak;
+	size_t peak_consecutive_noop_resizes;
 	/**
 	 * @brief Count of operations that converted a descriptor mode from data to string.
 	 * @details Incremented only when `destination->is_string` changes from `false` to `true` after a successful operation.
@@ -160,6 +170,11 @@ typedef struct {
 	 *          @ref mem_guarded_add, or @ref mem_guarded_subtract increments this counter
 	 */
 	size_t arithmetic_guard_failures;
+	/**
+	 * @brief Number of arithmetic guard failures expected by tests
+	 * @details Lets negative tests mark intentional overflow and underflow checks so the final summary can compare expected and observed failures
+	 */
+	size_t expected_arithmetic_guard_failures;
 } Telemetry;
 
 extern Telemetry telemetry;
@@ -247,9 +262,19 @@ void telemetry_current_payload_bytes_removed(const size_t);
 void telemetry_heap_allocation_failures(void);
 
 /**
+ * @brief Increment @ref Telemetry::expected_heap_allocation_failures
+ */
+void telemetry_expected_heap_allocation_failures(void);
+
+/**
  * @brief Increment @ref Telemetry::heap_reallocation_failures.
  */
 void telemetry_heap_reallocation_failures(void);
+
+/**
+ * @brief Increment @ref Telemetry::expected_heap_reallocation_failures
+ */
+void telemetry_expected_heap_reallocation_failures(void);
 
 /**
  * @brief Add bytes to block-overhead metrics.
@@ -264,14 +289,14 @@ void telemetry_block_overhead_bytes_added(const size_t);
 void telemetry_current_block_overhead_bytes_removed(const size_t);
 
 /**
- * @brief Advance no-op resize streak metrics.
+ * @brief Advance consecutive no-op resize metrics
  */
-void telemetry_noop_resize_streak_advanced(void);
+void telemetry_consecutive_noop_resizes_advanced(void);
 
 /**
- * @brief Reset @ref Telemetry::current_noop_resize_streak.
+ * @brief Reset @ref Telemetry::current_consecutive_noop_resizes
  */
-void telemetry_current_noop_resize_streak_reset(void);
+void telemetry_current_consecutive_noop_resizes_reset(void);
 
 /**
  * @brief Increment @ref Telemetry::data_to_string_conversions.
@@ -314,10 +339,15 @@ void telemetry_active_descriptors_released(void);
 void telemetry_arithmetic_guard_failures(void);
 
 /**
- * @brief Print the final telemetry summary at program shutdown
+ * @brief Increment @ref Telemetry::expected_arithmetic_guard_failures
+ */
+void telemetry_expected_arithmetic_guard_failures(void);
+
+/**
+ * @brief Print the telemetry summary at program shutdown
  *
  * Counters that are expected to drop back to zero by the end of the run
  * (current_heap_reserved_bytes, current_payload_bytes) are highlighted in green when they reached zero
  * and in red when they did not, so a leftover allocation or payload imbalance is immediately visible
  */
-void telemetry_final_summary(void);
+void telemetry_summary(void);

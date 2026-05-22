@@ -186,9 +186,19 @@ void telemetry_heap_allocation_failures(void)
 	__atomic_fetch_add(&telemetry.heap_allocation_failures,1,__ATOMIC_SEQ_CST);
 }
 
+void telemetry_expected_heap_allocation_failures(void)
+{
+	__atomic_fetch_add(&telemetry.expected_heap_allocation_failures,1,__ATOMIC_SEQ_CST);
+}
+
 void telemetry_heap_reallocation_failures(void)
 {
 	__atomic_fetch_add(&telemetry.heap_reallocation_failures,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_expected_heap_reallocation_failures(void)
+{
+	__atomic_fetch_add(&telemetry.expected_heap_reallocation_failures,1,__ATOMIC_SEQ_CST);
 }
 
 void telemetry_block_overhead_bytes_added(const size_t amount_of_bytes)
@@ -217,21 +227,21 @@ void telemetry_current_block_overhead_bytes_removed(const size_t amount_of_bytes
 	__atomic_sub_fetch(&telemetry.current_block_overhead_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_noop_resize_streak_advanced(void)
+void telemetry_consecutive_noop_resizes_advanced(void)
 {
-	const size_t updated_streak = __atomic_add_fetch(
-		&telemetry.current_noop_resize_streak,
+	const size_t updated_consecutive_noops = __atomic_add_fetch(
+		&telemetry.current_consecutive_noop_resizes,
 		1,
 		__ATOMIC_SEQ_CST);
 
-	size_t observed_peak = __atomic_load_n(&telemetry.peak_noop_resize_streak,__ATOMIC_SEQ_CST);
+	size_t observed_peak = __atomic_load_n(&telemetry.peak_consecutive_noop_resizes,__ATOMIC_SEQ_CST);
 
-	while(updated_streak > observed_peak)
+	while(updated_consecutive_noops > observed_peak)
 	{
 		if(__atomic_compare_exchange_n(
-			&telemetry.peak_noop_resize_streak,
+			&telemetry.peak_consecutive_noop_resizes,
 			&observed_peak,
-			updated_streak,
+			updated_consecutive_noops,
 			false,
 			__ATOMIC_SEQ_CST,
 			__ATOMIC_SEQ_CST))
@@ -241,9 +251,9 @@ void telemetry_noop_resize_streak_advanced(void)
 	}
 }
 
-void telemetry_current_noop_resize_streak_reset(void)
+void telemetry_current_consecutive_noop_resizes_reset(void)
 {
-	__atomic_store_n(&telemetry.current_noop_resize_streak,0,__ATOMIC_SEQ_CST);
+	__atomic_store_n(&telemetry.current_consecutive_noop_resizes,0,__ATOMIC_SEQ_CST);
 }
 
 void telemetry_data_to_string_conversions(void)
@@ -291,54 +301,7 @@ void telemetry_arithmetic_guard_failures(void)
 	__atomic_fetch_add(&telemetry.arithmetic_guard_failures,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_final_summary(void)
+void telemetry_expected_arithmetic_guard_failures(void)
 {
-	char buf[FORM_OUTPUT_BUFFER_SIZE];
-
-	printf(BOLD "Memory balance" RESET WHITE "\n");
-	printf("Current heap reserved bytes (expected 0B), now is: %s%s" RESET WHITE "\n",(telemetry.current_heap_reserved_bytes == 0) ? BOLDGREEN : BOLDRED,bkbmbgbtbpbeb(telemetry.current_heap_reserved_bytes,FULL_VIEW));
-	printf("Current payload bytes (expected 0B), now is: %s%s" RESET WHITE "\n",(telemetry.current_payload_bytes == 0) ? BOLDGREEN : BOLDRED,bkbmbgbtbpbeb(telemetry.current_payload_bytes,FULL_VIEW));
-	printf("Current active descriptors (expected 0), now is: %s%s" RESET WHITE "\n",(telemetry.current_active_descriptors == 0) ? BOLDGREEN : BOLDRED,form(telemetry.current_active_descriptors,buf,sizeof(buf)));
-
-	printf("\n" BOLD "Heap reserve" RESET WHITE "\n");
-	printf("Peak heap reserved bytes: %s\n",bkbmbgbtbpbeb(telemetry.peak_heap_reserved_bytes,FULL_VIEW));
-	printf("Total heap reserved bytes acquired: %s\n",bkbmbgbtbpbeb(telemetry.total_heap_reserved_bytes_acquired,FULL_VIEW));
-	printf("Total heap reserved bytes released (expected %zuB), now is: %s%s" RESET WHITE "\n",telemetry.total_heap_reserved_bytes_acquired,(telemetry.total_heap_reserved_bytes_released == telemetry.total_heap_reserved_bytes_acquired) ? BOLDGREEN : BOLDRED,bkbmbgbtbpbeb(telemetry.total_heap_reserved_bytes_released,FULL_VIEW));
-	printf("Fresh heap allocations: %s\n",form(telemetry.fresh_heap_allocations,buf,sizeof(buf)));
-	printf("Heap reallocations: %s\n",form(telemetry.heap_reallocations,buf,sizeof(buf)));
-	printf("Heap buffer releases (expected %zu), now is: %s%s" RESET WHITE "\n",telemetry.fresh_heap_allocations,(telemetry.heap_buffer_releases == telemetry.fresh_heap_allocations) ? BOLDGREEN : BOLDRED,form(telemetry.heap_buffer_releases,buf,sizeof(buf)));
-	printf("Heap allocation failures: %s\n",form(telemetry.heap_allocation_failures,buf,sizeof(buf)));
-	printf("Heap reallocation failures: %s\n",form(telemetry.heap_reallocation_failures,buf,sizeof(buf)));
-
-	printf("\n" BOLD "Payload" RESET WHITE "\n");
-	printf("Total payload bytes added: %s\n",bkbmbgbtbpbeb(telemetry.total_payload_bytes_added,FULL_VIEW));
-	printf("Zero-initialized payload growths: %s\n",form(telemetry.zero_initialized_payload_growths,buf,sizeof(buf)));
-
-	printf("\n" BOLD "Release-unused" RESET WHITE "\n");
-	printf("Release-unused shrinks: %s\n",form(telemetry.release_unused_shrinks,buf,sizeof(buf)));
-	printf("Total release-unused heap reserved bytes released: %s\n",bkbmbgbtbpbeb(telemetry.total_release_unused_heap_reserved_bytes_released,FULL_VIEW));
-
-	printf("\n" BOLD "Block overhead" RESET WHITE "\n");
-	printf("Current block overhead bytes (expected 0B), now is: %s%s" RESET WHITE "\n",(telemetry.current_block_overhead_bytes == 0) ? BOLDGREEN : BOLDRED,bkbmbgbtbpbeb(telemetry.current_block_overhead_bytes,FULL_VIEW));
-	printf("Peak block overhead bytes: %s\n",bkbmbgbtbpbeb(telemetry.peak_block_overhead_bytes,FULL_VIEW));
-	printf("Total block overhead bytes added: %s\n",bkbmbgbtbpbeb(telemetry.total_block_overhead_bytes_added,FULL_VIEW));
-
-	printf("\n" BOLD "Resize behavior" RESET WHITE "\n");
-	printf("In-place resizes: %s\n",form(telemetry.in_place_resizes,buf,sizeof(buf)));
-	printf("No-op resizes: %s\n",form(telemetry.noop_resizes,buf,sizeof(buf)));
-	printf("Current no-op resize streak (expected 0), now is: %s%s" RESET WHITE "\n",(telemetry.current_noop_resize_streak == 0) ? BOLDGREEN : BOLDRED,form(telemetry.current_noop_resize_streak,buf,sizeof(buf)));
-	printf("Peak no-op resize streak: %s\n",form(telemetry.peak_noop_resize_streak,buf,sizeof(buf)));
-
-	printf("\n" BOLD "String and mode conversions" RESET WHITE "\n");
-	printf("Data-to-string conversions: %s\n",form(telemetry.data_to_string_conversions,buf,sizeof(buf)));
-	printf("String-to-data conversions: %s\n",form(telemetry.string_to_data_conversions,buf,sizeof(buf)));
-	printf("Finalize string terminator already present: %s\n",form(telemetry.finalize_string_terminator_already_present,buf,sizeof(buf)));
-	printf("Finalize string terminator written when missing: %s\n",form(telemetry.finalize_string_terminator_written_when_missing,buf,sizeof(buf)));
-	printf("String terminator writes: %s\n",form(telemetry.string_terminator_writes,buf,sizeof(buf)));
-
-	printf("\n" BOLD "Descriptor activity" RESET WHITE "\n");
-	printf("Peak active descriptors: %s\n",form(telemetry.peak_active_descriptors,buf,sizeof(buf)));
-
-	printf("\n" BOLD "Safety" RESET WHITE "\n");
-	printf("Arithmetic guard failures: %s\n",form(telemetry.arithmetic_guard_failures,buf,sizeof(buf)));
+	__atomic_fetch_add(&telemetry.expected_arithmetic_guard_failures,1,__ATOMIC_SEQ_CST);
 }
