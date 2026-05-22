@@ -279,6 +279,9 @@ format:
 	done
 	@echo "All files formatted."
 
+purge:
+	@$(MAKE) -s -C ../ purge
+
 clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 

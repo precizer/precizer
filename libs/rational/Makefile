@@ -195,7 +195,7 @@ all: debug production portable
 #
 memtest: debug
 tests: test
-test: sanitize tests-sanitize
+test: tests-sanitize
 
 tests-sanitize:
 	@$(MAKE) -s -C tests/ sanitize BUILDDIR=../$(BUILDDIR)
