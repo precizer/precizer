@@ -116,7 +116,7 @@ COV_RPATH = -Wl,-rpath,@executable_path/../../../$(COV)/libs,-rpath,@executable_
 else
 COV_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(COV)/libs
 endif
-COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL -DTESTITALL_TEST_HOOKS
+COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL
 COV_LDFLAGS = -lgcov --coverage
 
 #
@@ -161,7 +161,7 @@ DBG_RPATH = -Wl,-rpath,@executable_path/../../../$(DBG)/libs,-rpath,@executable_
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(DBG)/libs
 endif
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL
 
 .PHONY: all clean debug sanitize coverage run test tests coverage-report coverage-html format
 .PHONY: testedlib-coverage testedlib-sanitize testedlib-debug
@@ -184,19 +184,19 @@ tests-coverage: coverage
 run: sanitize
 
 testlibs-coverage: testedlib-coverage
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1 || exit $$?;)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-sanitize: testedlib-sanitize
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1 || exit $$?;)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 testlibs-debug: testedlib-debug
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1 || exit $$?;)
+	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
 
 #
 # Coverage rules
 #
 testedlib-coverage:
-	@$(MAKE) -s -C ../ coverage BUILDDIR="$(TESTEDLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1
+	@$(MAKE) -s -C ../ coverage BUILDDIR="$(TESTEDLIB_BUILDDIR)"
 
 coverage: coverage-html
 
@@ -226,7 +226,7 @@ coverage-html: coverage-report
 # Sanitize rules
 #
 testedlib-sanitize:
-	@$(MAKE) -s -C ../ sanitize BUILDDIR="$(TESTEDLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1
+	@$(MAKE) -s -C ../ sanitize BUILDDIR="$(TESTEDLIB_BUILDDIR)"
 
 sanitize: $(SNTZ_EXE) | testlibs-sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
@@ -246,7 +246,7 @@ $(SNTZ_OBJDIR):
 # Debug rules
 #
 testedlib-debug:
-	@$(MAKE) -s -C ../ debug BUILDDIR="$(TESTEDLIB_BUILDDIR)" TESTITALL_TEST_HOOKS=1
+	@$(MAKE) -s -C ../ debug BUILDDIR="$(TESTEDLIB_BUILDDIR)"
 
 debug-build: $(DBG_EXE)
 

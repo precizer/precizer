@@ -22,12 +22,6 @@ endif
 CFLAGS += -pipe -std=c2x -finline-functions
 CFLAGS += -fbuiltin
 
-# Test builds may pass TESTITALL_TEST_HOOKS=1 when they need direct access to
-# selected internal helpers. Normal builds leave those helpers private
-ifneq ($(TESTITALL_TEST_HOOKS),)
-CFLAGS += -DTESTITALL_TEST_HOOKS
-endif
-
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
 
@@ -90,7 +84,7 @@ DBG_OBJDIR = $(DBG_LIBDIR)/obj/$(LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
+DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
@@ -109,7 +103,7 @@ COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS += $(USE_LLD) -lgcov --coverage
 
 #
