@@ -4,8 +4,9 @@ MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
 SUBDIRS  = sqlite3 rational sha512 mem xdiff testitall
+PURGE_SUBDIRS = $(SUBDIRS) testmocking
 
-TOPTARGETS := all clean purge debug prod production portable sanitize test gcc-analyzer format coverage
+TOPTARGETS := all clean debug prod production portable sanitize test gcc-analyzer format coverage
 
 # Dependencies between libraries
 mem: rational
@@ -19,7 +20,13 @@ $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
 	@$(MAKE) -s -C $@ $(MAKECMDGOALS) BUILDDIR=../../.builds
 
-.PHONY: $(TOPTARGETS) $(SUBDIRS)
+.PHONY: $(TOPTARGETS) $(SUBDIRS) purge
+
+# Purge is intentionally separate from TOPTARGETS because it must clean each
+# library's own local artifact tree. Passing BUILDDIR=../../.builds here would
+# make child Makefiles clean only the umbrella project's root artifact tree
+purge:
+	@$(foreach dir,$(PURGE_SUBDIRS),$(MAKE) -s -C $(dir) purge || exit $$?;)
 
 gcc-analyzer:
 	@true
