@@ -1,4 +1,4 @@
-[<img src="../../.html/img/i18n-icon.svg"> Link to the English language README page](README.md)
+[Link to the English language README page](README.md)
 
 # librational — помогатор для C-кода
 
