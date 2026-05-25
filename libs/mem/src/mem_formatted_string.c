@@ -12,8 +12,9 @@
  * interpreted: `sizeof(char)` for `vsnprintf`, `sizeof(wchar_t)` for
  * `vswprintf`. Any other element width is rejected
  *
- * Any previous visible content in @p destination is replaced. Self-aliasing of
- * @p source_string into the destination allocation is rejected
+ * Any previous visible content in @p destination is replaced. The format
+ * string must not point inside the destination allocation because self-aliasing
+ * of @p source_string is not currently supported by this helper
  *
  * @param destination String descriptor of `char`- or `wchar_t`-width
  * @param source_string Format string in the matching element width, followed
