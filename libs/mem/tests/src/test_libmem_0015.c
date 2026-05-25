@@ -24,7 +24,7 @@ static Return test_libmem_0015_1(void)
 	char *bytes = m_data(char,buffer);
 	ASSERT(bytes != NULL);
 
-	if(bytes != NULL)
+	IF(bytes != NULL)
 	{
 		bytes[0] = 'x';
 		bytes[1] = 'y';
@@ -63,7 +63,7 @@ static Return test_libmem_0015_2(void)
 	m_create(char,buffer,MEMORY_STRING);
 
 	/* Seed the string descriptor with three visible bytes plus a terminator */
-	ASSERT(SUCCESS == mem_concat_unbounded_string(buffer,"xyz"));
+	ASSERT(SUCCESS == m_concat_literal(buffer,"xyz"));
 	ASSERT(buffer->string_length == 3);
 	ASSERT(buffer->is_string == true);
 	ASSERT(buffer->length == 4);
@@ -115,7 +115,7 @@ static Return test_libmem_0015_3(void)
 	static const char refill[] = "hi";
 
 	/* Create and then logically clear a string while keeping its allocation */
-	ASSERT(SUCCESS == mem_concat_unbounded_string(buffer,"xy"));
+	ASSERT(SUCCESS == m_concat_literal(buffer,"xy"));
 	void *const retained_string_data = buffer->data;
 	const size_t retained_string_bytes = buffer->actually_allocated_bytes;
 
@@ -126,7 +126,7 @@ static Return test_libmem_0015_3(void)
 	ASSERT(buffer->actually_allocated_bytes == retained_string_bytes);
 
 	/* Refill through the string API and require the previously retained block to be reused */
-	ASSERT(SUCCESS == mem_concat_unbounded_string(buffer,refill));
+	ASSERT(SUCCESS == m_concat_fixed_string(buffer,sizeof(refill),refill));
 	ASSERT(buffer->data == retained_string_data);
 	ASSERT(buffer->actually_allocated_bytes == retained_string_bytes);
 	ASSERT(buffer->string_length == 2);
@@ -138,7 +138,7 @@ static Return test_libmem_0015_3(void)
 	char *raw_bytes = (char *)m_raw_data(buffer);
 	ASSERT(raw_bytes != NULL);
 
-	if(raw_bytes != NULL)
+	IF(raw_bytes != NULL)
 	{
 		raw_bytes[0] = 'b';
 		raw_bytes[1] = 'y';
@@ -173,7 +173,7 @@ static Return test_libmem_0015_4(void)
 	m_create(char,buffer,MEMORY_STRING);
 
 	/* Make deletion meaningful by giving the descriptor live string storage first */
-	ASSERT(SUCCESS == mem_concat_unbounded_string(buffer,"hi"));
+	ASSERT(SUCCESS == m_concat_literal(buffer,"hi"));
 	ASSERT(buffer->data != NULL);
 	ASSERT(buffer->actually_allocated_bytes > 0);
 
