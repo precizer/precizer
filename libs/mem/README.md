@@ -78,7 +78,7 @@ The frame is what the programmer creates. The programmer can accidentally use th
 
 #### Example 01. Frame error when a string operation is called on a data descriptor
 
-Covered by [`test_libmem_0000_01`](tests/src/test_libmem_0000.c#L11)
+Covered by [`test_libmem_0000_01`](tests/src/test_libmem_0000.c#L32)
 
 For example, calling a string-mode helper on a descriptor that was declared for raw binary data is a frame error. The library reports it.
 
@@ -129,7 +129,7 @@ m_del(destinations_string);
 
 #### Example 03. Data descriptor converted to string mode
 
-Covered by [`test_libmem_0000_03`](tests/src/test_libmem_0000.c#L80)
+Covered by [`test_libmem_0000_03`](tests/src/test_libmem_0000.c#L78)
 
 Or convert an existing data descriptor into a string descriptor:
 
@@ -239,7 +239,7 @@ raw views of the same descriptor expose the same backing storage.
 | `m_guarded_subtract(left, right, &diff)` | Safely subtract one `size_t` from another with underflow detection |
 | `m_string_array_append(array, element_type, source)` | Append one zero-terminated source as a new inline string descriptor without a separate size argument |
 | `m_string_array_append(array, element_type, source_size, source)` | Append the visible prefix of a bounded source buffer as a new inline string descriptor |
-| `m_string_array_del(array)` | Walk an array of inline string descriptors, delete each child descriptor, and then delete the root descriptor |
+| `m_array_del(array)` | Walk an array of inline string descriptors, delete each child descriptor, and then delete the root descriptor |
 | `m_reset(&ptr)` | Free a raw pointer and set it to `NULL` |
 
 ### Arrays of string descriptors
@@ -249,12 +249,12 @@ cleanest way to own an array of nested string descriptors. In that setup
 `m_string_array_append(...)` appends one new `memory` element, initializes it
 as a string descriptor of the requested element type width, and copies either a
 zero-terminated source or the visible prefix of a bounded source buffer into
-it. `m_string_array_del(...)` later walks all child strings, calls `m_del(...)`
+it. `m_array_del(...)` later walks all child strings, calls `m_del(...)`
 for each one, and finally clears the root descriptor
 
 #### Example 19. Appending strings to an array of string descriptors
 
-Covered by [`test_libmem_0000_19`](tests/src/test_libmem_0000.c#L668)
+Covered by [`test_libmem_0000_19`](tests/src/test_libmem_0000.c#L761)
 
 Small example without a separate size argument:
 
@@ -271,7 +271,7 @@ for(size_t index = 0; index < names->length; ++index)
 	printf("%s\n",m_text(&items[index]));
 }
 
-if((TRIUMPH & m_string_array_del(names)) == 0) { return 1; }
+if((TRIUMPH & m_array_del(names)) == 0) { return 1; }
 ```
 
 The same example also covers a bounded source buffer:
@@ -282,12 +282,17 @@ const char source[] = {'z','e','t','a','\0','x'};
 m_create(memory,names);
 
 if((TRIUMPH & m_string_array_append(names,char,sizeof(source),source)) == 0) { return 1; }
-if((TRIUMPH & m_string_array_del(names)) == 0) { return 1; }
+if((TRIUMPH & m_array_del(names)) == 0) { return 1; }
 ```
 
 #### Example 20. Iterating over an array of string descriptors
 
-Covered by [`test_libmem_0000_20`](tests/src/test_libmem_0000.c#L708)
+Covered by [`test_libmem_0000_20`](tests/src/test_libmem_0000.c#L846)
+
+This example appends three strings and prints them in insertion order.
+`m_string_array_foreach(array,item)` exposes each nested string descriptor as
+a `memory *`. Do not resize or delete the root array inside the loop because
+either operation can invalidate the current pointer.
 
 ```c
 m_create(memory,names);
@@ -380,7 +385,13 @@ Maintained usage examples for `libmem` live in `libs/mem/tests`. The links below
 
 #### Example 04. Typed data descriptor and self-aliased concatenation
 
-Covered by [`test_libmem_0000_04`](tests/src/test_libmem_0000.c#L108)
+Covered by [`test_libmem_0000_04`](tests/src/test_libmem_0000.c#L110)
+
+This example uses a typed data descriptor and then appends `mirror` to
+itself. The executable test chooses an initial payload that occupies one
+allocation block, so the self-append grows the destination storage. The
+operation must preserve the source points even if an internal `realloc(...)`
+moves the destination buffer
 
 ```c
 #include "mem.h"
@@ -389,8 +400,10 @@ typedef struct { int x, y; } point;
 
 int main(void)
 {
+	const size_t point_count = MEMORY_BLOCK_BYTES / sizeof(point);
+
 	m_create(point,points);
-	if((TRIUMPH & m_resize(points,5)) == 0) { return 1; }
+	if((TRIUMPH & m_resize(points,point_count)) == 0) { return 1; }
 
 	point *p = m_data(point,points); /* checked pointer */
 	for(size_t i = 0; i < points->length; ++i) {
@@ -399,10 +412,10 @@ int main(void)
 
 	m_create(point,mirror);
 	if((TRIUMPH & m_copy(mirror,points)) == 0) { return 1; }
-	if((TRIUMPH & m_concat_data(mirror,points)) == 0) { return 1; }
+	if((TRIUMPH & m_concat_data(mirror,mirror)) == 0) { return 1; }
 
 	const point *view = m_data_ro(point,mirror);
-	/* use view... */
+	/* Both halves of view contain the original point array */
 
 	m_del(points);
 	m_del(mirror);
@@ -410,9 +423,16 @@ int main(void)
 }
 ```
 
-#### Example 05. Log record built as data, then converted to string mode
+#### Example 05. Log record converted from data while reusing reserved storage
 
-Covered by [`test_libmem_0000_05`](tests/src/test_libmem_0000.c#L163)
+Covered by [`test_libmem_0000_05`](tests/src/test_libmem_0000.c#L173)
+
+One descriptor can first collect raw bytes and then continue as a cached
+string. In this scenario the short prefix already occupies an allocated block
+with spare room for its terminating zero element, so `m_to_string(...)`
+changes the logical representation without replacing the physical buffer or
+changing its reserved size. If an existing reserve has no room for the
+terminator, conversion may grow the storage instead
 
 ```c
 m_create(char,log,MEMORY_DATA);
@@ -420,6 +440,7 @@ m_create(char,log,MEMORY_DATA);
 if((TRIUMPH & m_copy_buffer(log,5,"GET /")) == 0) { return 1; }
 if((TRIUMPH & m_concat_buffer(log,4,"api ")) == 0) { return 1; }
 
+/* The executable test verifies that this spare-reserve case keeps the same buffer */
 if((TRIUMPH & m_to_string(log)) == 0) { return 1; }
 if((TRIUMPH & m_concat_literal(log,"200 OK")) == 0) { return 1; }
 
@@ -429,7 +450,14 @@ m_del(log);
 
 #### Example 06. Reusing a descriptor after `m_del`
 
-Covered by [`test_libmem_0000_06`](tests/src/test_libmem_0000.c#L198)
+Covered by [`test_libmem_0000_06`](tests/src/test_libmem_0000.c#L218)
+
+`m_del(...)` releases the buffer owned by a valid descriptor and clears its
+lengths, but preserves its element type and string/data mode. The descriptor
+itself therefore remains initialized and can later receive new contents
+through the library API. This guarantee applies to the descriptor, not to any
+pointer obtained from its old buffer: such pointers are invalid after
+`m_del(...)`
 
 ```c
 m_create(char,greeting,MEMORY_STRING);
@@ -437,8 +465,9 @@ m_create(char,greeting,MEMORY_STRING);
 if((TRIUMPH & m_copy_literal(greeting,"alive")) == 0) { return 1; }
 printf("%s\n",m_text(greeting)); /* "alive" */
 
-m_del(greeting);
+m_del(greeting); /* The descriptor is empty and still in string mode */
 
+/* Reuse greeting itself, never a pointer to its former buffer */
 if((TRIUMPH & m_copy_literal(greeting,"reborn")) == 0) { return 1; }
 printf("%s\n",m_text(greeting)); /* "reborn" */
 
@@ -447,40 +476,84 @@ m_del(greeting);
 
 #### Example 08. Copying a string literal and an equivalent fixed-size string
 
-Covered by [`test_libmem_0000_08`](tests/src/test_libmem_0000.c#L259)
+Covered by [`test_libmem_0000_08`](tests/src/test_libmem_0000.c#L287)
+
+For a string literal, `m_copy_literal(title,"hello")` derives the complete
+array size `sizeof("hello")`, including its trailing terminator, and applies
+fixed-string semantics. The explicit
+`m_copy_fixed_string(title,sizeof("hello"),"hello")` form must leave the same
+visible length and terminator-inclusive logical length
 
 ```c
+/* The literal wrapper supplies the terminated array size automatically */
 if((TRIUMPH & m_copy_literal(title,"hello")) == 0) { return 1; }
 
-/* Same meaning without the literal convenience macro. */
+/* The same fixed-string operation with its size written explicitly */
 if((TRIUMPH & m_copy_fixed_string(title,sizeof("hello"),"hello")) == 0) { return 1; }
 ```
 
+Example 11 separately demonstrates direct fixed-string copying from a named
+array whose final element is guaranteed to be the terminator
+
 #### Example 09. Formatted string
 
-Covered by [`test_libmem_0000_09`](tests/src/test_libmem_0000.c#L286)
+Covered by [`test_libmem_0000_09`](tests/src/test_libmem_0000.c#L319)
+
+The format and its arguments follow printf-style rules, while the rendered
+result is stored as a valid string descriptor. Here `%u` renders `7U` into
+`"file-7.txt"`; `string_length` describes the visible text and `length` also
+includes its final zero terminator
 
 ```c
-m_formatted_string(title,"file-%u.txt",7U);
+m_create(char,title,MEMORY_STRING);
+
+if((TRIUMPH & m_formatted_string(title,"file-%u.txt",7U)) == 0) { return 1; }
+
+printf("%s\n",m_text(title)); /* "file-7.txt" */
+m_del(title);
 ```
 
 #### Example 10. Direct write through `m_data` and string-state finalization
 
-Covered by [`test_libmem_0000_10`](tests/src/test_libmem_0000.c#L310)
+Covered by [`test_libmem_0000_10`](tests/src/test_libmem_0000.c#L346)
+
+The string descriptor initially contains `"alphabet"`. Direct access replaces
+only its first five characters, so the tail of the previous string is still
+present immediately after the write. `m_finalize_string(buffer,5)` places a
+terminator over the previous `'b'` and updates `string_length` to `5`, while
+leaving `length == sizeof("alphabet")`: it shortens the visible string without
+reducing the prepared descriptor length
 
 ```c
+m_create(char,buffer,MEMORY_STRING);
+
+if((TRIUMPH & m_copy_literal(buffer,"alphabet")) == 0) { return 1; }
+
 char *writable = m_data(char,buffer);
+if(writable == NULL) { return 1; }
+
+/* Direct access replaces only the visible prefix of the previous string */
 writable[0] = 'A';
 writable[1] = 'L';
 writable[2] = 'P';
 writable[3] = 'H';
 writable[4] = 'A';
-m_finalize_string(buffer,5);
+
+/* Finalization makes "ALPHA" visible while keeping the previous length */
+if((TRIUMPH & m_finalize_string(buffer,5)) == 0) { return 1; }
+
+printf("%s\n",m_text(buffer)); /* "ALPHA" */
+m_del(buffer);
 ```
 
 #### Example 11. Copying a fixed-size string
 
-Covered by [`test_libmem_0000_11`](tests/src/test_libmem_0000.c#L348)
+Covered by [`test_libmem_0000_11`](tests/src/test_libmem_0000.c#L391)
+
+Use this form when the source is a named array with a known complete size and
+its final element is guaranteed to be the zero terminator. Unlike bounded or
+unbounded string-copy helpers, `m_copy_fixed_string(...)` accepts that
+terminator position by contract and does not search the source for it
 
 ```c
 const char text[] = {'H','e','l','l','o','\0'};
@@ -489,7 +562,12 @@ m_copy_fixed_string(dest,sizeof(text),text);
 
 #### Example 12. Appending a fixed-size string
 
-Covered by [`test_libmem_0000_12`](tests/src/test_libmem_0000.c#L374)
+Covered by [`test_libmem_0000_12`](tests/src/test_libmem_0000.c#L420)
+
+Use this form when appending a named array whose complete size is known and
+whose final element is guaranteed to be the zero terminator. The helper trusts
+that contract and appends the visible suffix without searching it for a
+terminator
 
 ```c
 const char suffix[] = {'-','e','n','d','\0'};
@@ -498,7 +576,11 @@ m_concat_fixed_string(dest,sizeof(suffix),suffix);
 
 #### Example 13. Appending a string literal
 
-Covered by [`test_libmem_0000_13`](tests/src/test_libmem_0000.c#L401)
+Covered by [`test_libmem_0000_13`](tests/src/test_libmem_0000.c#L450)
+
+For a literal suffix, this macro is the preferred spelling of fixed-size
+append: it derives the complete terminated array size automatically and avoids
+manual size arithmetic
 
 ```c
 m_concat_literal(dest,"-suffix");
@@ -510,7 +592,17 @@ m_concat_literal(dest,"-suffix");
 
 #### Example 14. Concatenating string descriptors
 
-Covered by [`test_libmem_0000_14`](tests/src/test_libmem_0000.c#L430)
+Covered by [`test_libmem_0000_14`](tests/src/test_libmem_0000.c#L541)
+
+This example concatenates two string descriptors through
+`m_concat_strings(...)`.
+
+Both descriptors are created in string mode before their buffers are written
+directly. After each direct write, `m_finalize_string(...)` must be called to
+publish the visible length in `string_length`. A data descriptor is rejected
+by `m_concat_strings(...)`, but a string descriptor with a stale yet formally
+valid `string_length == 0` can be accepted and produce logically incorrect
+concatenation because the helper trusts the cached length
 
 ```c
 #include "mem.h"
@@ -521,11 +613,11 @@ int main(void)
 	m_create(char,first,MEMORY_STRING);
 	m_create(char,second,MEMORY_STRING);
 
-	/* Provision raw space (includes room for null terminator). */
+	/* Reserve writable capacity, including room for each zero terminator */
 	if((TRIUMPH & m_resize(first,16)) == 0) { return 1; }
 	if((TRIUMPH & m_resize(second,16)) == 0) { return 1; }
 
-	/* Write strings via m_raw_data() pointers. */
+	/* Write directly; snprintf reports visible lengths without terminators */
 	char *first_buf = m_raw_data(first);
 	char *second_buf = m_raw_data(second);
 	if(first_buf == NULL || second_buf == NULL) { return 1; }
@@ -536,15 +628,14 @@ int main(void)
 	int second_written = snprintf(second_buf,second->length," world!");
 	if(second_written < 0 || (size_t)second_written >= second->length) { return 1; }
 
+	/* Publish the cached visible lengths before descriptor concatenation */
 	if((TRIUMPH & m_finalize_string(first,(size_t)first_written)) == 0) { return 1; }
 	if((TRIUMPH & m_finalize_string(second,(size_t)second_written)) == 0) { return 1; }
 
 	if((TRIUMPH & m_concat_strings(first,second)) == 0) { return 1; }
 
-	const char safe_suffix[] = " (safe suffix)";
-	if((TRIUMPH & m_concat_fixed_string(first,sizeof(safe_suffix),safe_suffix)) == 0) { return 1; }
-
-	printf("%s\n",m_text(first)); /* Prints "Hello world! (safe suffix)" */
+	/* Print the result of concatenating the two finalized string descriptors */
+	printf("%s\n",m_text(first)); /* Prints "Hello world!" */
 
 	m_del(first);
 	m_del(second);
@@ -575,7 +666,7 @@ unchecked writable pointer and already trust the descriptor state.
 
 #### Example 15. Safe string view through `m_text`
 
-Covered by [`test_libmem_0000_15`](tests/src/test_libmem_0000.c#L505)
+Covered by [`test_libmem_0000_15`](tests/src/test_libmem_0000.c#L625)
 
 ```c
 #include "mem.h"
@@ -589,7 +680,7 @@ int main(void)
 
 	if((TRIUMPH & m_resize(buffer,32,ZERO_NEW_MEMORY)) == 0) { return 1; }
 
-	/* Writable access is explicit and keeps string mode intact. */
+	/* Obtain writable access after m_resize, which may have moved the buffer */
 	char *writable = m_data(char,buffer);
 	if(writable == NULL) { return 1; }
 
@@ -602,7 +693,10 @@ int main(void)
 	const char *view = m_text(buffer);
 	printf("%s\n",view); /* Prints “Hello world!” */
 
-	/* Even empty initialized string descriptors degrade to an empty string safely. */
+	/* Even an empty initialized string descriptor exposes an empty read-only string */
+	const char *scratch_view = m_text(scratch);
+	printf("scratch text: \"%s\"\n",scratch_view); /* Prints scratch text: "" */
+
 	if((TRIUMPH & m_string_length(scratch,&scratch_length)) == 0) { return 1; }
 	printf("scratch length: %zu\n",scratch_length);
 
@@ -633,7 +727,7 @@ behavior should be brought in line with the library-wide self-aliasing rule.
 
 #### Example 16. Formatted message
 
-Covered by [`test_libmem_0000_16`](tests/src/test_libmem_0000.c#L576)
+Covered by [`test_libmem_0000_16`](tests/src/test_libmem_0000.c#L653)
 
 ```c
 #include "mem.h"
@@ -682,11 +776,16 @@ When string payload length is already known, descriptors can be used as explicit
 
 #### Example 17. Copying and appending strings from bounded buffers
 
-Covered by [`test_libmem_0000_17`](tests/src/test_libmem_0000.c#L602)
+Covered by [`test_libmem_0000_17`](tests/src/test_libmem_0000.c#L682)
+
+Both sources have known complete sizes and readable bytes after their first
+zero terminators. `m_copy_string(...)` copies only `":memory:"`, while
+`m_concat_string(...)` appends only `"-new"`; neither `x` tail becomes part of
+the resulting `":memory:-new"` string
 
 ```c
 m_create(char,db_path,MEMORY_STRING);
-const char in_memory_db_path[] = ":memory:";
+const char in_memory_db_path[] = {':','m','e','m','o','r','y',':','\0','x','x'};
 
 if((TRIUMPH & m_copy_string(db_path,sizeof(in_memory_db_path),in_memory_db_path)) == 0) { return 1; }
 
@@ -696,7 +795,13 @@ if((TRIUMPH & m_concat_string(db_path,sizeof(bounded_suffix),bounded_suffix)) ==
 
 #### Example 18. Direct write into a preallocated string buffer
 
-Covered by [`test_libmem_0000_18`](tests/src/test_libmem_0000.c#L632)
+Covered by [`test_libmem_0000_18`](tests/src/test_libmem_0000.c#L719)
+
+This example writes directly into a preallocated string buffer. `memcpy(...)`
+copies `"draft"` together with its existing terminating `'\0'`. After the
+direct write, `m_finalize_string(...)` sees the terminator at the expected
+boundary, caches the visible length, and returns the descriptor to a
+consistent string state
 
 ```c
 m_create(char,title,MEMORY_STRING);
@@ -738,18 +843,27 @@ if((TRIUMPH & m_finalize_string(title,sizeof(draft) - 1U)) == 0) { return 1; }
 - `m_string_length(source,&len)`: Returns the cached `string_length` when `source->is_string == true`; otherwise treats the descriptor as a bounded element buffer and measures the visible prefix up to the first zero-valued element or `source->length`. The reported length is measured in elements, not bytes. Descriptors with `length > 0` and `data == NULL` are rejected as inconsistent. Return value is propagated through `provide(...)`.
 - `m_to_string(destination)`: Converts a mutable descriptor from data mode into cached string mode by measuring the visible prefix once in elements. In data mode the first zero-valued element acts as the terminator, so this helper also supports arbitrary non-zero element sizes. For non-empty descriptors it ensures a terminating zero element exists, while empty descriptors remain unallocated. Descriptors with `length > 0` and `data == NULL` are rejected as inconsistent. The helper also expects `string_length == 0` while the descriptor is still in data mode; stale cached string metadata causes a clean failure instead of an implicit repair. If the descriptor is already in string mode, the call remains a no-op only when `single_element_size > 0`, empty strings keep `string_length == 0`, and non-empty strings keep `string_length < length`
 
-#### Example 07. Converting copied raw bytes to string mode
+#### Example 07. Converting raw bytes that already include a terminator
 
-Covered by [`test_libmem_0000_07`](tests/src/test_libmem_0000.c#L231)
+Covered by [`test_libmem_0000_07`](tests/src/test_libmem_0000.c#L255)
+
+Unlike example 05, this example imports the complete array representation of
+the literal `"abc"`, including its trailing zero byte, into a data descriptor.
+When `m_to_string(...)` later promotes that descriptor, it recognizes the
+already imported terminator: `string_length` becomes `3`, while `length`
+remains `sizeof("abc")`
 
 ```c
 m_create(char,buffer);
 
+/* sizeof("abc") imports the trailing zero byte as raw data */
 if((TRIUMPH & m_copy_buffer(buffer,sizeof("abc"),"abc")) == 0) { return 1; }
 
+/* Conversion reuses the imported terminator instead of adding an element */
 if((TRIUMPH & m_to_string(buffer)) == 0) { return 1; }
 
-/* buffer->is_string == true and buffer->string_length == 3 here */
+/* buffer->is_string == true, buffer->string_length == 3,
+   and buffer->length == sizeof("abc") */
 ```
 - `m_to_data(destination)`: Converts a mutable byte-sized descriptor from string mode into data mode and decreases `length` by one when the logical trailing zero terminator was the last element. The current implementation rejects non-byte-sized string descriptors.
 
@@ -773,17 +887,24 @@ if((TRIUMPH & m_resize(packet,64)) == 0) { return 1; }
 
 #### Example 21. `m_resize` behavior flags
 
-Covered by [`test_libmem_0000_21`](tests/src/test_libmem_0000.c#L764)
+Covered by [`test_libmem_0000_21`](tests/src/test_libmem_0000.c#L874)
 
 Most examples in this README check `TRIUMPH`. The next two intentionally use `CRITICAL` to show the narrower hard-failure style.
 
+To make `RELEASE_UNUSED` return actual reserved capacity, this example first
+grows the array beyond one memory block. Shrinking back to four elements can
+then release the additional block.
+
 ```c
-/* Grow and zero-fill fresh points. */
-if(CRITICAL & m_resize(points,10,ZERO_NEW_MEMORY)) {
+const size_t points_per_block = MEMORY_BLOCK_BYTES / sizeof(point);
+const size_t large_length = points_per_block + 1U;
+
+/* Grow beyond one block and zero-fill fresh points. */
+if(CRITICAL & m_resize(points,large_length,ZERO_NEW_MEMORY)) {
 	return 1;
 }
 
-/* Later, shrink aggressively and release unused reserve immediately. */
+/* Later, shrink and return the additional block. */
 if(CRITICAL & m_resize(points,4,RELEASE_UNUSED)) {
 	return 1;
 }
