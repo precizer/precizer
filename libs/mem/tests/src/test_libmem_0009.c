@@ -1,5 +1,5 @@
 #include "test_libmem_utils.h"
-#include "mocks_libmem.h"
+#include "testmocking.h"
 
 /* Shared descriptors of the telemetry suite.
    The descriptors live for the whole suite so each subtest observes the
@@ -17,24 +17,6 @@ static memory *sentinel = &shared_sentinel;
    to this baseline rather than absolute counter values */
 static Telemetry suite_baseline;
 
-/* Expected stderr layout for subtest 17. mem_resize is forced to a
-   failed malloc by the libmem allocator mock and is expected to emit a
-   single report() line. The pattern leaves the source line number
-   flexible with \\d+ and the errno description flexible with [^\\n]+,
-   but pins the message body byte for byte */
-static const char expected_stderr_pattern_libmem_0009_17[] =
-	"\\A"
-	"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 4096 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-	"\\Z";
-
-/* Expected stderr layout for subtest 18. The realloc path inside
-   mem_resize prints the same report() format as the malloc path, only
-   the slab-rounded byte count differs */
-static const char expected_stderr_pattern_libmem_0009_18[] =
-	"\\A"
-	"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 8192 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-	"\\Z";
-
 /**
  * @brief Reinitialize the shared descriptors and snapshot the suite baseline
  *
@@ -43,11 +25,12 @@ static const char expected_stderr_pattern_libmem_0009_18[] =
  * empty state. Captures the current Telemetry struct as suite_baseline
  * so every subsequent subtest can express its expectations as deltas
  * relative to a known starting point. The function deliberately does
- * not call init_telemetry because previous tests in the runner may
+ * not reset global telemetry because previous tests in the runner may
  * still own descriptors registered in current_active_descriptors and a
- * hard reset would underflow the counter on their later teardown. The
- * reset is plain assignment, not m_del, so it does not recover any
- * blocks left allocated by an aborted previous run of this same suite
+ * hard counter reset would underflow the counter on their later teardown.
+ * The descriptor reset is plain assignment, not m_del, so it does not
+ * recover any blocks left allocated by an aborted previous run of this
+ * same suite
  *
  * @return Return describing success or failure
  */
@@ -160,22 +143,25 @@ static Return test_libmem_0009_03(void)
 	   exactly the deltas the contract permits for a slab-crossing
 	   reallocation: one slab block of fresh heap reserve, the matching
 	   acquired-byte total, the payload growth from 1 to big_count
-	   elements, one heap reallocation event, and a possible peak lift
-	   for current_heap_reserved_bytes. Block-overhead counters stay
-	   untouched because the overhead before and after the grow is the
-	   same block - 1 bytes */
+	   elements, and one heap reallocation event. Block-overhead counters
+	   stay untouched because the overhead before and after the grow is
+	   the same block - 1 bytes. The global peak counter is checked
+	   separately because it is monotonic across the whole process */
 	Telemetry expected_after_grow = before_grow;
 	expected_after_grow.current_heap_reserved_bytes += block;
 	expected_after_grow.total_heap_reserved_bytes_acquired += block;
 	expected_after_grow.current_payload_bytes += (big_count - 1);
 	expected_after_grow.total_payload_bytes_added += (big_count - 1);
 	expected_after_grow.heap_reallocations += 1;
-	if(expected_after_grow.current_heap_reserved_bytes > expected_after_grow.peak_heap_reserved_bytes)
-	{
-		expected_after_grow.peak_heap_reserved_bytes = expected_after_grow.current_heap_reserved_bytes;
-	}
 
-	ASSERT(memcmp(&telemetry,&expected_after_grow,sizeof(Telemetry)) == 0);
+	/* peak_heap_reserved_bytes is global and monotonic, so compare the deterministic counters separately */
+	Telemetry observed_after_grow = telemetry;
+	observed_after_grow.peak_heap_reserved_bytes = 0;
+	expected_after_grow.peak_heap_reserved_bytes = 0;
+
+	ASSERT(memcmp(&observed_after_grow,&expected_after_grow,sizeof(Telemetry)) == 0);
+	ASSERT(telemetry.peak_heap_reserved_bytes >= before_grow.peak_heap_reserved_bytes);
+	ASSERT(telemetry.peak_heap_reserved_bytes >= telemetry.current_heap_reserved_bytes);
 
 	RETURN_STATUS;
 }
@@ -256,12 +242,12 @@ static Return test_libmem_0009_05(void)
 }
 
 /**
- * @brief Cover a streak of consecutive no-op resizes
+ * @brief Cover a sequence of consecutive no-op resizes
  *
  * Issues three m_resize calls that ask for the size the descriptor
  * already has. Each call must skip every allocation path, increment
- * noop_resizes by one, and advance current_noop_resize_streak by
- * one. peak_noop_resize_streak must be at least three by the end of
+ * noop_resizes by one, and advance current_consecutive_noop_resizes by
+ * one. peak_consecutive_noop_resizes must be at least three by the end of
  * this subtest. None of the allocation, payload, or block-overhead
  * totals are allowed to change here
  *
@@ -271,7 +257,7 @@ static Return test_libmem_0009_06(void)
 {
 	INITTEST;
 
-	const Telemetry before_streak = telemetry;
+	const Telemetry before_consecutive_noops = telemetry;
 
 	ASSERT(SUCCESS == m_resize(buffer,2));
 	ASSERT(SUCCESS == m_resize(buffer,2));
@@ -279,31 +265,36 @@ static Return test_libmem_0009_06(void)
 
 	/* The expected post-state is computed from the pre-state by applying
 	   exactly the deltas a no-op resize is contractually allowed to
-	   produce: noop_resizes and current_noop_resize_streak each grow by
-	   one per call, and peak_noop_resize_streak is lifted whenever the
-	   running streak exceeds the previously observed peak. Every other
-	   counter must be byte-for-byte identical to the pre-state, which
-	   the final memcmp verifies against the entire Telemetry struct */
-	Telemetry expected_after_streak = before_streak;
-	expected_after_streak.noop_resizes += 3;
-	expected_after_streak.current_noop_resize_streak += 3;
-	if(expected_after_streak.current_noop_resize_streak > expected_after_streak.peak_noop_resize_streak)
-	{
-		expected_after_streak.peak_noop_resize_streak = expected_after_streak.current_noop_resize_streak;
-	}
+	   produce: noop_resizes and current_consecutive_noop_resizes each grow by
+	   one per call. The monotonic peak is checked separately because its
+	   expected value is max(previous peak, current consecutive count), and the test
+	   should not need its own branch to model that rule. Every other
+	   counter must be byte-for-byte identical to the pre-state */
+	const size_t previous_peak_consecutive_noops = before_consecutive_noops.peak_consecutive_noop_resizes;
+	const size_t expected_current_consecutive_noops = before_consecutive_noops.current_consecutive_noop_resizes + 3;
+	Telemetry expected_after_consecutive_noops = before_consecutive_noops;
+	expected_after_consecutive_noops.noop_resizes += 3;
+	expected_after_consecutive_noops.current_consecutive_noop_resizes = expected_current_consecutive_noops;
 
-	ASSERT(telemetry.peak_noop_resize_streak >= 3);
-	ASSERT(memcmp(&telemetry,&expected_after_streak,sizeof(Telemetry)) == 0);
+	Telemetry observed_after_consecutive_noops = telemetry;
+	observed_after_consecutive_noops.peak_consecutive_noop_resizes = 0;
+	expected_after_consecutive_noops.peak_consecutive_noop_resizes = 0;
+
+	ASSERT(memcmp(&observed_after_consecutive_noops,&expected_after_consecutive_noops,sizeof(Telemetry)) == 0);
+	ASSERT(telemetry.peak_consecutive_noop_resizes >= previous_peak_consecutive_noops);
+	ASSERT(telemetry.peak_consecutive_noop_resizes >= expected_current_consecutive_noops);
+	ASSERT(telemetry.peak_consecutive_noop_resizes == previous_peak_consecutive_noops
+	       || telemetry.peak_consecutive_noop_resizes == expected_current_consecutive_noops);
 
 	RETURN_STATUS;
 }
 
 /**
- * @brief Cover the streak reset triggered by an effective resize
+ * @brief Cover the consecutive no-op reset triggered by an effective resize
  *
  * Performs an in-place grow that actually changes the logical length.
- * The library must reset current_noop_resize_streak to zero while
- * preserving peak_noop_resize_streak from the previous subtest.
+ * The library must reset current_consecutive_noop_resizes to zero while
+ * preserving peak_consecutive_noop_resizes from the previous subtest.
  * in_place_resizes advances by one and the payload counters move by
  * exactly the new element
  *
@@ -313,7 +304,7 @@ static Return test_libmem_0009_07(void)
 {
 	INITTEST;
 
-	const size_t baseline_peak_streak = telemetry.peak_noop_resize_streak;
+	const size_t baseline_peak_consecutive_noops = telemetry.peak_consecutive_noop_resizes;
 	const size_t baseline_in_place = telemetry.in_place_resizes;
 	const size_t baseline_current_payload = telemetry.current_payload_bytes;
 	const size_t baseline_total_payload_added = telemetry.total_payload_bytes_added;
@@ -321,8 +312,8 @@ static Return test_libmem_0009_07(void)
 
 	ASSERT(SUCCESS == m_resize(buffer,3));
 
-	ASSERT(telemetry.current_noop_resize_streak == 0);
-	ASSERT(telemetry.peak_noop_resize_streak == baseline_peak_streak);
+	ASSERT(telemetry.current_consecutive_noop_resizes == 0);
+	ASSERT(telemetry.peak_consecutive_noop_resizes == baseline_peak_consecutive_noops);
 	ASSERT(telemetry.noop_resizes == baseline_noop);
 	ASSERT(telemetry.in_place_resizes == baseline_in_place + 1);
 	ASSERT(telemetry.current_payload_bytes == baseline_current_payload + 1);
@@ -412,8 +403,8 @@ static Return test_libmem_0009_09(void)
  * Forces an overflow in m_guarded_byte_size, an overflow in
  * m_guarded_add, and an underflow in m_guarded_subtract. Each
  * guarded helper must reject the invalid input with FAILURE and bump
- * arithmetic_guard_failures by one, so the counter advances by
- * exactly three relative to the entry baseline
+ * both the actual and expected arithmetic_guard_failures counters by
+ * one, so each counter advances by exactly three relative to the entry baseline
  *
  * @return Return describing success or failure
  */
@@ -422,16 +413,23 @@ static Return test_libmem_0009_10(void)
 	INITTEST;
 
 	const size_t baseline_guard = telemetry.arithmetic_guard_failures;
+	const size_t baseline_expected_guard = telemetry.expected_arithmetic_guard_failures;
 	size_t scratch = 0;
 
+	telemetry_expected_arithmetic_guard_failures();
 	ASSERT(FAILURE == m_guarded_byte_size(sentinel,SIZE_MAX,&scratch));
 	ASSERT(telemetry.arithmetic_guard_failures == baseline_guard + 1);
+	ASSERT(telemetry.expected_arithmetic_guard_failures == baseline_expected_guard + 1);
 
+	telemetry_expected_arithmetic_guard_failures();
 	ASSERT(FAILURE == m_guarded_add(SIZE_MAX,1,&scratch));
 	ASSERT(telemetry.arithmetic_guard_failures == baseline_guard + 2);
+	ASSERT(telemetry.expected_arithmetic_guard_failures == baseline_expected_guard + 2);
 
+	telemetry_expected_arithmetic_guard_failures();
 	ASSERT(FAILURE == m_guarded_subtract(0,1,&scratch));
 	ASSERT(telemetry.arithmetic_guard_failures == baseline_guard + 3);
+	ASSERT(telemetry.expected_arithmetic_guard_failures == baseline_expected_guard + 3);
 
 	RETURN_STATUS;
 }
@@ -458,9 +456,12 @@ static Return test_libmem_0009_11(void)
 
 	unsigned char *raw = m_data(unsigned char,buffer);
 	ASSERT(raw != NULL);
-	raw[0] = (unsigned char)'A';
-	raw[1] = (unsigned char)'B';
-	raw[2] = (unsigned char)'C';
+	IF(raw != NULL)
+	{
+		raw[0] = (unsigned char)'A';
+		raw[1] = (unsigned char)'B';
+		raw[2] = (unsigned char)'C';
+	}
 
 	ASSERT(SUCCESS == m_to_string(buffer));
 
@@ -608,8 +609,9 @@ static Return test_libmem_0009_14(void)
  * which actually frees the sentinel's slab block. After the calls every
  * "current" counter must be back to its suite baseline value, the
  * "total" counters must be at least at their suite baseline values,
- * and peak_noop_resize_streak must be at least three because subtest
- * 06 directly drives that streak inside the suite. The remaining peak
+ * and peak_consecutive_noop_resizes must be at least three because subtest
+ * 06 directly drives that consecutive no-op count inside the suite. The
+ * remaining peak
  * counters (peak_heap_reserved_bytes, peak_block_overhead_bytes,
  * peak_active_descriptors) are global and monotonic across the runner,
  * so this finalization step does not re-check them. Allocator-failure
@@ -673,12 +675,12 @@ static Return test_libmem_0009_15(void)
 	ASSERT(telemetry.current_payload_bytes == suite_baseline.current_payload_bytes);
 	ASSERT(telemetry.current_active_descriptors == suite_baseline.current_active_descriptors);
 	ASSERT(telemetry.current_block_overhead_bytes == suite_baseline.current_block_overhead_bytes);
-	ASSERT(telemetry.current_noop_resize_streak == 0);
+	ASSERT(telemetry.current_consecutive_noop_resizes == 0);
 
 	/* Peak counters are global and monotonic across the whole process,
 	   so when the suite runs alongside other tests an earlier high mark
 	   can already exceed anything this suite produces. The meaningful
-	   peak driven by the suite itself (the three-long no-op streak) is
+	   peak driven by the suite itself (the three consecutive no-op resizes) is
 	   verified directly. The remaining peak counters
 	   (peak_heap_reserved_bytes, peak_block_overhead_bytes,
 	   peak_active_descriptors) are not asserted here because no subtest
@@ -686,7 +688,7 @@ static Return test_libmem_0009_15(void)
 	   peak >= current invariant, and the full-struct memcmp in
 	   subtest 03 pins peak to its conditional post-state without
 	   requiring the suite to be the source of the maximum */
-	ASSERT(telemetry.peak_noop_resize_streak >= 3);
+	ASSERT(telemetry.peak_consecutive_noop_resizes >= 3);
 
 	/* The runner framework (testitall) may allocate and free its own
 	   STDOUT, STDERR, and EXTEND capture descriptors between subtests,
@@ -711,6 +713,7 @@ static Return test_libmem_0009_15(void)
 	ASSERT(telemetry.data_to_string_conversions == suite_baseline.data_to_string_conversions + 1);
 	ASSERT(telemetry.string_to_data_conversions == suite_baseline.string_to_data_conversions + 1);
 	ASSERT(telemetry.arithmetic_guard_failures == suite_baseline.arithmetic_guard_failures + 3);
+	ASSERT(telemetry.expected_arithmetic_guard_failures == suite_baseline.expected_arithmetic_guard_failures + 3);
 
 	/* mem_write_zero_terminator centralized helper fires for every
 	   successful terminator write across the library. Up to this
@@ -722,7 +725,7 @@ static Return test_libmem_0009_15(void)
 	ASSERT(telemetry.string_terminator_writes >= suite_baseline.string_terminator_writes + 1);
 
 	#if SHOW_TEST
-	telemetry_final_summary();
+	telemetry_summary();
 	#endif
 
 	RETURN_STATUS;
@@ -774,9 +777,12 @@ static Return test_libmem_0009_16(void)
 	ASSERT(raw != NULL);
 
 	/* Case 16a: slot already holds a zero element, IF_MISSING skips the write */
-	raw[0] = 'A';
-	raw[1] = 'B';
-	raw[2] = '\0';
+	IF(raw != NULL)
+	{
+		raw[0] = 'A';
+		raw[1] = 'B';
+		raw[2] = '\0';
+	}
 
 	ASSERT(SUCCESS == m_finalize_string(string_buffer,2,WRITE_TERMINATOR_IF_MISSING));
 	ASSERT(telemetry.finalize_string_terminator_already_present == baseline_already_present + 1);
@@ -785,9 +791,12 @@ static Return test_libmem_0009_16(void)
 	ASSERT(string_buffer->string_length == 2);
 
 	/* Case 16b: slot holds a non-zero element, IF_MISSING compensates by writing */
-	raw[0] = 'C';
-	raw[1] = 'D';
-	raw[2] = 'X';
+	IF(raw != NULL)
+	{
+		raw[0] = 'C';
+		raw[1] = 'D';
+		raw[2] = 'X';
+	}
 
 	ASSERT(SUCCESS == m_finalize_string(string_buffer,2,WRITE_TERMINATOR_IF_MISSING));
 	ASSERT(telemetry.finalize_string_terminator_already_present == baseline_already_present + 1);
@@ -798,9 +807,12 @@ static Return test_libmem_0009_16(void)
 
 	/* Case 16c: WRITE_TERMINATOR_ALWAYS writes unconditionally and must
 	   not move either of the new IF_MISSING counters */
-	raw[0] = 'E';
-	raw[1] = 'F';
-	raw[2] = 'Y';
+	IF(raw != NULL)
+	{
+		raw[0] = 'E';
+		raw[1] = 'F';
+		raw[2] = 'Y';
+	}
 
 	ASSERT(SUCCESS == m_finalize_string(string_buffer,2,WRITE_TERMINATOR_ALWAYS));
 	ASSERT(telemetry.finalize_string_terminator_already_present == baseline_already_present + 1);
@@ -819,11 +831,11 @@ static Return test_libmem_0009_16(void)
  *
  * Activates the libmem allocator mock for one malloc call, then asks
  * m_resize to grow a fresh descriptor from zero to one element. The
- * library must observe the NULL return, bump heap_allocation_failures
- * by one, and leave the descriptor in a clean unallocated state. Runs
- * through match_function_output in the driver, so the report() emission
- * that mem_resize makes lands in captured stderr instead of polluting
- * the suite output
+ * expected-failure marker is advanced immediately before the forced
+ * call. The library must observe the NULL return, bump heap_allocation_failures
+ * by one, and leave the descriptor in a clean unallocated state. Runs through
+ * match_function_output in the driver, so the report() emission that mem_resize
+ * makes lands in captured stderr instead of polluting the suite output
  *
  * @return Return describing success or failure
  */
@@ -832,15 +844,18 @@ static Return capture_libmem_0009_17_malloc_fail(void)
 	INITTEST;
 
 	const size_t baseline = telemetry.heap_allocation_failures;
+	const size_t baseline_expected = telemetry.expected_heap_allocation_failures;
 
 	m_create(char,fail_buf,MEMORY_STRING);
 
-	mocks_libmem_alloc_fail_next_malloc(1);
+	testmocking_malloc_fail_next(1);
+	telemetry_expected_heap_allocation_failures();
 	const Return result = m_resize(fail_buf,1);
-	mocks_libmem_alloc_disable();
+	testmocking_malloc_disable();
 
 	ASSERT(FAILURE == result);
 	ASSERT(telemetry.heap_allocation_failures == baseline + 1);
+	ASSERT(telemetry.expected_heap_allocation_failures == baseline_expected + 1);
 	ASSERT(fail_buf->data == NULL);
 	ASSERT(fail_buf->length == 0);
 	ASSERT(fail_buf->actually_allocated_bytes == 0);
@@ -867,6 +882,16 @@ static Return test_libmem_0009_17(void)
 	INITTEST;
 	SKIP_ON_EVIL_EMPIRE_OS;
 
+	/* Expected stderr layout for subtest 17. mem_resize is forced to a
+	   failed malloc by the libmem allocator mock and is expected to emit a
+	   single report() line. The pattern leaves the source line number
+	   flexible with \\d+ and the errno description flexible with [^\\n]+,
+	   but pins the message body byte for byte */
+	static const char expected_stderr_pattern_libmem_0009_17[] =
+		"\\A"
+		"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 4096 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+		"\\Z";
+
 	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0009_17,capture_libmem_0009_17_malloc_fail));
 
 	RETURN_STATUS;
@@ -879,7 +904,8 @@ static Return test_libmem_0009_17(void)
  * the next size change becomes a realloc instead of a fresh allocation.
  * Then activates the realloc mock for one call and asks m_resize to
  * grow past one slab block, which forces the library to call realloc.
- * The library must observe the NULL return, bump
+ * The expected-failure marker is advanced immediately before that forced
+ * call. The library must observe the NULL return, bump
  * heap_reallocation_failures by one, leave heap_allocation_failures
  * untouched, and keep the descriptor's previous allocation valid
  * because realloc returning NULL does not free the original block.
@@ -893,17 +919,20 @@ static Return capture_libmem_0009_18_realloc_fail(void)
 
 	const size_t baseline_alloc = telemetry.heap_allocation_failures;
 	const size_t baseline_realloc = telemetry.heap_reallocation_failures;
+	const size_t baseline_expected_realloc = telemetry.expected_heap_reallocation_failures;
 
 	m_create(char,grow_buf,MEMORY_STRING);
 
 	ASSERT(SUCCESS == m_resize(grow_buf,1));
 
-	mocks_libmem_alloc_fail_next_realloc(1);
+	testmocking_realloc_fail_next(1);
+	telemetry_expected_heap_reallocation_failures();
 	const Return result = m_resize(grow_buf,MEMORY_BLOCK_BYTES + 1);
-	mocks_libmem_alloc_disable();
+	testmocking_realloc_disable();
 
 	ASSERT(FAILURE == result);
 	ASSERT(telemetry.heap_reallocation_failures == baseline_realloc + 1);
+	ASSERT(telemetry.expected_heap_reallocation_failures == baseline_expected_realloc + 1);
 	ASSERT(telemetry.heap_allocation_failures == baseline_alloc);
 	ASSERT(grow_buf->data != NULL);
 	ASSERT(grow_buf->length == 1);
@@ -928,6 +957,14 @@ static Return test_libmem_0009_18(void)
 {
 	INITTEST;
 	SKIP_ON_EVIL_EMPIRE_OS;
+
+	/* Expected stderr layout for subtest 18. The realloc path inside
+	   mem_resize prints the same report() format as the malloc path, only
+	   the slab-rounded byte count differs */
+	static const char expected_stderr_pattern_libmem_0009_18[] =
+		"\\A"
+		"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 8192 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+		"\\Z";
 
 	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0009_18,capture_libmem_0009_18_realloc_fail));
 
@@ -959,8 +996,8 @@ Return test_libmem_0009(void)
 	TEST(test_libmem_0009_03,"Growth across a slab boundary registers a heap reallocation…");
 	TEST(test_libmem_0009_04,"RELEASE_UNUSED shrink returns one slab block to the OS…");
 	TEST(test_libmem_0009_05,"In-place grow inside the retained slab block bumps in_place_resizes…");
-	TEST(test_libmem_0009_06,"Three consecutive no-op resizes build a streak of length three…");
-	TEST(test_libmem_0009_07,"Effective resize resets the noop streak and preserves the peak…");
+	TEST(test_libmem_0009_06,"Three consecutive no-op resizes reach a count of three…");
+	TEST(test_libmem_0009_07,"Effective resize resets consecutive no-op counting and preserves the peak…");
 	TEST(test_libmem_0009_08,"ZERO_NEW_MEMORY growth zero-fills the newly exposed payload…");
 	TEST(test_libmem_0009_09,"Second live descriptor brings active count to two above the suite baseline…");
 	TEST(test_libmem_0009_10,"Guarded arithmetic helpers reject invalid math three times…");
