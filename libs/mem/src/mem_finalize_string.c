@@ -31,7 +31,7 @@
  *
  * @param destination String descriptor whose direct write should become visible
  * @param written_length Visible string length measured in whole elements
- * @param flags Whether the helper should materialize the zero terminator or require it to exist already
+ * @param flags Whether the helper should write the zero terminator unconditionally or only when it is missing
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_finalize_string(
