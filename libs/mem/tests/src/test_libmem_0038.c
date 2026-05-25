@@ -1,13 +1,12 @@
 #include "test_libmem_utils.h"
 
 
-static Return captured_status = SUCCESS;
-static int captured_failed_line = 0;
-
 /**
  * @brief Capture the negative resize case for a descriptor with a broken string cache
+ *
+ * @return Return describing success or failure
  */
-static void capture_libmem_inconsistent_resize_string_cache(void)
+static Return capture_libmem_inconsistent_resize_string_cache(void)
 {
 	INITTEST;
 
@@ -26,8 +25,7 @@ static void capture_libmem_inconsistent_resize_string_cache(void)
 	ASSERT(invalid_string.string_length == sizeof(materialized_string));
 	ASSERT(invalid_string.is_string == true);
 
-	captured_status = status;
-	captured_failed_line = failed_line;
+	deliver(status);
 }
 
 /**
@@ -39,41 +37,15 @@ Return test_libmem_0038(void)
 {
 	INITTEST;
 
-	m_create(char,captured_stdout,MEMORY_STRING);
-	m_create(char,captured_stderr,MEMORY_STRING);
-	Return capture_status = SUCCESS;
+	/* Expected stderr layout for the inconsistent cached-length resize
+	   rejection. The source line number and errno wording are intentionally
+	   flexible because they are build- and platform-dependent */
+	static const char expected_stderr_pattern_libmem_0038[] =
+		"\\A"
+		"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; String descriptor cache is inconsistent during resize Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+		"\\Z";
 
-	captured_status = FAILURE;
-	captured_failed_line = 0;
-
-	capture_status = function_capture(
-		capture_libmem_inconsistent_resize_string_cache,
-		captured_stdout,
-		captured_stderr);
-
-	if(capture_status != SUCCESS)
-	{
-		captured_status = capture_status;
-		captured_failed_line = __LINE__;
-	}
-
-	ASSERT(SUCCESS == capture_status);
-	ASSERT(captured_stdout->length == 0);
-	ASSERT(captured_stderr->length > 0);
-
-	const char *captured_report = m_text(captured_stderr);
-	ASSERT(captured_report != NULL);
-
-	if(captured_report != NULL)
-	{
-		ASSERT(strstr(captured_report,"String descriptor cache is inconsistent during resize") != NULL);
-	}
-
-	call(m_del(captured_stderr));
-	call(m_del(captured_stdout));
-
-	failed_line = captured_failed_line;
-	status = captured_status;
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0038,capture_libmem_inconsistent_resize_string_cache));
 
 	RETURN_STATUS;
 }

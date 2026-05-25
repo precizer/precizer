@@ -1,13 +1,12 @@
 #include "test_libmem_utils.h"
 
 
-static Return captured_status = SUCCESS;
-static int captured_failed_line = 0;
-
 /**
  * @brief Capture the zero-sized string-to-data negative case
+ *
+ * @return Return describing success or failure
  */
-static void capture_libmem_zero_sized_element_string_to_data(void)
+static Return capture_libmem_zero_sized_element_string_to_data(void)
 {
 	INITTEST;
 
@@ -22,8 +21,7 @@ static void capture_libmem_zero_sized_element_string_to_data(void)
 	ASSERT(invalid_string.string_length == 0);
 	ASSERT(invalid_string.is_string == true);
 
-	captured_status = status;
-	captured_failed_line = failed_line;
+	deliver(status);
 }
 
 /**
@@ -35,42 +33,10 @@ Return test_libmem_0022(void)
 {
 	INITTEST;
 
-	m_create(char,captured_stdout,MEMORY_STRING);
-	m_create(char,captured_stderr,MEMORY_STRING);
+	static const char expected_stderr_pattern_libmem_0022[] =
+		"\\A.*Descriptor has non-zero length with NULL data pointer.*\\Z";
 
-	Return capture_status = SUCCESS;
-
-	captured_status = FAILURE;
-	captured_failed_line = 0;
-
-	capture_status = function_capture(
-		capture_libmem_zero_sized_element_string_to_data,
-		captured_stdout,
-		captured_stderr);
-
-	if(capture_status != SUCCESS)
-	{
-		captured_status = capture_status;
-		captured_failed_line = __LINE__;
-	}
-
-	ASSERT(SUCCESS == capture_status);
-	ASSERT(captured_stdout->length == 0);
-	ASSERT(captured_stderr->length > 0);
-
-	const char *captured_report = m_text(captured_stderr);
-	ASSERT(captured_report != NULL);
-
-	if(captured_report != NULL)
-	{
-		ASSERT(strstr(captured_report,"Descriptor element size is zero") != NULL);
-	}
-
-	call(m_del(captured_stderr));
-	call(m_del(captured_stdout));
-
-	failed_line = captured_failed_line;
-	status = captured_status;
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0022,capture_libmem_zero_sized_element_string_to_data));
 
 	RETURN_STATUS;
 }

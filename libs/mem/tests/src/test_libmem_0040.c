@@ -1,13 +1,12 @@
 #include "test_libmem_utils.h"
 
 
-static Return captured_status = SUCCESS;
-static int captured_failed_line = 0;
-
 /**
  * @brief Capture negative already-string cases for data-to-string conversion
+ *
+ * @return Return describing success or failure
  */
-static void capture_libmem_inconsistent_data_to_string_string_mode(void)
+static Return capture_libmem_inconsistent_data_to_string_string_mode(void)
 {
 	INITTEST;
 
@@ -42,8 +41,7 @@ static void capture_libmem_inconsistent_data_to_string_string_mode(void)
 	ASSERT(invalid_string_descriptor.string_length == sizeof(materialized_string));
 	ASSERT(invalid_string_descriptor.is_string == true);
 
-	captured_status = status;
-	captured_failed_line = failed_line;
+	deliver(status);
 }
 
 /**
@@ -55,43 +53,15 @@ Return test_libmem_0040(void)
 {
 	INITTEST;
 
-	m_create(char,captured_stdout,MEMORY_STRING);
-	m_create(char,captured_stderr,MEMORY_STRING);
-	Return capture_status = SUCCESS;
+	static const char expected_stderr_pattern_libmem_0040[] =
+		"\\A.*Descriptor element size is zero during string conversion"
+		".*String descriptor has non-zero string_length with zero length during string conversion"
+		".*String descriptor cache is inconsistent during string conversion.*\\Z";
 
-	captured_status = FAILURE;
-	captured_failed_line = 0;
-
-	capture_status = function_capture(
-		capture_libmem_inconsistent_data_to_string_string_mode,
-		captured_stdout,
-		captured_stderr);
-
-	if(capture_status != SUCCESS)
-	{
-		captured_status = capture_status;
-		captured_failed_line = __LINE__;
-	}
-
-	ASSERT(SUCCESS == capture_status);
-	ASSERT(captured_stdout->length == 0);
-	ASSERT(captured_stderr->length > 0);
-
-	const char *captured_report = m_text(captured_stderr);
-	ASSERT(captured_report != NULL);
-
-	if(captured_report != NULL)
-	{
-		ASSERT(strstr(captured_report,"Descriptor element size is zero during string conversion") != NULL);
-		ASSERT(strstr(captured_report,"String descriptor has non-zero string_length with zero length during string conversion") != NULL);
-		ASSERT(strstr(captured_report,"String descriptor cache is inconsistent during string conversion") != NULL);
-	}
-
-	call(m_del(captured_stderr));
-	call(m_del(captured_stdout));
-
-	failed_line = captured_failed_line;
-	status = captured_status;
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		expected_stderr_pattern_libmem_0040,
+		capture_libmem_inconsistent_data_to_string_string_mode));
 
 	RETURN_STATUS;
 }

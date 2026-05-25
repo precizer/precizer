@@ -1,13 +1,12 @@
 #include "test_libmem_utils.h"
 
 
-static Return captured_status = SUCCESS;
-static int captured_failed_line = 0;
-
 /**
  * @brief Capture negative cases for descriptors with non-zero length and NULL data
+ *
+ * @return Return describing success or failure
  */
-static void capture_libmem_inconsistent_string_descriptor(void)
+static Return capture_libmem_inconsistent_string_descriptor(void)
 {
 	INITTEST;
 
@@ -27,7 +26,7 @@ static void capture_libmem_inconsistent_string_descriptor(void)
 	const unsigned char *safe_string_view = (const unsigned char *)m_string(&invalid_string_descriptor);
 	ASSERT(safe_string_view != NULL);
 
-	if(safe_string_view != NULL)
+	IF(safe_string_view != NULL)
 	{
 		ASSERT(safe_string_view[0] == 0U);
 	}
@@ -39,8 +38,7 @@ static void capture_libmem_inconsistent_string_descriptor(void)
 	ASSERT(invalid_string_descriptor.data == NULL);
 	ASSERT(invalid_string_descriptor.is_string == true);
 
-	captured_status = status;
-	captured_failed_line = failed_line;
+	deliver(status);
 }
 
 /**
@@ -52,42 +50,13 @@ Return test_libmem_0029(void)
 {
 	INITTEST;
 
-	m_create(char,captured_stdout,MEMORY_STRING);
-	m_create(char,captured_stderr,MEMORY_STRING);
+	static const char expected_stderr_pattern_libmem_0029[] =
+		"\\A.*Descriptor has non-zero length with NULL data pointer.*\\Z";
 
-	Return capture_status = SUCCESS;
-
-	captured_status = FAILURE;
-	captured_failed_line = 0;
-
-	capture_status = function_capture(
-		capture_libmem_inconsistent_string_descriptor,
-		captured_stdout,
-		captured_stderr);
-
-	if(capture_status != SUCCESS)
-	{
-		captured_status = capture_status;
-		captured_failed_line = __LINE__;
-	}
-
-	ASSERT(SUCCESS == capture_status);
-	ASSERT(captured_stdout->length == 0);
-	ASSERT(captured_stderr->length > 0);
-
-	const char *captured_report = m_text(captured_stderr);
-	ASSERT(captured_report != NULL);
-
-	if(captured_report != NULL)
-	{
-		ASSERT(strstr(captured_report,"Descriptor has non-zero length with NULL data pointer") != NULL);
-	}
-
-	call(m_del(captured_stderr));
-	call(m_del(captured_stdout));
-
-	failed_line = captured_failed_line;
-	status = captured_status;
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		expected_stderr_pattern_libmem_0029,
+		capture_libmem_inconsistent_string_descriptor));
 
 	RETURN_STATUS;
 }
