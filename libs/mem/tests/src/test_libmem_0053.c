@@ -12,7 +12,7 @@ Return test_libmem_0053(void)
 	char *manual_buffer = (char *)malloc(64u);
 	ASSERT(manual_buffer != NULL);
 
-	if(manual_buffer != NULL)
+	IF(manual_buffer != NULL)
 	{
 		strcpy(manual_buffer,"temporary heap payload");
 	}

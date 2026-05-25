@@ -17,7 +17,7 @@ Return test_libmem_0023(void)
 	uint32_t *code_unit_view = m_data(uint32_t,code_units);
 	ASSERT(code_unit_view != NULL);
 
-	if(code_unit_view != NULL)
+	IF(code_unit_view != NULL)
 	{
 		code_unit_view[0] = UINT32_C(0x00010000);
 		code_unit_view[1] = UINT32_C(0x01000000);
@@ -33,7 +33,7 @@ Return test_libmem_0023(void)
 	code_unit_view = m_data(uint32_t,code_units);
 	ASSERT(code_unit_view != NULL);
 
-	if(code_unit_view != NULL)
+	IF(code_unit_view != NULL)
 	{
 		code_unit_view[0] = UINT32_C(0x00010000);
 		code_unit_view[1] = UINT32_C(0x00000001);
@@ -49,7 +49,7 @@ Return test_libmem_0023(void)
 	ASSERT(SUCCESS == m_string_length(code_units,&measured_length));
 	ASSERT(measured_length == 2);
 
-	ASSERT(SUCCESS == m_del(code_units));
+	call(m_del(code_units));
 
 	RETURN_STATUS;
 }

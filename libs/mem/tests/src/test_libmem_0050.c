@@ -18,7 +18,7 @@ Return test_libmem_0050(void)
 	char *title_view = m_data(char,title);
 	ASSERT(title_view != NULL);
 
-	if(title_view != NULL)
+	IF(title_view != NULL)
 	{
 		memcpy(title_view,draft,sizeof(draft));
 	}
@@ -28,7 +28,7 @@ Return test_libmem_0050(void)
 	ASSERT(title->string_length == strlen("draft"));
 	ASSERT(title->is_string == true);
 	ASSERT(0 == strcmp(m_text(title),"draft"));
-	ASSERT(SUCCESS == m_del(title));
+	call(m_del(title));
 
 	RETURN_STATUS;
 }

@@ -28,7 +28,7 @@ Return test_libmem_0036(void)
 	char *mutable_view = (char *)string_buffer->data;
 	ASSERT(mutable_view != NULL);
 
-	if(mutable_view != NULL)
+	IF(mutable_view != NULL)
 	{
 		mutable_view[5] = 'x';
 	}
@@ -48,7 +48,7 @@ Return test_libmem_0036(void)
 	ASSERT(string_buffer->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_buffer),""));
 
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

@@ -32,7 +32,7 @@ static Return test_libmem_0011_1(void)
 	ASSERT(readonly_raw_points != NULL);
 	ASSERT(readonly_typed_points != NULL);
 
-	if(typed_points != NULL &&
+	IF(typed_points != NULL &&
 		raw_points != NULL &&
 		readonly_raw_points != NULL &&
 		readonly_typed_points != NULL)
@@ -84,7 +84,7 @@ static Return test_libmem_0011_2(void)
 	point *raw_points = (point *)m_raw_data(points);
 	ASSERT(raw_points != NULL);
 
-	if(raw_points != NULL)
+	IF(raw_points != NULL)
 	{
 		raw_points[0].x += 100;
 		raw_points[0].y += 200;
@@ -96,7 +96,7 @@ static Return test_libmem_0011_2(void)
 	const point *mirror_points = m_data_ro(point,mirror);
 	ASSERT(mirror_points != NULL);
 
-	if(mirror_points != NULL)
+	IF(mirror_points != NULL)
 	{
 		ASSERT(mirror->length == 5);
 

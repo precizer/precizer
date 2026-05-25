@@ -44,7 +44,7 @@ static Return test_libmem_0012_1(void)
 	const point *shrunk_points = m_data_ro(point,points);
 	ASSERT(shrunk_points != NULL);
 
-	if(shrunk_points != NULL)
+	IF(shrunk_points != NULL)
 	{
 		for(size_t point_index = 0; point_index < surviving_length; point_index++)
 		{
@@ -62,7 +62,7 @@ static Return test_libmem_0012_1(void)
 	const point *regrown_points = m_data_ro(point,points);
 	ASSERT(regrown_points != NULL);
 
-	if(regrown_points != NULL)
+	IF(regrown_points != NULL)
 	{
 		for(size_t point_index = 0; point_index < surviving_length; point_index++)
 		{
@@ -127,7 +127,7 @@ static Return test_libmem_0012_2(void)
 	point *regrown_points = m_data(point,points);
 	ASSERT(regrown_points != NULL);
 
-	if(regrown_points != NULL)
+	IF(regrown_points != NULL)
 	{
 		regrown_points[4] = (point){9,10};
 		regrown_points[5] = (point){11,12};
@@ -142,7 +142,7 @@ static Return test_libmem_0012_2(void)
 	const point *mirror_view = m_data_ro(point,mirror);
 	ASSERT(mirror_view != NULL);
 
-	if(mirror_view != NULL)
+	IF(mirror_view != NULL)
 	{
 		const point expected[] = {
 			{1,2}, {3,4}, {5,6}, {7,8}, {9,10},

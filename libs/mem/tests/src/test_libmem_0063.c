@@ -72,7 +72,7 @@ Return test_libmem_0063(void)
 	const unsigned char *binary_view = (const unsigned char *)m_raw_data_ro(left_binary);
 	ASSERT(binary_view != NULL);
 
-	if(binary_view != NULL)
+	IF(binary_view != NULL)
 	{
 		ASSERT(binary_view[0] == (unsigned char)'a');
 		ASSERT(binary_view[1] == (unsigned char)'b');
@@ -85,7 +85,7 @@ Return test_libmem_0063(void)
 	const unsigned char *right_binary_view = (const unsigned char *)m_raw_data_ro(right_binary);
 	ASSERT(right_binary_view != NULL);
 
-	if(right_binary_view != NULL)
+	IF(right_binary_view != NULL)
 	{
 		ASSERT(right_binary_view[0] == (unsigned char)'a');
 		ASSERT(right_binary_view[1] == (unsigned char)'b');
@@ -95,10 +95,10 @@ Return test_libmem_0063(void)
 		ASSERT(right_binary_view[5] == (unsigned char)'\0');
 	}
 
-	ASSERT(SUCCESS == m_del(source));
-	ASSERT(SUCCESS == m_del(destination));
-	ASSERT(SUCCESS == m_del(left_binary));
-	ASSERT(SUCCESS == m_del(right_binary));
+	call(m_del(source));
+	call(m_del(destination));
+	call(m_del(left_binary));
+	call(m_del(right_binary));
 
 	RETURN_STATUS;
 }

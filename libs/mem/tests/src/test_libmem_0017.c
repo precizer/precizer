@@ -21,7 +21,7 @@ Return test_libmem_0017(void)
 	const char *expanded_view = m_data_ro(char,string_buffer);
 	ASSERT(expanded_view != NULL);
 
-	if(expanded_view != NULL)
+	IF(expanded_view != NULL)
 	{
 		bool zero_tail = true;
 
@@ -61,7 +61,7 @@ Return test_libmem_0017(void)
 	ASSERT(string_buffer->length == 0);
 	ASSERT(string_buffer->string_length == 0);
 	ASSERT(string_buffer->is_string == true);
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

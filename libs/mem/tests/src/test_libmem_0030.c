@@ -52,7 +52,7 @@ Return test_libmem_0030(void)
 	ASSERT(string_buffer->string_length == sizeof(expected) - 1);
 	ASSERT(0 == strcmp(m_text(string_buffer),expected));
 
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

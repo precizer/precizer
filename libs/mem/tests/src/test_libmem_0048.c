@@ -24,9 +24,12 @@ Return test_libmem_0048(void)
 	char *title_view = m_data(char,title);
 	ASSERT(title_view != NULL);
 
-	const size_t truncated_length = title->string_length - 3U;
+	size_t title_length = 0U;
+	ASSERT(SUCCESS == m_string_length(title,&title_length));
 
-	if(title_view != NULL)
+	const size_t truncated_length = title_length - 3U;
+
+	IF(title_view != NULL)
 	{
 		title_view[truncated_length] = '\0';
 	}
@@ -35,7 +38,7 @@ Return test_libmem_0048(void)
 	ASSERT(title->string_length == 5);
 	ASSERT(title->is_string == true);
 	ASSERT(0 == strcmp(m_text(title),"draft"));
-	ASSERT(SUCCESS == m_del(title));
+	call(m_del(title));
 
 	RETURN_STATUS;
 }

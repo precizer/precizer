@@ -48,7 +48,7 @@ Return test_libmem_0059(void)
 	const unsigned char *destination_view = (const unsigned char *)m_raw_data_ro(destination_words);
 	ASSERT(destination_view != NULL);
 
-	if(destination_view != NULL)
+	IF(destination_view != NULL)
 	{
 		ASSERT(destination_view[0] == (unsigned char)'A');
 		ASSERT(destination_view[1] == (unsigned char)'B');
@@ -64,7 +64,7 @@ Return test_libmem_0059(void)
 	unsigned char *destination_data = (unsigned char *)m_raw_data(destination_words);
 	ASSERT(destination_data != NULL);
 
-	if(destination_data != NULL)
+	IF(destination_data != NULL)
 	{
 		aliased_append_source.data = destination_data + 1;
 	}
@@ -77,7 +77,7 @@ Return test_libmem_0059(void)
 	destination_view = (const unsigned char *)m_raw_data_ro(destination_words);
 	ASSERT(destination_view != NULL);
 
-	if(destination_view != NULL)
+	IF(destination_view != NULL)
 	{
 		ASSERT(destination_view[0] == (unsigned char)'1');
 		ASSERT(destination_view[1] == (unsigned char)'2');
@@ -93,7 +93,7 @@ Return test_libmem_0059(void)
 	destination_data = (unsigned char *)m_raw_data(destination_words);
 	ASSERT(destination_data != NULL);
 
-	if(destination_data != NULL)
+	IF(destination_data != NULL)
 	{
 		aliased_replace_source.data = destination_data + 1;
 	}
@@ -108,7 +108,7 @@ Return test_libmem_0059(void)
 	destination_view = (const unsigned char *)m_raw_data_ro(destination_words);
 	ASSERT(destination_view != NULL);
 
-	if(destination_view != NULL)
+	IF(destination_view != NULL)
 	{
 		ASSERT(destination_view[0] == (unsigned char)'b');
 		ASSERT(destination_view[1] == (unsigned char)'c');
@@ -116,8 +116,8 @@ Return test_libmem_0059(void)
 		ASSERT(destination_view[3] == (unsigned char)'e');
 	}
 
-	ASSERT(SUCCESS == m_del(source_bytes));
-	ASSERT(SUCCESS == m_del(destination_words));
+	call(m_del(source_bytes));
+	call(m_del(destination_words));
 
 	RETURN_STATUS;
 }

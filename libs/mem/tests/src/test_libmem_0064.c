@@ -40,7 +40,7 @@ Return test_libmem_0064(void)
 	const unsigned char *raw_view = (const unsigned char *)m_raw_data_ro(raw_destination);
 	ASSERT(raw_view != NULL);
 
-	if(raw_view != NULL)
+	IF(raw_view != NULL)
 	{
 		ASSERT(raw_view[0] == (unsigned char)'a');
 		ASSERT(raw_view[1] == (unsigned char)'b');
@@ -88,7 +88,7 @@ Return test_libmem_0064(void)
 	const unsigned char *raw_wrapper_view = (const unsigned char *)m_raw_data_ro(raw_wrapper_destination);
 	ASSERT(raw_wrapper_view != NULL);
 
-	if(raw_wrapper_view != NULL)
+	IF(raw_wrapper_view != NULL)
 	{
 		ASSERT(raw_wrapper_view[0] == (unsigned char)'a');
 		ASSERT(raw_wrapper_view[1] == (unsigned char)'b');
@@ -107,10 +107,10 @@ Return test_libmem_0064(void)
 	ASSERT(string_wrapper_destination->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_wrapper_destination),"go!?"));
 
-	ASSERT(SUCCESS == m_del(raw_destination));
-	ASSERT(SUCCESS == m_del(string_destination));
-	ASSERT(SUCCESS == m_del(raw_wrapper_destination));
-	ASSERT(SUCCESS == m_del(string_wrapper_destination));
+	call(m_del(raw_destination));
+	call(m_del(string_destination));
+	call(m_del(raw_wrapper_destination));
+	call(m_del(string_wrapper_destination));
 
 	RETURN_STATUS;
 }

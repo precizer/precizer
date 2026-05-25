@@ -33,7 +33,7 @@ Return test_libmem_0034(void)
 		sizeof(literal_suffix),
 			NULL));
 	ASSERT(0 == strcmp(m_text(string_buffer),"base"));
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

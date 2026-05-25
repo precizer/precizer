@@ -375,7 +375,7 @@ Return test_libmem_0061(void)
 
 	for(size_t descriptor_index = 0; descriptor_index < (sizeof(descriptors) / sizeof(descriptors[0])); ++descriptor_index)
 	{
-		ASSERT(SUCCESS == m_del(descriptors[descriptor_index]));
+		call(m_del(descriptors[descriptor_index]));
 	}
 
 	RETURN_STATUS;

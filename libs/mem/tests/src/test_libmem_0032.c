@@ -24,7 +24,7 @@ Return test_libmem_0032(void)
 	ASSERT(0 == strcmp(m_text(string_buffer),"basesuffix"));
 	ASSERT(string_buffer->string_length == strlen("basesuffix"));
 	ASSERT(string_buffer->is_string == true);
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

@@ -51,7 +51,7 @@ Return test_libmem_0010(void)
 	const point *zeroed_view = m_data_ro(point,zeroed_points);
 	ASSERT(zeroed_view != NULL);
 
-	if(zeroed_view != NULL)
+	IF(zeroed_view != NULL)
 	{
 		ASSERT(zeroed_view[0].x == 0);
 		ASSERT(zeroed_view[0].y == 0);
@@ -61,7 +61,7 @@ Return test_libmem_0010(void)
 	point *zeroed_writer = m_data(point,zeroed_points);
 	ASSERT(zeroed_writer != NULL);
 
-	if(zeroed_writer != NULL)
+	IF(zeroed_writer != NULL)
 	{
 		zeroed_writer[0] = (point){1,1};
 	}
@@ -73,7 +73,7 @@ Return test_libmem_0010(void)
 	const point *expanded_view = m_data_ro(point,zeroed_points);
 	ASSERT(expanded_view != NULL);
 
-	if(expanded_view != NULL)
+	IF(expanded_view != NULL)
 	{
 		ASSERT(expanded_view[0].x == 1);
 		ASSERT(expanded_view[0].y == 1);
@@ -88,7 +88,7 @@ Return test_libmem_0010(void)
 	const point *shrunk_view = m_data_ro(point,zeroed_points);
 	ASSERT(shrunk_view != NULL);
 
-	if(shrunk_view != NULL)
+	IF(shrunk_view != NULL)
 	{
 		ASSERT(zeroed_points->length == 2);
 		ASSERT(shrunk_view[0].x == 1);

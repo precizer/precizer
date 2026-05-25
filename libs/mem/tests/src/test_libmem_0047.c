@@ -38,7 +38,7 @@ Return test_libmem_0047(void)
 	const char *aliased_literal = m_text(string_buffer);
 	ASSERT(aliased_literal != NULL);
 
-	if(aliased_literal != NULL)
+	IF(aliased_literal != NULL)
 	{
 		aliased_literal += 2;
 		ASSERT(SUCCESS == m_copy_fixed_string(
@@ -60,15 +60,15 @@ Return test_libmem_0047(void)
 	const uint32_t *wide_view = m_data_ro(uint32_t,wide_buffer);
 	ASSERT(wide_view != NULL);
 
-	if(wide_view != NULL)
+	IF(wide_view != NULL)
 	{
 		ASSERT(wide_view[0] == UINT32_C(100));
 		ASSERT(wide_view[1] == UINT32_C(200));
 		ASSERT(wide_view[2] == UINT32_C(0));
 	}
 
-	ASSERT(SUCCESS == m_del(wide_buffer));
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(wide_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

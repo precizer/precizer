@@ -46,15 +46,15 @@ Return test_libmem_0045(void)
 	const uint32_t *code_unit_view = m_data_ro(uint32_t,code_units);
 	ASSERT(code_unit_view != NULL);
 
-	if(code_unit_view != NULL)
+	IF(code_unit_view != NULL)
 	{
 		ASSERT(code_unit_view[0] == UINT32_C(10));
 		ASSERT(code_unit_view[1] == UINT32_C(20));
 		ASSERT(code_unit_view[2] == UINT32_C(0));
 	}
 
-	ASSERT(SUCCESS == m_del(code_units));
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(code_units));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

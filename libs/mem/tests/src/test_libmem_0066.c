@@ -21,9 +21,12 @@ static Return test_libmem_0066_1(void)
 	const char *aliased_string_suffix = m_text(string_buffer);
 	ASSERT(aliased_string_suffix != NULL);
 
-	if(aliased_string_suffix != NULL)
+	size_t string_buffer_length = 0U;
+	ASSERT(SUCCESS == m_string_length(string_buffer,&string_buffer_length));
+
+	IF(aliased_string_suffix != NULL)
 	{
-		aliased_string_suffix += string_buffer->string_length;
+		aliased_string_suffix += string_buffer_length;
 		ASSERT(SUCCESS == m_copy_fixed_string(string_buffer,1U,aliased_string_suffix));
 	}
 
@@ -31,7 +34,7 @@ static Return test_libmem_0066_1(void)
 	ASSERT(string_buffer->string_length == 0);
 	ASSERT(string_buffer->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_buffer),""));
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }
@@ -56,7 +59,7 @@ static Return test_libmem_0066_2(void)
 	ASSERT(string_buffer->string_length == 3);
 	ASSERT(string_buffer->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_buffer),"xyz"));
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }
@@ -92,7 +95,7 @@ static Return test_libmem_0066_3(void)
 	const unsigned char *aliased_raw_suffix = (const unsigned char *)m_raw_data_ro(raw_buffer);
 	ASSERT(aliased_raw_suffix != NULL);
 
-	if(aliased_raw_suffix != NULL)
+	IF(aliased_raw_suffix != NULL)
 	{
 		aliased_raw_suffix += 2;
 		ASSERT(SUCCESS == m_copy_buffer(
@@ -109,12 +112,12 @@ static Return test_libmem_0066_3(void)
 	const unsigned char *raw_view = (const unsigned char *)m_raw_data_ro(raw_buffer);
 	ASSERT(raw_view != NULL);
 
-	if(raw_view != NULL)
+	IF(raw_view != NULL)
 	{
 		ASSERT(0 == memcmp(raw_view,expected_raw_tail,sizeof(expected_raw_tail)));
 	}
 
-	ASSERT(SUCCESS == m_del(raw_buffer));
+	call(m_del(raw_buffer));
 
 	RETURN_STATUS;
 }
@@ -150,7 +153,7 @@ static Return test_libmem_0066_4(void)
 	const unsigned char *aliased_core_suffix = (const unsigned char *)m_raw_data_ro(raw_core_buffer);
 	ASSERT(aliased_core_suffix != NULL);
 
-	if(aliased_core_suffix != NULL)
+	IF(aliased_core_suffix != NULL)
 	{
 		aliased_core_suffix += 1;
 		ASSERT(SUCCESS == m_copy_buffer(
@@ -166,7 +169,7 @@ static Return test_libmem_0066_4(void)
 	const unsigned char *raw_core_view = (const unsigned char *)m_raw_data_ro(raw_core_buffer);
 	ASSERT(raw_core_view != NULL);
 
-	if(raw_core_view != NULL)
+	IF(raw_core_view != NULL)
 	{
 		ASSERT(0 == memcmp(
 			raw_core_view,
@@ -178,7 +181,7 @@ static Return test_libmem_0066_4(void)
 	ASSERT(raw_core_buffer->length == 0);
 	ASSERT(raw_core_buffer->string_length == 0);
 	ASSERT(raw_core_buffer->is_string == false);
-	ASSERT(SUCCESS == m_del(raw_core_buffer));
+	call(m_del(raw_core_buffer));
 
 	RETURN_STATUS;
 }

@@ -28,7 +28,7 @@ Return test_libmem_0052(void)
 	const point *point_view = m_data_ro(point,point_buffer);
 	ASSERT(point_view != NULL);
 
-	if(point_view != NULL)
+	IF(point_view != NULL)
 	{
 		ASSERT(point_buffer->length == 2);
 		ASSERT(point_view[0].x == 3);
@@ -41,8 +41,8 @@ Return test_libmem_0052(void)
 	ASSERT(point_buffer->is_string == false);
 	ASSERT(SUCCESS == m_copy_buffer(point_buffer,0,NULL));
 	ASSERT(point_buffer->length == 0);
-	ASSERT(SUCCESS == m_del(db_path));
-	ASSERT(SUCCESS == m_del(point_buffer));
+	call(m_del(db_path));
+	call(m_del(point_buffer));
 
 	RETURN_STATUS;
 }

@@ -29,7 +29,7 @@ Return test_libmem_0020(void)
 	ASSERT(buffer->is_string == true);
 	ASSERT(0 == strcmp(m_text(buffer),"xyz"));
 
-	ASSERT(SUCCESS == m_del(buffer));
+	call(m_del(buffer));
 
 	RETURN_STATUS;
 }

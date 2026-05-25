@@ -29,7 +29,7 @@ Return test_libmem_0056(void)
 	ASSERT(packet->string_length == 0);
 	ASSERT(packet->is_string == false);
 
-	ASSERT(SUCCESS == m_del(packet));
+	call(m_del(packet));
 
 	RETURN_STATUS;
 }

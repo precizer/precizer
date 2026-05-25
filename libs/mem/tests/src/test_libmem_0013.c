@@ -85,7 +85,7 @@ static Return test_libmem_0013_2(void)
 	const char *string_view = m_data_ro(char,string_buffer);
 	ASSERT(string_view != NULL);
 
-	if(string_view != NULL)
+	IF(string_view != NULL)
 	{
 		ASSERT(string_view[0] == 'a');
 		ASSERT(string_view[1] == 'b');
@@ -137,7 +137,7 @@ static Return test_libmem_0013_3(void)
 	const uint32_t *wide_view = m_data_ro(uint32_t,wide_string);
 	ASSERT(wide_view != NULL);
 
-	if(wide_view != NULL)
+	IF(wide_view != NULL)
 	{
 		ASSERT(wide_view[0] == UINT32_C(10));
 		ASSERT(wide_view[1] == UINT32_C(20));

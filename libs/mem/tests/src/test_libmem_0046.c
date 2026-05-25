@@ -39,7 +39,7 @@ Return test_libmem_0046(void)
 	const char *aliased_source = m_text(string_buffer);
 	ASSERT(aliased_source != NULL);
 
-	if(aliased_source != NULL)
+	IF(aliased_source != NULL)
 	{
 		aliased_source += 2;
 		ASSERT(SUCCESS == m_copy_string(string_buffer,aliased_source));
@@ -55,7 +55,7 @@ Return test_libmem_0046(void)
 	aliased_source = m_text(string_buffer);
 	ASSERT(aliased_source != NULL);
 
-	if(aliased_source != NULL)
+	IF(aliased_source != NULL)
 	{
 		aliased_source += 2;
 		ASSERT(SUCCESS == m_copy_string(
@@ -80,15 +80,15 @@ Return test_libmem_0046(void)
 	const uint32_t *wide_view = m_data_ro(uint32_t,wide_buffer);
 	ASSERT(wide_view != NULL);
 
-	if(wide_view != NULL)
+	IF(wide_view != NULL)
 	{
 		ASSERT(wide_view[0] == UINT32_C(10));
 		ASSERT(wide_view[1] == UINT32_C(20));
 		ASSERT(wide_view[2] == UINT32_C(0));
 	}
 
-	ASSERT(SUCCESS == m_del(wide_buffer));
-	ASSERT(SUCCESS == m_del(string_buffer));
+	call(m_del(wide_buffer));
+	call(m_del(string_buffer));
 
 	RETURN_STATUS;
 }

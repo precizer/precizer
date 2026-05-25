@@ -39,7 +39,7 @@ Return test_libmem_0071(void)
 		baseline_block_overhead_bytes + expected_heap_drift - initial_elements);
 	ASSERT(telemetry.current_active_descriptors == baseline_current_active_descriptors + 1U);
 
-	if(SUCCESS == status)
+	IF(SUCCESS == status)
 	{
 		Return saved_global_status = atomic_exchange(&global_return_status,INFO);
 		Return resize_status = m_resize(graceful_path,shrunken_elements);
