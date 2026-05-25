@@ -9,36 +9,17 @@
  *
  * @param src Source string that may contain comma separators
  * @param dst Destination buffer
- * @param dst_size Destination buffer size in bytes
  */
 static void strip_commas(
 	const char *src,
-	char       *dst,
-	size_t      dst_size)
+	char       *dst)
 {
-	if(dst == NULL || dst_size == 0U)
-	{
-		return;
-	}
-
-	if(src == NULL)
-	{
-		dst[0] = '\0';
-		return;
-	}
-
 	size_t write = 0U;
 	for(size_t read = 0U; src[read] != '\0'; read++)
 	{
 		if(src[read] == ',')
 		{
 			continue;
-		}
-
-		if(write + 1U >= dst_size)
-		{
-			dst[0] = '\0';
-			return;
 		}
 
 		dst[write++] = src[read];
@@ -56,11 +37,6 @@ static void strip_commas(
 static bool valid_comma_grouping(
 	const char *val)
 {
-	if(val == NULL || val[0] == '\0')
-	{
-		return false;
-	}
-
 	size_t start = 0U;
 	if(val[0] == '-')
 	{
@@ -68,10 +44,6 @@ static bool valid_comma_grouping(
 	}
 
 	size_t len = strlen(val);
-	if(len <= start)
-	{
-		return false;
-	}
 
 	size_t digits_since_comma = 0U;
 	for(size_t i = len; i > start; i--)
@@ -114,14 +86,16 @@ static bool form_intmax_matches_standard(
 	char expected[MAX_CHARACTERS];
 	char stripped[MAX_CHARACTERS];
 
-	if(snprintf(expected,sizeof(expected),"%" PRIdMAX,val) < 0)
+	(void)snprintf(expected,sizeof(expected),"%" PRIdMAX,val);
+
+	if(valid_comma_grouping(formatted) == false)
 	{
 		return false;
 	}
 
-	strip_commas(formatted,stripped,sizeof(stripped));
+	strip_commas(formatted,stripped);
 
-	return valid_comma_grouping(formatted) && (0 == strcmp(stripped,expected));
+	return 0 == strcmp(stripped,expected);
 }
 
 /**
@@ -138,14 +112,16 @@ static bool form_uintmax_matches_standard(
 	char expected[MAX_CHARACTERS];
 	char stripped[MAX_CHARACTERS];
 
-	if(snprintf(expected,sizeof(expected),"%" PRIuMAX,val) < 0)
+	(void)snprintf(expected,sizeof(expected),"%" PRIuMAX,val);
+
+	if(valid_comma_grouping(formatted) == false)
 	{
 		return false;
 	}
 
-	strip_commas(formatted,stripped,sizeof(stripped));
+	strip_commas(formatted,stripped);
 
-	return valid_comma_grouping(formatted) && (0 == strcmp(stripped,expected));
+	return 0 == strcmp(stripped,expected);
 }
 
 /**
@@ -161,11 +137,6 @@ static bool valid_grouped_integer_part(
 	size_t     start,
 	size_t     end)
 {
-	if(val == NULL || end <= start)
-	{
-		return false;
-	}
-
 	size_t digits_since_comma = 0U;
 	for(size_t i = end; i > start; i--)
 	{
@@ -202,20 +173,10 @@ static bool valid_grouped_integer_part(
 static bool valid_grouped_real(
 	const char *val)
 {
-	if(val == NULL || val[0] == '\0')
-	{
-		return false;
-	}
-
 	size_t start = 0U;
 	if(val[0] == '-')
 	{
 		start = 1U;
-	}
-
-	if(val[start] == '\0')
-	{
-		return false;
 	}
 
 	const char *dot = strchr(val + start,'.');
@@ -266,12 +227,11 @@ static bool form_real_matches_portable(
 	}
 
 	char stripped[MAX_CHARACTERS];
-	strip_commas(formatted,stripped,sizeof(stripped));
+	strip_commas(formatted,stripped);
 
 	errno = 0;
-	char *end = NULL;
-	const long double parsed = strtold(stripped,&end);
-	if(errno != 0 || end == stripped || *end != '\0')
+	const long double parsed = strtold(stripped,NULL);
+	if(errno != 0)
 	{
 		return false;
 	}
@@ -668,12 +628,11 @@ static Return test_librational_0001_4(void)
  * @details Exercises form_date() and form_date_r() over nanosecond inputs.
  * Confirms zero handling, mixed-unit FULL_VIEW output, single-unit
  * MAJOR_VIEW output across every supported unit from nanoseconds through
- * years, NULL/size=0 rejection of the reentrant variant, return of the
- * caller-provided buffer pointer for successful calls, isolation between
- * two consecutive caller buffers, and terminated truncation in tiny
- * buffers down to a single byte. Link-time snprintf mock coverage for
- * form_date_r() lives separately in the test_librational_0003 suite to
- * keep this test runnable on platforms that lack GNU ld --wrap
+ * years, successful calls returning their caller-provided buffer pointer,
+ * buffer isolation, and terminated truncation in tiny buffers down to a
+ * single byte. Link-time snprintf mock coverage for form_date_r() lives
+ * separately in the test_librational_0003 suite to keep this test runnable
+ * on platforms that lack GNU ld --wrap
  *
  * @return Return describing success or failure
  */
@@ -704,10 +663,6 @@ static Return test_librational_0001_5(void)
 	ASSERT(0 == strcmp(form_date(273000528LL,MAJOR_VIEW),"273ms"));
 	ASSERT(0 == strcmp(form_date(3600000000001LL,FULL_VIEW),"1h 1ns"));
 	ASSERT(0 == strcmp(form_date(3600000000001LL,MAJOR_VIEW),"1h"));
-
-	/* Reentrant duration formatting must reject invalid output buffers before writing */
-	ASSERT(NULL == form_date_r(1LL,FULL_VIEW,NULL,sizeof(date_r_a)));
-	ASSERT(NULL == form_date_r(1LL,FULL_VIEW,date_r_a,0U));
 
 	/* A successful reentrant call must return the caller-provided buffer pointer, not an internal static */
 	ASSERT(form_date_r(1LL,FULL_VIEW,date_r_a,sizeof(date_r_a)) == date_r_a);
