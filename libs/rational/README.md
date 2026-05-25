@@ -1,4 +1,4 @@
-[<img src="../../.html/img/i18n-icon.svg"> Ссылка на русскоязычную страницу README](README.ru.md)
+[Ссылка на русскоязычную страницу README](README.ru.md)
 
 # librational — shared return statuses for C code
 
