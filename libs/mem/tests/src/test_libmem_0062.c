@@ -1,18 +1,15 @@
 #include "test_libmem_utils.h"
 
 
-static Return captured_status = SUCCESS;
-static int captured_failed_line = 0;
-
 /**
  * @brief Capture cross-type data-wrapper divisibility failures
  *
  * The helper should reject both append and replace when the full source
  * payload leaves a partial destination element tail
  *
- * @return void
+ * @return Return describing success or failure
  */
-static void capture_libmem_core_data_non_divisible_cross_type_cases(void)
+static Return capture_libmem_core_data_non_divisible_cross_type_cases(void)
 {
 	INITTEST;
 
@@ -131,8 +128,7 @@ static void capture_libmem_core_data_non_divisible_cross_type_cases(void)
 		call(m_del(descriptors[descriptor_index]));
 	}
 
-	captured_status = status;
-	captured_failed_line = failed_line;
+	deliver(status);
 }
 
 /**
@@ -144,54 +140,17 @@ Return test_libmem_0062(void)
 {
 	INITTEST;
 
-	m_create(char,captured_stdout,MEMORY_STRING);
-	m_create(char,captured_stderr,MEMORY_STRING);
-	Return capture_status = SUCCESS;
+	static const char expected_stderr_pattern_libmem_0062[] =
+		"\\A.*Source byte count 3 is not divisible by destination element size 2"
+		".*Source byte count 4 is not divisible by destination element size 3"
+		".*Source byte count 6 is not divisible by destination element size 4"
+		".*Source byte count 4 is not divisible by destination element size 8"
+		".*Source byte count 8 is not divisible by destination element size 3.*\\Z";
 
-	captured_status = FAILURE;
-	captured_failed_line = 0;
-
-	capture_status = function_capture(
-		capture_libmem_core_data_non_divisible_cross_type_cases,
-		captured_stdout,
-		captured_stderr);
-
-	if(capture_status != SUCCESS)
-	{
-		captured_status = capture_status;
-		captured_failed_line = __LINE__;
-	}
-
-	ASSERT(SUCCESS == capture_status);
-	ASSERT(captured_stdout->length == 0);
-
-	const char *captured_stderr_view = m_text(captured_stderr);
-	ASSERT(captured_stderr_view != NULL);
-
-	if(captured_stderr_view != NULL)
-	{
-		ASSERT(strstr(
-			captured_stderr_view,
-			"Source byte count 3 is not divisible by destination element size 2") != NULL);
-		ASSERT(strstr(
-			captured_stderr_view,
-			"Source byte count 4 is not divisible by destination element size 3") != NULL);
-		ASSERT(strstr(
-			captured_stderr_view,
-			"Source byte count 6 is not divisible by destination element size 4") != NULL);
-		ASSERT(strstr(
-			captured_stderr_view,
-			"Source byte count 4 is not divisible by destination element size 8") != NULL);
-		ASSERT(strstr(
-			captured_stderr_view,
-			"Source byte count 8 is not divisible by destination element size 3") != NULL);
-	}
-
-	call(m_del(captured_stdout));
-	call(m_del(captured_stderr));
-
-	failed_line = captured_failed_line;
-	status = captured_status;
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		expected_stderr_pattern_libmem_0062,
+		capture_libmem_core_data_non_divisible_cross_type_cases));
 
 	RETURN_STATUS;
 }

@@ -1,13 +1,12 @@
 #include "test_libmem_utils.h"
 
 
-static Return captured_status = SUCCESS;
-static int captured_failed_line = 0;
-
 /**
  * @brief Capture the negative resize case for a data descriptor with stale string metadata
+ *
+ * @return Return describing success or failure
  */
-static void capture_libmem_inconsistent_data_resize_cache(void)
+static Return capture_libmem_inconsistent_data_resize_cache(void)
 {
 	INITTEST;
 
@@ -27,8 +26,7 @@ static void capture_libmem_inconsistent_data_resize_cache(void)
 	ASSERT(invalid_descriptor.string_length == 2);
 	ASSERT(invalid_descriptor.is_string == false);
 
-	captured_status = status;
-	captured_failed_line = failed_line;
+	deliver(status);
 }
 
 /**
@@ -40,42 +38,13 @@ Return test_libmem_0057(void)
 {
 	INITTEST;
 
-	m_create(char,captured_stdout,MEMORY_STRING);
-	m_create(char,captured_stderr,MEMORY_STRING);
+	static const char expected_stderr_pattern_libmem_0057[] =
+		"\\A.*Data descriptor has non-zero string_length during resize.*\\Z";
 
-	Return capture_status = SUCCESS;
-
-	captured_status = FAILURE;
-	captured_failed_line = 0;
-
-	capture_status = function_capture(
-		capture_libmem_inconsistent_data_resize_cache,
-		captured_stdout,
-		captured_stderr);
-
-	if(capture_status != SUCCESS)
-	{
-		captured_status = capture_status;
-		captured_failed_line = __LINE__;
-	}
-
-	ASSERT(SUCCESS == capture_status);
-	ASSERT(captured_stdout->length == 0);
-	ASSERT(captured_stderr->length > 0);
-
-	const char *captured_report = m_text(captured_stderr);
-	ASSERT(captured_report != NULL);
-
-	if(captured_report != NULL)
-	{
-		ASSERT(strstr(captured_report,"Data descriptor has non-zero string_length during resize") != NULL);
-	}
-
-	call(m_del(captured_stderr));
-	call(m_del(captured_stdout));
-
-	failed_line = captured_failed_line;
-	status = captured_status;
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		expected_stderr_pattern_libmem_0057,
+		capture_libmem_inconsistent_data_resize_cache));
 
 	RETURN_STATUS;
 }
