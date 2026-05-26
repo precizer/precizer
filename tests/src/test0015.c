@@ -21,7 +21,7 @@ static Return open_db_from_tmpdir(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	create(char,db_path);
+	m_create(char,db_path,MEMORY_STRING);
 
 	if(db_filename == NULL || db_out == NULL)
 	{
@@ -37,11 +37,11 @@ static Return open_db_from_tmpdir(
 	{
 		*db_out = NULL;
 
-		if(SQLITE_OK != sqlite3_open_v2(getcstring(db_path),db_out,open_flags,NULL))
+		if(SQLITE_OK != sqlite3_open_v2(m_text(db_path),db_out,open_flags,NULL))
 		{
 			status = FAILURE;
 
-			if(*db_out != NULL)
+			IF(*db_out != NULL)
 			{
 				(void)sqlite3_close(*db_out);
 				*db_out = NULL;
@@ -49,7 +49,7 @@ static Return open_db_from_tmpdir(
 		}
 	}
 
-	del(db_path);
+	m_del(db_path);
 
 	return(status);
 }
@@ -108,12 +108,12 @@ static Return db_read_first_row_id(
 		}
 	}
 
-	if(stmt != NULL)
+	IF(stmt != NULL)
 	{
 		(void)sqlite3_finalize(stmt);
 	}
 
-	if(db != NULL)
+	IF(db != NULL)
 	{
 		(void)sqlite3_close(db);
 	}
@@ -181,12 +181,12 @@ static Return db_overwrite_stat_blob_by_row_id(
 		status = FAILURE;
 	}
 
-	if(stmt != NULL)
+	IF(stmt != NULL)
 	{
 		(void)sqlite3_finalize(stmt);
 	}
 
-	if(db != NULL)
+	IF(db != NULL)
 	{
 		(void)sqlite3_close(db);
 	}
@@ -255,12 +255,12 @@ static Return db_read_files_count_with_blob_size(
 		}
 	}
 
-	if(stmt != NULL)
+	IF(stmt != NULL)
 	{
 		(void)sqlite3_finalize(stmt);
 	}
 
-	if(db != NULL)
+	IF(db != NULL)
 	{
 		(void)sqlite3_close(db);
 	}
@@ -319,12 +319,12 @@ static Return set_db_version_in_metadata(
 		status = FAILURE;
 	}
 
-	if(stmt != NULL)
+	IF(stmt != NULL)
 	{
 		(void)sqlite3_finalize(stmt);
 	}
 
-	if(db != NULL)
+	IF(db != NULL)
 	{
 		(void)sqlite3_close(db);
 	}
@@ -424,12 +424,12 @@ static Return db_read_stat_blob_by_row_id(
 		}
 	}
 
-	if(stmt != NULL)
+	IF(stmt != NULL)
 	{
 		(void)sqlite3_finalize(stmt);
 	}
 
-	if(db != NULL)
+	IF(db != NULL)
 	{
 		(void)sqlite3_close(db);
 	}
@@ -609,7 +609,7 @@ static Return db_create_abort_on_second_stat_update_trigger(
 		status = FAILURE;
 	}
 
-	if(db != NULL)
+	IF(db != NULL)
 	{
 		(void)sqlite3_close(db);
 	}
@@ -631,8 +631,8 @@ Return test0015_1(void)
 
 	const char *arguments = "--database=./0015_database_v0.db tests/fixtures/diffs/diff1";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0015_001.txt";
 
@@ -644,8 +644,8 @@ Return test0015_1(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("0015_database_v0.db"));
@@ -668,8 +668,8 @@ Return test0015_2(void)
 	const char *arguments = "--update --database=0015_database_v0.db "
 	        "tests/fixtures/diffs/diff1";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0015_002_1.txt";
 
@@ -684,8 +684,8 @@ Return test0015_2(void)
 	ASSERT(SUCCESS == delete_path("0015_database_v0.db"));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -705,8 +705,8 @@ Return test0015_3(void)
 	const char *arguments = "--watch-timestamps --update --database=0015_database_v0.db "
 	        "tests/fixtures/diffs/diff1";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0015_002_2.txt";
 
@@ -718,8 +718,8 @@ Return test0015_3(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -733,8 +733,8 @@ Return test0015_4(void)
 {
 	INITTEST;
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0015_003.txt";
 
@@ -751,8 +751,8 @@ Return test0015_4(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("0015_database_v0.db"));
@@ -857,8 +857,8 @@ Return test0015_8(void)
 	const char *arguments = "--update --database=0015_database_v1.db "
 	        "tests/fixtures/diffs/diff1";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0015_007.txt";
 
@@ -870,8 +870,8 @@ Return test0015_8(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -885,8 +885,8 @@ Return test0015_9(void)
 {
 	INITTEST;
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0015_008.txt";
 
@@ -903,8 +903,8 @@ Return test0015_9(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("0015_database_v1.db"));
@@ -958,8 +958,8 @@ Return test0015_11(void)
 	const char *arguments = "--update --database=0015_database_v2.db --verbose "
 	        "tests/fixtures/diffs/diff1";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -974,8 +974,8 @@ Return test0015_11(void)
 	ASSERT(SUCCESS == delete_path("0015_database_v2.db"));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -1028,13 +1028,13 @@ Return test0015_13(void)
 	const char *arguments = "--update --database=\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
 	        "tests/fixtures/diffs/diff1";
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0015_012.txt";
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -1045,8 +1045,8 @@ Return test0015_13(void)
 	ASSERT(SUCCESS == delete_path("0015_database_v3 это база данных с пробелами и символами UTF-8.db"));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -1070,8 +1070,8 @@ Return test0015_14(void)
 	        "\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
 	        "\"0015_database_v4 это база данных с пробелами и символами UTF-8.db\"";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -1082,8 +1082,8 @@ Return test0015_14(void)
 	// Match the result against the pattern
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(result);
-	del(pattern);
+	m_del(result);
+	m_del(pattern);
 
 	ASSERT(SUCCESS == delete_path("0015_database_v3 это база данных с пробелами и символами UTF-8.db"));
 	ASSERT(SUCCESS == delete_path("0015_database_v4 это база данных с пробелами и символами UTF-8.db"));
@@ -1105,21 +1105,21 @@ Return test0015_15(void)
 
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db","0015_database_v4 это база данных с пробелами и символами UTF-8.db"));
 
-	create(char,pattern);
-	create(char,result);
-	create(char,chunk);
+	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,chunk,MEMORY_STRING);
 
 	const char *arguments = "--database=\"Это новая база данных.db\" "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--compare \"Это новая база данных.db\" "
 	        "\"0015_database_v4 это база данных с пробелами и символами UTF-8.db\"";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	const char *filename = "templates/0015_014.txt";
 
@@ -1129,9 +1129,9 @@ Return test0015_15(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("Это новая база данных.db"));
@@ -1160,8 +1160,8 @@ Return test0015_16(void)
 
 	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob(corrupted_db_filename,&row_id));
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v0_corrupt.db";
 
@@ -1181,8 +1181,8 @@ Return test0015_16(void)
 	ASSERT(SUCCESS == delete_path(corrupted_db_filename));
 	ASSERT(SUCCESS == delete_path(reference_db_filename));
 
-	del(result);
-	del(pattern);
+	m_del(result);
+	m_del(pattern);
 
 	RETURN_STATUS;
 }
@@ -1208,8 +1208,8 @@ Return test0015_17(void)
 
 	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v3_corrupt.db";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	const char *filename = "templates/0015_016.txt";
@@ -1227,8 +1227,8 @@ Return test0015_17(void)
 	ASSERT(SUCCESS == delete_path(corrupted_db_filename));
 	ASSERT(SUCCESS == delete_path(reference_db_filename));
 
-	del(result);
-	del(pattern);
+	m_del(result);
+	m_del(pattern);
 
 	RETURN_STATUS;
 }
@@ -1272,8 +1272,8 @@ Return test0015_18(void)
 
 	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v3_rollback.db";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
 	const char *filename = "templates/0015_017.txt";
@@ -1308,8 +1308,8 @@ Return test0015_18(void)
 	ASSERT(SUCCESS == delete_path(rollback_db_filename));
 	ASSERT(SUCCESS == delete_path(reference_db_filename));
 
-	del(result);
-	del(pattern);
+	m_del(result);
+	m_del(pattern);
 
 	RETURN_STATUS;
 }
@@ -1329,8 +1329,8 @@ Return test0015_19(void)
 	const char *arguments = "--database=0015_database_future_version.db "
 	        "tests/fixtures/diffs/diff1";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == set_db_version_in_metadata(db_filename,CURRENT_DB_VERSION + 1));
@@ -1359,8 +1359,8 @@ Return test0015_19(void)
 
 	ASSERT(SUCCESS == delete_path(db_filename));
 
-	del(result);
-	del(pattern);
+	m_del(result);
+	m_del(pattern);
 
 	RETURN_STATUS;
 }
@@ -1378,25 +1378,25 @@ Return test0015(void)
 {
 	INITTEST;
 
-	TEST(test0015_1,"Upgrade a DB from v0 to the current version. Error handling…");
-	TEST(test0015_2,"Upgrade a DB from v0 to the current version as the primary database…");
-	TEST(test0015_3,"Upgrade a DB from v0 to the current version with --watch-timestamps…");
-	TEST(test0015_4,"Verify that the upgraded v0 DB is actually at the current version…");
-	TEST(test0015_5,"Create default name database…");
-	TEST(test0015_6,"Attempting an upgrade with a single --compare parameter…");
-	TEST(test0015_7,"Upgrading from 0 to the last version using the --compare and --update…");
-	TEST(test0015_8,"Upgrade a DB from v1 to the current version as the primary database…");
-	TEST(test0015_9,"Verify that the upgraded v1 DB is actually at the current version…");
-	TEST(test0015_10,"Upgrading from 1 to the last version using the --compare and --update…");
-	TEST(test0015_11,"Upgrade a DB from v2 to the current version as the primary database…");
-	TEST(test0015_12,"Upgrading from 2 to the last version using the --compare and --update…");
-	TEST(test0015_13,"Upgrading from 3 with UTF-8 name to the last version using the --update…");
-	TEST(test0015_14,"Upgrading from 3 to the last version using the --compare and --update…");
-	TEST(test0015_15,"Create and compare DBs with UTF-8 names and checksums from legacy DB…");
-	TEST(test0015_16,"Corrupted v0 stat blob does not break the full upgrade…");
-	TEST(test0015_17,"Corrupted v3 stat blob does not break the full upgrade…");
-	TEST(test0015_18,"Forced SQLite failure triggers rollback during 3->4 migration…");
-	TEST(test0015_19,"Fresh DB with forced future version returns warning and stays unchanged…");
+	TEST(test0015_1,"Upgrade a DB from v0 to the current version. Error handling");
+	TEST(test0015_2,"Upgrade a DB from v0 to the current version as the primary database");
+	TEST(test0015_3,"Upgrade a DB from v0 to the current version with --watch-timestamps");
+	TEST(test0015_4,"Verify that the upgraded v0 DB is actually at the current version");
+	TEST(test0015_5,"Create default name database");
+	TEST(test0015_6,"Attempting an upgrade with a single --compare parameter");
+	TEST(test0015_7,"Upgrading from 0 to the last version using the --compare and --update");
+	TEST(test0015_8,"Upgrade a DB from v1 to the current version as the primary database");
+	TEST(test0015_9,"Verify that the upgraded v1 DB is actually at the current version");
+	TEST(test0015_10,"Upgrading from 1 to the last version using the --compare and --update");
+	TEST(test0015_11,"Upgrade a DB from v2 to the current version as the primary database");
+	TEST(test0015_12,"Upgrading from 2 to the last version using the --compare and --update");
+	TEST(test0015_13,"Upgrading from 3 with UTF-8 name to the last version using the --update");
+	TEST(test0015_14,"Upgrading from 3 to the last version using the --compare and --update");
+	TEST(test0015_15,"Create and compare DBs with UTF-8 names and checksums from legacy DB");
+	TEST(test0015_16,"Corrupted v0 stat blob does not break the full upgrade");
+	TEST(test0015_17,"Corrupted v3 stat blob does not break the full upgrade");
+	TEST(test0015_18,"Forced SQLite failure triggers rollback during 3->4 migration");
+	TEST(test0015_19,"Fresh DB with forced future version returns warning and stays unchanged");
 
 	RETURN_STATUS;
 }
