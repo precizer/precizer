@@ -136,10 +136,10 @@ Return test0012(void)
 {
 	INITTEST;
 
-	TEST(test0012_1,"Adding string to empty array…");
-	TEST(test0012_2,"Testing adding multiple strings…");
-	TEST(test0012_3,"Testing adding empty string…");
-	TEST(test0012_4,"Testing adding long string…");
+	TEST(test0012_1,"Adding string to empty array");
+	TEST(test0012_2,"Testing adding multiple strings");
+	TEST(test0012_3,"Testing adding empty string");
+	TEST(test0012_4,"Testing adding long string");
 
 	RETURN_STATUS;
 }
