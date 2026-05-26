@@ -81,10 +81,10 @@ Return test_libmem_0005(void)
 
 	SLOWTEST;
 
-	TEST(test_libmem_0005_1,"Random-size unsigned long long int bounded-buffer import…");
-	TEST(test_libmem_0005_2,"Random-size char bounded-buffer import…");
-	TEST(test_libmem_0005_3,"Random-size int bounded-buffer import…");
-	TEST(test_libmem_0005_4,"Random-size unsigned char bounded-buffer import…");
+	TEST(test_libmem_0005_1,"Random-size unsigned long long int bounded-buffer import");
+	TEST(test_libmem_0005_2,"Random-size char bounded-buffer import");
+	TEST(test_libmem_0005_3,"Random-size int bounded-buffer import");
+	TEST(test_libmem_0005_4,"Random-size unsigned char bounded-buffer import");
 
 	RETURN_STATUS;
 }

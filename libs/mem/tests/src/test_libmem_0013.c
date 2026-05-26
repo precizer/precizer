@@ -167,9 +167,9 @@ Return test_libmem_0013(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0013_1,"m_create initializes empty data and string descriptors…");
-	TEST(test_libmem_0013_2,"m_concat_fixed_string appends a byte string literal…");
-	TEST(test_libmem_0013_3,"m_concat_fixed_string appends a uint32_t fixed string…");
+	TEST(test_libmem_0013_1,"m_create initializes empty data and string descriptors");
+	TEST(test_libmem_0013_2,"m_concat_fixed_string appends a byte string literal");
+	TEST(test_libmem_0013_3,"m_concat_fixed_string appends a uint32_t fixed string");
 
 	RETURN_STATUS;
 }

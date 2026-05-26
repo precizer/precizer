@@ -168,10 +168,10 @@ Return test_libmem_0016(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0016_1,"Fixed-size string copy and append build alpha-beta…");
-	TEST(test_libmem_0016_2,"Bounded string copy ignores bytes after the terminator…");
-	TEST(test_libmem_0016_3,"Descriptor string append uses cached source length…");
-	TEST(test_libmem_0016_4,"Bounded string append ignores bytes after the terminator…");
+	TEST(test_libmem_0016_1,"Fixed-size string copy and append build alpha-beta");
+	TEST(test_libmem_0016_2,"Bounded string copy ignores bytes after the terminator");
+	TEST(test_libmem_0016_3,"Descriptor string append uses cached source length");
+	TEST(test_libmem_0016_4,"Bounded string append ignores bytes after the terminator");
 
 	RETURN_STATUS;
 }

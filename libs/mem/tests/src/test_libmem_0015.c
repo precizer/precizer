@@ -206,10 +206,10 @@ Return test_libmem_0015(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0015_1,"m_to_string finalizes manually filled char data…");
-	TEST(test_libmem_0015_2,"String resize shrink and zero resize keep metadata coherent…");
-	TEST(test_libmem_0015_3,"Refill after zero resize and raw mutation reuse live storage…");
-	TEST(test_libmem_0015_4,"m_del clears string storage while preserving string mode…");
+	TEST(test_libmem_0015_1,"m_to_string finalizes manually filled char data");
+	TEST(test_libmem_0015_2,"String resize shrink and zero resize keep metadata coherent");
+	TEST(test_libmem_0015_3,"Refill after zero resize and raw mutation reuse live storage");
+	TEST(test_libmem_0015_4,"m_del clears string storage while preserving string mode");
 
 	RETURN_STATUS;
 }

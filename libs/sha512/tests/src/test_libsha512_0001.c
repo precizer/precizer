@@ -190,10 +190,10 @@ Return test_libsha512_0001(void)
 
 	/* Each vector is its own SUTE test so the output names the exact reference
 	   message that failed */
-	TEST(test_libsha512_0001_1,"Empty input hashes to the FIPS SHA-512 digest...");
-	TEST(test_libsha512_0001_2,"The canonical abc message hashes to the FIPS SHA-512 digest...");
-	TEST(test_libsha512_0001_3,"Hello World hashes to the widely cited SHA-512 digest...");
-	TEST(test_libsha512_0001_4,"The 896-bit FIPS message exercises multi-block SHA-512 hashing...");
+	TEST(test_libsha512_0001_1,"Empty input hashes to the FIPS SHA-512 digest");
+	TEST(test_libsha512_0001_2,"The canonical abc message hashes to the FIPS SHA-512 digest");
+	TEST(test_libsha512_0001_3,"Hello World hashes to the widely cited SHA-512 digest");
+	TEST(test_libsha512_0001_4,"The 896-bit FIPS message exercises multi-block SHA-512 hashing");
 
 	RETURN_STATUS;
 }

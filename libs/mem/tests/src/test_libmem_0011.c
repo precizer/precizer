@@ -139,8 +139,8 @@ Return test_libmem_0011(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0011_1,"Typed and raw point accessors share descriptor storage…");
-	TEST(test_libmem_0011_2,"m_copy duplicates every typed point element…");
+	TEST(test_libmem_0011_1,"Typed and raw point accessors share descriptor storage");
+	TEST(test_libmem_0011_2,"m_copy duplicates every typed point element");
 
 	RETURN_STATUS;
 }

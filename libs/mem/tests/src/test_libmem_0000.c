@@ -929,27 +929,27 @@ Return test_libmem_0000(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0000_01,"README example 01: data descriptor rejects string copy...");
-	TEST(test_libmem_0000_02,"README example 02: MEMORY_STRING descriptor accepts string copy...");
-	TEST(test_libmem_0000_03,"README example 03: m_to_string enables later string copy...");
-	TEST(test_libmem_0000_04,"README example 04: typed point self-append survives destination storage growth...");
-	TEST(test_libmem_0000_05,"README example 05: data-to-string conversion reuses spare reserved storage...");
-	TEST(test_libmem_0000_06,"README example 06: descriptor can be reused after m_del...");
-	TEST(test_libmem_0000_07,"README example 07: copied raw bytes reuse their existing terminator as a string...");
-	TEST(test_libmem_0000_08,"README example 08: literal copy derives the same fixed-string size...");
-	TEST(test_libmem_0000_09,"README example 09: formatted string renders file name...");
-	TEST(test_libmem_0000_10,"README example 10: direct rewrite is finalized as a shorter string...");
-	TEST(test_libmem_0000_11,"README example 11: fixed-size string copy keeps one terminator...");
-	TEST(test_libmem_0000_12,"README example 12: fixed-size string append extends text...");
-	TEST(test_libmem_0000_13,"README example 13: literal append matches fixed-string append...");
-	TEST(test_libmem_0000_14,"README example 14: raw direct writes are finalized before concat...");
-	TEST(test_libmem_0000_15,"README example 15: m_text exposes text and empty views with zero length...");
-	TEST(test_libmem_0000_16,"README example 16: formatted message is stored in a descriptor...");
-	TEST(test_libmem_0000_17,"README example 17: bounded string copy and append ignore tail bytes...");
-	TEST(test_libmem_0000_18,"README example 18: direct buffer write becomes a valid string...");
-	TEST(test_libmem_0000_19,"README example 19: string array append owns nested descriptors...");
-	TEST(test_libmem_0000_20,"README example 20: string array foreach visits every item...");
-	TEST(test_libmem_0000_21,"README example 21: m_resize flags zero and release storage...");
+	TEST(test_libmem_0000_01,"README example 01: data descriptor rejects string copy");
+	TEST(test_libmem_0000_02,"README example 02: MEMORY_STRING descriptor accepts string copy");
+	TEST(test_libmem_0000_03,"README example 03: m_to_string enables later string copy");
+	TEST(test_libmem_0000_04,"README example 04: typed point self-append survives destination storage growth");
+	TEST(test_libmem_0000_05,"README example 05: data-to-string conversion reuses spare reserved storage");
+	TEST(test_libmem_0000_06,"README example 06: descriptor can be reused after m_del");
+	TEST(test_libmem_0000_07,"README example 07: copied raw bytes reuse their existing terminator as a string");
+	TEST(test_libmem_0000_08,"README example 08: literal copy derives the same fixed-string size");
+	TEST(test_libmem_0000_09,"README example 09: formatted string renders file name");
+	TEST(test_libmem_0000_10,"README example 10: direct rewrite is finalized as a shorter string");
+	TEST(test_libmem_0000_11,"README example 11: fixed-size string copy keeps one terminator");
+	TEST(test_libmem_0000_12,"README example 12: fixed-size string append extends text");
+	TEST(test_libmem_0000_13,"README example 13: literal append matches fixed-string append");
+	TEST(test_libmem_0000_14,"README example 14: raw direct writes are finalized before concat");
+	TEST(test_libmem_0000_15,"README example 15: m_text exposes text and empty views with zero length");
+	TEST(test_libmem_0000_16,"README example 16: formatted message is stored in a descriptor");
+	TEST(test_libmem_0000_17,"README example 17: bounded string copy and append ignore tail bytes");
+	TEST(test_libmem_0000_18,"README example 18: direct buffer write becomes a valid string");
+	TEST(test_libmem_0000_19,"README example 19: string array append owns nested descriptors");
+	TEST(test_libmem_0000_20,"README example 20: string array foreach visits every item");
+	TEST(test_libmem_0000_21,"README example 21: m_resize flags zero and release storage");
 
 	RETURN_STATUS;
 }

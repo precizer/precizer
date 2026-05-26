@@ -803,25 +803,25 @@ Return test_librational_0005(void)
 {
 	INITTEST;
 
-	TEST(test_librational_0005_1,"provide() marks fresh yes/no answers as pending…");
-	TEST(test_librational_0005_2,"ask() consumes direct yes/no check calls…");
-	TEST(test_librational_0005_3,"ask() consumes stored and assigned yes/no Return values…");
-	TEST(test_librational_0005_4,"ask() keeps technical failure stronger than a yes answer…");
-	TEST(test_librational_0005_5,"run() and call() reject yes/no check functions…");
-	TEST(test_librational_0005_6,"run() and call() reject previous unhandled yes/no answers…");
-	TEST(test_librational_0005_7,"provide() and deliver() reject unhandled yes/no answers…");
-	TEST(test_librational_0005_8,"ask() rejects raw yes/no flags without function-return marking…");
-	TEST(test_librational_0005_9,"void cast intentionally discards the whole Return value…");
-	TEST(test_librational_0005_10,"global_return_status is normalized and only global bits propagate…");
-	TEST(test_librational_0005_11,"ask() rejects pending answers without YES or NO…");
-	TEST(test_librational_0005_12,"rational_ask() rejects NULL status storage…");
-	TEST(test_librational_0005_13,"show_status() reports OK, known, unknown and mixed flags…");
-	TEST(test_librational_0005_14,"show_status() tolerates snprintf failure and truncation…");
-	TEST(test_librational_0005_15,"rational_normalize_return() resolves local flag conflicts…");
-	TEST(test_librational_0005_16,"rational_normalize_return() keeps global yes/no flags local…");
-	TEST(test_librational_0005_17,"ask() skips new expressions when local status already has SKIP…");
-	TEST(test_librational_0005_18,"run() skips work functions when local status already has SKIP…");
-	TEST(test_librational_0005_19,"call() still executes mandatory functions when local status has SKIP…");
+	TEST(test_librational_0005_1,"provide() marks fresh yes/no answers as pending");
+	TEST(test_librational_0005_2,"ask() consumes direct yes/no check calls");
+	TEST(test_librational_0005_3,"ask() consumes stored and assigned yes/no Return values");
+	TEST(test_librational_0005_4,"ask() keeps technical failure stronger than a yes answer");
+	TEST(test_librational_0005_5,"run() and call() reject yes/no check functions");
+	TEST(test_librational_0005_6,"run() and call() reject previous unhandled yes/no answers");
+	TEST(test_librational_0005_7,"provide() and deliver() reject unhandled yes/no answers");
+	TEST(test_librational_0005_8,"ask() rejects raw yes/no flags without function-return marking");
+	TEST(test_librational_0005_9,"void cast intentionally discards the whole Return value");
+	TEST(test_librational_0005_10,"global_return_status is normalized and only global bits propagate");
+	TEST(test_librational_0005_11,"ask() rejects pending answers without YES or NO");
+	TEST(test_librational_0005_12,"rational_ask() rejects NULL status storage");
+	TEST(test_librational_0005_13,"show_status() reports OK, known, unknown and mixed flags");
+	TEST(test_librational_0005_14,"show_status() tolerates snprintf failure and truncation");
+	TEST(test_librational_0005_15,"rational_normalize_return() resolves local flag conflicts");
+	TEST(test_librational_0005_16,"rational_normalize_return() keeps global yes/no flags local");
+	TEST(test_librational_0005_17,"ask() skips new expressions when local status already has SKIP");
+	TEST(test_librational_0005_18,"run() skips work functions when local status already has SKIP");
+	TEST(test_librational_0005_19,"call() still executes mandatory functions when local status has SKIP");
 
 	RETURN_STATUS;
 }

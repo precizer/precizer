@@ -351,8 +351,8 @@ Return test_librational_0002(void)
 	 * prevents silent breakage on any future port to a target with a wider int */
 	_Static_assert(sizeof(int) * CHAR_BIT == 32,"test_librational_0002 expects a 32-bit int for stable hex and binary expectations");
 
-	TEST(test_librational_0002_1,"itoa() demonstration output matches the strict full pattern…");
-	TEST(test_librational_0002_2,"itoa() converts boundaries, bases, negatives and error paths…");
+	TEST(test_librational_0002_1,"itoa() demonstration output matches the strict full pattern");
+	TEST(test_librational_0002_2,"itoa() converts boundaries, bases, negatives and error paths");
 
 	RETURN_STATUS;
 }

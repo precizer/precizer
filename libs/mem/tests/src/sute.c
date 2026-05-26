@@ -10,7 +10,7 @@ int main(void)
 	SUTESTART;
 
 	HEADER("Testing of libmem");
-	TEST(test_libmem_all,"libmem test set…");
+	TEST(test_libmem_all,"libmem test set");
 
 	RUN(finish,"Telemetry");
 

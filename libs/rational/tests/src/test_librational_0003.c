@@ -451,17 +451,17 @@ Return test_librational_0003(void)
 {
 	INITTEST;
 
-	TEST(test_librational_0003_1,"cur_time_ms() returns current epoch milliseconds…");
-	TEST(test_librational_0003_2,"cur_time_ns() returns current epoch nanoseconds…");
-	TEST(test_librational_0003_3,"cur_time_ms() and cur_time_ns() use the same wall-clock epoch…");
-	TEST(test_librational_0003_4,"form_date_r() formats a complete duration decomposition…");
-	TEST(test_librational_0003_5,"form_date() selects the largest requested duration unit…");
-	TEST(test_librational_0003_6,"form_date_r() tolerates snprintf failure inside duration assembly…");
-	TEST(test_librational_0003_7,"form_date_r() keeps truncated duration buffers terminated…");
-	TEST(test_librational_0003_8,"cur_time_monotonic_ns() returns ordered nanosecond samples…");
-	TEST(test_librational_0003_9,"seconds_to_ISOdate() returns and overwrites a fixed-width static timestamp…");
-	TEST(test_librational_0003_10,"form_date_r() rejects invalid output buffers…");
-	TEST(test_librational_0003_11,"form_date_r() returns an empty string for negative input…");
+	TEST(test_librational_0003_1,"cur_time_ms() returns current epoch milliseconds");
+	TEST(test_librational_0003_2,"cur_time_ns() returns current epoch nanoseconds");
+	TEST(test_librational_0003_3,"cur_time_ms() and cur_time_ns() use the same wall-clock epoch");
+	TEST(test_librational_0003_4,"form_date_r() formats a complete duration decomposition");
+	TEST(test_librational_0003_5,"form_date() selects the largest requested duration unit");
+	TEST(test_librational_0003_6,"form_date_r() tolerates snprintf failure inside duration assembly");
+	TEST(test_librational_0003_7,"form_date_r() keeps truncated duration buffers terminated");
+	TEST(test_librational_0003_8,"cur_time_monotonic_ns() returns ordered nanosecond samples");
+	TEST(test_librational_0003_9,"seconds_to_ISOdate() returns and overwrites a fixed-width static timestamp");
+	TEST(test_librational_0003_10,"form_date_r() rejects invalid output buffers");
+	TEST(test_librational_0003_11,"form_date_r() returns an empty string for negative input");
 
 	RETURN_STATUS;
 }

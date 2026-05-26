@@ -1012,24 +1012,24 @@ Return test_libmem_0009(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0009_01,"Suite baseline captured and shared descriptors reset…");
-	TEST(test_libmem_0009_02,"First allocation populates fresh heap and payload counters…");
-	TEST(test_libmem_0009_03,"Growth across a slab boundary registers a heap reallocation…");
-	TEST(test_libmem_0009_04,"RELEASE_UNUSED shrink returns one slab block to the OS…");
-	TEST(test_libmem_0009_05,"In-place grow inside the retained slab block bumps in_place_resizes…");
-	TEST(test_libmem_0009_06,"Three consecutive no-op resizes reach a count of three…");
-	TEST(test_libmem_0009_07,"Effective resize resets consecutive no-op counting and preserves the peak…");
-	TEST(test_libmem_0009_08,"ZERO_NEW_MEMORY growth zero-fills the newly exposed payload…");
-	TEST(test_libmem_0009_09,"Second live descriptor brings active count to two above the suite baseline…");
-	TEST(test_libmem_0009_10,"Guarded arithmetic helpers reject invalid math three times…");
-	TEST(test_libmem_0009_11,"m_to_string flips the buffer into string mode…");
-	TEST(test_libmem_0009_12,"m_to_data flips the buffer back into data mode…");
-	TEST(test_libmem_0009_13,"m_resize to zero without flags keeps the underlying block…");
-	TEST(test_libmem_0009_14,"m_resize to zero with RELEASE_UNUSED frees the buffer…");
-	TEST(test_libmem_0009_15,"m_del tears down both descriptors and finalizes the suite…");
-	TEST(test_libmem_0009_16,"m_finalize_string IF_MISSING records present-vs-written terminator counters…");
-	TEST(test_libmem_0009_17,"Allocator returns NULL on initial malloc and bumps heap_allocation_failures…");
-	TEST(test_libmem_0009_18,"Allocator returns NULL on grow realloc and bumps heap_reallocation_failures…");
+	TEST(test_libmem_0009_01,"Suite baseline captured and shared descriptors reset");
+	TEST(test_libmem_0009_02,"First allocation populates fresh heap and payload counters");
+	TEST(test_libmem_0009_03,"Growth across a slab boundary registers a heap reallocation");
+	TEST(test_libmem_0009_04,"RELEASE_UNUSED shrink returns one slab block to the OS");
+	TEST(test_libmem_0009_05,"In-place grow inside the retained slab block bumps in_place_resizes");
+	TEST(test_libmem_0009_06,"Three consecutive no-op resizes reach a count of three");
+	TEST(test_libmem_0009_07,"Effective resize resets consecutive no-op counting and preserves the peak");
+	TEST(test_libmem_0009_08,"ZERO_NEW_MEMORY growth zero-fills the newly exposed payload");
+	TEST(test_libmem_0009_09,"Second live descriptor brings active count to two above the suite baseline");
+	TEST(test_libmem_0009_10,"Guarded arithmetic helpers reject invalid math three times");
+	TEST(test_libmem_0009_11,"m_to_string flips the buffer into string mode");
+	TEST(test_libmem_0009_12,"m_to_data flips the buffer back into data mode");
+	TEST(test_libmem_0009_13,"m_resize to zero without flags keeps the underlying block");
+	TEST(test_libmem_0009_14,"m_resize to zero with RELEASE_UNUSED frees the buffer");
+	TEST(test_libmem_0009_15,"m_del tears down both descriptors and finalizes the suite");
+	TEST(test_libmem_0009_16,"m_finalize_string IF_MISSING records present-vs-written terminator counters");
+	TEST(test_libmem_0009_17,"Allocator returns NULL on initial malloc and bumps heap_allocation_failures");
+	TEST(test_libmem_0009_18,"Allocator returns NULL on grow realloc and bumps heap_reallocation_failures");
 
 	RETURN_STATUS;
 }

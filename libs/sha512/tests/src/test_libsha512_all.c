@@ -16,18 +16,18 @@ Return test_libsha512_all(void)
 	/* Start with public known-answer tests because they describe the basic
 	   promise users expect from any SHA-512 implementation */
 	HEADER("Reference Digests");
-	TEST(test_libsha512_0001,"Known SHA-512 examples produce the published digests...");
+	TEST(test_libsha512_0001,"Known SHA-512 examples produce the published digests");
 
 	/* Then check streaming behavior: callers may hash files in chunks and still
 	   need the exact same digest as a one-shot hash */
 	HEADER("Incremental Hashing");
-	TEST(test_libsha512_0002,"Chunked input produces the same digest as one-shot input...");
-	TEST(test_libsha512_0004,"Boundary-sized messages hash consistently in one-shot and chunked modes...");
+	TEST(test_libsha512_0002,"Chunked input produces the same digest as one-shot input");
+	TEST(test_libsha512_0004,"Boundary-sized messages hash consistently in one-shot and chunked modes");
 
 	/* Finish with invalid-input behavior so API failures stay predictable and
 	   readable */
 	HEADER("Failure Handling");
-	TEST(test_libsha512_0003,"Invalid SHA-512 API use returns named errors without corrupting state...");
+	TEST(test_libsha512_0003,"Invalid SHA-512 API use returns named errors without corrupting state");
 
 	RETURN_STATUS;
 }

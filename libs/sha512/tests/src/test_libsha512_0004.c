@@ -254,12 +254,12 @@ Return test_libsha512_0004(void)
 
 	/* Exercise each boundary independently so a failure points to the exact
 	   message size that broke the one-shot versus chunked guarantee */
-	TEST(test_libsha512_0004_1,"111-byte input stays stable just before SHA-512 padding spillover...");
-	TEST(test_libsha512_0004_2,"112-byte input stays stable at SHA-512 padding spillover...");
-	TEST(test_libsha512_0004_3,"113-byte input stays stable just after SHA-512 padding spillover...");
-	TEST(test_libsha512_0004_4,"127-byte input stays stable just before a full SHA-512 block...");
-	TEST(test_libsha512_0004_5,"128-byte input stays stable at a full SHA-512 block...");
-	TEST(test_libsha512_0004_6,"129-byte input stays stable just after a full SHA-512 block...");
+	TEST(test_libsha512_0004_1,"111-byte input stays stable just before SHA-512 padding spillover");
+	TEST(test_libsha512_0004_2,"112-byte input stays stable at SHA-512 padding spillover");
+	TEST(test_libsha512_0004_3,"113-byte input stays stable just after SHA-512 padding spillover");
+	TEST(test_libsha512_0004_4,"127-byte input stays stable just before a full SHA-512 block");
+	TEST(test_libsha512_0004_5,"128-byte input stays stable at a full SHA-512 block");
+	TEST(test_libsha512_0004_6,"129-byte input stays stable just after a full SHA-512 block");
 
 	RETURN_STATUS;
 }

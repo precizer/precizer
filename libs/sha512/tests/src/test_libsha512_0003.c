@@ -156,9 +156,9 @@ Return test_libsha512_0003(void)
 
 	/* Keep invalid-use checks split by user story: missing storage, damaged
 	   context state, and input that is too large to represent safely */
-	TEST(test_libsha512_0003_1,"Missing SHA-512 pointers return CRYPT_INVALID_ARG...");
-	TEST(test_libsha512_0003_2,"A damaged SHA-512 buffer length is rejected before hashing continues...");
-	TEST(test_libsha512_0003_3,"SHA-512 length overflow returns CRYPT_HASH_OVERFLOW before wraparound...");
+	TEST(test_libsha512_0003_1,"Missing SHA-512 pointers return CRYPT_INVALID_ARG");
+	TEST(test_libsha512_0003_2,"A damaged SHA-512 buffer length is rejected before hashing continues");
+	TEST(test_libsha512_0003_3,"SHA-512 length overflow returns CRYPT_HASH_OVERFLOW before wraparound");
 
 	RETURN_STATUS;
 }

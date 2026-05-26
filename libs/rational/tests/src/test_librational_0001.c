@@ -734,12 +734,12 @@ Return test_librational_0001(void)
 {
 	INITTEST;
 
-	TEST(test_librational_0001_1,"form() formats real values with grouping, rounding, _Generic dispatch and caller-buffer return…");
-	TEST(test_librational_0001_2,"integer formatters add grouping, cover platform extremes and preserve caller buffers…");
-	TEST(test_librational_0001_3,"numeric formatters validate NULL/size=0, non-finite values and tiny destination buffers…");
-	TEST(test_librational_0001_6,"private form helpers guard invalid storage and tiny zero buffers…");
-	TEST(test_librational_0001_4,"byte-size formatters cover full and major views, tiny buffers and snprintf failure…");
-	TEST(test_librational_0001_5,"duration formatters cover full and major views, two-buffer isolation and tiny buffers…");
+	TEST(test_librational_0001_1,"form() formats real values with grouping, rounding, _Generic dispatch and caller-buffer return");
+	TEST(test_librational_0001_2,"integer formatters add grouping, cover platform extremes and preserve caller buffers");
+	TEST(test_librational_0001_3,"numeric formatters validate NULL/size=0, non-finite values and tiny destination buffers");
+	TEST(test_librational_0001_6,"private form helpers guard invalid storage and tiny zero buffers");
+	TEST(test_librational_0001_4,"byte-size formatters cover full and major views, tiny buffers and snprintf failure");
+	TEST(test_librational_0001_5,"duration formatters cover full and major views, two-buffer isolation and tiny buffers");
 
 	RETURN_STATUS;
 }

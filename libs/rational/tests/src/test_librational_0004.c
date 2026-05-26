@@ -853,21 +853,21 @@ Return test_librational_0004(void)
 {
 	INITTEST;
 
-	TEST(test_librational_0004_capture_flush,"function_capture() flushes pending stdout before redirection…");
-	TEST(test_librational_0004_1,"report() writes formatted errno messages with source location…");
-	TEST(test_librational_0004_2,"slog() honors logger modes, decorations and silent visibility…");
-	TEST(test_librational_0004_3,"serp() writes errno, source file and function name…");
-	TEST(test_librational_0004_4,"report() stays silent when final message formatting fails…");
-	TEST(test_librational_0004_5,"report() keeps a truncated fixed-size message buffer terminated…");
-	TEST(test_librational_0004_6,"report() writes fallback text after primary write failure…");
-	TEST(test_librational_0004_7,"report() stays silent when primary and fallback writes fail…");
-	TEST(test_librational_0004_8,"rational_reconvert() covers empty and REMEMBER edge cases…");
-	TEST(test_librational_0004_9,"rational_reconvert() names every logger flag…");
-	TEST(test_librational_0004_10,"slog() stays silent when line allocation fails…");
-	TEST(test_librational_0004_11,"slog() keeps payloads visible when time formatting fails…");
-	TEST(test_librational_0004_12,"slog() stays silent when vsnprintf fails…");
-	TEST(test_librational_0004_13,"slog(ERROR) stays silent when no mode accepts ERROR…");
-	TEST(test_librational_0004_14,"slog(REMEMBER) skips empty or unformatted payloads…");
+	TEST(test_librational_0004_capture_flush,"function_capture() flushes pending stdout before redirection");
+	TEST(test_librational_0004_1,"report() writes formatted errno messages with source location");
+	TEST(test_librational_0004_2,"slog() honors logger modes, decorations and silent visibility");
+	TEST(test_librational_0004_3,"serp() writes errno, source file and function name");
+	TEST(test_librational_0004_4,"report() stays silent when final message formatting fails");
+	TEST(test_librational_0004_5,"report() keeps a truncated fixed-size message buffer terminated");
+	TEST(test_librational_0004_6,"report() writes fallback text after primary write failure");
+	TEST(test_librational_0004_7,"report() stays silent when primary and fallback writes fail");
+	TEST(test_librational_0004_8,"rational_reconvert() covers empty and REMEMBER edge cases");
+	TEST(test_librational_0004_9,"rational_reconvert() names every logger flag");
+	TEST(test_librational_0004_10,"slog() stays silent when line allocation fails");
+	TEST(test_librational_0004_11,"slog() keeps payloads visible when time formatting fails");
+	TEST(test_librational_0004_12,"slog() stays silent when vsnprintf fails");
+	TEST(test_librational_0004_13,"slog(ERROR) stays silent when no mode accepts ERROR");
+	TEST(test_librational_0004_14,"slog(REMEMBER) skips empty or unformatted payloads");
 
 	RETURN_STATUS;
 }

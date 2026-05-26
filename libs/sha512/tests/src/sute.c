@@ -13,7 +13,7 @@ int main(void)
 
 	/* Give standalone runs a clear top-level title before the grouped tests */
 	HEADER("Testing of libsha512");
-	TEST(test_libsha512_all,"libsha512 verifies known digests, chunked input, boundaries and safe failures...");
+	TEST(test_libsha512_all,"libsha512 verifies known digests, chunked input, boundaries and safe failures");
 
 	RUN(finish,"Telemetry");
 

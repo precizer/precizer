@@ -195,10 +195,10 @@ Return test_libmem_0066(void)
 {
 	INITTEST;
 
-	TEST(test_libmem_0066_1,"Aliased string replacement from the current terminator…");
-	TEST(test_libmem_0066_2,"m_copy preserves string self-copy…");
-	TEST(test_libmem_0066_3,"Aliased raw-buffer replacement preserves data self-copy…");
-	TEST(test_libmem_0066_4,"Aliased raw-buffer replacement supports clearing…");
+	TEST(test_libmem_0066_1,"Aliased string replacement from the current terminator");
+	TEST(test_libmem_0066_2,"m_copy preserves string self-copy");
+	TEST(test_libmem_0066_3,"Aliased raw-buffer replacement preserves data self-copy");
+	TEST(test_libmem_0066_4,"Aliased raw-buffer replacement supports clearing");
 
 	RETURN_STATUS;
 }

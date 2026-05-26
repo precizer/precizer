@@ -10,7 +10,7 @@ int main(void)
 	SUTESTART;
 
 	HEADER("Testing of librational");
-	TEST(test_librational_all,"librational test set…");
+	TEST(test_librational_all,"librational test set");
 
 	RUN(finish,"Telemetry");
 

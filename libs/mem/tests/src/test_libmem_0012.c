@@ -189,8 +189,8 @@ Return test_libmem_0012(void)
 	INITTEST;
 
 	/* Keep the physical shrink/regrow contract separate from the concat contract */
-	TEST(test_libmem_0012_1,"RELEASE_UNUSED shrink across a slab boundary preserves the typed point prefix…");
-	TEST(test_libmem_0012_2,"m_concat_data appends a regrown typed point source after the destination prefix…");
+	TEST(test_libmem_0012_1,"RELEASE_UNUSED shrink across a slab boundary preserves the typed point prefix");
+	TEST(test_libmem_0012_2,"m_concat_data appends a regrown typed point source after the destination prefix");
 
 	RETURN_STATUS;
 }
