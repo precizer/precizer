@@ -31,6 +31,12 @@ int __real_vsnprintf(
 	const char *format,
 	va_list     args) __attribute__((format(printf,3,0)));
 
+int __wrap_vsnprintf(
+	char       *str,
+	size_t      size,
+	const char *format,
+	va_list     args) __attribute__((format(printf,3,0)));
+
 /**
  * @brief Linker-redirected entry point for vsnprintf
  *

@@ -100,7 +100,7 @@ COV_LIBDIR = $(COV_DIR)/libs
 COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL
 
 #
 # Sanitize build settings
