@@ -3,4 +3,5 @@ tests/fixtures/huge/hugetestfile
 precizer
 tools/tool_*
 *.db
-compile_commands.json
+.clangd
+**/.clangd

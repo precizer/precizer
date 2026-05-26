@@ -15,3 +15,5 @@ tools/tool_*
 /*.out.*
 /src/tool_*
 .vms/
+.clangd
+.cache
