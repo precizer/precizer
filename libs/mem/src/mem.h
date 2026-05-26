@@ -218,6 +218,7 @@ Return mem_concat_strings(
 	memory *,
 	const memory *);
 
+__attribute__((format(printf,2,3)))
 Return mem_formatted_string_char(
 	memory *,
 	const char *,
@@ -401,7 +402,7 @@ const void *mem_raw_data_readonly(const memory *);
 	mem_concat_strings((destination),(source))
 
 #define m_formatted_string(destination,source_string,...) \
-	_Generic(((source_string) + 0), \
+	_Generic((source_string), \
 	char *: mem_formatted_string_char, \
 	const char *: mem_formatted_string_char, \
 	wchar_t *: mem_formatted_string_wchar, \

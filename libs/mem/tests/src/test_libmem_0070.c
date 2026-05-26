@@ -46,12 +46,11 @@ static Return capture_libmem_formatted_string_frame_errors(void)
 	   and rejecting it must leave already rendered text untouched */
 	{
 		m_create(char,null_narrow_format,MEMORY_STRING);
-		const char *null_format = NULL;
 
 		ASSERT(SUCCESS == m_formatted_string(null_narrow_format,"seed"));
 		/* Use a typed NULL pointer so the public macro selects the narrow
 		   formatter and the runtime contract is exercised */
-		ASSERT(FAILURE == m_formatted_string(null_narrow_format,null_format));
+		ASSERT(FAILURE == m_formatted_string(null_narrow_format,(const char *)NULL));
 		ASSERT(strcmp(m_text(null_narrow_format),"seed") == 0);
 		ASSERT(null_narrow_format->string_length == strlen("seed"));
 		call(m_del(null_narrow_format));
