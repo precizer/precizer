@@ -11,9 +11,9 @@ Return test0031(void)
 {
 	INITTEST;
 
-	create(char,result);
-	create(char,pattern);
-	create(char,error_buffer);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -47,9 +47,9 @@ Return test0031(void)
 	ASSERT(mocks_fread_call_count() == 1);
 	mocks_fread_reset();
 
-	del(pattern);
-	del(result);
-	del(error_buffer);
+	m_del(pattern);
+	m_del(result);
+	m_del(error_buffer);
 
 	RETURN_STATUS;
 }
