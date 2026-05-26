@@ -165,7 +165,7 @@ Return sha512sum(
 	if(file->checksum_offset == 0)
 	{
 		// Fresh hashing pass: initialize the SHA512 state from scratch
-		if(sha512_init(&file->mdContext) == 1)
+		if(sha512_init(&file->mdContext) != CRYPT_OK)
 		{
 			slog(ERROR,"SHA512 initialization failed\n");
 			free(absolute_path);
@@ -215,7 +215,7 @@ Return sha512sum(
 	{
 		long long int hashing_start_ns = cur_time_monotonic_ns();
 
-		unsigned char *buffer = rawdata(file_buffer);
+		unsigned char *file_buffer_data_rewritable = m_raw_data(file_buffer);
 
 		while(true)
 		{
@@ -289,7 +289,7 @@ Return sha512sum(
 			}
 #endif
 
-			size_t len = fread(buffer,sizeof(unsigned char),read_limit,fileptr);
+			size_t len = fread(file_buffer_data_rewritable,sizeof(unsigned char),read_limit,fileptr);
 
 			if(len == 0)
 			{
@@ -304,7 +304,7 @@ Return sha512sum(
 
 			if(SUCCESS == status)
 			{
-				if(sha512_update(&file->mdContext,buffer,len) == 1)
+				if(sha512_update(&file->mdContext,file_buffer_data_rewritable,len) != CRYPT_OK)
 				{
 					slog(ERROR,"SHA512 update failed\n");
 					status = FAILURE;
@@ -341,7 +341,7 @@ Return sha512sum(
 	{
 		file->checksum_offset = 0;
 
-		if(sha512_final(&file->mdContext,file->sha512) == 1)
+		if(sha512_final(&file->mdContext,file->sha512) != CRYPT_OK)
 		{
 			slog(ERROR,"SHA512 finalization failed\n");
 			status = FAILURE;
