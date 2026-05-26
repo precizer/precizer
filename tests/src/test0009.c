@@ -10,8 +10,8 @@ Return test0009_1(void)
 	INITTEST;
 	const char *db_filename = "database0009.db";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -51,8 +51,8 @@ Return test0009_1(void)
 
 	ASSERT(SUCCESS == delete_path(db_filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -67,8 +67,8 @@ static Return test0009_2(void)
 	INITTEST;
 	const char *db_filename = "database0009_2.db";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -99,8 +99,8 @@ static Return test0009_2(void)
 
 	ASSERT(SUCCESS == delete_path(db_filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -115,8 +115,8 @@ static Return test0009_3(void)
 	INITTEST;
 	const char *db_filename = "database0009_3.db";
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -146,8 +146,8 @@ static Return test0009_3(void)
 
 	ASSERT(SUCCESS == delete_path(db_filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -160,8 +160,8 @@ static Return test0009_4(void)
 	INITTEST;
 
 	const char *db_filename = "database0009_4.db";
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/ignore_include_cases/chaotic_filenames"));
 
@@ -233,8 +233,8 @@ static Return test0009_4(void)
 
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/ignore_include_cases/chaotic_filenames"));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -243,10 +243,10 @@ Return test0009(void)
 {
 	INITTEST;
 
-	TEST(test0009_1,"Ignore regexp splits chaotic filenames into tracked and skipped sets…");
-	TEST(test0009_2,"Ignore most files and include back selected ones…");
-	TEST(test0009_3,"Directory ignore with selective child include…");
-	TEST(test0009_4,"Create then update included files with and without detailed change output…");
+	TEST(test0009_1,"Ignore regexp splits chaotic filenames into tracked and skipped sets");
+	TEST(test0009_2,"Ignore most files and include back selected ones");
+	TEST(test0009_3,"Directory ignore with selective child include");
+	TEST(test0009_4,"Create then update included files with and without detailed change output");
 
 	RETURN_STATUS;
 }
