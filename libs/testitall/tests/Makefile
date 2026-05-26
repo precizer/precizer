@@ -67,6 +67,7 @@ INCPATH += $(foreach d,$(LINK_LIBS),-I../../$(d)/src/)
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 # Warning flags for additional checks
+WFLAGS += -Werror # Treat every warning as an error (-Werror stops the build)
 WFLAGS += -Wall # Enable common warning set
 WFLAGS += -Wpedantic
 WFLAGS += -Wshadow
