@@ -85,9 +85,9 @@ Return rational_normalize_return(Return status)
  */
 bool rational_ask(
 	Return     *status,
-	Return      returned,
+	Return     returned,
 	const char *func,
-	const int   line)
+	const int  line)
 {
 	bool answer = false;
 

@@ -20,9 +20,9 @@ Return test_libsha512_0002(void)
 	   reproduce the one-shot reference digest. Together they cover obvious
 	   pathological shapes: a single big update, an irregular Fibonacci-like
 	   split, a heavy-front/tiny-tail split, and one update per byte */
-	static const size_t plan_singleton[]      = {43U};
-	static const size_t plan_fibonacci[]      = {1U,2U,3U,5U,8U,13U,11U};
-	static const size_t plan_skewed[]         = {40U,2U,1U};
+	static const size_t plan_singleton[] = {43U};
+	static const size_t plan_fibonacci[] = {1U,2U,3U,5U,8U,13U,11U};
+	static const size_t plan_skewed[] = {40U,2U,1U};
 	static const size_t plan_byte_at_a_time[] = {
 		1U,1U,1U,1U,1U,1U,1U,1U,1U,1U,
 		1U,1U,1U,1U,1U,1U,1U,1U,1U,1U,
@@ -33,12 +33,12 @@ Return test_libsha512_0002(void)
 
 	const struct {
 		const size_t *sizes;
-		size_t        count;
+		size_t count;
 	} chunk_plans[] = {
-		{ plan_singleton,      sizeof(plan_singleton)      / sizeof(plan_singleton[0])      },
-		{ plan_fibonacci,      sizeof(plan_fibonacci)      / sizeof(plan_fibonacci[0])      },
-		{ plan_skewed,         sizeof(plan_skewed)         / sizeof(plan_skewed[0])         },
-		{ plan_byte_at_a_time, sizeof(plan_byte_at_a_time) / sizeof(plan_byte_at_a_time[0]) }
+		{plan_singleton,      sizeof(plan_singleton)      / sizeof(plan_singleton[0])     },
+		{plan_fibonacci,      sizeof(plan_fibonacci)      / sizeof(plan_fibonacci[0])     },
+		{plan_skewed,         sizeof(plan_skewed)         / sizeof(plan_skewed[0])        },
+		{plan_byte_at_a_time, sizeof(plan_byte_at_a_time) / sizeof(plan_byte_at_a_time[0])}
 	};
 
 	size_t message_length = 0U;

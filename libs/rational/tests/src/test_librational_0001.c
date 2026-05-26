@@ -15,6 +15,7 @@ static void strip_commas(
 	char       *dst)
 {
 	size_t write = 0U;
+
 	for(size_t read = 0U; src[read] != '\0'; read++)
 	{
 		if(src[read] == ',')
@@ -34,10 +35,10 @@ static void strip_commas(
  * @param val String to validate
  * @return `true` when @p val uses valid groups of three digits
  */
-static bool valid_comma_grouping(
-	const char *val)
+static bool valid_comma_grouping(const char *val)
 {
 	size_t start = 0U;
+
 	if(val[0] == '-')
 	{
 		start = 1U;
@@ -46,9 +47,11 @@ static bool valid_comma_grouping(
 	size_t len = strlen(val);
 
 	size_t digits_since_comma = 0U;
+
 	for(size_t i = len; i > start; i--)
 	{
 		const char ch = val[i - 1U];
+
 		if(ch >= '0' && ch <= '9')
 		{
 			digits_since_comma++;
@@ -80,7 +83,7 @@ static bool valid_comma_grouping(
  * @return `true` when @p formatted has valid grouping and preserves the value
  */
 static bool form_intmax_matches_standard(
-	intmax_t    val,
+	intmax_t   val,
 	const char *formatted)
 {
 	char expected[MAX_CHARACTERS];
@@ -106,7 +109,7 @@ static bool form_intmax_matches_standard(
  * @return `true` when @p formatted has valid grouping and preserves the value
  */
 static bool form_uintmax_matches_standard(
-	uintmax_t   val,
+	uintmax_t  val,
 	const char *formatted)
 {
 	char expected[MAX_CHARACTERS];
@@ -138,9 +141,11 @@ static bool valid_grouped_integer_part(
 	size_t     end)
 {
 	size_t digits_since_comma = 0U;
+
 	for(size_t i = end; i > start; i--)
 	{
 		const char ch = val[i - 1U];
+
 		if(ch >= '0' && ch <= '9')
 		{
 			digits_since_comma++;
@@ -170,10 +175,10 @@ static bool valid_grouped_integer_part(
  * @param val Formatted real string
  * @return `true` when @p val has valid grouping and fractional text
  */
-static bool valid_grouped_real(
-	const char *val)
+static bool valid_grouped_real(const char *val)
 {
 	size_t start = 0U;
+
 	if(val[0] == '-')
 	{
 		start = 1U;
@@ -194,6 +199,7 @@ static bool valid_grouped_real(
 	}
 
 	const char *fraction = dot + 1U;
+
 	if(*fraction == '\0')
 	{
 		return false;
@@ -231,12 +237,14 @@ static bool form_real_matches_portable(
 
 	errno = 0;
 	const long double parsed = strtold(stripped,NULL);
+
 	if(errno != 0)
 	{
 		return false;
 	}
 
 	long double tolerance = fabsl(expected) * LDBL_EPSILON * 4.0L;
+
 	if(tolerance < 0.000000001L)
 	{
 		tolerance = 0.000000001L;
@@ -556,12 +564,12 @@ static Return test_librational_0001_4(void)
 	const size_t pebibyte = tebibyte * 1024ULL;
 	const size_t exbibyte = pebibyte * 1024ULL;
 	const size_t mixed_units = 4ULL * exbibyte
-	                           + 5ULL * pebibyte
-	                           + 6ULL * tebibyte
-	                           + 7ULL * gibibyte
-	                           + 8ULL * mebibyte
-	                           + 9ULL * kibibyte
-	                           + 10ULL;
+	                         + 5ULL * pebibyte
+	                         + 6ULL * tebibyte
+	                         + 7ULL * gibibyte
+	                         + 8ULL * mebibyte
+	                         + 9ULL * kibibyte
+	                         + 10ULL;
 
 	/* Static-buffer formatting must support full output and largest-unit-only output.
 	   The last assertion uses 1,291,845,632 bytes = 1 GiB + 208 MiB; in MAJOR_VIEW the

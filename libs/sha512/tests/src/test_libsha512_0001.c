@@ -71,9 +71,9 @@ static const char hello_world_message[] = "Hello World";
 /* FIPS-180-2 Appendix C.2 sequence: 112 ASCII bytes that, together with
    SHA-512 padding, span two 128-byte compression blocks */
 static const char fips_multi_block_message[] =
-	"abcdefghbcdefghicdefghijdefghijkefghijkl"
-	"fghijklmghijklmnhijklmnoijklmnopjklmnopq"
-	"klmnopqrlmnopqrsmnopqrstnopqrstu";
+        "abcdefghbcdefghicdefghijdefghijkefghijkl"
+        "fghijklmghijklmnhijklmnoijklmnopjklmnopq"
+        "klmnopqrlmnopqrsmnopqrstnopqrstu";
 
 /**
  * @brief Check the published SHA-512 digest for empty input

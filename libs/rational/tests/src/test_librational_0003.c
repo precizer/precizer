@@ -7,8 +7,7 @@
  * @param value Timeval whose seconds and microseconds are folded into a single ms count
  * @return Milliseconds since the same epoch the input refers to
  */
-static long long int timeval_to_ms(
-	const struct timeval *const value)
+static long long int timeval_to_ms(const struct timeval *const value)
 {
 	return((long long int)value->tv_sec * 1000LL + (long long int)value->tv_usec / 1000LL);
 }
@@ -19,8 +18,7 @@ static long long int timeval_to_ms(
  * @param value Timespec whose seconds and nanoseconds are folded into a single ns count
  * @return Nanoseconds since the same epoch the input refers to
  */
-static long long int timespec_to_ns(
-	const struct timespec *const value)
+static long long int timespec_to_ns(const struct timespec *const value)
 {
 	return((long long int)value->tv_sec * 1000000000LL + (long long int)value->tv_nsec);
 }
@@ -306,7 +304,7 @@ static Return test_librational_0003_8(void)
 
 	/* A measurable sleep between samples lets the test assert a strictly positive interval */
 	const long long int before_ns = cur_time_monotonic_ns();
-	const struct timespec sleep_request = { .tv_sec = 0, .tv_nsec = 1000000LL };
+	const struct timespec sleep_request = { .tv_sec = 0,.tv_nsec = 1000000LL };
 	(void)nanosleep(&sleep_request,NULL);
 	const long long int after_ns = cur_time_monotonic_ns();
 
@@ -357,6 +355,7 @@ static Return test_librational_0003_9(void)
 	   mirrored here, otherwise this assertion will either miss new digit slots or
 	   wrongly flag separators */
 	const size_t digit_positions[] = {0U,1U,2U,3U,5U,6U,8U,9U,11U,12U,14U,15U,17U,18U};
+
 	for(size_t i = 0U; i < sizeof(digit_positions) / sizeof(digit_positions[0]); i++)
 	{
 		const char ch = iso_date[digit_positions[i]];

@@ -258,6 +258,7 @@ SHA512_Status sha512_update(
 	}
 
 	status = sha512_check_available_bytes(md,inlen);
+
 	if(status != CRYPT_OK)
 	{
 		return status;
@@ -322,6 +323,7 @@ SHA512_Status sha512_final(
 	}
 
 	status = sha512_check_available_bytes(md,0U);
+
 	if(status != CRYPT_OK)
 	{
 		return status;
