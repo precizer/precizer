@@ -89,37 +89,37 @@ static Return capture_libmem_core_data_non_divisible_cross_type_cases(void)
 
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(word_buffer,word_seed,sizeof(word_seed)));
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(byte_buffer,invalid_byte_source,sizeof(invalid_byte_source)));
-	ASSERT(FAILURE == mem_copy_data(word_buffer,byte_buffer));
+	ASSERT(FAILURE == m_copy_data(word_buffer,byte_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(word_buffer,word_seed,sizeof(word_seed),1));
-	ASSERT(FAILURE == mem_concat_data(word_buffer,byte_buffer));
+	ASSERT(FAILURE == m_concat_data(word_buffer,byte_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(word_buffer,word_seed,sizeof(word_seed),1));
 
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(rgb_buffer,rgb_seed,sizeof(rgb_seed)));
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(word_buffer,invalid_word_source,sizeof(invalid_word_source)));
-	ASSERT(FAILURE == mem_copy_data(rgb_buffer,word_buffer));
+	ASSERT(FAILURE == m_copy_data(rgb_buffer,word_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(rgb_buffer,rgb_seed,sizeof(rgb_seed),1));
-	ASSERT(FAILURE == mem_concat_data(rgb_buffer,word_buffer));
+	ASSERT(FAILURE == m_concat_data(rgb_buffer,word_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(rgb_buffer,rgb_seed,sizeof(rgb_seed),1));
 
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(dword_buffer,dword_seed,sizeof(dword_seed)));
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(rgb_buffer,invalid_rgb_source,sizeof(invalid_rgb_source)));
-	ASSERT(FAILURE == mem_copy_data(dword_buffer,rgb_buffer));
+	ASSERT(FAILURE == m_copy_data(dword_buffer,rgb_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(dword_buffer,dword_seed,sizeof(dword_seed),1));
-	ASSERT(FAILURE == mem_concat_data(dword_buffer,rgb_buffer));
+	ASSERT(FAILURE == m_concat_data(dword_buffer,rgb_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(dword_buffer,dword_seed,sizeof(dword_seed),1));
 
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(qword_buffer,qword_seed,sizeof(qword_seed)));
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(dword_buffer,invalid_dword_source,sizeof(invalid_dword_source)));
-	ASSERT(FAILURE == mem_copy_data(qword_buffer,dword_buffer));
+	ASSERT(FAILURE == m_copy_data(qword_buffer,dword_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(qword_buffer,qword_seed,sizeof(qword_seed),1));
-	ASSERT(FAILURE == mem_concat_data(qword_buffer,dword_buffer));
+	ASSERT(FAILURE == m_concat_data(qword_buffer,dword_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(qword_buffer,qword_seed,sizeof(qword_seed),1));
 
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(rgb_buffer,rgb_seed,sizeof(rgb_seed)));
 	ASSERT(SUCCESS == set_raw_descriptor_bytes(qword_buffer,invalid_qword_source,sizeof(invalid_qword_source)));
-	ASSERT(FAILURE == mem_copy_data(rgb_buffer,qword_buffer));
+	ASSERT(FAILURE == m_copy_data(rgb_buffer,qword_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(rgb_buffer,rgb_seed,sizeof(rgb_seed),1));
-	ASSERT(FAILURE == mem_concat_data(rgb_buffer,qword_buffer));
+	ASSERT(FAILURE == m_concat_data(rgb_buffer,qword_buffer));
 	ASSERT(SUCCESS == expect_raw_descriptor_bytes(rgb_buffer,rgb_seed,sizeof(rgb_seed),1));
 
 	for(size_t descriptor_index = 0; descriptor_index < (sizeof(descriptors) / sizeof(descriptors[0])); ++descriptor_index)

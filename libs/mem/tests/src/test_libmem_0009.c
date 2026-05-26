@@ -756,7 +756,7 @@ static Return test_libmem_0009_15(void)
  * @brief Cover the two finalize-string terminator branches under WRITE_TERMINATOR_IF_MISSING and the centralized terminator-write counter
  *
  * Drives a fresh local string descriptor through three cases of
- * mem_finalize_string. The first case places a zero element at the
+ * m_finalize_string(). The first case places a zero element at the
  * boundary slot, so finalize must skip the write and bump
  * finalize_string_terminator_already_present by one while leaving
  * finalize_string_terminator_written_when_missing and

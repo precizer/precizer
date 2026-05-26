@@ -26,14 +26,14 @@ static Return capture_libmem_inconsistent_string_truncate_reserve(void)
 	invalid_growth_noop.string_length = sizeof(materialized_growth_noop) - 1u;
 	invalid_growth_noop.is_string = true;
 
-	ASSERT(FAILURE == mem_string_truncate(&invalid_same_length,invalid_same_length.string_length));
+	ASSERT(FAILURE == m_string_truncate(&invalid_same_length,invalid_same_length.string_length));
 	ASSERT(invalid_same_length.data == materialized_same_length);
 	ASSERT(invalid_same_length.length == sizeof(materialized_same_length));
 	ASSERT(invalid_same_length.actually_allocated_bytes == sizeof(materialized_same_length) - 1u);
 	ASSERT(invalid_same_length.string_length == sizeof(materialized_same_length) - 1u);
 	ASSERT(invalid_same_length.is_string == true);
 
-	ASSERT(FAILURE == mem_string_truncate(&invalid_growth_noop,invalid_growth_noop.string_length + 1u));
+	ASSERT(FAILURE == m_string_truncate(&invalid_growth_noop,invalid_growth_noop.string_length + 1u));
 	ASSERT(invalid_growth_noop.data == materialized_growth_noop);
 	ASSERT(invalid_growth_noop.length == sizeof(materialized_growth_noop));
 	ASSERT(invalid_growth_noop.actually_allocated_bytes == sizeof(materialized_growth_noop) - 1u);

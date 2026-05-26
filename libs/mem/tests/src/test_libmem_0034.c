@@ -17,7 +17,7 @@ Return test_libmem_0034(void)
 	const char literal_suffix[] = {'-','l','i','t','\0'};
 
 	ASSERT(SUCCESS == m_copy_fixed_string(string_buffer,sizeof(base_text),base_text));
-	ASSERT(SUCCESS == mem_concat_unbounded_string(string_buffer,NULL));
+	ASSERT(SUCCESS == m_concat_string(string_buffer,NULL));
 	ASSERT(0 == strcmp(m_text(string_buffer),"base"));
 	ASSERT(SUCCESS == m_concat_string(string_buffer,sizeof(bounded_suffix),NULL));
 	ASSERT(0 == strcmp(m_text(string_buffer),"base"));

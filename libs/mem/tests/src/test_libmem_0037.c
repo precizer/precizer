@@ -1,7 +1,7 @@
 #include "test_libmem_utils.h"
 
 /**
- * @brief Capture the mem_string_truncate negative case for data-mode descriptors
+ * @brief Capture the m_string_truncate negative case for data-mode descriptors
  *
  * @return Return describing success or failure
  */
@@ -12,7 +12,7 @@ static Return capture_libmem_invalid_string_truncate_mode(void)
 	m_create(char,data_buffer);
 
 	ASSERT(SUCCESS == m_copy_buffer(data_buffer,sizeof("raw"),"raw"));
-	ASSERT(FAILURE == mem_string_truncate(data_buffer,1));
+	ASSERT(FAILURE == m_string_truncate(data_buffer,1));
 	call(m_del(data_buffer));
 
 	deliver(status);
@@ -45,7 +45,7 @@ Return test_libmem_0037(void)
 
 	const size_t original_length = code_units->length;
 
-	ASSERT(SUCCESS == mem_string_truncate(code_units,2));
+	ASSERT(SUCCESS == m_string_truncate(code_units,2));
 	ASSERT(code_units->length == original_length);
 	ASSERT(code_units->string_length == 2);
 	ASSERT(code_units->is_string == true);
@@ -60,7 +60,7 @@ Return test_libmem_0037(void)
 		ASSERT(truncated_view[2] == UINT32_C(0));
 	}
 
-	ASSERT(SUCCESS == mem_string_truncate(code_units,8));
+	ASSERT(SUCCESS == m_string_truncate(code_units,8));
 	ASSERT(code_units->string_length == 2);
 
 	ASSERT(SUCCESS == match_function_output(

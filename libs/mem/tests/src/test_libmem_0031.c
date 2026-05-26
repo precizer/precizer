@@ -27,7 +27,7 @@ Return test_libmem_0031(void)
 
 	ASSERT(SUCCESS == m_copy_buffer(code_units,sizeof(initial_code_units),initial_code_units));
 	ASSERT(SUCCESS == m_to_string(code_units));
-	ASSERT(SUCCESS == mem_concat_unbounded_string(
+	ASSERT(SUCCESS == m_concat_string(
 		code_units,
 		unbounded_suffix));
 	ASSERT(SUCCESS == mem_core_string(
@@ -42,7 +42,7 @@ Return test_libmem_0031(void)
 	IF(aliased_suffix != NULL)
 	{
 		aliased_suffix += 2;
-		ASSERT(SUCCESS == mem_concat_unbounded_string(
+		ASSERT(SUCCESS == m_concat_string(
 			code_units,
 			aliased_suffix));
 	}
@@ -56,7 +56,7 @@ Return test_libmem_0031(void)
 	IF(aliased_suffix != NULL)
 	{
 		aliased_suffix += code_units_length;
-		ASSERT(SUCCESS == mem_concat_unbounded_string(
+		ASSERT(SUCCESS == m_concat_string(
 			code_units,
 			aliased_suffix));
 	}

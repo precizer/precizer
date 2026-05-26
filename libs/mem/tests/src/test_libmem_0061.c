@@ -1,6 +1,46 @@
 #include "test_libmem_utils.h"
 
 /**
+ * @brief Invoke public data replacement through the operation callback shape
+ *
+ * @param destination Data descriptor that receives source contents
+ * @param source Data descriptor whose contents replace the destination payload
+ * @return Return describing success or failure
+ */
+static Return invoke_m_copy_data(
+	memory       *destination,
+	const memory *source)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	run(m_copy_data(destination,source));
+
+	provide(status);
+}
+
+/**
+ * @brief Invoke public data append through the operation callback shape
+ *
+ * @param destination Data descriptor that receives appended contents
+ * @param source Data descriptor whose contents are appended
+ * @return Return describing success or failure
+ */
+static Return invoke_m_concat_data(
+	memory       *destination,
+	const memory *source)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	run(m_concat_data(destination,source));
+
+	provide(status);
+}
+
+/**
  * @brief Check data-wrapper append and copy across five different data types
  *
  * @return Return describing success or failure
@@ -249,7 +289,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_WORD,
 			MEM_CORE_DATA_TYPE_BYTE,
-			mem_copy_data,
+			invoke_m_copy_data,
 			replace_word_seed,
 			sizeof(replace_word_seed),
 			replace_byte_source,
@@ -261,7 +301,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_RGB,
 			MEM_CORE_DATA_TYPE_WORD,
-			mem_copy_data,
+			invoke_m_copy_data,
 			replace_rgb_seed,
 			sizeof(replace_rgb_seed),
 			replace_word_source,
@@ -273,7 +313,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_DWORD,
 			MEM_CORE_DATA_TYPE_RGB,
-			mem_copy_data,
+			invoke_m_copy_data,
 			replace_dword_seed,
 			sizeof(replace_dword_seed),
 			replace_rgb_source,
@@ -285,7 +325,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_QWORD,
 			MEM_CORE_DATA_TYPE_DWORD,
-			mem_copy_data,
+			invoke_m_copy_data,
 			replace_qword_seed,
 			sizeof(replace_qword_seed),
 			replace_dword_source,
@@ -297,7 +337,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_BYTE,
 			MEM_CORE_DATA_TYPE_QWORD,
-			mem_copy_data,
+			invoke_m_copy_data,
 			replace_byte_seed,
 			sizeof(replace_byte_seed),
 			replace_qword_source,
@@ -309,7 +349,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_WORD,
 			MEM_CORE_DATA_TYPE_BYTE,
-			mem_concat_data,
+			invoke_m_concat_data,
 			append_word_seed,
 			sizeof(append_word_seed),
 			append_byte_source,
@@ -321,7 +361,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_RGB,
 			MEM_CORE_DATA_TYPE_WORD,
-			mem_concat_data,
+			invoke_m_concat_data,
 			append_rgb_seed,
 			sizeof(append_rgb_seed),
 			append_word_source,
@@ -333,7 +373,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_DWORD,
 			MEM_CORE_DATA_TYPE_RGB,
-			mem_concat_data,
+			invoke_m_concat_data,
 			append_dword_seed,
 			sizeof(append_dword_seed),
 			append_rgb_source,
@@ -345,7 +385,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_QWORD,
 			MEM_CORE_DATA_TYPE_DWORD,
-			mem_concat_data,
+			invoke_m_concat_data,
 			append_qword_seed,
 			sizeof(append_qword_seed),
 			append_dword_source,
@@ -357,7 +397,7 @@ Return test_libmem_0061(void)
 		{
 			MEM_CORE_DATA_TYPE_BYTE,
 			MEM_CORE_DATA_TYPE_QWORD,
-			mem_concat_data,
+			invoke_m_concat_data,
 			append_byte_seed,
 			sizeof(append_byte_seed),
 			append_qword_source,

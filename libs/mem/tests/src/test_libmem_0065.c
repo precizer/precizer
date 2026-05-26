@@ -56,7 +56,7 @@ static Return capture_libmem_mode_mismatch_negative_cases(void)
 	ASSERT(FAILURE == m_copy(destination,source));
 
 	/* Reject descriptor concat when destination is data and source is a string */
-	ASSERT(FAILURE == mem_concat_strings(destination,source));
+	ASSERT(FAILURE == m_concat_strings(destination,source));
 
 	ASSERT(SUCCESS == m_to_data(source));
 	ASSERT(SUCCESS == m_to_string(destination));
@@ -66,7 +66,7 @@ static Return capture_libmem_mode_mismatch_negative_cases(void)
 	ASSERT(FAILURE == m_copy(destination,source));
 
 	/* Reject descriptor concat when destination is a string and source is data */
-	ASSERT(FAILURE == mem_concat_strings(destination,source));
+	ASSERT(FAILURE == m_concat_strings(destination,source));
 
 	invalid_destination->length = 1;
 
@@ -94,12 +94,12 @@ static Return capture_libmem_mode_mismatch_negative_cases(void)
 	ASSERT(FAILURE == m_copy(string_destination,wide_string_source));
 
 	/* Reject string-route descriptor concat when element sizes differ */
-	ASSERT(FAILURE == mem_concat_strings(string_destination,wide_string_source));
+	ASSERT(FAILURE == m_concat_strings(string_destination,wide_string_source));
 
 	stale_string_destination->string_length = 1;
 
 	/* Reject descriptor concat when destination string metadata is stale */
-	ASSERT(FAILURE == mem_concat_strings(stale_string_destination,string_destination));
+	ASSERT(FAILURE == m_concat_strings(stale_string_destination,string_destination));
 
 	stale_string_destination->string_length = 0;
 
@@ -109,7 +109,7 @@ static Return capture_libmem_mode_mismatch_negative_cases(void)
 	ASSERT(FAILURE == m_copy(stale_string_destination,stale_string_source));
 
 	/* Reject descriptor concat when source string metadata is stale */
-	ASSERT(FAILURE == mem_concat_strings(stale_string_destination,stale_string_source));
+	ASSERT(FAILURE == m_concat_strings(stale_string_destination,stale_string_source));
 
 	invalid_destination->length = 0;
 	invalid_source->length = 0;

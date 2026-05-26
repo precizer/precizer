@@ -1,7 +1,7 @@
 #include "test_libmem_utils.h"
 
 /**
- * @brief Capture the mem_copy_data divisibility negative case
+ * @brief Capture the m_copy_data divisibility negative case
  *
  * The helper is expected to reject source payloads whose byte size cannot be
  * represented as a whole number of destination elements
@@ -22,7 +22,7 @@ static Return capture_libmem_core_data_non_divisible_source(void)
 	};
 
 	ASSERT(SUCCESS == m_copy_buffer(source,sizeof(odd_source_bytes),odd_source_bytes));
-	ASSERT(FAILURE == mem_copy_data(destination,source));
+	ASSERT(FAILURE == m_copy_data(destination,source));
 	ASSERT(destination->length == 0);
 	ASSERT(destination->string_length == 0);
 	ASSERT(destination->is_string == false);
@@ -34,7 +34,7 @@ static Return capture_libmem_core_data_non_divisible_source(void)
 }
 
 /**
- * @brief Check that mem_copy_data rejects source byte counts with destination tails
+ * @brief Check that m_copy_data rejects source byte counts with destination tails
  *
  * @return Return describing success or failure
  */

@@ -39,7 +39,7 @@ Return test_libmem_0059(void)
 
 	ASSERT(SUCCESS == m_copy_buffer(destination_words,sizeof(external_prefix),external_prefix));
 	ASSERT(SUCCESS == m_copy_buffer(source_bytes,sizeof(external_suffix),external_suffix));
-	ASSERT(SUCCESS == mem_concat_data(destination_words,source_bytes));
+	ASSERT(SUCCESS == m_concat_data(destination_words,source_bytes));
 
 	ASSERT(destination_words->length == 3);
 	ASSERT(destination_words->string_length == 0);
@@ -71,7 +71,7 @@ Return test_libmem_0059(void)
 
 	aliased_append_source.length = 2;
 
-	ASSERT(SUCCESS == mem_concat_data(destination_words,&aliased_append_source));
+	ASSERT(SUCCESS == m_concat_data(destination_words,&aliased_append_source));
 	ASSERT(destination_words->length == 3);
 
 	destination_view = (const unsigned char *)m_raw_data_ro(destination_words);
@@ -100,7 +100,7 @@ Return test_libmem_0059(void)
 
 	aliased_replace_source.length = 4;
 
-	ASSERT(SUCCESS == mem_copy_data(destination_words,&aliased_replace_source));
+	ASSERT(SUCCESS == m_copy_data(destination_words,&aliased_replace_source));
 	ASSERT(destination_words->length == 2);
 	ASSERT(destination_words->string_length == 0);
 	ASSERT(destination_words->is_string == false);

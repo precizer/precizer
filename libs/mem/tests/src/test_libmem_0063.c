@@ -47,7 +47,7 @@ Return test_libmem_0063(void)
 	ASSERT(source->string_length == 2);
 	ASSERT(source->length == 32);
 	ASSERT(SUCCESS == m_copy_fixed_string(destination,sizeof(ab_text),ab_text));
-	ASSERT(SUCCESS == mem_concat_strings(destination,source));
+	ASSERT(SUCCESS == m_concat_strings(destination,source));
 	ASSERT(destination->string_length == 4);
 	ASSERT(destination->is_string == true);
 	ASSERT(destination->length == 5);

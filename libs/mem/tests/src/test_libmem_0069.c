@@ -94,7 +94,7 @@ static Return capture_inline_string_descriptor_table(void)
 
 	ASSERT(descriptor_count == table->length);
 
-	mem_core_array_foreach(table,memory,descriptor)
+	m_string_array_foreach(table,descriptor)
 	{
 		ASSERT(descriptor->is_string == true);
 		ASSERT(descriptor->single_element_size == sizeof(char));

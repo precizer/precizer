@@ -75,9 +75,8 @@ static Return capture_libmem_formatted_string_frame_errors(void)
 
 /**
  * @brief Verify typed formatted-string dispatch for char and wchar_t descriptors
- * @details Exercises the public mem_formatted_string_char and
- *          mem_formatted_string_wchar helpers directly and through the
- *          m_formatted_string macro for both supported element widths. The
+ * @details Exercises the public m_formatted_string macro for both supported
+ *          element widths. The
  *          coverage includes:
  *           - byte (char) destinations: basic formatting with mixed
  *             conversions, replacement of an existing payload with both
@@ -137,11 +136,11 @@ Return test_libmem_0070(void)
 		call(m_del(byte_empty));
 	}
 
-	/* 4. Byte: the explicitly typed narrow helper exposes the same contract */
+	/* 4. Byte: another narrow formatted call exposes the same public contract */
 	{
 		m_create(char,byte_direct,MEMORY_STRING);
 
-		ASSERT(SUCCESS == mem_formatted_string_char(byte_direct,"%s-%u","item",3U));
+		ASSERT(SUCCESS == m_formatted_string(byte_direct,"%s-%u","item",3U));
 		ASSERT(strcmp(m_text(byte_direct),"item-3") == 0);
 		ASSERT(byte_direct->string_length == strlen("item-3"));
 

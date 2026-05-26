@@ -18,7 +18,7 @@ Return test_libmem_0036(void)
 	void *const original_data = string_buffer->data;
 	const size_t original_length = string_buffer->length;
 
-	ASSERT(SUCCESS == mem_string_truncate(string_buffer,5));
+	ASSERT(SUCCESS == m_string_truncate(string_buffer,5));
 	ASSERT(string_buffer->data == original_data);
 	ASSERT(string_buffer->length == original_length);
 	ASSERT(string_buffer->string_length == 5);
@@ -33,15 +33,15 @@ Return test_libmem_0036(void)
 		mutable_view[5] = 'x';
 	}
 
-	ASSERT(SUCCESS == mem_string_truncate(string_buffer,5));
+	ASSERT(SUCCESS == m_string_truncate(string_buffer,5));
 	ASSERT(string_buffer->string_length == 5);
 	ASSERT(0 == strcmp(m_text(string_buffer),"alpha"));
 
-	ASSERT(SUCCESS == mem_string_truncate(string_buffer,99));
+	ASSERT(SUCCESS == m_string_truncate(string_buffer,99));
 	ASSERT(string_buffer->string_length == 5);
 	ASSERT(0 == strcmp(m_text(string_buffer),"alpha"));
 
-	ASSERT(SUCCESS == mem_string_truncate(string_buffer,0));
+	ASSERT(SUCCESS == m_string_truncate(string_buffer,0));
 	ASSERT(string_buffer->data == original_data);
 	ASSERT(string_buffer->length == original_length);
 	ASSERT(string_buffer->string_length == 0);

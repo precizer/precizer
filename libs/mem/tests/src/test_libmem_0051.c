@@ -1,7 +1,7 @@
 #include "test_libmem_utils.h"
 
 /**
- * @brief Capture mem_finalize_string rejection for data-mode descriptors
+ * @brief Capture m_finalize_string rejection for data-mode descriptors
  *
  * @return Return describing success or failure
  */
@@ -14,14 +14,14 @@ static Return capture_libmem_invalid_finalize_string_write_mode(void)
 	const char draft[] = "draft";
 
 	ASSERT(SUCCESS == m_resize(data_buffer,sizeof(draft)));
-	ASSERT(FAILURE == mem_finalize_string(data_buffer,strlen(draft),WRITE_TERMINATOR_ALWAYS));
+	ASSERT(FAILURE == m_finalize_string(data_buffer,strlen(draft),WRITE_TERMINATOR_ALWAYS));
 	call(m_del(data_buffer));
 
 	deliver(status);
 }
 
 /**
- * @brief Check mem_finalize_string with explicit terminator write and mode rejection
+ * @brief Check m_finalize_string with explicit terminator write and mode rejection
  *
  * @return Return describing success or failure
  */
@@ -46,7 +46,7 @@ Return test_libmem_0051(void)
 		memcpy(title_view,draft,strlen(draft));
 	}
 
-	ASSERT(SUCCESS == mem_finalize_string(title,strlen(draft),WRITE_TERMINATOR_ALWAYS));
+	ASSERT(SUCCESS == m_finalize_string(title,strlen(draft),WRITE_TERMINATOR_ALWAYS));
 	ASSERT(title->length == sizeof(draft));
 	ASSERT(title->string_length == strlen("draft"));
 	ASSERT(title->is_string == true);

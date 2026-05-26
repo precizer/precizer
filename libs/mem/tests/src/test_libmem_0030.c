@@ -40,7 +40,7 @@ Return test_libmem_0030(void)
 		string_buffer,
 		sizeof(bounded_suffix),
 		bounded_suffix));
-	ASSERT(SUCCESS == mem_concat_unbounded_string(
+	ASSERT(SUCCESS == m_concat_string(
 		string_buffer,
 		unbounded_suffix));
 	ASSERT(SUCCESS == mem_core_string(

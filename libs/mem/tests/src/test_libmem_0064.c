@@ -81,7 +81,7 @@ Return test_libmem_0064(void)
 	ASSERT(0 == strcmp(m_text(string_destination),"pre-x-okx-ok"));
 
 	ASSERT(SUCCESS == m_copy_buffer(raw_wrapper_destination,sizeof(raw_prefix),raw_prefix));
-	ASSERT(SUCCESS == mem_concat_buffer(raw_wrapper_destination,sizeof(wrapper_raw_suffix),wrapper_raw_suffix));
+	ASSERT(SUCCESS == m_concat_buffer(raw_wrapper_destination,sizeof(wrapper_raw_suffix),wrapper_raw_suffix));
 	ASSERT(raw_wrapper_destination->string_length == 0);
 	ASSERT(raw_wrapper_destination->is_string == false);
 	ASSERT(raw_wrapper_destination->length == sizeof(raw_prefix) + sizeof(wrapper_raw_suffix));
@@ -100,7 +100,7 @@ Return test_libmem_0064(void)
 	}
 
 	ASSERT(SUCCESS == m_copy_fixed_string(string_wrapper_destination,sizeof(go_text),go_text));
-	ASSERT(SUCCESS == mem_concat_bounded_string(
+	ASSERT(SUCCESS == m_concat_string(
 		string_wrapper_destination,
 		sizeof(wrapper_string_suffix),
 		wrapper_string_suffix));
