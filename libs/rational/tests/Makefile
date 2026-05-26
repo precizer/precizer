@@ -31,8 +31,8 @@ STATIC = -static -static-libgcc -Wl,--gc-sections
 endif
 
 # Defaults to the parent library .builds when running `make` from this
-# directory standalone. The parent Makefile of libs/mem overrides BUILDDIR
-# with the same path, so both entrypoints write to one artifact tree
+# directory standalone. The parent Makefile of this library overrides
+# BUILDDIR with the same path, so both entrypoints write to one artifact tree
 BUILDDIR ?= ../.builds
 LIBDIR = $(patsubst lib%,%,$(LIBNAME))
 TEST_BUILDDIR = $(BUILDDIR)/$(LIBDIR)/$(EXE)
@@ -45,17 +45,15 @@ DEPLIB_BUILDDIR = ../$(LIBDIR)/tests/$(BUILDDIR)
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LINK_LIBS),-l$d)
 LDLIBS += -lpcre2-8
-# External libraries only — the internal ones are filtered out so they
-# can be linked through direct .o object files instead, which lets
-# -Wl,--wrap reach malloc/realloc calls made from inside them
+# Keep external libraries in this list. Internal libraries are linked through
+# object files so --wrap can intercept calls made inside those libraries
 EXT_LDLIBS = $(filter-out $(foreach d,$(LINK_LIBS),-l$d),$(LDLIBS))
 
-# Link-time wrappers for mock-based allocator failure injection. Add
-# more function names to WRAPFUNCS as new mocks are introduced
+# Link-time wrappers let mock-based tests force allocation, formatting,
+# output, and time failures. Add newly wrapped functions here as needed
 WRAPFUNCS = malloc realloc snprintf vsnprintf write gettimeofday localtime_r
 ifeq ($(UNAME_S),Darwin)
-# macOS lld does not honor -Wl,--wrap; mocks degrade to a no-op and the
-# affected subtests early-return through #ifdef EVIL_EMPIRE_OS
+# macOS lld does not honor -Wl,--wrap, so wrapped substitutions are disabled
 WRAPFLAGS =
 else
 WRAPFLAGS = $(foreach f,$(WRAPFUNCS),-Wl,--wrap=$(f))
@@ -65,7 +63,7 @@ endif
 INCPATH += -I../src/
 INCPATH += $(foreach d,$(LINK_LIBS),-I../../$(d)/src/)
 
-# Detect whether we're using GCC
+# Detect whether GCC is in use
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 # Warning flags for additional checks
@@ -95,7 +93,10 @@ endif
 #
 SRCS = $(wildcard $(SRC)/*.c)
 TMPLTS = $(wildcard $(SRC)/*.cc)
-HDRS = $(wildcard $(SRC)/*.h) $(foreach d,$(LINK_LIBS),$(wildcard ../../$(d)/src/*.h))
+# Keep the suite's own headers separate so the format target changes only
+# test files and does not rewrite headers owned by dependency libraries
+LOCAL_HDRS = $(wildcard $(SRC)/*.h)
+HDRS = $(LOCAL_HDRS) $(foreach d,$(LINK_LIBS),$(wildcard ../../$(d)/src/*.h))
 OBJS = $(SRCS:.c=.o)
 
 #
@@ -163,10 +164,10 @@ DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(DBG)/libs
 endif
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 
-.PHONY: all clean debug sanitize coverage run test tests tests-sanitize tests-debug tests-coverage coverage-report coverage-html format
+.PHONY: all clean purge debug sanitize coverage run test tests tests-sanitize tests-debug tests-coverage coverage-report coverage-html format
 .PHONY: testedlib-coverage testedlib-sanitize testedlib-debug
 .PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
-.PHONY: debug-build compile-commands clean-compile-commands cppcheck print-%
+.PHONY: debug-build compile-commands clean-compile-commands cppcheck
 
 # Default build
 all: sanitize
@@ -273,7 +274,7 @@ $(DBG_OBJDIR):
 #
 format:
 	@echo "Formatting source files..."
-	@for file in $(SRCS) $(HDRS) $(TMPLTS); do \
+	@for file in $(SRCS) $(LOCAL_HDRS) $(TMPLTS); do \
 		echo "Formatting $$file"; \
 		uncrustify -c ../../../Uncrustify.cfg --replace --no-backup $$file; \
 	done
