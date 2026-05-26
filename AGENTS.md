@@ -3,6 +3,7 @@
 ## Comments and Documentation
 - Use US English for comments and documentation
 - If a comment or documentation block contains multiple sentences, separate them with periods. However, do not place a trailing period at the end of the last sentence in a block, at the end of a single-line comment, or at the end of a single-line documentation entry
+- Preserve existing comments in their current locations. They may be updated for accuracy or clarity, but must never be removed
 - Write function documentation in Doxygen style
 - Write function documentation in the `.c` file that contains the function body, not in the header file
 - The main human-readable project documentation is available in `README.md` in US English and in `README.ru.md` in Russian
@@ -84,11 +85,11 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 - `FAILURE` is used only for technical errors inside a function: out of memory, damaged state, or inability to continue. A normal negative logical answer is not `FAILURE`
-- Check functions may return `SUCCESS | GOOD` or `SUCCESS | NOTGOOD`. `GOOD` and `NOTGOOD` are local binary answers; they should not be inherited automatically through a call chain. Return them outward only from functions that themselves answer a yes/no question
-- Caller code analyzes the technical layer first (`CRITICAL`, `TRIUMPH`, `SKIP`), then the binary answer (`GOOD`, `NOTGOOD`)
+- Check functions may return `SUCCESS | YES` or `SUCCESS | NO`. `YES` and `NO` are local binary answer flags, not C `bool` values; `NO` is not equal to `0`. Return them outward only from functions that themselves answer a yes/no question
+- Caller code consumes check-function results with `ask(check_function(...))`. `ask()` returns a C `bool`, merges technical failures into local `status`, and clears the binary answer so it is not inherited through the call chain
 - Use `if(TRIUMPH & status)` for sequential steps. For loops that should stop after an error, warning, informational result, or halt, use `if((SKIP & status) == 0)` or an equivalent condition
-- `run(func)` is for work steps that may be skipped after a failure or stop. `func` must return `Return`. `run()` calls `func` only while local `status` does not contain `SKIP`, then adds the return from `func` into `status` and normalizes it
-- `call(func)` is for cleanup and mandatory final actions. `func` must return `Return`. `call()` always calls `func`, even when local `status` is already not `SUCCESS`, but the return from `func` is still added into `status` and affects the final result
+- `run(func)` is for work steps that may be skipped after a failure or stop. `func` must return `Return` and must not be a yes/no check function. `run()` calls `func` only while local `status` does not contain `SKIP`, then adds the return from `func` into `status` and normalizes it
+- `call(func)` is for cleanup and mandatory final actions. `func` must return `Return` and must not be a yes/no check function. `call()` always calls `func`, even when local `status` is already not `SUCCESS`, but the return from `func` is still added into `status` and affects the final result
 - Function return goes through `provide(status)` or `deliver(status)`. `provide()` additionally writes TRACE for a critical return; `deliver()` returns without that TRACE
-- `global_return_status` is for program-level events. Only `GLOBAL` flags propagate from it into a regular return: `INFO`, `WARNING`, `HALTED`. `GOOD` and `NOTGOOD` do not propagate through global status
+- `global_return_status` is for program-level events. Only `GLOBAL` flags propagate from it into a regular return: `INFO`, `WARNING`, `HALTED`. `YES` and `NO` do not propagate through global status
 - If a status can contain several bits, do not compare the whole value exactly with one flag. Use bit masks for compound returns
