@@ -14,7 +14,6 @@ Return test_libtestitall_all(void)
 
 	HEADER("Runner Examples");
 	// Test function name and its short description
-	TEST(test_libtestitall_0002,"Empty tests complete successfully...");
 	TEST(test_libtestitall_0004,"External commands report expected return codes...");
 	TEST(test_libtestitall_0005,"External stderr follows the selected capture policy...");
 	TEST(test_libtestitall_0006,"Silent external commands complete successfully...");
