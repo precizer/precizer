@@ -12,14 +12,14 @@ static const Flags *lookup(
 	const memory *flags,
 	size_t       index)
 {
-	const Flags *flags_data = cdata(Flags,flags);
+	const Flags *flag = m_data_ro(Flags,flags);
 
-	if(flags_data == NULL || index >= flags->length)
+	if(flag == NULL || index >= flags->length)
 	{
 		return(NULL);
 	}
 
-	return(&flags_data[index]);
+	return(&flag[index]);
 }
 
 /**
@@ -47,22 +47,22 @@ static void print_changes(
 		return;
 	}
 
-	create(Flags,flags);
+	m_create(Flags,flags);
 
-	resize(flags,4);
+	m_resize(flags,4);
 
-	Flags *flags_data = data(Flags,flags);
+	Flags *flags_data_rewritable = m_data(Flags,flags);
 
-	if(flags_data == NULL)
+	if(flags_data_rewritable == NULL)
 	{
-		del(flags);
+		m_del(flags);
 		return;
 	}
 
-	flags_data[0] = (Flags){SIZE_CHANGED,"lsize"};
-	flags_data[1] = (Flags){ALLOCATED_SIZE_CHANGED,"asize"};
-	flags_data[2] = (Flags){STATUS_CHANGED_TIME,"ctime"};
-	flags_data[3] = (Flags){MODIFICATION_TIME_CHANGED,"mtime"};
+	flags_data_rewritable[0] = (Flags){SIZE_CHANGED,"lsize"};
+	flags_data_rewritable[1] = (Flags){ALLOCATED_SIZE_CHANGED,"asize"};
+	flags_data_rewritable[2] = (Flags){STATUS_CHANGED_TIME,"ctime"};
+	flags_data_rewritable[3] = (Flags){MODIFICATION_TIME_CHANGED,"mtime"};
 
 	unsigned int flags_found = 0;
 
@@ -94,7 +94,7 @@ static void print_changes(
 		}
 	}
 
-	del(flags);
+	m_del(flags);
 }
 
 /**
@@ -232,7 +232,7 @@ void show_file(
 	TraversalSummary *summary,
 	const File       *file)
 {
-	const char *runtime_relative_path = getcstring(relative_path);
+	const char *runtime_relative_path = m_text(relative_path);
 
 	if(file->ignore == true)
 	{
