@@ -27,15 +27,15 @@ void testmocking_vsnprintf_disable(void)
 #ifndef EVIL_EMPIRE_OS
 int __real_vsnprintf(
 	char       *str,
-	size_t      size,
+	size_t     size,
 	const char *format,
-	va_list     args) __attribute__((format(printf,3,0)));
+	va_list    args) __attribute__((format(printf,3,0)));
 
 int __wrap_vsnprintf(
 	char       *str,
-	size_t      size,
+	size_t     size,
 	const char *format,
-	va_list     args) __attribute__((format(printf,3,0)));
+	va_list    args) __attribute__((format(printf,3,0)));
 
 /**
  * @brief Linker-redirected entry point for vsnprintf
@@ -51,9 +51,9 @@ int __wrap_vsnprintf(
  */
 int __wrap_vsnprintf(
 	char       *str,
-	size_t      size,
+	size_t     size,
 	const char *format,
-	va_list     args)
+	va_list    args)
 {
 	if(testmocking_vsnprintf_remaining > 0)
 	{

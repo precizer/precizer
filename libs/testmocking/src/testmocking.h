@@ -28,6 +28,8 @@ void testmocking_vsnprintf_fail_next(size_t);
 
 void testmocking_vsnprintf_disable(void);
 
-void testmocking_write_fail_next(size_t,int);
+void testmocking_write_fail_next(
+	size_t,
+	int);
 
 void testmocking_write_disable(void);

@@ -45,7 +45,9 @@ void testmocking_localtime_r_disable(void)
 }
 
 #ifndef EVIL_EMPIRE_OS
-int __real_gettimeofday(struct timeval *tv,void *tz);
+int __real_gettimeofday(
+	struct timeval *tv,
+	void           *tz);
 
 /**
  * @brief Linker-redirected entry point for gettimeofday
@@ -58,7 +60,9 @@ int __real_gettimeofday(struct timeval *tv,void *tz);
  * @param[in] tz Obsolete timezone argument passed by the caller
  * @return gettimeofday-compatible result
  */
-int __wrap_gettimeofday(struct timeval *tv,void *tz)
+int __wrap_gettimeofday(
+	struct timeval *tv,
+	void           *tz)
 {
 	if(testmocking_gettimeofday_remaining > 0)
 	{
@@ -70,7 +74,9 @@ int __wrap_gettimeofday(struct timeval *tv,void *tz)
 	return __real_gettimeofday(tv,tz);
 }
 
-struct tm *__real_localtime_r(const time_t *timer,struct tm *result);
+struct tm *__real_localtime_r(
+	const time_t *timer,
+	struct tm    *result);
 
 /**
  * @brief Linker-redirected entry point for localtime_r
@@ -82,7 +88,9 @@ struct tm *__real_localtime_r(const time_t *timer,struct tm *result);
  * @param[out] result Destination structure passed by the caller
  * @return localtime_r-compatible result
  */
-struct tm *__wrap_localtime_r(const time_t *timer,struct tm *result)
+struct tm *__wrap_localtime_r(
+	const time_t *timer,
+	struct tm    *result)
 {
 	if(testmocking_localtime_r_remaining > 0)
 	{

@@ -23,7 +23,9 @@ void testmocking_realloc_disable(void)
 }
 
 #ifndef EVIL_EMPIRE_OS
-void *__real_realloc(void *ptr,size_t size);
+void *__real_realloc(
+	void   *ptr,
+	size_t size);
 
 /**
  * @brief Linker-redirected entry point for realloc
@@ -35,7 +37,9 @@ void *__real_realloc(void *ptr,size_t size);
  * @param[in] size New allocation size in bytes
  * @return Pointer returned by libc realloc, or NULL when the mock fires
  */
-void *__wrap_realloc(void *ptr,size_t size)
+void *__wrap_realloc(
+	void   *ptr,
+	size_t size)
 {
 	if(testmocking_realloc_remaining > 0)
 	{
