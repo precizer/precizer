@@ -17,27 +17,27 @@ static Return test0011_1(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	// Create memory for the result
-	create(char,result);
-	create(char,chunk);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,chunk,MEMORY_STRING);
 
 	const char *arguments = "--progress --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--progress --database=database2.db "
 	        "tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	arguments = "--compare database1.db database2.db";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0011_001.txt";
 
@@ -50,9 +50,9 @@ static Return test0011_1(void)
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
 
-	del(pattern);
-	del(chunk);
-	del(result);
+	m_del(pattern);
+	m_del(chunk);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -91,11 +91,11 @@ static Return test0011_2(void)
 	        "tests/fixtures/diffs/diff1";
 
 	// Create memory for the result
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0011_002_1.txt";
 
@@ -107,8 +107,8 @@ static Return test0011_2(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	arguments = "--progress --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
@@ -122,17 +122,17 @@ static Return test0011_2(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
-	create(char,chunk);
+	m_create(char,chunk,MEMORY_STRING);
 
 	arguments = "--update --progress --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	ASSERT(SUCCESS == add_string_to("  ","tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/a.txt"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
@@ -145,7 +145,7 @@ static Return test0011_2(void)
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	filename = "templates/0011_002_3.txt";
 
@@ -153,9 +153,9 @@ static Return test0011_2(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	// Don't clean up test results to use on the next test
 
@@ -180,7 +180,7 @@ static Return test0011_3(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -197,14 +197,14 @@ static Return test0011_3(void)
 	if(result->length > 0)
 	{
 		echo(STDERR,"ERROR: In silent mode stdout must be empty\n");
-		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET,getcstring(result));
+		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET,m_text(result));
 		status = FAILURE;
 	}
 #endif
 
-	call(del(result));
+	call(m_del(result));
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -214,8 +214,8 @@ static Return test0011_3(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -231,9 +231,9 @@ static Return test0011_4(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0011_004_1.txt";
 
@@ -247,8 +247,8 @@ static Return test0011_4(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean up test results
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -402,8 +402,8 @@ static Return test0011_8(void)
 
 	ASSERT(SUCCESS == delete_path(replacement));
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	arguments = "--progress --database=database1.db tests/fixtures/diffs/diff1";
 
@@ -426,8 +426,8 @@ static Return test0011_8(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
@@ -446,16 +446,16 @@ Return test0011(void)
 	/// By default, the function worked without errors.
 	INITTEST;
 
-	TEST(test0011_1,"README Example 1 Adding and comparing…");
-	TEST(test0011_2,"README Example 2 Updating the data in DB…");
-	TEST(test0011_3,"README Example 3 --silent mode…");
-	TEST(test0011_4,"README Example 4 --verbose mode…");
-	TEST(test0011_5,"README Example 5 Disable recursion with --maxdepth…");
-	TEST(test0011_6,"README Example 6 Relative path to ignore with --ignore…");
-	TEST(test0011_7,"README Example 7 Multiple regexp for ignoring…");
-	TEST(test0011_8,"README Example 8 The --ignore options together with --include, including the compare-scope example…");
-	SUTE(test0030,"README Examples 9 & 10: --lock-checksum with --rehash-locked and --watch-timestamps…");
-	SUTE(test0029,"README Example 11: Testing how the application behaves with inaccessible files…");
+	TEST(test0011_1,"README Example 1 Adding and comparing");
+	TEST(test0011_2,"README Example 2 Updating the data in DB");
+	TEST(test0011_3,"README Example 3 --silent mode");
+	TEST(test0011_4,"README Example 4 --verbose mode");
+	TEST(test0011_5,"README Example 5 Disable recursion with --maxdepth");
+	TEST(test0011_6,"README Example 6 Relative path to ignore with --ignore");
+	TEST(test0011_7,"README Example 7 Multiple regexp for ignoring");
+	TEST(test0011_8,"README Example 8 The --ignore options together with --include, including the compare-scope example");
+	SUTE(test0030,"README Examples 9 & 10: --lock-checksum with --rehash-locked and --watch-timestamps");
+	SUTE(test0029,"README Example 11: Testing how the application behaves with inaccessible files");
 
 	RETURN_STATUS;
 }
