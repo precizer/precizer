@@ -164,10 +164,10 @@ DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(DBG)/libs
 endif
 DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL
 
-.PHONY: all clean debug sanitize coverage run test tests tests-sanitize tests-debug tests-coverage coverage-report coverage-html format
+.PHONY: all clean purge debug sanitize coverage run test tests tests-sanitize tests-debug tests-coverage coverage-report coverage-html format
 .PHONY: testedlib-coverage testedlib-sanitize testedlib-debug
 .PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
-.PHONY: debug-build compile-commands clean-compile-commands cppcheck print-%
+.PHONY: debug-build compile-commands clean-compile-commands cppcheck
 
 # Default build
 all: sanitize
