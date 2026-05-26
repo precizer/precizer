@@ -9,9 +9,9 @@ Return test0020_1(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0020_001.txt";
 
@@ -28,8 +28,8 @@ Return test0020_1(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -43,9 +43,9 @@ Return test0020_2(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0020_002.txt";
 
@@ -62,8 +62,8 @@ Return test0020_2(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -77,9 +77,9 @@ Return test0020_3(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == create_directory("write_protected_directory"));
 	ASSERT(SUCCESS == change_mode("write_protected_directory",0000));
@@ -99,8 +99,8 @@ Return test0020_3(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == change_mode("write_protected_directory",0777));
 	ASSERT(SUCCESS == delete_path("write_protected_directory"));
@@ -117,9 +117,9 @@ Return test0020_4(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -146,8 +146,8 @@ Return test0020_4(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == delete_path("database2.db"));
 
@@ -163,9 +163,9 @@ Return test0020_5(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -182,8 +182,8 @@ Return test0020_5(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == change_mode("write_protected_database1.db",0666));
 	ASSERT(SUCCESS == delete_path("write_protected_database1.db"));
@@ -200,9 +200,9 @@ Return test0020_6(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0020_006.txt";
 
@@ -222,8 +222,8 @@ Return test0020_6(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -237,9 +237,9 @@ Return test0020_7(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0020_007.txt";
 
@@ -256,8 +256,8 @@ Return test0020_7(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == delete_path("database1.db"));
 
@@ -268,13 +268,13 @@ Return test0020(void)
 {
 	INITTEST;
 
-	TEST(test0020_1,"DB creation in missing directory…")
-	TEST(test0020_2,"Attempt to open DB with --update when database is missing…")
-	TEST(test0020_3,"DB creation in write protected directory…")
-	TEST(test0020_4,"Attempt to open DB with write protected database file…")
-	TEST(test0020_5,"Attempt to update DB with --update when database file is write protected…")
-	TEST(test0020_6,"Attempt to change the primary path in the database…")
-	TEST(test0020_7,"Replace the primary path in the database…")
+	TEST(test0020_1,"DB creation in missing directory")
+	TEST(test0020_2,"Attempt to open DB with --update when database is missing")
+	TEST(test0020_3,"DB creation in write protected directory")
+	TEST(test0020_4,"Attempt to open DB with write protected database file")
+	TEST(test0020_5,"Attempt to update DB with --update when database file is write protected")
+	TEST(test0020_6,"Attempt to change the primary path in the database")
+	TEST(test0020_7,"Replace the primary path in the database")
 
 	RETURN_STATUS;
 }

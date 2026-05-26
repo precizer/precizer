@@ -16,10 +16,10 @@ Return test0019(void)
 
 	const char *update_arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Create memory for the result
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	// Preparation for the test
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -38,8 +38,8 @@ Return test0019(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f"));
@@ -52,8 +52,8 @@ Return test0019(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	ASSERT(SUCCESS == create_symlink("../../../../1/AAA/BCB/CCC/a.txt","tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/symlink_to_the_file_a.txt"));
 	ASSERT(SUCCESS == create_symlink("../../../../AAA/ZAW/D/e/f","tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/symlink_to_dir_f"));
@@ -66,8 +66,8 @@ Return test0019(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
