@@ -6,7 +6,7 @@
  * This helper accepts a `MEMORY_STRING` descriptor whose elements are `char`
  * values. It examines the visible string boundary cached in `string_length`
  * and removes one final `\r\n`, `\n`, or `\r` sequence through
- * `mem_string_truncate()`, preserving the descriptor length and reusable
+ * `m_string_truncate()`, preserving the descriptor length and reusable
  * reserve
  *
  * @param buffer Byte string descriptor to update
@@ -26,7 +26,7 @@ Return trim_trailing_eol(memory *buffer)
 		deliver(FAILURE);
 	}
 
-	/* mem_string_truncate() accepts an empty descriptor before checking this stale-cache case */
+	/* m_string_truncate() accepts an empty descriptor before checking this stale-cache case */
 	if(buffer->length == 0U && buffer->string_length != 0U)
 	{
 		deliver(FAILURE);
@@ -36,7 +36,7 @@ Return trim_trailing_eol(memory *buffer)
 	const size_t len = buffer->string_length;
 
 	/* Ask libmem to validate the current string descriptor and its terminator */
-	run(mem_string_truncate(buffer,len));
+	run(m_string_truncate(buffer,len));
 
 	/* An empty visible string has no trailing EOL to remove */
 	if((TRIUMPH & status) && len == 0U)
@@ -63,7 +63,7 @@ Return trim_trailing_eol(memory *buffer)
 		if(new_len != len)
 		{
 			/* Preserve the existing logical reserve while shortening the visible string */
-			run(mem_string_truncate(buffer,new_len));
+			run(m_string_truncate(buffer,new_len));
 		}
 	}
 
