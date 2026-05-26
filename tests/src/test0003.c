@@ -15,10 +15,10 @@ static Return assert_information_mode_output(
 	/* By default, assumes the function ran without errors */
 	Return status = SUCCESS;
 
-	create(char,stdout_result);
-	create(char,stderr_result);
-	create(char,stdout_pattern);
-	create(char,stderr_pattern);
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+	m_create(char,stderr_pattern,MEMORY_STRING);
 
 	if((SUCCESS & status) && arguments == NULL)
 	{
@@ -36,13 +36,13 @@ static Return assert_information_mode_output(
 	run(get_file_content(stdout_pattern_file,stdout_pattern));
 	run(match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
 
-	run(copy_literal(stderr_pattern,"\\A\\Z"));
+	run(m_copy_literal(stderr_pattern,"\\A\\Z"));
 	run(match_pattern(stderr_result,stderr_pattern));
 
-	call(del(stderr_pattern));
-	call(del(stdout_pattern));
-	call(del(stderr_result));
-	call(del(stdout_result));
+	call(m_del(stderr_pattern));
+	call(m_del(stdout_pattern));
+	call(m_del(stderr_result));
+	call(m_del(stdout_result));
 
 	deliver(status);
 }
@@ -98,10 +98,10 @@ Return test0003_2(void)
 
 	const char *arguments = "";
 
-	create(char,stdout_result);
-	create(char,stderr_result);
-	create(char,stdout_pattern);
-	create(char,stderr_pattern);
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+	m_create(char,stderr_pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -122,10 +122,10 @@ Return test0003_2(void)
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,filename));
 
 	// Clean to use it iteratively
-	del(stderr_pattern);
-	del(stdout_pattern);
-	del(stderr_result);
-	del(stdout_result);
+	m_del(stderr_pattern);
+	m_del(stdout_pattern);
+	m_del(stderr_result);
+	m_del(stdout_result);
 
 	RETURN_STATUS;
 
@@ -182,10 +182,10 @@ Return test0003(void)
 {
 	INITTEST;
 
-	TEST(test0003_1,"Comply default DB name to \"hostname.db\" template…");
-	TEST(test0003_2,"Running the application with no arguments at all…");
-	TEST(test0003_3,"Information modes without PATH return success…");
-	TEST(test0003_4,"Information modes ignore PATH and stop early…");
+	TEST(test0003_1,"Comply default DB name to \"hostname.db\" template");
+	TEST(test0003_2,"Running the application with no arguments at all");
+	TEST(test0003_3,"Information modes without PATH return success");
+	TEST(test0003_4,"Information modes ignore PATH and stop early");
 
 	RETURN_STATUS;
 }
