@@ -29,4 +29,4 @@ Usage: precizer \[OPTION\.\.\.\] PATH
 [\s\S]*?  -v, --verbose[^\n]*
 [\s\S]*?  -V, --version[^\n]*
 [\s\S]*?  -z, --usage[^\n]*
-[\s\S]*?TESTING:Exit status » SUCCESS\|INFO\Z
+[\s\S]*?TESTING:Exit status » SUCCESS\|HALTED\|INFO\Z

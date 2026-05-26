@@ -11,4 +11,4 @@ Usage: precizer \[-cfoTuXCrh\?pqsvVz\]
 \s+\[--rehash-locked\] \[--ignore=PCRE2_REGEXP\] \[--include=PCRE2_REGEXP\]
 \s+\[--help\] \[--progress\] \[--quiet-ignored\] \[--silent\] \[--verbose\]
 \s+\[--version\] \[--usage\] PATH
-TESTING:Exit status » SUCCESS\|INFO\Z
+TESTING:Exit status » SUCCESS\|HALTED\|INFO\Z
