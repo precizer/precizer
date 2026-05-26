@@ -9,8 +9,8 @@ static Return assert_stderr_matches(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	create(char,pattern);
-	create(char,stderr_snapshot);
+	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,stderr_snapshot,MEMORY_STRING);
 
 	if(template_file == NULL)
 	{
@@ -24,7 +24,7 @@ static Return assert_stderr_matches(
 
 	if(SUCCESS == status)
 	{
-		status = copy(stderr_snapshot,STDERR);
+		status = m_copy(stderr_snapshot,STDERR);
 	}
 
 	if(SUCCESS == status)
@@ -34,11 +34,11 @@ static Return assert_stderr_matches(
 
 	if(SUCCESS == status)
 	{
-		call(del(STDERR));
+		call(m_del(STDERR));
 	}
 
-	call(del(stderr_snapshot));
-	call(del(pattern));
+	call(m_del(stderr_snapshot));
+	call(m_del(pattern));
 
 	deliver(status);
 }
@@ -66,7 +66,7 @@ static Return save_tmpdir_value(char **saved_tmpdir_out)
 		*saved_tmpdir_out = NULL;
 		original_tmpdir = getenv("TMPDIR");
 
-		if(original_tmpdir != NULL)
+		IF(original_tmpdir != NULL)
 		{
 			*saved_tmpdir_out = strdup(original_tmpdir);
 
@@ -90,7 +90,7 @@ static Return restore_tmpdir_value(const char *saved_tmpdir)
 {
 	int restore_tmpdir_status = 0;
 
-	if(saved_tmpdir != NULL)
+	IF(saved_tmpdir != NULL)
 	{
 		restore_tmpdir_status = setenv("TMPDIR",saved_tmpdir,1);
 	} else {
@@ -109,7 +109,7 @@ static Return test0037_1(void)
 {
 	INITTEST;
 
-	call(del(STDERR));
+	call(m_del(STDERR));
 
 	ASSERT(FAILURE == delete_path(NULL));
 	ASSERT(SUCCESS == assert_stderr_matches("templates/0037_001.txt"));
@@ -126,7 +126,7 @@ static Return test0037_2(void)
 {
 	INITTEST;
 
-	call(del(STDERR));
+	call(m_del(STDERR));
 
 	ASSERT(FAILURE == delete_path("delete_path_missing.txt"));
 	ASSERT(SUCCESS == assert_stderr_matches("templates/0037_002.txt"));
@@ -143,14 +143,14 @@ static Return test0037_3(void)
 {
 	INITTEST;
 
-	create(char,path);
+	m_create(char,path,MEMORY_STRING);
 
-	call(del(STDERR));
+	call(m_del(STDERR));
 
 	ASSERT(FAILURE == construct_path(NULL,path));
 	ASSERT(SUCCESS == assert_stderr_matches("templates/0037_003.txt"));
 
-	call(del(path));
+	call(m_del(path));
 
 	RETURN_STATUS;
 }
@@ -164,7 +164,7 @@ static Return test0037_4(void)
 {
 	INITTEST;
 
-	create(char,path);
+	m_create(char,path,MEMORY_STRING);
 	char *saved_tmpdir = NULL;
 	Return saved_tmpdir_status = FAILURE;
 	Return restore_tmpdir_status = SUCCESS;
@@ -183,7 +183,7 @@ static Return test0037_4(void)
 		ASSERT(unsetenv("TMPDIR") == 0);
 	}
 
-	call(del(STDERR));
+	call(m_del(STDERR));
 
 	if(SUCCESS == status)
 	{
@@ -202,7 +202,7 @@ static Return test0037_4(void)
 	}
 
 	free(saved_tmpdir);
-	call(del(path));
+	call(m_del(path));
 
 	RETURN_STATUS;
 }
@@ -215,18 +215,15 @@ static Return test0037_4(void)
 static Return test0037_5(void)
 {
 	INITTEST;
+	SKIP_ON_EVIL_EMPIRE_OS;
 
 	size_t remove_calls = 0;
 	const char *file_path = "0037_read_only_dir/file.txt";
 
-#ifdef EVIL_EMPIRE_OS
-	deliver(DONOTHING);
-#endif
-
 	ASSERT(SUCCESS == create_directory("0037_read_only_dir"));
 	ASSERT(SUCCESS == truncate_file_to_zero_size(file_path));
 
-	call(del(STDERR));
+	call(m_del(STDERR));
 	mocks_remove_reset();
 	mocks_remove_set_target_suffix(file_path);
 	mocks_remove_set_errno(EACCES);
@@ -251,18 +248,15 @@ static Return test0037_5(void)
 static Return test0037_6(void)
 {
 	INITTEST;
+	SKIP_ON_EVIL_EMPIRE_OS;
 
 	size_t remove_calls = 0;
 	const char *file_path = "0037_locked_tree/a/b/file.txt";
 
-#ifdef EVIL_EMPIRE_OS
-	deliver(DONOTHING);
-#endif
-
 	ASSERT(SUCCESS == create_directory("0037_locked_tree/a/b"));
 	ASSERT(SUCCESS == truncate_file_to_zero_size(file_path));
 
-	call(del(STDERR));
+	call(m_del(STDERR));
 	mocks_remove_reset();
 	mocks_remove_set_target_suffix(file_path);
 	mocks_remove_set_errno(EACCES);
@@ -290,8 +284,8 @@ static Return test0037_7(void)
 
 	char *saved_tmpdir = NULL;
 	bool file_exists = false;
-	create(char,symlinked_tmpdir);
-	create(char,expected_directory_path);
+	m_create(char,symlinked_tmpdir,MEMORY_STRING);
+	m_create(char,expected_directory_path,MEMORY_STRING);
 	Return restore_status = SUCCESS;
 	Return cleanup_status = SUCCESS;
 
@@ -300,7 +294,7 @@ static Return test0037_7(void)
 	ASSERT(SUCCESS == create_directory("0037_symlink_parent/real_tmp_root"));
 	ASSERT(SUCCESS == create_symlink("real_tmp_root","0037_symlink_parent/link_tmp_root"));
 	ASSERT(SUCCESS == construct_path("0037_symlink_parent/link_tmp_root",symlinked_tmpdir));
-	ASSERT(SUCCESS == set_environment_variable("TMPDIR",getcstring(symlinked_tmpdir)));
+	ASSERT(SUCCESS == set_environment_variable("TMPDIR",m_text(symlinked_tmpdir)));
 	ASSERT(SUCCESS == create_directory("a/b"));
 
 	restore_status = restore_tmpdir_value(saved_tmpdir);
@@ -308,7 +302,7 @@ static Return test0037_7(void)
 	if(SUCCESS == restore_status)
 	{
 		if(SUCCESS == construct_path("0037_symlink_parent/real_tmp_root/a/b",expected_directory_path)
-		        && SUCCESS == check_file_exists(&file_exists,getcstring(expected_directory_path)))
+		        && SUCCESS == check_file_exists(&file_exists,m_text(expected_directory_path)))
 		{
 			if(file_exists != true)
 			{
@@ -331,8 +325,8 @@ static Return test0037_7(void)
 	}
 
 	free(saved_tmpdir);
-	call(del(expected_directory_path));
-	call(del(symlinked_tmpdir));
+	call(m_del(expected_directory_path));
+	call(m_del(symlinked_tmpdir));
 
 	RETURN_STATUS;
 }
@@ -347,7 +341,7 @@ static Return test0037_8(void)
 	INITTEST;
 
 	char *saved_tmpdir = NULL;
-	create(char,symlinked_tmpdir);
+	m_create(char,symlinked_tmpdir,MEMORY_STRING);
 	Return restore_status = SUCCESS;
 	Return cleanup_status = SUCCESS;
 
@@ -356,7 +350,7 @@ static Return test0037_8(void)
 	ASSERT(SUCCESS == truncate_file_to_zero_size("0037_symlink_bad_parent/file_target"));
 	ASSERT(SUCCESS == create_symlink("file_target","0037_symlink_bad_parent/link_file_root"));
 	ASSERT(SUCCESS == construct_path("0037_symlink_bad_parent/link_file_root",symlinked_tmpdir));
-	ASSERT(SUCCESS == set_environment_variable("TMPDIR",getcstring(symlinked_tmpdir)));
+	ASSERT(SUCCESS == set_environment_variable("TMPDIR",m_text(symlinked_tmpdir)));
 	ASSERT(FAILURE == create_directory("a/b"));
 
 	restore_status = restore_tmpdir_value(saved_tmpdir);
@@ -373,7 +367,7 @@ static Return test0037_8(void)
 	}
 
 	free(saved_tmpdir);
-	call(del(symlinked_tmpdir));
+	call(m_del(symlinked_tmpdir));
 
 	RETURN_STATUS;
 }
@@ -382,14 +376,14 @@ Return test0037(void)
 {
 	INITTEST;
 
-	TEST(test0037_1,"delete_path() reports NULL input path…");
-	TEST(test0037_2,"delete_path() reports missing path lstat() failure…");
-	TEST(test0037_3,"construct_path() reports NULL input arguments…");
-	TEST(test0037_4,"construct_path() reports missing TMPDIR…");
-	TEST(test0037_5,"delete_path() reports remove() failure for a regular file…");
-	TEST(test0037_6,"delete_path() reports nftw() callback remove() failure…");
-	TEST(test0037_7,"create_directory() accepts a symlinked directory in TMPDIR…");
-	TEST(test0037_8,"create_directory() rejects a symlinked file in TMPDIR…");
+	TEST(test0037_1,"delete_path() reports NULL input path");
+	TEST(test0037_2,"delete_path() reports missing path lstat() failure");
+	TEST(test0037_3,"construct_path() reports NULL input arguments");
+	TEST(test0037_4,"construct_path() reports missing TMPDIR");
+	TEST(test0037_5,"delete_path() reports remove() failure for a regular file");
+	TEST(test0037_6,"delete_path() reports nftw() callback remove() failure");
+	TEST(test0037_7,"create_directory() accepts a symlinked directory in TMPDIR");
+	TEST(test0037_8,"create_directory() rejects a symlinked file in TMPDIR");
 
 	RETURN_STATUS;
 }
