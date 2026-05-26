@@ -92,7 +92,7 @@ Return test_libmem_all(void)
 	TEST(test_libmem_0049,"m_finalize_string truncates through m_data() and adds the terminator itself…");
 	TEST(test_libmem_0050,"m_finalize_string accepts an already terminated direct write…");
 	TEST(test_libmem_0051,"mem_finalize_string can add a terminator and rejects data descriptors…");
-	TEST(test_libmem_0070,"mem_formatted_string renders printf-style output for char and wchar_t string descriptors…");
+	TEST(test_libmem_0070,"m_formatted_string dispatches typed printf-style output for char and wchar_t string descriptors…");
 
 	HEADER("Descriptor Boundaries");
 	TEST(test_libmem_0063,"libmem string concat and raw byte concat operations…");

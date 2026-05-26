@@ -218,9 +218,14 @@ Return mem_concat_strings(
 	memory *,
 	const memory *);
 
-Return mem_formatted_string(
+Return mem_formatted_string_char(
 	memory *,
-	const void *const,
+	const char *,
+	...);
+
+Return mem_formatted_string_wchar(
+	memory *,
+	const wchar_t *,
 	...);
 
 Return mem_string_length(
@@ -396,7 +401,12 @@ const void *mem_raw_data_readonly(const memory *);
 	mem_concat_strings((destination),(source))
 
 #define m_formatted_string(destination,source_string,...) \
-	mem_formatted_string((destination),(source_string) __VA_OPT__(,) __VA_ARGS__)
+	_Generic(((source_string) + 0), \
+	char *: mem_formatted_string_char, \
+	const char *: mem_formatted_string_char, \
+	wchar_t *: mem_formatted_string_wchar, \
+	const wchar_t *: mem_formatted_string_wchar \
+	)((destination),(source_string) __VA_OPT__(,) __VA_ARGS__)
 
 #define m_copy_fixed_string(destination,source_size_bytes,source) \
 	mem_copy_fixed_string((destination),(source_size_bytes),(source))

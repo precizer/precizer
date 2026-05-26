@@ -181,7 +181,7 @@ guarantee exactly one trailing `'\0'`
 | `m_copy_literal(dest, "literal")` | Replace contents from a real narrow string literal without spelling out `sizeof(...)` manually |
 | `m_copy_string(dest, n, buf)` | Replace contents with the visible part of a bounded string buffer |
 | `m_finalize_string(dest, len[, flags])` | Finalize a direct string-buffer write and cache the visible length |
-| `m_formatted_string(dest, fmt, ...)` | Replace contents with a printf-style formatted result for a `char` or `wchar_t` string descriptor when `fmt` is non-NULL; NULL `fmt` is a no-op |
+| `m_formatted_string(dest, fmt, ...)` | Replace contents with a printf-style formatted result; a `char` format targets a `char` descriptor and a `wchar_t` format targets a `wchar_t` descriptor; NULL `fmt` is rejected |
 | `m_concat_fixed_string(dest, source_size, source)` | Append a fixed-size string source that already ends with one terminator |
 | `m_concat_literal(dest, "literal")` | Append a real narrow string literal without spelling out `sizeof(...)` manually |
 | `m_concat_strings(dest, src)` | Append one string descriptor to another using cached string lengths |
@@ -709,18 +709,19 @@ int main(void)
 ### Formatted Strings
 
 `m_formatted_string(destination,format,...)` builds a new string inside an
-existing string descriptor using printf-style formatting. When `format` is
-non-NULL, the previous visible contents of `destination` are fully replaced by
-the formatted result, and `string_length` is updated automatically.
+existing string descriptor using printf-style formatting. The previous visible
+contents of `destination` are fully replaced by the formatted result, and
+`string_length` is updated automatically.
 
-The descriptor element width chooses the formatting backend.
-`single_element_size == sizeof(char)` uses `vsnprintf`.
-`single_element_size == sizeof(wchar_t)` uses `vswprintf`. Other element widths
-are not supported by this function yet, even though the broader string model can
-already work with arbitrary-width string descriptors.
+`m_formatted_string(...)` is a typed macro. A format string of type `char *` or
+`const char *` selects `mem_formatted_string_char(...)`, which uses
+`vsnprintf`; a format string of type `wchar_t *` or `const wchar_t *` selects
+`mem_formatted_string_wchar(...)`, which uses `vswprintf`. The selected
+function verifies that `destination` has the matching element width, so a
+narrow format cannot be written into a `wchar_t` descriptor.
 
-`format == NULL` is treated as empty flow input, is not an error, and leaves
-`destination` unchanged. The format string must not point inside
+The format string is required: a typed NULL format pointer is rejected with
+`FAILURE` instead of being treated as a successful empty operation. The format string must not point inside
 `destination`'s own buffer: this operation replaces the descriptor contents and
 is not currently a self-aliasing operation. Future `m_formatted_string(...)`
 behavior should be brought in line with the library-wide self-aliasing rule.
@@ -833,7 +834,7 @@ if((TRIUMPH & m_finalize_string(title,sizeof(draft) - 1U)) == 0) { return 1; }
 - `m_concat_string(destination,buffer)`: Appends source elements up to the first zero-valued terminator element, but only when destination is already in string mode. There is no separate size argument. `buffer == NULL` means an empty append.
 - `m_copy_string(destination,n,buffer)`: Replaces destination with the visible part of a bounded source string buffer and keeps exactly one trailing terminator.
 - `m_finalize_string(destination,len[, flags])`: Finalizes a direct write into an already-string descriptor by caching `len` in `string_length`. The default form dispatches with `WRITE_TERMINATOR_IF_MISSING`, which writes a zero terminator at `len` only when the current element there is not already zero. `WRITE_TERMINATOR_ALWAYS` asks the helper to overwrite that slot with a zero terminator unconditionally. Either way the descriptor is always zero-terminated on return.
-- `m_formatted_string(destination,format,...)`: Replaces a string descriptor with a printf-style formatted result when `format` is non-NULL. It supports `char` through `vsnprintf` and `wchar_t` through `vswprintf`. A NULL `format` is a successful no-op.
+- `m_formatted_string(destination,format,...)`: Replaces a string descriptor with a printf-style formatted result. A `char` format selects `mem_formatted_string_char(...)` through `vsnprintf`, while a `wchar_t` format selects `mem_formatted_string_wchar(...)` through `vswprintf`. A typed NULL `format` is rejected.
 - `m_concat_fixed_string(destination,source_size,source)`: Appends a fixed-size terminated string source and enforces a trailing `'\0'`.
 - `m_concat_literal(destination,"literal")`: Convenience macro for real narrow string literals; expands to `mem_concat_fixed_string(destination,sizeof("literal"),"literal")`.
 - `m_concat_strings(destination,source)`: Appends one string descriptor to another using cached string lengths and keeps exactly one trailing `'\0'`.
@@ -912,7 +913,7 @@ if(CRITICAL & m_resize(points,4,RELEASE_UNUSED)) {
 
 ### String Constraints and Guarantees
 
-- Most string helper operations require byte-sized descriptors (`single_element_size == sizeof(char)`). `m_formatted_string(...)` supports `sizeof(char)` and `sizeof(wchar_t)`. `m_string_length(...)`, `m_to_string(...)`, and `m_concat_string(...)` also support arbitrary non-zero element sizes by treating an all-zero element as the terminator.
+- Most string helper operations require byte-sized descriptors (`single_element_size == sizeof(char)`). `m_formatted_string(...)` accepts a `char` format only for a `char` descriptor and a `wchar_t` format only for a `wchar_t` descriptor. `m_string_length(...)`, `m_to_string(...)`, and `m_concat_string(...)` also support arbitrary non-zero element sizes by treating an all-zero element as the terminator.
 - The library is being migrated to a unified string model in which strings processed by the library and stored in `memory` descriptors may use arbitrary non-zero element widths. Common representations include `char`, `signed char`, `unsigned char`, `char8_t`, `wchar_t`, `char16_t`, `char32_t`, and fixed-width UTF/code-unit storage such as `uint8_t`, `uint16_t`, and `uint32_t`.
 - The target guarantee of that model is safe string handling for arbitrary element widths. String algorithms are defined in whole elements rather than individual bytes, and a terminator is represented by an element whose bytes are all zero.
 - Safe self-aliasing is part of that required guarantee. A source that points into `destination` is considered a valid scenario that string and buffer helpers are expected to handle correctly. Any remaining mismatch with that rule is treated as incomplete migration work and should be fixed.
@@ -930,7 +931,7 @@ if(CRITICAL & m_resize(points,4,RELEASE_UNUSED)) {
 - `m_concat_string(destination,buffer)` requires `destination->is_string == true` and `destination->single_element_size > 0`. `buffer == NULL` means an empty append.
 - If `buffer` points inside the `destination` allocation, `m_concat_string(destination,n,buffer)` only requires a valid start: the address must be aligned to the element size and must not go past the visible string. Starting exactly on the terminator becomes a no-op, and `n` is softly clamped to the remaining visible suffix. `m_concat_string(destination,buffer)` still requires the internal source to start within the current logical string.
 - `m_copy_string(destination,n,buffer)` treats `buffer == NULL` as an empty replacement and still enforces normal string termination on the destination.
-- `m_formatted_string(destination,format,...)` requires `destination->is_string == true` and `destination->single_element_size` equal to `sizeof(char)` or `sizeof(wchar_t)`. `format == NULL` is treated as empty flow input, is not an error, and leaves `destination` unchanged. The format string must not point inside the `destination` allocation.
+- `m_formatted_string(destination,format,...)` requires `destination->is_string == true`, a non-NULL typed format pointer, and matching element types: a `char` format requires `destination->single_element_size == sizeof(char)`, while a `wchar_t` format requires `destination->single_element_size == sizeof(wchar_t)`. The format string must not point inside the `destination` allocation.
 - String helpers report failures on overflow-safe size calculations before allocation/copy.
 - `m_copy_fixed_string(destination,0,NULL)` and `m_concat_fixed_string(destination,0,NULL)` treat a `NULL` source as an empty fixed-size string operation.
 - `m_text(...)` and `m_string(...)` never return `NULL`; both may return shared empty fallback storage.
