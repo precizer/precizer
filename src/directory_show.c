@@ -19,7 +19,7 @@ void directory_show(
 	const bool       ignore,
 	const bool       include)
 {
-	const char *runtime_relative_path = getcstring(relative_path);
+	const char *runtime_relative_path = m_text(relative_path);
 
 	if(ignore == true)
 	{
