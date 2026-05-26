@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the mem_copy_data divisibility negative case
  *
@@ -44,7 +43,7 @@ Return test_libmem_0060(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0060[] =
-		"\\A.*Source byte count 3 is not divisible by destination element size 2.*\\Z";
+	        "\\A.*Source byte count 3 is not divisible by destination element size 2.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

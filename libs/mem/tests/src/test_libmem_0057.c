@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the negative resize case for a data descriptor with stale string metadata
  *
@@ -39,7 +38,7 @@ Return test_libmem_0057(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0057[] =
-		"\\A.*Data descriptor has non-zero string_length during resize.*\\Z";
+	        "\\A.*Data descriptor has non-zero string_length during resize.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

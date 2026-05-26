@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the negative resize case for a data descriptor whose reserve is too small
  *
@@ -39,7 +38,7 @@ Return test_libmem_0058(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0058[] =
-		"\\A.*Descriptor reserve is smaller than logical payload during resize.*\\Z";
+	        "\\A.*Descriptor reserve is smaller than logical payload during resize.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

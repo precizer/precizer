@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture mem_finalize_string rejection for data-mode descriptors
  *
@@ -31,7 +30,7 @@ Return test_libmem_0051(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0051[] =
-		"\\A.*String write finalization requires a string descriptor.*\\Z";
+	        "\\A.*String write finalization requires a string descriptor.*\\Z";
 
 	m_create(char,title,MEMORY_STRING);
 

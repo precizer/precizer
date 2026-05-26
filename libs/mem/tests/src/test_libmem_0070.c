@@ -134,9 +134,9 @@ Return test_libmem_0070(void)
 		/* This source is intentionally longer than 128 wchar_t elements so the
 		   initial speculative render fails and the doubling loop runs */
 		const wchar_t *long_source =
-			L"Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-			L"Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-			L"Ut enim ad minim veniam, quis nostrud exercitation ullamco.";
+		        L"Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+		        L"Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+		        L"Ut enim ad minim veniam, quis nostrud exercitation ullamco.";
 
 		ASSERT(wcslen(long_source) > 128U);
 		ASSERT(SUCCESS == m_formatted_string(wide_long,L"%ls",long_source));
@@ -150,10 +150,10 @@ Return test_libmem_0070(void)
 	   Source line numbers and errno wording are intentionally flexible because
 	   they are build- and platform-dependent */
 	static const char expected_stderr_pattern_libmem_0070[] =
-		"\\A"
-		"ERROR: src/mem_formatted_string\\.c:mem_formatted_string:\\d+ Memory management; Destination must be a string descriptor Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_formatted_string\\.c:mem_formatted_string:\\d+ Memory management; Formatted mode supports only char and wchar_t element widths Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"\\Z";
+	        "\\A"
+	        "ERROR: src/mem_formatted_string\\.c:mem_formatted_string:\\d+ Memory management; Destination must be a string descriptor Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_formatted_string\\.c:mem_formatted_string:\\d+ Memory management; Formatted mode supports only char and wchar_t element widths Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

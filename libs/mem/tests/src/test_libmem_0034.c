@@ -22,16 +22,16 @@ Return test_libmem_0034(void)
 	ASSERT(SUCCESS == m_concat_string(string_buffer,sizeof(bounded_suffix),NULL));
 	ASSERT(0 == strcmp(m_text(string_buffer),"base"));
 	ASSERT(SUCCESS == mem_core_string(
-			SOURCE_FIXED_STRING | TRANSFER_APPEND,
+		SOURCE_FIXED_STRING | TRANSFER_APPEND,
 		string_buffer,
 		sizeof(literal_suffix),
-			NULL));
+		NULL));
 	ASSERT(0 == strcmp(m_text(string_buffer),"base"));
 	ASSERT(SUCCESS == mem_core_string(
-			SOURCE_UNBOUNDED_STRING | TRANSFER_APPEND,
+		SOURCE_UNBOUNDED_STRING | TRANSFER_APPEND,
 		string_buffer,
 		sizeof(literal_suffix),
-			NULL));
+		NULL));
 	ASSERT(0 == strcmp(m_text(string_buffer),"base"));
 	call(m_del(string_buffer));
 

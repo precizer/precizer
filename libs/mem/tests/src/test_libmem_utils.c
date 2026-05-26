@@ -34,17 +34,17 @@ Return fill_points(memory *points)
 	point *typed_points = m_data(point,points);
 
 	if(typed_points == NULL)
-  {
-    provide(FAILURE);
-  }
+	{
+		provide(FAILURE);
+	}
 
-  for(size_t point_index = 0; point_index < points->length; ++point_index)
-  {
-    typed_points[point_index] = (point){
-      (int)(point_index * 2 + 1),
-      (int)(point_index * 2 + 2)
-    };
-  }
+	for(size_t point_index = 0; point_index < points->length; ++point_index)
+	{
+		typed_points[point_index] = (point){
+			(int)(point_index * 2 + 1),
+			(int)(point_index * 2 + 2)
+		};
+	}
 
 	provide(status);
 }

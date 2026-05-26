@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture cross-type data-wrapper divisibility failures
  *
@@ -141,11 +140,11 @@ Return test_libmem_0062(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0062[] =
-		"\\A.*Source byte count 3 is not divisible by destination element size 2"
-		".*Source byte count 4 is not divisible by destination element size 3"
-		".*Source byte count 6 is not divisible by destination element size 4"
-		".*Source byte count 4 is not divisible by destination element size 8"
-		".*Source byte count 8 is not divisible by destination element size 3.*\\Z";
+	        "\\A.*Source byte count 3 is not divisible by destination element size 2"
+	        ".*Source byte count 4 is not divisible by destination element size 3"
+	        ".*Source byte count 6 is not divisible by destination element size 4"
+	        ".*Source byte count 4 is not divisible by destination element size 8"
+	        ".*Source byte count 8 is not divisible by destination element size 3.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

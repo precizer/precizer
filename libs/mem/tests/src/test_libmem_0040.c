@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture negative already-string cases for data-to-string conversion
  *
@@ -54,9 +53,9 @@ Return test_libmem_0040(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0040[] =
-		"\\A.*Descriptor element size is zero during string conversion"
-		".*String descriptor has non-zero string_length with zero length during string conversion"
-		".*String descriptor cache is inconsistent during string conversion.*\\Z";
+	        "\\A.*Descriptor element size is zero during string conversion"
+	        ".*String descriptor has non-zero string_length with zero length during string conversion"
+	        ".*String descriptor cache is inconsistent during string conversion.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

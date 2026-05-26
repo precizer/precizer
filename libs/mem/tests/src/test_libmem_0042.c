@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture string truncate rejection for descriptors whose reserve does not cover the payload
  *
@@ -54,7 +53,7 @@ Return test_libmem_0042(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0042[] =
-		"\\A.*Descriptor reserve is smaller than logical payload during string truncate.*\\Z";
+	        "\\A.*Descriptor reserve is smaller than logical payload during string truncate.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

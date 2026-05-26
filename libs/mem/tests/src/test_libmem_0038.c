@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the negative resize case for a descriptor with a broken string cache
  *
@@ -41,9 +40,9 @@ Return test_libmem_0038(void)
 	   rejection. The source line number and errno wording are intentionally
 	   flexible because they are build- and platform-dependent */
 	static const char expected_stderr_pattern_libmem_0038[] =
-		"\\A"
-		"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; String descriptor cache is inconsistent during resize Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"\\Z";
+	        "\\A"
+	        "ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; String descriptor cache is inconsistent during resize Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0038,capture_libmem_inconsistent_resize_string_cache));
 

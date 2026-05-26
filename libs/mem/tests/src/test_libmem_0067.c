@@ -75,11 +75,11 @@ Return test_libmem_0067(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0067[] =
-		"\\A.*Soft string view requires a non-NULL descriptor"
-		".*Soft string view requires a non-zero element size"
-		".*Soft string view requires a string descriptor"
-		".*Descriptor has non-zero length with NULL data pointer"
-		".*Soft string view requires string_length to stay below length.*\\Z";
+	        "\\A.*Soft string view requires a non-NULL descriptor"
+	        ".*Soft string view requires a non-zero element size"
+	        ".*Soft string view requires a string descriptor"
+	        ".*Descriptor has non-zero length with NULL data pointer"
+	        ".*Soft string view requires string_length to stay below length.*\\Z";
 
 	static const char alpha_text[] = "alpha";
 	static const uint32_t wide_text[] = {

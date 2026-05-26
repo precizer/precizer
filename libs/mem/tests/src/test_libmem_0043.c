@@ -29,10 +29,10 @@ Return test_libmem_0043(void)
 	{
 		aliased_suffix += 2;
 		ASSERT(SUCCESS == mem_core_string(
-				SOURCE_BOUNDED_STRING | TRANSFER_REPLACE,
+			SOURCE_BOUNDED_STRING | TRANSFER_REPLACE,
 			code_units,
 			code_units->length * sizeof(uint32_t),
-				aliased_suffix));
+			aliased_suffix));
 	}
 
 	ASSERT(code_units->length == 3);
@@ -59,10 +59,10 @@ Return test_libmem_0043(void)
 	{
 		aliased_suffix += code_units_length;
 		ASSERT(SUCCESS == mem_core_string(
-				SOURCE_UNBOUNDED_STRING | TRANSFER_REPLACE,
+			SOURCE_UNBOUNDED_STRING | TRANSFER_REPLACE,
 			code_units,
 			0,
-				aliased_suffix));
+			aliased_suffix));
 	}
 
 	ASSERT(code_units->length == 1);

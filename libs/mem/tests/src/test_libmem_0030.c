@@ -33,13 +33,13 @@ Return test_libmem_0030(void)
 		SOURCE_FIXED_STRING | TRANSFER_APPEND,
 		string_buffer,
 		0,
-			literal_suffix));
+		literal_suffix));
 	ASSERT(0 == strcmp(m_text(string_buffer),"base"));
 	ASSERT(SUCCESS == mem_core_string(
 		SOURCE_BOUNDED_STRING | TRANSFER_APPEND,
 		string_buffer,
 		sizeof(bounded_suffix),
-			bounded_suffix));
+		bounded_suffix));
 	ASSERT(SUCCESS == mem_concat_unbounded_string(
 		string_buffer,
 		unbounded_suffix));
@@ -47,7 +47,7 @@ Return test_libmem_0030(void)
 		SOURCE_FIXED_STRING | TRANSFER_APPEND,
 		string_buffer,
 		sizeof(literal_suffix),
-			literal_suffix));
+		literal_suffix));
 	ASSERT(string_buffer->is_string == true);
 	ASSERT(string_buffer->string_length == sizeof(expected) - 1);
 	ASSERT(0 == strcmp(m_text(string_buffer),expected));

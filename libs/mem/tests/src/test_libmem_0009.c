@@ -284,7 +284,7 @@ static Return test_libmem_0009_06(void)
 	ASSERT(telemetry.peak_consecutive_noop_resizes >= previous_peak_consecutive_noops);
 	ASSERT(telemetry.peak_consecutive_noop_resizes >= expected_current_consecutive_noops);
 	ASSERT(telemetry.peak_consecutive_noop_resizes == previous_peak_consecutive_noops
-	       || telemetry.peak_consecutive_noop_resizes == expected_current_consecutive_noops);
+		|| telemetry.peak_consecutive_noop_resizes == expected_current_consecutive_noops);
 
 	RETURN_STATUS;
 }
@@ -909,9 +909,9 @@ static Return test_libmem_0009_17(void)
 	   flexible with \\d+ and the errno description flexible with [^\\n]+,
 	   but pins the message body byte for byte */
 	static const char expected_stderr_pattern_libmem_0009_17[] =
-		"\\A"
-		"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 4096 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"\\Z";
+	        "\\A"
+	        "ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 4096 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0009_17,capture_libmem_0009_17_malloc_fail));
 
@@ -983,9 +983,9 @@ static Return test_libmem_0009_18(void)
 	   mem_resize prints the same report() format as the malloc path, only
 	   the slab-rounded byte count differs */
 	static const char expected_stderr_pattern_libmem_0009_18[] =
-		"\\A"
-		"ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 8192 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"\\Z";
+	        "\\A"
+	        "ERROR: src/mem_resize\\.c:mem_resize:\\d+ Memory management; Memory allocation failed for 8192 bytes Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0009_18,capture_libmem_0009_18_realloc_fail));
 

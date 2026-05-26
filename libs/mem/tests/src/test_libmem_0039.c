@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the negative data-to-string conversion case for stale data-mode string metadata
  *
@@ -39,7 +38,7 @@ Return test_libmem_0039(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0039[] =
-		"\\A.*Data descriptor has non-zero string_length during string conversion.*\\Z";
+	        "\\A.*Data descriptor has non-zero string_length during string conversion.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

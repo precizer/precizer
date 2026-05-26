@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the bounded-string negative case with a non-divisible source size
  *
@@ -36,7 +35,7 @@ Return test_libmem_0028(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0028[] =
-		"\\A.*not divisible by element size.*\\Z";
+	        "\\A.*not divisible by element size.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

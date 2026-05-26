@@ -61,7 +61,7 @@ static Return capture_inline_string_descriptor_table(void)
 	}
 
 	static const char epsilon_bounded_source[] =
-		{'e','p','s','i','l','o','n','\0','x'};
+	{'e','p','s','i','l','o','n','\0','x'};
 
 	ASSERT(SUCCESS == m_string_array_append(table,char,"delta"));
 	ASSERT(SUCCESS == m_string_array_append(
@@ -151,17 +151,17 @@ Return test_libmem_0069(void)
 	INITTEST;
 
 	static const char expected_stdout_pattern[] =
-		"\\A"
-		"delta!\n"
-		"epsilon!\n"
-		"zeta!\n"
-		"\\Z";
+	        "\\A"
+	        "delta!\n"
+	        "epsilon!\n"
+	        "zeta!\n"
+	        "\\Z";
 
 	static const char expected_negative_stderr_pattern[] =
-		"\\A.*Descriptor is NULL"
-		".*Item index 0 is out of range for descriptor length 0"
-		".*Item index 2 is out of range for descriptor length 2"
-		".*Expected.*\\Z";
+	        "\\A.*Descriptor is NULL"
+	        ".*Item index 0 is out of range for descriptor length 0"
+	        ".*Item index 2 is out of range for descriptor length 2"
+	        ".*Expected.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		expected_stdout_pattern,

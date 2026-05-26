@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture noisy mode mismatch negative cases
  *
@@ -141,24 +140,24 @@ Return test_libmem_0065(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern[] =
-		"\\A"
-		"ERROR: src/mem_core_data\\.c:mem_core_data:\\d+ Memory management; Destination must be in data mode, but it is a string Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_core_data\\.c:mem_core_data:\\d+ Memory management; Destination must be in data mode, but it is a string Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_core_buffer\\.c:mem_core_buffer:\\d+ Memory management; Destination must be in data mode, but it is a string Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_core_string\\.c:mem_core_string:\\d+ Memory management; Destination must be a string descriptor Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source and destination must both be strings or both be data Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Source and destination must both be strings Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source and destination must both be strings or both be data Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Source and destination must both be strings Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Descriptor has non-zero length with NULL data pointer Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Descriptor has non-zero length with NULL data pointer Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Destination element size is zero \\(uninitialized\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source element size is zero \\(uninitialized\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Element size mismatch \\([0-9]+ vs [0-9]+\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Element size mismatch \\([0-9]+ vs [0-9]+\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Destination string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Source string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\\Z";
+	        "\\A"
+	        "ERROR: src/mem_core_data\\.c:mem_core_data:\\d+ Memory management; Destination must be in data mode, but it is a string Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_core_data\\.c:mem_core_data:\\d+ Memory management; Destination must be in data mode, but it is a string Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_core_buffer\\.c:mem_core_buffer:\\d+ Memory management; Destination must be in data mode, but it is a string Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_core_string\\.c:mem_core_string:\\d+ Memory management; Destination must be a string descriptor Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source and destination must both be strings or both be data Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Source and destination must both be strings Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source and destination must both be strings or both be data Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Source and destination must both be strings Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Descriptor has non-zero length with NULL data pointer Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Descriptor has non-zero length with NULL data pointer Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Destination element size is zero \\(uninitialized\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source element size is zero \\(uninitialized\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Element size mismatch \\([0-9]+ vs [0-9]+\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Element size mismatch \\([0-9]+ vs [0-9]+\\) Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Destination string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Source string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

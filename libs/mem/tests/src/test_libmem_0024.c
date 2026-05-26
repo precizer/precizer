@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the zero-sized string-length negative case
  *
@@ -37,7 +36,7 @@ Return test_libmem_0024(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0024[] =
-		"\\A.*Descriptor element size is zero \\(uninitialized\\).*\\Z";
+	        "\\A.*Descriptor element size is zero \\(uninitialized\\).*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

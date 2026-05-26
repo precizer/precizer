@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture negative cases for descriptors with non-zero length and NULL data
  *
@@ -51,7 +50,7 @@ Return test_libmem_0029(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0029[] =
-		"\\A.*Descriptor has non-zero length with NULL data pointer.*\\Z";
+	        "\\A.*Descriptor has non-zero length with NULL data pointer.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

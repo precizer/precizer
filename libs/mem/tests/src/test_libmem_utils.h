@@ -26,16 +26,18 @@ typedef struct mem_core_data_rgb {
 } mem_core_data_rgb;
 
 typedef struct mem_core_data_case {
-	size_t              destination_index;
-	size_t              source_index;
-	Return              (*operation)(memory *,const memory *);
+	size_t destination_index;
+	size_t source_index;
+	Return (*operation)(
+		memory *,
+		const memory *);
 	const unsigned char *destination_seed_bytes;
-	size_t              destination_seed_size;
+	size_t destination_seed_size;
 	const unsigned char *source_bytes;
-	size_t              source_size_bytes;
+	size_t source_size_bytes;
 	const unsigned char *expected_bytes;
-	size_t              expected_size;
-	size_t              expected_length;
+	size_t expected_size;
+	size_t expected_length;
 } mem_core_data_case;
 
 enum
@@ -63,5 +65,4 @@ Return expect_raw_descriptor_bytes(
 Return run_mem_core_data_case(
 	memory * const           descriptors[],
 	const mem_core_data_case *case_data);
-
 #endif

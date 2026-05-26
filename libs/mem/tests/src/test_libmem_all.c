@@ -32,7 +32,7 @@ Return test_libmem_all(void)
 	HEADER("Descriptor Collections");
 	TEST(test_libmem_0069,"Descriptor-backed arrays support item access and foreach traversal…");
 
- 	HEADER("Low-Level Helpers");
+	HEADER("Low-Level Helpers");
 	TEST(test_libmem_0052,"m_copy_buffer handles strings, structs, and clearing…");
 	TEST(test_libmem_0053,"reset clears manually managed raw pointers…");
 	TEST(test_libmem_0054,"guarded arithmetic helpers catch invalid size math…");

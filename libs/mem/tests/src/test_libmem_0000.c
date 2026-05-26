@@ -34,9 +34,9 @@ static Return test_libmem_0000_01(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0000_01[] =
-		"\\A"
-		"ERROR: src/mem_core_string\\.c:mem_core_string:\\d+ Memory management; Destination must be a string descriptor Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
-		"\\Z";
+	        "\\A"
+	        "ERROR: src/mem_core_string\\.c:mem_core_string:\\d+ Memory management; Destination must be a string descriptor Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
@@ -543,9 +543,9 @@ static Return test_libmem_0000_14(void)
 	INITTEST;
 
 	static const char expected_stdout_pattern_libmem_0000_14[] =
-		"\\A"
-		"Hello world!\n"
-		"\\Z";
+	        "\\A"
+	        "Hello world!\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		expected_stdout_pattern_libmem_0000_14,
@@ -627,11 +627,11 @@ static Return test_libmem_0000_15(void)
 	INITTEST;
 
 	static const char expected_stdout_pattern_libmem_0000_15[] =
-		"\\A"
-		"Hello world!\n"
-		"scratch text: \"\"\n"
-		"scratch length: 0\n"
-		"\\Z";
+	        "\\A"
+	        "Hello world!\n"
+	        "scratch text: \"\"\n"
+	        "scratch length: 0\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		expected_stdout_pattern_libmem_0000_15,
@@ -848,11 +848,11 @@ static Return test_libmem_0000_20(void)
 	INITTEST;
 
 	static const char expected_stdout_pattern_libmem_0000_20[] =
-		"\\A"
-		"alpha\n"
-		"beta\n"
-		"gamma\n"
-		"\\Z";
+	        "\\A"
+	        "alpha\n"
+	        "beta\n"
+	        "gamma\n"
+	        "\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		expected_stdout_pattern_libmem_0000_20,

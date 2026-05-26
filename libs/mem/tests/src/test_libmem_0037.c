@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the mem_string_truncate negative case for data-mode descriptors
  *
@@ -29,7 +28,7 @@ Return test_libmem_0037(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0037[] =
-		"\\A.*string truncate requires a string descriptor.*\\Z";
+	        "\\A.*string truncate requires a string descriptor.*\\Z";
 
 	m_create(uint32_t,code_units);
 

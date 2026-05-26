@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture the internal bounded-source negative case past the visible terminator
  *
@@ -48,7 +47,7 @@ Return test_libmem_0035(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0035[] =
-		"\\A.*Source start exceeds destination visible string bounds.*\\Z";
+	        "\\A.*Source start exceeds destination visible string bounds.*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

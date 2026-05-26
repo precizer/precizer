@@ -1,6 +1,5 @@
 #include "test_libmem_utils.h"
 
-
 /**
  * @brief Capture negative cases for data helpers on inconsistent descriptors
  *
@@ -79,11 +78,11 @@ Return test_libmem_0055(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0055[] =
-		"\\A.*Descriptor is NULL"
-		".*Descriptor has non-zero length with NULL data pointer"
-		".*Descriptor element size is zero \\(uninitialized\\)"
-		".*Descriptor has reserved bytes with NULL data pointer"
-		".*Descriptor reserve is smaller than logical payload.*\\Z";
+	        "\\A.*Descriptor is NULL"
+	        ".*Descriptor has non-zero length with NULL data pointer"
+	        ".*Descriptor element size is zero \\(uninitialized\\)"
+	        ".*Descriptor has reserved bytes with NULL data pointer"
+	        ".*Descriptor reserve is smaller than logical payload.*\\Z";
 
 	m_create(int,graceful_descriptor);
 
