@@ -10,7 +10,7 @@
  *         SUCCESS if file was read successfully
  *         FAILURE if file couldn't be opened or read, memory allocation failed, or file is empty
 
- * @note Caller is responsible for owning and later freeing the provided memory descriptor with del()
+ * @note Caller is responsible for owning and later freeing the provided memory descriptor with m_del()
  * @note Function resizes the buffer to the file size plus a terminating null byte
  */
 Return get_file_content(
@@ -101,19 +101,19 @@ Return get_file_content(
 	// Allocate memory
 	if(SUCCESS == status)
 	{
-		status = resize(pattern,file_size + 1);
+		status = m_resize(pattern,file_size + 1);
 	}
 
 	// Read file content
 	if(SUCCESS == status)
 	{
-		char *pattern_data = data(char,pattern);
+		char *pattern_data_rewritable = m_data(char,pattern);
 
-		if(pattern_data == NULL)
+		if(pattern_data_rewritable == NULL)
 		{
 			status = FAILURE;
 		} else {
-			read_size = fread(pattern_data,1,file_size,file);
+			read_size = fread(pattern_data_rewritable,1,file_size,file);
 
 			if(read_size != file_size)
 			{
@@ -121,7 +121,7 @@ Return get_file_content(
 					file_size,read_size,filename);
 				status = FAILURE;
 			} else {
-				pattern_data[file_size] = '\0';
+				status = m_finalize_string(pattern,file_size,WRITE_TERMINATOR_ALWAYS);
 			}
 		}
 	}
@@ -134,7 +134,7 @@ Return get_file_content(
 
 	if(status != SUCCESS)
 	{
-		del(pattern);
+		m_del(pattern);
 	}
 
 	deliver(status);
