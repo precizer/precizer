@@ -13,7 +13,7 @@
  * @param start Beginning of the range (inclusive)
  * @param end End of the range (inclusive)
  */
-Return random_number_generator(
+Return random_number_generator_urandom(
 	uint64_t *random_number,
 	uint64_t start,
 	uint64_t end)
@@ -53,9 +53,17 @@ Return random_number_generator(
 			echo(STDERR,"Invalid range: end < start\n");
 			status = FAILURE;
 		}
+	}
 
-		uint64_t range = (end-start)+1;
-		*random_number = (random_value%range)+start;
+	if(SUCCESS == status)
+	{
+		if(0U == start && UINT64_MAX == end)
+		{
+			*random_number = random_value;
+		} else {
+			uint64_t range = (end-start)+1;
+			*random_number = (random_value%range)+start;
+		}
 	}
 
 	#if 0
