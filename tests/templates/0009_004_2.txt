@@ -1,6 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/ignore_include_cases/chaotic_filenames
+TESTING:argument:roots=tests/fixtures/ignore_include_cases/chaotic_filenames
 TESTING:argument:database=database0009_4\.db
 TESTING:argument:db_file_name=database0009_4\.db
 TESTING:argument:ignore=\^\(\?:skip_\|tmp_\)\.\+

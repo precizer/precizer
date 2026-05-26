@@ -1,6 +1,5 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=write_protected_database1\.db, database2\.db
 TESTING:argument:db_file_paths=write_protected_database1\.db, database2\.db
 TESTING:argument:db_file_names=write_protected_database1\.db, database2\.db
 TESTING:argument:compare=yes

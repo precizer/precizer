@@ -1,6 +1,5 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=0015_database_v4_reference\.db, 0015_database_v0_corrupt\.db
 TESTING:argument:db_file_paths=0015_database_v4_reference\.db, 0015_database_v0_corrupt\.db
 TESTING:argument:db_file_names=0015_database_v4_reference\.db, 0015_database_v0_corrupt\.db
 TESTING:argument:update=yes

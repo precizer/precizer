@@ -1,6 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:start-device-only=yes
@@ -61,7 +61,7 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:check-level=QUICK
@@ -123,7 +123,6 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=database1\.db, database2\.db
 TESTING:argument:db_file_paths=database1\.db, database2\.db
 TESTING:argument:db_file_names=database1\.db, database2\.db
 TESTING:argument:compare=yes
@@ -177,7 +176,7 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:watch-timestamps=yes
@@ -239,7 +238,6 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=database1\.db, database2\.db
 TESTING:argument:db_file_paths=database1\.db, database2\.db
 TESTING:argument:db_file_names=database1\.db, database2\.db
 TESTING:argument:compare=yes

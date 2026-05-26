@@ -1,6 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=dry_run_regular\.db
 TESTING:argument:db_file_name=dry_run_regular\.db
 TESTING:argument:dry-run=yes
