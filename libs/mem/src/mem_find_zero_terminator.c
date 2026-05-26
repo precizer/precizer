@@ -36,12 +36,10 @@ Return mem_find_zero_terminator(
 	{
 		report("Memory management; Invalid arguments for zero terminator search");
 		status = FAILURE;
-	} else if(memory_structure->single_element_size == 0)
-	{
+	} else if(memory_structure->single_element_size == 0){
 		report("Memory management; Descriptor element size is zero (uninitialized)");
 		status = FAILURE;
-	} else if(memory_structure->length > 0 && memory_structure->data == NULL)
-	{
+	} else if(memory_structure->length > 0 && memory_structure->data == NULL){
 		report("Memory management; Descriptor has non-zero length with NULL data pointer");
 		status = FAILURE;
 	}
@@ -68,16 +66,16 @@ Return mem_find_zero_terminator(
 				memory_structure->single_element_size);
 		}
 
-			if(TRIUMPH & status)
-			{
-				run(mem_string_measure_length(
-					memory_structure_data_view,
-					descriptor_size_in_bytes,
-					memory_structure->single_element_size,
-					true,
-					terminator_position_out,
-					NULL));
-			}
+		if(TRIUMPH & status)
+		{
+			run(mem_string_measure_length(
+				memory_structure_data_view,
+				descriptor_size_in_bytes,
+				memory_structure->single_element_size,
+				true,
+				terminator_position_out,
+				NULL));
+		}
 	}
 
 	provide(status);

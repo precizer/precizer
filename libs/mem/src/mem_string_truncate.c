@@ -61,8 +61,8 @@ Return mem_string_truncate(
 	}
 
 	if((TRIUMPH & status) &&
-		destination->actually_allocated_bytes > 0 &&
-		destination->data == NULL)
+	        destination->actually_allocated_bytes > 0 &&
+	        destination->data == NULL)
 	{
 		report("Memory management; Descriptor has reserved bytes with NULL data pointer during string truncate");
 		provide(FAILURE);
@@ -80,8 +80,8 @@ Return mem_string_truncate(
 	}
 
 	if((TRIUMPH & status) &&
-		destination->length > 0 &&
-		destination->actually_allocated_bytes < current_payload_bytes)
+	        destination->length > 0 &&
+	        destination->actually_allocated_bytes < current_payload_bytes)
 	{
 		report("Memory management; Descriptor reserve is smaller than logical payload during string truncate");
 		provide(FAILURE);

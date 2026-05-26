@@ -432,10 +432,10 @@ const void *mem_raw_data_readonly(const memory *);
 	for(element_type *element = m_data(element_type,(descriptor_array)); \
 		element != NULL; \
 		element = NULL) \
-		for(size_t element ## _mem_core_array_index = 0, \
-			element ## _mem_core_array_count = (descriptor_array)->length; \
-			element ## _mem_core_array_index < element ## _mem_core_array_count; \
-			++element, ++element ## _mem_core_array_index)
+	for(size_t element ## _mem_core_array_index = 0, \
+		element ## _mem_core_array_count = (descriptor_array)->length; \
+		element ## _mem_core_array_index < element ## _mem_core_array_count; \
+		++element,++element ## _mem_core_array_index)
 
 /**
  * @def m_string_array_foreach(descriptor_array,string_descriptor)

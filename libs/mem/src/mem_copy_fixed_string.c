@@ -38,8 +38,8 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_copy_fixed_string(
-	memory *destination,
-	const size_t source_size_bytes,
+	memory            *destination,
+	const size_t      source_size_bytes,
 	const void *const source)
 {
 	return(mem_core_string(

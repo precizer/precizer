@@ -41,8 +41,8 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_concat_bounded_string(
-	memory     *destination,
-	const size_t source_limit_bytes,
+	memory            *destination,
+	const size_t      source_limit_bytes,
 	const void *const source_string)
 {
 	/* This function was reviewed line by line by a human and is not AI-generated

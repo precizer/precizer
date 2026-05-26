@@ -13,8 +13,8 @@
  */
 Return mem_guarded_byte_size(
 	const memory *memory_structure,
-	size_t element_count,
-	size_t *size_in_bytes)
+	size_t       element_count,
+	size_t       *size_in_bytes)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */

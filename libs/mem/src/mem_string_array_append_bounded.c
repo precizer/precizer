@@ -24,9 +24,9 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_string_array_append_bounded(
-	memory *descriptor_array,
-	size_t single_element_size,
-	const size_t source_limit_bytes,
+	memory            *descriptor_array,
+	size_t            single_element_size,
+	const size_t      source_limit_bytes,
 	const void *const source_text)
 {
 	return(mem_string_array_core(

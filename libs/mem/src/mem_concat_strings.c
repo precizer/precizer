@@ -68,24 +68,24 @@ Return mem_concat_strings(
 	}
 
 	if((destination->length == 0 && destination->string_length != 0) ||
-		(destination->length > 0 && destination->string_length >= destination->length))
+	        (destination->length > 0 && destination->string_length >= destination->length))
 	{
 		report("Memory management; Destination string descriptor is inconsistent");
 		provide(FAILURE);
 	}
 
 	if((source->length == 0 && source->string_length != 0) ||
-		(source->length > 0 && source->string_length >= source->length))
+	        (source->length > 0 && source->string_length >= source->length))
 	{
 		report("Memory management; Source string descriptor is inconsistent");
 		provide(FAILURE);
 	}
 
-		/* In descriptor-to-descriptor string mode, the source contract already
-		   guarantees a cached visible length and a terminator right after it.
-		   Route the append through fixed-string semantics so only the visible prefix plus
-		   one terminator participates in the concatenation, while any reserved tail
-		   beyond that cached terminator remains ignored */
+	/* In descriptor-to-descriptor string mode, the source contract already
+	   guarantees a cached visible length and a terminator right after it.
+	   Route the append through fixed-string semantics so only the visible prefix plus
+	   one terminator participates in the concatenation, while any reserved tail
+	   beyond that cached terminator remains ignored */
 	run(mem_guarded_add(source->string_length,1,&source_total_elements));
 	run(mem_guarded_byte_size(source,source_total_elements,&source_size_bytes));
 	run(mem_core_string(

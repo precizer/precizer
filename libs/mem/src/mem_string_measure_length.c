@@ -30,11 +30,11 @@
  */
 Return mem_string_measure_length(
 	const void *const source_string,
-	const size_t source_limit_bytes,
-	const size_t single_element_size,
-	const bool source_limit_is_active,
-	size_t *const length_out,
-	bool *const terminator_found_out)
+	const size_t      source_limit_bytes,
+	const size_t      single_element_size,
+	const bool        source_limit_is_active,
+	size_t *const     length_out,
+	bool *const       terminator_found_out)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */

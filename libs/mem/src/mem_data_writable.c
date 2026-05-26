@@ -59,7 +59,7 @@ inline __attribute__((always_inline)) void *mem_data_writable(
 	}
 
 	if(memory_structure->length > 0 &&
-		memory_structure->actually_allocated_bytes < current_payload_bytes)
+	        memory_structure->actually_allocated_bytes < current_payload_bytes)
 	{
 		report("Memory management; Descriptor reserve is smaller than logical payload");
 		return(NULL);

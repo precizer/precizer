@@ -14,8 +14,8 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_concat_buffer(
-	memory *destination,
-	const size_t source_buffer_size_bytes,
+	memory            *destination,
+	const size_t      source_buffer_size_bytes,
 	const void *const source_buffer)
 {
 	return(mem_core_buffer(

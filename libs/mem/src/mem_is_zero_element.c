@@ -14,7 +14,7 @@
  */
 bool mem_is_zero_element(
 	const unsigned char *const element_view,
-	const size_t single_element_size)
+	const size_t               single_element_size)
 {
 	if(element_view == NULL || single_element_size == 0)
 	{

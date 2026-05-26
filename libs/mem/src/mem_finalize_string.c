@@ -35,8 +35,8 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_finalize_string(
-	memory *destination,
-	size_t written_length,
+	memory                *destination,
+	size_t                written_length,
 	TERMINATOR_WRITE_MODE flags)
 {
 	/* Status returned by this function through provide()
@@ -70,8 +70,8 @@ Return mem_finalize_string(
 	}
 
 	if((TRIUMPH & status) &&
-		destination->actually_allocated_bytes > 0 &&
-		destination->data == NULL)
+	        destination->actually_allocated_bytes > 0 &&
+	        destination->data == NULL)
 	{
 		report("Memory management; Descriptor has reserved bytes with NULL data pointer during string write finalization");
 		status = FAILURE;
@@ -84,8 +84,8 @@ Return mem_finalize_string(
 	}
 
 	if((TRIUMPH & status) &&
-		flags != WRITE_TERMINATOR_IF_MISSING &&
-		flags != WRITE_TERMINATOR_ALWAYS)
+	        flags != WRITE_TERMINATOR_IF_MISSING &&
+	        flags != WRITE_TERMINATOR_ALWAYS)
 	{
 		report("Memory management; Unknown string write finalization flag");
 		status = FAILURE;
@@ -97,7 +97,7 @@ Return mem_finalize_string(
 		{
 			report("Memory management; String write finalization requires reserved space for the visible string and terminator");
 			status = FAILURE;
-		} else if(written_length >= destination->length) {
+		} else if(written_length >= destination->length){
 			report("Memory management; String write finalization visible length exceeds descriptor capacity");
 			status = FAILURE;
 		}

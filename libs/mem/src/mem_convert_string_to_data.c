@@ -52,8 +52,8 @@ Return mem_convert_string_to_data(memory *memory_structure)
 		}
 
 		if((TRIUMPH & status) &&
-		   memory_structure->length > 0 &&
-		   memory_structure->string_length == memory_structure->length - 1)
+		        memory_structure->length > 0 &&
+		        memory_structure->string_length == memory_structure->length - 1)
 		{
 			const unsigned char *memory_structure_data_view = (const unsigned char *)memory_structure->data;
 

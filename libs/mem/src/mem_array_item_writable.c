@@ -16,8 +16,8 @@
  */
 void *mem_array_item_writable(
 	memory *memory_structure,
-	size_t  index,
-	size_t  expected_single_element_size)
+	size_t index,
+	size_t expected_single_element_size)
 {
 	if(memory_structure == NULL)
 	{

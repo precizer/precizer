@@ -14,7 +14,7 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_write_zero_terminator(
-	memory *memory_structure,
+	memory       *memory_structure,
 	const size_t terminator_index)
 {
 	/* Status returned by this function through provide()

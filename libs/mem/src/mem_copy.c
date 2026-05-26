@@ -85,17 +85,17 @@ Return mem_copy(
 		}
 
 		if((source->length == 0 && source->string_length != 0) ||
-			(source->length > 0 && source->string_length >= source->length))
+		        (source->length > 0 && source->string_length >= source->length))
 		{
 			report("Memory management; Source string descriptor is inconsistent");
 			provide(FAILURE);
 		}
 
-			/* In descriptor-to-descriptor string mode, the source contract already
-			   guarantees a cached visible length and a terminator right after it.
-			   Route the copy through fixed-string semantics so the transfer uses exactly
-			   that visible prefix plus one terminator element, instead of rescanning
-			   the whole logical span in search of zero */
+		/* In descriptor-to-descriptor string mode, the source contract already
+		   guarantees a cached visible length and a terminator right after it.
+		   Route the copy through fixed-string semantics so the transfer uses exactly
+		   that visible prefix plus one terminator element, instead of rescanning
+		   the whole logical span in search of zero */
 		run(mem_guarded_add(source->string_length,1,&source_total_elements));
 		run(mem_guarded_byte_size(source,source_total_elements,&source_size_bytes));
 		run(mem_copy_fixed_string(destination,source_size_bytes,source->data));

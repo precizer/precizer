@@ -85,9 +85,9 @@
  */
 Return mem_core_string(
 	const MEM_CORE_MODE mode,
-	memory *destination,
-	const size_t source_range_bytes,
-	const void *const source_string)
+	memory              *destination,
+	const size_t        source_range_bytes,
+	const void *const   source_string)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -156,8 +156,8 @@ Return mem_core_string(
 	   string elements. Partial elements would make later scan and copy steps ambiguous.
 	   Unbounded mode intentionally ignores source_range_bytes, so the check is skipped */
 	if(source_is_effectively_empty == false &&
-		(source_mode & SOURCE_UNBOUNDED_STRING) == 0 &&
-		(source_range_bytes % destination->single_element_size) != 0)
+	        (source_mode & SOURCE_UNBOUNDED_STRING) == 0 &&
+	        (source_range_bytes % destination->single_element_size) != 0)
 	{
 		report("Memory management; Size %zu is not divisible by element size %zu",
 			source_range_bytes,
@@ -177,8 +177,8 @@ Return mem_core_string(
 
 	/* Check whether the source aliases the current destination allocation */
 	if((TRIUMPH & status) &&
-		source_string != NULL &&
-		source_is_effectively_empty == false)
+	        source_string != NULL &&
+	        source_is_effectively_empty == false)
 	{
 		/* Current logical destination size in bytes, used to validate self-aliased sources */
 		size_t destination_bytes = 0;
@@ -194,7 +194,7 @@ Return mem_core_string(
 			const uintptr_t source_begin = (uintptr_t)source_string;
 
 			if(destination->actually_allocated_bytes > UINTPTR_MAX - destination_begin ||
-				destination_bytes > UINTPTR_MAX - destination_begin)
+			        destination_bytes > UINTPTR_MAX - destination_begin)
 			{
 				report("Memory management; Destination address range overflows");
 				provide(FAILURE);
@@ -241,7 +241,7 @@ Return mem_core_string(
 						}
 
 						remaining_visible_elements = destination->string_length - source_offset_elements;
-					} else if(source_mode & SOURCE_BOUNDED_STRING) {
+					} else if(source_mode & SOURCE_BOUNDED_STRING){
 						if(source_begin > logical_end)
 						{
 							report("Memory management; Bounded source start exceeds destination logical bounds");
@@ -280,8 +280,8 @@ Return mem_core_string(
 	}
 
 	if((TRIUMPH & status) &&
-		source_string != NULL &&
-		source_is_effectively_empty == false)
+	        source_string != NULL &&
+	        source_is_effectively_empty == false)
 	{
 		/* Read-only byte view of the source string used by the scanners */
 		const unsigned char *const source_data_view = (const unsigned char *)source_string;
@@ -310,7 +310,7 @@ Return mem_core_string(
 					&source_length,
 					NULL));
 			}
-		} else if(source_mode & SOURCE_UNBOUNDED_STRING) {
+		} else if(source_mode & SOURCE_UNBOUNDED_STRING){
 			if(source_is_inside_string_destination == true)
 			{
 				/* Reuse the known internal string length instead of rescanning destination-owned text */
@@ -335,8 +335,8 @@ Return mem_core_string(
 	}
 
 	if((TRIUMPH & status) &&
-		(transfer_mode & TRANSFER_APPEND) != 0 &&
-		source_length == 0)
+	        (transfer_mode & TRANSFER_APPEND) != 0 &&
+	        source_length == 0)
 	{
 		provide(status);
 	}
@@ -354,7 +354,7 @@ Return mem_core_string(
 
 	if(TRIUMPH & status && (transfer_mode & TRANSFER_APPEND) != 0)
 	{
-			run(mem_guarded_add(destination_length,source_length,&visible_string_length));
+		run(mem_guarded_add(destination_length,source_length,&visible_string_length));
 
 		if(CRITICAL & status)
 		{
@@ -389,8 +389,8 @@ Return mem_core_string(
 	run(mem_guarded_byte_size(destination,source_length,&source_bytes));
 
 	if((TRIUMPH & status) &&
-		(transfer_mode & TRANSFER_REPLACE) != 0 &&
-		source_is_inside_string_destination == true)
+	        (transfer_mode & TRANSFER_REPLACE) != 0 &&
+	        source_is_inside_string_destination == true)
 	{
 		/* Writable byte view of the existing destination buffer before the shrink finalizes */
 		unsigned char *destination_data_rewritable = (unsigned char *)destination->data;

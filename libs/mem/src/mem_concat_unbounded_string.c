@@ -38,7 +38,7 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_concat_unbounded_string(
-	memory *destination,
+	memory            *destination,
 	const void *const source_string)
 {
 	return(mem_core_string(

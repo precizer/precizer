@@ -127,8 +127,8 @@ static int round_up_to_block_size(
  * @warning Any physical reallocation may move @ref memory::data, so refresh cached raw pointers after a successful resize
  */
 Return mem_resize(
-	memory *memory_structure,
-	size_t new_count,
+	memory      *memory_structure,
+	size_t      new_count,
 	RESIZEMODES behavior_flags)
 {
 	/* Status returned by this function through provide()
@@ -141,11 +141,11 @@ Return mem_resize(
 	/* Remembers whether shrink operations may return spare slab-rounded reserve to the allocator */
 	const bool allow_shrink = (behavior_flags & RELEASE_UNUSED) != 0;
 
-  if(memory_structure == NULL || memory_structure->single_element_size == 0)
-  {
-    report("Memory management; Descriptor is NULL or not initialized");
-    provide(FAILURE);
-  }
+	if(memory_structure == NULL || memory_structure->single_element_size == 0)
+	{
+		report("Memory management; Descriptor is NULL or not initialized");
+		provide(FAILURE);
+	}
 
 	if(memory_structure->length > 0 && memory_structure->data == NULL)
 	{
@@ -162,62 +162,62 @@ Return mem_resize(
 	/* Byte size of the payload described by the descriptor before this resize starts */
 	size_t previous_payload_bytes = 0;
 
-  /* Total bytes the allocator says are currently reserved for the descriptor */
+	/* Total bytes the allocator says are currently reserved for the descriptor */
 	size_t previous_allocated_bytes = 0;
 
-  /* Element count visible to callers before any resize logic runs */
+	/* Element count visible to callers before any resize logic runs */
 	size_t previous_length = 0;
 
-  /* Old block-overhead bytes beyond the logical payload, used only for telemetry accounting */
+	/* Old block-overhead bytes beyond the logical payload, used only for telemetry accounting */
 	size_t previous_block_overhead = 0;
 
-  /* Byte size needed for the requested new_count payload */
+	/* Byte size needed for the requested new_count payload */
 	size_t total_size_in_bytes = 0;
 
-  /* Cached visible string length captured before resize mutates any metadata */
+	/* Cached visible string length captured before resize mutates any metadata */
 	size_t previous_string_length = 0;
 
-  previous_length = memory_structure->length;
-  previous_allocated_bytes = memory_structure->actually_allocated_bytes;
-  previous_string_length = memory_structure->string_length;
+	previous_length = memory_structure->length;
+	previous_allocated_bytes = memory_structure->actually_allocated_bytes;
+	previous_string_length = memory_structure->string_length;
 
-  run(mem_guarded_byte_size(memory_structure,previous_length,&previous_payload_bytes));
+	run(mem_guarded_byte_size(memory_structure,previous_length,&previous_payload_bytes));
 
-  if(previous_allocated_bytes > previous_payload_bytes)
-  {
-    /* Direct subtraction is safe because the if-guard above proves no underflow */
-    previous_block_overhead = previous_allocated_bytes - previous_payload_bytes;
-  }
+	if(previous_allocated_bytes > previous_payload_bytes)
+	{
+		/* Direct subtraction is safe because the if-guard above proves no underflow */
+		previous_block_overhead = previous_allocated_bytes - previous_payload_bytes;
+	}
 
 	if((TRIUMPH & status) &&
-		previous_allocated_bytes > 0 &&
-		memory_structure->data == NULL)
+	        previous_allocated_bytes > 0 &&
+	        memory_structure->data == NULL)
 	{
 		report("Memory management; Descriptor has reserved bytes with NULL data pointer during resize");
 		provide(FAILURE);
 	}
 
 	if((TRIUMPH & status) &&
-		previous_length > 0 &&
-		previous_allocated_bytes < previous_payload_bytes)
+	        previous_length > 0 &&
+	        previous_allocated_bytes < previous_payload_bytes)
 	{
 		report("Memory management; Descriptor reserve is smaller than logical payload during resize");
 		provide(FAILURE);
 	}
 
 	if((TRIUMPH & status) &&
-		memory_structure->is_string == true &&
-		previous_length > 0 &&
-		previous_string_length >= previous_length)
+	        memory_structure->is_string == true &&
+	        previous_length > 0 &&
+	        previous_string_length >= previous_length)
 	{
 		report("Memory management; String descriptor cache is inconsistent during resize");
 		provide(FAILURE);
 	}
 
 	if((TRIUMPH & status) &&
-		memory_structure->is_string == true &&
-		previous_length == 0 &&
-		previous_string_length != 0)
+	        memory_structure->is_string == true &&
+	        previous_length == 0 &&
+	        previous_string_length != 0)
 	{
 		report("Memory management; String descriptor has non-zero string_length with zero length during resize");
 		provide(FAILURE);
@@ -266,8 +266,8 @@ Return mem_resize(
 				memory_structure->string_length = 0;
 
 				if(memory_structure->is_string == true &&
-					memory_structure->data != NULL &&
-					memory_structure->actually_allocated_bytes >= memory_structure->single_element_size)
+				        memory_structure->data != NULL &&
+				        memory_structure->actually_allocated_bytes >= memory_structure->single_element_size)
 				{
 					run(mem_write_zero_terminator(memory_structure,0));
 				}
@@ -276,18 +276,18 @@ Return mem_resize(
 			/* Requested payload rounded up to the slab-style block size */
 			size_t slab_size_in_bytes = 0;
 
-      if(round_up_to_block_size(total_size_in_bytes,&slab_size_in_bytes) != 0)
-      {
-        report("Memory management; Slab-size rounding overflow for %zu bytes",total_size_in_bytes);
-        provide(FAILURE);
-      } else {
+			if(round_up_to_block_size(total_size_in_bytes,&slab_size_in_bytes) != 0)
+			{
+				report("Memory management; Slab-size rounding overflow for %zu bytes",total_size_in_bytes);
+				provide(FAILURE);
+			} else {
 				/* True when the descriptor has no allocation yet and needs its first buffer */
 				const bool needs_fresh_allocation = memory_structure->data == NULL;
 				/* True when the slab-rounded target size is larger than the currently reserved block */
 				const bool needs_growth = slab_size_in_bytes > memory_structure->actually_allocated_bytes;
 				/* True when RELEASE_UNUSED allows an immediate shrink of the reserved block */
 				const bool should_shrink = (allow_shrink == true) &&
-					slab_size_in_bytes < memory_structure->actually_allocated_bytes;
+				        slab_size_in_bytes < memory_structure->actually_allocated_bytes;
 
 				if((needs_fresh_allocation == true) || (needs_growth == true) || (should_shrink == true))
 				{
@@ -429,7 +429,7 @@ Return mem_resize(
 						memory_structure->length = new_count;
 						memory_structure->string_length = resulting_string_length;
 						run(mem_string_truncate(memory_structure,resulting_string_length));
-					} else if(TRIUMPH & status) {
+					} else if(TRIUMPH & status){
 						memory_structure->length = new_count;
 						memory_structure->string_length = 0;
 					}

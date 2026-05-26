@@ -16,11 +16,11 @@ bool mem_is_zero_element(
 
 Return mem_string_measure_length(
 	const void *source_string,
-	size_t source_limit_bytes,
-	size_t single_element_size,
-	bool source_limit_is_active,
-	size_t *length_out,
-	bool *terminator_found_out);
+	size_t     source_limit_bytes,
+	size_t     single_element_size,
+	bool       source_limit_is_active,
+	size_t     *length_out,
+	bool       *terminator_found_out);
 
 Return mem_write_zero_terminator(
 	memory *memory_structure,
@@ -35,13 +35,13 @@ Return mem_write_zero_terminator(
  */
 typedef enum MEM_CORE_MODE : unsigned int
 {
-  SOURCE_BOUNDED_STRING = 1u << 0,
-  SOURCE_UNBOUNDED_STRING = 1u << 1,
-  SOURCE_FIXED_STRING = 1u << 2,
-  TRANSFER_APPEND = 1u << 3,
-  TRANSFER_REPLACE = 1u << 4,
-  SOURCE_MASK = SOURCE_BOUNDED_STRING | SOURCE_UNBOUNDED_STRING | SOURCE_FIXED_STRING, // Hex: 0x07. Dec: 7. Bin: 00111
-  TRANSFER_MASK = TRANSFER_APPEND | TRANSFER_REPLACE // Hex: 0x18. Dec: 24. Bin: 11000
+	SOURCE_BOUNDED_STRING = 1u << 0,
+	SOURCE_UNBOUNDED_STRING = 1u << 1,
+	SOURCE_FIXED_STRING = 1u << 2,
+	TRANSFER_APPEND = 1u << 3,
+	TRANSFER_REPLACE = 1u << 4,
+	SOURCE_MASK = SOURCE_BOUNDED_STRING | SOURCE_UNBOUNDED_STRING | SOURCE_FIXED_STRING, // Hex: 0x07. Dec: 7. Bin: 00111
+	TRANSFER_MASK = TRANSFER_APPEND | TRANSFER_REPLACE // Hex: 0x18. Dec: 24. Bin: 11000
 } MEM_CORE_MODE;
 
 /**
@@ -53,9 +53,9 @@ typedef enum MEM_CORE_MODE : unsigned int
  */
 Return mem_core_string(
 	const MEM_CORE_MODE mode,
-	memory *destination,
-	const size_t source_range_bytes,
-	const void *const source_string);
+	memory              *destination,
+	const size_t        source_range_bytes,
+	const void *const   source_string);
 
 /**
  * @brief Shared internal append core for arrays of inline string descriptors
@@ -67,10 +67,10 @@ Return mem_core_string(
  * actual copy to the matching public string-copy backend
  */
 Return mem_string_array_core(
-	MEM_CORE_MODE source_mode,
-	memory *descriptor_array,
-	size_t single_element_size,
-	size_t source_limit_bytes,
+	MEM_CORE_MODE     source_mode,
+	memory            *descriptor_array,
+	size_t            single_element_size,
+	size_t            source_limit_bytes,
 	const void *const source_string);
 
 /**
@@ -84,8 +84,8 @@ Return mem_string_array_core(
  */
 Return mem_core_data(
 	const MEM_CORE_MODE mode,
-	memory       *destination,
-	const memory *source);
+	memory              *destination,
+	const memory        *source);
 
 /**
  * @brief Shared internal raw-buffer core for append and copy entry points
@@ -95,9 +95,9 @@ Return mem_core_data(
  */
 Return mem_core_buffer(
 	const MEM_CORE_MODE mode,
-	memory *destination,
-	const size_t source_buffer_size_bytes,
-	const void *const source_buffer);
+	memory              *destination,
+	const size_t        source_buffer_size_bytes,
+	const void *const   source_buffer);
 
 /**
  * @brief Internal bounded terminator search helper
@@ -109,5 +109,4 @@ Return mem_core_buffer(
 Return mem_find_zero_terminator(
 	const memory *memory_structure,
 	size_t       *terminator_position_out);
-
 #endif /* MEM_INTERNAL_H */

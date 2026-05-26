@@ -23,10 +23,10 @@
  * @return `SUCCESS` on success; `FAILURE` otherwise
  */
 Return mem_string_array_core(
-	MEM_CORE_MODE source_mode,
-	memory *descriptor_array,
-	size_t single_element_size,
-	size_t source_limit_bytes,
+	MEM_CORE_MODE     source_mode,
+	memory            *descriptor_array,
+	size_t            single_element_size,
+	size_t            source_limit_bytes,
 	const void *const source_string)
 {
 	/* Status returned by this function through provide()
@@ -73,7 +73,7 @@ Return mem_string_array_core(
 	}
 
 	if(source_mode != SOURCE_UNBOUNDED_STRING &&
-		source_mode != SOURCE_BOUNDED_STRING)
+	        source_mode != SOURCE_BOUNDED_STRING)
 	{
 		report("Memory management; String-array append received unsupported source mode");
 		provide(FAILURE);

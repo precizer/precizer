@@ -35,9 +35,9 @@
  */
 Return mem_core_buffer(
 	const MEM_CORE_MODE mode,
-	memory *destination,
-	const size_t source_buffer_size_bytes,
-	const void *const source_buffer)
+	memory              *destination,
+	const size_t        source_buffer_size_bytes,
+	const void *const   source_buffer)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -156,7 +156,7 @@ Return mem_core_buffer(
 
 		/* Both allocation and logical ends are derived from destination_begin and must not wrap */
 		if(destination->actually_allocated_bytes > UINTPTR_MAX - destination_begin ||
-			destination_bytes > UINTPTR_MAX - destination_begin)
+		        destination_bytes > UINTPTR_MAX - destination_begin)
 		{
 			report("Memory management; Destination address range overflows");
 			provide(FAILURE);

@@ -37,8 +37,8 @@
  */
 Return mem_core_data(
 	const MEM_CORE_MODE mode,
-	memory       *destination,
-	const memory *source)
+	memory              *destination,
+	const memory        *source)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */

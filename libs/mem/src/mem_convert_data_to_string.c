@@ -57,7 +57,7 @@ Return mem_convert_data_to_string(memory *memory_structure)
 	}
 
 	if(memory_structure->is_string == false &&
-		memory_structure->string_length != 0)
+	        memory_structure->string_length != 0)
 	{
 		report("Memory management; Data descriptor has non-zero string_length during string conversion");
 		provide(FAILURE);
@@ -70,16 +70,16 @@ Return mem_convert_data_to_string(memory *memory_structure)
 	}
 
 	if(memory_structure->is_string == true &&
-		memory_structure->length == 0 &&
-		memory_structure->string_length != 0)
+	        memory_structure->length == 0 &&
+	        memory_structure->string_length != 0)
 	{
 		report("Memory management; String descriptor has non-zero string_length with zero length during string conversion");
 		provide(FAILURE);
 	}
 
 	if(memory_structure->is_string == true &&
-		memory_structure->length > 0 &&
-		memory_structure->string_length >= memory_structure->length)
+	        memory_structure->length > 0 &&
+	        memory_structure->string_length >= memory_structure->length)
 	{
 		report("Memory management; String descriptor cache is inconsistent during string conversion");
 		provide(FAILURE);
