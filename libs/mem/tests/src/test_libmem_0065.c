@@ -132,7 +132,7 @@ static Return capture_libmem_mode_mismatch_negative_cases(void)
 }
 
 /**
- * @brief Check mode mismatch negative cases are rejected quietly
+ * @brief Check mode mismatch and malformed-descriptor failures are diagnosed
  *
  * @return Return describing success or failure
  */

@@ -13,10 +13,10 @@ Return test_libmem_all(void)
 
 	HEADER("Allocation Lifecycle");
 	SUTE(test_libmem_0000,"Numbered README examples for public libmem usage...");
-	TEST(test_libmem_0001,"Copy an array of size 0…");
+	TEST(test_libmem_0001,"Copying an empty data descriptor clears a populated destination…");
 
 	HEADER("Repeated Type Coverage");
-	SUTE(test_libmem_0005,"Random-size descriptor round-trip across element types (SHA-512)…");
+	SUTE(test_libmem_0005,"Random-size bounded-buffer imports across element types (SHA-512)…");
 
 	HEADER("Telemetry");
 	SUTE(test_libmem_0009,"Telemetry counters track libmem state transitions…");
@@ -90,7 +90,7 @@ Return test_libmem_all(void)
 	TEST(test_libmem_0047,"m_copy_fixed_string and m_copy_literal replace contents through fixed-string mode…");
 	TEST(test_libmem_0048,"m_finalize_string truncates through m_data() using the cached length…");
 	TEST(test_libmem_0049,"m_finalize_string truncates through m_data() and adds the terminator itself…");
-	TEST(test_libmem_0050,"m_finalize_string finalizes the README direct-write example…");
+	TEST(test_libmem_0050,"m_finalize_string accepts an already terminated direct write…");
 	TEST(test_libmem_0051,"mem_finalize_string can add a terminator and rejects data descriptors…");
 	TEST(test_libmem_0070,"mem_formatted_string renders printf-style output for char and wchar_t string descriptors…");
 
@@ -99,7 +99,7 @@ Return test_libmem_all(void)
 	TEST(test_libmem_0064,"libmem bounded raw and bounded string concat helpers…");
 
 	HEADER("Mode Rejections");
-	TEST(test_libmem_0065,"libmem mode mismatches are rejected silently…");
+	TEST(test_libmem_0065,"libmem mode mismatches and malformed descriptors are diagnosed…");
 
 	HEADER("Aliasing");
 	TEST(test_libmem_0066,"libmem aliasing scenarios for string and data descriptors…");

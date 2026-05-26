@@ -5,10 +5,11 @@
  *
  * @return Return describing success or failure
  */
-	static const char xyz_text[] = "xyz";
 Return test_libmem_0020(void)
 {
 	INITTEST;
+
+	static const char xyz_text[] = "xyz";
 
 	m_create(char,buffer);
 

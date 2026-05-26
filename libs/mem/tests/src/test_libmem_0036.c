@@ -5,11 +5,11 @@
  *
  * @return Return describing success or failure
  */
-	static const char alphabet_text[] = "alphabet";
 Return test_libmem_0036(void)
 {
 	INITTEST;
 
+	static const char alphabet_text[] = "alphabet";
 	m_create(char,string_buffer);
 	ASSERT(SUCCESS == m_to_string(string_buffer));
 

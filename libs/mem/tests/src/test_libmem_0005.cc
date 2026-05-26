@@ -37,21 +37,12 @@ for(int i = 0; i < CYCLES; i++)
 		print_hash(hash_1);
 		#endif
 
-		/* Resize the descriptor to the same element count and copy the source
-		   bytes into libmem-managed storage */
-		ASSERT(SUCCESS == m_resize(test,array_length));
+		/* Import the bounded byte range into libmem-managed typed storage */
+		ASSERT(SUCCESS == m_copy_buffer(test,array_size,source_bytes));
 		ASSERT(test->length == array_length);
 
-		TYPE *test_data = m_data(TYPE,test);
-		ASSERT(test_data != NULL);
-
-		IF(test_data != NULL)
-		{
-			memcpy(test_data,source_bytes,array_size);
-		}
-
 		/* Hash the descriptor view and compare it with the original bytes. The
-		   two digests must match exactly after the round trip */
+		   two digests must match exactly after the bounded-buffer import */
 		SHA512_Context descriptor_context;
 		ASSERT(CRYPT_OK == sha512_init(&descriptor_context));
 

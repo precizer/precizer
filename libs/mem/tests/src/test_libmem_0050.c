@@ -1,7 +1,12 @@
 #include "test_libmem_utils.h"
 
 /**
- * @brief Check the README example for m_finalize_string with the default flag
+ * @brief Check m_finalize_string with the default flag after a complete direct write
+ *
+ * Reserves a string buffer, writes a complete zero-terminated text value through
+ * m_data(...), and finalizes the visible length without forcing a replacement
+ * terminator. The assertions verify that the already present terminator is
+ * accepted and the descriptor exposes the written text as a valid string
  *
  * @return Return describing success or failure
  */

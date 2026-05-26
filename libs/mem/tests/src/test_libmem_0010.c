@@ -7,16 +7,17 @@
  * (struct with two int fields, see test_libmem_utils.h) through a
  * chain of m_resize calls covering the practically interesting flag
  * combinations. The plain descriptor exercises an unflagged grow.
- * The second descriptor is taken through three transitions: a fresh
- * grow with ZERO_NEW_MEMORY where a typed element from the newly
- * exposed payload must read back as zero, a grow with
- * ZERO_NEW_MEMORY | RELEASE_UNUSED that has to preserve an existing
- * payload while zero-filling a representative element from the new
- * tail, and a shrink with the same combined flags that has to keep
- * the previously written surviving element intact. Both read-only and
- * writable views are exercised: m_data_ro confirms the zero fill
- * through the typed element layout, m_data is used to write a
- * non-zero payload that subsequent resize calls must not corrupt.
+ * The second descriptor is taken through a fresh grow with
+ * ZERO_NEW_MEMORY, then through a deterministic combined-flag grow:
+ * the test exposes a tail, writes non-zero typed elements into it,
+ * hides it again without releasing storage, and grows with
+ * ZERO_NEW_MEMORY | RELEASE_UNUSED. That grow has to preserve the
+ * existing payload while clearing every re-exposed tail element. A
+ * shrink with the same combined flags then has to keep the surviving
+ * payload intact. Both read-only and writable views are exercised:
+ * m_data_ro confirms the zero fill through the typed element layout,
+ * and m_data prepares the non-zero payload that resize must clear or
+ * preserve as appropriate.
  * The final block asserts that both descriptors stayed in data mode
  * (is_string == false, string_length == 0) for the whole sequence
  * and that m_del releases each cleanly
@@ -43,21 +44,11 @@ Return test_libmem_0010(void)
 	ASSERT(zeroed_points->string_length == 0);
 	ASSERT(zeroed_points->is_string == false);
 
-	/* Plain grow on one descriptor and a ZERO_NEW_MEMORY grow on the other to force a zero-fill of newly exposed payload */
+	/* Exercise an ordinary typed grow and a successful fresh grow with ZERO_NEW_MEMORY */
 	ASSERT(SUCCESS == m_resize(points,5));
 	ASSERT(SUCCESS == m_resize(zeroed_points,3,ZERO_NEW_MEMORY));
 
-	/* Read-only view must report both fields of the newly exposed element as zero, catching byte-vs-element size regressions */
-	const point *zeroed_view = m_data_ro(point,zeroed_points);
-	ASSERT(zeroed_view != NULL);
-
-	IF(zeroed_view != NULL)
-	{
-		ASSERT(zeroed_view[0].x == 0);
-		ASSERT(zeroed_view[0].y == 0);
-	}
-
-	/* Writable view receives a non-zero payload at index 0 that later resize calls must preserve */
+	/* Writable view receives a non-zero surviving payload that later resize calls must preserve */
 	point *zeroed_writer = m_data(point,zeroed_points);
 	ASSERT(zeroed_writer != NULL);
 
@@ -66,10 +57,25 @@ Return test_libmem_0010(void)
 		zeroed_writer[0] = (point){1,1};
 	}
 
-	/* Grow with the combined flags must keep the existing payload intact while zero-filling the new tail */
+	/* Expose and dirty the future tail before hiding it inside the retained allocation */
+	ASSERT(SUCCESS == m_resize(zeroed_points,6));
+
+	zeroed_writer = m_data(point,zeroed_points);
+	ASSERT(zeroed_writer != NULL);
+
+	IF(zeroed_writer != NULL)
+	{
+		zeroed_writer[3] = (point){31,32};
+		zeroed_writer[4] = (point){41,42};
+		zeroed_writer[5] = (point){51,52};
+	}
+
+	ASSERT(SUCCESS == m_resize(zeroed_points,3));
+
+	/* Grow with the combined flags must preserve the prefix and clear the retained non-zero tail */
 	ASSERT(SUCCESS == m_resize(zeroed_points,6,ZERO_NEW_MEMORY | RELEASE_UNUSED));
 
-	/* Index 0 retains the previously written (1,1) and index 5 proves the freshly exposed tail is zero-filled as a typed point */
+	/* Index 0 remains (1,1), while every re-exposed tail point must be all-zero */
 	const point *expanded_view = m_data_ro(point,zeroed_points);
 	ASSERT(expanded_view != NULL);
 
@@ -77,6 +83,10 @@ Return test_libmem_0010(void)
 	{
 		ASSERT(expanded_view[0].x == 1);
 		ASSERT(expanded_view[0].y == 1);
+		ASSERT(expanded_view[3].x == 0);
+		ASSERT(expanded_view[3].y == 0);
+		ASSERT(expanded_view[4].x == 0);
+		ASSERT(expanded_view[4].y == 0);
 		ASSERT(expanded_view[5].x == 0);
 		ASSERT(expanded_view[5].y == 0);
 	}

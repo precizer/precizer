@@ -11,11 +11,15 @@ static Return capture_libmem_zero_sized_element_string_length(void)
 	INITTEST;
 
 	size_t measured_length = SIZE_MAX;
+	unsigned char payload[] = {0U};
 	memory invalid_descriptor = m_init(unsigned char,MEMORY_DATA);
 
-	invalid_descriptor.single_element_size = 0;
-
+	/* Keep the backing storage valid so this test reaches only the
+	   deliberately invalid zero-sized element condition */
+	invalid_descriptor.data = payload;
+	invalid_descriptor.actually_allocated_bytes = sizeof(payload);
 	invalid_descriptor.length = 1;
+	invalid_descriptor.single_element_size = 0;
 
 	ASSERT(FAILURE == m_string_length(&invalid_descriptor,&measured_length));
 	ASSERT(measured_length == SIZE_MAX);
@@ -33,7 +37,7 @@ Return test_libmem_0024(void)
 	INITTEST;
 
 	static const char expected_stderr_pattern_libmem_0024[] =
-		"\\A.*Descriptor has non-zero length with NULL data pointer.*\\Z";
+		"\\A.*Descriptor element size is zero \\(uninitialized\\).*\\Z";
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,

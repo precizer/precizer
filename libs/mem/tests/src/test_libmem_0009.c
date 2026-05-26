@@ -325,12 +325,15 @@ static Return test_libmem_0009_07(void)
 /**
  * @brief Cover ZERO_NEW_MEMORY zero-fill on growth
  *
- * Grows the buffer from three to eight elements with ZERO_NEW_MEMORY
- * set. The grow stays inside the retained slab block, so it counts
- * as one in-place resize. The library must also zero exactly the
- * newly exposed bytes [3..7] and bump zero_initialized_payload_growths
- * by one. The newly exposed bytes are read back through m_data_ro to
- * confirm the zero-fill actually happened
+ * First exposes elements [3..7] without ZERO_NEW_MEMORY, fills them
+ * with non-zero bytes, and shrinks the logical payload back to three
+ * elements while retaining the slab block. It then grows the buffer
+ * from three to eight elements with ZERO_NEW_MEMORY set. The tested
+ * grow stays inside the retained slab block, so it counts as one
+ * in-place resize. The library must zero exactly the newly exposed
+ * bytes [3..7] and bump zero_initialized_payload_growths by one. The
+ * newly exposed bytes are read back through m_data_ro to confirm that
+ * the previously non-zero storage was cleared
  *
  * @return Return describing success or failure
  */
@@ -338,10 +341,28 @@ static Return test_libmem_0009_08(void)
 {
 	INITTEST;
 
+	/* Populate the reserved bytes that the tested grow will expose so
+	   success cannot depend on previously zero allocator contents */
+	ASSERT(SUCCESS == m_resize(buffer,8));
+
+	unsigned char *raw = m_data(unsigned char,buffer);
+	ASSERT(raw != NULL);
+	IF(raw != NULL)
+	{
+		raw[3] = 0xa3U;
+		raw[4] = 0xa4U;
+		raw[5] = 0xa5U;
+		raw[6] = 0xa6U;
+		raw[7] = 0xa7U;
+	}
+
+	ASSERT(SUCCESS == m_resize(buffer,3));
+
 	const size_t baseline_zero_growths = telemetry.zero_initialized_payload_growths;
 	const size_t baseline_in_place = telemetry.in_place_resizes;
 	const size_t baseline_current_payload = telemetry.current_payload_bytes;
 
+	/* ZERO_NEW_MEMORY must clear the retained non-zero payload tail */
 	ASSERT(SUCCESS == m_resize(buffer,8,ZERO_NEW_MEMORY));
 
 	ASSERT(telemetry.zero_initialized_payload_growths == baseline_zero_growths + 1);
@@ -704,7 +725,7 @@ static Return test_libmem_0009_15(void)
 
 	ASSERT(telemetry.fresh_heap_allocations >= suite_baseline.fresh_heap_allocations + 2);
 	ASSERT(telemetry.heap_reallocations >= suite_baseline.heap_reallocations + 2);
-	ASSERT(telemetry.in_place_resizes >= suite_baseline.in_place_resizes + 3);
+	ASSERT(telemetry.in_place_resizes >= suite_baseline.in_place_resizes + 5);
 	ASSERT(telemetry.noop_resizes == suite_baseline.noop_resizes + 3);
 	ASSERT(telemetry.release_unused_shrinks == suite_baseline.release_unused_shrinks + 2);
 	ASSERT(telemetry.heap_buffer_releases >= suite_baseline.heap_buffer_releases + 2);

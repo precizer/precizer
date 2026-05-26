@@ -5,11 +5,12 @@
  *
  * @return Return describing success or failure
  */
-	static const char pre_text[] = "pre";
-	static const char go_text[] = "go";
 Return test_libmem_0064(void)
 {
 	INITTEST;
+
+	static const char pre_text[] = "pre";
+	static const char go_text[] = "go";
 
 	m_create(char,raw_destination);
 	m_create(char,string_destination);

@@ -10,11 +10,11 @@
  *
  * @return Return describing success or failure
  */
-	static const char drafting_text[] = "drafting";
 Return test_libmem_0048(void)
 {
 	INITTEST;
 
+	static const char drafting_text[] = "drafting";
 	m_create(char,title,MEMORY_STRING);
 
 	ASSERT(SUCCESS == m_copy_fixed_string(title,sizeof(drafting_text),drafting_text));
