@@ -9,8 +9,8 @@ static Return test0027_1(void)
 {
 	INITTEST;
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Preparation for tests
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -80,8 +80,8 @@ static Return test0027_1(void)
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff2"));
 
-	del(result);
-	del(pattern);
+	m_del(result);
+	m_del(pattern);
 
 	RETURN_STATUS;
 }
@@ -90,7 +90,7 @@ Return test0027(void)
 {
 	INITTEST;
 
-	TEST(test0027_1,"Attempt to modify files protected by the --lock-checksum…");
+	TEST(test0027_1,"Attempt to modify files protected by the --lock-checksum");
 
 	RETURN_STATUS;
 }

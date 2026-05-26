@@ -8,8 +8,8 @@ static Return test0029_1(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Preparation for tests
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -36,8 +36,8 @@ static Return test0029_1(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
@@ -56,8 +56,8 @@ static Return test0029_2(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Preparation for tests
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -85,8 +85,8 @@ static Return test0029_2(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database2.db"));
@@ -106,8 +106,8 @@ Return test0029(void)
 {
 	INITTEST;
 
-	TEST(test0029_1,"\"inaccessible\" message of file_show() function…");
-	TEST(test0029_2,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths…");
+	TEST(test0029_1,"\"inaccessible\" message of file_show() function");
+	TEST(test0029_2,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths");
 
 	RETURN_STATUS;
 }
