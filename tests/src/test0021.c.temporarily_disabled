@@ -45,9 +45,9 @@ Return test0021(void)
 {
 	INITTEST;
 
-	create(char,captured_stdout);
-	create(char,captured_stderr);
-	create(char,pattern);
+	m_create(char,captured_stdout);
+	m_create(char,captured_stderr);
+	m_create(char,pattern);
 
 	ASSERT(SUCCESS == function_capture(test0021_1,captured_stdout,captured_stderr));
 
@@ -58,9 +58,9 @@ Return test0021(void)
 	// Match the result against the pattern
 	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern));
 
-	del(captured_stdout);
-	del(captured_stderr);
-	del(pattern);
+	m_del(captured_stdout);
+	m_del(captured_stderr);
+	m_del(pattern);
 
 	RETURN_STATUS;
 }
