@@ -33,7 +33,7 @@ bool rational_ask(
 				return(FAILURE); \
 			} \
 			/* Normalize, merge global context, and mark fresh yes/no answers as pending */ \
-				Return __returned_status = rational_normalize_return(__delivered_status); \
+			Return __returned_status = rational_normalize_return(__delivered_status); \
 			if(BOOLEAN & __returned_status) \
 			{ \
 				__returned_status |= AWAITING; \
@@ -65,7 +65,7 @@ bool rational_ask(
 				return(FAILURE); \
 			} \
 			/* Normalize, merge global context, and mark fresh yes/no answers as pending */ \
-				Return __returned_status = rational_normalize_return(__provided_status); \
+			Return __returned_status = rational_normalize_return(__provided_status); \
 			if(BOOLEAN & __returned_status) \
 			{ \
 				__returned_status |= AWAITING; \
@@ -110,7 +110,7 @@ bool rational_ask(
 					status = FAILURE; \
 				} else { \
 					/* Merge returned flags into current status, then normalize accumulated flags */ \
-						status = rational_normalize_return(status | __returned_status); \
+					status = rational_normalize_return(status | __returned_status); \
 				} \
 			} \
 		}
@@ -144,7 +144,7 @@ bool rational_ask(
 					status = FAILURE; \
 				} else { \
 					/* Merge returned flags into current status, then normalize accumulated flags */ \
-						status = rational_normalize_return(status | __returned_status); \
+					status = rational_normalize_return(status | __returned_status); \
 				} \
 			} \
 		}

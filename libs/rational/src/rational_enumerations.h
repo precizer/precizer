@@ -54,23 +54,23 @@ typedef enum Return : unsigned int
 	AWAITING = 0x0400u, // 0000 0100 0000 0000
 
 	/// Technical status bits that report internal or blocking problems
-  // Hex: 0x0021. Dec: 33. Bin: 0000 0000 0010 0001
+	// Hex: 0x0021. Dec: 33. Bin: 0000 0000 0010 0001
 	CRITICAL = WARNING | FAILURE,
 
 	/// Technical and flow bits that report graceful outcomes
-  // Hex: 0x00D8. Dec: 216. Bin: 0000 0000 1101 1000
+	// Hex: 0x00D8. Dec: 216. Bin: 0000 0000 1101 1000
 	TRIUMPH = SUCCESS | HALTED | DONOTHING | INFO,
 
 	/// Status bits allowed to propagate from global_return_status
-  // Hex: 0x00B0. Dec: 176. Bin: 0000 0000 1011 0000
+	// Hex: 0x00B0. Dec: 176. Bin: 0000 0000 1011 0000
 	GLOBAL = INFO | WARNING | HALTED,
 
 	/// Local binary answer bits for caller-side decisions
-  // Hex: 0x0300. Dec: 768. Bin: 0000 0011 0000 0000
+	// Hex: 0x0300. Dec: 768. Bin: 0000 0011 0000 0000
 	BOOLEAN = YES | NO,
 
 	/// Skip the normal function call based on the status flag
-  // Hex: 0x0031. Dec: 49. Bin: 0000 0000 0011 0001
+	// Hex: 0x0031. Dec: 49. Bin: 0000 0000 0011 0001
 	SKIP = WARNING | FAILURE | HALTED
 
 } Return;
