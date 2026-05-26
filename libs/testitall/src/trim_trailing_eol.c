@@ -1,17 +1,18 @@
 #include "testitall.h"
 
 /**
- * @brief Remove a trailing EOL (\r, \n, or \r\n sequence) from a memory buffer.
+ * @brief Remove one trailing EOL sequence from a byte string descriptor
  *
- * @param buffer Pointer to a memory descriptor containing text.
+ * This helper accepts a `MEMORY_STRING` descriptor whose elements are `char`
+ * values. It examines the visible string boundary cached in `string_length`
+ * and removes one final `\r\n`, `\n`, or `\r` sequence through
+ * `mem_string_truncate()`, preserving the descriptor length and reusable
+ * reserve
  *
- * @return SUCCESS if trimming succeeded or nothing to trim; FAILURE on invalid input.
+ * @param buffer Byte string descriptor to update
  *
- * @details
- * - Works with buffers that already have a trailing '\0' or without it.
- * - Removes a Windows EOL pair (\r\n) at the end if present.
- * - Removes a single \n or \r at the end if present.
- * - Does nothing for empty or very short buffers.
+ * @return SUCCESS if trimming succeeds or no trailing EOL is present. FAILURE
+ *         if @p buffer is not a valid byte string descriptor
  */
 Return trim_trailing_eol(memory *buffer)
 {
@@ -19,76 +20,50 @@ Return trim_trailing_eol(memory *buffer)
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	if(buffer == NULL)
+	if(buffer == NULL ||
+	        buffer->single_element_size != sizeof(char))
 	{
 		deliver(FAILURE);
 	}
 
-	/* Nothing to trim if length is less than one byte */
-	if(buffer->length < 1U)
-	{
-		deliver(SUCCESS);
-	}
-
-	size_t len = buffer->length;
-	char *data_ptr = data(char,buffer);
-
-	if(data_ptr == NULL)
+	/* mem_string_truncate() accepts an empty descriptor before checking this stale-cache case */
+	if(buffer->length == 0U && buffer->string_length != 0U)
 	{
 		deliver(FAILURE);
 	}
 
-	/* If there is a trailing '\0', operate on the actual string payload */
-	if(len > 0U && data_ptr[len - 1U] == '\0')
-	{
-		len -= 1U;
-	}
+	/* Use the cached visible string boundary instead of the available descriptor span */
+	const size_t len = buffer->string_length;
 
-	/* After trimming a possible '\0' we might end up empty */
-	if(len == 0U)
-	{
-		deliver(SUCCESS);
-	}
+	/* Ask libmem to validate the current string descriptor and its terminator */
+	run(mem_string_truncate(buffer,len));
 
-	size_t new_len = len;
-
-	/* Check for Windows EOL (\r\n) */
-	if(len >= 2U && data_ptr[len - 2U] == '\r' && data_ptr[len - 1U] == '\n')
-	{
-		new_len = len - 2U;
-
-	} else if(data_ptr[len - 1U] == '\n' || data_ptr[len - 1U] == '\r'){
-		/* Single \n or \r */
-		new_len = len - 1U;
-	}
-
-	/* No change means no trailing EOL */
-	if(new_len == len)
+	/* An empty visible string has no trailing EOL to remove */
+	if((TRIUMPH & status) && len == 0U)
 	{
 		deliver(SUCCESS);
 	}
 
-	/* Restore trailing '\0' if it originally existed */
-	const bool had_null_terminator = (buffer->length > 0U && data_ptr[buffer->length - 1U] == '\0');
-	size_t target_length = new_len;
-
-	if(had_null_terminator)
+	if(TRIUMPH & status)
 	{
-		/* Reserve +1 for the terminator */
-		target_length = new_len + 1U;
-	}
+		const char *buffer_data_view = m_text(buffer);
+		size_t new_len = len;
 
-	run(resize(buffer,target_length));
-
-	if(SUCCESS == status && had_null_terminator)
-	{
-		char *ptr = data(char,buffer);
-
-		if(ptr == NULL)
+		/* Check for Windows EOL (\r\n) */
+		if(len >= 2U && buffer_data_view[len - 2U] == '\r' && buffer_data_view[len - 1U] == '\n')
 		{
-			status = FAILURE;
-		} else {
-			ptr[target_length - 1U] = '\0';
+			new_len = len - 2U;
+
+		} else if(buffer_data_view[len - 1U] == '\n' || buffer_data_view[len - 1U] == '\r'){
+			/* Single \n or \r */
+			new_len = len - 1U;
+		}
+
+		/* Change means one trailing EOL was found and should be removed */
+		if(new_len != len)
+		{
+			/* Preserve the existing logical reserve while shortening the visible string */
+			run(mem_string_truncate(buffer,new_len));
 		}
 	}
 
