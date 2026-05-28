@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Verify that typed and raw accessors expose the same descriptor storage

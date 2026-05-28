@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Check string resizing with ZERO_NEW_MEMORY, shrink, and zero-release

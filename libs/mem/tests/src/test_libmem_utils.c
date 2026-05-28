@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 #if SHOW_TEST
 /**

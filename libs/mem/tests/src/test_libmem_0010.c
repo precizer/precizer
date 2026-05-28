@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Verify m_resize behavior with flag combinations on typed point descriptors

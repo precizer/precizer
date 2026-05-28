@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Check bounded string concat on multi-byte buffers and softly clamped self-aliasing

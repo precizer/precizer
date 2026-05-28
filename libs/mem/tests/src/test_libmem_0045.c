@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Check the overloaded m_concat_string macro for bounded and unbounded calls

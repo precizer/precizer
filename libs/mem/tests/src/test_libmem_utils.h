@@ -1,16 +1,10 @@
 #ifndef LIBMEM_TEST_LIBMEM_UTILS_H
 #define LIBMEM_TEST_LIBMEM_UTILS_H
 
-#include "sute.h"
+#include "mem.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
-#define CYCLES 10
-#define SHOW_TEST 0
-
-#if SHOW_TEST
-void print_hash(const unsigned char *hash);
-#endif
 
 typedef struct point {
 	int x;
@@ -63,4 +57,4 @@ Return expect_raw_descriptor_bytes(
 Return run_mem_core_data_case(
 	memory * const           descriptors[],
 	const mem_core_data_case *case_data);
-#endif
+#endif // LIBMEM_TEST_LIBMEM_UTILS_H

@@ -1,12 +1,22 @@
-#ifndef LIBMEM_TEST_LIBMEM_ALL_H
-#define LIBMEM_TEST_LIBMEM_ALL_H
-
-#include "testitall.h"
-
 /**
  * @file test_libmem_all.h
  * @brief Public entry points for the standalone libmem test suite
  */
+
+#ifndef LIBMEM_TEST_LIBMEM_ALL_H
+#define LIBMEM_TEST_LIBMEM_ALL_H
+
+#include "mem.h"
+#include "mem_internal.h"
+#include "testitall.h"
+#include "test_libmem_utils.h"
+
+#define CYCLES 10
+#define SHOW_TEST 0
+
+#if SHOW_TEST
+void print_hash(const unsigned char *hash);
+#endif
 
 Return test_libmem_all(void);
 
@@ -76,4 +86,4 @@ Return test_libmem_0067(void);
 Return test_libmem_0069(void);
 Return test_libmem_0070(void);
 Return test_libmem_0071(void);
-#endif
+#endif // LIBMEM_TEST_LIBMEM_ALL_H

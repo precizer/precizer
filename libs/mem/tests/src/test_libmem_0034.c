@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Check NULL sources and zero-sized bounded or fixed-string inputs are no-ops

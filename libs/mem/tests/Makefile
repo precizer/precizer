@@ -93,7 +93,7 @@ endif
 # Project files
 #
 SRCS = $(wildcard $(SRC)/*.c)
-TMPLTS = $(wildcard $(SRC)/*.cc)
+TMPLTS = $(wildcard $(SRC)/*.tpl)
 # Keep the suite's own headers separate so the format target changes only
 # test files and does not rewrite headers owned by dependency libraries
 LOCAL_HDRS = $(wildcard $(SRC)/*.h)

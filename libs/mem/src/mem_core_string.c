@@ -1,6 +1,7 @@
 #include "mem.h"
 #include "mem_internal.h"
 #include <stdint.h>
+#include <string.h>
 
 /**
  * @brief Internal string transfer helper used by both append and copy paths

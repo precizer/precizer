@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Capture string truncate rejection for descriptors whose reserve does not cover the payload

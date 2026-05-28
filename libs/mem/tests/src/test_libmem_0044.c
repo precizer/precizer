@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Check fixed-string append and literal append sugar on byte and multi-byte string descriptors

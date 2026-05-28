@@ -1,4 +1,5 @@
 #include "mem.h"
+#include <stdio.h>
 
 /**
  * @brief Print live-memory balance counters

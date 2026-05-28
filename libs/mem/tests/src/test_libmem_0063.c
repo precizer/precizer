@@ -1,5 +1,4 @@
-#include "test_libmem_utils.h"
-
+#include "test_libmem_all.h"
 /**
  * @brief Check same-mode descriptor-to-descriptor transfers
  *

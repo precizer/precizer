@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 #include "testmocking.h"
 
 /* Shared descriptors of the telemetry suite.

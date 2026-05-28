@@ -1,4 +1,5 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
+#include "sha512.h"
 
 /**
  * @brief Random-size bounded-buffer import for unsigned long long int descriptors
@@ -10,7 +11,7 @@ static Return test_libmem_0005_1(void)
 	INITTEST;
 
 	#define TYPE unsigned long long int
-	#include "test_libmem_0005.cc"
+	#include "test_libmem_0005.tpl"
 	#undef TYPE
 
 	RETURN_STATUS;
@@ -26,7 +27,7 @@ static Return test_libmem_0005_2(void)
 	INITTEST;
 
 	#define TYPE char
-	#include "test_libmem_0005.cc"
+	#include "test_libmem_0005.tpl"
 	#undef TYPE
 
 	RETURN_STATUS;
@@ -42,7 +43,7 @@ static Return test_libmem_0005_3(void)
 	INITTEST;
 
 	#define TYPE int
-	#include "test_libmem_0005.cc"
+	#include "test_libmem_0005.tpl"
 	#undef TYPE
 
 	RETURN_STATUS;
@@ -58,7 +59,7 @@ static Return test_libmem_0005_4(void)
 	INITTEST;
 
 	#define TYPE unsigned char
-	#include "test_libmem_0005.cc"
+	#include "test_libmem_0005.tpl"
 	#undef TYPE
 
 	RETURN_STATUS;

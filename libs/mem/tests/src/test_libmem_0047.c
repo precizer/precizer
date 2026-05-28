@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Check fixed-string replacement wrappers and literal replacement sugar for byte and wide descriptors

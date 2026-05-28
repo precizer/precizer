@@ -1,4 +1,4 @@
-#include "test_libmem_utils.h"
+#include "test_libmem_all.h"
 
 /**
  * @brief Verify RELEASE_UNUSED physically shrinks a typed point descriptor while preserving the surviving prefix
