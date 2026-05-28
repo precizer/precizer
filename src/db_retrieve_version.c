@@ -1,15 +1,15 @@
 /**
- * @file db_get_version.c
- * @brief Functions for checking metadata table existence and querying database version
+ * @file db_retrieve_version.c
+ * @brief Functions for checking metadata table existence and retrieving database version
  */
 
 #include "precizer.h"
 
 /**
- * @brief Retrieves database version from the metadata table
+ * @brief Retrieve database version from the metadata table
  *
  * @details Opens database connection, checks for metadata table existence
- *          and retrieves version number if available. Handles all necessary
+ *          and retrieves the version number if available. Handles all necessary
  *          resource cleanup.
  *
  * @param[in] db_file_path Path to the SQLite database file
@@ -19,7 +19,7 @@
  *         - SUCCESS: Version retrieved successfully (may be 0 if not found)
  *         - FAILURE: Database error or invalid parameters
  */
-Return db_get_version(
+Return db_retrieve_version(
 	int        *db_version,
 	const char *db_file_path)
 {
@@ -75,7 +75,7 @@ Return db_get_version(
 		stmt = NULL;
 	}
 
-	/* Get version if table exists */
+	/* Retrieve version if table exists */
 	if(SUCCESS == status && table_exists == true)
 	{
 		const char *version_query = "SELECT db_version FROM metadata;";
