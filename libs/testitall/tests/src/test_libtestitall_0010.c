@@ -27,6 +27,14 @@ static void print_capability_demonstration_output(void)
 }
 
 /**
+ * @brief Produce no output while exercising empty capture results
+ */
+static void print_no_capture_output(void)
+{
+	/* Intentionally empty: verifies capture behavior when the callback prints nothing */
+}
+
+/**
  * @brief Check stdout capture against an expected string kept in the library test
  * @details The test is self-contained and does not depend on application template files
  *
@@ -54,6 +62,21 @@ Return test_libtestitall_0010(void)
 		/* Compare the materialized capture only after its text view is confirmed available */
 		ASSERT(0 == strcmp(m_text(captured_stdout),expected_capability_demonstration_output));
 	}
+
+	ASSERT(SUCCESS == m_copy_literal(captured_stdout,"previous stdout"));
+	ASSERT(SUCCESS == m_copy_literal(captured_stderr,"previous stderr"));
+
+	ASSERT(SUCCESS == function_capture(
+		print_no_capture_output,
+		captured_stdout,
+		captured_stderr));
+
+	ASSERT(captured_stdout->length == 0U);
+	ASSERT(captured_stderr->length == 0U);
+	ASSERT(captured_stdout->string_length == 0U);
+	ASSERT(captured_stderr->string_length == 0U);
+	ASSERT(0 == strcmp(m_text(captured_stdout),""));
+	ASSERT(0 == strcmp(m_text(captured_stderr),""));
 
 	call(m_del(captured_stderr));
 	call(m_del(captured_stdout));

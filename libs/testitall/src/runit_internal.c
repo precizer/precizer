@@ -12,8 +12,8 @@ static char runit_internal_program_name[] = "precizer";
 void runit_call_init(struct runit_call *call)
 {
 	memset(call,0,sizeof(*call));
-	call->program_path_buffer = (memory){sizeof(char),0U,0U,NULL};
-	call->argv_buffer = (memory){sizeof(char *),0U,0U,NULL};
+	call->program_path_buffer = m_init(char,MEMORY_STRING);
+	call->argv_buffer = m_init(char *);
 }
 
 /**
@@ -26,8 +26,8 @@ void runit_call_cleanup(struct runit_call *call)
 		wordfree(&call->parsed_arguments);
 	}
 
-	(void)del(&call->argv_buffer);
-	(void)del(&call->program_path_buffer);
+	(void)m_del(&call->argv_buffer);
+	(void)m_del(&call->program_path_buffer);
 
 	runit_call_init(call);
 }
@@ -42,12 +42,12 @@ Return runit_reset_result_buffers(
 
 	if(NULL != stdout_result)
 	{
-		call(del(stdout_result));
+		call(m_del(stdout_result));
 	}
 
 	if(NULL != stderr_result)
 	{
-		call(del(stderr_result));
+		call(m_del(stderr_result));
 	}
 
 	deliver(status);
@@ -134,18 +134,29 @@ Return runit_call_prepare(
 		} else {
 			const size_t path_size = bindir_length + suffix_length;
 
-			if(SUCCESS != resize(&call->program_path_buffer,path_size))
+			if(SUCCESS != m_resize(&call->program_path_buffer,path_size))
 			{
 				report("Memory allocation failed, requested size: %zu bytes",path_size);
 				status = FAILURE;
 
 			} else {
-				call->program_path = data(char,&call->program_path_buffer);
+				call->program_path = m_data(char,&call->program_path_buffer);
 
-				if(snprintf(call->program_path,path_size,"%s%s",bindir,suffix) < 0)
+				if(NULL == call->program_path)
 				{
-					echo(STDERR,"Failed to build executable path from BINDIR");
 					status = FAILURE;
+
+				} else {
+					const int formatted_path_length = snprintf(call->program_path,path_size,"%s%s",bindir,suffix);
+
+					if(formatted_path_length < 0)
+					{
+						echo(STDERR,"Failed to build executable path from BINDIR");
+						status = FAILURE;
+
+					} else {
+						run(m_finalize_string(&call->program_path_buffer,(size_t)formatted_path_length));
+					}
 				}
 			}
 		}
@@ -198,20 +209,27 @@ Return runit_call_prepare(
 	{
 		const size_t argv_size = call->argc + 1U;
 
-		if(SUCCESS != resize(&call->argv_buffer,argv_size,ZERO_NEW_MEMORY))
+		if(SUCCESS != m_resize(&call->argv_buffer,argv_size,ZERO_NEW_MEMORY))
 		{
 			report("Memory allocation failed, requested size: %zu bytes",argv_size * sizeof(char *));
 			status = FAILURE;
 
 		} else {
-			call->argv = data(char *,&call->argv_buffer);
-			call->argv[0] = call->program_path;
+			call->argv = m_data(char *,&call->argv_buffer);
 
-			for(size_t i = 0U; i < call->parsed_arguments.we_wordc; i++)
+			if(NULL == call->argv)
 			{
-				call->argv[i + 1U] = call->parsed_arguments.we_wordv[i];
+				status = FAILURE;
+
+			} else {
+				call->argv[0] = call->program_path;
+
+				for(size_t i = 0U; i < call->parsed_arguments.we_wordc; i++)
+				{
+					call->argv[i + 1U] = call->parsed_arguments.we_wordv[i];
+				}
+				call->argv[call->argc] = NULL;
 			}
-			call->argv[call->argc] = NULL;
 		}
 	}
 
@@ -227,14 +245,14 @@ Return runit_prepare_call_and_capture(
 	memory                       *stdout_result,
 	memory                       *stderr_result,
 	int                          expected_return_code,
-	unsigned int                 buffer_policy)
+	CAPTURE_POLICY               buffer_policy)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	run(runit_call_prepare(call,mode,arguments));
 	run(runit_reset_result_buffers(stdout_result,stderr_result));
+	run(runit_call_prepare(call,mode,arguments));
 	run(runit_capture_prepare(
 		capture,
 		call->tmpdir,

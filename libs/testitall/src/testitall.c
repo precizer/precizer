@@ -3,6 +3,88 @@
 bool show_subheader = false;
 
 /**
+ * @brief Number of test functions that reached their normal result reporting step
+ *
+ * The runner uses this value to show a simple final summary for people
+ * reading the test output. Each completed test function adds one mark here
+ * before it returns its status to the surrounding suite
+ */
+size_t testitall_completed_tests = 0;
+
+static struct {
+	bool has_failure;
+	const char *file;
+	const char *function;
+	int line;
+} failure_location = { false,NULL,NULL,0 };
+
+/**
+ * @brief Record the first assertion location for the current failing test process
+ *
+ * The record is written only when there is no pending failure location.
+ * This keeps the original assertion location intact while the failure status
+ * travels through helper functions and suite wrappers
+ *
+ * @param file Source file where the assertion failed
+ * @param function Function where the assertion failed
+ * @param line Source line where the assertion failed
+ */
+void testitall_failure_location_record(
+	const char *file,
+	const char *function,
+	int        line)
+{
+	if(failure_location.has_failure == false)
+	{
+		if(file == NULL)
+		{
+			file = "unknown file";
+		}
+
+		if(function == NULL)
+		{
+			function = "unknown function";
+		}
+
+		failure_location.file = file;
+		failure_location.function = function;
+		failure_location.line = line;
+		failure_location.has_failure = true;
+	}
+}
+
+/**
+ * @brief Clear the pending failure location for the current test process
+ */
+void testitall_failure_location_clear(void)
+{
+	failure_location.has_failure = false;
+	failure_location.file = NULL;
+	failure_location.function = NULL;
+	failure_location.line = 0;
+}
+
+/**
+ * @brief Append the pending failure-location report to a test output buffer
+ *
+ * @param output Buffer that receives the formatted failure details
+ * @return true if a pending failure location was reported, false otherwise
+ */
+bool testitall_failure_location_report(memory *output)
+{
+	bool reported = false;
+
+	if(output != NULL && failure_location.has_failure == true)
+	{
+		echo(output,BOLDRED "𐄂" BOLDWHITE " failed at %s:%d in %s()" RESET,failure_location.file,failure_location.line,failure_location.function);
+		testitall_failure_location_clear();
+		reported = true;
+	}
+
+	return reported;
+}
+
+/**
  * @brief Main testing framework function that executes and evaluates test cases
  *
  * @param func Pointer to the test function to be executed
@@ -18,7 +100,7 @@ bool show_subheader = false;
  *          in a readable way with color coding.
  */
 Return testitall(
-	Return    (*func)(void),
+	Return (   *func )(void),
 	const char *function_name,
 	const char *test_description)
 {
@@ -30,8 +112,8 @@ Return testitall(
 	long long int __start_time = cur_time_ns();
 
 	/* Clear output capture buffers to ensure clean state */
-	call(del(STDOUT));
-	call(del(STDERR));
+	call(m_del(STDOUT));
+	call(m_del(STDERR));
 
 	if(show_subheader == true)
 	{
@@ -41,6 +123,11 @@ Return testitall(
 
 	/* Execute the test function and capture its return status */
 	status = func();
+
+	if(SUCCESS != status)
+	{
+		(void)testitall_failure_location_report(EXTEND);
+	}
 
 	/* Calculate execution time */
 	long long int __end_time = cur_time_ns();
@@ -52,12 +139,12 @@ Return testitall(
 	{
 		/* Green OK for passed tests */
 		fprintf(stdout,WHITE "[  " BOLDGREEN "OK" RESET WHITE  "  ]" RESET );
-		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
+		fprintf(stdout,WHITE " %s %s %s…" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
-		const char *extend_buffer = getcstring(EXTEND);
+		const char *extend_buffer = m_text(EXTEND);
 
-		if((EXTEND->length > 0) && (extend_buffer[0] != '\0'))
+		if((EXTEND->string_length > 0U) && (extend_buffer[0] != '\0'))
 		{
 			fprintf(stdout,WHITE " %s" RESET,extend_buffer);
 		}
@@ -66,12 +153,12 @@ Return testitall(
 	} else if(DONOTHING & status){
 		/* Green OK for passed tests */
 		fprintf(stdout,WHITE "[ " BOLDYELLOW "SKIP" RESET WHITE  " ]" RESET );
-		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
+		fprintf(stdout,WHITE " %s %s %s…" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
-		const char *extend_buffer = getcstring(EXTEND);
+		const char *extend_buffer = m_text(EXTEND);
 
-		if((EXTEND->length > 0) && (extend_buffer[0] != '\0'))
+		if((EXTEND->string_length > 0U) && (extend_buffer[0] != '\0'))
 		{
 			fprintf(stdout,WHITE " %s" RESET,extend_buffer);
 		}
@@ -80,12 +167,12 @@ Return testitall(
 	} else {
 		/* Red FAIL for failed tests */
 		fprintf(stdout,WHITE "[ " BOLDRED    "FAIL" RESET WHITE " ]" RESET );
-		fprintf(stdout,WHITE " %s %s %s" RESET,function_name,elapsed_time_text,test_description);
+		fprintf(stdout,WHITE " %s %s %s…" RESET,function_name,elapsed_time_text,test_description);
 
 		/* Display any additional info captured in EXTEND buffer */
-		const char *extend_buffer = getcstring(EXTEND);
+		const char *extend_buffer = m_text(EXTEND);
 
-		if((EXTEND->length > 0) && (extend_buffer[0] != '\0'))
+		if((EXTEND->string_length > 0U) && (extend_buffer[0] != '\0'))
 		{
 			fprintf(stdout,WHITE " %s" RESET,extend_buffer);
 		}
@@ -93,27 +180,27 @@ Return testitall(
 	}
 
 	/* Display captured stderr output in yellow */
-	const char *stderr_buffer = getcstring(STDERR);
+	const char *stderr_buffer = m_text(STDERR);
 
-	if((STDERR->length > 0) && (stderr_buffer[0] != '\0'))
+	if((STDERR->string_length > 0U) && (stderr_buffer[0] != '\0'))
 	{
 		fprintf(stdout,RED "STDERR" RESET " " WHITE "is not empty when it should be:\n" RESET);
 		fprintf(stdout,"%s",stderr_buffer);
 	}
 
 	/* Display captured stdout output */
-	const char *stdout_buffer = getcstring(STDOUT);
+	const char *stdout_buffer = m_text(STDOUT);
 
-	if((STDOUT->length > 0) && (stdout_buffer[0] != '\0'))
+	if((STDOUT->string_length > 0U) && (stdout_buffer[0] != '\0'))
 	{
 		fprintf(stdout,BLUE "STDOUT" RESET " " WHITE "is not empty when it should be:\n" RESET);
 		fprintf(stdout,"%s",stdout_buffer);
 	}
 
 	/* Cleanup: free dynamically allocated buffers */
-	call(del(STDOUT));
-	call(del(STDERR));
-	call(del(EXTEND));
+	call(m_del(STDOUT));
+	call(m_del(STDERR));
+	call(m_del(EXTEND));
 
 	deliver(status);
 }

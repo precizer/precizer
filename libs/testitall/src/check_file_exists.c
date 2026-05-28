@@ -23,12 +23,12 @@ Return check_file_exists(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	*file_exists = false;
-
-	if(NULL == filename)
+	if(NULL == file_exists || NULL == filename)
 	{
 		deliver(FAILURE);
 	}
+
+	*file_exists = false;
 
 	if(0 == access(filename,F_OK))
 	{
