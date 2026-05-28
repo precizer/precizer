@@ -5,6 +5,11 @@
  *
  */
 
+#ifndef RATIONAL_LOGGER_H
+#define RATIONAL_LOGGER_H
+
+#include "rational_enumerations.h"
+
 #include <stdarg.h>
 
 /* Atomic operations */
@@ -84,3 +89,5 @@ void rational_logger
 	const char *,
 	const char *,
 	...);
+
+#endif // RATIONAL_LOGGER_H

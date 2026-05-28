@@ -3,6 +3,8 @@
 
 #include <errno.h>
 #include <float.h>
+#include <inttypes.h>
+#include <math.h>
 
 /**
  * @brief Copy a formatted number without thousands separators

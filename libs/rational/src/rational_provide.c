@@ -1,4 +1,5 @@
 #include "rational.h"
+#include <stdio.h>
 
 /**
  * @brief Normalize one function Return value with global context

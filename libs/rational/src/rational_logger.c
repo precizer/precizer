@@ -1,4 +1,7 @@
 #include "rational.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 // Global flag to manage output of all logging messages
 // in an application and its default value

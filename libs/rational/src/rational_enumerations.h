@@ -3,6 +3,8 @@
  * @brief Common usage enumerations and bit flags
  *
  */
+#ifndef RATIONAL_ENUMERATIONS_H
+#define RATIONAL_ENUMERATIONS_H
 
 /*
  *
@@ -117,3 +119,5 @@ typedef enum Changed : unsigned int
 	COMPARE_FAILED = 0x20u             // 100000
 
 } Changed;
+
+#endif // RATIONAL_ENUMERATIONS_H

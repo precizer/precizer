@@ -1,4 +1,5 @@
 #include "rational.h"
+#include <stdio.h>
 
 /**
  * @brief Convert bytes

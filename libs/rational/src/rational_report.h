@@ -5,6 +5,9 @@
  *
  */
 
+#ifndef RATIONAL_REPORT_H
+#define RATIONAL_REPORT_H
+
 // Safe ERror Print
 void SERP(
 	const char *,
@@ -23,3 +26,5 @@ void REPORT(
 
 /* Convenience macro for heap-independent error reporting with source location */
 #define report(...) REPORT(__FILE__,__func__,__LINE__,__VA_ARGS__)
+
+#endif // RATIONAL_REPORT_H

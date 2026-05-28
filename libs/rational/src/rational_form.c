@@ -1,4 +1,6 @@
 #include "rational.h"
+#include <math.h>
+#include <string.h>
 
 STATIC const char *form_write_empty(
 	char   *result,

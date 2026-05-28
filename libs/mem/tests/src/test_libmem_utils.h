@@ -4,8 +4,6 @@
 #include "sute.h"
 #include <stdint.h>
 #include <string.h>
-#include "mem_internal.h"
-#include "sha512.h"
 
 #define CYCLES 10
 #define SHOW_TEST 0

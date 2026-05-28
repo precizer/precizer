@@ -4,6 +4,10 @@
  * @brief Functions and structs to convert a number of bytes into a human-readable string
  *
  */
+#ifndef RATIONAL_BKBMBGBTBPBEB_H
+#define RATIONAL_BKBMBGBTBPBEB_H
+
+#include <stddef.h>
 
 /// Structure to record the number of bytes.
 typedef struct {
@@ -50,3 +54,5 @@ char *bkbmbgbtbpbeb_r(
 char *bkbmbgbtbpbeb(
 	const size_t,
 	const ByteFormat);
+
+#endif // RATIONAL_BKBMBGBTBPBEB_H

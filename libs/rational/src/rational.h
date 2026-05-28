@@ -5,7 +5,8 @@
  *
  */
 
-#pragma once
+#ifndef RATIONAL_H
+#define RATIONAL_H
 
 /*
  *
@@ -37,34 +38,6 @@
 #ifndef __USE_FILE_OFFSET64
 #define __USE_FILE_OFFSET64 1
 #endif
-
-/*
- *
- *
- * System libraries
- *
- *
- */
-#include <stdio.h>
-
-// Time functions (gettimeofday)
-#include <sys/time.h>
-
-// String library
-#include <string.h>
-
-// Extended types
-#include <inttypes.h>
-#include <stdbool.h>
-
-// Mathematical formulas
-#include <math.h>
-
-// Standard functions
-#include <stdlib.h>
-
-// String functions
-#include <string.h>
 
 /* STATIC keeps internal helpers private in normal builds.
    Test builds define TESTITALL_TEST_HOOKS when they need to call selected
@@ -150,3 +123,5 @@
  *
  */
 #include "rational_provide.h"
+
+#endif // RATIONAL_H

@@ -1,3 +1,7 @@
+#ifndef RATIONAL_PROVIDE_H
+#define RATIONAL_PROVIDE_H
+
+#include "rational_enumerations.h"
 
 void provide(const Return);
 void deliver(const Return);
@@ -163,3 +167,5 @@ bool rational_ask(
 		(((SKIP & status) == 0) || (AWAITING & status)) \
 		&& rational_ask(&status,(expr),__func__,__LINE__) \
 	)
+
+#endif // RATIONAL_PROVIDE_H

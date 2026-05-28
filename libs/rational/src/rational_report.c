@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 /**
  * @brief Safely prints an error message with system error description to stderr

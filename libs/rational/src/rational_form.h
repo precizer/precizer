@@ -4,6 +4,10 @@
  * @brief Prototypes of functions for formatting numbers before printing
  *
  */
+
+#ifndef RATIONAL_FORM_H
+#define RATIONAL_FORM_H
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -77,3 +81,5 @@ const char *form_uintmax_r(
 	_Bool:              form_uintmax_r, \
 	default:            form_real_r \
 )(x,result,result_size)
+
+#endif // RATIONAL_FORM_H

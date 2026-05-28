@@ -1,5 +1,10 @@
 #include "rational.h"
 
+#include <stdio.h>
+
+// Time functions (gettimeofday)
+#include <sys/time.h>
+
 /**
  * @brief Current time in milliseconds
  * @return Returns long long int the number of milliseconds since the UNIX epoch
