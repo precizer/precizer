@@ -1,5 +1,4 @@
 #include "mem.h"
-#include "mem_internal.h"
 
 /**
  * @brief Return a read-only pointer to one typed descriptor element
