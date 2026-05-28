@@ -1,5 +1,4 @@
-#include "sute.h"
-#include "testmocking.h"
+#include "test_librational_all.h"
 #include <errno.h>
 
 static const char expected_report_stderr_pattern[] =

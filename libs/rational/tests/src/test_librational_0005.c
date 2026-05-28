@@ -1,5 +1,4 @@
-#include "sute.h"
-#include "testmocking.h"
+#include "test_librational_all.h"
 
 /* Counts side-effect helper calls in SKIP macro tests */
 static unsigned int counted_return_calls = 0U;

@@ -2,6 +2,9 @@
 #define LIBRATIONAL_TEST_LIBRATIONAL_ALL_H
 
 #include "testitall.h"
+#include "testmocking.h"
+#include "mem.h"
+#include "rational.h"
 
 /**
  * @file test_librational_all.h

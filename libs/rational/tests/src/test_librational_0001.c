@@ -1,6 +1,4 @@
-#include "sute.h"
-#include "testmocking.h"
-
+#include "test_librational_all.h"
 #include <errno.h>
 #include <float.h>
 #include <inttypes.h>

@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_librational_all.h"
 #include <errno.h>
 #include <limits.h>
 

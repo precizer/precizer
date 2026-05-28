@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_librational_all.h"
 
 /**
  * @brief Run all public librational test suites
