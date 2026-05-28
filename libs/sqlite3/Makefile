@@ -159,7 +159,7 @@ else
 PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
 endif
 
-.PHONY: all purge clean debug production prod portable sanitize gcc-analyzer
+.PHONY: all purge clean debug production prod portable sanitize gcc-analyzer compile-commands
 .PHONY: coverage memtest tests test format print-%
 
 define SQLITE_WARN_ONCE
@@ -176,6 +176,9 @@ all: debug production portable
 #
 gcc-analyzer: CC = gcc
 gcc-analyzer: debug
+
+compile-commands:
+	@true
 
 #
 # Debug rules

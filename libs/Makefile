@@ -8,6 +8,8 @@ PURGE_SUBDIRS = $(SUBDIRS) testmocking
 
 TOPTARGETS := all clean debug prod production portable sanitize test gcc-analyzer format coverage
 
+.PHONY: $(TOPTARGETS) $(SUBDIRS) purge compile-commands
+
 # Dependencies between libraries
 mem: rational
 xdiff: rational
@@ -20,7 +22,8 @@ $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
 	@$(MAKE) -s -C $@ $(MAKECMDGOALS) BUILDDIR=../../.builds
 
-.PHONY: $(TOPTARGETS) $(SUBDIRS) purge
+compile-commands:
+	@$(foreach dir,$(SUBDIRS),$(MAKE) -s -C $(dir) compile-commands || exit $$?;)
 
 # Purge is intentionally separate from TOPTARGETS because it must clean each
 # library's own local artifact tree. Passing BUILDDIR=../../.builds here would
