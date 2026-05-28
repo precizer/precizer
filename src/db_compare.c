@@ -1,45 +1,15 @@
 #include "precizer.h"
 
 /**
- * @brief Composes an SQL ATTACH DATABASE query string.
- *
- * This function generates an SQL query string to attach a database with a specified path and number.
- *
- * @param[out] sql Pointer to a string that will hold the generated SQL query.
- * @param[in] db_path Path to the database file to be attached.
- * @param[in] db_num Database number (1 or 2) used in the query.
- * @return Return structure indicating the operation status.
- */
-static Return compose_sql(
-	char       **sql,
-	const char *db_path,
-	int        db_num)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-	create(char,wrapped_db_path);
-
-	run(db_sql_wrap_string(wrapped_db_path,db_path));
-
-	if(SUCCESS == status && asprintf(sql,"ATTACH DATABASE %s as db%d;",getcstring(wrapped_db_path),db_num) == -1)
-	{
-		status = FAILURE;
-		report("Memory allocation failed for SQL query string");
-	}
-
-	del(wrapped_db_path);
-
-	provide(status);
-}
-
-/**
  * @brief Attaches a secondary database to the primary database connection.
  *
- * This function attaches a secondary database (specified by its index in the configuration)
- * to the primary SQLite database connection using the ATTACH DATABASE command.
+ * The path is selected from `config->db_file_paths`, which stores the two
+ * `--compare` positional arguments as libmem string descriptors.
+ * `db_sql_wrap_string()` first converts the selected path into a safe SQL
+ * literal, then `m_formatted_string()` builds the final `ATTACH DATABASE`
+ * statement in a libmem string descriptor before SQLite executes it
  *
- * @param[in] db_A Index of the database path in the configuration array.
+ * @param[in] db_A Index of the database path in `config->db_file_paths`.
  * @param[in] db_B Database number (1 or 2) to be used in the ATTACH DATABASE command.
  * @return Return structure indicating the operation status.
  */
@@ -47,17 +17,37 @@ static Return db_attach(
 	int db_A,
 	int db_B)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	char *select_sql = NULL;
+	m_create(char,wrapped_db_path,MEMORY_STRING);
+	m_create(char,sql,MEMORY_STRING);
 
-	run(compose_sql(&select_sql,config->db_file_paths[db_A],db_B));
+	const memory *db_file_path = m_item_ro(memory,conf(db_file_paths),db_A);
+
+	if(db_file_path == NULL)
+	{
+		report("Database path item is unavailable for index: %d",db_A);
+		status = FAILURE;
+	}
 
 	if(SUCCESS == status)
 	{
-		int rc = sqlite3_exec(config->db,select_sql,NULL,NULL,NULL);
+		run(db_sql_wrap_string(wrapped_db_path,m_text(db_file_path)));
+	}
+
+	if(SUCCESS == status)
+	{
+		run(m_formatted_string(sql,"ATTACH DATABASE %s as db%d;",m_text(wrapped_db_path),db_B));
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_exec(config->db,m_text(sql),NULL,NULL,NULL);
 
 		if(rc!= SQLITE_OK)
 		{
@@ -66,7 +56,8 @@ static Return db_attach(
 		}
 	}
 
-	free(select_sql);
+	call(m_del(wrapped_db_path));
+	call(m_del(sql));
 
 	provide(status);
 }
@@ -79,6 +70,9 @@ static Return db_attach(
  */
 static Return db_detach(const char *db_alias)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
@@ -152,6 +146,9 @@ static Return db_report_category(
 	const char *db_A_name,
 	const char *db_B_name)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
@@ -169,7 +166,7 @@ static Return db_report_category(
 	if(SUCCESS == status)
 	{
 		bool first_visible_path = true;
-		create(char,relative_path);
+		m_create(char,relative_path,MEMORY_STRING);
 
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
@@ -192,7 +189,7 @@ static Return db_report_category(
 
 			size_t relative_path_size = (size_t)sqlite3_column_bytes(select_stmt,0) + 1U;
 
-			run(copy_buffer(relative_path,db_relative_path,relative_path_size));
+			run(m_copy_fixed_string(relative_path,relative_path_size,db_relative_path));
 
 			if(SUCCESS != status)
 			{
@@ -228,10 +225,10 @@ static Return db_report_category(
 			}
 
 			*differences_found = true;
-			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",getcstring(relative_path));
+			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",m_text(relative_path));
 		}
 
-		del(relative_path);
+		m_del(relative_path);
 
 		if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
 		{
@@ -257,18 +254,26 @@ static Return db_report_category(
 }
 
 /**
- * @brief Compare two databases selected in the global config
+ * @brief Compare the two databases selected by `--compare`
  *
- * @details Attaches both databases, reports requested difference categories,
- * and prints summary lines for missing paths and checksum mismatches. The
- * comparison scope can be limited with `--compare-filter` and further narrowed
- * by `--ignore` and `--include`; without filters the function checks
- * first-source paths, second-source paths, and SHA512 mismatches
+ * @details The two database file paths come from `config->db_file_paths`, not
+ * from traversal roots. The function verifies both files, attaches them to the
+ * primary SQLite connection, reports requested difference categories, and
+ * prints summary lines for missing paths and checksum mismatches
+ *
+ * The comparison scope can be limited with `--compare-filter` and further
+ * narrowed by `--ignore` and `--include`; without filters the function checks
+ * first-source paths, second-source paths, and SHA512 mismatches. For example,
+ * `precizer --compare old.db new.db --compare-filter=sha512` validates both DB
+ * files and reports checksum differences for paths present in both databases
  *
  * @return Return status code
  */
 Return db_compare(void)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
@@ -293,12 +298,14 @@ Return db_compare(void)
 	slog(EVERY,"The comparison of %s and %s databases is starting…\n",config->db_file_names[0],config->db_file_names[1]);
 
 	/* Validate database paths */
-	for(int i = 0; config->db_file_paths[i]; i++)
+	m_string_array_foreach(conf(db_file_paths),db_file_path)
 	{
-		if(NOT_FOUND == file_availability(config->db_file_paths[i],NULL,SHOULD_BE_A_FILE))
+		const char *db_file_path_text = m_text(db_file_path);
+
+		if(NOT_FOUND == file_availability(db_file_path_text,NULL,SHOULD_BE_A_FILE))
 		{
 			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",
-				config->db_file_paths[i]);
+				db_file_path_text);
 			status = FAILURE;
 			break;
 		}
@@ -308,7 +315,7 @@ Return db_compare(void)
 			/*
 			 * Validate the integrity of the database file
 			 */
-			status = db_integrity_check(config->db_file_paths[i]);
+			status = db_integrity_check(db_file_path_text);
 
 			if(SUCCESS != status)
 			{
