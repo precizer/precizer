@@ -1,4 +1,4 @@
-#include "test_libmem_all.h"
+#include "sute.h"
 
 Return finish(void)
 {
