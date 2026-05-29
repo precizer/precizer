@@ -62,8 +62,6 @@ Return print_stat(const struct stat *st)
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	char time_str[20]; /* "YYYY-MM-DD HH:MM:SS" + NUL */
-	struct tm *tm_info;
 
 	if(SUCCESS == status)
 	{
@@ -75,6 +73,9 @@ Return print_stat(const struct stat *st)
 
 	if(SUCCESS == status)
 	{
+		char time_str[20]; /* "YYYY-MM-DD HH:MM:SS" + NUL */
+		struct tm *tm_info;
+
 		echo(STDERR,"----------------\n");
 		echo(STDERR,"File information:\n");
 		echo(STDERR,"Device ID: %lu\n",(unsigned long)st->st_dev);

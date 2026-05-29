@@ -244,7 +244,6 @@ SHA512_Status sha512_update(
 	size_t              inlen)
 {
 	SHA512_Status status;
-	size_t n;
 	size_t i;
 
 	if(md == NULL)
@@ -273,7 +272,7 @@ SHA512_Status sha512_update(
 			in += SHA512_BLOCK_BYTES;
 			inlen -= SHA512_BLOCK_BYTES;
 		} else {
-			n = MIN(inlen,(SHA512_BLOCK_BYTES - md->curlen));
+			size_t n = MIN(inlen,(SHA512_BLOCK_BYTES - md->curlen));
 
 			for(i = 0; i < n; i++)
 			{

@@ -23,7 +23,6 @@ Return get_file_content(
 	FILE *file = NULL;
 	long file_size_long = 0;
 	size_t file_size = 0;
-	size_t read_size = 0;
 
 	// Validate input parameters
 	if((filename == NULL) || (pattern == NULL))
@@ -113,7 +112,7 @@ Return get_file_content(
 		{
 			status = FAILURE;
 		} else {
-			read_size = fread(pattern_data_rewritable,1,file_size,file);
+			size_t read_size = fread(pattern_data_rewritable,1,file_size,file);
 
 			if(read_size != file_size)
 			{

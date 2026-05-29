@@ -68,7 +68,6 @@ static int append_to_buffer(
 	int status = SUCCESS;
 	output_buffer_t *buf = (output_buffer_t *)priv;
 	size_t total_size = 0;
-	size_t new_capacity = 0;
 	char *new_buffer = NULL;
 
 	/* Check input parameters */
@@ -91,7 +90,7 @@ static int append_to_buffer(
 	{
 		if(buf->size + total_size + 1 > buf->capacity)
 		{
-			new_capacity = buf->capacity;
+			size_t new_capacity = buf->capacity;
 
 			while(new_capacity < buf->size + total_size + 1)
 			{
