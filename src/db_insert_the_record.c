@@ -54,7 +54,7 @@ Return db_insert_the_record(
 	}
 
 	/* Bind offset value */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		if(file->checksum_offset == 0)
 		{
@@ -71,26 +71,26 @@ Return db_insert_the_record(
 	}
 
 	/* Bind relative path */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
-		int relative_path_length = 0;
+		size_t relative_path_length = 0;
 
-		if(relative_path->length > 0)
+		status = m_string_length(relative_path,&relative_path_length);
+
+		if(SUCCESS & status)
 		{
-			relative_path_length = (int)(relative_path->length - 1);
-		}
+			rc = sqlite3_bind_text(insert_stmt,2,m_text(relative_path),(int)relative_path_length,NULL);
 
-		rc = sqlite3_bind_text(insert_stmt,2,getcstring(relative_path),relative_path_length,NULL);
-
-		if(SQLITE_OK != rc)
-		{
-			log_sqlite_error(config->db,rc,NULL,"Failed to bind relative path");
-			status = FAILURE;
+			if(SQLITE_OK != rc)
+			{
+				log_sqlite_error(config->db,rc,NULL,"Failed to bind relative path");
+				status = FAILURE;
+			}
 		}
 	}
 
 	/* Bind SHA512 checksum */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		if(file->checksum_offset == 0 && file->zero_size_file == false && file->wrong_file_type == false)
 		{
@@ -107,7 +107,7 @@ Return db_insert_the_record(
 	}
 
 	/* Copy and bind file metadata */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		rc = sqlite3_bind_blob(insert_stmt,4,&file->stat,sizeof(CmpctStat),NULL);
 
@@ -119,7 +119,7 @@ Return db_insert_the_record(
 	}
 
 	/* Bind SHA512 context */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		if(file->checksum_offset == 0)
 		{
@@ -136,7 +136,7 @@ Return db_insert_the_record(
 	}
 
 	/* Execute prepared statement */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		rc = sqlite3_step(insert_stmt);
 
@@ -147,14 +147,20 @@ Return db_insert_the_record(
 		}
 	}
 
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		/* Reflect changes in global */
 		config->db_primary_file_modified = true;
 
 	}
 
-	sqlite3_finalize(insert_stmt);
+	rc = sqlite3_finalize(insert_stmt);
+
+	if(SUCCESS & status && SQLITE_OK != rc)
+	{
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize insert statement");
+		status = FAILURE;
+	}
 
 	provide(status);
 }
