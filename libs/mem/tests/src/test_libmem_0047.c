@@ -41,10 +41,7 @@ Return test_libmem_0047(void)
 	IF(aliased_literal != NULL)
 	{
 		aliased_literal += 2;
-		ASSERT(SUCCESS == m_copy_fixed_string(
-			string_buffer,
-			string_buffer->length - 2,
-			aliased_literal));
+		ASSERT(SUCCESS == m_copy_fixed_string(string_buffer,string_buffer->length - 2,aliased_literal));
 	}
 
 	ASSERT(string_buffer->length == 5);

@@ -27,14 +27,8 @@ Return test_libmem_0031(void)
 
 	ASSERT(SUCCESS == m_copy_buffer(code_units,sizeof(initial_code_units),initial_code_units));
 	ASSERT(SUCCESS == m_to_string(code_units));
-	ASSERT(SUCCESS == m_concat_string(
-		code_units,
-		unbounded_suffix));
-	ASSERT(SUCCESS == mem_core_string(
-		SOURCE_FIXED_STRING | TRANSFER_APPEND,
-		code_units,
-		sizeof(literal_suffix),
-		literal_suffix));
+	ASSERT(SUCCESS == m_concat_string(code_units,unbounded_suffix));
+	ASSERT(SUCCESS == mem_core_string(SOURCE_FIXED_STRING | TRANSFER_APPEND,code_units,sizeof(literal_suffix),literal_suffix));
 
 	const uint32_t *aliased_suffix = m_data_ro(uint32_t,code_units);
 	ASSERT(aliased_suffix != NULL);
@@ -42,9 +36,7 @@ Return test_libmem_0031(void)
 	IF(aliased_suffix != NULL)
 	{
 		aliased_suffix += 2;
-		ASSERT(SUCCESS == m_concat_string(
-			code_units,
-			aliased_suffix));
+		ASSERT(SUCCESS == m_concat_string(code_units,aliased_suffix));
 	}
 
 	aliased_suffix = m_data_ro(uint32_t,code_units);
@@ -56,9 +48,7 @@ Return test_libmem_0031(void)
 	IF(aliased_suffix != NULL)
 	{
 		aliased_suffix += code_units_length;
-		ASSERT(SUCCESS == m_concat_string(
-			code_units,
-			aliased_suffix));
+		ASSERT(SUCCESS == m_concat_string(code_units,aliased_suffix));
 	}
 
 	ASSERT(code_units->length == 7);

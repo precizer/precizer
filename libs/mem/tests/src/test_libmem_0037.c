@@ -63,10 +63,7 @@ Return test_libmem_0037(void)
 	ASSERT(SUCCESS == m_string_truncate(code_units,8));
 	ASSERT(code_units->string_length == 2);
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0037,
-		capture_libmem_invalid_string_truncate_mode));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0037,capture_libmem_invalid_string_truncate_mode));
 
 	call(m_del(code_units));
 

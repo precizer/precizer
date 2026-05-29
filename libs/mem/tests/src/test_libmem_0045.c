@@ -35,10 +35,7 @@ Return test_libmem_0045(void)
 
 	ASSERT(SUCCESS == m_copy_buffer(code_units,sizeof(initial_code_units),initial_code_units));
 	ASSERT(SUCCESS == m_to_string(code_units));
-	ASSERT(SUCCESS == m_concat_string(
-		code_units,
-		sizeof(bounded_wide_suffix),
-		bounded_wide_suffix));
+	ASSERT(SUCCESS == m_concat_string(code_units,sizeof(bounded_wide_suffix),bounded_wide_suffix));
 	ASSERT(code_units->length == 3);
 	ASSERT(code_units->string_length == 2);
 	ASSERT(code_units->is_string == true);

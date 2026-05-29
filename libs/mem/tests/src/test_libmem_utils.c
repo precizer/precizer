@@ -124,22 +124,10 @@ Return run_mem_core_data_case(
 
 	ASSERT(descriptors != NULL);
 	ASSERT(case_data != NULL);
-	ASSERT(SUCCESS == set_raw_descriptor_bytes(
-		descriptors[case_data->destination_index],
-		case_data->destination_seed_bytes,
-		case_data->destination_seed_size));
-	ASSERT(SUCCESS == set_raw_descriptor_bytes(
-		descriptors[case_data->source_index],
-		case_data->source_bytes,
-		case_data->source_size_bytes));
-	ASSERT(SUCCESS == case_data->operation(
-		descriptors[case_data->destination_index],
-		descriptors[case_data->source_index]));
-	ASSERT(SUCCESS == expect_raw_descriptor_bytes(
-		descriptors[case_data->destination_index],
-		case_data->expected_bytes,
-		case_data->expected_size,
-		case_data->expected_length));
+	ASSERT(SUCCESS == set_raw_descriptor_bytes(descriptors[case_data->destination_index],case_data->destination_seed_bytes,case_data->destination_seed_size));
+	ASSERT(SUCCESS == set_raw_descriptor_bytes(descriptors[case_data->source_index],case_data->source_bytes,case_data->source_size_bytes));
+	ASSERT(SUCCESS == case_data->operation(descriptors[case_data->destination_index],descriptors[case_data->source_index]));
+	ASSERT(SUCCESS == expect_raw_descriptor_bytes(descriptors[case_data->destination_index],case_data->expected_bytes,case_data->expected_size,case_data->expected_length));
 
 	return(status);
 }

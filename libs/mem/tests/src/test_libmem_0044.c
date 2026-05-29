@@ -38,10 +38,7 @@ Return test_libmem_0044(void)
 
 	ASSERT(SUCCESS == m_copy_buffer(code_units,sizeof(initial_code_units),initial_code_units));
 	ASSERT(SUCCESS == m_to_string(code_units));
-	ASSERT(SUCCESS == m_concat_fixed_string(
-		code_units,
-		sizeof(literal_suffix),
-		literal_suffix));
+	ASSERT(SUCCESS == m_concat_fixed_string(code_units,sizeof(literal_suffix),literal_suffix));
 	ASSERT(code_units->length == 4);
 	ASSERT(code_units->string_length == 3);
 	ASSERT(code_units->is_string == true);

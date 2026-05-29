@@ -189,10 +189,7 @@ Return test_libmem_0070(void)
 	        "ERROR: src/mem_formatted_string\\.c:mem_formatted_string_wchar:\\d+ Memory management; Format string must be non-NULL Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
 	        "\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0070,
-		capture_libmem_formatted_string_frame_errors));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0070,capture_libmem_formatted_string_frame_errors));
 
 	RETURN_STATUS;
 }

@@ -64,11 +64,7 @@ static Return capture_inline_string_descriptor_table(void)
 	{'e','p','s','i','l','o','n','\0','x'};
 
 	ASSERT(SUCCESS == m_string_array_append(table,char,"delta"));
-	ASSERT(SUCCESS == m_string_array_append(
-		table,
-		char,
-		sizeof(epsilon_bounded_source),
-		epsilon_bounded_source));
+	ASSERT(SUCCESS == m_string_array_append(table,char,sizeof(epsilon_bounded_source),epsilon_bounded_source));
 	ASSERT(SUCCESS == m_string_array_append(table,char,"zeta"));
 	ASSERT(table->is_string == false);
 	ASSERT(table->single_element_size == sizeof(memory));
@@ -163,15 +159,9 @@ Return test_libmem_0069(void)
 	        ".*Item index 2 is out of range for descriptor length 2"
 	        ".*Expected.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		expected_stdout_pattern,
-		NULL,
-		capture_inline_string_descriptor_table));
+	ASSERT(SUCCESS == match_function_output(expected_stdout_pattern,NULL,capture_inline_string_descriptor_table));
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_negative_stderr_pattern,
-		capture_array_item_negative_cases));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_negative_stderr_pattern,capture_array_item_negative_cases));
 
 	RETURN_STATUS;
 }

@@ -40,10 +40,7 @@ Return test_libmem_0039(void)
 	static const char expected_stderr_pattern_libmem_0039[] =
 	        "\\A.*Data descriptor has non-zero string_length during string conversion.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0039,
-		capture_libmem_inconsistent_data_to_string_cache));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0039,capture_libmem_inconsistent_data_to_string_cache));
 
 	RETURN_STATUS;
 }

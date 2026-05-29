@@ -146,10 +146,7 @@ Return test_libmem_0062(void)
 	        ".*Source byte count 4 is not divisible by destination element size 8"
 	        ".*Source byte count 8 is not divisible by destination element size 3.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0062,
-		capture_libmem_core_data_non_divisible_cross_type_cases));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0062,capture_libmem_core_data_non_divisible_cross_type_cases));
 
 	RETURN_STATUS;
 }

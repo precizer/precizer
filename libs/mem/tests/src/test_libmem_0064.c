@@ -56,26 +56,17 @@ Return test_libmem_0064(void)
 	}
 
 	ASSERT(SUCCESS == m_copy_fixed_string(string_destination,sizeof(pre_text),pre_text));
-	ASSERT(SUCCESS == m_concat_string(
-		string_destination,
-		sizeof(bounded_string_with_terminator),
-		bounded_string_with_terminator));
+	ASSERT(SUCCESS == m_concat_string(string_destination,sizeof(bounded_string_with_terminator),bounded_string_with_terminator));
 	ASSERT(string_destination->string_length == 5);
 	ASSERT(string_destination->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_destination),"pre-x"));
-	ASSERT(SUCCESS == m_concat_string(
-		string_destination,
-		sizeof(bounded_string_without_terminator),
-		bounded_string_without_terminator));
+	ASSERT(SUCCESS == m_concat_string(string_destination,sizeof(bounded_string_without_terminator),bounded_string_without_terminator));
 	ASSERT(string_destination->string_length == 8);
 	ASSERT(string_destination->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_destination),"pre-x-ok"));
 
 	const char *aliased_string_suffix = m_text(string_destination) + 4;
-	ASSERT(SUCCESS == m_concat_string(
-		string_destination,
-		string_destination->length - 4,
-		aliased_string_suffix));
+	ASSERT(SUCCESS == m_concat_string(string_destination,string_destination->length - 4,aliased_string_suffix));
 	ASSERT(string_destination->string_length == 12);
 	ASSERT(string_destination->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_destination),"pre-x-okx-ok"));
@@ -100,10 +91,7 @@ Return test_libmem_0064(void)
 	}
 
 	ASSERT(SUCCESS == m_copy_fixed_string(string_wrapper_destination,sizeof(go_text),go_text));
-	ASSERT(SUCCESS == m_concat_string(
-		string_wrapper_destination,
-		sizeof(wrapper_string_suffix),
-		wrapper_string_suffix));
+	ASSERT(SUCCESS == m_concat_string(string_wrapper_destination,sizeof(wrapper_string_suffix),wrapper_string_suffix));
 	ASSERT(string_wrapper_destination->string_length == 4);
 	ASSERT(string_wrapper_destination->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_wrapper_destination),"go!?"));

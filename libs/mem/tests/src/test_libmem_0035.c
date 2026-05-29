@@ -26,10 +26,7 @@ static Return capture_libmem_invalid_internal_bounded_source(void)
 
 	IF(invalid_internal_source != NULL)
 	{
-		ASSERT(FAILURE == m_concat_string(
-			string_buffer,
-			1,
-			invalid_internal_source));
+		ASSERT(FAILURE == m_concat_string(string_buffer,1,invalid_internal_source));
 	}
 
 	call(m_del(string_buffer));
@@ -49,10 +46,7 @@ Return test_libmem_0035(void)
 	static const char expected_stderr_pattern_libmem_0035[] =
 	        "\\A.*Source start exceeds destination visible string bounds.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0035,
-		capture_libmem_invalid_internal_bounded_source));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0035,capture_libmem_invalid_internal_bounded_source));
 
 	RETURN_STATUS;
 }

@@ -52,10 +52,7 @@ Return test_libmem_0051(void)
 	ASSERT(title->is_string == true);
 	ASSERT(0 == strcmp(m_text(title),"draft"));
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0051,
-		capture_libmem_invalid_finalize_string_write_mode));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0051,capture_libmem_invalid_finalize_string_write_mode));
 
 	call(m_del(title));
 

@@ -40,10 +40,7 @@ Return test_libmem_0058(void)
 	static const char expected_stderr_pattern_libmem_0058[] =
 	        "\\A.*Descriptor reserve is smaller than logical payload during resize.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0058,
-		capture_libmem_inconsistent_data_resize_reserve));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0058,capture_libmem_inconsistent_data_resize_reserve));
 
 	RETURN_STATUS;
 }

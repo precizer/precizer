@@ -22,11 +22,7 @@ static Return capture_libmem_invalid_internal_unbounded_source(void)
 
 	IF(invalid_internal_source != NULL)
 	{
-		ASSERT(FAILURE == mem_core_string(
-			SOURCE_UNBOUNDED_STRING | TRANSFER_APPEND,
-			string_buffer,
-			0,
-			invalid_internal_source));
+		ASSERT(FAILURE == mem_core_string(SOURCE_UNBOUNDED_STRING | TRANSFER_APPEND,string_buffer,0,invalid_internal_source));
 	}
 
 	call(m_del(string_buffer));
@@ -46,10 +42,7 @@ Return test_libmem_0033(void)
 	static const char expected_stderr_pattern_libmem_0033[] =
 	        "\\A.*Unbounded source start exceeds destination logical bounds.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0033,
-		capture_libmem_invalid_internal_unbounded_source));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0033,capture_libmem_invalid_internal_unbounded_source));
 
 	RETURN_STATUS;
 }

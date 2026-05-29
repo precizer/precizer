@@ -52,10 +52,7 @@ Return test_libmem_0029(void)
 	static const char expected_stderr_pattern_libmem_0029[] =
 	        "\\A.*Descriptor has non-zero length with NULL data pointer.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0029,
-		capture_libmem_inconsistent_string_descriptor));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0029,capture_libmem_inconsistent_string_descriptor));
 
 	RETURN_STATUS;
 }

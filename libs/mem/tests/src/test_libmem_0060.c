@@ -45,10 +45,7 @@ Return test_libmem_0060(void)
 	static const char expected_stderr_pattern_libmem_0060[] =
 	        "\\A.*Source byte count 3 is not divisible by destination element size 2.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0060,
-		capture_libmem_core_data_non_divisible_source));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0060,capture_libmem_core_data_non_divisible_source));
 
 	RETURN_STATUS;
 }

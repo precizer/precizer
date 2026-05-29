@@ -139,10 +139,7 @@ Return test_libmem_0067(void)
 		ASSERT(empty_wide_view[0] == UINT32_C(0));
 	}
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0067,
-		capture_invalid_mem_string_descriptors));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0067,capture_invalid_mem_string_descriptors));
 
 	call(m_del(empty_wide_string));
 	call(m_del(byte_string));

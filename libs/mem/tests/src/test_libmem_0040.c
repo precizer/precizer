@@ -57,10 +57,7 @@ Return test_libmem_0040(void)
 	        ".*String descriptor has non-zero string_length with zero length during string conversion"
 	        ".*String descriptor cache is inconsistent during string conversion.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0040,
-		capture_libmem_inconsistent_data_to_string_string_mode));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0040,capture_libmem_inconsistent_data_to_string_string_mode));
 
 	RETURN_STATUS;
 }

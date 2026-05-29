@@ -98,10 +98,7 @@ static Return test_libmem_0066_3(void)
 	IF(aliased_raw_suffix != NULL)
 	{
 		aliased_raw_suffix += 2;
-		ASSERT(SUCCESS == m_copy_buffer(
-			raw_buffer,
-			sizeof(raw_bytes) - 2U,
-			aliased_raw_suffix));
+		ASSERT(SUCCESS == m_copy_buffer(raw_buffer,sizeof(raw_bytes) - 2U,aliased_raw_suffix));
 	}
 
 	ASSERT(raw_buffer->length == sizeof(expected_raw_tail));
@@ -156,10 +153,7 @@ static Return test_libmem_0066_4(void)
 	IF(aliased_core_suffix != NULL)
 	{
 		aliased_core_suffix += 1;
-		ASSERT(SUCCESS == m_copy_buffer(
-			raw_core_buffer,
-			sizeof(raw_bytes) - 2U,
-			aliased_core_suffix));
+		ASSERT(SUCCESS == m_copy_buffer(raw_core_buffer,sizeof(raw_bytes) - 2U,aliased_core_suffix));
 	}
 
 	ASSERT(raw_core_buffer->length == sizeof(expected_raw_core_tail));
@@ -171,10 +165,7 @@ static Return test_libmem_0066_4(void)
 
 	IF(raw_core_view != NULL)
 	{
-		ASSERT(0 == memcmp(
-			raw_core_view,
-			expected_raw_core_tail,
-			sizeof(expected_raw_core_tail)));
+		ASSERT(0 == memcmp(raw_core_view,expected_raw_core_tail,sizeof(expected_raw_core_tail)));
 	}
 
 	ASSERT(SUCCESS == m_copy_buffer(raw_core_buffer,0,NULL));

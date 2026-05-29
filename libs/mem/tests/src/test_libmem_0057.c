@@ -40,10 +40,7 @@ Return test_libmem_0057(void)
 	static const char expected_stderr_pattern_libmem_0057[] =
 	        "\\A.*Data descriptor has non-zero string_length during resize.*\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0057,
-		capture_libmem_inconsistent_data_resize_cache));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0057,capture_libmem_inconsistent_data_resize_cache));
 
 	RETURN_STATUS;
 }

@@ -86,10 +86,7 @@ Return test_libmem_0055(void)
 
 	m_create(int,graceful_descriptor);
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern_libmem_0055,
-		capture_libmem_inconsistent_data_descriptor));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0055,capture_libmem_inconsistent_data_descriptor));
 
 	IF(SUCCESS == status)
 	{

@@ -51,10 +51,7 @@ for(int i = 0; i < CYCLES; i++)
 
 		IF(test_view != NULL)
 		{
-			ASSERT(CRYPT_OK == sha512_update(
-				&descriptor_context,
-				(const unsigned char *)test_view,
-				test->length * sizeof(TYPE)));
+			ASSERT(CRYPT_OK == sha512_update(&descriptor_context,(const unsigned char *)test_view,test->length * sizeof(TYPE)));
 		}
 
 		ASSERT(CRYPT_OK == sha512_final(&descriptor_context,hash_2));

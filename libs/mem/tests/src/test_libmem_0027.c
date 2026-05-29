@@ -48,10 +48,7 @@ Return test_libmem_0027(void)
 	IF(aliased_suffix != NULL)
 	{
 		aliased_suffix += 2;
-		ASSERT(SUCCESS == m_concat_string(
-			code_units,
-			code_units->length * sizeof(uint32_t),
-			aliased_suffix));
+		ASSERT(SUCCESS == m_concat_string(code_units,code_units->length * sizeof(uint32_t),aliased_suffix));
 	}
 
 	ASSERT(code_units->length == 7);
@@ -81,10 +78,7 @@ Return test_libmem_0027(void)
 	IF(aliased_suffix != NULL)
 	{
 		aliased_suffix += code_units_length;
-		ASSERT(SUCCESS == m_concat_string(
-			code_units,
-			sizeof(uint32_t),
-			aliased_suffix));
+		ASSERT(SUCCESS == m_concat_string(code_units,sizeof(uint32_t),aliased_suffix));
 	}
 
 	ASSERT(code_units->length == 7);

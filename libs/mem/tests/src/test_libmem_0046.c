@@ -58,10 +58,7 @@ Return test_libmem_0046(void)
 	IF(aliased_source != NULL)
 	{
 		aliased_source += 2;
-		ASSERT(SUCCESS == m_copy_string(
-			string_buffer,
-			string_buffer->length - 2,
-			aliased_source));
+		ASSERT(SUCCESS == m_copy_string(string_buffer,string_buffer->length - 2,aliased_source));
 	}
 
 	ASSERT(string_buffer->length == 5);
@@ -69,10 +66,7 @@ Return test_libmem_0046(void)
 	ASSERT(string_buffer->is_string == true);
 	ASSERT(0 == strcmp(m_text(string_buffer),"cdef"));
 
-	ASSERT(SUCCESS == m_copy_string(
-		wide_buffer,
-		sizeof(wide_bounded_source),
-		wide_bounded_source));
+	ASSERT(SUCCESS == m_copy_string(wide_buffer,sizeof(wide_bounded_source),wide_bounded_source));
 	ASSERT(wide_buffer->length == 3);
 	ASSERT(wide_buffer->string_length == 2);
 	ASSERT(wide_buffer->is_string == true);

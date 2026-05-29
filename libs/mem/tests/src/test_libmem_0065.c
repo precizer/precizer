@@ -159,10 +159,7 @@ Return test_libmem_0065(void)
 	        "ERROR: src/mem_copy\\.c:mem_copy:\\d+ Memory management; Source string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
 	        "ERROR: src/mem_concat_strings\\.c:mem_concat_strings:\\d+ Memory management; Source string descriptor is inconsistent Errno: [^\\n]+ \\(errno: [0-9]+\\)\\Z";
 
-	ASSERT(SUCCESS == match_function_output(
-		NULL,
-		expected_stderr_pattern,
-		capture_libmem_mode_mismatch_negative_cases));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern,capture_libmem_mode_mismatch_negative_cases));
 
 	RETURN_STATUS;
 }
