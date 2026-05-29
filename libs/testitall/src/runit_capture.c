@@ -93,10 +93,7 @@ static Return load_capture_file(
 	if(SUCCESS == status)
 	{
 		file_size = (size_t)file_size_long;
-	}
 
-	if(SUCCESS == status)
-	{
 		if(0 != fseek(file,0,SEEK_SET))
 		{
 			serp("Failed to rewind capture file");
