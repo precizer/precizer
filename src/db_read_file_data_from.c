@@ -51,54 +51,66 @@ Return db_read_file_data_from(
 		status = FAILURE;
 	}
 #endif
-	int relative_path_length = 0;
+	size_t relative_path_length;
 
-	if(relative_path->length > 0)
+	if(SUCCESS & status)
 	{
-		relative_path_length = (int)(relative_path->length - 1);
+		status = m_string_length(relative_path,&relative_path_length);
 	}
 
-	rc = sqlite3_bind_text(select_stmt,1,getcstring(relative_path),relative_path_length,NULL);
-
-	if(SQLITE_OK != rc)
+	if(SUCCESS & status)
 	{
-		log_sqlite_error(config->db,rc,NULL,"Error binding value in select");
+		rc = sqlite3_bind_text(select_stmt,1,m_text(relative_path),(int)relative_path_length,NULL);
+
+		if(SQLITE_OK != rc)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Error binding value in select");
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS & status)
+	{
+		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
+		{
+			dbrow->ID = sqlite3_column_int64(select_stmt,0);
+			dbrow->saved_offset = sqlite3_column_int64(select_stmt,1);
+			const CmpctStat *get_stat = sqlite3_column_blob(select_stmt,2);
+
+			if(get_stat != NULL)
+			{
+				memcpy(&dbrow->saved_stat,get_stat,sizeof(CmpctStat));
+			}
+			const SHA512_Context *get_mdContext = sqlite3_column_blob(select_stmt,3);
+
+			if(get_mdContext != NULL)
+			{
+				memcpy(&dbrow->saved_mdContext,get_mdContext,sizeof(SHA512_Context));
+			}
+
+			const unsigned char *get_sha512 = sqlite3_column_blob(select_stmt,4);
+
+			if(get_sha512 != NULL)
+			{
+				memcpy(&dbrow->sha512,get_sha512,SHA512_DIGEST_LENGTH);
+			}
+
+			dbrow->relative_path_was_in_db_before_processing = true;
+		}
+
+		if(SQLITE_DONE != rc)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
+			status = FAILURE;
+		}
+	}
+	rc = sqlite3_finalize(select_stmt);
+
+	if(SUCCESS & status && SQLITE_OK != rc)
+	{
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize select statement");
 		status = FAILURE;
 	}
-
-	while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
-	{
-		dbrow->ID = sqlite3_column_int64(select_stmt,0);
-		dbrow->saved_offset = sqlite3_column_int64(select_stmt,1);
-		const CmpctStat *get_stat = sqlite3_column_blob(select_stmt,2);
-
-		if(get_stat != NULL)
-		{
-			memcpy(&dbrow->saved_stat,get_stat,sizeof(CmpctStat));
-		}
-		const SHA512_Context *get_mdContext = sqlite3_column_blob(select_stmt,3);
-
-		if(get_mdContext != NULL)
-		{
-			memcpy(&dbrow->saved_mdContext,get_mdContext,sizeof(SHA512_Context));
-		}
-
-		const unsigned char *get_sha512 = sqlite3_column_blob(select_stmt,4);
-
-		if(get_sha512 != NULL)
-		{
-			memcpy(&dbrow->sha512,get_sha512,SHA512_DIGEST_LENGTH);
-		}
-
-		dbrow->relative_path_was_in_db_before_processing = true;
-	}
-
-	if(SQLITE_DONE != rc)
-	{
-		log_sqlite_error(config->db,rc,NULL,"Select statement didn't finish with DONE");
-		status = FAILURE;
-	}
-	sqlite3_finalize(select_stmt);
 
 	provide(status);
 }
