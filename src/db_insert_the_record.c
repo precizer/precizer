@@ -73,7 +73,7 @@ Return db_insert_the_record(
 	/* Bind relative path */
 	if(SUCCESS & status)
 	{
-		size_t relative_path_length = 0;
+		size_t relative_path_length;
 
 		status = m_string_length(relative_path,&relative_path_length);
 
