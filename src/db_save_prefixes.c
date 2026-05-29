@@ -1,50 +1,31 @@
 /**
- * @file precizer.h
+ * @file db_save_prefixes.c
  * @brief Database operations for directory prefix paths
  */
 
 #include "precizer.h"
 
 /**
- * @brief Saves directory prefix paths into the database
+ * @brief Save the current traversal roots into the `paths` table
  *
- * @details This function handles the storage of directory prefix paths in the database
- * according to several operational modes:
+ * The positional directories accepted by normal scanning mode are stored in
+ * `config->roots` as libmem string descriptors. This function writes each
+ * normalized root into the database once, so later file records can be resolved
+ * relative to those root prefixes. In `--compare` mode the function returns
+ * immediately because compare arguments are database files rather than
+ * traversal roots
  *
- * Operational Modes:
- * - Compare Mode: Function returns immediately with SUCCESS
- * - Force Mode: Previous records are deleted before insertion
- * - Dry Run Mode: Data insertion occurs in memory only
+ * With `--force`, obsolete path rows are removed before the current roots are
+ * inserted. With `--dry-run` against an already existing physical database,
+ * inserts are skipped so the on-disk database is not modified
  *
- * Data Insertion Rules:
- * - Data is inserted only if:
- *   - Database file is not physical, OR
- *   - Dry Run mode is not activated
- * - In Dry Run mode with physical database:
- *   - Writing occurs to in-memory database only
+ * For example, after parsing `precizer --database tree.db /home/me/tree`,
+ * `config->roots` contains `/home/me/tree`, and this function ensures that
+ * prefix exists in `paths.prefix`
  *
- * Processing Steps:
- * 1. Checks operational mode
- * 2. Handles record deletion if in Force mode
- * 3. Processes path insertions according to insertion rules
- * 4. Removes trailing slashes from paths before insertion
- *
- * Error Handling:
- * - SQLite preparation errors
- * - SQLite binding errors
- * - SQLite execution errors
- * All errors are logged using slog() function
- *
- * @pre config structure must be properly initialized with:
- *      - compare flag
- *      - force flag
- *      - dry_run flag
- *      - db connection
- *      - paths array
- *
- * @return Return enum value:
- *      - SUCCESS (0): Paths saved successfully
- *      - FAILURE (1): Operation failed due to database errors
+ * @return `SUCCESS` when all required prefixes are present or intentionally
+ *         skipped by mode. `FAILURE` when SQLite preparation, binding, or
+ *         execution fails
  */
 Return db_save_prefixes(void)
 {
@@ -99,18 +80,16 @@ Return db_save_prefixes(void)
 		sqlite3_finalize(delete_stmt);
 	}
 
-	/**
-	 * @brief Data insertion handling rules
-	 * @details Data insertion occurs only if the database file is not a physical file
-	 *          and Dry Run mode is not activated. With Dry Run mode activated,
-	 *          if a physical file is not opened, writing occurs to an in-memory database.
+	/*
+	 * Write prefixes only when the selected mode may change the active database.
+	 * Dry-run scans against an existing physical DB keep the on-disk file intact
 	 */
 	if(!(config->dry_run == true && config->db_primary_file_exists == true))
 	{
-		for(int i = 0; config->paths[i]; i++)
+		// Insert every normalized traversal root that is not already present
+		m_string_array_foreach(conf(roots),root)
 		{
-			// Remove unnecessary trailing slash at the end of the directory prefix
-			remove_trailing_slash(config->paths[i]);
+			const char *root_path = m_text(root);
 
 			const char *select_sql = "SELECT COUNT(*) FROM paths WHERE prefix = ?1;";
 			sqlite3_stmt *select_stmt = NULL;
@@ -126,7 +105,7 @@ Return db_save_prefixes(void)
 
 			if(SUCCESS == status)
 			{
-				rc = sqlite3_bind_text(select_stmt,1,config->paths[i],(int)strlen(config->paths[i]),NULL);
+				rc = sqlite3_bind_text(select_stmt,1,root_path,(int)strlen(root_path),NULL);
 
 				if(SQLITE_OK != rc)
 				{
@@ -164,7 +143,7 @@ Return db_save_prefixes(void)
 
 				if(SUCCESS == status)
 				{
-					rc = sqlite3_bind_text(insert_stmt,1,config->paths[i],(int)strlen(config->paths[i]),NULL);
+					rc = sqlite3_bind_text(insert_stmt,1,root_path,(int)strlen(root_path),NULL);
 
 					if(SQLITE_OK != rc)
 					{
