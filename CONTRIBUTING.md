@@ -66,19 +66,18 @@ sudo apt-get update
 sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev upx-ucl
 ```
 
-#### 3. Test Run (`make tests`) with Sanitizers and `cmocka`
+#### 3. Test Run (`make tests`) with Sanitizers
 
 Required components:
 
 * dependencies from sections 1 and 2
-* `cmocka` (`libcmocka-dev`) for the test runner
 * sanitizer toolchain (`ASan`/`UBSan`) and `llvm-symbolizer`
 
 Ubuntu/Debian:
 
 ```sh
 sudo apt-get update
-sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev libcmocka0 libcmocka-dev upx-ucl
+sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev upx-ucl
 ```
 
 #### 4. Static Analysis and Tooling (`cppcheck` and related targets)
