@@ -229,7 +229,7 @@ tests-debug:
 	@$(MAKE) -s -C tests/ debug BUILDDIR=../$(BUILDDIR)
 
 tests-coverage:
-	@$(MAKE) -s -C tests/ coverage BUILDDIR=../$(BUILDDIR)
+	@$(MAKE) -s -C tests/ coverage-report BUILDDIR=../$(BUILDDIR)
 
 testlibs-debug:
 	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)

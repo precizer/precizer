@@ -193,7 +193,7 @@ tests-debug:
 	@$(MAKE) -s -C tests/ debug BUILDDIR=../$(BUILDDIR)
 
 tests-coverage:
-	@$(MAKE) -s -C tests/ coverage BUILDDIR=../$(BUILDDIR)
+	@$(MAKE) -s -C tests/ coverage-report BUILDDIR=../$(BUILDDIR)
 debug: $(DBG_SO) $(DBG_STAT)
 
 $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)

@@ -187,7 +187,7 @@ PRTB_WFLAGS += -Wmissing-format-attribute
 endif
 
 .PHONY: all purge clean debug production prod portable sanitize format gcc-analyzer
-.PHONY: coverage memtest tests test testlibs-coverage testlibs-sanitize testlibs-debug
+.PHONY: coverage memtest tests test tests-sanitize tests-debug tests-coverage testlibs-coverage testlibs-sanitize testlibs-debug
 .PHONY: testlibs-production testlibs-portable cppcheck clang-analyzer compile-commands clean-compile-commands print-%
 
 # Default build
@@ -198,7 +198,16 @@ all: debug production portable
 #
 memtest: debug
 tests: test
-test: sanitize
+test: tests-sanitize
+
+tests-sanitize:
+	@true
+
+tests-debug:
+	@true
+
+tests-coverage:
+	@true
 
 testlibs-debug:
 	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)

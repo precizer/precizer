@@ -203,7 +203,7 @@ testedlib-coverage:
 coverage: coverage-html
 
 $(COV_EXE): $(COV_OBJS) testlibs-coverage
-	@$(CC) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) $(WRAPFLAGS) -o $(COV_EXE) $(COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS)
+	@$(CC) $(COV_LDPATH) $(COV_RPATH) $(WRAPFLAGS) -o $(COV_EXE) $(COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) $(COV_LDFLAGS)
 	@echo "$@ linked dynamically with coverage flags, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(COV_OBJDIR)

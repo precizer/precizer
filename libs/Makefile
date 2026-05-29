@@ -6,30 +6,20 @@ CONFIG += ordered
 SUBDIRS  = sqlite3 rational sha512 mem xdiff testitall
 PURGE_SUBDIRS = $(SUBDIRS) testmocking
 
-TOPTARGETS := all clean debug prod production portable sanitize test gcc-analyzer format coverage
+TOPTARGETS := all clean debug prod production portable sanitize test tests-debug tests-sanitize tests-coverage gcc-analyzer format coverage compile-commands purge
 
-.PHONY: $(TOPTARGETS) $(SUBDIRS) purge compile-commands
+.PHONY: $(TOPTARGETS) $(SUBDIRS)
 
 # Dependencies between libraries
 mem: rational
 xdiff: rational
 testitall: mem xdiff rational
 
-# When invoked from the umbrella project, every library writes into the
-# project-wide .builds at the repo root. Each library Makefile defaults to its
-# own local .builds when launched directly from the library directory
+# Each child library Makefile defaults to its own local .builds directory.
+# Callers that need a shared artifact tree pass BUILDDIR explicitly
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):
-	@$(MAKE) -s -C $@ $(MAKECMDGOALS) BUILDDIR=../../.builds
-
-compile-commands:
-	@$(foreach dir,$(SUBDIRS),$(MAKE) -s -C $(dir) compile-commands || exit $$?;)
-
-# Purge is intentionally separate from TOPTARGETS because it must clean each
-# library's own local artifact tree. Passing BUILDDIR=../../.builds here would
-# make child Makefiles clean only the umbrella project's root artifact tree
-purge:
-	@$(foreach dir,$(PURGE_SUBDIRS),$(MAKE) -s -C $(dir) purge || exit $$?;)
+	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
 
 gcc-analyzer:
 	@true
