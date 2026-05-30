@@ -24,7 +24,7 @@ roots=tests/fixtures/diffs/diff1; database=0015_database_v2\.db; db_file_name=00
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Starting database file 0015_database_v2\.db integrity check…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:The database verification level has been set to FULL
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Database 0015_database_v2\.db has been verified and is in good condition
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_get_version\.c:\d+:db_get_version:Version number \d+ found in database
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_retrieve_version\.c:\d+:db_retrieve_version:Version number \d+ found in database
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The 0015_database_v2\.db database file is version \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade\.c:\d+:db_upgrade:The database 0015_database_v2\.db file has an outdated version \d+ and requires updating to the version \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_upgrade\.c:\d+:db_upgrade:Warning! The update will be performed in transaction mode for database safety

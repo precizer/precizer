@@ -24,7 +24,7 @@ roots=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Starting database file database1\.db integrity check…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:The database verification level has been set to FULL
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Database database1\.db has been verified and is in good condition
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_get_version\.c:\d+:db_get_version:Version number \d+ found in database
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_retrieve_version\.c:\d+:db_retrieve_version:Version number \d+ found in database
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The database1\.db database file is version \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The database database1\.db is on version \d+ and does not require any upgrades
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init\.c:\d+:db_init:Successfully opened database database1\.db
