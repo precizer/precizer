@@ -23,6 +23,7 @@ size_t file_buffer_memory(void)
 	// Default value is 1MB buffer. Is it too big for embedded and IoT?
 	const size_t buffer_size = 1024*1024;
 
+#if (defined(_SC_AVPHYS_PAGES) || defined(_SC_PHYS_PAGES)) && (defined(_SC_PAGESIZE) || defined(_SC_PAGE_SIZE))
 	// Number of actually free pages
 	long pages;
 
@@ -31,8 +32,6 @@ size_t file_buffer_memory(void)
 #elif defined(_SC_PHYS_PAGES)
 	// Fallback for platforms without _SC_AVPHYS_PAGES — use total pages
 	pages = sysconf(_SC_PHYS_PAGES);
-#else
-	pages = -1;
 #endif
 
 	if(pages == -1)
@@ -41,7 +40,11 @@ size_t file_buffer_memory(void)
 	}
 
 	/* Page size in bytes */
+	#ifdef _SC_PAGESIZE
 	long page_size = sysconf(_SC_PAGESIZE);
+	#else
+	long page_size = sysconf(_SC_PAGE_SIZE);
+	#endif
 
 	if(page_size == -1)
 	{
@@ -56,4 +59,7 @@ size_t file_buffer_memory(void)
 	slog(TRACE,"Bytes that can be allocated for the file buffer: %s\n",bkbmbgbtbpbeb(one_percent,FULL_VIEW));
 
 	return(one_percent);
+#else
+	return(buffer_size);
+#endif
 }

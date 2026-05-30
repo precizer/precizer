@@ -36,12 +36,8 @@ static const char *get_initialize_string_by_code(void)
 	{
 		return "true";
 
-	} else if(config->db_initialize_tables == false){
-		return "false";
-
 	} else {
-
-		return "ERROR!";
+		return "false";
 	}
 }
 
