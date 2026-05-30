@@ -61,7 +61,7 @@ static const uint64_t K[80] =
 
 #define ROR64c(x,y) \
 	( ((((x)&UINT64_C(0xFFFFFFFFFFFFFFFF))>>((uint64_t)(y)&UINT64_C(63))) | \
-	((x)<<((uint64_t)(64-((y)&UINT64_C(63))))))&UINT64_C(0xFFFFFFFFFFFFFFFF))
+	((x)<<(((uint64_t)64-((uint64_t)(y)&UINT64_C(63)))&UINT64_C(63))))&UINT64_C(0xFFFFFFFFFFFFFFFF))
 
 #define STORE64H(x,y) \
 	{ \
