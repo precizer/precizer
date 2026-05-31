@@ -1,23 +1,26 @@
 #include "precizer.h"
 
 /**
- * @brief Validate stored DB path prefixes against current CLI PATH arguments
+ * @brief Validate stored DB path prefixes against the current traversal roots
  *
  * @details Skips validation in compare mode. When the primary database has just
- * been created, no stored-path comparison is needed. Otherwise the function
- * finds DB prefixes that are missing from the current PATH arguments, stores
- * their IDs in `the_path_id_does_not_exists`, and reports the mismatch to the
- * user
+ * been created, no stored-prefix comparison is needed. Otherwise the function
+ * compares the normalized root descriptors in `config->roots` with prefixes
+ * stored in the database `paths` table. Prefix IDs missing from the current
+ * roots are recorded in `the_path_id_does_not_exists` so cleanup code can act
+ * on them later when the user explicitly allows it
  *
  * If mismatches are found and `--force` is not enabled, the function returns
  * `WARNING` so the caller can stop before replacing stored path metadata. When
- * `--force` is enabled, execution continues and the new PATH arguments may be
- * written to the database
+ * `--force` is enabled, execution continues and the current roots may be
+ * written to the database. For example, opening an existing database created
+ * for `/old/tree` with the root `/new/tree` warns before any path metadata is
+ * replaced
  *
  * @warning Using `--force` incorrectly can replace path, file, and checksum
  * metadata in the database
  *
- * @return `SUCCESS` when paths match or forced path replacement is allowed,
+ * @return `SUCCESS` when prefixes match or forced path replacement is allowed,
  *         `WARNING` when mismatches are found without `--force`, or `FAILURE`
  *         on SQLite or memory errors
  */
@@ -46,68 +49,67 @@ Return db_validate_paths(void)
 
 	bool paths_are_equal = true;
 
-	create(char,select_sql);
+	m_create(char,select_sql,MEMORY_STRING);
 
-	// Create the SQL request
-	if(config->paths[0] != NULL)
+	// Create the SQL request from the current libmem-managed traversal roots
+	if(config->roots.length != 0)
 	{
-		char const *sql_1 = "SELECT ID FROM paths WHERE prefix NOT IN (";
-
-		status = concat_literal(select_sql,sql_1);
+		status = m_concat_literal(select_sql,"SELECT ID FROM paths WHERE prefix NOT IN (");
 
 		if(SUCCESS != status)
 		{
-			del(select_sql);
+			m_del(select_sql);
 			provide(status);
 		}
 
-		for(int i = 0; config->paths[i]; i++)
+		bool has_previous_root = false;
+
+		m_string_array_foreach(conf(roots),root)
 		{
-			create(char,path);
-
-			run(db_sql_wrap_string(path,config->paths[i]));
-
-			run(concat_literal(select_sql,getcstring(path)));
-
-			del(path);
-
-			if(SUCCESS != status)
+			if(has_previous_root == true)
 			{
-				del(select_sql);
-				provide(status);
-			}
-
-			// Not the last path in the array
-			if(config->paths[i + 1] != 0)
-			{
-				/* Concatenate with the comma character "," */
-				status = concat_literal(select_sql,",");
+				// Separate quoted root prefixes inside the SQL IN-list
+				status = m_concat_literal(select_sql,",");
 
 				if(SUCCESS != status)
 				{
-					del(select_sql);
+					m_del(select_sql);
 					provide(status);
 				}
 			}
+
+			m_create(char,path,MEMORY_STRING);
+
+			run(db_sql_wrap_string(path,m_text(root)));
+
+			run(m_concat_strings(select_sql,path));
+
+			m_del(path);
+
+			if(SUCCESS != status)
+			{
+				m_del(select_sql);
+				provide(status);
+			}
+
+			has_previous_root = true;
 		}
 
-		/* Close the string that contains SQL request */
-
-		/* Concatenate with the ");" characters */
-		status = concat_literal(select_sql,");");
+		// Close the SQL request string
+		status = m_concat_literal(select_sql,");");
 
 		if(SUCCESS != status)
 		{
-			del(select_sql);
+			m_del(select_sql);
 			provide(status);
 		}
 	}
 
-	rc = sqlite3_prepare_v2(config->db,getcstring(select_sql),-1,&select_stmt,NULL);
+	rc = sqlite3_prepare_v2(config->db,m_text(select_sql),-1,&select_stmt,NULL);
 
 	if(SQLITE_OK != rc)
 	{
-		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",getcstring(select_sql));
+		log_sqlite_error(config->db,rc,NULL,"Can't prepare select statement %s",m_text(select_sql));
 		status = FAILURE;
 	}
 
@@ -167,7 +169,7 @@ Return db_validate_paths(void)
 		}
 	}
 
-	del(select_sql);
+	m_del(select_sql);
 
 	sqlite3_finalize(select_stmt);
 
@@ -228,9 +230,10 @@ Return db_validate_paths(void)
 					{
 						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",confstr(db_file_name));
 
-						for(int i = 0; config->paths[i]; i++)
+						// Show the normalized traversal roots that will replace stored prefixes
+						m_string_array_foreach(conf(roots),root)
 						{
-							slog(EVERY|UNDECOR,"%s\n",config->paths[i]);
+							slog(EVERY|UNDECOR,"%s\n",m_text(root));
 						}
 					}
 				} else {
