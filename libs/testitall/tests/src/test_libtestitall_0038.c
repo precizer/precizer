@@ -51,21 +51,18 @@ static Return check_trim_trailing_eol_case(
 
 	run(m_copy_string(text,input));
 
-	if(SUCCESS == status)
+	IF(SUCCESS == status)
 	{
 		original_length = text->length;
 	}
 
 	run(trim_trailing_eol(text));
 
-	if(SUCCESS == status)
+	IF(SUCCESS == status)
 	{
-		if(strcmp(m_text(text),expected) != 0 ||
-		        text->string_length != strlen(expected) ||
-		        text->length != original_length)
-		{
-			status = FAILURE;
-		}
+		ASSERT(0 == strcmp(m_text(text),expected));
+		ASSERT(text->string_length == strlen(expected));
+		ASSERT(text->length == original_length);
 	}
 
 	call(m_del(text));

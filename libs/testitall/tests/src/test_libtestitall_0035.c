@@ -26,7 +26,7 @@ Return test_libtestitall_0035(void)
 	int restore_tmpdir_status = 0;
 
 	#ifdef P_tmpdir
-	if(P_tmpdir[0] != '\0')
+	IF(P_tmpdir[0] != '\0')
 	{
 		expected_root = P_tmpdir;
 	}
@@ -38,82 +38,54 @@ Return test_libtestitall_0035(void)
 		ASSERT(saved_tmpdir != NULL);
 	}
 
-	if(SUCCESS == status)
-	{
-		ASSERT(unsetenv("TMPDIR") == 0);
-	}
+	ASSERT(unsetenv("TMPDIR") == 0);
 
 	ASSERT(SUCCESS == create_tmpdir(fallback_tmpdir));
 	fallback_path = m_text(fallback_tmpdir);
+	ASSERT(fallback_path != NULL);
 
-	if(SUCCESS == status)
+	IF(SUCCESS == status)
 	{
 		const size_t expected_root_length = strlen(expected_root);
-		const char *fallback_name = fallback_path + expected_root_length;
+		const size_t fallback_path_length = strlen(fallback_path);
+		const char *fallback_name_separator = strrchr(fallback_path,'/');
+		const char *suffix_separator = strrchr(fallback_path,'.');
 
+		ASSERT(expected_root_length > 0U);
+		ASSERT(fallback_path_length > expected_root_length);
 		ASSERT(0 == strncmp(fallback_path,expected_root,expected_root_length));
-
-		if('/' != expected_root[expected_root_length - 1U])
-		{
-			ASSERT('/' == fallback_path[expected_root_length]);
-			fallback_name++;
-		}
-
-		if(SUCCESS == status)
-		{
-			const char *suffix_separator = strrchr(fallback_name,'.');
-
-			ASSERT(fallback_name[0] != '\0');
-			ASSERT(suffix_separator != NULL);
-
-			if(SUCCESS == status)
-			{
-				ASSERT(suffix_separator != fallback_name);
-				ASSERT(strlen(suffix_separator + 1U) == 6U);
-			}
-		}
-	}
-
-	if(SUCCESS == status)
-	{
+		ASSERT(fallback_name_separator != NULL);
+		ASSERT(fallback_name_separator + ('/' == expected_root[expected_root_length - 1U])
+			== fallback_path + expected_root_length);
+		ASSERT(fallback_name_separator[1U] != '\0');
+		ASSERT(suffix_separator != NULL);
+		ASSERT(suffix_separator != fallback_name_separator + 1U);
+		ASSERT(strlen(suffix_separator + 1U) == 6U);
 		struct stat directory_stat;
 		ASSERT(0 == stat(fallback_path,&directory_stat));
 		ASSERT(S_ISDIR(directory_stat.st_mode));
-	}
-
-	if(SUCCESS == status)
-	{
 		ASSERT(SUCCESS == set_environment_variable("TMPDIR",fallback_path));
 	}
 
 	ASSERT(SUCCESS == create_tmpdir(nested_tmpdir));
 	nested_path = m_text(nested_tmpdir);
+	ASSERT(nested_path != NULL);
 
-	if(SUCCESS == status)
+	IF(SUCCESS == status)
 	{
 		const size_t prefix_length = strlen(fallback_path);
-		const char *nested_name = nested_path + prefix_length + 1U;
-		const char *suffix_separator = NULL;
+		const size_t nested_path_length = strlen(nested_path);
+		const char *nested_name_separator = strrchr(nested_path,'/');
+		const char *suffix_separator = strrchr(nested_path,'.');
 
+		ASSERT(nested_path_length > prefix_length);
 		ASSERT(0 == strncmp(nested_path,fallback_path,prefix_length));
-		ASSERT('/' == nested_path[prefix_length]);
-
-		if(SUCCESS == status)
-		{
-			suffix_separator = strrchr(nested_name,'.');
-			ASSERT(nested_name[0] != '\0');
-			ASSERT(suffix_separator != NULL);
-		}
-
-		if(SUCCESS == status)
-		{
-			ASSERT(suffix_separator != nested_name);
-			ASSERT(strlen(suffix_separator + 1U) == 6U);
-		}
-	}
-
-	if(SUCCESS == status)
-	{
+		ASSERT(nested_name_separator != NULL);
+		ASSERT(nested_name_separator == nested_path + prefix_length);
+		ASSERT(nested_name_separator[1U] != '\0');
+		ASSERT(suffix_separator != NULL);
+		ASSERT(suffix_separator != nested_name_separator + 1U);
+		ASSERT(strlen(suffix_separator + 1U) == 6U);
 		struct stat directory_stat;
 		ASSERT(0 == stat(nested_path,&directory_stat));
 		ASSERT(S_ISDIR(directory_stat.st_mode));
@@ -136,12 +108,9 @@ Return test_libtestitall_0035(void)
 		restore_tmpdir_status = unsetenv("TMPDIR");
 	}
 
-	if(SUCCESS == status)
-	{
-		ASSERT(remove_nested_status == 0);
-		ASSERT(remove_fallback_status == 0);
-		ASSERT(restore_tmpdir_status == 0);
-	}
+	ASSERT(remove_nested_status == 0);
+	ASSERT(remove_fallback_status == 0);
+	ASSERT(restore_tmpdir_status == 0);
 
 	free(saved_tmpdir);
 
