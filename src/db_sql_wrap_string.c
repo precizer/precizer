@@ -3,7 +3,7 @@
 /**
  * @brief Wrap a plain string into an SQL literal with escaping.
  *
- * @param destination Pointer to a byte-sized memory descriptor receiving the wrapped string.
+ * @param destination Pointer to a byte-sized string descriptor receiving the wrapped string.
  * @param source      Zero-terminated string that should be quoted for SQL usage.
  *
  * @return Return code describing operation status.
@@ -19,12 +19,6 @@ Return db_sql_wrap_string(
 	if(destination == NULL || source == NULL)
 	{
 		slog(ERROR,"sql_wrap_string arguments must be non-NULL\n");
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && destination->element_size != sizeof(char))
-	{
-		slog(ERROR,"sql_wrap_string requires byte-sized destination descriptor\n");
 		status = FAILURE;
 	}
 
@@ -55,61 +49,73 @@ Return db_sql_wrap_string(
 		}
 	}
 
+	size_t escaped_payload_length = 0;
+	size_t escaped_visible_length = 0;
 	size_t required_elements = 0;
 
 	if(SUCCESS == status)
 	{
-		const size_t overhead = 3;
+		run(m_guarded_add(source_length,apostrophes,&escaped_payload_length));
 
-		if(source_length > SIZE_MAX - apostrophes)
+		if(CRITICAL & status)
 		{
 			slog(ERROR,"sql_wrap_string overflow while adding escape budget\n");
-			status = FAILURE;
-		} else {
-			size_t base_length = source_length + apostrophes;
-
-			if(base_length > SIZE_MAX - overhead)
-			{
-				slog(ERROR,"sql_wrap_string overflow before allocating terminator\n");
-				status = FAILURE;
-			} else {
-				required_elements = base_length + overhead;
-			}
 		}
 	}
 
-	run(resize(destination,required_elements));
+	if(SUCCESS == status)
+	{
+		run(m_guarded_add(escaped_payload_length,2,&escaped_visible_length));
+
+		if(CRITICAL & status)
+		{
+			slog(ERROR,"sql_wrap_string overflow while adding surrounding quotes\n");
+		}
+	}
 
 	if(SUCCESS == status)
 	{
-		unsigned char *destination_bytes = data(unsigned char,destination);
+		run(m_guarded_add(escaped_visible_length,1,&required_elements));
 
-		if(destination_bytes == NULL)
+		if(CRITICAL & status)
 		{
-			slog(ERROR,"sql_wrap_string destination pointer is NULL after resize\n");
+			slog(ERROR,"sql_wrap_string overflow before allocating terminator\n");
+		}
+	}
+
+	run(m_resize(destination,required_elements));
+
+	if(SUCCESS == status)
+	{
+		char *destination_data_rewritable = m_data(char,destination);
+
+		if(destination_data_rewritable == NULL)
+		{
+			slog(ERROR,"sql_wrap_string destination pointer is NULL after m_resize\n");
 			status = FAILURE;
 		} else {
 			size_t write_index = 0;
 
-			destination_bytes[write_index++] = '\'';
+			/* Opening SQL quote */
+			destination_data_rewritable[write_index++] = '\'';
 
 			for(size_t i = 0; i < source_length; ++i)
 			{
-				unsigned char current_char = (unsigned char)source[i];
+				const char current_char = source[i];
 
 				if(current_char == '\'')
 				{
 					/* Double apostrophes for SQL-compatible escaping */
-					destination_bytes[write_index++] = '\'';
-					destination_bytes[write_index++] = '\'';
+					destination_data_rewritable[write_index++] = '\'';
+					destination_data_rewritable[write_index++] = '\'';
 				} else {
-					destination_bytes[write_index++] = current_char;
+					destination_data_rewritable[write_index++] = current_char;
 				}
 			}
 
-			destination_bytes[write_index++] = '\'';
-			destination_bytes[write_index] = '\0';
-			telemetry_string_padding_event();
+			/* Closing SQL quote. write_index now equals the visible wrapped length */
+			destination_data_rewritable[write_index++] = '\'';
+			run(m_finalize_string(destination,write_index,WRITE_TERMINATOR_ALWAYS));
 		}
 	}
 
