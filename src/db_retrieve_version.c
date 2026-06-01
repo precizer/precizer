@@ -27,7 +27,8 @@ Return db_retrieve_version(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	sqlite3 *db = NULL;
-	sqlite3_stmt *stmt = NULL;
+	sqlite3_stmt *table_exists_stmt = NULL;
+	sqlite3_stmt *version_stmt = NULL;
 	bool table_exists = false;
 	int rc = SQLITE_OK;
 
@@ -52,7 +53,7 @@ Return db_retrieve_version(
 	{
 		const char *check_query = "SELECT name FROM sqlite_master WHERE type='table' AND name='metadata';";
 
-		rc = sqlite3_prepare_v2(db,check_query,-1,&stmt,NULL);
+		rc = sqlite3_prepare_v2(db,check_query,-1,&table_exists_stmt,NULL);
 
 		if(SQLITE_OK != rc)
 		{
@@ -63,24 +64,20 @@ Return db_retrieve_version(
 
 	if(SUCCESS == status)
 	{
-		if(SQLITE_ROW == sqlite3_step(stmt))
+		if(SQLITE_ROW == sqlite3_step(table_exists_stmt))
 		{
 			table_exists = true;
 		}
 	}
 
-	if(stmt != NULL)
-	{
-		sqlite3_finalize(stmt);
-		stmt = NULL;
-	}
+	sqlite3_finalize(table_exists_stmt);
 
 	/* Retrieve version if table exists */
 	if(SUCCESS == status && table_exists == true)
 	{
 		const char *version_query = "SELECT db_version FROM metadata;";
 
-		rc = sqlite3_prepare_v2(db,version_query,-1,&stmt,NULL);
+		rc = sqlite3_prepare_v2(db,version_query,-1,&version_stmt,NULL);
 
 		if(SQLITE_OK != rc)
 		{
@@ -90,9 +87,9 @@ Return db_retrieve_version(
 
 		if(SUCCESS == status)
 		{
-			if(SQLITE_ROW == sqlite3_step(stmt))
+			if(SQLITE_ROW == sqlite3_step(version_stmt))
 			{
-				*db_version = sqlite3_column_int(stmt,0);
+				*db_version = sqlite3_column_int(version_stmt,0);
 				slog(TRACE,"Version number %d found in database\n",*db_version);
 
 			} else {
@@ -105,10 +102,7 @@ Return db_retrieve_version(
 	}
 
 	/* Cleanup */
-	if(stmt != NULL)
-	{
-		sqlite3_finalize(stmt);
-	}
+	sqlite3_finalize(version_stmt);
 
 	if(db != NULL)
 	{

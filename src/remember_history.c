@@ -25,7 +25,8 @@ void rational_remember(
 		return;
 	}
 
-	sqlite3_stmt *stmt = NULL;
+	sqlite3_stmt *lookup_stmt = NULL;
+	sqlite3_stmt *write_stmt = NULL;
 	sqlite3_int64 last_id = 0;
 	bool append_to_last = false;
 
@@ -33,30 +34,29 @@ void rational_remember(
 	        "SELECT id, message FROM temp.remember_history "
 	        "ORDER BY id DESC LIMIT 1;";
 
-	int rc = sqlite3_prepare_v2(config->db,select_sql,-1,&stmt,NULL);
+	int rc = sqlite3_prepare_v2(config->db,select_sql,-1,&lookup_stmt,NULL);
 
 	if(rc != SQLITE_OK)
 	{
 		log_sqlite_error(config->db,rc,NULL,
 			"Failed to prepare remember_history lookup");
 	} else {
-		rc = sqlite3_step(stmt);
+		rc = sqlite3_step(lookup_stmt);
 
 		if(rc == SQLITE_ROW)
 		{
-			const unsigned char *text = sqlite3_column_text(stmt,1);
-			const int text_len = sqlite3_column_bytes(stmt,1);
+			const unsigned char *text = sqlite3_column_text(lookup_stmt,1);
+			const int text_len = sqlite3_column_bytes(lookup_stmt,1);
 
 			if(text != NULL && text_len > 0 && text[text_len - 1] != '\n')
 			{
-				last_id = sqlite3_column_int64(stmt,0);
+				last_id = sqlite3_column_int64(lookup_stmt,0);
 				append_to_last = true;
 			}
 		}
-
-		sqlite3_finalize(stmt);
-		stmt = NULL;
 	}
+
+	sqlite3_finalize(lookup_stmt);
 
 	if(append_to_last)
 	{
@@ -64,59 +64,61 @@ void rational_remember(
 		        "UPDATE temp.remember_history "
 		        "SET message = message || ?1 WHERE id = ?2;";
 
-		rc = sqlite3_prepare_v2(config->db,update_sql,-1,&stmt,NULL);
+		rc = sqlite3_prepare_v2(config->db,update_sql,-1,&write_stmt,NULL);
 
 		if(rc != SQLITE_OK)
 		{
 			log_sqlite_error(config->db,rc,NULL,
 				"Failed to prepare remember_history update");
+			sqlite3_finalize(write_stmt);
 			return;
 		}
 
-		rc = sqlite3_bind_text(stmt,1,message,line_len,SQLITE_TRANSIENT);
+		rc = sqlite3_bind_text(write_stmt,1,message,line_len,SQLITE_TRANSIENT);
 
 		if(rc != SQLITE_OK)
 		{
 			log_sqlite_error(config->db,rc,NULL,
 				"Failed to bind remember_history update");
-			sqlite3_finalize(stmt);
+			sqlite3_finalize(write_stmt);
 			return;
 		}
 
-		rc = sqlite3_bind_int64(stmt,2,last_id);
+		rc = sqlite3_bind_int64(write_stmt,2,last_id);
 
 		if(rc != SQLITE_OK)
 		{
 			log_sqlite_error(config->db,rc,NULL,
 				"Failed to bind remember_history id");
-			sqlite3_finalize(stmt);
+			sqlite3_finalize(write_stmt);
 			return;
 		}
 	} else {
 		const char *insert_sql =
 		        "INSERT INTO temp.remember_history (message) VALUES (?1);";
 
-		rc = sqlite3_prepare_v2(config->db,insert_sql,-1,&stmt,NULL);
+		rc = sqlite3_prepare_v2(config->db,insert_sql,-1,&write_stmt,NULL);
 
 		if(rc != SQLITE_OK)
 		{
 			log_sqlite_error(config->db,rc,NULL,
 				"Failed to prepare remember_history insert");
+			sqlite3_finalize(write_stmt);
 			return;
 		}
 
-		rc = sqlite3_bind_text(stmt,1,message,line_len,SQLITE_TRANSIENT);
+		rc = sqlite3_bind_text(write_stmt,1,message,line_len,SQLITE_TRANSIENT);
 	}
 
 	if(rc != SQLITE_OK)
 	{
 		log_sqlite_error(config->db,rc,NULL,
 			"Failed to bind remember_history message");
-		sqlite3_finalize(stmt);
+		sqlite3_finalize(write_stmt);
 		return;
 	}
 
-	rc = sqlite3_step(stmt);
+	rc = sqlite3_step(write_stmt);
 
 	if(rc != SQLITE_DONE)
 	{
@@ -130,7 +132,7 @@ void rational_remember(
 		}
 	}
 
-	sqlite3_finalize(stmt);
+	sqlite3_finalize(write_stmt);
 
 	if(rc != SQLITE_DONE)
 	{

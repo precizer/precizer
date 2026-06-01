@@ -173,10 +173,7 @@ static Return process_row(
 		}
 	}
 
-	if(update_stmt != NULL)
-	{
-		sqlite3_finalize(update_stmt);
-	}
+	sqlite3_finalize(update_stmt);
 
 	provide(status);
 }
@@ -240,10 +237,7 @@ static Return process_database(
 	}
 
 	/* Cleanup */
-	if(NULL != stmt)
-	{
-		sqlite3_finalize(stmt);
-	}
+	sqlite3_finalize(stmt);
 
 	provide(status);
 }
