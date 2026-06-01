@@ -406,7 +406,13 @@ Return db_compare(void)
 	const bool verify_checksum_consistency = (config->compare_filter & CF_CHECKSUM_MISMATCH)
 	        || filter_specified == false;
 
-	// Counts enabled compare categories so silent mode can decide whether headings are needed
+	/*
+	 * Count the enabled comparison categories before producing output.
+	 * In silent mode, a heading is unnecessary when only one category can
+	 * produce paths because every printed path belongs to that category.
+	 * When several categories are enabled, keep headings visible so paths from
+	 * different categories remain distinguishable
+	 */
 	unsigned int active_compare_categories = 0u;
 
 	if(check_first_source == true)
