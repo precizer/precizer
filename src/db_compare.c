@@ -3,11 +3,8 @@
 /**
  * @brief Attaches a secondary database to the primary database connection.
  *
- * The path is selected from `config->db_file_paths`, which stores the two
- * `--compare` positional arguments as libmem string descriptors.
- * `db_sql_wrap_string()` first converts the selected path into a safe SQL
- * literal, then `m_formatted_string()` builds the final `ATTACH DATABASE`
- * statement in a libmem string descriptor before SQLite executes it
+ * The path comes from the two `--compare` positional arguments. SQLite attaches
+ * the selected database under an internal schema alias such as `db1` or `db2`
  *
  * @param[in] db_A Index of the database path in `config->db_file_paths`.
  * @param[in] db_B Database number (1 or 2) to be used in the ATTACH DATABASE command.
@@ -24,10 +21,11 @@ static Return db_attach(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	m_create(char,wrapped_db_path,MEMORY_STRING);
 	m_create(char,sql,MEMORY_STRING);
+	sqlite3_stmt *stmt = NULL;
 
 	const memory *db_file_path = m_item_ro(memory,conf(db_file_paths),db_A);
+	size_t db_file_path_length = 0;
 
 	if(db_file_path == NULL)
 	{
@@ -37,26 +35,55 @@ static Return db_attach(
 
 	if(SUCCESS == status)
 	{
-		run(db_sql_wrap_string(wrapped_db_path,m_text(db_file_path)));
+		status = m_string_length(db_file_path,&db_file_path_length);
 	}
 
 	if(SUCCESS == status)
 	{
-		run(m_formatted_string(sql,"ATTACH DATABASE %s as db%d;",m_text(wrapped_db_path),db_B));
+		run(m_formatted_string(sql,"ATTACH DATABASE ?1 AS db%d;",db_B));
 	}
 
 	if(SUCCESS == status)
 	{
-		int rc = sqlite3_exec(config->db,m_text(sql),NULL,NULL,NULL);
+		int rc = sqlite3_prepare_v2(config->db,m_text(sql),-1,&stmt,NULL);
 
-		if(rc!= SQLITE_OK)
+		if(SQLITE_OK != rc)
 		{
-			log_sqlite_error(config->db,rc,NULL,"Can't execute");
+			log_sqlite_error(config->db,rc,NULL,"Failed to prepare attach statement");
 			status = FAILURE;
 		}
 	}
 
-	call(m_del(wrapped_db_path));
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_bind_text(stmt,1,m_text(db_file_path),(int)db_file_path_length,NULL);
+
+		if(SQLITE_OK != rc)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind database path in attach");
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_step(stmt);
+
+		if(SQLITE_DONE != rc)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Attach statement didn't return DONE");
+			status = FAILURE;
+		}
+	}
+
+	int rc = sqlite3_finalize(stmt);
+
+	if(SUCCESS == status && SQLITE_OK != rc)
+	{
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize attach statement");
+		status = FAILURE;
+	}
+
 	call(m_del(sql));
 
 	provide(status);
@@ -111,9 +138,12 @@ static Return db_detach(const char *db_alias)
 		}
 	}
 
-	if(stmt != NULL)
+	rc = sqlite3_finalize(stmt);
+
+	if(SUCCESS == status && SQLITE_OK != rc)
 	{
-		sqlite3_finalize(stmt);
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize detach statement");
+		status = FAILURE;
 	}
 
 	provide(status);
@@ -237,17 +267,12 @@ static Return db_report_category(
 		}
 	}
 
-	if(select_stmt != NULL)
-	{
-		rc = sqlite3_finalize(select_stmt);
+	rc = sqlite3_finalize(select_stmt);
 
-		if(SQLITE_OK != rc)
-		{
-			log_sqlite_error(config->db,rc,NULL,"Failed to finalize SQLite statement");
-			status = FAILURE;
-		} else {
-			select_stmt = NULL;
-		}
+	if(SQLITE_OK != rc)
+	{
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize SQLite statement");
+		status = FAILURE;
 	}
 
 	provide(status);
@@ -264,7 +289,7 @@ static Return db_report_category(
  * The comparison scope can be limited with `--compare-filter` and further
  * narrowed by `--ignore` and `--include`; without filters the function checks
  * first-source paths, second-source paths, and SHA512 mismatches. For example,
- * `precizer --compare old.db new.db --compare-filter=sha512` validates both DB
+ * `precizer --compare first.db second.db --compare-filter=sha512` validates both DB
  * files and reports checksum differences for paths present in both databases
  *
  * @return Return status code
@@ -429,7 +454,7 @@ Return db_compare(void)
 	}
 
 #if 0
-	// Old multiPATH solutions
+	// Disabled multi-root path index implementation
 	const char *compare_checksums_sql = "select a.relative_path from db2.files a inner join db1.files b"
 	        " on b.relative_path = a.relative_path "
 	        " and b.sha512 is not a.sha512"
