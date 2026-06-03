@@ -4,7 +4,7 @@ TESTING:argument:roots=tests/fixtures/huge
 TESTING:argument:database=0033_interrupt_rehash\.db
 TESTING:argument:db_file_name=0033_interrupt_rehash\.db
 TESTING:argument:progress=yes
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/huge exists

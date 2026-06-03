@@ -8,7 +8,7 @@ TESTING:argument:watch-timestamps=yes
 TESTING:argument:update=yes
 TESTING:argument:db-drop-ignored=yes
 TESTING:argument:dry-run=yes
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists

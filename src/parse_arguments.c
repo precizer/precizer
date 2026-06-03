@@ -912,7 +912,7 @@ Return parse_arguments(
 	/* Show compact configuration summary for verbose user output */
 	parse_arguments_show_verbose_diagnostics();
 
-	slog(TRACE,"Argument parsing is complete\n");
+	slog(TRACE,"Argument parsing is finished\n");
 
 	provide(status);
 }

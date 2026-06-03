@@ -4,7 +4,7 @@ TESTING:argument:db_file_paths=0015_database_v3 это база данных с 
 TESTING:argument:db_file_names=0015_database_v3 это база данных с пробелами и символами UTF-8\.db, 0015_database_v4 это база данных с пробелами и символами UTF-8\.db
 TESTING:argument:update=yes
 TESTING:argument:compare=yes
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
