@@ -33,3 +33,12 @@ void testmocking_write_fail_next(
 	int);
 
 void testmocking_write_disable(void);
+
+void testmocking_sysconf_return_next(
+	size_t,
+	long,
+	long);
+
+void testmocking_sysconf_disable(void);
+
+long testmocking_sysconf(int);
