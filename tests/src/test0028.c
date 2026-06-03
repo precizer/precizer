@@ -6,7 +6,7 @@
  */
 static Return assert_compare_output(
 	const char *arguments,
-	const int expected_return_code,
+	const int  expected_return_code,
 	const char *stdout_pattern_file,
 	const char *stderr_pattern_file)
 {
@@ -19,7 +19,7 @@ static Return assert_compare_output(
 	m_create(char,stdout_pattern,MEMORY_STRING);
 	m_create(char,stderr_pattern,MEMORY_STRING);
 
-	if((SUCCESS & status) && arguments == NULL)
+	if(arguments == NULL)
 	{
 		status = FAILURE;
 	}
