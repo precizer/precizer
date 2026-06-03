@@ -1,21 +1,16 @@
 #include "precizer.h"
 
 /**
- * @brief Normalize a path descriptor by trimming trailing '/' characters
+ * @brief Remove extra trailing slashes from a path descriptor
  *
- * Scans the descriptor as a bounded byte string up to the first `'\0'` byte or
- * `path->length`, whichever comes first. Compacts the descriptor to the visible
- * string plus one trailing `'\0'`, removes trailing forward slashes from that
- * visible prefix, then compacts it again. For libmem-managed buffers under
- * plain `SUCCESS`, the helper also releases unused capacity. Leaves a slash-only
- * prefix as a single `/`. Empty descriptors are ignored
+ * Measures the visible string through the libmem string-length helper, then
+ * trims trailing `/` characters from that visible prefix. Keeps the root path
+ * `/` unchanged and leaves empty paths unchanged
  *
- * @param[in,out] path Path descriptor whose visible string payload is normalized
- * @return SUCCESS after normalization or when no change is needed.
- *         Returns FAILURE when the descriptor is NULL or when a non-empty descriptor
- *         cannot be accessed as a character buffer.
- *         Otherwise returns the status propagated from @ref string_length and
- *         resize operations while continuing through graceful statuses
+ * @param[in,out] path Path descriptor to normalize
+ * @return SUCCESS when the path is normalized or does not need changes.
+ *         Returns FAILURE when the descriptor is invalid or when a visible
+ *         non-empty payload cannot be accessed as a writable char buffer
  */
 Return remove_trailing_slash(memory *path)
 {
@@ -26,38 +21,37 @@ Return remove_trailing_slash(memory *path)
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	size_t len = 0;
+	/* Visible path length before trailing slashes are trimmed */
+	size_t visible_path_length = 0;
 
-	run(string_length(path,&len));
+	/* Writable C string pointer to the descriptor payload */
+	char *path_data_rewritable = NULL;
 
-	// Exit on FAILURE
-	if((TRIUMPH & status) == 0)
+	run(m_string_length(path,&visible_path_length));
+
+	if((TRIUMPH & status) && visible_path_length > 0)
 	{
-		provide(status);
+		path_data_rewritable = m_data(char,path);
+
+		if(path_data_rewritable == NULL)
+		{
+			slog(ERROR,"Path normalization; Failed to access non-empty descriptor as a char buffer\n");
+			status = FAILURE;
+		}
 	}
 
-	if(path->length == 0)
+	/* Keep the single root slash intact */
+	if((TRIUMPH & status) && visible_path_length > 0)
 	{
-		provide(status);
+		while(visible_path_length > 1 && path_data_rewritable[visible_path_length - 1] == '/')
+		{
+			--visible_path_length;
+		}
+
+		path_data_rewritable[visible_path_length] = '\0';
+
+		call(m_resize(path,visible_path_length + 1,RELEASE_UNUSED));
 	}
-
-	char *path_array = data(char,path);
-
-	if(path_array == NULL)
-	{
-		slog(ERROR,"Path normalization; Failed to access non-empty descriptor as a char buffer\n");
-		provide(FAILURE);
-	}
-
-	// Keep the single root slash intact
-	while(len > 1 && path_array[len - 1] == '/')
-	{
-		--len;
-	}
-
-	path_array[len] = '\0';
-
-	call(resize(path,len + 1,RELEASE_UNUSED));
 
 	provide(status);
 }
