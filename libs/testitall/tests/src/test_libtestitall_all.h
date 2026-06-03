@@ -2,6 +2,7 @@
 #define LIBTESTITALL_TEST_LIBTESTITALL_ALL_H
 
 #include "testitall.h"
+#include "test_libtestitall_common_utils.h"
 
 /**
  * @file test_libtestitall_all.h
@@ -16,5 +17,6 @@ Return test_libtestitall_0006(void);
 
 Return test_libtestitall_0010(void);
 Return test_libtestitall_0035(void);
+Return test_libtestitall_0036(void);
 Return test_libtestitall_0038(void);
 #endif

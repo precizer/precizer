@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_libtestitall_all.h"
 #include <sys/stat.h>
 #include <unistd.h>
 

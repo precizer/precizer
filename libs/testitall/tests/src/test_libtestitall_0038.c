@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_libtestitall_all.h"
 
 static const char expected_noisy_trim_trailing_eol_stderr_pattern[] =
         "\\A"

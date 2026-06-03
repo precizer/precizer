@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_libtestitall_all.h"
 
 /**
  * @brief Check successful execution when a command produces no output

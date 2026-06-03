@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_libtestitall_all.h"
 
 /**
  * @brief Run every libtestitall test group
@@ -23,6 +23,7 @@ Return test_libtestitall_all(void)
 
 	HEADER("Temporary Directories");
 	TEST(test_libtestitall_0035,"Temporary directory roots and names are selected correctly");
+	TEST(test_libtestitall_0036,"Path construction reports invalid input diagnostics");
 
 	HEADER("String Helpers");
 	TEST(test_libtestitall_0038,"Trailing EOL removal preserves libmem string invariants");

@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_libtestitall_all.h"
 
 /**
  * @brief Check stderr suppression and accepted stderr output

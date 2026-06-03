@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_libtestitall_all.h"
 
 /**
  * @brief Check external command success and failure expectations

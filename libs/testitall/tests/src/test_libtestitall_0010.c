@@ -1,4 +1,4 @@
-#include "sute.h"
+#include "test_libtestitall_all.h"
 
 /* Store the expected value in this library suite instead of an application template file */
 static const char expected_capability_demonstration_output[] =
