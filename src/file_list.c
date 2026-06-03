@@ -22,10 +22,10 @@ static int compare_by_name(
 /**
  * @brief Traverse configured roots and process files for one pass
  *
- * The function walks each libmem-managed root in `config->roots` with a
- * separate FTS stream. Paths written to the database are kept relative to the
- * current root, so the same traversal logic works for one root or for several
- * positional directory arguments
+ * The function walks each root in `config->roots` with a separate FTS stream.
+ * Paths written to the database are kept relative to the current root, so the
+ * same traversal logic works for one root or for several positional directory
+ * arguments
  *
  * `summary->stats_only_pass` controls how much work is done. When it is `true`,
  * traversal only counts directories, files, symlinks, and allocated size. When
@@ -33,9 +33,9 @@ static int compare_by_name(
  * rows, inserted, updated, or reported according to ignore/include and checksum
  * locking settings
  *
- * For example, after `precizer src tests`, `config->roots` contains two root
- * descriptors and this function traverses `src` first, closes that FTS stream,
- * then traverses `tests`
+ * For example, after `precizer src tests`, `config->roots` contains two roots.
+ * This function traverses `src` first, closes that FTS stream, then traverses
+ * `tests`
  *
  * @param summary Traversal state that is reset and populated by this call
  * @return `SUCCESS` when traversal completes, `WARNING` when a non-fatal
@@ -156,7 +156,7 @@ Return file_list(TraversalSummary *summary)
 #endif
 	}
 
-	// Open one FTS stream per libmem-managed traversal root
+	// Open one FTS stream per traversal root
 	m_string_array_foreach(conf(roots),root)
 	{
 		char *root_path_text = m_data(char,root);
