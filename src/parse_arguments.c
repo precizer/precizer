@@ -62,7 +62,7 @@ static struct argp_option options[] = {
 	 "must be specified as relative, the same way as for the "
 	 BOLD "--ignore" RESET " option. For these entries, the "
 	 BOLD "--update" RESET " option will not recalculate checksums; any difference in file size, timestamps, or content will "
-	 "always be reported as data corruption instead of a reason to generate a new checksum. Multiple "
+	 "always be reported as data corruption, and no replacement checksum will be generated. Multiple "
 	 "regular expressions can be specified using multiple "
 	 BOLD "--lock-checksum" RESET " options.\n"
 	 "Example:\n"
@@ -186,7 +186,7 @@ static error_t parse_opt(
 		case 'd':
 		{
 			// Store full path to the DB file
-			if(CRITICAL & copy_literal(conf(db_primary_file_path),arg))
+			if(CRITICAL & m_copy_string(conf(db_primary_file_path),arg))
 			{
 				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_path failed");
 				return(ENOMEM);
@@ -197,7 +197,7 @@ static error_t parse_opt(
 
 			if(tmp == NULL)
 			{
-				(void)del(conf(db_primary_file_path));
+				(void)m_del(conf(db_primary_file_path));
 				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed");
 				return(ENOMEM);
 			}
@@ -207,15 +207,15 @@ static error_t parse_opt(
 			if(db_file_basename == NULL)
 			{
 				free(tmp);
-				(void)del(conf(db_primary_file_path));
+				(void)m_del(conf(db_primary_file_path));
 				argp_failure(state,0,0,"ERROR: Failed to determine database base name from path '%s'",arg);
 				return(EINVAL);
 			}
 
-			if(CRITICAL & copy_literal(conf(db_file_name),db_file_basename))
+			if(CRITICAL & m_copy_string(conf(db_file_name),db_file_basename))
 			{
 				free(tmp);
-				(void)del(conf(db_primary_file_path));
+				(void)m_del(conf(db_primary_file_path));
 				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for db_file_name failed");
 				return(ENOMEM);
 			}
@@ -282,7 +282,7 @@ static error_t parse_opt(
 
 			// Accept only non-negative integer values that fit into short int
 			// and reject strings with trailing non-numeric characters
-			if(argument_value >= 0 && argument_value <= 32767 && *ptr == '\0')
+			if(ptr != arg && argument_value >= 0 && argument_value <= 32767 && *ptr == '\0')
 			{
 				config->maxdepth = (short int)argument_value;
 			} else {
@@ -292,6 +292,10 @@ static error_t parse_opt(
 			break;
 		case 'p':
 			config->progress = true;
+			/*
+			 * Progress output can push important warning lines out of the visible terminal area.
+			 * Enable final replay before traversal starts so remembered warnings collected later are shown again near exit
+			 */
 			config->show_remembered_messages_at_exit = true;
 			break;
 		case 'T':
@@ -329,16 +333,13 @@ static error_t parse_opt(
 		case 'h':
 		case '?':
 			information_mode_requested = true;
-			about();
 			argp_state_help(state,state->out_stream,ARGP_HELP_STD_HELP & ~(ARGP_HELP_EXIT_OK | ARGP_HELP_EXIT_ERR));
 			break;
 		case 'V':
 			information_mode_requested = true;
-			about();
 			break;
 		case 'z':
 			information_mode_requested = true;
-			about();
 			argp_state_help(state,state->out_stream,ARGP_HELP_USAGE);
 			break;
 		case ARGP_KEY_NO_ARGS:
@@ -350,7 +351,6 @@ static error_t parse_opt(
 			if(state->argc == 1)
 			{
 				information_mode_requested = true;
-				about();
 				argp_usage(state);
 				break;
 			}
@@ -359,9 +359,32 @@ static error_t parse_opt(
 			return(EX_USAGE);
 			break;
 		case ARGP_KEY_ARG:
-			config->paths = &state->argv[state->next - 1];
-			state->next = state->argc;
+		{
+			Return status;
+
+			/*
+			 * This event receives one positional command-line argument.
+			 * Argp normally processes options before positional arguments, so
+			 * `--compare` has already selected the intended mode by this point.
+			 *
+			 * In compare mode, positional arguments are database file paths.
+			 * In normal scan mode, positional arguments are filesystem roots
+			 * that will be traversed later
+			 */
+			if(config->compare == true)
+			{
+				status = m_string_array_append(conf(db_file_paths),char,arg);
+			} else {
+				status = m_string_array_append(conf(roots),char,arg);
+			}
+
+			if((TRIUMPH & status) == 0)
+			{
+				argp_failure(state,0,ENOMEM,"ERROR: Memory allocation for positional argument failed");
+				return(ENOMEM);
+			}
 			break;
+		}
 		case ARGP_KEY_END:
 			if(information_mode_requested == true)
 			{
@@ -376,16 +399,14 @@ static error_t parse_opt(
 
 			if(config->compare == true)
 			{
-				if(state->arg_num < 2)
+				if(config->db_file_paths.length < 2)
 				{
 					argp_failure(state,0,0,"ERROR: Too few arguments\n--compare require two arguments with paths to database files. See --help for more information");
 					return(EX_USAGE);
-				} else if(state->arg_num > 2){
+				} else if(config->db_file_paths.length > 2){
 					argp_failure(state,0,0,"ERROR: Too many arguments\n--compare require just two arguments with paths to database files. See --help for more information");
 					return(EX_USAGE);
 				}
-			} else if(state->arg_num > 1){
-				slog(TRACE,"Caution: multiple PATH arguments received. Multipath mode activated. It’s important to note that when comparison mode is enabled, the ORDER of the paths must be identical for the database comparison to work correctly. Number of paths: %d\n",state->arg_num);
 			}
 
 			if(config->db_drop_inaccessible == true && config->update == false)
@@ -410,11 +431,376 @@ static struct argp argp = {
 	options,parse_opt,args_doc,doc,0,0,0
 };
 
+/* Keep diagnostics attributed to parse_arguments() after moving their bodies into helpers */
+#define parse_arguments_slog(level,...) rational_logger((level),__FILE__,__LINE__,"parse_arguments",__VA_ARGS__)
+
+/**
+ * @brief Show parsed configuration details for TESTING logger output
+ *
+ * @details
+ * Test templates use these lines as stable key-value diagnostics. The function
+ * prints only options that were explicitly set or values that are useful for
+ * validating argument parsing behavior
+ */
+static void parse_arguments_show_testing_diagnostics(void)
+{
+	parse_arguments_slog(TESTING,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
+
+	if(config->roots.length != 0)
+	{
+		bool first_root = true;
+
+		parse_arguments_slog(TESTING,"argument:roots=");
+
+		m_string_array_foreach(conf(roots),root)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,first_root == true ? "%s" : ", %s",m_text(root));
+			first_root = false;
+		}
+		parse_arguments_slog(TESTING|UNDECOR,"\n");
+	}
+
+	// Print configured database path when available
+	if(conf(db_primary_file_path)->string_length > 0)
+	{
+		parse_arguments_slog(TESTING,"argument:database=%s\n",confstr(db_primary_file_path));
+	}
+
+	// Print configured database file name when available
+	if(conf(db_file_name)->string_length > 0)
+	{
+		parse_arguments_slog(TESTING,"argument:db_file_name=%s\n",confstr(db_file_name));
+	}
+
+	if(config->db_file_paths.length != 0)
+	{
+		bool first_db_file_path = true;
+
+		parse_arguments_slog(TESTING,"argument:db_file_paths=");
+
+		m_string_array_foreach(conf(db_file_paths),db_file_path)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,first_db_file_path == true ? "%s" : ", %s",m_text(db_file_path));
+			first_db_file_path = false;
+		}
+		parse_arguments_slog(TESTING|UNDECOR,"\n");
+	}
+
+	if(config->db_file_names != NULL)
+	{
+		parse_arguments_slog(TESTING,"argument:db_file_names=");
+
+		for(int i = 0; config->db_file_names[i]; i++)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_names[i]);
+		}
+		parse_arguments_slog(TESTING|UNDECOR,"\n");
+	}
+
+	if(config->ignore != NULL)
+	{
+		parse_arguments_slog(TESTING,"argument:ignore=");
+
+		// Print string-array contents
+		for(int i = 0; config->ignore[i] != NULL; ++i)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
+		}
+		parse_arguments_slog(TESTING|UNDECOR,"\n");
+	}
+
+	if(config->include != NULL)
+	{
+		parse_arguments_slog(TESTING,"argument:include=");
+
+		// Print string-array contents
+		for(int i = 0; config->include[i] != NULL; ++i)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
+		}
+		parse_arguments_slog(TESTING|UNDECOR,"\n");
+	}
+
+	if(config->lock_checksum != NULL)
+	{
+		parse_arguments_slog(TESTING,"argument:lock-checksum=");
+
+		// Print string-array contents
+		for(int i = 0; config->lock_checksum[i] != NULL; ++i)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
+		}
+		parse_arguments_slog(TESTING|UNDECOR,"\n");
+	}
+
+	if(config->db_check_level != FULL)
+	{
+		parse_arguments_slog(TESTING,"argument:check-level=%s\n",config->db_check_level == QUICK ? "QUICK" : "FULL");
+	}
+
+	if(config->maxdepth > 0)
+	{
+		parse_arguments_slog(TESTING,"argument:maxdepth=%d\n",config->maxdepth);
+	}
+
+	if(config->verbose)
+	{
+		parse_arguments_slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
+	}
+
+	if(config->quiet_ignored)
+	{
+		parse_arguments_slog(TESTING,"argument:quiet-ignored=%s\n",config->quiet_ignored ? "yes" : "no");
+	}
+
+	if(config->watch_timestamps)
+	{
+		parse_arguments_slog(TESTING,"argument:watch-timestamps=%s\n",config->watch_timestamps ? "yes" : "no");
+	}
+
+	if(config->rehash_locked == true)
+	{
+		parse_arguments_slog(TESTING,"argument:rehash-locked=%s\n",config->rehash_locked ? "yes" : "no");
+	}
+
+	if(config->force)
+	{
+		parse_arguments_slog(TESTING,"argument:force=%s\n",config->force ? "yes" : "no");
+	}
+
+	if(config->update)
+	{
+		parse_arguments_slog(TESTING,"argument:update=%s\n",config->update ? "yes" : "no");
+	}
+
+	if(config->progress)
+	{
+		parse_arguments_slog(TESTING,"argument:progress=%s\n",config->progress ? "yes" : "no");
+	}
+
+	if(config->compare)
+	{
+		parse_arguments_slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
+	}
+
+	if(config->compare_filter)
+	{
+		bool first_compare_filter = true;
+
+		parse_arguments_slog(TESTING,"argument:compare-filter=");
+
+		if((config->compare_filter & CF_CHECKSUM_MISMATCH) != 0u)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
+			first_compare_filter = false;
+		}
+
+		if((config->compare_filter & CF_FIRST_SOURCE) != 0u)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,"%sfirst-source",first_compare_filter ? "" : ", ");
+			first_compare_filter = false;
+		}
+
+		if((config->compare_filter & CF_SECOND_SOURCE) != 0u)
+		{
+			parse_arguments_slog(TESTING|UNDECOR,"%ssecond-source",first_compare_filter ? "" : ", ");
+		}
+
+		parse_arguments_slog(TESTING|UNDECOR,"\n");
+	}
+
+	if(config->db_drop_ignored)
+	{
+		parse_arguments_slog(TESTING,"argument:db-drop-ignored=%s\n",config->db_drop_ignored ? "yes" : "no");
+	}
+
+	if(config->db_drop_inaccessible)
+	{
+		parse_arguments_slog(TESTING,"argument:db-drop-inaccessible=%s\n",config->db_drop_inaccessible ? "yes" : "no");
+	}
+
+	if(config->dry_run)
+	{
+		parse_arguments_slog(TESTING,"argument:dry-run=%s\n",config->dry_run_with_checksums ? "with-checksums" : "yes");
+	}
+
+	if(config->start_device_only)
+	{
+		parse_arguments_slog(TESTING,"argument:start-device-only=%s\n",config->start_device_only ? "yes" : "no");
+	}
+}
+
+/**
+ * @brief Show parsed configuration details for verbose user output
+ *
+ * @details
+ * Verbose output is a compact, single-line configuration summary for people
+ * running the program interactively. It mirrors the TESTING diagnostics while
+ * preserving the existing user-facing formatting
+ */
+static void parse_arguments_show_verbose_diagnostics(void)
+{
+	parse_arguments_slog(VERBOSE,"Configuration: ");
+	parse_arguments_slog(VERBOSE|UNDECOR,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
+
+	if(config->roots.length != 0)
+	{
+		bool first_root = true;
+
+		parse_arguments_slog(VERBOSE|UNDECOR,"roots=");
+
+		m_string_array_foreach(conf(roots),root)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,first_root == true ? "%s" : ", %s",m_text(root));
+			first_root = false;
+		}
+		parse_arguments_slog(VERBOSE|UNDECOR,"; ");
+	}
+
+	// Print configured database path when available
+	if(conf(db_primary_file_path)->string_length > 0)
+	{
+		parse_arguments_slog(VERBOSE|UNDECOR,"database=%s; ",confstr(db_primary_file_path));
+	}
+
+	// Print configured database file name when available
+	if(conf(db_file_name)->string_length > 0)
+	{
+		parse_arguments_slog(VERBOSE|UNDECOR,"db_file_name=%s; ",confstr(db_file_name));
+	}
+
+	if(config->db_file_paths.length != 0)
+	{
+		bool first_db_file_path = true;
+
+		parse_arguments_slog(VERBOSE|UNDECOR,"db_file_paths=");
+
+		m_string_array_foreach(conf(db_file_paths),db_file_path)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,first_db_file_path == true ? "%s" : ", %s",m_text(db_file_path));
+			first_db_file_path = false;
+		}
+		parse_arguments_slog(VERBOSE|UNDECOR,"; ");
+	}
+
+	if(config->db_file_names != NULL)
+	{
+		parse_arguments_slog(VERBOSE|UNDECOR,"db_file_names=");
+
+		for(int i = 0; config->db_file_names[i]; i++)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_names[i]);
+		}
+		parse_arguments_slog(VERBOSE|UNDECOR,"; ");
+	}
+
+	if(config->ignore != NULL)
+	{
+		parse_arguments_slog(VERBOSE|UNDECOR,"ignore=");
+
+		// Print string-array contents
+		for(int i = 0; config->ignore[i] != NULL; ++i)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
+		}
+		parse_arguments_slog(VERBOSE|UNDECOR,"; ");
+	}
+
+	if(config->include != NULL)
+	{
+		parse_arguments_slog(VERBOSE|UNDECOR,"include=");
+
+		// Print string-array contents
+		for(int i = 0; config->include[i] != NULL; ++i)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
+		}
+		parse_arguments_slog(VERBOSE|UNDECOR,"; ");
+	}
+
+	if(config->lock_checksum != NULL)
+	{
+		parse_arguments_slog(VERBOSE|UNDECOR,"lock-checksum=");
+
+		// Print string-array contents
+		for(int i = 0; config->lock_checksum[i] != NULL; ++i)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
+		}
+		parse_arguments_slog(VERBOSE|UNDECOR,"; ");
+	}
+
+	const char *dry_run_mode = "no";
+
+	if(config->dry_run == true)
+	{
+		if(config->dry_run_with_checksums == true)
+		{
+			dry_run_mode = "with-checksums";
+		} else {
+			dry_run_mode = "yes";
+		}
+	}
+
+	parse_arguments_slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+		config->verbose ? "yes" : "no",
+		config->maxdepth,
+		config->quiet_ignored ? "yes" : "no",
+		config->force ? "yes" : "no",
+		config->update ? "yes" : "no",
+		config->watch_timestamps ? "yes" : "no",
+		config->rehash_locked ? "yes" : "no",
+		config->progress ? "yes" : "no",
+		config->compare ? "yes" : "no",
+		config->db_drop_ignored ? "yes" : "no",
+		config->db_drop_inaccessible ? "yes" : "no",
+		dry_run_mode,
+		config->start_device_only ? "yes" : "no",
+		config->db_check_level == QUICK ? "QUICK" : "FULL",
+		rational_reconvert(rational_logger_mode));
+
+	if(config->compare_filter)
+	{
+		bool first_compare_filter = true;
+
+		parse_arguments_slog(VERBOSE|UNDECOR,"; compare-filter=");
+
+		if((config->compare_filter & CF_CHECKSUM_MISMATCH) != 0u)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
+			first_compare_filter = false;
+		}
+
+		if((config->compare_filter & CF_FIRST_SOURCE) != 0u)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,"%sfirst-source",first_compare_filter ? "" : ", ");
+			first_compare_filter = false;
+		}
+
+		if((config->compare_filter & CF_SECOND_SOURCE) != 0u)
+		{
+			parse_arguments_slog(VERBOSE|UNDECOR,"%ssecond-source",first_compare_filter ? "" : ", ");
+		}
+	}
+
+	parse_arguments_slog(VERBOSE|UNDECOR,"\n");
+}
+
+#undef parse_arguments_slog
+
 /**
  * @brief Parse command-line arguments and finalize parse-related configuration state
+ *
+ * In normal scan mode, positional arguments become traversal roots. In
+ * `--compare` mode, the two positional arguments become database paths and
+ * their file names are used in user-facing messages
+ *
+ * For example, `precizer src tests` creates two traversal roots, while
+ * `precizer --compare first.db second.db` creates two compare database paths
+ *
  * @param argc Number of CLI arguments
  * @param argv CLI argument vector
- * @return SUCCESS for normal mode, INFO for informational mode, or failure flags on errors
+ * @return SUCCESS for normal mode, INFO|HALTED for informational mode, or failure flags on errors
  */
 Return parse_arguments(
 	const int argc,
@@ -434,33 +820,55 @@ Return parse_arguments(
 	{
 		status = FAILURE;
 	} else if(information_mode_requested == true){
-		provide(INFO);
+		provide(INFO | HALTED);
 	}
 
-	if((SUCCESS & status) && config->paths != NULL)
+	/*
+	 * Normal scan mode stores positional arguments as traversal roots.
+	 * Normalize those roots after argp has finished collecting them, so later
+	 * code can compare paths without treating `dir` and `dir/` as different
+	 * user input
+	 */
+	if((SUCCESS & status) && config->compare == false && config->roots.length != 0)
 	{
-		for(int i = 0; config->paths[i]; i++)
+		m_string_array_foreach(conf(roots),root)
 		{
-			// Normalize input path by removing trailing slash
-			remove_trailing_slash(config->paths[i]);
+			run(remove_trailing_slash(root));
+
+			if((SUCCESS & status) == 0)
+			{
+				break;
+			}
 		}
 	}
 
-	if((SUCCESS & status)  && config->compare == true)
+	/*
+	 * Compare mode stores positional arguments as database file paths instead
+	 * of traversal roots. Normalize each database path, then keep its basename
+	 * separately so compare output can show friendly source names like
+	 * `first.db` and `second.db`
+	 */
+	if((SUCCESS & status) && config->compare == true)
 	{
-		if(config->paths != NULL)
+		if(config->db_file_paths.length != 0)
 		{
-			// Reuse parsed positional arguments as database file paths
-			config->db_file_paths = config->paths;
-
-			for(int i = 0; config->db_file_paths[i] && (SUCCESS & status); i++)
+			m_string_array_foreach(conf(db_file_paths),db_file_path)
 			{
+				run(remove_trailing_slash(db_file_path));
+
+				if((SUCCESS & status) == 0)
+				{
+					break;
+				}
+
+				const char *db_file_path_text = m_text(db_file_path);
+
 				// Duplicate the path because basename may modify the buffer
-				char *tmp = strdup(config->db_file_paths[i]);
+				char *tmp = strdup(db_file_path_text);
 
 				if(tmp == NULL)
 				{
-					report("Failed to duplicate string: %s",config->db_file_paths[i]);
+					report("Failed to duplicate string: %s",db_file_path_text);
 					status = FAILURE;
 					break;
 				}
@@ -479,7 +887,7 @@ Return parse_arguments(
 				status = add_string_to_array(&config->db_file_names,db_file_basename);
 				free(tmp);
 
-				if((SUCCESS & status) == false)
+				if((SUCCESS & status) == 0)
 				{
 					break;
 				}
@@ -498,330 +906,11 @@ Return parse_arguments(
 		provide(status);
 	}
 
-	/* Testing-mode diagnostics */
-	{
-		slog(TESTING,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
+	/* Show key-value diagnostics consumed by test templates */
+	parse_arguments_show_testing_diagnostics();
 
-		if(config->paths != NULL)
-		{
-			slog(TESTING,"argument:paths=");
-
-			for(int i = 0; config->paths[i]; i++)
-			{
-				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->paths[i]);
-			}
-			slog(TESTING|UNDECOR,"\n");
-		}
-
-		// String descriptor length includes '\0'; >1 means there is actual content
-		if(conf(db_primary_file_path)->length > 1)
-		{
-			slog(TESTING,"argument:database=%s\n",confstr(db_primary_file_path));
-		}
-
-		// String descriptor length includes '\0'; >1 means there is actual content
-		if(conf(db_file_name)->length > 1)
-		{
-			slog(TESTING,"argument:db_file_name=%s\n",confstr(db_file_name));
-		}
-
-		if(config->db_file_paths != NULL)
-		{
-			slog(TESTING,"argument:db_file_paths=");
-
-			for(int i = 0; config->db_file_paths[i]; i++)
-			{
-				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_paths[i]);
-			}
-			slog(TESTING|UNDECOR,"\n");
-		}
-
-		if(config->db_file_names != NULL)
-		{
-			slog(TESTING,"argument:db_file_names=");
-
-			for(int i = 0; config->db_file_names[i]; i++)
-			{
-				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_names[i]);
-			}
-			slog(TESTING|UNDECOR,"\n");
-		}
-
-		if(config->ignore != NULL)
-		{
-			slog(TESTING,"argument:ignore=");
-
-			// Print string-array contents
-			for(int i = 0; config->ignore[i] != NULL; ++i)
-			{
-				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
-			}
-			slog(TESTING|UNDECOR,"\n");
-		}
-
-		if(config->include != NULL)
-		{
-			slog(TESTING,"argument:include=");
-
-			// Print string-array contents
-			for(int i = 0; config->include[i] != NULL; ++i)
-			{
-				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
-			}
-			slog(TESTING|UNDECOR,"\n");
-		}
-
-		if(config->lock_checksum != NULL)
-		{
-			slog(TESTING,"argument:lock-checksum=");
-
-			// Print string-array contents
-			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
-			{
-				slog(TESTING|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
-			}
-			slog(TESTING|UNDECOR,"\n");
-		}
-
-		if(config->db_check_level != FULL)
-		{
-			slog(TESTING,"argument:check-level=%s\n",config->db_check_level == QUICK ? "QUICK" : "FULL");
-		}
-
-		if(config->maxdepth > 0)
-		{
-			slog(TESTING,"argument:maxdepth=%d\n",config->maxdepth);
-		}
-
-		if(config->verbose)
-		{
-			slog(TESTING,"argument:verbose=%s\n",config->verbose ? "yes" : "no");
-		}
-
-		if(config->quiet_ignored)
-		{
-			slog(TESTING,"argument:quiet-ignored=%s\n",config->quiet_ignored ? "yes" : "no");
-		}
-
-		if(config->watch_timestamps)
-		{
-			slog(TESTING,"argument:watch-timestamps=%s\n",config->watch_timestamps ? "yes" : "no");
-		}
-
-		if(config->rehash_locked == true)
-		{
-			slog(TESTING,"argument:rehash-locked=%s\n",config->rehash_locked ? "yes" : "no");
-		}
-
-		if(config->force)
-		{
-			slog(TESTING,"argument:force=%s\n",config->force ? "yes" : "no");
-		}
-
-		if(config->update)
-		{
-			slog(TESTING,"argument:update=%s\n",config->update ? "yes" : "no");
-		}
-
-		if(config->progress)
-		{
-			slog(TESTING,"argument:progress=%s\n",config->progress ? "yes" : "no");
-		}
-
-		if(config->compare)
-		{
-			slog(TESTING,"argument:compare=%s\n",config->compare ? "yes" : "no");
-		}
-
-		if(config->compare_filter)
-		{
-			bool first_compare_filter = true;
-
-			slog(TESTING,"argument:compare-filter=");
-
-			if((config->compare_filter & CF_CHECKSUM_MISMATCH) != 0u)
-			{
-				slog(TESTING|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
-				first_compare_filter = false;
-			}
-
-			if((config->compare_filter & CF_FIRST_SOURCE) != 0u)
-			{
-				slog(TESTING|UNDECOR,"%sfirst-source",first_compare_filter ? "" : ", ");
-				first_compare_filter = false;
-			}
-
-			if((config->compare_filter & CF_SECOND_SOURCE) != 0u)
-			{
-				slog(TESTING|UNDECOR,"%ssecond-source",first_compare_filter ? "" : ", ");
-			}
-
-			slog(TESTING|UNDECOR,"\n");
-		}
-
-		if(config->db_drop_ignored)
-		{
-			slog(TESTING,"argument:db-drop-ignored=%s\n",config->db_drop_ignored ? "yes" : "no");
-		}
-
-		if(config->db_drop_inaccessible)
-		{
-			slog(TESTING,"argument:db-drop-inaccessible=%s\n",config->db_drop_inaccessible ? "yes" : "no");
-		}
-
-		if(config->dry_run)
-		{
-			slog(TESTING,"argument:dry-run=%s\n",config->dry_run_with_checksums ? "with-checksums" : "yes");
-		}
-
-		if(config->start_device_only)
-		{
-			slog(TESTING,"argument:start-device-only=%s\n",config->start_device_only ? "yes" : "no");
-		}
-
-	}
-
-	/* Verbose-mode diagnostics */
-	{
-		slog(VERBOSE,"Configuration: ");
-		slog(VERBOSE|UNDECOR,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
-
-		if(config->paths != NULL)
-		{
-			slog(VERBOSE|UNDECOR,"paths=");
-
-			for(int i = 0; config->paths[i]; i++)
-			{
-				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->paths[i]);
-			}
-			slog(VERBOSE|UNDECOR,"; ");
-		}
-
-		// String descriptor length includes '\0'; >1 means there is actual content
-		if(conf(db_primary_file_path)->length > 1)
-		{
-			slog(VERBOSE|UNDECOR,"database=%s; ",confstr(db_primary_file_path));
-		}
-
-		// String descriptor length includes '\0'; >1 means there is actual content
-		if(conf(db_file_name)->length > 1)
-		{
-			slog(VERBOSE|UNDECOR,"db_file_name=%s; ",confstr(db_file_name));
-		}
-
-		if(config->db_file_paths != NULL)
-		{
-			slog(VERBOSE|UNDECOR,"db_file_paths=");
-
-			for(int i = 0; config->db_file_paths[i]; i++)
-			{
-				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_paths[i]);
-			}
-			slog(VERBOSE|UNDECOR,"; ");
-		}
-
-		if(config->db_file_names != NULL)
-		{
-			slog(VERBOSE|UNDECOR,"db_file_names=");
-
-			for(int i = 0; config->db_file_names[i]; i++)
-			{
-				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->db_file_names[i]);
-			}
-			slog(VERBOSE|UNDECOR,"; ");
-		}
-
-		if(config->ignore != NULL)
-		{
-			slog(VERBOSE|UNDECOR,"ignore=");
-
-			// Print string-array contents
-			for(int i = 0; config->ignore[i] != NULL; ++i)
-			{
-				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->ignore[i]);
-			}
-			slog(VERBOSE|UNDECOR,"; ");
-		}
-
-		if(config->include != NULL)
-		{
-			slog(VERBOSE|UNDECOR,"include=");
-
-			// Print string-array contents
-			for(int i = 0; config->include[i] != NULL; ++i)
-			{
-				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->include[i]);
-			}
-			slog(VERBOSE|UNDECOR,"; ");
-		}
-
-		if(config->lock_checksum != NULL)
-		{
-			slog(VERBOSE|UNDECOR,"lock-checksum=");
-
-			// Print string-array contents
-			for(int i = 0; config->lock_checksum[i] != NULL; ++i)
-			{
-				slog(VERBOSE|UNDECOR,i == 0 ? "%s" : ", %s",config->lock_checksum[i]);
-			}
-			slog(VERBOSE|UNDECOR,"; ");
-		}
-
-		const char *dry_run_mode = "no";
-
-		if(config->dry_run == true)
-		{
-			if(config->dry_run_with_checksums == true)
-			{
-				dry_run_mode = "with-checksums";
-			} else {
-				dry_run_mode = "yes";
-			}
-		}
-
-		slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
-			config->verbose ? "yes" : "no",
-			config->maxdepth,
-			config->quiet_ignored ? "yes" : "no",
-			config->force ? "yes" : "no",
-			config->update ? "yes" : "no",
-			config->watch_timestamps ? "yes" : "no",
-			config->rehash_locked ? "yes" : "no",
-			config->progress ? "yes" : "no",
-			config->compare ? "yes" : "no",
-			config->db_drop_ignored ? "yes" : "no",
-			config->db_drop_inaccessible ? "yes" : "no",
-			dry_run_mode,
-			config->start_device_only ? "yes" : "no",
-			config->db_check_level == QUICK ? "QUICK" : "FULL",
-			rational_reconvert(rational_logger_mode));
-
-		if(config->compare_filter)
-		{
-			bool first_compare_filter = true;
-
-			slog(VERBOSE|UNDECOR,"; compare-filter=");
-
-			if((config->compare_filter & CF_CHECKSUM_MISMATCH) != 0u)
-			{
-				slog(VERBOSE|UNDECOR,"%schecksum-mismatch",first_compare_filter ? "" : ", ");
-				first_compare_filter = false;
-			}
-
-			if((config->compare_filter & CF_FIRST_SOURCE) != 0u)
-			{
-				slog(VERBOSE|UNDECOR,"%sfirst-source",first_compare_filter ? "" : ", ");
-				first_compare_filter = false;
-			}
-
-			if((config->compare_filter & CF_SECOND_SOURCE) != 0u)
-			{
-				slog(VERBOSE|UNDECOR,"%ssecond-source",first_compare_filter ? "" : ", ");
-			}
-		}
-
-		slog(VERBOSE|UNDECOR,"\n");
-	}
+	/* Show compact configuration summary for verbose user output */
+	parse_arguments_show_verbose_diagnostics();
 
 	slog(TRACE,"Argument parsing is complete\n");
 
