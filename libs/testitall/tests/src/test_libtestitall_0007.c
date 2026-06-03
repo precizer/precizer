@@ -78,7 +78,7 @@ static Return check_trim_trailing_eol_case(
  *
  * @return Return status code
  */
-Return test_libtestitall_0038(void)
+Return test_libtestitall_0007(void)
 {
 	INITTEST;
 

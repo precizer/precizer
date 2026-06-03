@@ -11,12 +11,12 @@
 
 Return test_libtestitall_all(void);
 
+Return test_libtestitall_0001(void);
+Return test_libtestitall_0002(void);
+Return test_libtestitall_0003(void);
 Return test_libtestitall_0004(void);
 Return test_libtestitall_0005(void);
 Return test_libtestitall_0006(void);
-
-Return test_libtestitall_0010(void);
-Return test_libtestitall_0035(void);
-Return test_libtestitall_0036(void);
-Return test_libtestitall_0038(void);
+Return test_libtestitall_0007(void);
+Return test_libtestitall_0008(void);
 #endif
