@@ -164,9 +164,10 @@ static Return test0011_2(void)
 
 /**
  * The Example 3 from README
- * Using the --silent mode. When this mode is enabled, the program does not display
- * anything on the screen. This makes sense when using the program inside scripts.
- * An exception is --compare: with --silent, only compare results remain
+ * Using the --silent mode. When this mode is enabled, the program suppresses
+ * normal output after command execution. This makes sense when using the
+ * program inside scripts. An exception is --compare: with --silent, compare
+ * results remain
  * visible. Paths with differences are printed directly, and category headings
  * are kept only when more than one compare category is active
  * Let's add the --silent option to the previous example:
@@ -194,7 +195,7 @@ static Return test0011_3(void)
 
 #if 0
 	// Verify that silent mode produced no stdout after command execution
-	if(result->length > 0)
+	if(result->length != 0)
 	{
 		echo(STDERR,"ERROR: In silent mode stdout must be empty\n");
 		echo(STDERR,YELLOW "Output:\n>>" RESET "%s" YELLOW "<<\n" RESET,m_text(result));
@@ -381,7 +382,7 @@ static Return test0011_8(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
 	arguments = "--update"
-		" --progress"
+	        " --progress"
 	        " --ignore=\"^.*/path2/.*\""
 	        " --ignore=\"^diff2/.*\""
 	        " --include=\"^diff2/1/AAA/ZAW/A/b/c/.*\""
@@ -414,11 +415,11 @@ static Return test0011_8(void)
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	arguments = "--compare"
-		" --ignore=\"^(?:2|3|4)/.*\""
-		" --ignore=\"^path1/.*\""
-		" --ignore=\"^path2/.*\""
-		" --include=\"^2/AAA/BBB/CZC/a\\.txt$\""
-		" database1.db database2.db";
+	        " --ignore=\"^(?:2|3|4)/.*\""
+	        " --ignore=\"^path1/.*\""
+	        " --ignore=\"^path2/.*\""
+	        " --include=\"^2/AAA/BBB/CZC/a\\.txt$\""
+	        " database1.db database2.db";
 
 	filename = "templates/0011_008_2.txt";
 
