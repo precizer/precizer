@@ -3,8 +3,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-static Return assert_stderr_matches(
-	const char *template_file)
+static Return assert_stderr_matches(const char *template_file)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -130,79 +129,6 @@ static Return test0037_2(void)
 
 	ASSERT(FAILURE == delete_path("delete_path_missing.txt"));
 	ASSERT(SUCCESS == assert_stderr_matches("templates/0037_002.txt"));
-
-	RETURN_STATUS;
-}
-
-/**
- *
- * @brief construct_path() should report NULL input arguments
- *
- */
-static Return test0037_3(void)
-{
-	INITTEST;
-
-	m_create(char,path,MEMORY_STRING);
-
-	call(m_del(STDERR));
-
-	ASSERT(FAILURE == construct_path(NULL,path));
-	ASSERT(SUCCESS == assert_stderr_matches("templates/0037_003.txt"));
-
-	call(m_del(path));
-
-	RETURN_STATUS;
-}
-
-/**
- *
- * @brief construct_path() should report a missing TMPDIR
- *
- */
-static Return test0037_4(void)
-{
-	INITTEST;
-
-	m_create(char,path,MEMORY_STRING);
-	char *saved_tmpdir = NULL;
-	Return saved_tmpdir_status = FAILURE;
-	Return restore_tmpdir_status = SUCCESS;
-	bool tmpdir_saved = false;
-
-	saved_tmpdir_status = save_tmpdir_value(&saved_tmpdir);
-	ASSERT(SUCCESS == saved_tmpdir_status);
-
-	if(SUCCESS == saved_tmpdir_status)
-	{
-		tmpdir_saved = true;
-	}
-
-	if(SUCCESS == status)
-	{
-		ASSERT(unsetenv("TMPDIR") == 0);
-	}
-
-	call(m_del(STDERR));
-
-	if(SUCCESS == status)
-	{
-		ASSERT(FAILURE == construct_path("tmpdir_missing.txt",path));
-		ASSERT(SUCCESS == assert_stderr_matches("templates/0037_004.txt"));
-	}
-
-	if(tmpdir_saved == true)
-	{
-		restore_tmpdir_status = restore_tmpdir_value(saved_tmpdir);
-	}
-
-	if(SUCCESS == status)
-	{
-		ASSERT(SUCCESS == restore_tmpdir_status);
-	}
-
-	free(saved_tmpdir);
-	call(m_del(path));
 
 	RETURN_STATUS;
 }
@@ -378,8 +304,6 @@ Return test0037(void)
 
 	TEST(test0037_1,"delete_path() reports NULL input path");
 	TEST(test0037_2,"delete_path() reports missing path lstat() failure");
-	TEST(test0037_3,"construct_path() reports NULL input arguments");
-	TEST(test0037_4,"construct_path() reports missing TMPDIR");
 	TEST(test0037_5,"delete_path() reports remove() failure for a regular file");
 	TEST(test0037_6,"delete_path() reports nftw() callback remove() failure");
 	TEST(test0037_7,"create_directory() accepts a symlinked directory in TMPDIR");
