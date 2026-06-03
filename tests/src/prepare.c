@@ -21,7 +21,7 @@ Return prepare(void)
 	m_create(char,environment_build_path,MEMORY_STRING);
 	m_create(char,environment_precizer_path,MEMORY_STRING);
 
-	ASSERT(SUCCESS == get_origin_dir(path));
+	ASSERT(SUCCESS == determine_origin_dir(path));
 	ASSERT(SUCCESS == set_environment_variable("ORIGIN_DIR",m_text(path)));
 	call(m_del(path));
 
