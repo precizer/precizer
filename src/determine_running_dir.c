@@ -16,41 +16,38 @@ Return determine_running_dir(void)
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	char *cwd = NULL;
-	size_t cwd_length = 0;
-
 #if defined(__GLIBC__)
-	cwd = get_current_dir_name();
+	char *cwd = get_current_dir_name();
 #else
 	// Portable fallback for platforms without get_current_dir_name (e.g., macOS)
-	cwd = getcwd(NULL,0);
+	char *cwd = getcwd(NULL,0);
 #endif
 
 	if(cwd == NULL)
 	{
 		slog(ERROR,"Error getting current directory\n");
-		provide(FAILURE);
+		status = FAILURE;
 	}
 
-	cwd_length = strlen(cwd) + 1;
-
-	run(copy_buffer(conf(running_dir),cwd,cwd_length));
-
-	free(cwd);
-
-	if((TRIUMPH & status) == 0)
+	if(TRIUMPH & status)
 	{
-		provide(status);
+		run(m_copy_string(conf(running_dir),cwd));
 	}
 
-	run(remove_trailing_slash(conf(running_dir)));
-
-	if((TRIUMPH & status) == 0)
+	if(cwd != NULL)
 	{
-		provide(status);
+		free(cwd);
 	}
 
-	slog(TRACE,"Current directory: %s\n",confstr(running_dir));
+	if(TRIUMPH & status)
+	{
+		run(remove_trailing_slash(conf(running_dir)));
+	}
+
+	if(TRIUMPH & status)
+	{
+		slog(TRACE,"Current directory: %s\n",confstr(running_dir));
+	}
 
 	provide(status);
 }
