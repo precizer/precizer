@@ -70,6 +70,11 @@ static Return test0034_1(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Run metadata-difference reporting coverage for logical and allocated size changes
+ *
+ * @return Return status code
+ */
 Return test0034(void)
 {
 	INITTEST;
