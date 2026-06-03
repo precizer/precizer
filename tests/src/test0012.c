@@ -18,7 +18,7 @@ static Return verify_array_contents(
 	/* By default, assumes the function ran without errors */
 	Return status = SUCCESS;
 
-	if((SUCCESS & status) && array == NULL)
+	if(array == NULL)
 	{
 		status = FAILURE;
 	}
