@@ -1,5 +1,4 @@
 \ATESTING:Configuration initialization is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:roots=tests/fixtures/ignore_include_cases/chaotic_filenames
 TESTING:argument:database=database0009_4\.db
@@ -9,6 +8,7 @@ TESTING:argument:include=\^\(\?:skip_4xv7__m2\\\.log\|tmp_qwe_90210\\\.log\|tmp_
 TESTING:argument:watch-timestamps=yes
 TESTING:argument:update=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/ignore_include_cases/chaotic_filenames exists
 TESTING:The path tests/fixtures/ignore_include_cases/chaotic_filenames is exists and it is a directory

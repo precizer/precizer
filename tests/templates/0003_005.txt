@@ -1,5 +1,4 @@
 \ATESTING:Configuration initialization is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 Usage: precizer \[-cfoTuXCrh\?pqsvVz\]
 \s+\[-F checksum-mismatch\|first-source\|second-source\] \[-d FILE\]
 \s+\[-l FULL\|QUICK\] \[-m NUMBER\] \[-n\[MODE\]\] \[-k PCRE2_REGEXP\]
@@ -11,4 +10,5 @@ Usage: precizer \[-cfoTuXCrh\?pqsvVz\]
 \s+\[--rehash-locked\] \[--ignore=PCRE2_REGEXP\] \[--include=PCRE2_REGEXP\]
 \s+\[--help\] \[--progress\] \[--quiet-ignored\] \[--silent\] \[--verbose\]
 \s+\[--version\] \[--usage\] PATH
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Exit status » SUCCESS\|HALTED\|INFO\Z

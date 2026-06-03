@@ -1,10 +1,10 @@
 \ATESTING:Configuration initialization is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=Это новая база данных\.db
 TESTING:argument:db_file_name=Это новая база данных\.db
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -59,12 +59,12 @@ TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file Это новая
 TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:db_file_paths=Это новая база данных\.db, 0015_database_v4 это база данных с пробелами и символами UTF-8\.db
 TESTING:argument:db_file_names=Это новая база данных\.db, 0015_database_v4 это база данных с пробелами и символами UTF-8\.db
 TESTING:argument:compare=yes
 TESTING:Argument parsing is complete
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
