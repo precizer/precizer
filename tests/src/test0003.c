@@ -20,10 +20,11 @@ static Return assert_information_mode_output(
 	m_create(char,stdout_pattern,MEMORY_STRING);
 	m_create(char,stderr_pattern,MEMORY_STRING);
 
-	if((SUCCESS & status) && arguments == NULL)
+	if(arguments == NULL)
 	{
 		status = FAILURE;
 	}
+
 	if((SUCCESS & status) && stdout_pattern_file == NULL)
 	{
 		status = FAILURE;
@@ -149,6 +150,7 @@ Return test0003_3(void)
 	ASSERT(SUCCESS & assert_information_mode_output("--usage",usage_template));
 	ASSERT(SUCCESS & assert_information_mode_output("-z",usage_template));
 	ASSERT(SUCCESS & assert_information_mode_output("--version",version_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--version --version",version_template));
 
 	RETURN_STATUS;
 }
@@ -174,6 +176,7 @@ Return test0003_4(void)
 	ASSERT(SUCCESS & assert_information_mode_output("--compare --usage",usage_template));
 	ASSERT(SUCCESS & assert_information_mode_output("--compare -z",usage_template));
 	ASSERT(SUCCESS & assert_information_mode_output("--compare --version",version_template));
+	ASSERT(SUCCESS & assert_information_mode_output("--help --version",help_template));
 
 	RETURN_STATUS;
 }
