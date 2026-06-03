@@ -29,11 +29,13 @@ static Return verify_array_contents(
 		{
 			status = FAILURE;
 		}
+
 		if((SUCCESS & status) && strcmp(array[i],expected[i]) != 0)
 		{
 			status = FAILURE;
 		}
 	}
+
 	if((SUCCESS & status) && array[expected_size] != NULL)  // Verify NULL termination
 	{
 		status = FAILURE;
@@ -130,16 +132,16 @@ static Return test0012_4(void)
 }
 
 /**
- * @brief Unit tests for add_string_to_array and free_string_array cleanup semantics
+ * @brief Run unit tests for add_string_to_array() and cleanup behavior
  */
 Return test0012(void)
 {
 	INITTEST;
 
-	TEST(test0012_1,"Adding string to empty array");
-	TEST(test0012_2,"Testing adding multiple strings");
-	TEST(test0012_3,"Testing adding empty string");
-	TEST(test0012_4,"Testing adding long string");
+	TEST(test0012_1,"add_string_to_array(): add to empty array");
+	TEST(test0012_2,"add_string_to_array(): add multiple strings");
+	TEST(test0012_3,"add_string_to_array(): add empty string");
+	TEST(test0012_4,"add_string_to_array(): add long string");
 
 	RETURN_STATUS;
 }
