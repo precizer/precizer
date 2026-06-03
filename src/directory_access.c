@@ -20,29 +20,49 @@ Return directory_access_verify(
 	bool             *first_iteration,
 	TraversalSummary *summary)
 {
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
 	if(root_path == NULL)
 	{
-		return(SUCCESS);
+		provide(status);
 	}
 
+	/* Directory traversal needs both read permission and execute permission.
+	   Read permission lets the program list entries inside the directory, while
+	   execute permission lets it enter the directory and reach child paths */
 	FileAccessStatus access_status = file_check_access(entry->fts_path,(size_t)entry->fts_pathlen,R_OK | X_OK);
 
 	if(access_status == FILE_ACCESS_ERROR)
 	{
-		return(FAILURE);
+		provide(FAILURE);
 	}
 
+	/* When a directory cannot be read or has disappeared during traversal, show
+	   the user its relative path and remember the warning for the final summary.
+	   If no --include rules were supplied, the whole subtree can be skipped
+	   because there is no later include pattern that could make a child visible */
 	if(access_status == FILE_ACCESS_DENIED || access_status == FILE_NOT_FOUND)
 	{
-		const char *relative_path = extract_relative_path(entry->fts_path,root_path);
+		m_create(char,relative_path,MEMORY_STRING);
 
-		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible directory %s\n",relative_path);
+		run(extract_relative_path(relative_path,entry->fts_path,(size_t)entry->fts_pathlen,root_path));
 
-		if(config->include_specified == false)
+		if(TRIUMPH & status)
 		{
-			(void)fts_set(file_systems,entry,FTS_SKIP);
+			const char *runtime_relative_path = m_text(relative_path);
+
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible directory %s\n",runtime_relative_path);
+
+			if(config->include_specified == false)
+			{
+				(void)fts_set(file_systems,entry,FTS_SKIP);
+			}
 		}
+
+		call(m_del(relative_path));
 	}
 
-	return(SUCCESS);
+	provide(status);
 }
