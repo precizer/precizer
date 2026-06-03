@@ -13,7 +13,7 @@
 Return path_check_locked_checksum(const memory *relative_path)
 {
 	/* This function was reviewed line by line by a human and is not AI-generated
-     Any change to this function requires separate explicit approval */
+	   Any change to this function requires separate explicit approval */
 
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
