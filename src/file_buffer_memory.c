@@ -1,10 +1,12 @@
 #include "precizer.h"
 
 #ifdef TESTITALL
-// In test builds route sysconf() through a test hook to avoid overriding
-// the libc symbol globally (ASan/UBSan may rely on it).
-long testitall_sysconf(int name);
-#define sysconf(name) testitall_sysconf(name)
+#include "testmocking.h"
+
+/* In test builds route only this file's sysconf() calls through testmocking.
+   This avoids overriding the libc symbol globally because sanitizers and
+   runtime helpers may rely on the real sysconf() behavior */
+#define sysconf(name) testmocking_sysconf(name)
 #endif
 
 /**
