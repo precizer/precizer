@@ -6,6 +6,9 @@
  * Saves the process working directory into the global configuration as a
  * managed string descriptor. This path is later used as the base directory
  * when absolute paths must be constructed from relative inputs
+ *
+ * @return SUCCESS when the working directory was captured and normalized,
+ *         otherwise FAILURE
  */
 Return determine_running_dir(void)
 {

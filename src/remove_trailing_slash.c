@@ -1,16 +1,13 @@
 #include "precizer.h"
 
 /**
- * @brief Remove extra trailing slashes from a path descriptor
+ * @brief Normalize a path descriptor by removing redundant trailing slashes
  *
- * Measures the visible string through the libmem string-length helper, then
- * trims trailing `/` characters from that visible prefix. Keeps the root path
- * `/` unchanged and leaves empty paths unchanged
+ * Keeps `/` unchanged, leaves empty paths unchanged, and trims repeated trailing
+ * separators from ordinary paths such as `dir///`
  *
  * @param[in,out] path Path descriptor to normalize
- * @return SUCCESS when the path is normalized or does not need changes.
- *         Returns FAILURE when the descriptor is invalid or when a visible
- *         non-empty payload cannot be accessed as a writable char buffer
+ * @return SUCCESS when the path is normalized or already valid, otherwise FAILURE
  */
 Return remove_trailing_slash(memory *path)
 {
