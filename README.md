@@ -858,6 +858,8 @@ The following cases illustrate how `--lock-checksum`, `--watch-timestamps`, and 
 4. **Size matches, timestamps differ; `--watch-timestamps` is enabled and `--rehash-locked` is omitted.** The file is flagged as a “locked checksum violation” only due to timestamp drift, and `precizer` finishes with the `WARNING` status.
 5. **Size matches; `--rehash-locked` is enabled.** Only the checksum and the size stored in the database matter. If both match, the file is considered consistent. If the on-disk timestamps changed, the new ctime/mtime values are saved to the database regardless of whether `--watch-timestamps` was used.
 
+Detailed examples of behavior in difficult situations are collected in test No. 30 (`tests/src/test0030.c`). It covers deleted locked files, lost access, access-check failures, and interactions with `--ignore`, `--include`, `--db-drop-ignored`, and `--db-drop-inaccessible`.
+
 A practical workflow is to run a quick daily scan without `--rehash-locked` (and even without `--watch-timestamps` if timestamp drift is acceptable) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to force checksum-level verification of the frozen data set.
 
 ### Example 11
@@ -871,7 +873,9 @@ precizer --update --db-drop-inaccessible /mnt/storage
 
 <sub>drop due to inaccessible archive/secret.bin</sub>
 
-Note: this example applies only to files that have a record in the database but are truly inaccessible on disk for some reason. This can happen due to incorrect `chmod`/`chown` permissions or an incorrectly mounted volume. WARNING: if the file (or even its path) is actually deleted, not just temporarily inaccessible, then updating the database with `--update` will remove its record unconditionally — no extra options are needed.
+Important: `--db-drop-inaccessible` is not about files that are gone. It is about files that cannot be read right now, or files whose access state cannot be checked reliably. For example, permissions, ownership, ACLs, or the filesystem itself may temporarily prevent access. By default, these records stay in the database so a temporary access problem does not erase useful history. If you are sure those records should be removed, add `--db-drop-inaccessible`.
+
+If a file, or one of the directories in its path, is not visible in the filesystem at all, `precizer` treats a regular record not protected by `--lock-checksum` as deleted and removes it from the database during `--update` without any extra option. The program cannot tell whether this is a real deletion or a mount point that exists but currently shows an empty directory because the expected volume was not mounted. Before updating a database for external, network, or removable volumes, first make sure the expected volume is actually mounted. For important archive paths, use `--lock-checksum`: then a missing or unavailable file is reported as a warning, and its database record is preserved.
 
 ## TROUBLESHOOTING
 

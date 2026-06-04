@@ -174,8 +174,8 @@ static Return db_preserve_locked_ignored_record(
  * The function walks through file records stored in the primary database and
  * decides whether each row should remain there
  * A row can be removed when the file is no longer present on disk, when it is
- * inaccessible and `--db-drop-inaccessible` is active, or when the path is
- * ignored and `--db-drop-ignored` is enabled
+ * inaccessible or its access check fails and `--db-drop-inaccessible` is active,
+ * or when the path is ignored and `--db-drop-ignored` is enabled
  *
  * Checksum-locked paths are handled more conservatively
  * If a locked file is missing or unavailable, the function keeps the database
@@ -279,7 +279,7 @@ Return db_delete_missing_metadata(void)
 		// Marks deletions triggered by --db-drop-ignored
 		bool drop_ignored = false;
 
-		// Marks deletions triggered by denied access when --db-drop-inaccessible is active
+		// Marks deletions triggered by unavailable access when --db-drop-inaccessible is active
 		bool inaccessible = false;
 
 		// Marks deletions triggered by a missing path on disk
@@ -366,10 +366,10 @@ Return db_delete_missing_metadata(void)
 			{
 				continue;
 
-			} else if(access_status == FILE_ACCESS_DENIED){
+			} else if(access_status == FILE_ACCESS_DENIED || access_status == FILE_ACCESS_ERROR){
 
 				/*
-				 * YES means the inaccessible DB row is checksum-locked and was reported as a violation.
+				 * YES means the unavailable DB row is checksum-locked and was reported as a violation.
 				 * NO means no checksum-lock violation was reported, so normal inaccessible handling continues
 				 */
 				if(ask(db_check_locked_unavailable_violation(relative_path,access_status)))
@@ -413,24 +413,6 @@ Return db_delete_missing_metadata(void)
 				file_not_found = true;
 				should_delete = true;
 
-			} else if(access_status == FILE_ACCESS_ERROR){
-				/*
-				 * YES means the path with failed access classification is checksum-locked and was reported as a violation.
-				 * NO means no checksum-lock violation was reported, so the access classification failure remains technical
-				 */
-				if(ask(db_check_locked_unavailable_violation(relative_path,access_status)))
-				{
-					locked_unavailable_violation_detected = true;
-					continue;
-				}
-
-				if(SUCCESS != status)
-				{
-					break;
-				}
-
-				status = FAILURE;
-				break;
 			}
 		}
 
