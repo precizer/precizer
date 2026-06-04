@@ -42,12 +42,12 @@ TESTING:The database lock_s10\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Searching for files that no longer exist on the file system…
-(?:\x1B\[[0-9;]*m)*checksum locked, file disappeared from disk(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*checksum locked, file disappeared(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:Missing file search finished
 TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
 TESTING:Returned db_delete_missing_metadata:\d+ status: WARNING
 TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
-(?:\x1B\[[0-9;]*m)*checksum locked, file disappeared from disk(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*checksum locked, file disappeared(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » WARNING\Z
