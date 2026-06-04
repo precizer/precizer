@@ -8,6 +8,7 @@ static const char *copy_source_root_for_nftw = NULL;
 static const char *copy_destination_root_for_nftw = NULL;
 static size_t copy_source_root_length_for_nftw = 0U;
 static size_t copy_destination_root_length_for_nftw = 0U;
+static const char mutable_fixture_backup_root[] = ".fixture_backups";
 
 /**
  * @brief Reset nftw copy context to an empty state
@@ -33,8 +34,8 @@ static void reset_nftw_copy_context(void)
  */
 Return open_file_stream(
 	const memory *file_path,
-	const char *stream_open_mode,
-	FILE       **opened_file_stream_out)
+	const char   *stream_open_mode,
+	FILE         **opened_file_stream_out)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -48,14 +49,14 @@ Return open_file_stream(
 		status = FAILURE;
 	}
 
-	if(opened_file_stream_out != NULL)
+	IF(opened_file_stream_out != NULL)
 	{
 		*opened_file_stream_out = NULL;
 	}
 
 	if(SUCCESS == status)
 	{
-		file_path_string = getcstring(file_path);
+		file_path_string = m_text(file_path);
 	}
 
 	if(SUCCESS == status)
@@ -73,6 +74,7 @@ Return open_file_stream(
 	if(SUCCESS == status)
 	{
 		writable_file_descriptor = open(file_path_string,file_open_flags,0600);
+
 		if(writable_file_descriptor < 0)
 		{
 			status = FAILURE;
@@ -82,6 +84,7 @@ Return open_file_stream(
 	if(SUCCESS == status)
 	{
 		*opened_file_stream_out = fdopen(writable_file_descriptor,stream_open_mode);
+
 		if(*opened_file_stream_out == NULL)
 		{
 			(void)close(writable_file_descriptor);
@@ -102,12 +105,11 @@ Return open_file_stream(
  * @return 0 on success, non-zero on failure
  */
 static int apply_mtime_from_source_stat(
-	const char *destination_path,
+	const char        *destination_path,
 	const struct stat *source_stat,
-	const int utimensat_flags)
+	const int         utimensat_flags)
 {
 	int status = 0;
-	struct timespec times[2] = {0};
 
 	if(destination_path == NULL || source_stat == NULL)
 	{
@@ -116,8 +118,11 @@ static int apply_mtime_from_source_stat(
 
 	if(status == 0)
 	{
+		struct timespec times[2] = {0};
+
 		times[0].tv_nsec = UTIME_OMIT;
 		times[1] = source_stat->st_mtim;
+
 		if(utimensat(0,destination_path,times,utimensat_flags) != 0)
 		{
 			status = -1;
@@ -138,10 +143,10 @@ static int apply_mtime_from_source_stat(
  * @return 0 on success, non-zero on failure
  */
 static int nftw_remove_callback(
-	const char    *path,
+	const char        *path,
 	const struct stat *stat_buffer,
-	const int     type_flag,
-	struct FTW    *ftw_buffer)
+	const int         type_flag,
+	struct FTW        *ftw_buffer)
 {
 	(void)stat_buffer;
 	(void)type_flag;
@@ -169,7 +174,6 @@ static int build_copy_destination_path_for_nftw(
 	memory     *destination_path_out)
 {
 	int status = 0;
-	const char *relative_path = NULL;
 
 	if(source_path == NULL
 	        || destination_path_out == NULL
@@ -180,34 +184,31 @@ static int build_copy_destination_path_for_nftw(
 	}
 
 	if(status == 0 && strncmp(source_path,
-	                          copy_source_root_for_nftw,
-	                          copy_source_root_length_for_nftw) != 0)
+		copy_source_root_for_nftw,
+		copy_source_root_length_for_nftw) != 0)
 	{
 		status = -1;
 	}
 
 	if(status == 0)
 	{
-		relative_path = source_path + copy_source_root_length_for_nftw;
+		const char *relative_path = source_path + copy_source_root_length_for_nftw;
 
 		if(relative_path[0] == '/')
 		{
 			relative_path++;
 		}
-	}
 
-	if(status == 0)
-	{
-		if(copy_cstring(destination_path_out,
-		                copy_destination_root_for_nftw,
-		                copy_destination_root_length_for_nftw + 1U) != SUCCESS)
+		if(m_copy_string(destination_path_out,
+			copy_destination_root_length_for_nftw + 1U,
+			copy_destination_root_for_nftw) != SUCCESS)
 		{
 			status = -1;
 		}
 
 		if(status == 0 && relative_path[0] != '\0')
 		{
-			if(concat_literal(destination_path_out,"/") != SUCCESS)
+			if(m_concat_literal(destination_path_out,"/") != SUCCESS)
 			{
 				status = -1;
 			}
@@ -215,7 +216,7 @@ static int build_copy_destination_path_for_nftw(
 
 		if(status == 0 && relative_path[0] != '\0')
 		{
-			if(concat_cstring(destination_path_out,relative_path,strlen(relative_path) + 1U) != SUCCESS)
+			if(m_concat_string(destination_path_out,relative_path) != SUCCESS)
 			{
 				status = -1;
 			}
@@ -234,8 +235,7 @@ static int build_copy_destination_path_for_nftw(
  *
  * @return 0 on success, non-zero on failure
  */
-static int create_directory_if_missing(
-	const char *directory_path)
+static int create_directory_if_missing(const char *directory_path)
 {
 	int status = 0;
 	struct stat directory_stat = {0};
@@ -291,6 +291,7 @@ static Return construct_path_from_environment_variable(
 	if(SUCCESS == status)
 	{
 		root_path = getenv(environment_variable_name);
+
 		if(root_path == NULL)
 		{
 			status = FAILURE;
@@ -300,18 +301,25 @@ static Return construct_path_from_environment_variable(
 	if(SUCCESS == status)
 	{
 		absolute_path_size = strlen(root_path) + strlen(relative_path) + 2U;
-		status = resize(absolute_path_out,absolute_path_size);
+		status = m_resize(absolute_path_out,absolute_path_size);
 	}
 
 	if(SUCCESS == status)
 	{
-		char *absolute_path_data = data(char,absolute_path_out);
+		char *absolute_path_data = m_data(char,absolute_path_out);
 
 		if(absolute_path_data == NULL)
 		{
 			status = FAILURE;
-		} else if(snprintf(absolute_path_data,absolute_path_size,"%s/%s",root_path,relative_path) < 0){
-			status = FAILURE;
+		} else {
+			int print_result = snprintf(absolute_path_data,absolute_path_size,"%s/%s",root_path,relative_path);
+
+			if(print_result < 0)
+			{
+				status = FAILURE;
+			} else {
+				status = m_finalize_string(absolute_path_out,(size_t)print_result);
+			}
 		}
 	}
 
@@ -328,8 +336,8 @@ static Return construct_path_from_environment_variable(
  * @return 0 on success, non-zero on failure
  */
 static int copy_regular_file_contents(
-	const char *source_path,
-	const char *destination_path,
+	const char   *source_path,
+	const char   *destination_path,
 	const mode_t destination_mode)
 {
 	int status = 0;
@@ -345,6 +353,7 @@ static int copy_regular_file_contents(
 	if(status == 0)
 	{
 		source_fd = open(source_path,O_RDONLY);
+
 		if(source_fd < 0)
 		{
 			status = -1;
@@ -354,8 +363,9 @@ static int copy_regular_file_contents(
 	if(status == 0)
 	{
 		destination_fd = open(destination_path,
-		                      O_WRONLY | O_CREAT | O_TRUNC,
-		                      destination_mode & (mode_t)07777);
+			O_WRONLY | O_CREAT | O_TRUNC,
+			destination_mode & (mode_t)07777);
+
 		if(destination_fd < 0)
 		{
 			status = -1;
@@ -391,8 +401,8 @@ static int copy_regular_file_contents(
 		while(offset < bytes_read)
 		{
 			const ssize_t bytes_written = write(destination_fd,
-			                                    buffer + offset,
-			                                    (size_t)(bytes_read - offset));
+				buffer + offset,
+				(size_t)(bytes_read - offset));
 
 			if(bytes_written < 0)
 			{
@@ -436,7 +446,6 @@ static int copy_symbolic_link(
 	int status = 0;
 	size_t link_target_buffer_size = 256U;
 	char *link_target = NULL;
-	ssize_t link_target_size = -1;
 
 	if(source_path == NULL || destination_path == NULL)
 	{
@@ -446,6 +455,7 @@ static int copy_symbolic_link(
 	if(status == 0)
 	{
 		link_target = malloc(link_target_buffer_size);
+
 		if(link_target == NULL)
 		{
 			status = -1;
@@ -454,7 +464,7 @@ static int copy_symbolic_link(
 
 	while(status == 0)
 	{
-		link_target_size = readlink(source_path,link_target,link_target_buffer_size - 1U);
+		ssize_t link_target_size = readlink(source_path,link_target,link_target_buffer_size - 1U);
 
 		if(link_target_size < 0)
 		{
@@ -500,15 +510,15 @@ static int copy_symbolic_link(
  * @return 0 on success, non-zero on failure
  */
 static int nftw_copy_callback(
-	const char    *path,
+	const char        *path,
 	const struct stat *stat_buffer,
-	const int     type_flag,
-	struct FTW    *ftw_buffer)
+	const int         type_flag,
+	struct FTW        *ftw_buffer)
 {
 	(void)ftw_buffer;
 
 	int status = 0;
-	create(char,destination_path);
+	m_create(char,destination_path,MEMORY_STRING);
 	const char *destination_path_string = NULL;
 
 	if(stat_buffer == NULL)
@@ -523,7 +533,8 @@ static int nftw_copy_callback(
 
 	if(status == 0)
 	{
-		destination_path_string = getcstring(destination_path);
+		destination_path_string = m_text(destination_path);
+
 		if(destination_path_string == NULL)
 		{
 			status = -1;
@@ -534,53 +545,57 @@ static int nftw_copy_callback(
 	{
 		switch(type_flag)
 		{
-		case FTW_D:
-			if(mkdir(destination_path_string,stat_buffer->st_mode & (mode_t)07777) != 0 && errno != EEXIST)
-			{
-				status = -1;
-			}
-			if(status == 0 && chmod(destination_path_string,stat_buffer->st_mode & (mode_t)07777) != 0)
-			{
-				status = -1;
-			}
-			break;
-		case FTW_F:
-			if(copy_regular_file_contents(path,destination_path_string,stat_buffer->st_mode) != 0)
-			{
-				status = -1;
-			}
-			if(status == 0 && apply_mtime_from_source_stat(destination_path_string,stat_buffer,0) != 0)
-			{
-				status = -1;
-			}
-			break;
-		case FTW_SL:
+			case FTW_D:
+				if(mkdir(destination_path_string,stat_buffer->st_mode & (mode_t)07777) != 0 && errno != EEXIST)
+				{
+					status = -1;
+				}
+
+				if(status == 0 && chmod(destination_path_string,stat_buffer->st_mode & (mode_t)07777) != 0)
+				{
+					status = -1;
+				}
+				break;
+			case FTW_F:
+				if(copy_regular_file_contents(path,destination_path_string,stat_buffer->st_mode) != 0)
+				{
+					status = -1;
+				}
+
+				if(status == 0 && apply_mtime_from_source_stat(destination_path_string,stat_buffer,0) != 0)
+				{
+					status = -1;
+				}
+				break;
+			case FTW_SL:
 #ifdef FTW_SLN
-		case FTW_SLN:
+			case FTW_SLN:
 #endif
-			if(unlink(destination_path_string) != 0 && errno != ENOENT)
-			{
-				status = -1;
-			}
-			if(status == 0 && copy_symbolic_link(path,destination_path_string) != 0)
-			{
-				status = -1;
-			}
+
+				if(unlink(destination_path_string) != 0 && errno != ENOENT)
+				{
+					status = -1;
+				}
+
+				if(status == 0 && copy_symbolic_link(path,destination_path_string) != 0)
+				{
+					status = -1;
+				}
 #ifdef AT_SYMLINK_NOFOLLOW
-			if(status == 0
-			        && apply_mtime_from_source_stat(destination_path_string,stat_buffer,AT_SYMLINK_NOFOLLOW) != 0)
-			{
-				status = -1;
-			}
+				if(status == 0
+				        && apply_mtime_from_source_stat(destination_path_string,stat_buffer,AT_SYMLINK_NOFOLLOW) != 0)
+				{
+					status = -1;
+				}
 #endif
-			break;
-		default:
-			status = -1;
-			break;
+				break;
+			default:
+				status = -1;
+				break;
 		}
 	}
 
-	del(destination_path);
+	m_del(destination_path);
 
 	return(status);
 }
@@ -596,15 +611,15 @@ static int nftw_copy_callback(
  * @return 0 on success, non-zero on failure
  */
 static int nftw_sync_directory_mtime_callback(
-	const char    *path,
+	const char        *path,
 	const struct stat *stat_buffer,
-	const int     type_flag,
-	struct FTW    *ftw_buffer)
+	const int         type_flag,
+	struct FTW        *ftw_buffer)
 {
 	(void)ftw_buffer;
 
 	int status = 0;
-	create(char,destination_path);
+	m_create(char,destination_path,MEMORY_STRING);
 	const char *destination_path_string = NULL;
 	bool is_directory = false;
 
@@ -634,7 +649,8 @@ static int nftw_sync_directory_mtime_callback(
 
 	if(status == 0 && is_directory == true)
 	{
-		destination_path_string = getcstring(destination_path);
+		destination_path_string = m_text(destination_path);
+
 		if(destination_path_string == NULL)
 		{
 			status = -1;
@@ -649,7 +665,7 @@ static int nftw_sync_directory_mtime_callback(
 		}
 	}
 
-	del(destination_path);
+	m_del(destination_path);
 
 	return(status);
 }
@@ -663,15 +679,14 @@ static int nftw_sync_directory_mtime_callback(
  *         - SUCCESS: File was truncated successfully
  *         - FAILURE: Path construction or file operation failed
  */
-Return truncate_file_to_zero_size(
-	const char *relative_path_to_tmpdir)
+Return truncate_file_to_zero_size(const char *relative_path_to_tmpdir)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *file = NULL;
 
-	create(char,absolute_path);
+	m_create(char,absolute_path,MEMORY_STRING);
 
 	if(relative_path_to_tmpdir == NULL)
 	{
@@ -691,12 +706,95 @@ Return truncate_file_to_zero_size(
 			&file);
 	}
 
-	if(file != NULL && fclose(file) != 0)
+	IF(file != NULL && fclose(file) != 0)
 	{
 		status = FAILURE;
 	}
 
-	del(absolute_path);
+	m_del(absolute_path);
+
+	return(status);
+}
+
+/**
+ * @brief Create symbolic link by path relative to TMPDIR
+ *
+ * The target string is stored in the link exactly as provided
+ *
+ * @param[in] link_target Literal target string for the symbolic link
+ * @param[in] relative_link_path_to_tmpdir Symbolic link path relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Symbolic link was created successfully
+ *         - FAILURE: Validation, path construction, or symlink creation failed
+ */
+Return create_symlink(
+	const char *link_target,
+	const char *relative_link_path_to_tmpdir)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	m_create(char,absolute_path,MEMORY_STRING);
+
+	if(link_target == NULL || relative_link_path_to_tmpdir == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(relative_link_path_to_tmpdir,absolute_path);
+	}
+
+	if(SUCCESS == status && symlink(link_target,m_text(absolute_path)) != 0)
+	{
+		status = FAILURE;
+	}
+
+	m_del(absolute_path);
+
+	return(status);
+}
+
+/**
+ * @brief Change file mode by path relative to TMPDIR
+ *
+ * The provided mode is applied exactly with native `chmod()`
+ *
+ * @param[in] relative_path_to_tmpdir File or directory path relative to TMPDIR
+ * @param[in] new_mode Exact mode value to apply
+ *
+ * @return Return status code:
+ *         - SUCCESS: File mode was changed successfully
+ *         - FAILURE: Validation, path construction, or chmod failed
+ */
+Return change_mode(
+	const char   *relative_path_to_tmpdir,
+	unsigned int new_mode)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	m_create(char,absolute_path,MEMORY_STRING);
+
+	if(relative_path_to_tmpdir == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(relative_path_to_tmpdir,absolute_path);
+	}
+
+	if(SUCCESS == status && chmod(m_text(absolute_path),(mode_t)new_mode) != 0)
+	{
+		status = FAILURE;
+	}
+
+	m_del(absolute_path);
 
 	return(status);
 }
@@ -714,15 +812,13 @@ Return truncate_file_to_zero_size(
  *         - SUCCESS: Directory tree exists after the call
  *         - FAILURE: Path construction or directory creation failed
  */
-Return create_directory(
-	const char *relative_path_to_tmpdir)
+Return create_directory(const char *relative_path_to_tmpdir)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	char *absolute_path_data = NULL;
-	size_t absolute_path_length = 0U;
-	create(char,absolute_path);
+	m_create(char,absolute_path,MEMORY_STRING);
 
 	if(relative_path_to_tmpdir == NULL)
 	{
@@ -736,7 +832,8 @@ Return create_directory(
 
 	if(SUCCESS == status)
 	{
-		absolute_path_data = data(char,absolute_path);
+		absolute_path_data = m_data(char,absolute_path);
+
 		if(absolute_path_data == NULL)
 		{
 			status = FAILURE;
@@ -745,7 +842,7 @@ Return create_directory(
 
 	if(SUCCESS == status)
 	{
-		absolute_path_length = strlen(absolute_path_data);
+		size_t absolute_path_length = strlen(absolute_path_data);
 
 		while(absolute_path_length > 1U && absolute_path_data[absolute_path_length - 1U] == '/')
 		{
@@ -763,6 +860,7 @@ Return create_directory(
 			if(*path_cursor == '/')
 			{
 				*path_cursor = '\0';
+
 				if(create_directory_if_missing(absolute_path_data) != 0)
 				{
 					status = FAILURE;
@@ -780,7 +878,7 @@ Return create_directory(
 		}
 	}
 
-	del(absolute_path);
+	m_del(absolute_path);
 
 	return(status);
 }
@@ -797,14 +895,13 @@ Return create_directory(
  *         - SUCCESS: Path was removed
  *         - FAILURE: Path construction or remove traversal failed
  */
-Return delete_path(
-	const char *relative_path_to_tmpdir)
+Return delete_path(const char *relative_path_to_tmpdir)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	struct stat path_stat = {0};
-	create(char,absolute_path);
+	m_create(char,absolute_path,MEMORY_STRING);
 
 	if(relative_path_to_tmpdir == NULL)
 	{
@@ -824,9 +921,9 @@ Return delete_path(
 
 	if(SUCCESS == status)
 	{
-		if(lstat(getcstring(absolute_path),&path_stat) != 0)
+		if(lstat(m_text(absolute_path),&path_stat) != 0)
 		{
-			echo(STDERR,"delete_path: lstat failed for %s: %s\n",getcstring(absolute_path),strerror(errno));
+			echo(STDERR,"delete_path: lstat failed for %s: %s\n",m_text(absolute_path),strerror(errno));
 			status = FAILURE;
 		}
 	}
@@ -836,22 +933,24 @@ Return delete_path(
 		if(S_ISDIR(path_stat.st_mode))
 		{
 			long sc_open_max = sysconf(_SC_OPEN_MAX);
+
 			if(sc_open_max <= 0)
 			{
 				sc_open_max = 512;
 			}
-			if(nftw(getcstring(absolute_path),nftw_remove_callback,(int)sc_open_max,FTW_DEPTH | FTW_PHYS) != 0)
+
+			if(nftw(m_text(absolute_path),nftw_remove_callback,(int)sc_open_max,FTW_DEPTH | FTW_PHYS) != 0)
 			{
-				echo(STDERR,"delete_path: nftw failed for %s: %s\n",getcstring(absolute_path),strerror(errno));
+				echo(STDERR,"delete_path: nftw failed for %s: %s\n",m_text(absolute_path),strerror(errno));
 				status = FAILURE;
 			}
-		} else if(remove(getcstring(absolute_path)) != 0){
-			echo(STDERR,"delete_path: remove failed for %s: %s\n",getcstring(absolute_path),strerror(errno));
+		} else if(remove(m_text(absolute_path)) != 0){
+			echo(STDERR,"delete_path: remove failed for %s: %s\n",m_text(absolute_path),strerror(errno));
 			status = FAILURE;
 		}
 	}
 
-	del(absolute_path);
+	m_del(absolute_path);
 
 	return(status);
 }
@@ -903,7 +1002,7 @@ static Return copy_absolute_path(
 
 		if(strncmp(destination_absolute_path,source_absolute_path,source_length) == 0
 		        && (destination_absolute_path[source_length] == '\0'
-		                || destination_absolute_path[source_length] == '/'))
+		        || destination_absolute_path[source_length] == '/'))
 		{
 			status = FAILURE;
 		}
@@ -927,6 +1026,7 @@ static Return copy_absolute_path(
 		} else {
 			copy_source_root_for_nftw = source_absolute_path;
 			copy_destination_root_for_nftw = destination_absolute_path;
+
 			if(copy_source_root_for_nftw == NULL
 			        || copy_destination_root_for_nftw == NULL)
 			{
@@ -958,9 +1058,9 @@ static Return copy_absolute_path(
 
 			if(SUCCESS == status
 			        && nftw(source_absolute_path,
-			                nftw_sync_directory_mtime_callback,
-			                64,
-			                FTW_DEPTH | FTW_PHYS) != 0)
+				nftw_sync_directory_mtime_callback,
+				64,
+				FTW_DEPTH | FTW_PHYS) != 0)
 			{
 				status = FAILURE;
 			}
@@ -981,8 +1081,8 @@ static Return copy_absolute_path(
 
 		if(SUCCESS == status
 		        && copy_regular_file_contents(source_absolute_path,
-		                                      destination_absolute_path,
-		                                      source_stat.st_mode) != 0)
+			destination_absolute_path,
+			source_stat.st_mode) != 0)
 		{
 			status = FAILURE;
 		}
@@ -1012,8 +1112,8 @@ static Return copy_absolute_path(
 #ifdef AT_SYMLINK_NOFOLLOW
 		if(SUCCESS == status
 		        && apply_mtime_from_source_stat(destination_absolute_path,
-		                                        &source_stat,
-		                                        AT_SYMLINK_NOFOLLOW) != 0)
+			&source_stat,
+			AT_SYMLINK_NOFOLLOW) != 0)
 		{
 			status = FAILURE;
 		}
@@ -1047,8 +1147,8 @@ Return copy_path(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	create(char,source_absolute_path);
-	create(char,destination_absolute_path);
+	m_create(char,source_absolute_path,MEMORY_STRING);
+	m_create(char,destination_absolute_path,MEMORY_STRING);
 
 	if(relative_source_path == NULL || relative_destination_path == NULL)
 	{
@@ -1067,12 +1167,12 @@ Return copy_path(
 
 	if(SUCCESS == status)
 	{
-			status = copy_absolute_path(getcstring(source_absolute_path),
-			                            getcstring(destination_absolute_path),
-			                            REQUIRE_SOURCE_EXISTS);
+		status = copy_absolute_path(m_text(source_absolute_path),
+			m_text(destination_absolute_path),
+			REQUIRE_SOURCE_EXISTS);
 	}
-	del(destination_absolute_path);
-	del(source_absolute_path);
+	m_del(destination_absolute_path);
+	m_del(source_absolute_path);
 
 	return(status);
 }
@@ -1096,8 +1196,8 @@ Return copy_from_origin(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	create(char,source_absolute_path);
-	create(char,destination_absolute_path);
+	m_create(char,source_absolute_path,MEMORY_STRING);
+	m_create(char,destination_absolute_path,MEMORY_STRING);
 
 	if(relative_source_path_to_origin_dir == NULL || relative_destination_path_to_tmpdir == NULL)
 	{
@@ -1107,8 +1207,8 @@ Return copy_from_origin(
 	if(SUCCESS == status)
 	{
 		status = construct_path_from_environment_variable("ORIGIN_DIR",
-		                                                  relative_source_path_to_origin_dir,
-		                                                  source_absolute_path);
+			relative_source_path_to_origin_dir,
+			source_absolute_path);
 	}
 
 	if(SUCCESS == status)
@@ -1118,13 +1218,13 @@ Return copy_from_origin(
 
 	if(SUCCESS == status)
 	{
-		status = copy_absolute_path(getcstring(source_absolute_path),
-		                            getcstring(destination_absolute_path),
-		                            flags);
+		status = copy_absolute_path(m_text(source_absolute_path),
+			m_text(destination_absolute_path),
+			flags);
 	}
 
-	del(destination_absolute_path);
-	del(source_absolute_path);
+	m_del(destination_absolute_path);
+	m_del(source_absolute_path);
 
 	return(status);
 }
@@ -1148,8 +1248,8 @@ Return move_path(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	create(char,source_absolute_path);
-	create(char,destination_absolute_path);
+	m_create(char,source_absolute_path,MEMORY_STRING);
+	m_create(char,destination_absolute_path,MEMORY_STRING);
 
 	if(relative_source_path == NULL || relative_destination_path == NULL)
 	{
@@ -1166,13 +1266,215 @@ Return move_path(
 		status = construct_path(relative_destination_path,destination_absolute_path);
 	}
 
-	if(SUCCESS == status && rename(getcstring(source_absolute_path),getcstring(destination_absolute_path)) != 0)
+	if(SUCCESS == status && rename(m_text(source_absolute_path),m_text(destination_absolute_path)) != 0)
 	{
 		status = FAILURE;
 	}
 
-	del(destination_absolute_path);
-	del(source_absolute_path);
+	m_del(destination_absolute_path);
+	m_del(source_absolute_path);
+
+	return(status);
+}
+
+/**
+ * @brief Build the hidden backup path for a mutable fixture
+ *
+ * The returned path mirrors the fixture path under `.fixture_backups`
+ *
+ * @param[in] fixture_path Fixture path relative to TMPDIR
+ * @param[out] backup_path_out Output hidden backup path relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Hidden backup path was constructed
+ *         - FAILURE: Validation or string construction failed
+ */
+static Return construct_mutable_fixture_backup_path(
+	const char *fixture_path,
+	memory     *backup_path_out)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	if(fixture_path == NULL || backup_path_out == NULL || fixture_path[0] == '\0')
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = m_copy_string(backup_path_out,
+			sizeof(mutable_fixture_backup_root),
+			mutable_fixture_backup_root);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = m_to_string(backup_path_out);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = m_concat_literal(backup_path_out,"/");
+	}
+
+	if(SUCCESS == status)
+	{
+		status = m_concat_string(backup_path_out,strlen(fixture_path) + 1U,fixture_path);
+	}
+
+	return(status);
+}
+
+/**
+ * @brief Derive the parent directory of a mutable-fixture backup path
+ *
+ * @param[in] backup_path Hidden backup path relative to TMPDIR
+ * @param[out] backup_parent_path_out Output parent directory relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Parent directory path was derived
+ *         - FAILURE: Validation, copy, or parent extraction failed
+ */
+static Return construct_mutable_fixture_backup_parent_path(
+	const memory *backup_path,
+	memory       *backup_parent_path_out)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	char *backup_parent_path_string = NULL;
+
+	if(backup_path == NULL || backup_parent_path_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = m_copy(backup_parent_path_out,backup_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		backup_parent_path_string = m_data(char,backup_parent_path_out);
+
+		if(backup_parent_path_string == NULL)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		char *last_separator = strrchr(backup_parent_path_string,'/');
+
+		if(last_separator == NULL)
+		{
+			status = FAILURE;
+		} else {
+			*last_separator = '\0';
+		}
+	}
+
+	return(status);
+}
+
+/**
+ * @brief Prepare a mutable working copy for a fixture path relative to TMPDIR
+ *
+ * The pristine backup is stored under the hidden `.fixture_backups` root
+ *
+ * @param[in] fixture_path Fixture path relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Pristine backup was created and working copy was restored
+ *         - FAILURE: Validation, backup path construction, or fixture copy failed
+ */
+Return prepare_mutable_fixture(const char *fixture_path)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	m_create(char,backup_path,MEMORY_STRING);
+	m_create(char,backup_parent_path,MEMORY_STRING);
+
+	if(fixture_path == NULL || fixture_path[0] == '\0')
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_mutable_fixture_backup_path(fixture_path,backup_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_mutable_fixture_backup_parent_path(backup_path,backup_parent_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = create_directory(m_text(backup_parent_path));
+	}
+
+	if(SUCCESS == status)
+	{
+		status = move_path(fixture_path,m_text(backup_path));
+	}
+
+	if(SUCCESS == status)
+	{
+		status = copy_path(m_text(backup_path),fixture_path);
+	}
+
+	m_del(backup_parent_path);
+	m_del(backup_path);
+
+	return(status);
+}
+
+/**
+ * @brief Restore a fixture path from the hidden mutable-fixture backup
+ *
+ * The working copy is deleted before the pristine backup is moved back
+ *
+ * @param[in] fixture_path Fixture path relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Working copy was removed and pristine backup was restored
+ *         - FAILURE: Validation, backup path construction, or restore failed
+ */
+Return restore_mutable_fixture(const char *fixture_path)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	m_create(char,backup_path,MEMORY_STRING);
+
+	if(fixture_path == NULL || fixture_path[0] == '\0')
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_mutable_fixture_backup_path(fixture_path,backup_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = delete_path(fixture_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = move_path(m_text(backup_path),fixture_path);
+	}
+
+	m_del(backup_path);
 
 	return(status);
 }
@@ -1198,7 +1500,7 @@ Return make_sparse_size_change_without_allocated_block_growth(
 	Return status = SUCCESS;
 	struct stat before_stat = {0};
 	struct stat after_stat = {0};
-	create(char,absolute_path);
+	m_create(char,absolute_path,MEMORY_STRING);
 
 	if(relative_path_to_tmpdir == NULL || new_size_out == NULL || blocks_after_change_out == NULL)
 	{
@@ -1212,7 +1514,7 @@ Return make_sparse_size_change_without_allocated_block_growth(
 
 	if(SUCCESS == status)
 	{
-		status = get_file_stat(getcstring(absolute_path),&before_stat);
+		status = get_file_stat(m_text(absolute_path),&before_stat);
 	}
 
 	if(SUCCESS == status)
@@ -1223,14 +1525,14 @@ Return make_sparse_size_change_without_allocated_block_growth(
 		if(grown_size <= before_stat.st_size)
 		{
 			status = FAILURE;
-		} else if(truncate(getcstring(absolute_path),grown_size) != 0){
+		} else if(truncate(m_text(absolute_path),grown_size) != 0){
 			status = FAILURE;
 		}
 	}
 
 	if(SUCCESS == status)
 	{
-		status = get_file_stat(getcstring(absolute_path),&after_stat);
+		status = get_file_stat(m_text(absolute_path),&after_stat);
 	}
 
 	if(SUCCESS == status && after_stat.st_size <= before_stat.st_size)
@@ -1249,7 +1551,7 @@ Return make_sparse_size_change_without_allocated_block_growth(
 		*blocks_after_change_out = after_stat.st_blocks;
 	}
 
-	del(absolute_path);
+	m_del(absolute_path);
 
 	return(status);
 }
@@ -1266,8 +1568,8 @@ Return make_sparse_size_change_without_allocated_block_growth(
  *         - FAILURE: Validation or filesystem operation failed
  */
 Return rewrite_file_dense_with_same_size(
-	const char   *relative_path_to_tmpdir,
-	const off_t  target_size,
+	const char     *relative_path_to_tmpdir,
+	const off_t    target_size,
 	const blkcnt_t blocks_before_rewrite)
 {
 	/* Status returned by this function through provide()
@@ -1276,7 +1578,7 @@ Return rewrite_file_dense_with_same_size(
 	FILE *file = NULL;
 	struct stat after_stat = {0};
 	unsigned char buffer[4096];
-	create(char,absolute_path);
+	m_create(char,absolute_path,MEMORY_STRING);
 
 	memset(buffer,'X',sizeof(buffer));
 
@@ -1319,7 +1621,7 @@ Return rewrite_file_dense_with_same_size(
 		}
 	}
 
-	if(file != NULL)
+	IF(file != NULL)
 	{
 		if(fclose(file) != 0)
 		{
@@ -1329,7 +1631,7 @@ Return rewrite_file_dense_with_same_size(
 
 	if(SUCCESS == status)
 	{
-		status = get_file_stat(getcstring(absolute_path),&after_stat);
+		status = get_file_stat(m_text(absolute_path),&after_stat);
 	}
 
 	if(SUCCESS == status && after_stat.st_size != target_size)
@@ -1342,7 +1644,7 @@ Return rewrite_file_dense_with_same_size(
 		status = FAILURE;
 	}
 
-	del(absolute_path);
+	m_del(absolute_path);
 
 	return(status);
 }
@@ -1376,13 +1678,14 @@ Return compute_file_sha512(
 	if(SUCCESS == status)
 	{
 		file = fopen(file_path,"rb");
+
 		if(file == NULL)
 		{
 			status = FAILURE;
 		}
 	}
 
-	if(SUCCESS == status && sha512_init(&context) == 1)
+	if(SUCCESS == status && sha512_init(&context) != CRYPT_OK)
 	{
 		status = FAILURE;
 	}
@@ -1400,18 +1703,18 @@ Return compute_file_sha512(
 			break;
 		}
 
-		if(sha512_update(&context,buffer,bytes_read) == 1)
+		if(sha512_update(&context,buffer,bytes_read) != CRYPT_OK)
 		{
 			status = FAILURE;
 		}
 	}
 
-	if(SUCCESS == status && sha512_final(&context,sha512_out) == 1)
+	if(SUCCESS == status && sha512_final(&context,sha512_out) != CRYPT_OK)
 	{
 		status = FAILURE;
 	}
 
-	if(file != NULL)
+	IF(file != NULL)
 	{
 		(void)fclose(file);
 	}
@@ -1430,7 +1733,7 @@ Return compute_file_sha512(
  *         - FAILURE: Validation or I/O failed
  */
 Return append_byte_to_file(
-	const memory *file_path_buffer,
+	const memory  *file_path_buffer,
 	unsigned char byte)
 {
 	/* Status returned by this function through provide()
@@ -1459,7 +1762,7 @@ Return append_byte_to_file(
 		}
 	}
 
-	if(file != NULL)
+	IF(file != NULL)
 	{
 		if(fclose(file) != 0)
 		{
@@ -1484,8 +1787,8 @@ Return append_byte_to_file(
  *         - FAILURE: Validation, path resolution, or file I/O failed
  */
 Return write_string_to_file(
-	const char       *file_content,
-	const char       *file_path,
+	const char         *file_content,
+	const char         *file_path,
 	const unsigned int write_flags)
 {
 	/* Status returned by this function through provide()
@@ -1493,7 +1796,7 @@ Return write_string_to_file(
 	Return status = SUCCESS;
 	FILE *file = NULL;
 	const char *open_mode = NULL;
-	create(char,absolute_path);
+	m_create(char,absolute_path,MEMORY_STRING);
 
 	if(file_content == NULL || file_path == NULL)
 	{
@@ -1528,6 +1831,7 @@ Return write_string_to_file(
 	if(SUCCESS == status)
 	{
 		const size_t bytes_to_write = strlen(file_content);
+
 		if(bytes_to_write > 0U
 		        && fwrite(file_content,sizeof(char),bytes_to_write,file) != bytes_to_write)
 		{
@@ -1535,12 +1839,12 @@ Return write_string_to_file(
 		}
 	}
 
-	if(file != NULL && fclose(file) != 0)
+	IF(file != NULL && fclose(file) != 0)
 	{
 		status = FAILURE;
 	}
 
-	del(absolute_path);
+	m_del(absolute_path);
 
 	return(status);
 }
@@ -1607,8 +1911,8 @@ Return touch_file_mtime_with_reference_delta_ns(
 	struct stat source_file_stat = {0};
 	struct timespec target_times[2] = {{0}};
 	const char *source_relative_path = relative_source_path;
-	create(char,source_absolute_path);
-	create(char,target_absolute_path);
+	m_create(char,source_absolute_path,MEMORY_STRING);
+	m_create(char,target_absolute_path,MEMORY_STRING);
 
 	// Require a target path because the mtime update is applied to this file
 	if(relative_target_path == NULL)
@@ -1637,7 +1941,7 @@ Return touch_file_mtime_with_reference_delta_ns(
 	// Read source stat to use its mtime as the reference point
 	if(SUCCESS == status)
 	{
-		status = get_file_stat(getcstring(source_absolute_path),&source_file_stat);
+		status = get_file_stat(m_text(source_absolute_path),&source_file_stat);
 	}
 
 	// Build target mtime by applying and normalizing nanosecond delta
@@ -1654,7 +1958,7 @@ Return touch_file_mtime_with_reference_delta_ns(
 		{
 			target_nanoseconds -= (long)nanoseconds_per_second;
 			target_seconds++;
-		// Normalize negative nanoseconds by borrowing one second
+			// Normalize negative nanoseconds by borrowing one second
 		} else if(target_nanoseconds < 0){
 			target_nanoseconds += (long)nanoseconds_per_second;
 			target_seconds--;
@@ -1677,14 +1981,14 @@ Return touch_file_mtime_with_reference_delta_ns(
 	// Apply the prepared timestamp values to the target file
 	if(SUCCESS == status)
 	{
-		if(utimensat(0,getcstring(target_absolute_path),target_times,0) != 0)
+		if(utimensat(0,m_text(target_absolute_path),target_times,0) != 0)
 		{
 			status = FAILURE;
 		}
 	}
 
-	del(source_absolute_path);
-	del(target_absolute_path);
+	m_del(source_absolute_path);
+	m_del(target_absolute_path);
 
 	return(status);
 }
@@ -1698,8 +2002,7 @@ Return touch_file_mtime_with_reference_delta_ns(
  *         - SUCCESS: File bytes were modified
  *         - FAILURE: Validation or filesystem operation failed
  */
-Return tamper_locked_file_bytes(
-	const char *relative_path)
+Return tamper_locked_file_bytes(const char *relative_path)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -1707,8 +2010,7 @@ Return tamper_locked_file_bytes(
 	int fd = -1;
 	struct stat before = {0};
 	unsigned char buffer[2] = {0};
-	struct timespec times[2] = {{0}};
-	create(char,file_path);
+	m_create(char,file_path,MEMORY_STRING);
 
 	// Validate input path before any filesystem operations
 	if(SUCCESS == status && relative_path == NULL)
@@ -1723,7 +2025,7 @@ Return tamper_locked_file_bytes(
 	}
 
 	// Open file for in-place read and write operations
-	if(SUCCESS == status && (fd = open(getcstring(file_path),O_RDWR)) < 0)
+	if(SUCCESS == status && (fd = open(m_text(file_path),O_RDWR)) < 0)
 	{
 		status = FAILURE;
 	}
@@ -1762,6 +2064,8 @@ Return tamper_locked_file_bytes(
 	// Restore atime and mtime best effort after content tampering
 	if(SUCCESS == status)
 	{
+		struct timespec times[2] = {{0}};
+
 		// Best effort restore for atime and mtime while ctime still changes on POSIX
 		times[0] = before.st_atim;
 		times[1] = before.st_mtim;
@@ -1778,7 +2082,7 @@ Return tamper_locked_file_bytes(
 		(void)close(fd);
 	}
 
-	del(file_path);
+	m_del(file_path);
 
 	return(status);
 }
