@@ -1,47 +1,19 @@
 #include "sute.h"
-#include <unistd.h>
+#include "testmocking.h"
 
-/* Test-only hook for sysconf() to control outputs in file_buffer_memory().
-   The macro in file_buffer_memory.c aliases sysconf() to testitall_sysconf()
-   in TESTITALL builds, so only that code path receives the controlled values */
-static long mock_avphys_pages = 0;
-static long mock_page_size = 0;
-
-/**
- * @brief Return controlled sysconf() values for file_buffer_memory() tests
- *
- * @param[in] name sysconf() selector
- * @return Controlled sysconf() value or -1 for unexpected selectors
- */
-long testitall_sysconf(int name)
-{
-	switch(name)
-	{
-#ifdef _SC_AVPHYS_PAGES
-		case _SC_AVPHYS_PAGES:
-#elif defined(_SC_PHYS_PAGES)
-		case _SC_PHYS_PAGES:
-#endif
-			return mock_avphys_pages;
-#ifdef _SC_PAGESIZE
-		case _SC_PAGESIZE:
-#elif defined(_SC_PAGE_SIZE)
-		case _SC_PAGE_SIZE:
-#endif
-			return mock_page_size;
-		default:
-			return -1;
-	}
-}
+/* Test-only sysconf() control for file_buffer_memory().
+   file_buffer_memory.c routes only its own TESTITALL sysconf() calls through
+   libtestmocking, so the rest of the test binary keeps native sysconf()
+   behavior */
 
 static Return test0005_1(void)
 {
 	INITTEST;
 
-	mock_avphys_pages = -1;
-	mock_page_size = 4096;
+	testmocking_sysconf_return_next(1,-1,4096);
 
 	size_t result = file_buffer_memory();
+	testmocking_sysconf_disable();
 	ASSERT(result == (size_t)(1024*1024));
 
 	RETURN_STATUS;
@@ -51,10 +23,10 @@ static Return test0005_2(void)
 {
 	INITTEST;
 
-	mock_avphys_pages = 1000;
-	mock_page_size = -1;
+	testmocking_sysconf_return_next(2,1000,-1);
 
 	size_t result = file_buffer_memory();
+	testmocking_sysconf_disable();
 	ASSERT(result == (size_t)(1024*1024));
 
 	RETURN_STATUS;
@@ -64,10 +36,10 @@ static Return test0005_3(void)
 {
 	INITTEST;
 
-	mock_avphys_pages = 0;
-	mock_page_size = 4096;
+	testmocking_sysconf_return_next(2,0,4096);
 
 	size_t result = file_buffer_memory();
+	testmocking_sysconf_disable();
 	ASSERT(result == (size_t)0);
 
 	RETURN_STATUS;
@@ -77,10 +49,10 @@ static Return test0005_4(void)
 {
 	INITTEST;
 
-	mock_avphys_pages = 12345;
-	mock_page_size = 0;
+	testmocking_sysconf_return_next(2,12345,0);
 
 	size_t result = file_buffer_memory();
+	testmocking_sysconf_disable();
 	ASSERT(result == (size_t)0);
 
 	RETURN_STATUS;
@@ -90,10 +62,10 @@ static Return test0005_5(void)
 {
 	INITTEST;
 
-	mock_avphys_pages = 12345;
-	mock_page_size = 1;
+	testmocking_sysconf_return_next(2,12345,1);
 
 	size_t result = file_buffer_memory();
+	testmocking_sysconf_disable();
 	ASSERT(result == (size_t)123);
 
 	RETURN_STATUS;
@@ -103,10 +75,10 @@ static Return test0005_6(void)
 {
 	INITTEST;
 
-	mock_avphys_pages = 1000000;
-	mock_page_size = 4096;
+	testmocking_sysconf_return_next(2,1000000,4096);
 
 	size_t result = file_buffer_memory();
+	testmocking_sysconf_disable();
 	ASSERT(result == (size_t)40960000);
 
 	RETURN_STATUS;
@@ -130,11 +102,10 @@ Return test0005(void)
 	TEST(test0005_5,"file_buffer_memory(): integer division rounding down");
 	TEST(test0005_6,"file_buffer_memory(): normal case computation");
 
-	/* These variables are file-scope state for the sysconf() test hook.
-	   The hook is shared by every file_buffer_memory() call in this test
-	   binary, so the values left here affect all later uses of this mock */
-	mock_avphys_pages = 0;
-	mock_page_size = 0;
+	/* The sysconf() mock state is shared by the whole test binary.
+	   Keep the suite closed by leaving the libtestmocking hook disabled
+	   after all file_buffer_memory() unit checks have finished */
+	testmocking_sysconf_disable();
 
 	RETURN_STATUS;
 }
