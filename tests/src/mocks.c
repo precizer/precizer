@@ -1,7 +1,4 @@
 #include "mocks.h"
-#include <stdarg.h>
-#include <setjmp.h>
-#include <cmocka.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,6 +13,10 @@ static bool mock_remove_enabled = false;
 static size_t mock_remove_calls = 0;
 static const char *mock_remove_target_suffix = NULL;
 static int mock_remove_errno = EACCES;
+static bool mock_access_enabled = false;
+static size_t mock_access_calls = 0;
+static const char *mock_access_target_suffix = NULL;
+static int mock_access_errno = EIO;
 
 static bool mock_path_matches_suffix(const char *path,const char *suffix)
 {
@@ -111,6 +112,34 @@ void mocks_remove_set_errno(int err)
 	mock_remove_errno = err;
 }
 
+void mocks_access_set_target_suffix(const char *suffix)
+{
+	mock_access_target_suffix = suffix;
+}
+
+void mocks_access_enable(bool enabled)
+{
+	mock_access_enabled = enabled;
+}
+
+void mocks_access_reset(void)
+{
+	mock_access_enabled = false;
+	mock_access_calls = 0;
+	mock_access_target_suffix = NULL;
+	mock_access_errno = EIO;
+}
+
+size_t mocks_access_call_count(void)
+{
+	return mock_access_calls;
+}
+
+void mocks_access_set_errno(int err)
+{
+	mock_access_errno = err;
+}
+
 FILE *__real_fopen(const char *path,const char *mode);
 
 FILE *__wrap_fopen(const char *path,const char *mode)
@@ -186,4 +215,21 @@ int __wrap_remove(const char *path)
 	}
 
 	return __real_remove(path);
+}
+
+int __real_access(const char *path,int mode);
+
+int __wrap_access(const char *path,int mode)
+{
+	if(mock_access_enabled
+	        && path != NULL
+	        && mock_access_target_suffix != NULL
+	        && mock_path_matches_suffix(path,mock_access_target_suffix))
+	{
+		mock_access_calls++;
+		errno = mock_access_errno;
+		return -1;
+	}
+
+	return __real_access(path,mode);
 }
