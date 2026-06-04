@@ -1,0 +1,53 @@
+\ATESTING:Configuration initialization is finished
+TESTING:rational_logger_mode=TESTING
+TESTING:argument:roots=tests/fixtures/diffs/diff1
+TESTING:argument:database=lock_s10\.db
+TESTING:argument:db_file_name=lock_s10\.db
+TESTING:argument:lock-checksum=\^path1/.*
+TESTING:argument:update=yes
+TESTING:Argument parsing is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
+TESTING:Checking directory paths provided as arguments
+TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
+TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
+TESTING:Path detection is finished
+TESTING:Set signal SIGUSR2 OK:pid:\d+
+TESTING:Set signal SIGINT OK:pid:\d+
+TESTING:Set signal SIGTERM OK:pid:\d+
+TESTING:Signals initialized
+TESTING:Current directory: [^\r\n]*
+TESTING:Primary database file name: lock_s10\.db
+TESTING:Primary database file path: lock_s10\.db
+TESTING:Finished determining database name
+TESTING:Verify that the path \. exists
+TESTING:The path \. is exists and it is a directory
+TESTING:Verify that the path lock_s10\.db exists
+TESTING:The path lock_s10\.db is exists and it is a file
+TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
+TESTING:Final value for config->db_initialize_tables: false
+TESTING:DB mode determined
+TESTING:Starting database file lock_s10\.db integrity check…
+TESTING:The database verification level has been set to FULL
+TESTING:Database lock_s10\.db has been verified and is in good condition
+TESTING:Version number \d+ found in database
+TESTING:The lock_s10\.db database file is version \d+
+TESTING:The database lock_s10\.db is on version \d+ and does not require any upgrades
+TESTING:Successfully opened database lock_s10\.db
+TESTING:The primary database and tables do not require initialization
+TESTING:The primary database named lock_s10\.db is ready for operations
+TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
+TESTING:Database initialization process completed
+TESTING:Database comparison mode is not enabled. Skipping comparison
+TESTING:The database lock_s10\.db has already been created previously
+TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:Bytes that can be allocated for the file buffer: .*
+TESTING:Searching for files that no longer exist on the file system…
+(?:\x1B\[[0-9;]*m)*checksum locked, file disappeared from disk(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
+TESTING:Missing file search finished
+TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
+TESTING:Returned db_delete_missing_metadata:\d+ status: WARNING
+TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*checksum locked, file disappeared from disk(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
+TESTING:The database connection has been closed
+ERROR:The precizer process terminated unexpectedly due to an error
+ERROR:Exit status » WARNING\Z
