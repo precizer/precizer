@@ -175,49 +175,127 @@ static bool cmpctstat_matches_stat_timestamps(
 }
 
 /**
- * @brief README --lock-checksum example: on-disk size change of a locked file
- * with --rehash-locked triggers WARNING
+ * @brief Verify that a checksum-locked file size change is reported but not saved
+ *
+ * Covers README Example 10, case 1
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * After one locked file grows on disk, the update run with `--rehash-locked`
+ * must warn about possible data corruption and keep the original database row
  */
 static Return test0030_1(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output and
+	 * the expected regular-expression template used by this test
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
+	/*
+	 * Name the database, the protected database key, and the fixture file
+	 * that will be changed on disk during the second half of the test
+	 */
+	const char *db_filename = "lock_s1.db";
+	const char *locked_relative_path = "path1/AAA/BCB/CCC/a.txt";
+	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
+
+	/*
+	 * Keep before-and-after snapshots of the protected database row.
+	 * They prove that a warning result did not silently update locked data
+	 */
+	CmpctStat db_stat_before = {0};
+	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
+
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s1.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_001_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == write_string_to_file("pad",
-		"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",
-		FILE_WRITE_APPEND));
+	/*
+	 * Read the locked row before corrupting the on-disk file.
+	 * These values are expected to remain unchanged after the warning run
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
+	/*
+	 * Grow one checksum-locked file on disk.
+	 * This creates a size mismatch against the protected database row
+	 */
+	ASSERT(SUCCESS == write_string_to_file("pad",locked_file_path,FILE_WRITE_APPEND));
+
+	/*
+	 * Run an update with deep locked-file verification enabled.
+	 * The size mismatch must be reported as a warning, not saved to the DB
+	 */
 	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
+	/*
+	 * Verify the warning output.
+	 * The changed locked file must be reported as possible data corruption
+	 */
 	filename = "templates/0030_001_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("lock_s1.db"));
+	/*
+	 * Re-read the same protected row after the warning run.
+	 * The row must keep its original metadata, offset, and SHA512 checksum
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
 	m_del(pattern);
 	m_del(result);
 
@@ -225,48 +303,127 @@ static Return test0030_1(void)
 }
 
 /**
- * @brief README --lock-checksum example: timestamp-only drift with
- * --watch-timestamps and without --rehash-locked triggers WARNING
+ * @brief Verify that watched timestamp drift on a locked file is reported but not saved
+ *
+ * Covers README Example 10, case 4
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * After one locked file gets a metadata-only timestamp change, the update run
+ * with `--watch-timestamps` must warn and keep the original database row
  */
 static Return test0030_2(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output and
+	 * the expected regular-expression template used by this test
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
+	/*
+	 * Name the database, the protected database key, and the fixture file
+	 * whose timestamps will be changed without touching file contents
+	 */
+	const char *db_filename = "lock_s2.db";
+	const char *locked_relative_path = "path1/AAA/BCB/CCC/a.txt";
+	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
+
+	/*
+	 * Keep before-and-after snapshots of the protected database row.
+	 * They prove that a warning result did not silently update locked data
+	 */
+	CmpctStat db_stat_before = {0};
+	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
+
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s2.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_002_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
+	/*
+	 * Read the locked row before changing file timestamps.
+	 * These values are expected to remain unchanged after the warning run
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
+	/*
+	 * Change only timestamps for one checksum-locked file.
+	 * The file size and contents stay unchanged, but ctime and mtime drift
+	 */
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,locked_file_path,999));
+
+	/*
+	 * Run an update that treats timestamp drift as meaningful.
+	 * The drift must be reported as a warning, not saved to the DB
+	 */
 	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
+	/*
+	 * Verify the warning output.
+	 * The changed locked file must be reported with ctime and mtime drift
+	 */
 	filename = "templates/0030_002_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("lock_s2.db"));
+	/*
+	 * Re-read the same protected row after the warning run.
+	 * The row must keep its original metadata, offset, and SHA512 checksum
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
 	m_del(pattern);
 	m_del(result);
 
@@ -274,48 +431,142 @@ static Return test0030_2(void)
 }
 
 /**
- * @brief README --lock-checksum example: timestamp-only drift without
- * --watch-timestamps and without --rehash-locked completes successfully
+ * @brief Verify that locked timestamp drift is ignored when timestamp watching is off
+ *
+ * Covers README Example 10, case 2
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * After one locked file gets a metadata-only timestamp change, the update run
+ * without `--watch-timestamps` or `--rehash-locked` must finish successfully
+ * and keep the original database row
  */
 static Return test0030_3(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and the resolved fixture path
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,target_path,MEMORY_STRING);
 
+	/*
+	 * Name the database, the protected database key, and the fixture file
+	 * whose timestamps will be changed without touching file contents
+	 */
+	const char *db_filename = "lock_s3.db";
+	const char *locked_relative_path = "path1/AAA/BCB/CCC/a.txt";
+	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
+
+	/*
+	 * Keep before-and-after snapshots of the protected database row.
+	 * They prove that ignored timestamp drift did not silently update locked data
+	 */
+	CmpctStat db_stat_before = {0};
+	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
+	struct stat file_stat_before = {0};
+	struct stat file_stat_after = {0};
+
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s3.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_003_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
+	/*
+	 * Resolve the changed fixture path and read its matching locked DB row.
+	 * Before any drift, the file timestamps should match the stored metadata
+	 */
+	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
+	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before));
+	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
 
+	/*
+	 * Change only timestamps for one checksum-locked file.
+	 * The file size and contents stay unchanged, but ctime and mtime drift
+	 */
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,locked_file_path,999));
+
+	/*
+	 * Confirm that the test setup produced real timestamp drift.
+	 * The stored DB metadata must no longer match the current file timestamps
+	 */
+	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
+	ASSERT(false == cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_after));
+
+	/*
+	 * Run an update without timestamp watching or deep locked-file rehashing.
+	 * The timestamp drift must be ignored and the run must finish successfully
+	 */
 	arguments = "--update --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s3.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the successful output.
+	 * It must report that no database changes were needed
+	 */
 	filename = "templates/0030_003_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("lock_s3.db"));
+	/*
+	 * Re-read the same protected row after the successful update run.
+	 * The row must keep its original metadata, offset, and SHA512 checksum
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
+	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
 
@@ -323,69 +574,153 @@ static Return test0030_3(void)
 }
 
 /**
- * @brief README --lock-checksum example: timestamp-only drift with
- * --watch-timestamps and with --rehash-locked completes successfully and
- * synchronizes DB timestamps
+ * @brief Verify that locked timestamp drift is safely synchronized after rehash
+ *
+ * Covers README Example 10, case 5
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * After one locked file gets a metadata-only timestamp change, the update run
+ * with `--watch-timestamps` and `--rehash-locked` must rehash the file,
+ * finish successfully, and store the new timestamps without changing its checksum
  */
 static Return test0030_4(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and the resolved fixture path
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
+
+	/*
+	 * Name the database, the protected database key, and the fixture file
+	 * whose timestamps will be changed without touching file contents
+	 */
+	const char *db_filename = "lock_s4.db";
+	const char *locked_relative_path = "path1/AAA/BCB/CCC/a.txt";
+	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
+
+	/*
+	 * Keep file and database snapshots around the timestamp drift.
+	 * They prove that the drift is real and later synchronized to the database
+	 */
 	struct stat file_stat_before = {0};
+	struct stat file_stat_drift = {0};
 	struct stat file_stat_after = {0};
 	CmpctStat db_stat_before = {0};
 	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
 
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s4.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_004_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == construct_path("tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",target_path));
-
-	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s4.db","path1/AAA/BCB/CCC/a.txt",&db_stat_before));
-
+	/*
+	 * Resolve the changed fixture path and read its matching locked DB row.
+	 * Before any drift, the file timestamps should match the stored metadata
+	 */
+	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before));
-
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
 
-	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
+	/*
+	 * Change only timestamps for one checksum-locked file.
+	 * The file size and contents stay unchanged, but ctime and mtime drift
+	 */
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,locked_file_path,999));
 
+	/*
+	 * Confirm that the test setup produced real timestamp drift.
+	 * The stored DB metadata must no longer match the current file timestamps
+	 */
+	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_drift));
+	ASSERT(false == cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_drift));
+
+	/*
+	 * Run an update that watches timestamps and rehashes locked files.
+	 * The checksum match must make the timestamp-only drift safe to save
+	 */
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the successful update output.
+	 * The changed locked file must be reported as rehashed and synchronized
+	 */
 	filename = "templates/0030_004_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s4.db","path1/AAA/BCB/CCC/a.txt",&db_stat_after));
-
+	/*
+	 * Re-read the protected row and current file state after the update.
+	 * The database timestamps must now match the file again
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
-
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
 
-	ASSERT(SUCCESS == delete_path("lock_s4.db"));
+	/*
+	 * Verify that only metadata timestamps changed in the stored row.
+	 * Size, allocation, identity, SHA512 offset, and SHA512 digest must stay stable
+	 */
+	ASSERT(db_stat_before.st_size == db_stat_after.st_size);
+	ASSERT(db_stat_before.st_blocks == db_stat_after.st_blocks);
+	ASSERT(db_stat_before.st_dev == db_stat_after.st_dev);
+	ASSERT(db_stat_before.st_ino == db_stat_after.st_ino);
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
 	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
@@ -394,68 +729,152 @@ static Return test0030_4(void)
 }
 
 /**
- * @brief README --lock-checksum example: timestamp-only drift without
- * --watch-timestamps and with --rehash-locked completes successfully and
- * synchronizes DB timestamps
+ * @brief Verify that locked timestamp drift is synchronized by rehash alone
+ *
+ * Covers README Example 10, case 5
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * After one locked file gets a metadata-only timestamp change, the update run
+ * with `--rehash-locked` and without `--watch-timestamps` must rehash the file,
+ * finish successfully, and store the new timestamps without changing its checksum
  */
 static Return test0030_5(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and the resolved fixture path
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
+
+	/*
+	 * Name the database, the protected database key, and the fixture file
+	 * whose timestamps will be changed without touching file contents
+	 */
+	const char *db_filename = "lock_s5.db";
+	const char *locked_relative_path = "path1/AAA/BCB/CCC/a.txt";
+	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
+
+	/*
+	 * Keep file and database snapshots around the timestamp drift.
+	 * They prove that the drift is real and later synchronized to the database
+	 */
 	struct stat file_stat_before = {0};
+	struct stat file_stat_drift = {0};
 	struct stat file_stat_after = {0};
 	CmpctStat db_stat_before = {0};
 	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
 
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s5.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_005_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == construct_path("tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",target_path));
-
-	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s5.db","path1/AAA/BCB/CCC/a.txt",&db_stat_before));
-
+	/*
+	 * Resolve the changed fixture path and read its matching locked DB row.
+	 * Before any drift, the file timestamps should match the stored metadata
+	 */
+	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before));
-
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
 
-	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
+	/*
+	 * Change only timestamps for one checksum-locked file.
+	 * The file size and contents stay unchanged, but ctime and mtime drift
+	 */
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,locked_file_path,999));
 
+	/*
+	 * Confirm that the test setup produced real timestamp drift.
+	 * The stored DB metadata must no longer match the current file timestamps
+	 */
+	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_drift));
+	ASSERT(false == cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_drift));
+
+	/*
+	 * Run an update that rehashes locked files without timestamp watching.
+	 * The checksum match must make the timestamp-only drift safe to save
+	 */
 	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s5.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the successful update output.
+	 * All locked files must be reported as successfully rehashed
+	 */
 	filename = "templates/0030_005_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == read_cmpctstat_from_db("lock_s5.db","path1/AAA/BCB/CCC/a.txt",&db_stat_after));
-
+	/*
+	 * Re-read the protected row and current file state after the update.
+	 * The database timestamps must now match the file again
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
-
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
 
-	ASSERT(SUCCESS == delete_path("lock_s5.db"));
+	/*
+	 * Verify that only metadata timestamps changed in the stored row.
+	 * Size, allocation, identity, SHA512 offset, and SHA512 digest must stay stable
+	 */
+	ASSERT(db_stat_before.st_size == db_stat_after.st_size);
+	ASSERT(db_stat_before.st_blocks == db_stat_after.st_blocks);
+	ASSERT(db_stat_before.st_dev == db_stat_after.st_dev);
+	ASSERT(db_stat_before.st_ino == db_stat_after.st_ino);
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
 	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
@@ -464,53 +883,200 @@ static Return test0030_5(void)
 }
 
 /**
- * @brief README --lock-checksum example extension: timestamp-only drift on one
- * locked file plus a stored checksum mismatch on another locked file triggers
- * WARNING under --watch-timestamps and --rehash-locked
+ * @brief Verify mixed locked-file results during a watched rehash audit
+ *
+ * Covers README Example 10
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * One locked file then receives a metadata-only timestamp change, while another
+ * locked file keeps its on-disk contents but gets a corrupted stored SHA512 value.
+ * The update run with `--watch-timestamps` and `--rehash-locked` must synchronize
+ * the safe timestamp drift, report the checksum mismatch as corruption, and leave
+ * the mismatched DB checksum untouched
  */
 static Return test0030_6(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and resolved fixture paths
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,drift_target_path,MEMORY_STRING);
+	m_create(char,mismatch_target_path,MEMORY_STRING);
 
+	/*
+	 * Name the database, the locked file that will drift only by timestamps,
+	 * and the locked file whose stored checksum will be corrupted in the DB
+	 */
+	const char *db_filename = "lock_s6.db";
+	const char *drift_relative_path = "path1/AAA/BCB/CCC/a.txt";
+	const char *drift_file_path = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
+	const char *mismatch_relative_path = "path1/AAA/ZAW/A/b/c/a_file.txt";
+	const char *mismatch_file_path = "tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt";
+
+	/*
+	 * Keep file and database snapshots for the timestamp-drift row.
+	 * They prove that the safe drift is saved without changing the checksum
+	 */
+	struct stat drift_file_stat_before = {0};
+	struct stat drift_file_stat_after_touch = {0};
+	struct stat drift_file_stat_after_update = {0};
+	CmpctStat drift_db_stat_before = {0};
+	CmpctStat drift_db_stat_after = {0};
+	sqlite3_int64 drift_offset_before = 0;
+	sqlite3_int64 drift_offset_after = 0;
+	unsigned char drift_sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char drift_sha512_after[SHA512_DIGEST_LENGTH] = {0};
+
+	/*
+	 * Keep checksum snapshots for the mismatch row.
+	 * They prove that a detected corruption warning does not silently repair the DB
+	 */
+	CmpctStat mismatch_db_stat_before = {0};
+	CmpctStat mismatch_db_stat_after = {0};
+	sqlite3_int64 mismatch_offset_before = 0;
+	sqlite3_int64 mismatch_offset_tampered = 0;
+	sqlite3_int64 mismatch_offset_after = 0;
+	unsigned char mismatch_sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char mismatch_sha512_tampered[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char mismatch_sha512_after[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char mismatch_file_sha512[SHA512_DIGEST_LENGTH] = {0};
+
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s6.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_006_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	// Bump file mtime by a nanosecond delta without changing file content
-	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",999));
+	/*
+	 * Resolve fixture paths and read the rows that will be exercised.
+	 * The baseline checksum for the mismatch row must match the real file
+	 */
+	ASSERT(SUCCESS == construct_path(drift_file_path,drift_target_path));
+	ASSERT(SUCCESS == construct_path(mismatch_file_path,mismatch_target_path));
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,drift_relative_path,&drift_db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,drift_relative_path,&drift_offset_before,drift_sha512_before));
+	ASSERT(SUCCESS == get_file_stat(m_text(drift_target_path),&drift_file_stat_before));
+	ASSERT(cmpctstat_matches_stat_timestamps(&drift_db_stat_before,&drift_file_stat_before));
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,mismatch_relative_path,&mismatch_db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_before,mismatch_sha512_before));
+	ASSERT(SUCCESS == compute_file_sha512(m_text(mismatch_target_path),mismatch_file_sha512));
+	ASSERT(0 == memcmp(mismatch_sha512_before,mismatch_file_sha512,(size_t)SHA512_DIGEST_LENGTH));
 
-	// Corrupt the stored checksum for a locked file without touching it on disk
-	ASSERT(SUCCESS == db_tamper_locked_checksum("lock_s6.db","path1/AAA/ZAW/A/b/c/a_file.txt"));
+	/*
+	 * Change only timestamps for one checksum-locked file.
+	 * The file size and contents stay unchanged, but ctime and mtime drift
+	 */
+	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,drift_file_path,999));
 
+	/*
+	 * Confirm that the test setup produced real timestamp drift.
+	 * The stored DB metadata must no longer match the current file timestamps
+	 */
+	ASSERT(SUCCESS == get_file_stat(m_text(drift_target_path),&drift_file_stat_after_touch));
+	ASSERT(false == cmpctstat_matches_stat_timestamps(&drift_db_stat_before,&drift_file_stat_after_touch));
+
+	/*
+	 * Corrupt the stored checksum for a different locked file.
+	 * The file on disk stays unchanged, so the next rehash must detect a mismatch
+	 */
+	ASSERT(SUCCESS == db_tamper_locked_checksum(db_filename,mismatch_relative_path));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_tampered,mismatch_sha512_tampered));
+	ASSERT(mismatch_offset_before == mismatch_offset_tampered);
+	ASSERT(0 != memcmp(mismatch_sha512_before,mismatch_sha512_tampered,(size_t)SHA512_DIGEST_LENGTH));
+	ASSERT(0 != memcmp(mismatch_file_sha512,mismatch_sha512_tampered,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Run an update that watches timestamps and rehashes locked files.
+	 * The safe drift must be saved, while the checksum mismatch must warn
+	 */
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s6.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
+	/*
+	 * Verify the warning output against the real scenario.
+	 * It must show synchronized timestamp drift and a separate checksum mismatch
+	 */
 	filename = "templates/0030_006_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("lock_s6.db"));
+	/*
+	 * Re-read the drift row and current file state after the warning run.
+	 * The database timestamps must now match the file again
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,drift_relative_path,&drift_db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,drift_relative_path,&drift_offset_after,drift_sha512_after));
+	ASSERT(SUCCESS == get_file_stat(m_text(drift_target_path),&drift_file_stat_after_update));
+	ASSERT(cmpctstat_matches_stat_timestamps(&drift_db_stat_after,&drift_file_stat_after_update));
+
+	/*
+	 * Verify that only metadata timestamps changed in the safely rehashed row.
+	 * Size, allocation, identity, SHA512 offset, and SHA512 digest must stay stable
+	 */
+	ASSERT(drift_db_stat_before.st_size == drift_db_stat_after.st_size);
+	ASSERT(drift_db_stat_before.st_blocks == drift_db_stat_after.st_blocks);
+	ASSERT(drift_db_stat_before.st_dev == drift_db_stat_after.st_dev);
+	ASSERT(drift_db_stat_before.st_ino == drift_db_stat_after.st_ino);
+	ASSERT(drift_offset_before == drift_offset_after);
+	ASSERT(0 == memcmp(drift_sha512_before,drift_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Re-read the mismatched row after the warning run.
+	 * The corrupted stored checksum must remain unchanged instead of being repaired
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,mismatch_relative_path,&mismatch_db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_after,mismatch_sha512_after));
+	ASSERT(0 == memcmp(&mismatch_db_stat_before,&mismatch_db_stat_after,sizeof(CmpctStat)));
+	ASSERT(mismatch_offset_tampered == mismatch_offset_after);
+	ASSERT(0 == memcmp(mismatch_sha512_tampered,mismatch_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	ASSERT(0 != memcmp(mismatch_file_sha512,mismatch_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
+	m_del(mismatch_target_path);
+	m_del(drift_target_path);
 	m_del(pattern);
 	m_del(result);
 
@@ -518,47 +1084,144 @@ static Return test0030_6(void)
 }
 
 /**
- * README --lock-checksum example extension: on-disk content change with
- * --rehash-locked should trigger WARNING
+ * @brief Verify that locked content corruption is reported but not saved
+ *
+ * Covers README Example 10
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * After bytes inside one locked file change on disk, the update run with
+ * `--rehash-locked` must detect the checksum mismatch, report corruption,
+ * and keep the original database row untouched
  */
 static Return test0030_7(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and the resolved fixture path
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,target_path,MEMORY_STRING);
 
+	/*
+	 * Name the database, the protected database key, and the fixture file
+	 * whose on-disk bytes will be changed without changing its logical size
+	 */
+	const char *db_filename = "lock_s7.db";
+	const char *locked_relative_path = "path1/AAA/ZAW/A/b/c/a_file.txt";
+	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt";
+
+	/*
+	 * Keep file and database snapshots around the content tampering.
+	 * They prove that the warning run does not silently trust corrupted data
+	 */
+	CmpctStat db_stat_before = {0};
+	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char db_sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char db_sha512_after[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char file_sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char file_sha512_after_tamper[SHA512_DIGEST_LENGTH] = {0};
+
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s7.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_007_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == tamper_locked_file_bytes("tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt"));
+	/*
+	 * Resolve the target fixture path and read its matching locked DB row.
+	 * Before tampering, the stored checksum must match the real file checksum
+	 */
+	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,db_sha512_before));
+	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_before));
+	ASSERT(0 == memcmp(db_sha512_before,file_sha512_before,(size_t)SHA512_DIGEST_LENGTH));
 
+	/*
+	 * Change bytes inside one checksum-locked file on disk.
+	 * The helper preserves logical size, so the mismatch is about content integrity
+	 */
+	ASSERT(SUCCESS == tamper_locked_file_bytes(locked_file_path));
+
+	/*
+	 * Confirm that the test setup produced real content corruption.
+	 * The current file checksum must no longer match the protected DB checksum
+	 */
+	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_after_tamper));
+	ASSERT(0 != memcmp(file_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+	ASSERT(0 != memcmp(db_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Run an update with deep locked-file verification enabled.
+	 * The content mismatch must be reported as a warning, not saved to the DB
+	 */
 	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s7.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
+	/*
+	 * Verify the warning output against the real scenario.
+	 * The changed locked file must be reported as checksum corruption
+	 */
 	filename = "templates/0030_007_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("lock_s7.db"));
+	/*
+	 * Re-read the same protected row after the warning run.
+	 * The row must keep its original metadata, offset, and SHA512 checksum
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
+	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
+	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
 
@@ -566,48 +1229,145 @@ static Return test0030_7(void)
 }
 
 /**
- * Same as test0030_7 but with --watch-timestamps; per README example, this option
- * does not change the --rehash-locked outcome
+ * @brief Verify that watched locked content corruption is reported but not saved
+ *
+ * Covers README Example 10
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * After bytes inside one locked file change on disk, the update run with
+ * `--watch-timestamps` and `--rehash-locked` must detect checksum corruption.
+ * Timestamp watching must not make the corrupted database row updateable
  */
 static Return test0030_8(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and the resolved fixture path
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,target_path,MEMORY_STRING);
 
+	/*
+	 * Name the database, the protected database key, and the fixture file
+	 * whose on-disk bytes will be changed without changing its logical size
+	 */
+	const char *db_filename = "lock_s8.db";
+	const char *locked_relative_path = "path1/AAA/ZAW/A/b/c/a_file.txt";
+	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt";
+
+	/*
+	 * Keep file and database snapshots around the content tampering.
+	 * They prove that the warning run does not silently trust corrupted data
+	 */
+	CmpctStat db_stat_before = {0};
+	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char db_sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char db_sha512_after[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char file_sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char file_sha512_after_tamper[SHA512_DIGEST_LENGTH] = {0};
+
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s8.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_008_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == tamper_locked_file_bytes("tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt"));
+	/*
+	 * Resolve the target fixture path and read its matching locked DB row.
+	 * Before tampering, the stored checksum must match the real file checksum
+	 */
+	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,db_sha512_before));
+	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_before));
+	ASSERT(0 == memcmp(db_sha512_before,file_sha512_before,(size_t)SHA512_DIGEST_LENGTH));
 
+	/*
+	 * Change bytes inside one checksum-locked file on disk.
+	 * The helper preserves logical size, so the mismatch is about content integrity
+	 */
+	ASSERT(SUCCESS == tamper_locked_file_bytes(locked_file_path));
+
+	/*
+	 * Confirm that the test setup produced real content corruption.
+	 * The current file checksum must no longer match the protected DB checksum
+	 */
+	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_after_tamper));
+	ASSERT(0 != memcmp(file_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+	ASSERT(0 != memcmp(db_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Run an update that watches timestamps and rehashes locked files.
+	 * The content mismatch must be reported as a warning, not saved to the DB
+	 */
 	arguments = "--update --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s8.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
+	/*
+	 * Verify the warning output against the real scenario.
+	 * The changed locked file must be reported as checksum corruption
+	 */
 	filename = "templates/0030_008_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("lock_s8.db"));
+	/*
+	 * Re-read the same protected row after the warning run.
+	 * The row must keep its original metadata, offset, and SHA512 checksum
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
+	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
+	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
 
@@ -615,45 +1375,147 @@ static Return test0030_8(void)
 }
 
 /**
- * README --lock-checksum example: size and timestamps match,
- * --watch-timestamps enabled, --rehash-locked disabled -> SUCCESS
+ * @brief Verify that watched unchanged locked files finish successfully
+ *
+ * Covers README Example 10, case 3
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * When the locked files still match the stored metadata and `--rehash-locked`
+ * is not used, `--watch-timestamps` must not create warnings or updates.
+ * All protected rows must stay unchanged in the database
  */
 static Return test0030_9(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and reusable resolved paths
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,target_path,MEMORY_STRING);
 
+	/*
+	 * Name the database and every file protected by the lock pattern.
+	 * This test checks all protected rows, because no locked path should change
+	 */
+	const char *db_filename = "lock_s9.db";
+	const char *locked_relative_paths[] = {
+		"path1/AAA/BCB/CCC/a.txt",
+		"path1/AAA/ZAW/A/b/c/a_file.txt",
+		"path1/AAA/ZAW/D/e/f/b_file.txt",
+	};
+	const char *locked_file_paths[] = {
+		"tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt",
+		"tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt",
+		"tests/fixtures/diffs/diff1/path1/AAA/ZAW/D/e/f/b_file.txt",
+	};
+	const size_t locked_path_count = sizeof(locked_relative_paths) / sizeof(locked_relative_paths[0]);
+
+	/*
+	 * Keep before-and-after snapshots of every protected database row.
+	 * They prove that a successful watched update did not rewrite locked data
+	 */
+	CmpctStat db_stat_before[3] = {0};
+	CmpctStat db_stat_after[3] = {0};
+	struct stat file_stat_before[3] = {0};
+	struct stat file_stat_after[3] = {0};
+	sqlite3_int64 offset_before[3] = {0};
+	sqlite3_int64 offset_after[3] = {0};
+	unsigned char sha512_before[3][SHA512_DIGEST_LENGTH] = {0};
+	unsigned char sha512_after[3][SHA512_DIGEST_LENGTH] = {0};
+
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s9.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_009_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	/*
+	 * Read all protected rows and current file timestamps before the update.
+	 * For this README case, every locked file must still match the database
+	 */
+	for(size_t index = 0; index < locked_path_count; index++)
+	{
+		ASSERT(SUCCESS == construct_path(locked_file_paths[index],target_path));
+		ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_paths[index],&db_stat_before[index]));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_paths[index],&offset_before[index],sha512_before[index]));
+		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before[index]));
+		ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before[index],&file_stat_before[index]));
+	}
+
+	/*
+	 * Run an update that watches timestamps but does not rehash locked files.
+	 * Because all protected metadata still matches, the run must be successful
+	 */
 	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s9.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the successful output.
+	 * It must report no changes and no locked-file warnings
+	 */
 	filename = "templates/0030_009_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("lock_s9.db"));
+	/*
+	 * Re-read all protected rows after the successful watched update.
+	 * Metadata, SHA512 offsets, and SHA512 digests must remain unchanged
+	 */
+	for(size_t index = 0; index < locked_path_count; index++)
+	{
+		ASSERT(SUCCESS == construct_path(locked_file_paths[index],target_path));
+		ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_paths[index],&db_stat_after[index]));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_paths[index],&offset_after[index],sha512_after[index]));
+		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after[index]));
+		ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after[index],&file_stat_after[index]));
+		ASSERT(0 == memcmp(&db_stat_before[index],&db_stat_after[index],sizeof(CmpctStat)));
+		ASSERT(offset_before[index] == offset_after[index]);
+		ASSERT(0 == memcmp(sha512_before[index],sha512_after[index],(size_t)SHA512_DIGEST_LENGTH));
+	}
+
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
+	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
 
@@ -661,55 +1523,146 @@ static Return test0030_9(void)
 }
 
 /**
- * @brief README --lock-checksum extension: deleting a locked file triggers
- * WARNING and keeps the DB row intact
+ * @brief Verify that deleting a locked file warns and keeps the DB row
+ *
+ * Covers README Example 9
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * When a locked file disappears before an update, the program must warn and
+ * keep every locked row in the database. The deleted row must remain unchanged
  */
 static Return test0030_10(void)
 {
 	INITTEST;
 
+	/*
+	 * Allocate managed buffers for the captured application output,
+	 * the expected regular-expression template, and the resolved deleted path
+	 */
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,target_path,MEMORY_STRING);
+
+	/*
+	 * Name the database, the deleted locked row, and the matching fixture file.
+	 * The other locked rows are checked separately to prove the whole lock set survives
+	 */
+	const char *db_filename = "lock_s10.db";
+	const char *deleted_relative_path = "path1/AAA/ZAW/A/b/c/a_file.txt";
+	const char *deleted_file_path = "tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt";
+	const char *other_locked_relative_path_1 = "path1/AAA/ZAW/D/e/f/b_file.txt";
+	const char *other_locked_relative_path_2 = "path1/AAA/BCB/CCC/a.txt";
+
+	/*
+	 * Keep before-and-after snapshots of the deleted locked row.
+	 * They prove that reporting the missing file did not rewrite protected data
+	 */
+	CmpctStat db_stat_before = {0};
+	CmpctStat db_stat_after = {0};
+	sqlite3_int64 offset_before = 0;
+	sqlite3_int64 offset_after = 0;
+	unsigned char sha512_before[SHA512_DIGEST_LENGTH] = {0};
+	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
 	bool row_exists = false;
 
+	/*
+	 * Enable deterministic TESTING output so the captured application log
+	 * can be compared against a template
+	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
+	/*
+	 * Work on a mutable copy of the fixture tree.
+	 * The original fixture is restored during cleanup
+	 */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Create the baseline database.
+	 * The lock pattern protects every relative path under the path1/ subtree
+	 */
 	const char *arguments = "--database=lock_s10.db --progress "
 	        "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
+	/*
+	 * Verify the baseline run output.
+	 * It must show a new database with path1/ files recorded as checksum-locked
+	 */
 	const char *filename = "templates/0030_010_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt"));
+	/*
+	 * Read the locked row before deleting its file.
+	 * The same values must still be present after the warning run
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_before,sha512_before));
+	ASSERT(SUCCESS == construct_path(deleted_file_path,target_path));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
 
+	/*
+	 * Delete one checksum-locked file from disk.
+	 * This must be treated as a lock violation, not as a normal missing-file cleanup
+	 */
+	ASSERT(SUCCESS == delete_path(deleted_file_path));
+	ASSERT(FILE_NOT_FOUND == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+
+	/*
+	 * Run an update with the same lock pattern.
+	 * The missing locked file must be reported as a warning and kept in the DB
+	 */
 	arguments = "--update --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s10.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
+	/*
+	 * Verify the warning output against the real scenario.
+	 * The deleted locked file must be reported as disappeared from disk
+	 */
 	filename = "templates/0030_010_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(SUCCESS == db_relative_path_exists("lock_s10.db","path1/AAA/ZAW/A/b/c/a_file.txt",&row_exists));
+	/*
+	 * Re-read the deleted file row after the warning run.
+	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+	 */
+	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
+	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+	ASSERT(offset_before == offset_after);
+	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/*
+	 * Confirm that the full locked path set remains in the database.
+	 * A missing locked file must not cause any protected row to be dropped
+	 */
+	ASSERT(SUCCESS == db_relative_path_exists(db_filename,deleted_relative_path,&row_exists));
 	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists("lock_s10.db","path1/AAA/ZAW/D/e/f/b_file.txt",&row_exists));
+	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
 	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists("lock_s10.db","path1/AAA/BCB/CCC/a.txt",&row_exists));
+	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
 	ASSERT(row_exists == true);
 
-	ASSERT(SUCCESS == delete_path("lock_s10.db"));
+	/*
+	 * Remove the test database and restore the mutable fixture.
+	 * This returns the workspace to the state expected by the next test
+	 */
+	ASSERT(SUCCESS == delete_path(db_filename));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
+	/*
+	 * Release managed buffers allocated by this test before returning
+	 */
+	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
 
@@ -717,8 +1670,13 @@ static Return test0030_10(void)
 }
 
 /**
- * @brief README --lock-checksum extension: access denied for a locked file triggers
- * WARNING, is not dropped by --db-drop-inaccessible, and stays deduplicated
+ * @brief Verify that an inaccessible locked file is not dropped
+ *
+ * Covers README Examples 9 and 11
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * When access to one locked file is denied, `--db-drop-inaccessible` must not
+ * remove the locked row
  */
 static Return test0030_11(void)
 {
@@ -776,8 +1734,13 @@ static Return test0030_11(void)
 }
 
 /**
- * @brief README --lock-checksum extension: unexpected access-check failure for a
- * locked file triggers WARNING and keeps the DB row intact
+ * @brief Verify that a locked access-check failure is not dropped
+ *
+ * Covers README Examples 9 and 11
+ *
+ * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
+ * When access checking fails for one locked file, `--db-drop-inaccessible`
+ * must not remove the locked row
  */
 static Return test0030_12(void)
 {
@@ -837,6 +1800,8 @@ static Return test0030_12(void)
 /**
  * @brief Locked file deleted under --ignore and --db-drop-ignored still triggers
  * WARNING and remains in the DB
+ *
+ * Covers README Example 9
  */
 static Return test0030_13(void)
 {
@@ -892,6 +1857,8 @@ static Return test0030_13(void)
 /**
  * @brief Locked file content change under --ignore is still detected by
  * --rehash-locked
+ *
+ * Covers README Examples 9 and 10
  */
 static Return test0030_14(void)
 {
@@ -939,6 +1906,8 @@ static Return test0030_14(void)
 /**
  * @brief Locked file deleted outside the restored --include subset still
  * triggers WARNING and remains in the DB
+ *
+ * Covers README Example 9
  */
 static Return test0030_15(void)
 {
@@ -994,6 +1963,8 @@ static Return test0030_15(void)
 /**
  * @brief Locked file outside the restored --include subset is still rehashed
  * and reported when corrupted
+ *
+ * Covers README Examples 9 and 10
  */
 static Return test0030_16(void)
 {
@@ -1040,6 +2011,8 @@ static Return test0030_16(void)
 /**
  * @brief Locked file access denied under --ignore still triggers WARNING and
  * remains in the DB
+ *
+ * Covers README Examples 9 and 11
  */
 static Return test0030_17(void)
 {
@@ -1098,6 +2071,8 @@ static Return test0030_17(void)
 /**
  * @brief Locked file access-check failure under --ignore still triggers
  * WARNING and remains in the DB
+ *
+ * Covers README Examples 9 and 11
  */
 static Return test0030_18(void)
 {
@@ -1157,6 +2132,8 @@ static Return test0030_18(void)
  * @brief Lock-checksum overrides --db-drop-inaccessible at db_delete_missing_metadata
  * level: file_list is skipped via test hook so db_delete_missing_metadata handles
  * the access denied locked file directly, record preserved
+ *
+ * Covers README Examples 9 and 11
  */
 static Return test0030_19(void)
 {
@@ -1224,6 +2201,8 @@ static Return test0030_19(void)
  * level for access-check failures: file_list is skipped via test hook so
  * db_delete_missing_metadata handles FILE_ACCESS_ERROR directly and preserves
  * the locked record
+ *
+ * Covers README Examples 9 and 11
  */
 static Return test0030_20(void)
 {
@@ -1287,6 +2266,8 @@ static Return test0030_20(void)
 /**
  * @brief Ignored lock-checksum paths still survive cleanup-only access-check
  * failures at db_delete_missing_metadata level when file_list is skipped
+ *
+ * Covers README Examples 9 and 11
  */
 static Return test0030_21(void)
 {
@@ -1349,10 +2330,12 @@ static Return test0030_21(void)
 }
 
 /**
+ * @brief Run the README lock-checksum scenario tests
  *
- * README --lock-checksum examples.
- * Scenarios with --lock-checksum, --rehash-locked, and --watch-timestamps
+ * Covers README Examples 9, 10, and 11
  *
+ * Exercises protected checksum paths, locked-file rehashing, timestamp
+ * watching, and interactions with cleanup options for inaccessible or ignored files
  */
 Return test0030(void)
 {
@@ -1360,15 +2343,15 @@ Return test0030(void)
 
 	SLOWTEST;
 
-	TEST(test0030_1,"Size change with locked checksum triggers a warning");
-	TEST(test0030_2,"Timestamp drift with --watch-timestamps triggers a warning");
-	TEST(test0030_3,"Timestamp drift without --watch-timestamps completes successfully");
-	TEST(test0030_4,"Timestamp drift with --watch-timestamps and --rehash-locked completes successfully");
-	TEST(test0030_5,"Timestamp drift without --watch-timestamps and with --rehash-locked completes successfully");
+	TEST(test0030_1,"Locked file size change warns and keeps the DB row unchanged");
+	TEST(test0030_2,"Locked timestamp drift with --watch-timestamps warns and keeps the DB row unchanged");
+	TEST(test0030_3,"Locked timestamp drift without --watch-timestamps is ignored and keeps the DB row unchanged");
+	TEST(test0030_4,"Locked timestamp drift with --watch-timestamps and --rehash-locked is synchronized after rehash");
+	TEST(test0030_5,"Locked timestamp drift without --watch-timestamps is synchronized by --rehash-locked");
 	TEST(test0030_6,"Locked checksum mismatch in DB triggers a warning");
 	TEST(test0030_7,"Locked file content change triggers a warning");
 	TEST(test0030_8,"Locked file content change with --watch-timestamps triggers a warning");
-	TEST(test0030_9,"No changes with --watch-timestamps completes successfully");
+	TEST(test0030_9,"Unchanged locked files with --watch-timestamps complete successfully");
 	TEST(test0030_10,"Deleted locked file triggers a warning and remains in the DB");
 	TEST(test0030_11,"Locked inaccessible file triggers a warning and is not dropped");
 	TEST(test0030_12,"Locked access-check failure triggers a warning and remains in the DB");
