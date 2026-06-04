@@ -138,12 +138,10 @@ make purge
 * Language standard: `C2x`.
 * The build uses strict warnings and `-Werror`; new code must compile cleanly.
 * Match existing naming and structure in the files you touch.
-* Format only what you changed:
+* To format all code globally, use:
 
 ```sh
-make format
-cd libs && make format
-cd tests && make format
+make format && (cd libs && make format) && (cd tests && make format)
 ```
 
 ## Testing
