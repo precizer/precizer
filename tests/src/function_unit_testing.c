@@ -14,6 +14,7 @@ Return function_unit_testing(void)
 
 	SUTE(test0004,"create_directory(): test set");
 	SUTE(test0005,"file_buffer_memory(): test set");
+	SUTE(test0006,"match_regexp(): test set");
 	SUTE(test0012,"add_string_to_array(): test set");
 #if 0
 	TEST(test0021,"Native international UTF8 encoding test set");
