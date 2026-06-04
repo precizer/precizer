@@ -41,11 +41,8 @@ static Return open_db_from_tmpdir(
 		{
 			status = FAILURE;
 
-			IF(*db_out != NULL)
-			{
-				(void)sqlite3_close(*db_out);
-				*db_out = NULL;
-			}
+			(void)sqlite3_close(*db_out);
+			*db_out = NULL;
 		}
 	}
 
@@ -108,15 +105,9 @@ static Return db_read_first_row_id(
 		}
 	}
 
-	IF(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	IF(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -181,15 +172,9 @@ static Return db_overwrite_stat_blob_by_row_id(
 		status = FAILURE;
 	}
 
-	IF(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	IF(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -255,15 +240,9 @@ static Return db_read_files_count_with_blob_size(
 		}
 	}
 
-	IF(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	IF(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -319,15 +298,9 @@ static Return set_db_version_in_metadata(
 		status = FAILURE;
 	}
 
-	IF(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	IF(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -424,15 +397,9 @@ static Return db_read_stat_blob_by_row_id(
 		}
 	}
 
-	IF(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	IF(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -491,8 +458,7 @@ static Return db_read_cmpctstat_by_row_id(
  *         - SUCCESS: Structure matches expected zero-converted values
  *         - FAILURE: One or more fields differ from expected values
  */
-static Return db_verify_zero_converted_cmpctstat(
-	const CmpctStat *stat)
+static Return db_verify_zero_converted_cmpctstat(const CmpctStat *stat)
 {
 	if(stat == NULL)
 	{
@@ -574,8 +540,7 @@ static Return db_corrupt_first_row_stat_blob(
  *         - SUCCESS: Trigger and helper table were created
  *         - FAILURE: Validation, DB open, or SQL execution failed
  */
-static Return db_create_abort_on_second_stat_update_trigger(
-	const char *db_filename)
+static Return db_create_abort_on_second_stat_update_trigger(const char *db_filename)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -609,10 +574,7 @@ static Return db_create_abort_on_second_stat_update_trigger(
 		status = FAILURE;
 	}
 
-	IF(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -1258,15 +1220,15 @@ Return test0015_18(void)
 	unsigned char before_blob[512];
 	int before_blob_size = 0;
 	ASSERT(SUCCESS == db_read_stat_blob_by_row_id(rollback_db_filename,
-	                                           row_id,
-	                                           before_blob,
-	                                           sizeof(before_blob),
-	                                           &before_blob_size));
+		row_id,
+		before_blob,
+		sizeof(before_blob),
+		&before_blob_size));
 
 	int v1_rows_before = 0;
 	ASSERT(SUCCESS == db_read_files_count_with_blob_size(rollback_db_filename,
-	                                                  (int)sizeof(CmpctStat_v1),
-	                                                  &v1_rows_before));
+		(int)sizeof(CmpctStat_v1),
+		&v1_rows_before));
 
 	ASSERT(SUCCESS == db_create_abort_on_second_stat_update_trigger(rollback_db_filename));
 
@@ -1287,10 +1249,10 @@ Return test0015_18(void)
 	unsigned char after_blob[512];
 	int after_blob_size = 0;
 	ASSERT(SUCCESS == db_read_stat_blob_by_row_id(rollback_db_filename,
-	                                           row_id,
-	                                           after_blob,
-	                                           sizeof(after_blob),
-	                                           &after_blob_size));
+		row_id,
+		after_blob,
+		sizeof(after_blob),
+		&after_blob_size));
 
 	ASSERT(before_blob_size == after_blob_size);
 
@@ -1301,8 +1263,8 @@ Return test0015_18(void)
 
 	int v1_rows_after = 0;
 	ASSERT(SUCCESS == db_read_files_count_with_blob_size(rollback_db_filename,
-	                                                  (int)sizeof(CmpctStat_v1),
-	                                                  &v1_rows_after));
+		(int)sizeof(CmpctStat_v1),
+		&v1_rows_after));
 	ASSERT(v1_rows_before == v1_rows_after);
 
 	ASSERT(SUCCESS == delete_path(rollback_db_filename));
