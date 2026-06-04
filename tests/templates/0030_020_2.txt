@@ -3,7 +3,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=lock_s20\.db
 TESTING:argument:db_file_name=lock_s20\.db
-TESTING:argument:lock-checksum=\^path1/.*
+TESTING:argument:lock-checksum=\Q^path1/.*\E
 TESTING:argument:update=yes
 TESTING:argument:db-drop-inaccessible=yes
 TESTING:Argument parsing is finished
