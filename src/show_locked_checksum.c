@@ -35,7 +35,7 @@ Return show_locked_checksum_unavailable_violation(
 
 	if(access_status == FILE_NOT_FOUND)
 	{
-		message = "checksum locked, file disappeared from disk";
+		message = "checksum locked, file disappeared";
 
 	} else if(access_status == FILE_ACCESS_DENIED){
 		message = "checksum locked, access denied";
@@ -49,7 +49,7 @@ Return show_locked_checksum_unavailable_violation(
 
 	if(SUCCESS == status)
 	{
-   	const char *runtime_relative_path = m_text(relative_path);
+		const char *runtime_relative_path = m_text(relative_path);
 
 		if(first_iteration != NULL)
 		{
