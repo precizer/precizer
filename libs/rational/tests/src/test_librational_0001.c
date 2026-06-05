@@ -567,12 +567,12 @@ static Return test_librational_0001_4(void)
 	const size_t pebibyte = tebibyte * 1024ULL;
 	const size_t exbibyte = pebibyte * 1024ULL;
 	const size_t mixed_units = 4ULL * exbibyte
-	        + 5ULL * pebibyte
-	        + 6ULL * tebibyte
-	        + 7ULL * gibibyte
-	        + 8ULL * mebibyte
-	        + 9ULL * kibibyte
-	        + 10ULL;
+	                         + 5ULL * pebibyte
+	                         + 6ULL * tebibyte
+	                         + 7ULL * gibibyte
+	                         + 8ULL * mebibyte
+	                         + 9ULL * kibibyte
+	                         + 10ULL;
 
 	/* Static-buffer formatting must support full output and largest-unit-only output.
 	   The last assertion uses 1,291,845,632 bytes = 1 GiB + 208 MiB; in MAJOR_VIEW the
