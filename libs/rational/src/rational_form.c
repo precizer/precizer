@@ -1,6 +1,8 @@
 #include "rational.h"
+#include <math.h>
+#include <string.h>
 
-static const char *form_write_empty(
+STATIC const char *form_write_empty(
 	char   *result,
 	size_t result_size)
 {
@@ -13,7 +15,7 @@ static const char *form_write_empty(
 	return result;
 }
 
-static const char *form_write_zero(
+STATIC const char *form_write_zero(
 	char   *result,
 	size_t result_size)
 {

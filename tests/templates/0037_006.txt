@@ -1,2 +1,0 @@
-\Adelete_path: remove failed for [^\r\n]*/0037_locked_tree/a/b/file\.txt: Permission denied
-delete_path: nftw failed for [^\r\n]*/0037_locked_tree: Permission denied\Z

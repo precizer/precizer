@@ -13,7 +13,7 @@
  *
  * @param pointer_handle Address of the pointer being released.
  */
-void FREE_AND_RESET(void **pointer_handle)
+void mem_free_and_reset(void **pointer_handle)
 {
 	if(pointer_handle != NULL)
 	{

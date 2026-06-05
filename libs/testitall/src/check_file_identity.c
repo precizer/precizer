@@ -1,21 +1,6 @@
 #include "testitall.h"
 #include <time.h>
 
-/*
- * Modification bits
- *
- */
-typedef enum
-{
-	IDENTICAL                 = 0x00, // 00000
-	NOT_EQUAL                 = 0x01, // 00001
-	SIZE_CHANGED              = 0x02, // 00010
-	STATUS_CHANGED_TIME       = 0x04, // 00100
-	MODIFICATION_TIME_CHANGED = 0x08, // 01000
-	COMPARE_FAILED            = 0x10  // 10000
-
-} Changed;
-
 /**
  * @brief Compares basic file metadata fields (size, mtime, ctime).
  *
@@ -28,7 +13,7 @@ typedef enum
  *         - STATUS_CHANGED_TIME (uses ctime/status-change time)
  *         Returns FAILURE on invalid parameters.
  */
-static int compare_file_metadata_equivalence(
+static Changed compare_file_metadata_equivalence(
 	const struct stat *source,
 	const struct stat *destination)
 {
@@ -38,7 +23,7 @@ static int compare_file_metadata_equivalence(
 		return(COMPARE_FAILED);
 	}
 
-	int changes = IDENTICAL;
+	Changed changes = IDENTICAL;
 
 	/* Size of file, in bytes.  */
 	if(source->st_size != destination->st_size)
@@ -77,8 +62,6 @@ Return print_stat(const struct stat *st)
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	char time_str[20]; /* "YYYY-MM-DD HH:MM:SS" + NUL */
-	struct tm *tm_info;
 
 	if(SUCCESS == status)
 	{
@@ -90,6 +73,9 @@ Return print_stat(const struct stat *st)
 
 	if(SUCCESS == status)
 	{
+		char time_str[20]; /* "YYYY-MM-DD HH:MM:SS" + NUL */
+		struct tm *tm_info;
+
 		echo(STDERR,"----------------\n");
 		echo(STDERR,"File information:\n");
 		echo(STDERR,"Device ID: %lu\n",(unsigned long)st->st_dev);

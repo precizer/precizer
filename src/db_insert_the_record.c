@@ -1,33 +1,27 @@
 /**
  * @file db_insert_the_record.c
- * @brief Implementation of database record insertion functionality
- * @details Contains functions for inserting new records into the SQLite database
- *          including file metadata, checksums and offset information
+ * @brief Insert new file rows into the SQLite database
+ * @details Contains the implementation that binds relative path, checksum, offset,
+ *          and metadata fields for a new files table record
  */
 
 #include "precizer.h"
 
 /**
- * @brief Inserts a new record into the database
+ * @brief Insert one file record into the database
  *
- * @details This function inserts information about a file including its relative path,
- *          file offset, SHA512 checksum, file metadata (stat), and SHA512 context
- *          into the SQLite database. The function handles both complete file records
- *          and partial records where some fields may be NULL.
+ * Binds the relative path, checksum offset, SHA512 digest, compact stat payload,
+ * and saved hashing context for one files-table row.
+ * Some bound fields may be NULL when the current file state does not have data for them
  *
- * @param[in] relative_path Path to the file relative to the root directory
- * @param[in] file Per-file state object. Uses checksum_offset, sha512, stat,
- *                 mdContext, zero_size_file, and wrong_file_type when binding
- *                 the row values
+ * @param[in] relative_path Descriptor containing the file path relative to the traversal root
+ * @param[in] file Per-file state object used to bind the row payload
+ * @return SUCCESS when the record was handled cleanly, otherwise FAILURE
  *
- * @return Return status code:
- *         - SUCCESS: Record inserted successfully
- *         - FAILURE: Error occurred during insertion
- *
- * @note In dry run mode, the function returns SUCCESS without modifying the database
+ * @note In dry-run mode, the function returns SUCCESS without modifying the database
  */
 Return db_insert_the_record(
-	const char *relative_path,
+	const memory *relative_path,
 	const File *file)
 {
 	/* Status returned by this function through provide()
@@ -60,7 +54,7 @@ Return db_insert_the_record(
 	}
 
 	/* Bind offset value */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		if(file->checksum_offset == 0)
 		{
@@ -77,19 +71,26 @@ Return db_insert_the_record(
 	}
 
 	/* Bind relative path */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
-		rc = sqlite3_bind_text(insert_stmt,2,relative_path,(int)strlen(relative_path),NULL);
+		size_t relative_path_length;
 
-		if(SQLITE_OK != rc)
+		status = m_string_length(relative_path,&relative_path_length);
+
+		if(SUCCESS & status)
 		{
-			log_sqlite_error(config->db,rc,NULL,"Failed to bind relative path");
-			status = FAILURE;
+			rc = sqlite3_bind_text(insert_stmt,2,m_text(relative_path),(int)relative_path_length,NULL);
+
+			if(SQLITE_OK != rc)
+			{
+				log_sqlite_error(config->db,rc,NULL,"Failed to bind relative path");
+				status = FAILURE;
+			}
 		}
 	}
 
 	/* Bind SHA512 checksum */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		if(file->checksum_offset == 0 && file->zero_size_file == false && file->wrong_file_type == false)
 		{
@@ -106,7 +107,7 @@ Return db_insert_the_record(
 	}
 
 	/* Copy and bind file metadata */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		rc = sqlite3_bind_blob(insert_stmt,4,&file->stat,sizeof(CmpctStat),NULL);
 
@@ -118,7 +119,7 @@ Return db_insert_the_record(
 	}
 
 	/* Bind SHA512 context */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		if(file->checksum_offset == 0)
 		{
@@ -135,7 +136,7 @@ Return db_insert_the_record(
 	}
 
 	/* Execute prepared statement */
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		rc = sqlite3_step(insert_stmt);
 
@@ -146,14 +147,20 @@ Return db_insert_the_record(
 		}
 	}
 
-	if(SUCCESS == status)
+	if(SUCCESS & status)
 	{
 		/* Reflect changes in global */
 		config->db_primary_file_modified = true;
 
 	}
 
-	sqlite3_finalize(insert_stmt);
+	rc = sqlite3_finalize(insert_stmt);
+
+	if(SUCCESS & status && SQLITE_OK != rc)
+	{
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize insert statement");
+		status = FAILURE;
+	}
 
 	provide(status);
 }

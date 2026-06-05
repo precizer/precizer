@@ -35,11 +35,15 @@ Return db_primary_file_validate_existence(void)
 
 	// Primary DB file exists or not
 	config->db_primary_file_exists = false;
-	const char *db_primary_file_path = confstr(db_primary_file_path);
 
-	// Path is initialized in db_determine_name() and must contain at least one
-	// real character beyond the trailing '\0' terminator
-	if(conf(db_primary_file_path)->length <= 1)
+  const char *db_primary_file_path = confstr(db_primary_file_path);
+
+  size_t db_primary_file_path_length;
+
+	status = m_string_length(conf(db_primary_file_path),&db_primary_file_path_length);
+
+	// Path is initialized in db_determine_name() and must contain visible content
+	if(SUCCESS & status && db_primary_file_path_length == 0)
 	{
 		status = FAILURE;
 	}

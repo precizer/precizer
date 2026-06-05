@@ -1,6 +1,6 @@
 \A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-paths=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1\.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=yes; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is complete
+roots=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1\.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=yes; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, start-device-only=no, check-level=FULL, rational_logger_mode=VERBOSE
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is finished
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Checking directory paths provided as arguments
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability\.c:\d+:file_availability:Verify that the path tests/fixtures/diffs/diff1 exists
@@ -24,7 +24,7 @@ paths=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Starting database file database1\.db integrity check…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:The database verification level has been set to FULL
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Database database1\.db has been verified and is in good condition
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_get_version\.c:\d+:db_get_version:Version number \d+ found in database
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_retrieve_version\.c:\d+:db_retrieve_version:Version number \d+ found in database
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The database1\.db database file is version \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The database database1\.db is on version \d+ and does not require any upgrades
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_init\.c:\d+:db_init:Successfully opened database database1\.db
@@ -39,7 +39,7 @@ paths=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_statistics\.c:\d+:show_statistics:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_buffer_memory\.c:\d+:file_buffer_memory:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Missing file search completed
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Missing file search finished
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close\.c:\d+:db_close:The database connection has been closed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_primary_consider_vacuum\.c:\d+:db_primary_consider_vacuum:No changes were made. The primary database doesn't require vacuuming
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_changes\.c:\d+:db_check_changes:(?:\x1B\[[0-9;]*m)*The database file database1\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*

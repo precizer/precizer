@@ -34,14 +34,14 @@ Return db_check_version(
 	/// Zerro by default
 	int db_version = 0;
 
-	status = db_get_version(&db_version,db_file_path);
+	status = db_retrieve_version(&db_version,db_file_path);
 
 	if(SUCCESS == status)
 	{
 		slog(TRACE,"The %s database file is version %d\n",db_file_name,db_version);
 	} else {
 
-		slog(ERROR,"Failed to get database version\n");
+		slog(ERROR,"Failed to retrieve database version\n");
 	}
 
 	if(SUCCESS == status)

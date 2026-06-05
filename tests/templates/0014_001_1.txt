@@ -1,9 +1,9 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
@@ -60,12 +60,12 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/long
+TESTING:argument:roots=tests/fixtures/long
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:force=yes
 TESTING:argument:update=yes
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/long exists
@@ -147,7 +147,7 @@ no longer exists path1/AAA/ZAW/D/e/f/b_file\.txt
 no longer exists path2/AAA/BCB/CCC/a\.txt
 no longer exists path2/AAA/ZAW/A/b/c/a_file\.txt
 no longer exists path2/AAA/ZAW/D/e/f/b_file\.txt
-TESTING:Missing file search completed
+TESTING:Missing file search finished
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed

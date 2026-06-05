@@ -72,15 +72,12 @@ int test_main(
 	// parsing command line arguments
 	run(parse_arguments(argc,argv));
 
+	// Print program identity before starting the main workflow
+	about();
+
 	// Compile PCRE2 patterns from --ignore, --include, --lock-checksum once
 	// so that file traversal reuses compiled objects instead of recompiling per file
 	run(compile_patterns());
-
-	// Print program identity only when argument parsing is not in info mode
-	if((status & INFO) == 0)
-	{
-		about();
-	}
 
 	// Verify that the provided paths exist and
 	// are directories
@@ -118,8 +115,7 @@ int test_main(
 	// the paths stored in the database
 	run(db_validate_paths());
 
-	// Save new prefixes that has been passed as
-	// arguments
+	// Save normalized traversal root prefixes
 	run(db_save_prefixes());
 
 	// Just get a statistic
