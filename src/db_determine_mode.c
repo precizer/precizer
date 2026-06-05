@@ -1,8 +1,9 @@
 #include "precizer.h"
 
 /**
- * @brief Gets corresponding string based on provided code
- * @return Pointer to selected string constant
+ * @brief Return a diagnostic name for the selected SQLite open mode
+ *
+ * @return Pointer to a static string that describes `config->sqlite_open_flag`
  */
 static const char *get_flag_string_by_code(void)
 {
@@ -27,8 +28,9 @@ static const char *get_flag_string_by_code(void)
 }
 
 /**
- * @brief Gets corresponding string based on provided code
- * @return Pointer to selected string constant
+ * @brief Return a diagnostic name for table-initialization state
+ *
+ * @return `"true"` when database tables should be initialized, otherwise `"false"`
  */
 static const char *get_initialize_string_by_code(void)
 {
@@ -42,9 +44,16 @@ static const char *get_initialize_string_by_code(void)
 }
 
 /**
+ * @brief Select SQLite open flags and table-initialization behavior
  *
- * @brief Define the database operation mode
+ * Uses the parsed command-line mode and primary database existence state to set
+ * `config->sqlite_open_flag` and `config->db_initialize_tables`. Compare mode
+ * opens read-only storage, update mode requires an existing database, normal
+ * mode creates a missing database, and dry-run mode either opens an existing
+ * database read-only or uses the in-memory dry-run flag when no physical
+ * database exists
  *
+ * @return SUCCESS when a valid mode was selected, otherwise FAILURE
  */
 Return db_determine_mode(void)
 {

@@ -7,6 +7,8 @@
  * This suite keeps function-level checks in one place. These tests call the
  * target functions directly through the test runner and do not participate in
  * the shared internal/external application scenario matrix
+ *
+ * @return Return status for all direct function-level tests
  */
 Return function_unit_testing(void)
 {

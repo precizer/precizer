@@ -1,15 +1,17 @@
 #include "precizer.h"
 
 /**
+ * @brief Store a formatted log line in the TEMP remember_history table
  *
- * @brief Store a formatted log line in the TEMP remember_history table.
+ * @details The table is created in db_init(). Empty messages are ignored. When
+ * the previous remembered row does not end with a newline, the new message is
+ * appended to that row so multi-part log output remains one remembered message
  *
- * @details The table is created in db_init(). If the database is unavailable,
- *          the function returns without inserting anything.
+ * @param[in] message Message bytes to remember
+ * @param[in] line_len Number of bytes to read from @p message
  *
- * @note The message buffer may be non-null-terminated; line_len is used
- *       to bound the insert.
- *
+ * @note The message buffer may be non-null-terminated; line_len is used to
+ *       bound the insert or append operation
  */
 void rational_remember(
 	const char *message,

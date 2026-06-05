@@ -22,15 +22,16 @@ static int compare_by_name(
 /**
  * @brief Traverse configured roots and process files for one pass
  *
- * The function walks each root in `config->roots` with a separate FTS stream.
- * Paths written to the database are kept relative to the current root, so the
- * same traversal logic works for one root or for several positional directory
- * arguments
+ * The function is a no-op in compare mode. During normal scanning it walks each
+ * root in `config->roots` with a separate FTS stream. Paths written to the
+ * database are kept relative to the current root, so the same traversal logic
+ * works for one root or for several positional directory arguments
  *
  * `summary->stats_only_pass` controls how much work is done. When it is `true`,
- * traversal only counts directories, files, symlinks, and allocated size. When
- * it is `false`, regular files can be hashed, compared with existing database
- * rows, inserted, updated, or reported according to ignore/include and checksum
+ * traversal only counts directories, files, symlinks, and allocated size, and
+ * that pass is skipped unless progress output needs those counters. When it is
+ * `false`, regular files can be hashed, compared with existing database rows,
+ * inserted, updated, or reported according to ignore/include and checksum
  * locking settings
  *
  * For example, after `precizer src tests`, `config->roots` contains two roots.
@@ -117,7 +118,7 @@ Return file_list(TraversalSummary *summary)
 	 * To obtain a relative path, trim the prefix from the absolute path.
 	 */
 	m_create(char,root_path,MEMORY_STRING);
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 	/**
 	 * Index of the path prefix
 	 * All full runtime paths are stored in the table "paths".
@@ -209,7 +210,7 @@ Return file_list(TraversalSummary *summary)
 					break;
 				}
 
-	#if 0 // Old multiPATH solution
+	#if 0 // Disabled multi-root path index implementation
 				// If several paths were passed as arguments,
 				// then the counting of the path prefix index
 				// will start from zero
@@ -326,7 +327,7 @@ Return file_list(TraversalSummary *summary)
 					}
 
 					/* Get all file's metadata from the database */
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 					run(db_read_file_data_from(file,&runtime_root_path_index,relative_path));
 #else
 					run(db_read_file_data_from(file,relative_path));
@@ -640,7 +641,7 @@ Return file_list(TraversalSummary *summary)
 						/* Insert into DB */
 						if(TRIUMPH & status)
 						{
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 							status = db_insert_the_record(&runtime_root_path_index,
 								relative_path,
 								file);

@@ -13,7 +13,7 @@
  */
 Return db_read_file_data_from(
 	File *file,
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 	const sqlite3_int64 *path_prefix_index,
 #endif
 	const memory *relative_path)
@@ -29,7 +29,7 @@ Return db_read_file_data_from(
 	DBrow *dbrow = file->db;
 
 	/* Create SQL statement */
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 	const char *select_sql = "SELECT ID,offset,stat,mdContext,sha512 FROM files WHERE path_prefix_index = ?1 and relative_path = ?2;";
 #else
 	const char *select_sql = "SELECT ID,offset,stat,mdContext,sha512 FROM files WHERE relative_path = ?1;";
@@ -42,7 +42,7 @@ Return db_read_file_data_from(
 		status = FAILURE;
 	}
 
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 	rc = sqlite3_bind_int64(select_stmt,1,*path_prefix_index);
 
 	if(SQLITE_OK != rc)

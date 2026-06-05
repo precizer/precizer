@@ -3,14 +3,14 @@
 
 #ifdef TESTITALL_TEST_HOOKS
 /**
- * @brief Test-only hook to simulate unexpected DB metadata change in dry-run mode.
+ * @brief Test-only hook to simulate unexpected DB metadata change in dry-run mode
  *
  * When enabled by environment variable
  * `TESTITALL_TEST_ENV_DB_FILE_TIMESTAMPS_WILL_BUMPED=true`, this helper updates
  * database file timestamps via utime(), forcing metadata drift before the final
- * `stat()` comparison in db_check_changes().
+ * `stat()` comparison in db_check_changes()
  *
- * The hook is intentionally limited to dry-run on an existing primary DB file.
+ * The hook is intentionally limited to dry-run on an existing primary DB file
  */
 static Return run_test_hook_bump_db_timestamps(void)
 {
@@ -56,16 +56,19 @@ static Return run_test_hook_bump_db_timestamps(void)
 }
 
 /**
- * @brief Test-only hook to simulate missing DB metadata drift during update mode.
+ * @brief Test-only hook to simulate missing DB metadata drift during update mode
  *
  * When enabled by environment variable
  * `TESTITALL_TEST_ENV_DB_FILE_STAT_WILL_BE_RESYNCED=true`, this helper overwrites
  * the saved baseline stat (`config->db_file_stat`) with the current DB file
  * stat. This forces metadata comparison in db_check_changes() to report
- * IDENTICAL, even if the database was modified earlier in the same run.
+ * IDENTICAL, even if the database was modified earlier in the same run
  *
  * The hook is intentionally limited to non-dry-run mode and to cases where
- * `config->db_primary_file_modified` is already true.
+ * `config->db_primary_file_modified` is already true
+ *
+ * @param[in] db_current_stat Current metadata for the primary database file
+ * @return SUCCESS when the hook is inactive or resynchronized the baseline, otherwise FAILURE
  */
 static Return run_test_hook_resync_db_stat_baseline(const struct stat *db_current_stat)
 {
@@ -115,6 +118,18 @@ static Return run_test_hook_resync_db_stat_baseline(const struct stat *db_curren
 }
 #endif
 
+/**
+ * @brief Verify that the primary database file changed only when expected
+ *
+ * Compares the saved primary-database metadata captured earlier in the run with
+ * the current metadata on disk. A real metadata change is expected only when
+ * `config->db_primary_file_modified` is true. If the file changed without that
+ * flag, or the flag is set but metadata did not change, the function reports an
+ * internal consistency warning
+ *
+ * @return SUCCESS when the metadata and modification flag agree, WARNING when
+ *         they disagree, or FAILURE when current database metadata cannot be read
+ */
 Return db_check_changes(void)
 {
 	/* Status returned by this function through provide()

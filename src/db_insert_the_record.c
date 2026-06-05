@@ -22,7 +22,7 @@
  */
 Return db_insert_the_record(
 	const memory *relative_path,
-	const File *file)
+	const File   *file)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -38,7 +38,7 @@ Return db_insert_the_record(
 
 	sqlite3_stmt *insert_stmt = NULL;
 
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 	const char *insert_sql = "INSERT INTO files (offset,path_prefix_index,relative_path,sha512,stat,mdContext) VALUES (?1, ?2, ?3, ?4, ?5, ?6);";
 #else
 	const char *insert_sql = "INSERT INTO files (offset,relative_path,sha512,stat,mdContext) VALUES (?1, ?2, ?3, ?4, ?5);";

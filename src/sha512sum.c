@@ -3,7 +3,10 @@
 
 #ifdef TESTITALL_TEST_HOOKS
 /**
- * @brief Check whether a path points to the large interruption test file.
+ * @brief Check whether a path points to the large interruption test file
+ *
+ * @param[in] path Path being hashed during a test build
+ * @return true when the path ends with the interruption fixture name
  */
 static bool is_huge_interruption_target(const char *path)
 {
@@ -25,7 +28,10 @@ static bool is_huge_interruption_target(const char *path)
 }
 
 /**
- * @brief Generate a pseudo-random stop byte in the closed range [1, file_size].
+ * @brief Generate a pseudo-random stop byte in the closed range [1, file_size]
+ *
+ * @param[in] file_size File size used as the inclusive upper bound
+ * @return Selected byte offset, or zero when @p file_size is zero
  */
 static uint64_t random_stop_byte(const uint64_t file_size)
 {
@@ -46,23 +52,27 @@ static uint64_t random_stop_byte(const uint64_t file_size)
 #endif
 
 /**
- * @brief Calculate SHA512 cryptographic hash of a file, optionally resuming from offset.
+ * @brief Read a file and update its SHA512 state when hashing is enabled
  *
- * Reads file data starting from @p file->checksum_offset, updates @p file->mdContext,
- * increments @p summary->total_hashed_bytes for each processed chunk, and accumulates
- * per-call hashing elapsed time into @p summary->total_hashing_elapsed_ns.
+ * Opens @p path directly and falls back to an absolute path based on
+ * `config->running_dir` when needed. When normal hashing is enabled, or when
+ * dry-run uses `--dry-run=with-checksums`, the function reads file data
+ * starting from @p file->checksum_offset, updates @p file->mdContext, counts
+ * hashed bytes in @p summary, and finalizes @p file->sha512 after an
+ * uninterrupted pass. In dry-run mode without checksum calculation, the file is
+ * opened and seek-checked but the checksum state is not advanced
  *
- * @param path File path (relative or absolute).
- * @param path_size Length of @p path.
- * @param file_buffer Read buffer descriptor.
- * @param summary Traversal counters updated with hashed byte count and hashing time.
+ * @param path File path, relative or absolute
+ * @param path_size Length of @p path without the terminating null byte
+ * @param file_buffer Read buffer descriptor
+ * @param summary Traversal counters updated with hashed byte count and hashing time
  * @param file Per-file state object used as input and output. checksum_offset is the
  *             starting byte offset for resumption and is updated as bytes are
  *             hashed. sha512 receives the final digest. mdContext holds the
  *             incremental hashing state. read_error and read_errno describe
  *             read failures. wrong_file_type is set for non-seekable or
  *             otherwise unsupported file types
- * @return SUCCESS or FAILURE.
+ * @return SUCCESS when the file was handled cleanly, otherwise FAILURE
  */
 Return sha512sum(
 	const char       *path,
@@ -237,7 +247,7 @@ Return sha512sum(
 			/* Interrupt when Ctrl+C */
 #ifdef TESTITALL_TEST_HOOKS
 			/*
-			 * Temporary guard: when random-stop mode is active for hugetestfile,
+			 * Test-only guard: when random-stop mode is active for hugetestfile,
 			 * do not break on global_interrupt_flag until point 2 has really
 			 * happened. Otherwise interruption may fire too early and miss the
 			 * controlled "interrupt at random byte" scenario.

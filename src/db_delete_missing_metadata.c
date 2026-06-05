@@ -249,7 +249,7 @@ Return db_delete_missing_metadata(void)
 
 	if(SUCCESS == status)
 	{
-#if 0 // Old multiPATH solutions
+#if 0 // Disabled multi-root path index implementation
 		const char *select_sql = "SELECT files.ID,paths.prefix,files.relative_path FROM files LEFT JOIN paths ON files.root_path_index = paths.ID;";
 #endif
 		const char *select_sql = "SELECT ID,relative_path FROM files;";
