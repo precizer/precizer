@@ -10,15 +10,17 @@
 #endif
 
 /**
- * @brief Determines the maximum amount of memory that can be allocated for the buffer.
+ * @brief Estimate the file-read buffer size
  *
- * This function estimates how much memory can be allocated for a buffer based on
- * available physical memory. It defaults to 1MB if system calls fail.
+ * Uses one percent of currently available physical memory when the platform
+ * reports it. On platforms that only expose total physical pages, the estimate
+ * is based on total memory instead. If page-count or page-size queries fail,
+ * the function falls back to a 1 MB buffer
  *
- * @note The function assumes that only 1% of available RAM should be used for the buffer.
- *       It may not be suitable for embedded or IoT devices with constrained memory.
+ * @note The one-percent heuristic may still be too large for constrained
+ *       embedded or IoT devices
  *
- * @return The maximum buffer size in bytes. Defaults to 1MB if system information is unavailable.
+ * @return Selected buffer size in bytes
  */
 size_t file_buffer_memory(void)
 {

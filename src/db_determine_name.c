@@ -1,10 +1,14 @@
 #include "precizer.h"
 
 /**
- * Determine file name of the database.
- * This database file name can be passed as an argument --database=FILE
- * Unless specified, the default database filename
- * will be the hostname and ".db" as the filename extension
+ * @brief Determine the primary database path and display name
+ *
+ * In compare mode the primary connection is a disposable in-memory database
+ * used to attach the two compared database files. In normal scanning mode, an
+ * explicit `--database` path is kept, or the default path is built from the
+ * local host name plus the `.db` suffix when no database argument was supplied
+ *
+ * @return SUCCESS when the database name state was prepared, otherwise FAILURE
  */
 Return db_determine_name(void)
 {
@@ -26,10 +30,10 @@ Return db_determine_name(void)
 			// In-memory database
 			config->db_primary_path_is_memory = true;
 
-			// Set primary DB path to SQLite in-memory marker.
+			// Set primary DB path to SQLite in-memory marker
 			run(m_copy_literal(conf(db_primary_file_path),":memory:"));
 
-			// Set display-friendly DB name for logs.
+			// Set display-friendly DB name for logs
 			run(m_copy_literal(conf(db_file_name),"DisposableDB"));
 
 			if(CRITICAL & status)
@@ -51,15 +55,15 @@ Return db_determine_name(void)
 
 			struct utsname utsname = {0};
 
-      // Determine local host name
-      if(uname(&utsname) != 0)
+			// Determine local host name
+			if(uname(&utsname) != 0)
 			{
 				slog(ERROR,"Failed to get hostname\n");
 				status = FAILURE;
 			} else {
-        // Build default DB path from hostname plus ".db" suffix
-        run(m_copy_string(conf(db_primary_file_path),utsname.nodename));
-        run(m_concat_literal(conf(db_primary_file_path),".db"));
+				// Build default DB path from hostname plus ".db" suffix
+				run(m_copy_string(conf(db_primary_file_path),utsname.nodename));
+				run(m_concat_literal(conf(db_primary_file_path),".db"));
 				// Copy the same path to db_file_name
 				run(m_copy(conf(db_file_name),conf(db_primary_file_path)));
 

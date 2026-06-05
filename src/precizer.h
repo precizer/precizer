@@ -791,7 +791,7 @@ Return db_specify_version(
 
 Return db_primary_file_test(void);
 
-#if 0 // Old multiPATH solution
+#if 0 // Disabled multi-root path index implementation
 Return db_get_path_prefix_index(
 	const char *,
 	sqlite3_int64 *);

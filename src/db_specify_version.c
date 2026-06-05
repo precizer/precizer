@@ -1,17 +1,21 @@
 /**
  * @file db_specify_version.c
- * @brief
+ * @brief Store database schema-version metadata
  */
 
 #include "precizer.h"
 
 /**
- * @brief Store the current database version in the metadata table
+ * @brief Store a database version in the metadata table
  *
- * @details Opens database connection and sets version number to CURRENT_DB_VERSION
- *          constant in the metadata table. Handles all necessary resource cleanup.
+ * @details Opens the target database in read-write mode, clears the metadata
+ * table, writes @p version as the current schema version, and commits the
+ * update in one transaction. The function skips work after an interrupt and in
+ * dry-run mode. When the primary database is updated, the global modification
+ * flag is set so final consistency checks know that a database write happened
  *
  * @param[in] db_file_path Path to the SQLite database file
+ * @param[in] version Version number to write into `metadata.db_version`
  *
  * @return Return status codes:
  *         - SUCCESS: Version set successfully

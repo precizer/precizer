@@ -1,13 +1,24 @@
 /**
  * @file db_check_version.c
- * @brief
+ * @brief Database-version validation and upgrade entry point
  */
 
 #include "precizer.h"
 
 /**
- * @brief Checks database version and initiates upgrade if needed
+ * @brief Check a database version and run required upgrades
  *
+ * Retrieves the version stored in the database metadata, upgrades older
+ * databases to `CURRENT_DB_VERSION`, and rejects databases created for a newer
+ * application version. When a non-primary database is upgraded, the function
+ * vacuums it after the upgrade. The primary database is left for the regular
+ * session-end vacuum path
+ *
+ * @param[in] db_file_path Path to the SQLite database file being checked
+ * @param[in] db_file_name Display name used in diagnostic messages
+ * @return SUCCESS when the database is compatible or was upgraded, WARNING
+ *         when the database requires a newer application, or FAILURE when
+ *         version retrieval, upgrade, or post-upgrade vacuum fails
  */
 Return db_check_version(
 	const char *db_file_path,

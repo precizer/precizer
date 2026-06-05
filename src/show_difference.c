@@ -1,11 +1,11 @@
 #include "precizer.h"
 
 /**
- * @brief Retrieve a const pointer to a flag descriptor by index.
+ * @brief Retrieve a const pointer to a flag descriptor by index
  *
  * Uses the mem helper to obtain a typed readonly view of the @ref Flags array and
  * performs bounds checking. Returns NULL if the descriptor is missing, type
- * verification fails, or the index is out of range.
+ * verification fails, or the index is out of range
  */
 static const Flags *lookup(
 	const memory *flags,
@@ -21,6 +21,19 @@ static const Flags *lookup(
 	return(&flags_data_view[index]);
 }
 
+/**
+ * @brief Print database metadata fields that changed between two snapshots
+ *
+ * Expands a metadata-change bit mask into user-visible field names and detailed
+ * values. The function is used when final database-file consistency checks need
+ * to explain why the database file metadata differs from the saved baseline
+ *
+ * @param[in] change_flags_mask Bit mask describing which metadata fields changed
+ * @param[in] before Saved metadata snapshot from the beginning of the run
+ * @param[in] after Current metadata snapshot from the end of the run
+ * @return SUCCESS when there is nothing to print or the difference was printed,
+ *         otherwise FAILURE for missing snapshots
+ */
 Return show_difference(
 	Changed         change_flags_mask,
 	const CmpctStat *before,
