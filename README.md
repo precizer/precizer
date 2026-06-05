@@ -10,8 +10,9 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 ## Comprehensive hybrid test suite
 
-<a href="https://precizer.github.io/code_coverage_report/">Test coverage:<br>
-<img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
+### Test coverage:
+
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
 <img src=".html/img/test-coverage-functions.svg" height="20" alt="Functions covered by tests" /><br>
 <img src=".html/img/test-coverage-branches.svg" height="20" alt="Code branches covered by tests" /></a>
 
