@@ -1,24 +1,24 @@
 #include "precizer.h"
 
 /**
- * @brief Apply the shared --include/--ignore decision logic to one relative path
+ * @brief Apply the shared --include and --ignore decision logic to one path
  *
- * Checks --include first so explicitly included paths stay visible even when they
- * also match --ignore. If a regexp evaluation fails, reports the error and
- * returns FAILURE
+ * Applies --include first, then --ignore, so explicitly included paths stay visible
  *
- * @param[in] relative_path Relative path to test
+ * @param[in] relative_path Relative path descriptor to test
  * @param[out] include True when the path matched --include. May be NULL when the caller
- *             does not need to distinguish explicitly included paths from default-visible ones
+ *             only needs the final visibility decision
  * @param[out] ignore True when the path matched --ignore without being restored by --include
  * @return SUCCESS on a valid decision, otherwise FAILURE
  */
 Return match_include_ignore(
-	const char *relative_path,
+	const memory *relative_path,
 	bool       *include,
 	bool       *ignore)
 {
-	// include is optional: callers that only need ignore-or-show pass NULL
+	const char *runtime_relative_path = m_text(relative_path);
+
+	// Callers may omit include when only the final visibility decision is needed
 	if(include != NULL)
 	{
 		*include = false;
@@ -38,18 +38,18 @@ Return match_include_ignore(
 
 		} else if(FAIL_REGEXP_IGNORE == match_ignore_response){
 
-			slog(ERROR,"Fail ignore REGEXP for a string: %s\n",relative_path);
+			slog(ERROR,"Fail ignore REGEXP for a string: %s\n",runtime_relative_path);
 			provide(FAILURE);
 		}
 
 	} else if(FAIL_REGEXP_INCLUDE == match_include_response){
 
-		slog(ERROR,"Fail include REGEXP for a string: %s\n",relative_path);
+		slog(ERROR,"Fail include REGEXP for a string: %s\n",runtime_relative_path);
 		provide(FAILURE);
 
 	} else if(INCLUDE == match_include_response){
 
-		// Skipped when caller passed NULL: the path stays visible, distinction is just not reported
+		// Keep the path visible even when the include flag is not requested
 		if(include != NULL)
 		{
 			*include = true;

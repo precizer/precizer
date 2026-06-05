@@ -152,10 +152,7 @@ Return db_specify_version(
 	}
 
 	/* Cleanup */
-	if(stmt != NULL)
-	{
-		sqlite3_finalize(stmt);
-	}
+	sqlite3_finalize(stmt);
 
 	/* Cleanup */
 	call(db_close(db,&db_file_modified));

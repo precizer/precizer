@@ -9,18 +9,16 @@ Telemetry telemetry = {0};
 /**
  * @brief Update the peak heap usage counter if @p updated_current_bytes exceeds it.
  *
- * Uses atomic compare-and-swap to record the highest observed heap footprint.
- *
  * @param updated_current_bytes Newly observed heap usage value.
  */
-static void telemetry_update_peak(const size_t updated_current_bytes)
+static void telemetry_peak_heap_reserved_bytes_update(const size_t updated_current_bytes)
 {
-	size_t observed_peak = __atomic_load_n(&telemetry.peak_heap_bytes,__ATOMIC_SEQ_CST);
+	size_t observed_peak = __atomic_load_n(&telemetry.peak_heap_reserved_bytes,__ATOMIC_SEQ_CST);
 
 	while(updated_current_bytes > observed_peak)
 	{
 		if(__atomic_compare_exchange_n(
-			&telemetry.peak_heap_bytes,
+			&telemetry.peak_heap_reserved_bytes,
 			&observed_peak,
 			updated_current_bytes,
 			false,
@@ -33,18 +31,18 @@ static void telemetry_update_peak(const size_t updated_current_bytes)
 }
 
 /**
- * @brief Track the maximum alignment overhead observed at runtime.
+ * @brief Track the maximum block overhead observed at runtime.
  *
- * @param updated_current_overhead Current alignment padding consumption in bytes.
+ * @param updated_current_overhead Current block-overhead consumption in bytes.
  */
-static void telemetry_update_alignment_peak(const size_t updated_current_overhead)
+static void telemetry_peak_block_overhead_bytes_update(const size_t updated_current_overhead)
 {
-	size_t observed_peak = __atomic_load_n(&telemetry.peak_alignment_overhead_bytes,__ATOMIC_SEQ_CST);
+	size_t observed_peak = __atomic_load_n(&telemetry.peak_block_overhead_bytes,__ATOMIC_SEQ_CST);
 
 	while(updated_current_overhead > observed_peak)
 	{
 		if(__atomic_compare_exchange_n(
-			&telemetry.peak_alignment_overhead_bytes,
+			&telemetry.peak_block_overhead_bytes,
 			&observed_peak,
 			updated_current_overhead,
 			false,
@@ -59,18 +57,18 @@ static void telemetry_update_alignment_peak(const size_t updated_current_overhea
 /**
  * @brief Record the highest number of simultaneously active descriptors.
  *
- * @param updated_active_descriptors Current count of active descriptors.
+ * @param updated_current_active_descriptors Current count of active descriptors.
  */
-static void telemetry_update_active_peak(const size_t updated_active_descriptors)
+static void telemetry_peak_active_descriptors_update(const size_t updated_current_active_descriptors)
 {
 	size_t observed_peak = __atomic_load_n(&telemetry.peak_active_descriptors,__ATOMIC_SEQ_CST);
 
-	while(updated_active_descriptors > observed_peak)
+	while(updated_current_active_descriptors > observed_peak)
 	{
 		if(__atomic_compare_exchange_n(
 			&telemetry.peak_active_descriptors,
 			&observed_peak,
-			updated_active_descriptors,
+			updated_current_active_descriptors,
 			false,
 			__ATOMIC_SEQ_CST,
 			__ATOMIC_SEQ_CST))
@@ -80,86 +78,86 @@ static void telemetry_update_active_peak(const size_t updated_active_descriptors
 	}
 }
 
-void telemetry_realloc_optimized_counter(void)
+void telemetry_in_place_resizes(void)
 {
-	__atomic_fetch_add(&telemetry.optimized_resizes_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.in_place_resizes,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_new_allocations_counter(void)
+void telemetry_fresh_heap_allocations(void)
 {
-	__atomic_fetch_add(&telemetry.fresh_allocations_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.fresh_heap_allocations,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_new_callocations_counter(void)
+void telemetry_zero_initialized_payload_growths(void)
 {
-	__atomic_fetch_add(&telemetry.zero_initialized_allocations_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.zero_initialized_payload_growths,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_aligned_reallocations_counter(void)
+void telemetry_heap_reallocations(void)
 {
-	__atomic_fetch_add(&telemetry.heap_reallocations_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.heap_reallocations,1,__ATOMIC_SEQ_CST);
 	#if ROUGH_DEBUG
-	printf("telemetry.heap_reallocations_counter: %zu\n",telemetry.heap_reallocations_counter);
+	printf("telemetry.heap_reallocations: %zu\n",telemetry.heap_reallocations);
 	#endif
 }
 
-void telemetry_realloc_noop_counter(void)
+void telemetry_noop_resizes(void)
 {
-	__atomic_fetch_add(&telemetry.exact_size_resizes_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.noop_resizes,1,__ATOMIC_SEQ_CST);
 	#if ROUGH_DEBUG
-	printf("telemetry.exact_size_resizes_counter: %zu\n",telemetry.exact_size_resizes_counter);
+	printf("telemetry.noop_resizes: %zu\n",telemetry.noop_resizes);
 	#endif
 }
 
-void telemetry_free_counter(void)
+void telemetry_heap_buffer_releases(void)
 {
-	__atomic_fetch_add(&telemetry.release_operations_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.heap_buffer_releases,1,__ATOMIC_SEQ_CST);
 	#if ROUGH_DEBUG
-	printf("telemetry.release_operations_counter: %zu\n",telemetry.release_operations_counter);
+	printf("telemetry.heap_buffer_releases: %zu\n",telemetry.heap_buffer_releases);
 	#endif
 }
 
-void telemetry_free_total_bytes(const size_t amount_of_bytes)
+void telemetry_total_heap_reserved_bytes_released(const size_t amount_of_bytes)
 {
-	__atomic_fetch_add(&telemetry.total_heap_bytes_released,amount_of_bytes,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.total_heap_reserved_bytes_released,amount_of_bytes,__ATOMIC_SEQ_CST);
 	#if ROUGH_DEBUG
-	printf("telemetry.total_heap_bytes_released: %zu\n",telemetry.total_heap_bytes_released);
+	printf("telemetry.total_heap_reserved_bytes_released: %zu\n",telemetry.total_heap_reserved_bytes_released);
 	#endif
 }
 
-void telemetry_release_unused_operation(void)
+void telemetry_release_unused_shrinks(void)
 {
-	__atomic_fetch_add(&telemetry.release_unused_operations_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.release_unused_shrinks,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_release_unused_bytes(const size_t amount_of_bytes)
+void telemetry_total_release_unused_heap_reserved_bytes_released(const size_t amount_of_bytes)
 {
 	if(amount_of_bytes == 0)
 	{
 		return;
 	}
 
-	__atomic_fetch_add(&telemetry.release_unused_bytes_total,amount_of_bytes,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.total_release_unused_heap_reserved_bytes_released,amount_of_bytes,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_add(const size_t amount_of_bytes)
+void telemetry_heap_reserved_bytes_acquired(const size_t amount_of_bytes)
 {
 	const size_t updated_current_bytes = __atomic_add_fetch(
-		&telemetry.current_heap_bytes,
+		&telemetry.current_heap_reserved_bytes,
 		amount_of_bytes,
 		__ATOMIC_SEQ_CST);
 
-	__atomic_fetch_add(&telemetry.total_heap_bytes_acquired,amount_of_bytes,__ATOMIC_SEQ_CST);
-	telemetry_update_peak(updated_current_bytes);
+	__atomic_fetch_add(&telemetry.total_heap_reserved_bytes_acquired,amount_of_bytes,__ATOMIC_SEQ_CST);
+	telemetry_peak_heap_reserved_bytes_update(updated_current_bytes);
 
 	#if ROUGH_DEBUG
 	printf("+%zu\n",amount_of_bytes);
 	#endif
 }
 
-void telemetry_effective_add(const size_t amount_of_bytes)
+void telemetry_payload_bytes_added(const size_t amount_of_bytes)
 {
-	__atomic_fetch_add(&telemetry.total_payload_bytes_acquired,amount_of_bytes,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.total_payload_bytes_added,amount_of_bytes,__ATOMIC_SEQ_CST);
 	__atomic_add_fetch(&telemetry.current_payload_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
 
 	#if ROUGH_DEBUG
@@ -167,15 +165,15 @@ void telemetry_effective_add(const size_t amount_of_bytes)
 	#endif
 }
 
-void telemetry_reduce(const size_t amount_of_bytes)
+void telemetry_current_heap_reserved_bytes_released(const size_t amount_of_bytes)
 {
-	__atomic_sub_fetch(&telemetry.current_heap_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
+	__atomic_sub_fetch(&telemetry.current_heap_reserved_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
 	#if ROUGH_DEBUG
 	printf("-%zu\n",amount_of_bytes);
 	#endif
 }
 
-void telemetry_effective_reduce(const size_t amount_of_bytes)
+void telemetry_current_payload_bytes_removed(const size_t amount_of_bytes)
 {
 	__atomic_sub_fetch(&telemetry.current_payload_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
 	#if ROUGH_DEBUG
@@ -183,17 +181,27 @@ void telemetry_effective_reduce(const size_t amount_of_bytes)
 	#endif
 }
 
-void telemetry_allocation_failure(void)
+void telemetry_heap_allocation_failures(void)
 {
-	__atomic_fetch_add(&telemetry.heap_allocation_failures_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.heap_allocation_failures,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_reallocation_failure(void)
+void telemetry_expected_heap_allocation_failures(void)
 {
-	__atomic_fetch_add(&telemetry.heap_reallocation_failures_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.expected_heap_allocation_failures,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_alignment_overhead_add(const size_t amount_of_bytes)
+void telemetry_heap_reallocation_failures(void)
+{
+	__atomic_fetch_add(&telemetry.heap_reallocation_failures,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_expected_heap_reallocation_failures(void)
+{
+	__atomic_fetch_add(&telemetry.expected_heap_reallocation_failures,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_block_overhead_bytes_added(const size_t amount_of_bytes)
 {
 	if(amount_of_bytes == 0)
 	{
@@ -201,46 +209,39 @@ void telemetry_alignment_overhead_add(const size_t amount_of_bytes)
 	}
 
 	const size_t updated_current_overhead = __atomic_add_fetch(
-		&telemetry.current_alignment_overhead_bytes,
+		&telemetry.current_block_overhead_bytes,
 		amount_of_bytes,
 		__ATOMIC_SEQ_CST);
 
-	__atomic_fetch_add(&telemetry.total_alignment_overhead_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
-	telemetry_update_alignment_peak(updated_current_overhead);
+	__atomic_fetch_add(&telemetry.total_block_overhead_bytes_added,amount_of_bytes,__ATOMIC_SEQ_CST);
+	telemetry_peak_block_overhead_bytes_update(updated_current_overhead);
 }
 
-void telemetry_alignment_overhead_reduce(const size_t amount_of_bytes)
+void telemetry_current_block_overhead_bytes_removed(const size_t amount_of_bytes)
 {
 	if(amount_of_bytes == 0)
 	{
 		return;
 	}
 
-	size_t current_overhead = __atomic_load_n(&telemetry.current_alignment_overhead_bytes,__ATOMIC_SEQ_CST);
-
-	if(amount_of_bytes >= current_overhead)
-	{
-		__atomic_store_n(&telemetry.current_alignment_overhead_bytes,0,__ATOMIC_SEQ_CST);
-	} else {
-		__atomic_sub_fetch(&telemetry.current_alignment_overhead_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
-	}
+	__atomic_sub_fetch(&telemetry.current_block_overhead_bytes,amount_of_bytes,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_noop_resize_event(void)
+void telemetry_consecutive_noop_resizes_advanced(void)
 {
-	const size_t updated_streak = __atomic_add_fetch(
-		&telemetry.noop_resize_streak_current,
+	const size_t updated_consecutive_noops = __atomic_add_fetch(
+		&telemetry.current_consecutive_noop_resizes,
 		1,
 		__ATOMIC_SEQ_CST);
 
-	size_t observed_peak = __atomic_load_n(&telemetry.noop_resize_streak_peak,__ATOMIC_SEQ_CST);
+	size_t observed_peak = __atomic_load_n(&telemetry.peak_consecutive_noop_resizes,__ATOMIC_SEQ_CST);
 
-	while(updated_streak > observed_peak)
+	while(updated_consecutive_noops > observed_peak)
 	{
 		if(__atomic_compare_exchange_n(
-			&telemetry.noop_resize_streak_peak,
+			&telemetry.peak_consecutive_noop_resizes,
 			&observed_peak,
-			updated_streak,
+			updated_consecutive_noops,
 			false,
 			__ATOMIC_SEQ_CST,
 			__ATOMIC_SEQ_CST))
@@ -250,82 +251,57 @@ void telemetry_noop_resize_event(void)
 	}
 }
 
-void telemetry_reset_noop_streak(void)
+void telemetry_current_consecutive_noop_resizes_reset(void)
 {
-	__atomic_store_n(&telemetry.noop_resize_streak_current,0,__ATOMIC_SEQ_CST);
+	__atomic_store_n(&telemetry.current_consecutive_noop_resizes,0,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_string_padding_event(void)
+void telemetry_data_to_string_conversions(void)
 {
-	__atomic_fetch_add(&telemetry.concat_zero_padding_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.data_to_string_conversions,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_active_descriptor_acquire(void)
+void telemetry_string_to_data_conversions(void)
+{
+	__atomic_fetch_add(&telemetry.string_to_data_conversions,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_finalize_string_terminator_already_present(void)
+{
+	__atomic_fetch_add(&telemetry.finalize_string_terminator_already_present,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_finalize_string_terminator_written_when_missing(void)
+{
+	__atomic_fetch_add(&telemetry.finalize_string_terminator_written_when_missing,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_string_terminator_writes(void)
+{
+	__atomic_fetch_add(&telemetry.string_terminator_writes,1,__ATOMIC_SEQ_CST);
+}
+
+void telemetry_active_descriptors_acquired(void)
 {
 	const size_t updated_active = __atomic_add_fetch(
-		&telemetry.active_descriptors,
+		&telemetry.current_active_descriptors,
 		1,
 		__ATOMIC_SEQ_CST);
 
-	telemetry_update_active_peak(updated_active);
+	telemetry_peak_active_descriptors_update(updated_active);
 }
 
-void telemetry_active_descriptor_release(void)
+void telemetry_active_descriptors_released(void)
 {
-	size_t current_active = __atomic_load_n(&telemetry.active_descriptors,__ATOMIC_SEQ_CST);
-
-	while(current_active > 0)
-	{
-		if(__atomic_compare_exchange_n(
-			&telemetry.active_descriptors,
-			&current_active,
-			current_active - 1,
-			false,
-			__ATOMIC_SEQ_CST,
-			__ATOMIC_SEQ_CST))
-		{
-			break;
-		}
-	}
+	__atomic_sub_fetch(&telemetry.current_active_descriptors,1,__ATOMIC_SEQ_CST);
 }
 
-void telemetry_overflow_guard_failure(void)
+void telemetry_arithmetic_guard_failures(void)
 {
-	__atomic_fetch_add(&telemetry.overflow_guard_failures_counter,1,__ATOMIC_SEQ_CST);
+	__atomic_fetch_add(&telemetry.arithmetic_guard_failures,1,__ATOMIC_SEQ_CST);
 }
 
-void init_telemetry(void)
+void telemetry_expected_arithmetic_guard_failures(void)
 {
-	memset(&telemetry,0x0,sizeof(Telemetry));
-}
-
-void telemetry_show(void)
-{
-	char buf[FORM_OUTPUT_BUFFER_SIZE];
-
-	printf("Telemetry: Outstanding heap bytes (expected 0): %s\n",bkbmbgbtbpbeb(telemetry.current_heap_bytes,FULL_VIEW));
-	printf("Telemetry: Outstanding payload bytes (expected 0): %s\n",bkbmbgbtbpbeb(telemetry.current_payload_bytes,FULL_VIEW));
-	printf("Telemetry: Peak heap footprint: %s\n",bkbmbgbtbpbeb(telemetry.peak_heap_bytes,FULL_VIEW));
-	printf("Telemetry: Free operations count: %s\n",form(telemetry.release_operations_counter,buf,sizeof(buf)));
-	printf("Telemetry: Bytes released to the OS: %s\n",bkbmbgbtbpbeb(telemetry.total_heap_bytes_released,FULL_VIEW));
-	printf("Telemetry: Shrink calls that forced immediate buffer release: %s\n",form(telemetry.release_unused_operations_counter,buf,sizeof(buf)));
-	printf("Telemetry: Bytes returned by those forced releases: %s\n",bkbmbgbtbpbeb(telemetry.release_unused_bytes_total,FULL_VIEW));
-	printf("Telemetry: Fresh allocation count: %s\n",form(telemetry.fresh_allocations_counter,buf,sizeof(buf)));
-	printf("Telemetry: Zero-initialized allocation count: %s\n",form(telemetry.zero_initialized_allocations_counter,buf,sizeof(buf)));
-	printf("Telemetry: Optimized resize count: %s\n",form(telemetry.optimized_resizes_counter,buf,sizeof(buf)));
-	printf("Telemetry: Realignment resize count: %s\n",form(telemetry.heap_reallocations_counter,buf,sizeof(buf)));
-	printf("Telemetry: Total aligned bytes requested: %s\n",bkbmbgbtbpbeb(telemetry.total_heap_bytes_acquired,FULL_VIEW));
-	printf("Telemetry: Total payload bytes requested: %s\n",bkbmbgbtbpbeb(telemetry.total_payload_bytes_acquired,FULL_VIEW));
-	printf("Telemetry: Exact-size resize count: %s\n",form(telemetry.exact_size_resizes_counter,buf,sizeof(buf)));
-	printf("Telemetry: Allocation failures intercepted: %s\n",form(telemetry.heap_allocation_failures_counter,buf,sizeof(buf)));
-	printf("Telemetry: Reallocation failures intercepted: %s\n",form(telemetry.heap_reallocation_failures_counter,buf,sizeof(buf)));
-	printf("Telemetry: Current alignment overhead: %s\n",bkbmbgbtbpbeb(telemetry.current_alignment_overhead_bytes,FULL_VIEW));
-	printf("Telemetry: Peak alignment overhead: %s\n",bkbmbgbtbpbeb(telemetry.peak_alignment_overhead_bytes,FULL_VIEW));
-	printf("Telemetry: Total alignment overhead accrued: %s\n",bkbmbgbtbpbeb(telemetry.total_alignment_overhead_bytes,FULL_VIEW));
-	printf("Telemetry: Current no-op resize streak: %s\n",form(telemetry.noop_resize_streak_current,buf,sizeof(buf)));
-	printf("Telemetry: Longest no-op resize streak: %s\n",form(telemetry.noop_resize_streak_peak,buf,sizeof(buf)));
-	printf("Telemetry: String padding injections: %s\n",form(telemetry.concat_zero_padding_counter,buf,sizeof(buf)));
-	printf("Telemetry: Active descriptors: %s\n",form(telemetry.active_descriptors,buf,sizeof(buf)));
-	printf("Telemetry: Peak active descriptors: %s\n",form(telemetry.peak_active_descriptors,buf,sizeof(buf)));
-	printf("Telemetry: Overflow guards triggered: %s\n",form(telemetry.overflow_guard_failures_counter,buf,sizeof(buf)));
+	__atomic_fetch_add(&telemetry.expected_arithmetic_guard_failures,1,__ATOMIC_SEQ_CST);
 }

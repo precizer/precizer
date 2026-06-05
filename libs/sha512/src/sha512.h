@@ -61,11 +61,23 @@ typedef struct sha512_context_ {
 	unsigned char buf[128];
 } SHA512_Context;
 
-int sha512_init(SHA512_Context *);
-int sha512_final(
+/**
+ * @brief Result of a libsha512 operation
+ *
+ * The names follow LibTomCrypt terminology so callers can test for CRYPT_OK
+ * and keep failure checks readable
+ */
+typedef enum sha512_status_ {
+	CRYPT_OK = 0,           /**< Operation completed successfully */
+	CRYPT_INVALID_ARG = 1,  /**< Caller passed invalid storage or context state */
+	CRYPT_HASH_OVERFLOW = 2 /**< Hash input length exceeded the SHA-512 counter */
+} SHA512_Status;
+
+SHA512_Status sha512_init(SHA512_Context *);
+SHA512_Status sha512_final(
 	SHA512_Context *,
 	unsigned char *);
-int sha512_update(
+SHA512_Status sha512_update(
 	SHA512_Context *,
 	const unsigned char *,
 	size_t);

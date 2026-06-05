@@ -1,65 +1,31 @@
 #include "mem.h"
-#include <string.h>
+#include "mem_internal.h"
 
 /**
- * @brief Import an externally-owned byte buffer into a descriptor.
+ * @brief Copy an exact bounded byte range into a data descriptor
  *
- * This helper mirrors @ref memory_copy semantics for size checks and resize
- * flow, but takes raw pointer + byte count instead of a source descriptor.
+ * This helper is the raw-buffer replace counterpart of
+ * @ref mem_concat_buffer. It interprets @p source_buffer_size_bytes as the
+ * exact number of source bytes to import, resizes the destination to that
+ * exact payload size, and keeps the result in data mode
+ *
+ * Self-aliasing is supported when @p source_buffer points inside the current
+ * destination allocation. Passing `NULL` together with size 0 clears the
+ * destination
+ *
+ * @param destination Pointer to the destination descriptor receiving copied data
+ * @param source_buffer_size_bytes Exact byte count to copy from @p source_buffer
+ * @param source_buffer Pointer to source bytes
+ * @return `SUCCESS` on success; `FAILURE` otherwise
  */
-Return memory_copy_buffer(
-	memory     *destination,
-	const void *source_buffer,
-	size_t     buffer_size)
+Return mem_copy_buffer(
+	memory            *destination,
+	const size_t      source_buffer_size_bytes,
+	const void *const source_buffer)
 {
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-
-	if(destination == NULL)
-	{
-		report("Memory management; copy_buffer destination must be non-NULL");
-		provide(FAILURE);
-	}
-
-	if(destination->element_size == 0)
-	{
-		report("Memory management; Destination element size is zero (uninitialized)");
-		provide(FAILURE);
-	}
-
-	if(source_buffer == NULL)
-	{
-		if(buffer_size == 0)
-		{
-			run(resize(destination,0));
-			provide(status);
-		}
-
-		report("Memory management; copy_buffer source is NULL while size is %zu",buffer_size);
-		provide(FAILURE);
-	}
-
-	if((buffer_size % destination->element_size) != 0)
-	{
-		report("Memory management; copy_buffer size %zu is not divisible by element size %zu",buffer_size,destination->element_size);
-		provide(FAILURE);
-	}
-
-	const size_t target_elements = buffer_size / destination->element_size;
-
-	run(resize(destination,target_elements));
-
-	if((TRIUMPH & status) && buffer_size > 0)
-	{
-		if(destination->data == NULL)
-		{
-			report("Memory management; Destination data pointer is NULL during copy_buffer");
-			status = FAILURE;
-		} else {
-			memcpy(destination->data,source_buffer,buffer_size);
-		}
-	}
-
-	provide(status);
+	return(mem_core_buffer(
+		TRANSFER_REPLACE,
+		destination,
+		source_buffer_size_bytes,
+		source_buffer));
 }

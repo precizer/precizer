@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc llvm make libpcre2-dev libcmocka-dev
+        run: sudo apt-get update && sudo apt-get install -y gcc llvm make libpcre2-dev
 
       - name: Run test suite
         run: make -j tests

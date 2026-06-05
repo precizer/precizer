@@ -27,7 +27,7 @@ Return execute_and_set_variable(
 	Return status = SUCCESS;
 
 	// Create memory for storing command output
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	// Execute command and capture output
 	call(execute_command(command,result,NULL,expected_return_code,ALLOW_BOTH));
@@ -35,11 +35,11 @@ Return execute_and_set_variable(
 	if(SUCCESS == status)
 	{
 		// Only set environment variable if we got some output
-		if(result->length > 0)
+		if(result->string_length > 0U)
 		{
 			run(trim_trailing_eol(result));
 
-			run(set_environment_variable(variable,getcstring(result)));
+			run(set_environment_variable(variable,m_text(result)));
 
 		} else {
 			// Empty output is considered a failure
@@ -49,7 +49,7 @@ Return execute_and_set_variable(
 	}
 
 	// Cleanup allocated memory
-	call(del(result));
+	call(m_del(result));
 
 	deliver(status);
 }

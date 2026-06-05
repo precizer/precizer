@@ -1,6 +1,84 @@
 #include "precizer.h"
 #include <errno.h>
 
+#ifdef TESTITALL_TEST_HOOKS
+static bool test_hook_path_matches_suffix(
+	const char *path,
+	const char *suffix)
+{
+	size_t path_len = 0;
+	size_t suffix_len = 0;
+
+	if(path == NULL || suffix == NULL)
+	{
+		return false;
+	}
+
+	if(strcmp(path,suffix) == 0)
+	{
+		return true;
+	}
+
+	path_len = strlen(path);
+	suffix_len = strlen(suffix);
+
+	if(path_len < suffix_len + 1U)
+	{
+		return false;
+	}
+
+	if(path[path_len - suffix_len - 1U] != '/')
+	{
+		return false;
+	}
+
+	return strcmp(path + (path_len - suffix_len),suffix) == 0;
+}
+
+static bool test_hook_override_file_access_status(
+	const char       *path,
+	FileAccessStatus *access_status_out)
+{
+	const char *target_suffix = getenv("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX");
+	const char *forced_status = getenv("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS");
+
+	if(path == NULL
+	        || access_status_out == NULL
+	        || target_suffix == NULL
+	        || forced_status == NULL
+	        || target_suffix[0] == '\0'
+	        || forced_status[0] == '\0')
+	{
+		return false;
+	}
+
+	if(test_hook_path_matches_suffix(path,target_suffix) == false)
+	{
+		return false;
+	}
+
+	if(strcmp(forced_status,"FILE_ACCESS_ALLOWED") == 0)
+	{
+		*access_status_out = FILE_ACCESS_ALLOWED;
+
+	} else if(strcmp(forced_status,"FILE_ACCESS_DENIED") == 0){
+		*access_status_out = FILE_ACCESS_DENIED;
+
+	} else if(strcmp(forced_status,"FILE_NOT_FOUND") == 0){
+		*access_status_out = FILE_NOT_FOUND;
+
+	} else if(strcmp(forced_status,"FILE_ACCESS_ERROR") == 0){
+		*access_status_out = FILE_ACCESS_ERROR;
+
+	} else {
+		slog(ERROR,"Test hook failed: unsupported TESTITALL_TEST_ENV_FILE_ACCESS_STATUS value %s\n",forced_status);
+		*access_status_out = FILE_ACCESS_ERROR;
+	}
+
+	return true;
+}
+#endif
+
 /**
  * @brief Classify errno from a failed access() into FileAccessStatus
  *
@@ -54,6 +132,15 @@ FileAccessStatus file_check_access(
 	const size_t path_size,
 	const int    mode)
 {
+#ifdef TESTITALL_TEST_HOOKS
+	FileAccessStatus forced_status = FILE_ACCESS_ALLOWED;
+
+	if(test_hook_override_file_access_status(path,&forced_status) == true)
+	{
+		return(forced_status);
+	}
+#endif
+
 	if(access(path,mode) == 0)
 	{
 		return(FILE_ACCESS_ALLOWED);
