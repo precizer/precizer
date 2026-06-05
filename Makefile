@@ -537,7 +537,6 @@ banner-portable: portable-done
 portfinal: $(PRTB_EXE)
 	@cp $(PRTB_EXE) $(ROOT_EXE)
 	@$(UPX) $(ROOT_EXE)
-	./$(PRTB_EXE) --version
 	@$(ROOT_EXE) --version
 	@echo "The $(PRTB_EXE) has been copied to the current directory"
 
