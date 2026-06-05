@@ -614,6 +614,7 @@ static Return test_librational_0005_13(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check show_status() fallback behavior for snprintf problems
  *
@@ -622,8 +623,6 @@ static Return test_librational_0005_13(void)
 static Return test_librational_0005_14(void)
 {
 	INITTEST;
-
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	/* A formatting failure must fall back to UNKNOWN instead of exposing partial buffer state */
 	testmocking_snprintf_fail_next(1);
@@ -641,6 +640,7 @@ static Return test_librational_0005_14(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief Check local conflict resolution in rational_normalize_return()
@@ -815,7 +815,9 @@ Return test_librational_0005(void)
 	TEST(test_librational_0005_11,"ask() rejects pending answers without YES or NO");
 	TEST(test_librational_0005_12,"rational_ask() rejects NULL status storage");
 	TEST(test_librational_0005_13,"show_status() reports OK, known, unknown and mixed flags");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test_librational_0005_14,"show_status() tolerates snprintf failure and truncation");
+#endif
 	TEST(test_librational_0005_15,"rational_normalize_return() resolves local flag conflicts");
 	TEST(test_librational_0005_16,"rational_normalize_return() keeps global yes/no flags local");
 	TEST(test_librational_0005_17,"ask() skips new expressions when local status already has SKIP");

@@ -847,6 +847,7 @@ static Return test_libmem_0009_16(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Capture function for subtest 17 — force malloc to return NULL inside mem_resize
  *
@@ -892,16 +893,15 @@ static Return capture_libmem_0009_17_malloc_fail(void)
  * stderr and away from the visible suite log. The driver asserts that
  * stdout was silent, that stderr matches the expected single ERROR line
  * for a 4096-byte malloc failure (line-number flexible, errno
- * description system-dependent). The subtest is gated by
- * SKIP_ON_EVIL_EMPIRE_OS because Apple ld does not honor -Wl,--wrap, so
- * the mock cannot fire there and the assertions would not hold
+ * description system-dependent). Evil Empire OS builds exclude this subtest
+ * because Apple ld does not honor -Wl,--wrap, so the mock cannot fire there
+ * and the assertions would not hold
  *
  * @return Return describing success or failure
  */
 static Return test_libmem_0009_17(void)
 {
 	INITTEST;
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	/* Expected stderr layout for subtest 17. mem_resize is forced to a
 	   failed malloc by the libmem allocator mock and is expected to emit a
@@ -970,14 +970,13 @@ static Return capture_libmem_0009_18_realloc_fail(void)
  * so the expected report() output from mem_resize stays inside captured
  * stderr. The driver asserts that stdout was silent and that stderr
  * matches the expected single ERROR line for an 8192-byte realloc failure.
- * Same SKIP_ON_EVIL_EMPIRE_OS gating as subtest 17
+ * Evil Empire OS builds exclude this subtest for the same reason as subtest 17
  *
  * @return Return describing success or failure
  */
 static Return test_libmem_0009_18(void)
 {
 	INITTEST;
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	/* Expected stderr layout for subtest 18. The realloc path inside
 	   mem_resize prints the same report() format as the malloc path, only
@@ -991,6 +990,7 @@ static Return test_libmem_0009_18(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief End-to-end suite that exercises every libmem telemetry counter at least once
@@ -1002,9 +1002,10 @@ static Return test_libmem_0009_18(void)
  * asserted as a delta relative to the entry baseline of the
  * corresponding subtest, so the suite serves as the canonical proof
  * that telemetry stays consistent with descriptor state across every
- * supported transition. Allocator-failure counters
- * (heap_allocation_failures, heap_reallocation_failures) are driven
- * deterministically by the libmem allocator mock in subtests 17 and 18
+ * supported transition. On builds that support link-time wrappers,
+ * allocator-failure counters (heap_allocation_failures,
+ * heap_reallocation_failures) are driven deterministically by the libmem
+ * allocator mock in subtests 17 and 18
  *
  * @return Return describing success or failure
  */
@@ -1028,8 +1029,10 @@ Return test_libmem_0009(void)
 	TEST(test_libmem_0009_14,"m_resize to zero with RELEASE_UNUSED frees the buffer");
 	TEST(test_libmem_0009_15,"m_del tears down both descriptors and finalizes the suite");
 	TEST(test_libmem_0009_16,"m_finalize_string IF_MISSING records present-vs-written terminator counters");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test_libmem_0009_17,"Allocator returns NULL on initial malloc and bumps heap_allocation_failures");
 	TEST(test_libmem_0009_18,"Allocator returns NULL on grow realloc and bumps heap_reallocation_failures");
+#endif
 
 	RETURN_STATUS;
 }

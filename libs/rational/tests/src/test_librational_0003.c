@@ -214,13 +214,14 @@ static Return test_librational_0003_5(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check that form_date_r() tolerates a failing snprintf
  *
  * @details Arms the link-time snprintf mock to return -1 for the next call,
  * invokes form_date_r() and verifies that the caller buffer is left as an
- * empty terminated string. SKIP_ON_EVIL_EMPIRE_OS is required because the
- * mocks rely on GNU ld --wrap, which is not available on Windows targets
+ * empty terminated string. Evil Empire OS builds exclude this subtest because
+ * the mocks rely on GNU ld --wrap
  *
  * @return Return describing success or failure
  */
@@ -228,8 +229,7 @@ static Return test_librational_0003_6(void)
 {
 	INITTEST;
 
-	/* The link-time snprintf mock used below relies on GNU ld --wrap, unavailable on Windows */
-	SKIP_ON_EVIL_EMPIRE_OS;
+	/* The link-time snprintf mock used below relies on GNU ld --wrap */
 
 	char date_buffer[MAX_CHARACTERS] = {0};
 
@@ -255,8 +255,8 @@ static Return test_librational_0003_6(void)
  * call. The mock writes a sentinel 'T' at buffer[0] and reports a length that
  * forces the production code onto the truncation path. The assertions verify
  * that the destination is filled up to its last byte and remains NUL
- * terminated. SKIP_ON_EVIL_EMPIRE_OS is required because the mocks rely on
- * GNU ld --wrap, which is not available on Windows targets
+ * terminated. Evil Empire OS builds exclude this subtest because the mocks
+ * rely on GNU ld --wrap
  *
  * @return Return describing success or failure
  */
@@ -264,8 +264,7 @@ static Return test_librational_0003_7(void)
 {
 	INITTEST;
 
-	/* The link-time snprintf mock used below relies on GNU ld --wrap, unavailable on Windows */
-	SKIP_ON_EVIL_EMPIRE_OS;
+	/* The link-time snprintf mock used below relies on GNU ld --wrap */
 
 	char date_buffer[8] = {0};
 
@@ -284,6 +283,7 @@ static Return test_librational_0003_7(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief Check that cur_time_monotonic_ns() returns ordered samples around a measurable interval
@@ -456,8 +456,10 @@ Return test_librational_0003(void)
 	TEST(test_librational_0003_3,"cur_time_ms() and cur_time_ns() use the same wall-clock epoch");
 	TEST(test_librational_0003_4,"form_date_r() formats a complete duration decomposition");
 	TEST(test_librational_0003_5,"form_date() selects the largest requested duration unit");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test_librational_0003_6,"form_date_r() tolerates snprintf failure inside duration assembly");
 	TEST(test_librational_0003_7,"form_date_r() keeps truncated duration buffers terminated");
+#endif
 	TEST(test_librational_0003_8,"cur_time_monotonic_ns() returns ordered nanosecond samples");
 	TEST(test_librational_0003_9,"seconds_to_ISOdate() returns and overwrites a fixed-width static timestamp");
 	TEST(test_librational_0003_10,"form_date_r() rejects invalid output buffers");

@@ -397,20 +397,6 @@ Return extract_current_executable_directory_name(memory *);
 		deliver(DONOTHING); \
 	}
 
-/* Skip the current subtest at compile time when the build runs on Evil
-   Empire OS. Mirrors the SLOWTEST contract but reacts to the
-   EVIL_EMPIRE_OS build define instead of an env var. When EVIL_EMPIRE_OS
-   is defined, the macro emits a yellow skip tag through the testitall
-   reporter and returns DONOTHING. On every other build the macro expands
-   to nothing, so the surrounding subtest runs as usual */
-#ifdef EVIL_EMPIRE_OS
-#define SKIP_ON_EVIL_EMPIRE_OS \
-	echo(EXTEND,BOLDYELLOW "↯" BOLDWHITE " skipped on Evil Empire OS" RESET); \
-	deliver(DONOTHING);
-#else
-#define SKIP_ON_EVIL_EMPIRE_OS
-#endif
-
 Return testitall(
 	Return (*)(void),
 	const char *,
