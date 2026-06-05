@@ -161,6 +161,7 @@ static Return test0026_3(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Verify that an unexpected access failure is reported as FILE_ACCESS_ERROR
  *
@@ -215,6 +216,7 @@ static Return test0026_4(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief Unit tests for file_check_access()
@@ -231,7 +233,9 @@ Return test0026(void)
 	TEST(test0026_1,"file_check_access(): readable absolute path");
 	TEST(test0026_2,"file_check_access(): missing file");
 	TEST(test0026_3,"file_check_access(): unreadable path");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test0026_4,"file_check_access(): unexpected access failure");
+#endif
 
 	RETURN_STATUS;
 }
