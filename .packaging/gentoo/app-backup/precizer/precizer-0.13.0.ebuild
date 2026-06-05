@@ -19,7 +19,6 @@ RDEPEND="
 "
 DEPEND="
 	${RDEPEND}
-	test? ( dev-util/cmocka )
 "
 BDEPEND="
 	test? ( llvm-core/llvm )

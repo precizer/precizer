@@ -62,7 +62,7 @@ static Return load_capture_file(
 	long file_size_long = 0;
 	size_t file_size = 0U;
 
-	call(del(buffer));
+	call(m_del(buffer));
 
 	file = fopen(path,"rb");
 
@@ -93,10 +93,7 @@ static Return load_capture_file(
 	if(SUCCESS == status)
 	{
 		file_size = (size_t)file_size_long;
-	}
 
-	if(SUCCESS == status)
-	{
 		if(0 != fseek(file,0,SEEK_SET))
 		{
 			serp("Failed to rewind capture file");
@@ -106,20 +103,28 @@ static Return load_capture_file(
 
 	if(SUCCESS == status && file_size > 0U)
 	{
-		run(resize(buffer,file_size + 1U));
+		run(m_resize(buffer,file_size + 1U));
 	}
 
 	if(SUCCESS == status && file_size > 0U)
 	{
-		char *buffer_data = data(char,buffer);
-		size_t bytes_read = fread(buffer_data,1,file_size,file);
+		char *buffer_data_rewritable = m_data(char,buffer);
 
-		if(bytes_read != file_size)
+		if(buffer_data_rewritable == NULL)
 		{
-			echo(STDERR,"Failed to read capture file: %s",path);
 			status = FAILURE;
+
 		} else {
-			buffer_data[file_size] = '\0';
+			size_t bytes_read = fread(buffer_data_rewritable,1,file_size,file);
+
+			if(bytes_read != file_size)
+			{
+				echo(STDERR,"Failed to read capture file: %s",path);
+				status = FAILURE;
+
+			} else {
+				run(m_finalize_string(buffer,file_size,WRITE_TERMINATOR_ALWAYS));
+			}
 		}
 	}
 
@@ -130,30 +135,7 @@ static Return load_capture_file(
 
 	if(SUCCESS != status)
 	{
-		call(del(buffer));
-	}
-
-	deliver(status);
-}
-
-/**
- * @brief Replace global STDERR buffer with formatted message text.
- */
-static Return set_stderr_message(
-	char *message,
-	bool fail_after_write)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-
-	run(copy_literal(STDERR,message));
-
-	free(message);
-
-	if(SUCCESS == status && true == fail_after_write)
-	{
-		status = FAILURE;
+		call(m_del(buffer));
 	}
 
 	deliver(status);
@@ -184,8 +166,8 @@ static Return format_unexpected_exit_report(
 	{
 		term_signal = WTERMSIG(wait_status);
 	}
-	const char *stderr_view = getcstring(STDERR);
-	const char *stdout_view = getcstring(STDOUT);
+	const char *stderr_view = m_text(STDERR);
+	const char *stdout_view = m_text(STDOUT);
 
 	char *message = NULL;
 	int written = asprintf(
@@ -211,7 +193,14 @@ static Return format_unexpected_exit_report(
 		deliver(status);
 	}
 
-	run(set_stderr_message(message,true));
+	run(m_copy_fixed_string(STDERR,(size_t)written + 1U,message));
+
+	free(message);
+
+	if(SUCCESS == status)
+	{
+		status = FAILURE;
+	}
 
 	deliver(status);
 }
@@ -225,7 +214,7 @@ static Return format_stderr_warning_report(const struct runit_capture_session *s
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	const char *stderr_view = getcstring(STDERR);
+	const char *stderr_view = m_text(STDERR);
 
 	char *message = NULL;
 	int written = asprintf(
@@ -244,7 +233,14 @@ static Return format_stderr_warning_report(const struct runit_capture_session *s
 		deliver(status);
 	}
 
-	run(set_stderr_message(message,true));
+	run(m_copy_fixed_string(STDERR,(size_t)written + 1U,message));
+
+	free(message);
+
+	if(SUCCESS == status)
+	{
+		status = FAILURE;
+	}
 
 	deliver(status);
 }
@@ -279,7 +275,7 @@ Return runit_capture_prepare(
 	memory                       *stdout_result,
 	memory                       *stderr_result,
 	int                          expected_return_code,
-	unsigned int                 buffer_policy)
+	CAPTURE_POLICY               buffer_policy)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -363,14 +359,14 @@ static Return runit_capture_apply_stderr_policy(const struct runit_capture_sessi
 	const bool suppress_stderr = (session->buffer_policy & STDERR_SUPPRESS) != 0U;
 	const bool allow_stderr = (session->buffer_policy & STDERR_ALLOW) != 0U;
 
-	if(STDERR->length > 0U)
+	if(STDERR->string_length > 0U)
 	{
 		if(true == allow_stderr)
 		{
 			/* Keep STDERR as-is and do not fail. */
 
 		} else if(true == suppress_stderr){
-			call(del(STDERR));
+			call(m_del(STDERR));
 
 		} else {
 			run(format_stderr_warning_report(session));
@@ -388,11 +384,12 @@ static Return runit_capture_apply_stdout_policy(const struct runit_capture_sessi
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
+
 	const bool suppress_stdout = (session->buffer_policy & STDOUT_SUPPRESS) != 0U;
 
-	if(STDOUT->length > 0U && true == suppress_stdout)
+	if(STDOUT->string_length > 0U && true == suppress_stdout)
 	{
-		call(del(STDOUT));
+		call(m_del(STDOUT));
 	}
 
 	deliver(status);
@@ -407,14 +404,14 @@ static Return runit_capture_copy_results(const struct runit_capture_session *ses
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	if(NULL != session->stdout_result && STDOUT->length > 0U)
+	if(NULL != session->stdout_result && STDOUT->string_length > 0U)
 	{
-		call(copy(session->stdout_result,STDOUT));
+		call(m_copy(session->stdout_result,STDOUT));
 	}
 
-	if(NULL != session->stderr_result && STDERR->length > 0U)
+	if(NULL != session->stderr_result && STDERR->string_length > 0U)
 	{
-		call(copy(session->stderr_result,STDERR));
+		call(m_copy(session->stderr_result,STDERR));
 	}
 
 	deliver(status);
@@ -432,8 +429,8 @@ Return runit_capture_finalize(
 	Return status = SUCCESS;
 	const bool allow_stderr = (session->buffer_policy & STDERR_ALLOW) != 0U;
 
-	call(del(STDOUT));
-	call(del(STDERR));
+	call(m_del(STDOUT));
+	call(m_del(STDERR));
 
 	call(load_capture_file(session->stdout_path,STDOUT));
 	call(load_capture_file(session->stderr_path,STDERR));
@@ -445,10 +442,10 @@ Return runit_capture_finalize(
 
 	if(true == allow_stderr)
 	{
-		run(del(STDERR));
+		run(m_del(STDERR));
 	}
 
-	call(del(STDOUT));
+	call(m_del(STDOUT));
 
 	deliver(status);
 }

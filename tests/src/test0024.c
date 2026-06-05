@@ -9,10 +9,10 @@ Return test0024_1(void)
 {
 	INITTEST;
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Create memory for the result
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	/*
 	 * Checking how paths are handled when the directory name starts
@@ -30,8 +30,8 @@ Return test0024_1(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
@@ -48,10 +48,10 @@ Return test0024_2(void)
 {
 	INITTEST;
 
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Create memory for the result
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	/*
 	 * Checking how paths are handled when the directory name ends
@@ -68,8 +68,8 @@ Return test0024_2(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
@@ -95,28 +95,28 @@ static Return test0024_3(void)
 	        "tests/fixtures/\\'apostrophe/\\'apostrophe/";
 
 	// Create memory for the result
-	create(char,result);
-	create(char,chunk);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,chunk,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--progress --database=database2.db "
 	        "tests/fixtures/apostrophe\\'/\\'apostrophe/apostrophe\\'/";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	arguments = "--compare database1.db database2.db";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	// Create memory for the result
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *filename = "templates/0024_003.txt";
 
@@ -129,9 +129,9 @@ static Return test0024_3(void)
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
 
-	del(pattern);
-	del(chunk);
-	del(result);
+	m_del(pattern);
+	m_del(chunk);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -141,9 +141,9 @@ Return test0024(void)
 {
 	INITTEST;
 
-	TEST(test0024_1,"Prefix path with apostrophe…");
-	TEST(test0024_2,"Another prefix and apostrophe combination in the name…");
-	TEST(test0024_3,"Adding and comparing with apostrophe…");
+	TEST(test0024_1,"Prefix path with apostrophe");
+	TEST(test0024_2,"Another prefix and apostrophe combination in the name");
+	TEST(test0024_3,"Adding and comparing with apostrophe");
 
 	RETURN_STATUS;
 }

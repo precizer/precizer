@@ -16,7 +16,7 @@ drop ignored diff1/1/AAA/ZAW/D/e/f/b_file\.txt
 drop ignored diff2/1/AAA/BCB/CCC/a\.txt
 drop ignored diff2/1/AAA/ZAW/A/b/c/a_file\.txt
 drop ignored diff2/1/AAA/ZAW/D/e/f/b_file\.txt
-Missing file search completed
+Missing file search finished
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 Start vacuuming the primary database…

@@ -18,7 +18,7 @@ struct runit_capture_session {
 	memory *stdout_result;
 	memory *stderr_result;
 	int expected_return_code;
-	unsigned int buffer_policy;
+	CAPTURE_POLICY buffer_policy;
 };
 
 void runit_capture_session_init(struct runit_capture_session *);
@@ -33,7 +33,7 @@ Return runit_capture_prepare(
 	memory *,
 	memory *,
 	int,
-	unsigned int);
+	CAPTURE_POLICY);
 
 Return runit_capture_apply_redirect(struct runit_capture_session *);
 
@@ -103,7 +103,7 @@ Return runit_prepare_call_and_capture(
 	memory *,
 	memory *,
 	int,
-	unsigned int);
+	CAPTURE_POLICY);
 
 /**
  * @brief Cleanup helper for runit call/capture pair.

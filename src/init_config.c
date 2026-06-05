@@ -5,10 +5,15 @@
 #endif
 
 /**
+ * @brief Initialize global runtime configuration with explicit defaults
  *
- * Initialize the Config structure that stores runtime settings.
- * Start with zeroed memory and then apply explicit defaults.
+ * The function clears the shared `Config` object and then initializes every
+ * field that needs a non-zero default. Path-like data owned by libmem is
+ * prepared as string descriptors or descriptor arrays: `running_dir`,
+ * `db_primary_file_path`, `db_file_name`, `roots`, and `db_file_paths`
  *
+ * Normal scan roots are collected later in `config->roots`, while `--compare`
+ * database arguments are collected in `config->db_file_paths`
  */
 void init_config(void)
 {
@@ -21,12 +26,9 @@ void init_config(void)
 	// Application start time for total runtime reporting.
 	config->app_start_time_ns = cur_time_monotonic_ns();
 
-	// Max available size of a path
-	config->running_dir_size = 0;
-
 	// Absolute path name of the working directory
 	// A directory where the program was executed
-	config->running_dir = NULL;
+	config->running_dir = m_init(char,MEMORY_STRING);
 
 	// Show progress bar
 	config->progress = false;
@@ -52,8 +54,8 @@ void init_config(void)
 	// Show all compare output categories by default
 	config->compare_filter = CF_NONE_SPECIFIED;
 
-	// An array of paths to traverse
-	config->paths = NULL;
+	// Managed array of root paths to traverse
+	config->roots = m_init(memory);
 
 	// The pointer to the primary database
 	config->db = NULL;
@@ -68,18 +70,16 @@ void init_config(void)
 	config->sqlite_open_flag = SQLITE_OPEN_READONLY;
 
 	// The path of DB file
-	// Set element size for libmem string descriptors; other fields are already zeroed by memset
-	config->db_primary_file_path.element_size = sizeof(char);
+	config->db_primary_file_path = m_init(char,MEMORY_STRING);
 
 	// Set true only when the primary database path is ":memory:"
 	config->db_primary_path_is_memory = false;
 
 	// The name of DB file
-	// Set element size for libmem string descriptors; other fields are already zeroed by memset
-	config->db_file_name.element_size = sizeof(char);
+	config->db_file_name = m_init(char,MEMORY_STRING);
 
-	// Pointers to the array with database paths
-	config->db_file_paths = NULL;
+	// Managed array of database file paths
+	config->db_file_paths = m_init(memory);
 
 	// Pointers to the array with database file names
 	config->db_file_names = NULL;

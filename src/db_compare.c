@@ -1,45 +1,12 @@
 #include "precizer.h"
 
 /**
- * @brief Composes an SQL ATTACH DATABASE query string.
- *
- * This function generates an SQL query string to attach a database with a specified path and number.
- *
- * @param[out] sql Pointer to a string that will hold the generated SQL query.
- * @param[in] db_path Path to the database file to be attached.
- * @param[in] db_num Database number (1 or 2) used in the query.
- * @return Return structure indicating the operation status.
- */
-static Return compose_sql(
-	char       **sql,
-	const char *db_path,
-	int        db_num)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-	create(char,wrapped_db_path);
-
-	run(db_sql_wrap_string(wrapped_db_path,db_path));
-
-	if(SUCCESS == status && asprintf(sql,"ATTACH DATABASE %s as db%d;",getcstring(wrapped_db_path),db_num) == -1)
-	{
-		status = FAILURE;
-		report("Memory allocation failed for SQL query string");
-	}
-
-	del(wrapped_db_path);
-
-	provide(status);
-}
-
-/**
  * @brief Attaches a secondary database to the primary database connection.
  *
- * This function attaches a secondary database (specified by its index in the configuration)
- * to the primary SQLite database connection using the ATTACH DATABASE command.
+ * The path comes from the two `--compare` positional arguments. SQLite attaches
+ * the selected database under an internal schema alias such as `db1` or `db2`
  *
- * @param[in] db_A Index of the database path in the configuration array.
+ * @param[in] db_A Index of the database path in `config->db_file_paths`.
  * @param[in] db_B Database number (1 or 2) to be used in the ATTACH DATABASE command.
  * @return Return structure indicating the operation status.
  */
@@ -47,26 +14,77 @@ static Return db_attach(
 	int db_A,
 	int db_B)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	char *select_sql = NULL;
+	m_create(char,sql,MEMORY_STRING);
+	sqlite3_stmt *stmt = NULL;
 
-	run(compose_sql(&select_sql,config->db_file_paths[db_A],db_B));
+	const memory *db_file_path = m_item_ro(memory,conf(db_file_paths),db_A);
+	size_t db_file_path_length = 0;
+
+	if(db_file_path == NULL)
+	{
+		report("Database path item is unavailable for index: %d",db_A);
+		status = FAILURE;
+	}
 
 	if(SUCCESS == status)
 	{
-		int rc = sqlite3_exec(config->db,select_sql,NULL,NULL,NULL);
+		status = m_string_length(db_file_path,&db_file_path_length);
+	}
 
-		if(rc!= SQLITE_OK)
+	if(SUCCESS == status)
+	{
+		run(m_formatted_string(sql,"ATTACH DATABASE ?1 AS db%d;",db_B));
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_prepare_v2(config->db,m_text(sql),-1,&stmt,NULL);
+
+		if(SQLITE_OK != rc)
 		{
-			log_sqlite_error(config->db,rc,NULL,"Can't execute");
+			log_sqlite_error(config->db,rc,NULL,"Failed to prepare attach statement");
 			status = FAILURE;
 		}
 	}
 
-	free(select_sql);
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_bind_text(stmt,1,m_text(db_file_path),(int)db_file_path_length,NULL);
+
+		if(SQLITE_OK != rc)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind database path in attach");
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		int rc = sqlite3_step(stmt);
+
+		if(SQLITE_DONE != rc)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Attach statement didn't return DONE");
+			status = FAILURE;
+		}
+	}
+
+	int rc = sqlite3_finalize(stmt);
+
+	if(SUCCESS == status && SQLITE_OK != rc)
+	{
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize attach statement");
+		status = FAILURE;
+	}
+
+	call(m_del(sql));
 
 	provide(status);
 }
@@ -79,6 +97,9 @@ static Return db_attach(
  */
 static Return db_detach(const char *db_alias)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
@@ -117,9 +138,12 @@ static Return db_detach(const char *db_alias)
 		}
 	}
 
-	if(stmt != NULL)
+	rc = sqlite3_finalize(stmt);
+
+	if(SUCCESS == status && SQLITE_OK != rc)
 	{
-		sqlite3_finalize(stmt);
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize detach statement");
+		status = FAILURE;
 	}
 
 	provide(status);
@@ -152,6 +176,9 @@ static Return db_report_category(
 	const char *db_A_name,
 	const char *db_B_name)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
@@ -169,6 +196,7 @@ static Return db_report_category(
 	if(SUCCESS == status)
 	{
 		bool first_visible_path = true;
+		m_create(char,relative_path,MEMORY_STRING);
 
 		while(SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 		{
@@ -179,9 +207,9 @@ static Return db_report_category(
 				break;
 			}
 
-			const unsigned char *relative_path = sqlite3_column_text(select_stmt,0);
+			const unsigned char *db_relative_path = sqlite3_column_text(select_stmt,0);
 
-			if(relative_path == NULL)
+			if(db_relative_path == NULL)
 			{
 				rc = sqlite3_errcode(config->db);
 				log_sqlite_error(config->db,rc,NULL,"Failed to read relative path from select result");
@@ -189,9 +217,18 @@ static Return db_report_category(
 				break;
 			}
 
+			size_t relative_path_size = (size_t)sqlite3_column_bytes(select_stmt,0) + 1U;
+
+			run(m_copy_fixed_string(relative_path,relative_path_size,db_relative_path));
+
+			if(SUCCESS != status)
+			{
+				break;
+			}
+
 			bool ignore = false;
 
-			status = match_include_ignore((const char *)relative_path,
+			status = match_include_ignore(relative_path,
 				NULL,
 				&ignore);
 
@@ -218,8 +255,10 @@ static Return db_report_category(
 			}
 
 			*differences_found = true;
-			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",relative_path);
+			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",m_text(relative_path));
 		}
+
+		m_del(relative_path);
 
 		if(SUCCESS == status && global_interrupt_flag == false && SQLITE_DONE != rc)
 		{
@@ -228,35 +267,38 @@ static Return db_report_category(
 		}
 	}
 
-	if(select_stmt != NULL)
-	{
-		rc = sqlite3_finalize(select_stmt);
+	rc = sqlite3_finalize(select_stmt);
 
-		if(SQLITE_OK != rc)
-		{
-			log_sqlite_error(config->db,rc,NULL,"Failed to finalize SQLite statement");
-			status = FAILURE;
-		} else {
-			select_stmt = NULL;
-		}
+	if(SQLITE_OK != rc)
+	{
+		log_sqlite_error(config->db,rc,NULL,"Failed to finalize SQLite statement");
+		status = FAILURE;
 	}
 
 	provide(status);
 }
 
 /**
- * @brief Compare two databases selected in the global config
+ * @brief Compare the two databases selected by `--compare`
  *
- * @details Attaches both databases, reports requested difference categories,
- * and prints summary lines for missing paths and checksum mismatches. The
- * comparison scope can be limited with `--compare-filter` and further narrowed
- * by `--ignore` and `--include`; without filters the function checks
- * first-source paths, second-source paths, and SHA512 mismatches
+ * @details The two database file paths come from `config->db_file_paths`, not
+ * from traversal roots. The function verifies both files, attaches them to the
+ * primary SQLite connection, reports requested difference categories, and
+ * prints summary lines for missing paths and checksum mismatches
+ *
+ * The comparison scope can be limited with `--compare-filter` and further
+ * narrowed by `--ignore` and `--include`; without filters the function checks
+ * first-source paths, second-source paths, and SHA512 mismatches. For example,
+ * `precizer --compare first.db second.db --compare-filter=sha512` validates both DB
+ * files and reports checksum differences for paths present in both databases
  *
  * @return Return status code
  */
 Return db_compare(void)
 {
+	/* This function was reviewed line by line by a human and is not AI-generated
+	   Any change to this function requires separate explicit approval */
+
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
@@ -281,12 +323,14 @@ Return db_compare(void)
 	slog(EVERY,"The comparison of %s and %s databases is starting…\n",config->db_file_names[0],config->db_file_names[1]);
 
 	/* Validate database paths */
-	for(int i = 0; config->db_file_paths[i]; i++)
+	m_string_array_foreach(conf(db_file_paths),db_file_path)
 	{
-		if(NOT_FOUND == file_availability(config->db_file_paths[i],NULL,SHOULD_BE_A_FILE))
+		const char *db_file_path_text = m_text(db_file_path);
+
+		if(NOT_FOUND == file_availability(db_file_path_text,NULL,SHOULD_BE_A_FILE))
 		{
 			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",
-				config->db_file_paths[i]);
+				db_file_path_text);
 			status = FAILURE;
 			break;
 		}
@@ -296,7 +340,7 @@ Return db_compare(void)
 			/*
 			 * Validate the integrity of the database file
 			 */
-			status = db_integrity_check(config->db_file_paths[i]);
+			status = db_integrity_check(db_file_path_text);
 
 			if(SUCCESS != status)
 			{
@@ -362,7 +406,13 @@ Return db_compare(void)
 	const bool verify_checksum_consistency = (config->compare_filter & CF_CHECKSUM_MISMATCH)
 	        || filter_specified == false;
 
-	// Counts enabled compare categories so silent mode can decide whether headings are needed
+	/*
+	 * Count the enabled comparison categories before producing output.
+	 * In silent mode, a heading is unnecessary when only one category can
+	 * produce paths because every printed path belongs to that category.
+	 * When several categories are enabled, keep headings visible so paths from
+	 * different categories remain distinguishable
+	 */
 	unsigned int active_compare_categories = 0u;
 
 	if(check_first_source == true)
@@ -410,7 +460,7 @@ Return db_compare(void)
 	}
 
 #if 0
-	// Old multiPATH solutions
+	// Disabled multi-root path index implementation
 	const char *compare_checksums_sql = "select a.relative_path from db2.files a inner join db1.files b"
 	        " on b.relative_path = a.relative_path "
 	        " and b.sha512 is not a.sha512"

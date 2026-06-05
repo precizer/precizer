@@ -30,10 +30,10 @@ Return match_app_output(
 	Return status = SUCCESS;
 
 	// Will store template content from file
-	create(char,pattern);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Create memory for the output
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	// Read template pattern from file
 	status = get_file_content(filename,pattern);
@@ -52,8 +52,8 @@ Return match_app_output(
 	#endif
 
 	// Final cleanup
-	call(del(result));
-	call(del(pattern));
+	call(m_del(result));
+	call(m_del(pattern));
 
 	deliver(status);
 }

@@ -19,10 +19,13 @@ Return create_tmpdir(memory *path)
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */
 
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
 	const char *tmpdir = getenv("TMPDIR");
-	const char template_suffix[] = TESTITALL_APP_NAME ".XXXXXX";
-	size_t tmpdir_length = 0U;
-	char *directory_path = NULL;
+	char *directory_path_data_rewritable = NULL;
+	size_t template_length = 0U;
 
 	/* Prefer the process-defined temporary directory when it is available */
 	if(NULL == tmpdir || '\0' == tmpdir[0])
@@ -40,47 +43,66 @@ Return create_tmpdir(memory *path)
 		tmpdir = "/tmp";
 	}
 
-	tmpdir_length = strlen(tmpdir);
-
 	/* Start the template with the selected base directory */
-	if(SUCCESS != copy_literal(path,tmpdir))
+	if(TRIUMPH & status)
 	{
-		del(path);
-		deliver(FAILURE);
+		status = m_copy_string(path,tmpdir);
+	}
+
+	if(TRIUMPH & status)
+	{
+		status = m_string_length(path,&template_length);
 	}
 
 	/* Insert a separator only when the base directory does not already end with '/' */
-	if('/' != tmpdir[tmpdir_length - 1U])
+	if((TRIUMPH & status) && template_length > 0U)
 	{
-		if(SUCCESS != concat_literal(path,"/"))
+		const char *path_text = m_text(path);
+
+		if('/' != path_text[template_length - 1U])
 		{
-			del(path);
-			deliver(FAILURE);
+			status = m_concat_literal(path,"/");
 		}
 	}
 
 	/* Append the mkdtemp-compatible suffix with the configured application name */
-	if(SUCCESS != concat_literal(path,template_suffix))
+	if(TRIUMPH & status)
 	{
-		del(path);
-		deliver(FAILURE);
+		status = m_concat_literal(path,TESTITALL_APP_NAME ".XXXXXX");
+	}
+
+	if(TRIUMPH & status)
+	{
+		status = m_string_length(path,&template_length);
 	}
 
 	/* Obtain a writable C string because mkdtemp rewrites the template in place */
-	directory_path = data(char,path);
-
-	if(NULL == directory_path)
+	if(TRIUMPH & status)
 	{
-		del(path);
-		deliver(FAILURE);
+		directory_path_data_rewritable = m_data(char,path);
+
+		if(NULL == directory_path_data_rewritable)
+		{
+			status = FAILURE;
+		}
 	}
 
 	/* Create the directory and keep the resulting path in the same buffer */
-	if(NULL == mkdtemp(directory_path))
+	if((TRIUMPH & status) && NULL == mkdtemp(directory_path_data_rewritable))
 	{
-		del(path);
-		deliver(FAILURE);
+		status = FAILURE;
 	}
 
-	deliver(SUCCESS);
+	/* Synchronize cached string metadata after mkdtemp rewrites the template in place */
+	if(TRIUMPH & status)
+	{
+		status = m_finalize_string(path,template_length,WRITE_TERMINATOR_ALWAYS);
+	}
+
+	if(CRITICAL & status)
+	{
+		call(m_del(path));
+	}
+
+	deliver(status);
 }

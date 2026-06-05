@@ -31,6 +31,20 @@ Return db_paths_match(
 	const int         expected_count);
 
 /**
+ * @brief Check whether one files-table row exists by relative path
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] relative_path Relative path key in files table
+ * @param[out] exists_out Output existence flag
+ *
+ * @return Return status code
+ */
+Return db_relative_path_exists(
+	const char *db_filename,
+	const char *relative_path,
+	bool       *exists_out);
+
+/**
  * @brief Read resume-related state for one file from files table
  *
  * @param[in] db_filename Database filename relative to TMPDIR
@@ -41,10 +55,10 @@ Return db_paths_match(
  * @return Return status code
  */
 Return read_resume_state_from_db(
-	const char     *db_filename,
-	const char     *relative_path,
-	sqlite3_int64  *offset_out,
-	int            *md_context_bytes_out);
+	const char    *db_filename,
+	const char    *relative_path,
+	sqlite3_int64 *offset_out,
+	int           *md_context_bytes_out);
 
 /**
  * @brief Read number of rows from files table
@@ -81,10 +95,10 @@ Return read_db_version_from_metadata(
  * @return Return status code
  */
 Return read_final_sha512_from_db(
-	const char     *db_filename,
-	const char     *relative_path,
-	sqlite3_int64  *offset_out,
-	unsigned char  *sha512_out);
+	const char    *db_filename,
+	const char    *relative_path,
+	sqlite3_int64 *offset_out,
+	unsigned char *sha512_out);
 
 /**
  * @brief Set files.sha512 to NULL for one row in the database
@@ -105,8 +119,35 @@ Return db_set_sha512_to_null(
  *
  * @return Return status code
  */
-Return truncate_file_to_zero_size(
-	const char *relative_path_to_tmpdir);
+Return truncate_file_to_zero_size(const char *relative_path_to_tmpdir);
+
+/**
+ * @brief Create symbolic link by path relative to TMPDIR
+ *
+ * The target string is stored in the link exactly as provided
+ *
+ * @param[in] link_target Literal target string for the symbolic link
+ * @param[in] relative_link_path_to_tmpdir Symbolic link path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return create_symlink(
+	const char *link_target,
+	const char *relative_link_path_to_tmpdir);
+
+/**
+ * @brief Change file mode by path relative to TMPDIR
+ *
+ * The provided mode is applied exactly with native `chmod()`
+ *
+ * @param[in] relative_path_to_tmpdir File or directory path relative to TMPDIR
+ * @param[in] new_mode Exact mode value to apply
+ *
+ * @return Return status code
+ */
+Return change_mode(
+	const char   *relative_path_to_tmpdir,
+	unsigned int new_mode);
 
 /**
  * @brief Create directory tree relative to TMPDIR using native filesystem calls
@@ -118,8 +159,7 @@ Return truncate_file_to_zero_size(
  *
  * @return Return status code
  */
-Return create_directory(
-	const char *relative_path_to_tmpdir);
+Return create_directory(const char *relative_path_to_tmpdir);
 
 /**
  * @brief Remove file or directory tree by path relative to TMPDIR
@@ -131,8 +171,7 @@ Return create_directory(
  *
  * @return Return status code
  */
-Return delete_path(
-	const char *relative_path_to_tmpdir);
+Return delete_path(const char *relative_path_to_tmpdir);
 
 /**
  * @brief Copy file or directory tree by path relative to TMPDIR
@@ -183,6 +222,28 @@ Return move_path(
 	const char *relative_destination_path);
 
 /**
+ * @brief Prepare a mutable working copy for a fixture path relative to TMPDIR
+ *
+ * The pristine backup is stored under the hidden `.fixture_backups` root
+ *
+ * @param[in] fixture_path Fixture path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return prepare_mutable_fixture(const char *fixture_path);
+
+/**
+ * @brief Restore a fixture path from the hidden mutable-fixture backup
+ *
+ * The working copy is deleted before the pristine backup is moved back
+ *
+ * @param[in] fixture_path Fixture path relative to TMPDIR
+ *
+ * @return Return status code
+ */
+Return restore_mutable_fixture(const char *fixture_path);
+
+/**
  * @brief Create sparse growth via hole punch and explicit final size
  *
  * @param[in] relative_path_to_tmpdir File path relative to TMPDIR
@@ -206,8 +267,8 @@ Return make_sparse_size_change_without_allocated_block_growth(
  * @return Return status code
  */
 Return rewrite_file_dense_with_same_size(
-	const char   *relative_path_to_tmpdir,
-	const off_t  target_size,
+	const char     *relative_path_to_tmpdir,
+	const off_t    target_size,
 	const blkcnt_t blocks_before_rewrite);
 
 /**
@@ -231,7 +292,7 @@ Return compute_file_sha512(
  * @return Return status code
  */
 Return append_byte_to_file(
-	const memory *file_path_buffer,
+	const memory  *file_path_buffer,
 	unsigned char byte);
 
 /**
@@ -248,7 +309,7 @@ Return append_byte_to_file(
 Return open_file_stream(
 	const memory *file_path,
 	const char   *stream_open_mode,
-	FILE       **opened_file_stream_out);
+	FILE         **opened_file_stream_out);
 
 /**
  * @brief Write string to file with explicit append or replace mode
@@ -262,8 +323,8 @@ Return open_file_stream(
  * @return Return status code
  */
 Return write_string_to_file(
-	const char       *file_content,
-	const char       *file_path,
+	const char         *file_content,
+	const char         *file_path,
 	const unsigned int write_flags);
 
 /**
@@ -311,7 +372,6 @@ Return touch_file_mtime_with_reference_delta_ns(
  *
  * @return Return status code
  */
-Return tamper_locked_file_bytes(
-	const char *relative_path);
+Return tamper_locked_file_bytes(const char *relative_path);
 
 #endif

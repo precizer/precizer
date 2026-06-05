@@ -11,10 +11,10 @@ static Return test0033_1(void)
 	const char *filename = "templates/0033_001.txt";
 	const char *cleanup_path = "0033_interrupt_resume.db";
 
-	create(char,stdout_result);
-	create(char,stderr_result);
-	create(char,stdout_pattern);
-	create(char,stderr_pattern);
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+	m_create(char,stderr_pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -32,15 +32,15 @@ static Return test0033_1(void)
 	ASSERT(SUCCESS == get_file_content(filename,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,filename));
 
-	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
 	ASSERT(SUCCESS == delete_path(cleanup_path));
 
-	del(stderr_pattern);
-	del(stdout_pattern);
-	del(stderr_result);
-	del(stdout_result);
+	m_del(stderr_pattern);
+	m_del(stdout_pattern);
+	m_del(stderr_result);
+	m_del(stdout_result);
 
 	RETURN_STATUS;
 }
@@ -56,10 +56,10 @@ static Return test0033_2(void)
 	const char *filename = "templates/0033_002.txt";
 	const char *cleanup_path = "0033_interrupt_resume.db";
 
-	create(char,stdout_result);
-	create(char,stderr_result);
-	create(char,stdout_pattern);
-	create(char,stderr_pattern);
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+	m_create(char,stderr_pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -77,15 +77,15 @@ static Return test0033_2(void)
 	ASSERT(SUCCESS == get_file_content(filename,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,filename));
 
-	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
 	ASSERT(SUCCESS == delete_path(cleanup_path));
 
-	del(stderr_pattern);
-	del(stdout_pattern);
-	del(stderr_result);
-	del(stdout_result);
+	m_del(stderr_pattern);
+	m_del(stdout_pattern);
+	m_del(stderr_result);
+	m_del(stdout_result);
 
 	RETURN_STATUS;
 }
@@ -101,11 +101,11 @@ static Return test0033_3(void)
 	const char *first_run_template = "templates/0033_003_1.txt";
 	const char *second_run_template = "templates/0033_003_2.txt";
 
-	create(char,stdout_result);
-	create(char,stderr_result);
-	create(char,stdout_pattern);
-	create(char,stderr_pattern);
-	create(char,huge_file_path);
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+	m_create(char,stderr_pattern,MEMORY_STRING);
+	m_create(char,huge_file_path,MEMORY_STRING);
 
 	/*
 	 * Step 1: Prepare isolated test data in TMPDIR and start from a clean DB
@@ -121,7 +121,7 @@ static Return test0033_3(void)
 	 * an upper bound for the interrupted offset assertions below
 	 */
 	struct stat huge_file_stat = {0};
-	ASSERT(0 == stat(getcstring(huge_file_path),&huge_file_stat));
+	ASSERT(0 == stat(m_text(huge_file_path),&huge_file_stat));
 	ASSERT(huge_file_stat.st_size > 0);
 
 	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/fixtures/huge";
@@ -148,7 +148,7 @@ static Return test0033_3(void)
 	ASSERT(SUCCESS == get_file_content(first_run_template,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,first_run_template));
 
-	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
 	sqlite3_int64 interrupted_offset = 0;
@@ -175,7 +175,7 @@ static Return test0033_3(void)
 	ASSERT(SUCCESS == get_file_content(second_run_template,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,second_run_template));
 
-	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
 	sqlite3_int64 final_offset = -1;
@@ -190,18 +190,18 @@ static Return test0033_3(void)
 
 	ASSERT(0 == final_offset);
 
-	ASSERT(SUCCESS == compute_file_sha512(getcstring(huge_file_path),expected_sha512));
+	ASSERT(SUCCESS == compute_file_sha512(m_text(huge_file_path),expected_sha512));
 	ASSERT(0 == memcmp(db_sha512,expected_sha512,(size_t)SHA512_DIGEST_LENGTH));
 
 	/* Step 7: Cleanup temporary test artifacts */
 	ASSERT(SUCCESS == delete_path("0033_interrupt_resume.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/huge"));
 
-	del(huge_file_path);
-	del(stderr_pattern);
-	del(stdout_pattern);
-	del(stderr_result);
-	del(stdout_result);
+	m_del(huge_file_path);
+	m_del(stderr_pattern);
+	m_del(stdout_pattern);
+	m_del(stderr_result);
+	m_del(stdout_result);
 
 	RETURN_STATUS;
 }
@@ -218,11 +218,11 @@ static Return test0033_4(void)
 	const char *first_run_template = "templates/0033_004_1.txt";
 	const char *second_run_template = "templates/0033_004_2.txt";
 
-	create(char,stdout_result);
-	create(char,stderr_result);
-	create(char,stdout_pattern);
-	create(char,stderr_pattern);
-	create(char,huge_file_path);
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+	m_create(char,stderr_pattern,MEMORY_STRING);
+	m_create(char,huge_file_path,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == create_directory("tests/fixtures"));
@@ -244,7 +244,7 @@ static Return test0033_4(void)
 
 	ASSERT(SUCCESS == get_file_content(first_run_template,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,first_run_template));
-	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
 	sqlite3_int64 interrupted_offset = 0;
@@ -261,7 +261,7 @@ static Return test0033_4(void)
 
 	ASSERT(SUCCESS == get_file_content(second_run_template,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,second_run_template));
-	ASSERT(SUCCESS == copy_literal(stderr_pattern,"\\A\\Z"));
+	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
 	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
 
 	const char *expected_paths[] =
@@ -273,11 +273,11 @@ static Return test0033_4(void)
 	ASSERT(SUCCESS == delete_path("0033_interrupt_rehash.db"));
 	ASSERT(SUCCESS == delete_path("tests/fixtures/huge"));
 
-	del(huge_file_path);
-	del(stderr_pattern);
-	del(stdout_pattern);
-	del(stderr_result);
-	del(stdout_result);
+	m_del(huge_file_path);
+	m_del(stderr_pattern);
+	m_del(stdout_pattern);
+	m_del(stderr_result);
+	m_del(stdout_result);
 
 	RETURN_STATUS;
 }
@@ -289,10 +289,12 @@ Return test0033(void)
 {
 	INITTEST;
 
-	TEST(test0033_1,"Background run receives SIGTERM and exits with HALTED…");
-	TEST(test0033_2,"Background run receives SIGINT and exits with HALTED…");
-	TEST(test0033_3,"Random interruption on hugetestfile with resume and SHA512 verification…");
-	TEST(test0033_4,"Interrupted hash with file change restarts rehash from the beginning…");
+	SLOWTEST;
+
+	TEST(test0033_1,"Background run receives SIGTERM and exits with HALTED");
+	TEST(test0033_2,"Background run receives SIGINT and exits with HALTED");
+	TEST(test0033_3,"Random interruption on hugetestfile with resume and SHA512 verification");
+	TEST(test0033_4,"Interrupted hash with file change restarts rehash from the beginning");
 
 	RETURN_STATUS;
 }

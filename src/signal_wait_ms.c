@@ -4,12 +4,14 @@
 #include <stdint.h>
 
 /**
- * @brief Pause execution at a selected test wait point.
+ * @brief Pause a test run at a configured wait point
  *
- * The function reads `TESTITALL_SIGNAL_WAIT_POINT` and
- * `TESTITALL_SIGNAL_WAIT_MS`. When the configured point matches @p point_id,
- * it waits for the requested number of milliseconds, checking
- * `global_interrupt_flag` between short sleep chunks for early resume.
+ * Used by signal-driven tests to delay a known execution point. The wait point
+ * and duration are selected with `TESTITALL_SIGNAL_WAIT_POINT` and
+ * `TESTITALL_SIGNAL_WAIT_MS`. The delay ends early when `global_interrupt_flag`
+ * is set
+ *
+ * @param point_id Wait point identifier reached by the caller
  */
 void signal_wait_at_point(unsigned int point_id)
 {

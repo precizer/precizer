@@ -11,14 +11,14 @@ static const Flags *lookup(
 	const memory *flags,
 	size_t       index)
 {
-	const Flags *flags_data = cdata(Flags,flags);
+	const Flags *flags_data_view = m_data_ro(Flags,flags);
 
-	if(flags_data == NULL || index >= flags->length)
+	if(flags_data_view == NULL || index >= flags->length)
 	{
 		return(NULL);
 	}
 
-	return(&flags_data[index]);
+	return(&flags_data_view[index]);
 }
 
 Return show_difference(
@@ -41,21 +41,21 @@ Return show_difference(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	create(Flags,flags);
-	call(resize(flags,4));
+	m_create(Flags,flags);
+	call(m_resize(flags,4));
 
-	Flags *flags_data = data(Flags,flags);
+	Flags *flags_data_rewritable = m_data(Flags,flags);
 
-	if(flags_data == NULL)
+	if(flags_data_rewritable == NULL)
 	{
-		del(flags);
+		m_del(flags);
 		provide(FAILURE);
 	}
 
-	flags_data[0] = (Flags){SIZE_CHANGED,"lsize"};
-	flags_data[1] = (Flags){ALLOCATED_SIZE_CHANGED,"asize"};
-	flags_data[2] = (Flags){STATUS_CHANGED_TIME,"ctime"};
-	flags_data[3] = (Flags){MODIFICATION_TIME_CHANGED,"mtime"};
+	flags_data_rewritable[0] = (Flags){SIZE_CHANGED,"lsize"};
+	flags_data_rewritable[1] = (Flags){ALLOCATED_SIZE_CHANGED,"asize"};
+	flags_data_rewritable[2] = (Flags){STATUS_CHANGED_TIME,"ctime"};
+	flags_data_rewritable[3] = (Flags){MODIFICATION_TIME_CHANGED,"mtime"};
 
 	unsigned int flags_found = 0;
 	bool first_word = true;
@@ -94,7 +94,7 @@ Return show_difference(
 		slog(ERROR|UNDECOR,"\n");
 	}
 
-	del(flags);
+	m_del(flags);
 
 	provide(SUCCESS);
 }

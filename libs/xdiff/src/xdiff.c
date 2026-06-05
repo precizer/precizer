@@ -933,22 +933,21 @@ int xdl_emit_diff(
 	xdemitcb_t         *ecb,
 	xdemitconf_t const *xecfg)
 {
-	long s1,s2,e1,e2,lctx;
 	xdchange_t *xch,*xche;
 
 	for(xch = xche = xscr; xch; xch = xche->next)
 	{
 		xche = xdl_get_hunk(xch,xecfg);
 
-		s1 = XDL_MAX(xch->i1 - xecfg->ctxlen,0);
-		s2 = XDL_MAX(xch->i2 - xecfg->ctxlen,0);
+		long s1 = XDL_MAX(xch->i1 - xecfg->ctxlen,0);
+		long s2 = XDL_MAX(xch->i2 - xecfg->ctxlen,0);
 
-		lctx = xecfg->ctxlen;
+		long lctx = xecfg->ctxlen;
 		lctx = XDL_MIN(lctx,xe->xdf1.nrec - (xche->i1 + xche->chg1));
 		lctx = XDL_MIN(lctx,xe->xdf2.nrec - (xche->i2 + xche->chg2));
 
-		e1 = xche->i1 + xche->chg1 + lctx;
-		e2 = xche->i2 + xche->chg2 + lctx;
+		long e1 = xche->i1 + xche->chg1 + lctx;
+		long e2 = xche->i2 + xche->chg2 + lctx;
 
 		/*
 		 * Emit current hunk header.
@@ -1134,7 +1133,6 @@ static int xdl_prepare_ctx(
 {
 	unsigned int hbits;
 	long i,nrec,hsize,bsize;
-	unsigned long hav;
 	char const *blk,*cur,*top,*prev;
 	xrecord_t *crec;
 	xrecord_t **recs,**rrecs;
@@ -1186,7 +1184,7 @@ static int xdl_prepare_ctx(
 				top = blk + bsize;
 			}
 			prev = cur;
-			hav = xdl_hash_record(&cur,top);
+			unsigned long hav = xdl_hash_record(&cur,top);
 
 			if(nrec >= narec)
 			{
@@ -1646,13 +1644,12 @@ void *xdl_mmfile_writeallocate(
 	mmfile_t *mmf,
 	long     size)
 {
-	long bsize;
 	mmblock_t *wcur;
 	char *blk;
 
 	if(!(wcur = mmf->wcur) || wcur->size + size > wcur->bsize)
 	{
-		bsize = XDL_MAX(mmf->bsize,size);
+		long bsize = XDL_MAX(mmf->bsize,size);
 
 		if(!(wcur = (mmblock_t *)malloc(sizeof(mmblock_t) + bsize)))
 		{

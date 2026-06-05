@@ -2,6 +2,28 @@
 
 All notable changes will be documented in this file
 
+# Release 0.14.0 2026-06-04
+
+## Changed
+
+- `--lock-checksum` now protects locked records from being silently removed when files disappear or become unreadable
+- Locked checksum protection now takes priority over `--ignore`, `--include`, `--db-drop-ignored`, and `--db-drop-inaccessible`
+- `--rehash-locked` now verifies locked files even when they also match `--ignore`
+- Inaccessible files are handled more safely and are kept in the database unless `--db-drop-inaccessible` is explicitly used
+- Path and database handling is more reliable, with safer SQL parameter binding and transactional root path saving
+- PCRE2 filters can now use JIT compilation for faster matching on large file trees
+- Most file and path operations in the main application tests now use internal C helpers instead of external shell commands
+- Build and CI support is broader, including dynamic tests, Docker matrix checks, Clang selection, and improved cleanup
+
+## Documentation
+
+- Documentation now explains locked checksum behavior, deep locked-file verification, and inaccessible-file cleanup more clearly
+
+# Release 0.13.0 2026-05-10
+
+## Removed
+- CMocka is no longer required to build precizer from source or to run the test suite
+
 # Release 0.12.0 2026-03-19
 
 ## Added
