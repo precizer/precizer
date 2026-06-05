@@ -19,7 +19,11 @@
 <img src=".html/img/test-coverage-functions.svg" height="20" alt="Functions covered by tests" /><br>
 <img src=".html/img/test-coverage-branches.svg" height="20" alt="Code branches covered by tests" /></a>
 
+### Automated builds:
+
 [![precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
+
+### Security:
 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)
 
