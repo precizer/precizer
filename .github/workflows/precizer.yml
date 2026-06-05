@@ -131,7 +131,7 @@ jobs:
 
       - name: Build project (Linux arm64)
         run: |
-          make -j portable
+          make -j portable UPX=true
           mkdir v${{ env.VERSION }}
           cp -a .builds/portable/precizer v${{ env.VERSION }}/
           zip -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/
