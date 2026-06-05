@@ -8,14 +8,19 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-Comprehensive hybrid test suite:
+## Comprehensive hybrid test suite
 
-* In-process integration tests
-* Out-of-process CLI system tests
+### Test coverage:
 
-<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/integration-coverage.svg" height="20" alt="Integration Tests Code Coverage" /><br><img src=".html/img/system-coverage.svg" height="20" alt="System Tests Code Coverage"/></a>
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
+<img src=".html/img/test-coverage-functions.svg" height="20" alt="Functions covered by tests" /><br>
+<img src=".html/img/test-coverage-branches.svg" height="20" alt="Code branches covered by tests" /></a>
+
+### Automated builds:
 
 [![precizer build & testing](https://github.com/precizer/precizer/actions/workflows/precizer.yml/badge.svg)](https://github.com/precizer/precizer/actions/workflows/precizer.yml)
+
+### Security:
 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)
 
