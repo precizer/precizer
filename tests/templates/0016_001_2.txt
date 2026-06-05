@@ -11,7 +11,7 @@ File traversal complete
 Searching for files that no longer exist on the file system…
 (?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1\.db:(?:\x1B\[[0-9;]*m)*
 no longer exists path2/AAA/ZAW/D/e/f/b_file\.txt
-Missing file search completed
+Missing file search finished
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 Start vacuuming the primary database…
@@ -47,7 +47,7 @@ File traversal complete
 Searching for files that no longer exist on the file system…
 (?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1\.db:(?:\x1B\[[0-9;]*m)*
 no longer exists path2/AAA/ZAW/D/e/f/b_file\.txt
-Missing file search completed
+Missing file search finished
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
 Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 Start vacuuming the primary database…

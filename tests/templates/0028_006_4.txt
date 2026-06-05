@@ -1,11 +1,10 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=database1\.db, database2\.db
 TESTING:argument:db_file_paths=database1\.db, database2\.db
 TESTING:argument:db_file_names=database1\.db, database2\.db
 TESTING:argument:compare=yes
 TESTING:argument:compare-filter=first-source, second-source
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+

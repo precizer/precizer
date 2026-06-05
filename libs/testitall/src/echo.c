@@ -46,13 +46,13 @@ void echo(
 		}
 	}
 
-	if(SUCCESS == resize(buffer,new_size))
+	if(SUCCESS == m_resize(buffer,new_size))
 	{
 		if(buffer->length > 0U)
 		{
-			char *buffer_data = data(char,buffer);
+			char *buffer_data_rewritable = m_data(char,buffer);
 
-			if(buffer_data == NULL)
+			if(buffer_data_rewritable == NULL)
 			{
 				va_end(args);
 				return;
@@ -60,7 +60,7 @@ void echo(
 
 			const size_t writable_capacity = buffer->length - shift;
 			int written = vsnprintf(
-				buffer_data + shift,
+				buffer_data_rewritable + shift,
 				writable_capacity,
 				format,
 				args);
@@ -69,7 +69,7 @@ void echo(
 			{
 				report("Formatting failed while writing into buffer");
 			} else {
-				buffer_data[buffer->length - 1U] = '\0';
+				(void)m_finalize_string(buffer,shift + (size_t)written,WRITE_TERMINATOR_ALWAYS);
 			}
 		}
 	} else {

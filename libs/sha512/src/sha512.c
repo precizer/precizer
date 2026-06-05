@@ -61,7 +61,7 @@ static const uint64_t K[80] =
 
 #define ROR64c(x,y) \
 	( ((((x)&UINT64_C(0xFFFFFFFFFFFFFFFF))>>((uint64_t)(y)&UINT64_C(63))) | \
-	((x)<<((uint64_t)(64-((y)&UINT64_C(63))))))&UINT64_C(0xFFFFFFFFFFFFFFFF))
+	((x)<<(((uint64_t)64-((uint64_t)(y)&UINT64_C(63)))&UINT64_C(63))))&UINT64_C(0xFFFFFFFFFFFFFFFF))
 
 #define STORE64H(x,y) \
 	{ \
@@ -91,8 +91,21 @@ static const uint64_t K[80] =
 #define MIN(x,y) ( ((x)<(y))?(x):(y) )
 #endif
 
-/* compress 1024-bits */
-static int sha512_compress(
+#define SHA512_BITS_PER_BYTE UINT64_C(8)
+#define SHA512_BLOCK_BYTES 128U
+#define SHA512_LENGTH_FIELD_OFFSET 120U
+#define SHA512_MAX_BIT_COUNT UINT64_C(0xffffffffffffffff)
+
+/**
+ * @brief Mix one full SHA-512 block into the current hash state
+ * @details The caller must pass a valid context and exactly one 128-byte block.
+ * This routine performs only deterministic SHA-512 block arithmetic, so it has
+ * no runtime failure state of its own
+ *
+ * @param md Hash context that receives the updated state
+ * @param buf One complete 128-byte message block
+ */
+static void sha512_compress(
 	SHA512_Context      *md,
 	const unsigned char *buf)
 {
@@ -145,20 +158,59 @@ static int sha512_compress(
 	{
 		md->state[i] = md->state[i] + S[i];
 	}
-
-	return 0;
 }
 
 /**
-   Initialize the hash state
-   @param md   The hash state you wish to initialize
-   @return 0 if successful
+ * @brief Check whether more message bytes fit into the recorded SHA-512 length
+ * @details This library records the message length in a 64-bit bit counter.
+ * The helper keeps update and finalization code from silently wrapping that
+ * counter when a caller passes an extremely large or damaged context
+ *
+ * @param md Hash context whose current length should be checked
+ * @param inlen Number of new bytes the caller wants to add
+ * @return CRYPT_OK when the bytes fit, otherwise a specific libsha512 error
  */
-int sha512_init(SHA512_Context *md)
+static SHA512_Status sha512_check_available_bytes(
+	const SHA512_Context *md,
+	size_t               inlen)
+{
+	uint64_t available_bytes;
+
+	if(md->curlen >= sizeof(md->buf))
+	{
+		return CRYPT_INVALID_ARG;
+	}
+
+	available_bytes = (SHA512_MAX_BIT_COUNT - md->length) / SHA512_BITS_PER_BYTE;
+
+	if(available_bytes < (uint64_t)md->curlen)
+	{
+		return CRYPT_HASH_OVERFLOW;
+	}
+
+	available_bytes -= (uint64_t)md->curlen;
+
+	if((uint64_t)inlen > available_bytes)
+	{
+		return CRYPT_HASH_OVERFLOW;
+	}
+
+	return CRYPT_OK;
+}
+
+/**
+ * @brief Prepare a SHA-512 context for a new message
+ * @details The context is reset to the standard SHA-512 initial state and can
+ * then be passed to sha512_update() and sha512_final()
+ *
+ * @param md Context to initialize
+ * @return CRYPT_OK on success, CRYPT_INVALID_ARG when @p md is NULL
+ */
+SHA512_Status sha512_init(SHA512_Context *md)
 {
 	if(md == NULL)
 	{
-		return 1;
+		return CRYPT_INVALID_ARG;
 	}
 
 	md->curlen = 0;
@@ -172,53 +224,55 @@ int sha512_init(SHA512_Context *md)
 	md->state[6] = UINT64_C(0x1f83d9abfb41bd6b);
 	md->state[7] = UINT64_C(0x5be0cd19137e2179);
 
-	return 0;
+	return CRYPT_OK;
 }
 
 /**
-   Process a block of memory though the hash
-   @param md     The hash state
-   @param in     The data to hash
-   @param inlen  The length of the data (octets)
-   @return 0 if successful
+ * @brief Add message bytes to a SHA-512 context
+ * @details The input may be any size, including zero bytes. The function
+ * buffers partial blocks internally and rejects invalid pointers, damaged
+ * buffer state, or input that would overflow the recorded message length
+ *
+ * @param md Context that already passed through sha512_init()
+ * @param in Message bytes to add to the hash
+ * @param inlen Number of bytes available at @p in
+ * @return CRYPT_OK on success, otherwise a specific libsha512 error
  */
-int sha512_update(
+SHA512_Status sha512_update(
 	SHA512_Context      *md,
 	const unsigned char *in,
 	size_t              inlen)
 {
-	size_t n;
+	SHA512_Status status;
 	size_t i;
-	int err;
 
 	if(md == NULL)
 	{
-		return 1;
+		return CRYPT_INVALID_ARG;
 	}
 
 	if(in == NULL)
 	{
-		return 1;
+		return CRYPT_INVALID_ARG;
 	}
 
-	if(md->curlen > sizeof(md->buf))
+	status = sha512_check_available_bytes(md,inlen);
+
+	if(status != CRYPT_OK)
 	{
-		return 1;
+		return status;
 	}
 
 	while(inlen > 0)
 	{
-		if(md->curlen == 0 && inlen >= 128)
+		if(md->curlen == 0 && inlen >= SHA512_BLOCK_BYTES)
 		{
-			if((err = sha512_compress (md,in)) != 0)
-			{
-				return err;
-			}
-			md->length += 128 * 8;
-			in += 128;
-			inlen -= 128;
+			sha512_compress(md,in);
+			md->length += SHA512_BLOCK_BYTES * SHA512_BITS_PER_BYTE;
+			in += SHA512_BLOCK_BYTES;
+			inlen -= SHA512_BLOCK_BYTES;
 		} else {
-			n = MIN(inlen,(128 - md->curlen));
+			size_t n = MIN(inlen,(SHA512_BLOCK_BYTES - md->curlen));
 
 			for(i = 0; i < n; i++)
 			{
@@ -229,49 +283,53 @@ int sha512_update(
 			in += n;
 			inlen -= n;
 
-			if(md->curlen == 128)
+			if(md->curlen == SHA512_BLOCK_BYTES)
 			{
-				if((err = sha512_compress (md,md->buf)) != 0)
-				{
-					return err;
-				}
-				md->length += 8*128;
+				sha512_compress(md,md->buf);
+				md->length += SHA512_BITS_PER_BYTE * SHA512_BLOCK_BYTES;
 				md->curlen = 0;
 			}
 		}
 	}
-	return 0;
+	return CRYPT_OK;
 }
 
 /**
-   Terminate the hash to get the digest
-   @param md  The hash state
-   @param out [out] The destination of the hash (64 bytes)
-   @return 0 if successful
+ * @brief Finish a SHA-512 message and write its digest
+ * @details Finalization adds SHA-512 padding, writes the 64-byte digest, and
+ * rejects invalid output storage or a context whose buffered bytes would
+ * overflow the recorded message length
+ *
+ * @param md Context that contains the message accumulated so far
+ * @param out Destination for the 64-byte SHA-512 digest
+ * @return CRYPT_OK on success, otherwise a specific libsha512 error
  */
-int sha512_final(
+SHA512_Status sha512_final(
 	SHA512_Context *md,
 	unsigned char  *out)
 {
+	SHA512_Status status;
 	int i;
 
 	if(md == NULL)
 	{
-		return 1;
+		return CRYPT_INVALID_ARG;
 	}
 
 	if(out == NULL)
 	{
-		return 1;
+		return CRYPT_INVALID_ARG;
 	}
 
-	if(md->curlen >= sizeof(md->buf))
+	status = sha512_check_available_bytes(md,0U);
+
+	if(status != CRYPT_OK)
 	{
-		return 1;
+		return status;
 	}
 
 	/* increase the length of the message */
-	md->length += md->curlen * UINT64_C(8);
+	md->length += (uint64_t)md->curlen * SHA512_BITS_PER_BYTE;
 
 	/* append the '1' bit */
 	md->buf[md->curlen++] = (unsigned char)0x80;
@@ -280,9 +338,9 @@ int sha512_final(
 	 * then compress.  Then we can fall back to padding zeros and length
 	 * encoding like normal.
 	 */
-	if(md->curlen > 112)
+	if(md->curlen > 112U)
 	{
-		while(md->curlen < 128)
+		while(md->curlen < SHA512_BLOCK_BYTES)
 		{
 			md->buf[md->curlen++] = (unsigned char)0;
 		}
@@ -294,13 +352,13 @@ int sha512_final(
 	 * note: that from 112 to 120 is the 64 MSB of the length.  We assume that you won't hash
 	 * > 2^64 bits of data... :-)
 	 */
-	while(md->curlen < 120)
+	while(md->curlen < SHA512_LENGTH_FIELD_OFFSET)
 	{
 		md->buf[md->curlen++] = (unsigned char)0;
 	}
 
 	/* store length */
-	STORE64H(md->length,md->buf+120);
+	STORE64H(md->length,md->buf + SHA512_LENGTH_FIELD_OFFSET);
 	sha512_compress(md,md->buf);
 
 	/* copy output */
@@ -309,7 +367,7 @@ int sha512_final(
 		STORE64H(md->state[i],out+(8*i));
 	}
 
-	return 0;
+	return CRYPT_OK;
 }
 
 #if 0

@@ -66,12 +66,6 @@
  */
 #define BLKCNT_UNKNOWN ((blkcnt_t)-1)
 
-#ifdef TESTITALL
-	#define STATIC
-#else
-	#define STATIC static
-#endif
-
 /*
  * Evil Empire OS uses `st_*timespec` fields instead of `st_*tim`.
  * Map the member names so we can keep the Linux-oriented copy code.
@@ -102,74 +96,58 @@
 /**
  * @brief Get a C-string view of a string field in the global @ref Config instance.
  *
- * Convenience wrapper for `getcstring(&(config->field))`.
+ * Convenience wrapper for `m_text(&(config->field))`.
  * The target field is expected to be of type @ref memory and to store string data.
  *
  * @param field Name of a @ref Config field without the `config->` prefix.
- * @return `const char *` returned by @ref getcstring.
+ * @return `const char *` returned by @ref m_text.
  */
-#define confstr(field) getcstring(&(config->field))
+#define confstr(field) m_text(&(config->field))
 
 // PCRE2 return codes
-typedef enum
+typedef enum REGEXP : unsigned int
 {
-	NOT_MATCH,   // The actual value is 0
-	MATCH,       // The actual value is 1
-	REGEXP_ERROR // The actual value is 2
+	NOT_MATCH = 0u,
+	MATCH = 1u,
+	REGEXP_ERROR = 2u
 
 } REGEXP;
 
 // Return codes for Ignore function
-typedef enum
+typedef enum Ignore : unsigned int
 {
-	DO_NOT_IGNORE,     // The actual value is 0
-	IGNORE,            // The actual value is 1
-	FAIL_REGEXP_IGNORE // The actual value is 2
+	DO_NOT_IGNORE = 0u,
+	IGNORE = 1u,
+	FAIL_REGEXP_IGNORE = 2u
 
 } Ignore;
 
 // Return codes for Include function
-typedef enum
+typedef enum Include : unsigned int
 {
-	DO_NOT_INCLUDE,     // The actual value is 0
-	INCLUDE,            // The actual value is 1
-	FAIL_REGEXP_INCLUDE // The actual value is 2
+	DO_NOT_INCLUDE = 0u,     // The actual value is 0
+	INCLUDE = 1u,            // The actual value is 1
+	FAIL_REGEXP_INCLUDE = 2u // The actual value is 2
 
 } Include;
 
 // Return codes for Lock Checksum function
-typedef enum
+typedef enum LockChecksum : unsigned int
 {
-	DO_NOT_LOCK_CHECKSUM,     // The actual value is 0
-	LOCK_CHECKSUM,            // The actual value is 1
-	FAIL_REGEXP_LOCK_CHECKSUM // The actual value is 2
+	DO_NOT_LOCK_CHECKSUM = 0u,     // The actual value is 0
+	LOCK_CHECKSUM = 1u,            // The actual value is 1
+	FAIL_REGEXP_LOCK_CHECKSUM = 2u // The actual value is 2
 
 } LockChecksum;
-
-/*
- * Modification bits
- *
- */
-typedef enum
-{
-	IDENTICAL                 = 0x00, // 000000
-	NOT_EQUAL                 = 0x01, // 000001
-	SIZE_CHANGED              = 0x02, // 000010
-	STATUS_CHANGED_TIME       = 0x04, // 000100
-	MODIFICATION_TIME_CHANGED = 0x08, // 001000
-	ALLOCATED_SIZE_CHANGED    = 0x10, // 010000
-	COMPARE_FAILED            = 0x20  // 100000
-
-} Changed;
 
 /*
  * A file or a directory
  *
  */
-typedef enum
+typedef enum FILEDIR : unsigned int
 {
-	SHOULD_BE_A_FILE = 1,
-	SHOULD_BE_A_DIRECTORY = 2
+	SHOULD_BE_A_FILE = 1u,
+	SHOULD_BE_A_DIRECTORY = 2u
 
 } FILEDIR;
 
@@ -177,10 +155,10 @@ typedef enum
  * Database validation level
  *
  */
-typedef enum
+typedef enum DB_CHECK_LEVEL : unsigned int
 {
-	QUICK = 1,
-	FULL = 2
+	QUICK = 1u,
+	FULL = 2u
 
 } DB_CHECK_LEVEL;
 
@@ -192,12 +170,12 @@ typedef enum
  * A zero value means that no filter was specified explicitly, so compare mode
  * uses its default behavior and reports all categories
  */
-typedef enum
+typedef enum CompareFilter : unsigned int
 {
-	CF_NONE_SPECIFIED = 0x00, /**< No explicit `--compare-filter` options were provided */
-	CF_CHECKSUM_MISMATCH = 0x01, /**< Report paths present in both databases whose checksums differ */
-	CF_FIRST_SOURCE = 0x02, /**< Report paths that exist in the first compared database but not in the second */
-	CF_SECOND_SOURCE = 0x04 /**< Report paths that exist in the second compared database but not in the first */
+	CF_NONE_SPECIFIED = 0x00u, /**< No explicit `--compare-filter` options were provided */
+	CF_CHECKSUM_MISMATCH = 0x01u, /**< Report paths present in both databases whose checksums differ */
+	CF_FIRST_SOURCE = 0x02u, /**< Report paths that exist in the first compared database but not in the second */
+	CF_SECOND_SOURCE = 0x04u /**< Report paths that exist in the second compared database but not in the first */
 
 } CompareFilter;
 
@@ -205,10 +183,10 @@ typedef enum
  * Whether the file exists or not
  *
  */
-typedef enum
+typedef enum FileAvailability : unsigned int
 {
-	NOT_FOUND,
-	EXISTS
+	NOT_FOUND = 0u,
+	EXISTS = 1u
 
 } FileAvailability;
 
@@ -313,12 +291,9 @@ typedef struct {
 // The main Configuration
 typedef struct {
 
-	/// Max available size of a path
-	long int running_dir_size;
-
-	/// Absolute path name of the working directory
+	/// Absolute path name of the working directory stored as a managed string descriptor
 	/// A directory where the program was executed
-	char *running_dir;
+	memory running_dir;
 
 	/// Application start timestamp in monotonic nanoseconds.
 	/// Used for reporting total process runtime.
@@ -327,7 +302,10 @@ typedef struct {
 	/// Show progress bar
 	bool progress;
 
-	/// Print remembered warnings and errors before exit
+	/// When set to true, all messages logged with the REMEMBER flag
+	/// are reprinted as a summary block before the program exits.
+	/// This ensures critical warnings (e.g. checksum-locked violations)
+	/// remain visible even after lengthy output.
 	bool show_remembered_messages_at_exit;
 
 	/// Force update of the database
@@ -348,8 +326,8 @@ typedef struct {
 	/// Bitmask of enabled --compare output filters
 	unsigned int compare_filter;
 
-	/// An array of paths to traverse
-	char **paths;
+	/// Managed array of root paths to traverse
+	memory roots;
 
 	/// The pointer to the primary database
 	sqlite3 *db;
@@ -363,8 +341,8 @@ typedef struct {
 	/// The name of DB file stored as a managed byte string.
 	memory db_file_name;
 
-	/// Pointers to the array with database paths
-	char **db_file_paths;
+	/// Managed array of database file paths
+	memory db_file_paths;
 
 	/// Pointers to the array with database file names
 	char **db_file_names;
@@ -657,14 +635,8 @@ void remove_trailing_dots(char *);
 
 Return file_list(TraversalSummary *);
 
-/**
- * @brief Print aggregated traversal totals from TraversalSummary.
- */
 void show_statistics(const TraversalSummary *);
 
-/**
- * @brief Print traversal elapsed time and hashing rate from TraversalSummary.
- */
 void show_elapsed(const TraversalSummary *);
 
 Return sha512sum(
@@ -675,12 +647,6 @@ Return sha512sum(
 	File *);
 
 #ifdef TESTITALL_TEST_HOOKS
-/**
- * @brief Pause execution at a configured test wait point.
- *
- * Used only in test builds to delay execution until a signal-driven test
- * either times out or sets the global interrupt flag.
- */
 void signal_wait_at_point(unsigned int);
 #endif
 
@@ -694,25 +660,18 @@ Return add_string_to_array(
 	char ***,
 	const char *);
 
-void remove_trailing_slash(char *);
+Return remove_trailing_slash(memory *);
 
-const char *extract_relative_path(
+Return extract_relative_path(
+	memory *,
 	const char *,
-	const char *) __attribute__ ((pure));
+	size_t,
+	const memory *);
 
-LockChecksum match_checksum_lock_pattern(const char *);
+LockChecksum match_checksum_lock_pattern(const memory *);
 
-/**
- * @brief Allocate an absolute-path string from a relative or absolute input path
- *
- * @details Relative paths are prefixed with `config->running_dir`. Absolute
- * paths are copied as-is into a new buffer owned by the caller
- *
- * @param[out] Absolute-path output buffer allocated by the function
- * @param[in] Input relative or absolute path
- * @param[in] Length of the input path without the terminating null byte
- * @return Return status code
- */
+Return path_check_locked_checksum(const memory *);
+
 Return path_absolute_from_relative(
 	char **,
 	const char *,
@@ -726,12 +685,12 @@ Return path_absolute_from_relative(
  * FILE_NOT_FOUND         — path or one of its components does not exist
  * FILE_ACCESS_ERROR      — access failed for another reason or fallback path construction failed
  */
-typedef enum FileAccessStatus
+typedef enum FileAccessStatus : unsigned int
 {
-	FILE_ACCESS_ALLOWED = 0,
-	FILE_ACCESS_DENIED,
-	FILE_NOT_FOUND,
-	FILE_ACCESS_ERROR
+	FILE_ACCESS_ALLOWED = 0u,
+	FILE_ACCESS_DENIED = 1u,
+	FILE_NOT_FOUND = 2u,
+	FILE_ACCESS_ERROR = 3u
 
 } FileAccessStatus;
 
@@ -739,6 +698,12 @@ FileAccessStatus file_check_access(
 	const char *,
 	const size_t,
 	const int);
+
+Return show_locked_checksum_unavailable_violation(
+	const memory *,
+	const FileAccessStatus,
+	bool *,
+	TraversalSummary *);
 
 void signal_notify_quit_handler(int);
 
@@ -765,12 +730,9 @@ void free_config(void);
 
 Return db_delete_missing_metadata(void);
 
-Return db_delete_the_record_by_id(
-	const sqlite_int64 *,
-	bool *,
-	const bool *,
-	const char *,
-	const char *);
+Return db_retrieve_root_path(memory *);
+
+Return db_delete_the_record_by_id(const sqlite_int64 *);
 
 Return db_init(void);
 
@@ -780,12 +742,12 @@ Return db_primary_consider_vacuum(void);
 
 Return db_read_file_data_from(
 	File *,
-	const char *);
+	const memory *);
 
 Return db_update_the_record_by_id(const File *);
 
 Return db_insert_the_record(
-	const char *,
+	const memory *,
 	const File *);
 
 Return db_determine_name(void);
@@ -804,7 +766,7 @@ Return db_primary_file_validate_existence(void);
 
 Return db_integrity_check(const char *);
 
-Return db_get_version(
+Return db_retrieve_version(
 	int *,
 	const char *);
 
@@ -828,10 +790,6 @@ Return db_specify_version(
 	int);
 
 Return db_primary_file_test(void);
-
-Return db_sql_wrap_string(
-	memory *,
-	const char *);
 
 #if 0 // Old multiPATH solution
 Return db_get_path_prefix_index(
@@ -868,13 +826,13 @@ void slog_show_impl(
 	...);
 
 void show_file(
-	const char *,
+	const memory *,
 	bool *,
 	TraversalSummary *,
 	const File *);
 
 void directory_show(
-	const char *,
+	const memory *,
 	bool *,
 	TraversalSummary *,
 	const bool,
@@ -895,37 +853,19 @@ void show_checksum_gracefully_interrupted(
 	const char *,
 	const sqlite3_int64 *);
 
-/**
- * @brief Report whether the primary database changed during the current run
- *
- * @return Return status code
- */
 Return status_of_changes(void);
 
-/**
- * @brief Print remembered warning and error lines captured during the run
- *        when delayed output is enabled
- */
 Return show_remembered_messages(void);
 
-Return verify_directory_access(
+Return directory_access_verify(
 	FTS *,
 	FTSENT *,
-	const char *,
+	const memory *,
 	bool *,
 	TraversalSummary *);
 
 Return db_check_changes(void);
 
-/**
- * @brief Check whether the given path exists and matches requested filesystem object type
- * @param path Path to verify
- * @param output_stat Optional pointer to a stat structure to receive file metadata when the
- *        path is found. Pass NULL if metadata is not needed
- * @param fs_object_type Expected object type: SHOULD_BE_A_FILE or SHOULD_BE_A_DIRECTORY
- * @return EXISTS when path exists and matches requested type, otherwise NOT_FOUND
- * @details The special path ":memory:" is treated as not available and returns NOT_FOUND
- */
 FileAvailability file_availability(
 	const char *,
 	struct stat *,
@@ -933,28 +873,19 @@ FileAvailability file_availability(
 
 Return paths_detect(void);
 
-Ignore match_ignore_pattern(const char *);
+Ignore match_ignore_pattern(const memory *);
 
-Include match_include_pattern(const char *);
+Include match_include_pattern(const memory *);
 
 Return match_include_ignore(
-	const char *,
+	const memory *,
 	bool *,
 	bool *);
 
 REGEXP match_regexp(
 	pcre2_code *,
-	const char *);
+	const memory *);
 
-/**
- * @brief Compile all PCRE2 pattern strings stored in Config into pcre2_code objects
- *
- * Must be called once after parse_arguments() and before file_list().
- * On success every non-NULL string array (ignore, include, lock_checksum) has a
- * matching compiled array stored in the corresponding _pcre_compiled field of Config.
- *
- * @return SUCCESS or FAILURE (invalid pattern text)
- */
 Return compile_patterns(void);
 
 int exit_status(
@@ -969,5 +900,4 @@ extern Config *config;
 
 // Application name and current code version
 #include "version.h"
-
 #endif /* _PRECIZER_H */

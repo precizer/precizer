@@ -1,7 +1,17 @@
+#ifndef RATIONAL_PROVIDE_H
+#define RATIONAL_PROVIDE_H
+
+#include "rational_enumerations.h"
 
 void provide(const Return);
 void deliver(const Return);
 const char *show_status(const Return);
+Return rational_normalize_return(Return);
+bool rational_ask(
+	Return *,
+	Return,
+	const char *,
+	const int);
 
 /**
  * @def deliver(status)
@@ -12,33 +22,28 @@ const char *show_status(const Return);
  *
  * Behavior:
  * - Evaluates `status` once
- * - Clears `SUCCESS` in `global_return_status` if global state is `CRITICAL`
- * - If local status is `CRITICAL`, merges global non-`TRIUMPH` bits
- * - If local status is `TRIUMPH`, merges global non-`CRITICAL` bits
- * - Returns merged flags without printing TRACE logs
+ * - Normalizes local status and global_return_status
+ * - Merges only GLOBAL bits from global_return_status into the return value
+ * - Returns normalized merged flags without printing TRACE logs
  */
-#define deliver(status) \
-	{ \
-		/* Evaluate the input once and work on a local mutable copy */ \
-		Return __returned_status = status; \
-		/* If global state is already critical, drop SUCCESS to avoid contradictory flags */ \
-		if(CRITICAL & global_return_status) \
+	#define deliver(status) \
 		{ \
-			/* Keep all global bits except SUCCESS */ \
-			global_return_status &= ~SUCCESS; \
-		} \
-		/* Critical local exit path: prioritize critical global context over graceful global bits */ \
-		if(CRITICAL & __returned_status) \
-		{ \
-			/* Merge all global non-TRIUMPH bits (e.g., FAILURE/WARNING/UNSUCCESS) */ \
-			__returned_status |= (global_return_status & ~TRIUMPH); \
-		} else if(TRIUMPH & __returned_status){ \
-			/* Graceful local exit path: keep global graceful context, suppress global critical bits */ \
-			__returned_status |= (global_return_status & ~CRITICAL); \
-		} \
-		/* Return the normalized and merged status flags */ \
-		return(__returned_status); \
-	}
+			/* Evaluate once so contract checks and normalization use the same status */ \
+			Return __delivered_status = (status); \
+			/* A pending yes/no answer must be consumed with ask() before function exit */ \
+			if(AWAITING & __delivered_status) \
+			{ \
+				slog(ERROR,"Unhandled yes/no Return answer before deliver()\n"); \
+				return(FAILURE); \
+			} \
+			/* Normalize, merge global context, and mark fresh yes/no answers as pending */ \
+			Return __returned_status = rational_normalize_return(__delivered_status); \
+			if(BOOLEAN & __returned_status) \
+			{ \
+				__returned_status |= AWAITING; \
+			} \
+			return(__returned_status); \
+		}
 
 /**
  * @def provide(status)
@@ -46,38 +51,36 @@ const char *show_status(const Return);
  *
  * Intended for function exit paths. The macro normalizes conflicting flags and
  * merges local and global state before returning:
- * - If `global_return_status` is already critical, `SUCCESS` is removed from it.
- * - If local `status` contains any `CRITICAL` bit, all non-`TRIUMPH` global bits
- *   are merged into the return value.
- * - If local `status` contains any `TRIUMPH` bit, all non-`CRITICAL` global bits
- *   are merged into the return value.
+ * - Local status is normalized
+ * - `global_return_status` is normalized and stored back
+ * - Only GLOBAL bits from `global_return_status` are merged into the result
+ * - The final result is normalized before return
  *
  * Critical returns also emit a TRACE log record.
  */
-#define provide(status) \
-	{ \
-		/* Evaluate the input once and work on a local mutable copy */ \
-		Return __returned_status = status; \
-		/* If global state is already critical, drop SUCCESS to avoid contradictory flags */ \
-		if(CRITICAL & global_return_status) \
+	#define provide(status) \
 		{ \
-			/* Keep all global bits except SUCCESS */ \
-			global_return_status &= ~SUCCESS; \
-		} \
-		/* Critical local exit path: prioritize critical global context over graceful global bits */ \
-		if(CRITICAL & __returned_status) \
-		{ \
-			/* Merge all global non-TRIUMPH bits (e.g., FAILURE/WARNING/UNSUCCESS) */ \
-			__returned_status |= (global_return_status & ~TRIUMPH); \
-			/* Emit trace for final critical return composition */ \
-			slog(TRACE,"Returned %s:%d status: %s\n",__func__,__LINE__,show_status(__returned_status)); \
-		} else if(TRIUMPH & __returned_status){ \
-			/* Graceful local exit path: keep global graceful context, suppress global critical bits */ \
-			__returned_status |= (global_return_status & ~CRITICAL); \
-		} \
-		/* Return the normalized and merged status flags */ \
-		return(__returned_status); \
-	}
+			/* Evaluate once so contract checks and normalization use the same status */ \
+			Return __provided_status = (status); \
+			/* A pending yes/no answer must be consumed with ask() before function exit */ \
+			if(AWAITING & __provided_status) \
+			{ \
+				slog(ERROR,"Unhandled yes/no Return answer before provide()\n"); \
+				return(FAILURE); \
+			} \
+			/* Normalize, merge global context, and mark fresh yes/no answers as pending */ \
+			Return __returned_status = rational_normalize_return(__provided_status); \
+			if(BOOLEAN & __returned_status) \
+			{ \
+				__returned_status |= AWAITING; \
+			} \
+			/* Critical final status is traced by provide(), but not by deliver() */ \
+			if(CRITICAL & __returned_status) \
+			{ \
+				slog(TRACE,"Returned %s:%d status: %s\n",__func__,__LINE__,show_status(__returned_status)); \
+			} \
+			return(__returned_status); \
+		}
 
 /**
  * @def run(func)
@@ -88,29 +91,33 @@ const char *show_status(const Return);
  * This macro expects a writable `Return status` variable in scope.
  *
  * Merge rules:
- * - If the callee returns `CRITICAL`, `SUCCESS` is removed from both the callee
- *   result and current `status`.
- * - The callee result is then OR-merged into `status`
+ * - The callee result is OR-merged into `status`
+ * - The accumulated status is normalized after the callee returns
  */
-#define run(func) \
-	{ \
-		/* Execute only when current status does not request skipping */ \
-		if((SKIP & status) == false) \
+	#define run(func) \
 		{ \
-			/* Evaluate callee once and capture its returned flag set */ \
-			Return __returned_status = (func); \
-			/* Detect any critical bit returned by the callee */ \
-			if(CRITICAL & __returned_status) \
+			/* A previous yes/no answer must be handled before the next regular call */ \
+			if(AWAITING & status) \
 			{ \
-				/* Remove SUCCESS from callee status to avoid SUCCESS|CRITICAL combination */ \
-				__returned_status &= ~SUCCESS; \
-				/* Remove SUCCESS from accumulated status for the same reason */ \
-				status &= ~SUCCESS; \
+				slog(ERROR,"Unhandled yes/no Return answer before run()\n"); \
+				status = FAILURE; \
 			} \
-			/* Merge returned flags into current accumulated status */ \
-			status |= __returned_status; \
-		} \
-	}
+			/* Execute only when current status does not request skipping */ \
+			if((SKIP & status) == 0) \
+			{ \
+				/* Evaluate callee once and capture its returned flag set */ \
+				Return __returned_status = (func); \
+				/* A yes/no function must be consumed through ask(), not through run() */ \
+				if(AWAITING & __returned_status) \
+				{ \
+					slog(ERROR,"run() received an unhandled yes/no Return answer. Use ask()\n"); \
+					status = FAILURE; \
+				} else { \
+					/* Merge returned flags into current status, then normalize accumulated flags */ \
+					status = rational_normalize_return(status | __returned_status); \
+				} \
+			} \
+		}
 
 /**
  * @def call(func)
@@ -121,30 +128,44 @@ const char *show_status(const Return);
  * It expects a writable `Return status` variable in scope.
  *
  * Merge rules:
- * - If the callee returns `CRITICAL`, `SUCCESS` is removed from both the callee
- *   result and current `status`.
- * - If current `status` is already critical, `SUCCESS` is removed from the callee
- *   result before merge.
- * - The callee result is then OR-merged into `status`.
+ * - The callee result is OR-merged into `status`.
+ * - The accumulated status is normalized after the callee returns
  */
-#define call(func) \
-	{ \
-		/* Always evaluate the callee and capture its returned flag set */ \
-		Return __returned_status = (func); \
-		/* Detect any critical bit returned by the callee */ \
-		if(CRITICAL & __returned_status) \
+	#define call(func) \
 		{ \
-			/* Remove SUCCESS from callee status to avoid SUCCESS|CRITICAL combination */ \
-			__returned_status &= ~SUCCESS; \
-			/* Remove SUCCESS from accumulated status for the same reason */ \
-			status &= ~SUCCESS; \
-		} \
-		/* If accumulated status is already critical, keep callee non-successful */ \
-		if(CRITICAL & status) \
-		{ \
-			/* Remove SUCCESS from callee status before merging */ \
-			__returned_status &= ~SUCCESS; \
-		} \
-		/* Merge returned flags into current accumulated status */ \
-		status |= __returned_status; \
-	}
+			/* A previous yes/no answer must be handled before the next regular call */ \
+			if(AWAITING & status) \
+			{ \
+				slog(ERROR,"Unhandled yes/no Return answer before call()\n"); \
+				status = FAILURE; \
+			} else { \
+				/* Always evaluate the callee and capture its returned flag set */ \
+				Return __returned_status = (func); \
+				/* A yes/no function must be consumed through ask(), not through call() */ \
+				if(AWAITING & __returned_status) \
+				{ \
+					slog(ERROR,"call() received an unhandled yes/no Return answer. Use ask()\n"); \
+					status = FAILURE; \
+				} else { \
+					/* Merge returned flags into current status, then normalize accumulated flags */ \
+					status = rational_normalize_return(status | __returned_status); \
+				} \
+			} \
+		}
+
+/**
+ * @def ask(expr)
+ * @brief Consume a yes/no Return expression and return a regular C bool.
+ * @param expr Expression that returns `Return`.
+ *
+ * The expression is evaluated only when local `status` has no `SKIP` bits, or
+ * when local `status` already contains a pending yes/no answer to consume.
+ * This macro expects a writable `Return status` variable in scope.
+ */
+#define ask(expr) \
+	( \
+		(((SKIP & status) == 0) || (AWAITING & status)) \
+		&& rational_ask(&status,(expr),__func__,__LINE__) \
+	)
+
+#endif // RATIONAL_PROVIDE_H

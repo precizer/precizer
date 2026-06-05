@@ -106,10 +106,7 @@ Return db_integrity_check(const char *db_file_path)
 		}
 	}
 
-	if(select_stmt != NULL)
-	{
-		sqlite3_finalize(select_stmt);
-	}
+	sqlite3_finalize(select_stmt);
 
 	/* Report integrity check results */
 	if(SUCCESS == status)

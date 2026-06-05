@@ -23,6 +23,8 @@ Using AI assistants while working on the code is strongly encouraged! They catch
 
 That said, as the local demiurge of your own little system, you shouldn’t let an assistant steer the wheel or make decisions for you. Any AI-generated code must be reviewed manually—think it through, verify it, and make sure it matches your intent before it lands in the codebase.
 
+And please do not use weak AI models for programming.
+
 ## Local Environment
 
 ### Dependencies by Scenario
@@ -64,19 +66,18 @@ sudo apt-get update
 sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev upx-ucl
 ```
 
-#### 3. Test Run (`make tests`) with Sanitizers and `cmocka`
+#### 3. Test Run (`make tests`) with Sanitizers
 
 Required components:
 
 * dependencies from sections 1 and 2
-* `cmocka` (`libcmocka-dev`) for the test runner
 * sanitizer toolchain (`ASan`/`UBSan`) and `llvm-symbolizer`
 
 Ubuntu/Debian:
 
 ```sh
 sudo apt-get update
-sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev libcmocka0 libcmocka-dev upx-ucl
+sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev upx-ucl
 ```
 
 #### 4. Static Analysis and Tooling (`cppcheck` and related targets)
@@ -137,12 +138,10 @@ make purge
 * Language standard: `C2x`.
 * The build uses strict warnings and `-Werror`; new code must compile cleanly.
 * Match existing naming and structure in the files you touch.
-* Format only what you changed:
+* To format all code globally, use:
 
 ```sh
-make format
-cd libs && make format
-cd tests && make format
+make format && (cd libs && make format) && (cd tests && make format)
 ```
 
 ## Testing

@@ -1,1 +1,0 @@
-\Adelete_path: remove failed for [^\r\n]*/0037_read_only_dir/file\.txt: Permission denied\Z

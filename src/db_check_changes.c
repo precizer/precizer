@@ -6,7 +6,7 @@
  * @brief Test-only hook to simulate unexpected DB metadata change in dry-run mode.
  *
  * When enabled by environment variable
- * `PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED=true`, this helper updates
+ * `TESTITALL_TEST_ENV_DB_FILE_TIMESTAMPS_WILL_BUMPED=true`, this helper updates
  * database file timestamps via utime(), forcing metadata drift before the final
  * `stat()` comparison in db_check_changes().
  *
@@ -18,7 +18,7 @@ static Return run_test_hook_bump_db_timestamps(void)
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	const char *flag_value = getenv("PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED");
+	const char *flag_value = getenv("TESTITALL_TEST_ENV_DB_FILE_TIMESTAMPS_WILL_BUMPED");
 
 	if(flag_value == NULL || strcmp(flag_value,"true") != 0)
 	{
@@ -27,7 +27,7 @@ static Return run_test_hook_bump_db_timestamps(void)
 
 	if(config->dry_run != true)
 	{
-		slog(ERROR,"Test hook failed: PRECIZER_TEST_DB_FILE_TIMESTAMPS_WILL_BUMPED requires --dry-run\n");
+		slog(ERROR,"Test hook failed: TESTITALL_TEST_ENV_DB_FILE_TIMESTAMPS_WILL_BUMPED requires --dry-run\n");
 		return(FAILURE);
 	}
 
@@ -59,7 +59,7 @@ static Return run_test_hook_bump_db_timestamps(void)
  * @brief Test-only hook to simulate missing DB metadata drift during update mode.
  *
  * When enabled by environment variable
- * `PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED=true`, this helper overwrites
+ * `TESTITALL_TEST_ENV_DB_FILE_STAT_WILL_BE_RESYNCED=true`, this helper overwrites
  * the saved baseline stat (`config->db_file_stat`) with the current DB file
  * stat. This forces metadata comparison in db_check_changes() to report
  * IDENTICAL, even if the database was modified earlier in the same run.
@@ -73,7 +73,7 @@ static Return run_test_hook_resync_db_stat_baseline(const struct stat *db_curren
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	const char *flag_value = getenv("PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED");
+	const char *flag_value = getenv("TESTITALL_TEST_ENV_DB_FILE_STAT_WILL_BE_RESYNCED");
 
 	if(flag_value == NULL || strcmp(flag_value,"true") != 0)
 	{
@@ -82,7 +82,7 @@ static Return run_test_hook_resync_db_stat_baseline(const struct stat *db_curren
 
 	if(config->dry_run == true)
 	{
-		slog(ERROR,"Test hook failed: PRECIZER_TEST_DB_FILE_STAT_WILL_BE_RESYNCED requires non-dry-run mode\n");
+		slog(ERROR,"Test hook failed: TESTITALL_TEST_ENV_DB_FILE_STAT_WILL_BE_RESYNCED requires non-dry-run mode\n");
 		return(FAILURE);
 	}
 

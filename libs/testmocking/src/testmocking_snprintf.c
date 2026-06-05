@@ -1,0 +1,110 @@
+#include "testmocking.h"
+
+#include <limits.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdio.h>
+
+static size_t testmocking_snprintf_fail_remaining = 0;
+static size_t testmocking_snprintf_truncate_remaining = 0;
+
+/**
+ * @brief Arm snprintf mock to fail for the next n calls
+ *
+ * @param[in] n Number of consecutive snprintf calls that must fail
+ */
+void testmocking_snprintf_fail_next(size_t n)
+{
+	testmocking_snprintf_fail_remaining = n;
+}
+
+/**
+ * @brief Arm snprintf mock to report truncation for the next n calls
+ *
+ * @param[in] n Number of consecutive snprintf calls that must report truncation
+ */
+void testmocking_snprintf_truncate_next(size_t n)
+{
+	testmocking_snprintf_truncate_remaining = n;
+}
+
+/**
+ * @brief Disable snprintf mock unconditionally
+ */
+void testmocking_snprintf_disable(void)
+{
+	testmocking_snprintf_fail_remaining = 0;
+	testmocking_snprintf_truncate_remaining = 0;
+}
+
+#ifndef EVIL_EMPIRE_OS
+int __wrap_snprintf(
+	char       *str,
+	size_t     size,
+	const char *format,
+	...) __attribute__((format(printf,3,4)));
+
+/**
+ * @brief Linker-redirected entry point for snprintf
+ *
+ * When the mock is armed, it can inject either a formatting failure or a
+ * truncation result. Otherwise the call is forwarded to libc through
+ * vsnprintf, which is the standard way to pass a collected variadic argument
+ * list to a printf-family implementation
+ *
+ * @param[out] str Destination buffer passed by the caller
+ * @param[in] size Destination buffer size
+ * @param[in] format printf-style format string
+ * @return snprintf-compatible result
+ */
+int __wrap_snprintf(
+	char       *str,
+	size_t     size,
+	const char *format,
+	...)
+{
+	if(testmocking_snprintf_fail_remaining > 0U)
+	{
+		testmocking_snprintf_fail_remaining--;
+		return(-1);
+	}
+
+	if(testmocking_snprintf_truncate_remaining > 0U)
+	{
+		testmocking_snprintf_truncate_remaining--;
+
+		if(str != NULL && size > 0U)
+		{
+			str[0] = 'T';
+
+			if(size > 1U)
+			{
+				str[1] = '\0';
+			}
+		}
+
+		int reported_length = 1;
+
+		if(size < (size_t)INT_MAX)
+		{
+			reported_length = (int)size;
+		} else {
+			reported_length = INT_MAX;
+		}
+
+		if(reported_length == 0)
+		{
+			reported_length = 1;
+		}
+
+		return(reported_length);
+	}
+
+	va_list args;
+	va_start(args,format);
+	const int result = vsnprintf(str,size,format,args);
+	va_end(args);
+
+	return(result);
+}
+#endif

@@ -1,10 +1,10 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/diffs/diff1
+TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=dry_run_with_checksums\.db
 TESTING:argument:db_file_name=dry_run_with_checksums\.db
 TESTING:argument:dry-run=with-checksums
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists

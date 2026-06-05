@@ -1,15 +1,13 @@
 #include "precizer.h"
 
 /**
+ * @brief Print delayed warning and error messages saved during the run
  *
- * @brief Print warnings and errors captured in the TEMP remember_history table.
+ * Prints rows from the temporary `remember_history` table only when final
+ * remembered output is enabled. If the database is not open or no remembered
+ * messages exist, the function returns without output
  *
- * @details The table is created in db_init(). Output is produced only when
- *          delayed remembered output is enabled. If the database is unavailable
- *          or no rows are present, the function returns without output
- *
- * @return SUCCESS on completion, FAILURE if a SQLite operation fails.
- *
+ * @return SUCCESS when delayed reporting is complete, otherwise FAILURE
  */
 Return show_remembered_messages(void)
 {
