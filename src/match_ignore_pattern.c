@@ -5,11 +5,11 @@
  *
  * Compares the path against PCRE2 patterns supplied via --ignore=
  *
- * @param[in] relative_path Relative path to test
+ * @param[in] relative_path Relative path descriptor to test
  * @return IGNORE if matched, DO_NOT_IGNORE if not,
  *         FAIL_REGEXP_IGNORE on PCRE2 error
  */
-Ignore match_ignore_pattern(const char *relative_path)
+Ignore match_ignore_pattern(const memory *relative_path)
 {
 	if(config->ignore_pcre_compiled == NULL)
 	{

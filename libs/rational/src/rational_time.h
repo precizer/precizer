@@ -5,6 +5,11 @@
  *
  */
 
+#ifndef RATIONAL_TIME_H
+#define RATIONAL_TIME_H
+
+#include "rational_bkbmbgbtbpbeb.h"
+
 // Functions of working with time
 #include <time.h>
 #include <sys/time.h>
@@ -64,3 +69,5 @@ char *form_date_r(
 char *form_date(
 	const long long int,
 	const ByteFormat);
+
+#endif // RATIONAL_TIME_H

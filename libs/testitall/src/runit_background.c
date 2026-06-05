@@ -298,7 +298,7 @@ Return runit_background(
 	memory       *stdout_result,
 	memory       *stderr_result,
 	const int    expected_return_code,
-	unsigned int buffer_policy,
+	CAPTURE_POLICY buffer_policy,
 	uint64_t     min_delay_ms,
 	uint64_t     max_delay_ms,
 	int          signal_number,
@@ -328,8 +328,8 @@ Return runit_background(
 	struct runit_wait_env wait_environment;
 	runit_wait_env_init(&wait_environment);
 
-	call(del(STDOUT));
-	call(del(STDERR));
+	call(m_del(STDOUT));
+	call(m_del(STDERR));
 
 	run(runit_validate_runtime_mode(run_external));
 
@@ -504,7 +504,7 @@ Return runit_background(
 	runit_wait_env_cleanup(&wait_environment);
 	runit_release_call_and_capture(&capture,&runit_call_data);
 
-	run(del(STDERR));
+	run(m_del(STDERR));
 
 	deliver(status);
 }

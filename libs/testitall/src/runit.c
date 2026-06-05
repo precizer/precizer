@@ -180,7 +180,7 @@ Return runit(
 	memory       *stdout_result,
 	memory       *stderr_result,
 	const int    expected_return_code,
-	unsigned int buffer_policy)
+	CAPTURE_POLICY buffer_policy)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -205,8 +205,8 @@ Return runit(
 	bool child_waited = false;
 	Return finalize_status = SUCCESS;
 
-	call(del(STDOUT));
-	call(del(STDERR));
+	call(m_del(STDOUT));
+	call(m_del(STDERR));
 
 	run(runit_validate_runtime_mode(run_external));
 
@@ -291,7 +291,7 @@ Return runit(
 
 	runit_release_call_and_capture(&capture,&runit_call_data);
 
-	run(del(STDERR));
+	run(m_del(STDERR));
 
 	deliver(status);
 }

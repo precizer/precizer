@@ -8,11 +8,10 @@ static Return test0034_1(void)
 {
 	INITTEST;
 
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *fixture_path = "tests/fixtures/diffs/diff1";
-	const char *fixture_backup_path = "tests/fixtures/diff1_backup";
 	const char *tracked_file_in_source_fixture = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
 
 	off_t sparse_file_size = 0;
@@ -21,9 +20,8 @@ static Return test0034_1(void)
 	// First pass runs in TESTING mode without verbose output
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	// Prepare fixture copy using native move and copy helpers
-	ASSERT(SUCCESS == move_path(fixture_path,fixture_backup_path));
-	ASSERT(SUCCESS == copy_path(fixture_backup_path,fixture_path));
+	// Prepare a mutable working copy while keeping a pristine backup hidden from traversal
+	ASSERT(SUCCESS == prepare_mutable_fixture(fixture_path));
 
 	ASSERT(SUCCESS == runit("--database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1",NULL,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -43,8 +41,8 @@ static Return test0034_1(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(NULL != strstr(getcstring(result),"changed: lsize"));
-	ASSERT(NULL == strstr(getcstring(result),"changed: asize"));
+	ASSERT(NULL != strstr(m_text(result),"changed: lsize"));
+	ASSERT(NULL == strstr(m_text(result),"changed: asize"));
 
 	// Case 2: rewrite file densely with same logical size so only allocated blocks differ
 	ASSERT(SUCCESS == rewrite_file_dense_with_same_size(
@@ -58,26 +56,30 @@ static Return test0034_1(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	ASSERT(NULL == strstr(getcstring(result),"changed: lsize"));
-	ASSERT(NULL != strstr(getcstring(result),"changed: asize"));
-	ASSERT(NULL != strstr(getcstring(result),"update & rehash"));
-	ASSERT(NULL != strstr(getcstring(result),"path1/AAA/BCB/CCC/a.txt"));
+	ASSERT(NULL == strstr(m_text(result),"changed: lsize"));
+	ASSERT(NULL != strstr(m_text(result),"changed: asize"));
+	ASSERT(NULL != strstr(m_text(result),"update & rehash"));
+	ASSERT(NULL != strstr(m_text(result),"path1/AAA/BCB/CCC/a.txt"));
 
 	ASSERT(SUCCESS == delete_path("0034_lsize_vs_asize_flags.db"));
-	ASSERT(SUCCESS == delete_path(fixture_path));
-	ASSERT(SUCCESS == move_path(fixture_backup_path,fixture_path));
+	ASSERT(SUCCESS == restore_mutable_fixture(fixture_path));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Run metadata-difference reporting coverage for logical and allocated size changes
+ *
+ * @return Return status code
+ */
 Return test0034(void)
 {
 	INITTEST;
 
-	TEST(test0034_1,"Metadata diff flags: lsize-only and asize-only cases…");
+	TEST(test0034_1,"Metadata diff flags: lsize-only and asize-only cases");
 
 	RETURN_STATUS;
 }

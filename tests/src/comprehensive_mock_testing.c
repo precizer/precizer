@@ -9,7 +9,7 @@ Return comprehensive_mock_testing(void)
 
 	run_external = INTERNAL_TEST;
 
-	TEST(test0031,"Read error handling during hashing…");
+	TEST(test0031,"Read error handling during hashing");
 
 	run_external = prev_run_mode;
 

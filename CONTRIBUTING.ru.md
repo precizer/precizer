@@ -23,6 +23,8 @@
 
 Как местному демиургу Вам нельзя позволять ассистенту управлять Вами и принимать решения вместо Вас, поэтому созданный код обязательно должен быть проверен вручную.
 
+Пожалуйста, не используйте слабые AI модели для программирования.
+
 ## Локальное окружение
 
 ### Зависимости по сценариям
@@ -64,19 +66,18 @@ sudo apt-get update
 sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev upx-ucl
 ```
 
-#### 3. Запуск тестов (`make tests`) с санитайзерами и `cmocka`
+#### 3. Запуск тестов (`make tests`) с санитайзерами
 
 Нужно:
 
 * зависимости из пунктов 1 и 2
-* `cmocka` (`libcmocka-dev`) для test runner’а
 * тулчейн санитайзеров (`ASan`/`UBSan`) и `llvm-symbolizer`
 
 Ubuntu/Debian:
 
 ```sh
 sudo apt-get update
-sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev libcmocka0 libcmocka-dev upx-ucl
+sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev upx-ucl
 ```
 
 #### 4. Статический анализ и инструменты (`cppcheck` и связанные таргеты)
@@ -137,12 +138,10 @@ make purge
 * Стандарт языка: `C2x`.
 * В сборке включены строгие предупреждения и `-Werror`; новый код должен компилироваться без предупреждений.
 * В изменяемых файлах придерживайтесь существующих паттернов именования и структуры.
-* Форматируйте только то, что затронули:
+* Для глобального форматирования всего кода используйте:
 
 ```sh
-make format
-cd libs && make format
-cd tests && make format
+make format && (cd libs && make format) && (cd tests && make format)
 ```
 
 ## Тестирование

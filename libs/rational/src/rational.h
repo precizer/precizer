@@ -5,7 +5,8 @@
  *
  */
 
-#pragma once
+#ifndef RATIONAL_H
+#define RATIONAL_H
 
 /*
  *
@@ -38,33 +39,17 @@
 #define __USE_FILE_OFFSET64 1
 #endif
 
-/*
- *
- *
- * System libraries
- *
- *
- */
-#include <stdio.h>
-
-// Time functions (gettimeofday)
-#include <sys/time.h>
-
-// String library
-#include <string.h>
-
-// Extended types
-#include <inttypes.h>
-#include <stdbool.h>
-
-// Mathematical formulas
-#include <math.h>
-
-// Standard functions
-#include <stdlib.h>
-
-// String functions
-#include <string.h>
+/* STATIC keeps internal helpers private in normal builds.
+   Test builds define TESTITALL_TEST_HOOKS when they need to call selected
+   internal helpers directly. In that mode STATIC expands to nothing, so the
+   function names are exported from the object file. This does not make them
+   public API; only matching TESTITALL_TEST_HOOKS declarations expose specific
+   helpers to tests */
+#ifdef TESTITALL_TEST_HOOKS
+	#define STATIC
+#else
+	#define STATIC static
+#endif
 
 /**
  *
@@ -103,10 +88,10 @@
 
 /**
  *
- * Common usage structures and enumerations
+ * Common usage enumerations and bit flags
  *
  */
-#include "rational_strenum.h"
+#include "rational_enumerations.h"
 
 /**
  *
@@ -138,3 +123,5 @@
  *
  */
 #include "rational_provide.h"
+
+#endif // RATIONAL_H

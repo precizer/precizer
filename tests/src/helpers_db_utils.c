@@ -20,7 +20,7 @@ static Return open_db_from_tmpdir(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	create(char,db_path);
+	m_create(char,db_path,MEMORY_STRING);
 
 	if(db_filename == NULL || db_out == NULL)
 	{
@@ -36,19 +36,16 @@ static Return open_db_from_tmpdir(
 	{
 		*db_out = NULL;
 
-		if(SQLITE_OK != sqlite3_open_v2(getcstring(db_path),db_out,open_flags,NULL))
+		if(SQLITE_OK != sqlite3_open_v2(m_text(db_path),db_out,open_flags,NULL))
 		{
 			status = FAILURE;
 
-			if(*db_out != NULL)
-			{
-				(void)sqlite3_close(*db_out);
-				*db_out = NULL;
-			}
+			(void)sqlite3_close(*db_out);
+			*db_out = NULL;
 		}
 	}
 
-	del(db_path);
+	m_del(db_path);
 
 	return(status);
 }
@@ -75,7 +72,7 @@ Return db_paths_match(
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
 	const char *sql = "SELECT relative_path FROM files ORDER BY relative_path ASC;";
-	create(char,db_path);
+	m_create(char,db_path,MEMORY_STRING);
 
 	if(SUCCESS == status && (db_filename == NULL || expected_paths == NULL || expected_count < 0))
 	{
@@ -87,7 +84,7 @@ Return db_paths_match(
 		status = construct_path(db_filename,db_path);
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
+	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(m_text(db_path),&db,SQLITE_OPEN_READONLY,NULL))
 	{
 		status = FAILURE;
 	}
@@ -134,17 +131,82 @@ Return db_paths_match(
 		status = FAILURE;
 	}
 
-	if(stmt != NULL)
+	(void)sqlite3_finalize(stmt);
+
+	(void)sqlite3_close(db);
+
+	m_del(db_path);
+
+	return(status);
+}
+
+/**
+ * @brief Check whether one files-table row exists by relative path
+ *
+ * @param[in] db_filename Database filename relative to TMPDIR
+ * @param[in] relative_path Relative path key in files table
+ * @param[out] exists_out Output existence flag
+ *
+ * @return Return status code:
+ *         - SUCCESS: Query completed and output was filled
+ *         - FAILURE: Validation, DB access, bind, or query execution failed
+ */
+Return db_relative_path_exists(
+	const char *db_filename,
+	const char *relative_path,
+	bool       *exists_out)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	const char *sql = "SELECT 1 FROM files WHERE relative_path = ?1 LIMIT 1;";
+
+	if(db_filename == NULL || relative_path == NULL || exists_out == NULL)
 	{
-		(void)sqlite3_finalize(stmt);
+		status = FAILURE;
 	}
 
-	if(db != NULL)
+	if(SUCCESS == status)
 	{
-		(void)sqlite3_close(db);
+		status = open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db);
 	}
 
-	del(db_path);
+	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		const int rc = sqlite3_step(stmt);
+
+		if(rc == SQLITE_ROW)
+		{
+			*exists_out = true;
+
+			if(SQLITE_DONE != sqlite3_step(stmt))
+			{
+				status = FAILURE;
+			}
+
+		} else if(rc == SQLITE_DONE){
+			*exists_out = false;
+
+		} else {
+			status = FAILURE;
+		}
+	}
+
+	(void)sqlite3_finalize(stmt);
+
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -203,15 +265,9 @@ Return db_read_files_count(
 		}
 	}
 
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -270,15 +326,9 @@ Return read_db_version_from_metadata(
 		}
 	}
 
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -296,10 +346,10 @@ Return read_db_version_from_metadata(
  *         - FAILURE: Validation, DB access, missing row, or SHA512 blob size mismatch
  */
 Return read_final_sha512_from_db(
-	const char     *db_filename,
-	const char     *relative_path,
-	sqlite3_int64  *offset_out,
-	unsigned char  *sha512_out)
+	const char    *db_filename,
+	const char    *relative_path,
+	sqlite3_int64 *offset_out,
+	unsigned char *sha512_out)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -334,6 +384,7 @@ Return read_final_sha512_from_db(
 	if(SUCCESS == status)
 	{
 		const int step_rc = sqlite3_step(stmt);
+
 		if(step_rc != SQLITE_ROW)
 		{
 			status = FAILURE;
@@ -360,21 +411,16 @@ Return read_final_sha512_from_db(
 		}
 
 		const int done_rc = sqlite3_step(stmt);
+
 		if((SUCCESS == status) && done_rc != SQLITE_DONE)
 		{
 			status = FAILURE;
 		}
 	}
 
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -430,15 +476,9 @@ Return db_set_sha512_to_null(
 		status = FAILURE;
 	}
 
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
 	return(status);
 }
@@ -456,10 +496,10 @@ Return db_set_sha512_to_null(
  *         - FAILURE: Validation, DB access, or row parsing failed
  */
 Return read_resume_state_from_db(
-	const char     *db_filename,
-	const char     *relative_path,
-	sqlite3_int64  *offset_out,
-	int            *md_context_bytes_out)
+	const char    *db_filename,
+	const char    *relative_path,
+	sqlite3_int64 *offset_out,
+	int           *md_context_bytes_out)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -467,7 +507,7 @@ Return read_resume_state_from_db(
 	sqlite3 *db = NULL;
 	sqlite3_stmt *stmt = NULL;
 	const char *sql = "SELECT offset, mdContext FROM files WHERE relative_path = ?1;";
-	create(char,db_path);
+	m_create(char,db_path,MEMORY_STRING);
 
 	if(SUCCESS == status && (db_filename == NULL
 	        || relative_path == NULL
@@ -482,7 +522,7 @@ Return read_resume_state_from_db(
 		status = construct_path(db_filename,db_path);
 	}
 
-	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(getcstring(db_path),&db,SQLITE_OPEN_READONLY,NULL))
+	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(m_text(db_path),&db,SQLITE_OPEN_READONLY,NULL))
 	{
 		status = FAILURE;
 	}
@@ -500,6 +540,7 @@ Return read_resume_state_from_db(
 	if(SUCCESS == status)
 	{
 		const int step_rc = sqlite3_step(stmt);
+
 		if(step_rc != SQLITE_ROW)
 		{
 			status = FAILURE;
@@ -518,23 +559,18 @@ Return read_resume_state_from_db(
 		*md_context_bytes_out = sqlite3_column_bytes(stmt,1);
 
 		const int done_rc = sqlite3_step(stmt);
+
 		if(done_rc != SQLITE_DONE)
 		{
 			status = FAILURE;
 		}
 	}
 
-	if(stmt != NULL)
-	{
-		(void)sqlite3_finalize(stmt);
-	}
+	(void)sqlite3_finalize(stmt);
 
-	if(db != NULL)
-	{
-		(void)sqlite3_close(db);
-	}
+	(void)sqlite3_close(db);
 
-	del(db_path);
+	m_del(db_path);
 
 	return(status);
 }

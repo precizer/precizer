@@ -115,10 +115,7 @@ static Return process_row(
 		}
 	}
 
-	if(update_stmt != NULL)
-	{
-		sqlite3_finalize(update_stmt);
-	}
+	sqlite3_finalize(update_stmt);
 
 	provide(status);
 }
@@ -176,10 +173,7 @@ static Return process_database(
 		}
 	}
 
-	if(stmt != NULL)
-	{
-		sqlite3_finalize(stmt);
-	}
+	sqlite3_finalize(stmt);
 
 	provide(status);
 }
@@ -225,10 +219,7 @@ static Return normalize_journal_mode(sqlite3 *db)
 		}
 	}
 
-	if(stmt != NULL)
-	{
-		sqlite3_finalize(stmt);
-	}
+	sqlite3_finalize(stmt);
 
 	if(SUCCESS == status)
 	{

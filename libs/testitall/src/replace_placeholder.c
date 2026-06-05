@@ -18,7 +18,7 @@ Return replace_placeholder(
 		return FAILURE;
 	}
 
-	const char *subject = getcstring(pattern);
+	const char *subject = m_text(pattern);
 
 	if(subject == NULL)
 	{
@@ -29,7 +29,7 @@ Return replace_placeholder(
 
 	pcre2_code *re = NULL;
 	pcre2_match_data *match_data = NULL;
-	create(char,replacement_buffer);
+	m_create(char,replacement_buffer,MEMORY_STRING);
 
 	const PCRE2_SPTR pattern_str = (PCRE2_SPTR)placeholder;
 	const PCRE2_SPTR subject_str = (PCRE2_SPTR)subject;
@@ -85,16 +85,16 @@ Return replace_placeholder(
 			out_len = 1;
 		}
 
-		status = resize(replacement_buffer,(size_t)out_len);
+		status = m_resize(replacement_buffer,(size_t)out_len);
 	}
 
 	PCRE2_SIZE out_len_actual = out_len;
 
 	if(SUCCESS == status)
 	{
-		char *output = data(char,replacement_buffer);
+		char *replacement_buffer_data_rewritable = m_data(char,replacement_buffer);
 
-		if(output == NULL)
+		if(replacement_buffer_data_rewritable == NULL)
 		{
 			status = FAILURE;
 		} else {
@@ -108,7 +108,7 @@ Return replace_placeholder(
 				NULL,
 				replacement_str,
 				PCRE2_ZERO_TERMINATED,
-				(PCRE2_UCHAR8 *)output,
+				(PCRE2_UCHAR8 *)replacement_buffer_data_rewritable,
 				&out_len_actual);
 
 			if(rc < 0)
@@ -120,11 +120,11 @@ Return replace_placeholder(
 
 				if(actual_length + 1 > replacement_buffer->length)
 				{
-					status = resize(replacement_buffer,actual_length + 1);
+					status = m_resize(replacement_buffer,actual_length + 1);
 
-					output = data(char,replacement_buffer);
+					replacement_buffer_data_rewritable = m_data(char,replacement_buffer);
 
-					if(output == NULL)
+					if(replacement_buffer_data_rewritable == NULL)
 					{
 						status = FAILURE;
 					}
@@ -132,16 +132,17 @@ Return replace_placeholder(
 
 				if(SUCCESS == status)
 				{
-					output[actual_length] = '\0';
-					status = resize(replacement_buffer,actual_length + 1);
+					status = m_finalize_string(replacement_buffer,
+					                           actual_length,
+					                           WRITE_TERMINATOR_ALWAYS);
 				}
 			}
 		}
 	}
 
-	run(copy(pattern,replacement_buffer));
+	run(m_copy(pattern,replacement_buffer));
 
-	call(del(replacement_buffer));
+	call(m_del(replacement_buffer));
 
 	if(match_data != NULL)
 	{

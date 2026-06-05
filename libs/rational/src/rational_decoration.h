@@ -4,11 +4,13 @@
  *
  */
 
-#pragma once
+#ifndef RATIONAL_DECORATION_H
+#define RATIONAL_DECORATION_H
 
 #define SHORTTAB "\033[?5W"     /* 2 bytes tab */
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
+#define GRAY    "\033[90m"      /* Gray */
 #define RED     "\033[31m"      /* Red */
 #define GREEN   "\033[32m"      /* Green */
 #define YELLOW  "\033[33m"      /* Yellow */
@@ -25,3 +27,5 @@
 #define BOLDMAGENTA "\033[1m\033[35m"      /* Bold Magenta */
 #define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
 #define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
+
+#endif // RATIONAL_DECORATION_H

@@ -5,11 +5,11 @@
  *
  * Compares the path against PCRE2 patterns supplied via --lock-checksum=
  *
- * @param[in] relative_path Relative path to test
+ * @param[in] relative_path Relative path descriptor to test
  * @return LOCK_CHECKSUM if matched, DO_NOT_LOCK_CHECKSUM if not,
  *         FAIL_REGEXP_LOCK_CHECKSUM on PCRE2 error
  */
-LockChecksum match_checksum_lock_pattern(const char *relative_path)
+LockChecksum match_checksum_lock_pattern(const memory *relative_path)
 {
 	if(config->lock_checksum_pcre_compiled == NULL)
 	{
