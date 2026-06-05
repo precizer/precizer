@@ -6,7 +6,7 @@
  */
 static Return assert_compare_output(
 	const char *arguments,
-	const int expected_return_code,
+	const int  expected_return_code,
 	const char *stdout_pattern_file,
 	const char *stderr_pattern_file)
 {
@@ -14,12 +14,12 @@ static Return assert_compare_output(
 	/* By default, assumes the function ran without errors */
 	Return status = SUCCESS;
 
-	create(char,stdout_result);
-	create(char,stderr_result);
-	create(char,stdout_pattern);
-	create(char,stderr_pattern);
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+	m_create(char,stderr_pattern,MEMORY_STRING);
 
-	if((SUCCESS & status) && arguments == NULL)
+	if(arguments == NULL)
 	{
 		status = FAILURE;
 	}
@@ -45,10 +45,10 @@ static Return assert_compare_output(
 		run(match_pattern(stderr_result,stderr_pattern,stderr_pattern_file));
 	}
 
-	del(stderr_pattern);
-	del(stdout_pattern);
-	del(stderr_result);
-	del(stdout_result);
+	m_del(stderr_pattern);
+	m_del(stdout_pattern);
+	m_del(stderr_result);
+	m_del(stdout_result);
 
 	deliver(status);
 }
@@ -62,10 +62,9 @@ static Return prepare_compare_filter_differences_fixture(void)
 	/* By default, assumes the function ran without errors */
 	Return status = SUCCESS;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	run(move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	run(copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	run(set_environment_variable("TESTING","false"));
 
@@ -89,7 +88,7 @@ static Return prepare_compare_filter_differences_fixture(void)
 		status = FAILURE;
 	}
 
-	del(result);
+	m_del(result);
 
 	deliver(status);
 }
@@ -104,10 +103,9 @@ static Return prepare_compare_filter_one_sided_fixture(void)
 	/* By default, assumes the function ran without errors */
 	Return status = SUCCESS;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	run(move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	run(copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	run(set_environment_variable("TESTING","false"));
 
@@ -129,7 +127,7 @@ static Return prepare_compare_filter_one_sided_fixture(void)
 		status = FAILURE;
 	}
 
-	del(result);
+	m_del(result);
 
 	deliver(status);
 }
@@ -145,9 +143,7 @@ static Return cleanup_compare_filter_differences_fixture(void)
 
 	run(delete_path("database1.db"));
 	run(delete_path("database2.db"));
-	run(delete_path("tests/fixtures/diffs/diff1"));
-
-	run(move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	run(restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	deliver(status);
 }
@@ -161,7 +157,7 @@ static Return prepare_compare_filter_equal_fixture(void)
 	/* By default, assumes the function ran without errors */
 	Return status = SUCCESS;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	run(set_environment_variable("TESTING","false"));
 
@@ -181,7 +177,7 @@ static Return prepare_compare_filter_equal_fixture(void)
 		status = FAILURE;
 	}
 
-	del(result);
+	m_del(result);
 
 	deliver(status);
 }
@@ -209,12 +205,11 @@ static Return test0028_1(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -245,15 +240,13 @@ static Return test0028_1(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -266,12 +259,11 @@ static Return test0028_2(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -300,15 +292,13 @@ static Return test0028_2(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -321,12 +311,11 @@ static Return test0028_3(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -355,15 +344,13 @@ static Return test0028_3(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -376,12 +363,11 @@ static Return test0028_4(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	// Preparation for tests
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -410,15 +396,13 @@ static Return test0028_4(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
-
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	RETURN_STATUS;
 }
@@ -431,8 +415,8 @@ static Return test0028_5(void)
 	INITTEST;
 
 	// Create memory for the result
-	create(char,result);
-	create(char,pattern);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
 
 	const char *arguments = "--database=database1.db tests/fixtures/diffs/diff1";
 
@@ -453,8 +437,8 @@ static Return test0028_5(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	// Clean up test results
 	ASSERT(SUCCESS == delete_path("database1.db"));
@@ -469,6 +453,8 @@ static Return test0028_5(void)
 static Return test0028_6(void)
 {
 	INITTEST;
+
+	SLOWTEST;
 
 	struct compare_filter_case {
 		const char *arguments;
@@ -622,10 +608,9 @@ static Return test0028_9(void)
 {
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
-	ASSERT(SUCCESS == move_path("tests/fixtures/diffs/diff1","tests/fixtures/diff1_backup"));
-	ASSERT(SUCCESS == copy_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
@@ -650,11 +635,9 @@ static Return test0028_9(void)
 
 	ASSERT(SUCCESS == delete_path("database1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
-	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
-	ASSERT(SUCCESS == move_path("tests/fixtures/diff1_backup","tests/fixtures/diffs/diff1"));
-
-	del(result);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -692,7 +675,7 @@ static Return test0028_11(void)
 
 	INITTEST;
 
-	create(char,result);
+	m_create(char,result,MEMORY_STRING);
 
 	ASSERT(SUCCESS & prepare_compare_filter_differences_fixture());
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
@@ -713,7 +696,7 @@ static Return test0028_11(void)
 
 	ASSERT(SUCCESS & cleanup_compare_filter_equal_fixture());
 
-	del(result);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -764,18 +747,18 @@ Return test0028(void)
 {
 	INITTEST;
 
-	TEST(test0028_1,"One file is removed, updated, and added at a time…");
-	TEST(test0028_2,"One file is removed. It should be reflected as a change in one of the databases…");
-	TEST(test0028_3,"One file is added. It should be reflected as a change in one of the databases…");
-	TEST(test0028_4,"One file is updated and its checksum should change…");
-	TEST(test0028_5,"Nothing changes. The databases should be equivalent…");
-	TEST(test0028_6,"All supported --compare-filter combinations should behave as expected…");
-	TEST(test0028_7,"Invalid --compare-filter value should fail with an argument parsing error…");
-	TEST(test0028_8,"NULL and non-NULL SHA512 values should be reported as mismatches…");
-	TEST(test0028_9,"NULL SHA512 created from fixture changes should be reported as a mismatch…");
-	TEST(test0028_10,"Compare mode should work with database names containing apostrophes…");
-	TEST(test0028_11,"Silent compare mode should print only compare results…");
-	TEST(test0028_12,"Compare mode should apply --ignore and --include to the reported comparison scope, including summaries and equality messages…");
+	TEST(test0028_1,"One file is removed, updated, and added at a time");
+	TEST(test0028_2,"One file is removed. It should be reflected as a change in one of the databases");
+	TEST(test0028_3,"One file is added. It should be reflected as a change in one of the databases");
+	TEST(test0028_4,"One file is updated and its checksum should change");
+	TEST(test0028_5,"Nothing changes. The databases should be equivalent");
+	TEST(test0028_6,"All supported --compare-filter combinations should behave as expected");
+	TEST(test0028_7,"Invalid --compare-filter value should fail with an argument parsing error");
+	TEST(test0028_8,"NULL and non-NULL SHA512 values should be reported as mismatches");
+	TEST(test0028_9,"NULL SHA512 created from fixture changes should be reported as a mismatch");
+	TEST(test0028_10,"Compare mode should work with database names containing apostrophes");
+	TEST(test0028_11,"Silent compare mode should print only compare results");
+	TEST(test0028_12,"Compare mode should apply --ignore and --include to the reported comparison scope, including summaries and equality messages");
 
 	RETURN_STATUS;
 }

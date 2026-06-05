@@ -1,2 +1,0 @@
-\AERROR: src/test0008\.c:report_test:\d+ Memory reallocation failed with bytes 10 Errno: [^\n]+ \(errno: [0-9]+\)
-ERROR: src/test0008\.c:report_test:\d+ Buffer overflow at position 42 with value overflow Errno: [^\n]+ \(errno: [0-9]+\)\Z

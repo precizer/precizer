@@ -23,7 +23,7 @@ Return execute_command(
 	memory       *stdout_result,
 	memory       *stderr_result,
 	const int    expected_return_code,
-	unsigned int buffer_policy)
+	CAPTURE_POLICY buffer_policy)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -36,13 +36,13 @@ Return execute_command(
 	}
 
 	/* Clean the STDOUT buffer to prepare for new command output */
-	call(del(STDOUT));
+	call(m_del(STDOUT));
 
 	/* Execute the command with specified parameters */
 	run(external_call(command,stdout_result,stderr_result,expected_return_code,buffer_policy));
 
 	/* Free temporary STDOUT buffer after copying */
-	call(del(STDOUT));
+	call(m_del(STDOUT));
 
 	deliver(status);
 }

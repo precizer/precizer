@@ -1,7 +1,7 @@
 FROM archlinux@sha256:8435d30c1462f94345c3894ebbeaeecd658fcb284aa41b0bcc5f88728933447f AS arch
 
 RUN set -eux; \
-     pacman -Syu --noconfirm --needed base-devel gcc-libs clang sqlite llvm pcre2 upx inetutils cmocka; \
+     pacman -Syu --noconfirm --needed base-devel gcc-libs clang sqlite llvm pcre2 upx inetutils; \
      pacman -Scc --noconfirm
 
 WORKDIR /precizer

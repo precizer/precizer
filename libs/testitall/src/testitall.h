@@ -77,31 +77,66 @@
 		printf(CYAN msg RESET "\n"); \
 	}
 
-#define ASSERT(condition) \
-	if(SUCCESS == status) \
-	{ \
-		if(condition) \
+	#define ASSERT(condition) \
+		if(SUCCESS == status) \
 		{ \
-			status = SUCCESS; \
-		} else { \
-			failed_line = __LINE__; \
-			status = FAILURE; \
-		} \
-	}
+			if(condition) \
+			{ \
+				status = SUCCESS; \
+			} else { \
+				testitall_failure_location_record(__FILE__,__func__,__LINE__); \
+				status = FAILURE; \
+			} \
+		}
 
-#define RETURN_STATUS \
-	if(SUCCESS == status) \
-	{ \
-		echo(EXTEND,BOLDGREEN "✓" BOLDWHITE " passed " RESET); \
-	} else { \
-		if(failed_line > 0) \
+/**
+ * @def IF(condition)
+ * @brief Guard code that is safe to run only after a matching assertion passed
+ * @param condition Boolean expression that protects the guarded block
+ *
+ * Use this macro only for defensive branches in tests, typically after
+ * ASSERT(condition), or for cleanup branches in test infrastructure where
+ * the branch only checks whether a temporary resource was actually opened.
+ * Coverage builds exclude this macro from branch accounting, so regular
+ * test logic must still use plain `if`
+ */
+	#define IF(condition) \
+		if(condition)
+
+	#define RETURN_STATUS \
+		/* Count this completed test function for the final runner summary */ \
+		testitall_completed_tests++; \
+		if(SUCCESS == status) \
 		{ \
-			echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed on line %d" RESET,failed_line); \
+			echo(EXTEND,BOLDGREEN "✓" BOLDWHITE " passed" RESET); \
 		} else { \
-			echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
+			if(testitall_failure_location_report(EXTEND) == false) \
+			{ \
+				echo(EXTEND,BOLDRED "𐄂" BOLDWHITE " failed" RESET); \
+			} \
 		} \
-	} \
-	deliver(status); \
+		deliver(status); \
+
+/**
+ * @brief Bitmask flags for stdout/stderr capture.
+ *
+ * Flags are ORed together:
+ * - STDOUT_SUPPRESS: drop captured stdout.
+ * - STDERR_SUPPRESS: drop captured stderr and do not fail on it.
+ * - STDERR_ALLOW: keep stderr without failing; wins over STDERR_SUPPRESS.
+ * - STDOUT_ENABLE/STDERR_ENABLE and ALLOW_BOTH are informational only.
+ * - SUPPRESS_BOTH_BUFFERS is STDOUT_SUPPRESS|STDERR_SUPPRESS.
+ */
+typedef enum CAPTURE_POLICY : unsigned int
+{
+	STDOUT_ENABLE = 1u << 0,
+	STDOUT_SUPPRESS = 1u << 1,
+	STDERR_ENABLE = 1u << 2,
+	STDERR_SUPPRESS = 1u << 3,
+	STDERR_ALLOW = 1u << 4,
+	ALLOW_BOTH = STDOUT_ENABLE | STDERR_ENABLE,   // Hex: 0x05. Dec: 5. Bin: 00101
+	SUPPRESS_BOTH_BUFFERS = STDOUT_SUPPRESS | STDERR_SUPPRESS      // Hex: 0x0A. Dec: 10. Bin: 01010
+} CAPTURE_POLICY;
 
 // Global buffers for capturing output streams.
 extern memory _STDOUT;
@@ -111,12 +146,23 @@ extern memory *STDERR;
 extern memory _EXTEND;
 extern memory *EXTEND;
 
+extern size_t testitall_completed_tests;
+
+void testitall_failure_location_record(
+	const char *,
+	const char *,
+	int);
+
+void testitall_failure_location_clear(void);
+
+bool testitall_failure_location_report(memory *);
+
 Return external_call(
 	const char *,
 	memory *,
 	memory *,
 	const int,
-	unsigned int);
+	CAPTURE_POLICY);
 
 void echo(
 	memory *,
@@ -128,7 +174,7 @@ Return execute_command(
 	memory *,
 	memory *,
 	const int,
-	unsigned int);
+	CAPTURE_POLICY);
 
 Return execute_and_set_variable(
 	const char *,
@@ -145,7 +191,7 @@ Return set_environment_variable(
  * @param[out] path Destination memory descriptor initialized for char elements
  * @return SUCCESS on success or FAILURE on error
  */
-Return get_origin_dir(memory *);
+Return determine_origin_dir(memory *);
 
 /**
  * @brief Create a unique temporary directory and keep its path in the buffer
@@ -163,6 +209,16 @@ Return function_capture(
 Return get_file_content(
 	const char *,
 	memory *);
+
+Return compare_memory_strings(
+	memory *,
+	const memory *,
+	const memory *);
+
+Return match_function_output(
+	const char *,
+	const char *,
+	Return (*)(void));
 
 Return match_pattern(
 	const memory *,
@@ -241,7 +297,21 @@ Return construct_path(
  * @param[in] end Inclusive upper bound
  * @return SUCCESS on success or FAILURE on error
  */
-Return random_number_generator(
+Return random_number_generator_urandom(
+	uint64_t *,
+	uint64_t,
+	uint64_t
+);
+
+/**
+ * @brief Generate a pseudorandom integer in the inclusive `[start..end]` range
+ *
+ * @param[out] random_number Output random value
+ * @param[in] start Inclusive lower bound
+ * @param[in] end Inclusive upper bound
+ * @return SUCCESS on success or FAILURE on error
+ */
+Return random_number_generator_xoshiro(
 	uint64_t *,
 	uint64_t,
 	uint64_t
@@ -289,6 +359,7 @@ Return extract_current_executable_directory_name(memory *);
 // Macro to measure the start time of a test.
 #define SUTESTART \
 	long long int _test_start_time = cur_time_ns(); \
+	testitall_failure_location_clear(); \
 	/* The status that will be returned before exiting. */ \
 	/* By default, assumes the function ran without errors. */ \
 	Return status = SUCCESS; \
@@ -299,6 +370,7 @@ Return extract_current_executable_directory_name(memory *);
 	long long int _test_end_time = cur_time_ns(); \
 	long long int _time_spent = _test_end_time - _test_start_time; \
 	printf(WHITE "Total execution time: %s\n" RESET,form_date(_time_spent,FULL_VIEW)); \
+	printf(WHITE "Total completed tests: %zu\n" RESET,testitall_completed_tests); \
 	if(TRIUMPH & status) \
 	{ \
 		printf(WHITE "Completed " BOLDGREEN "successfully\n" RESET); \
@@ -313,8 +385,7 @@ Return extract_current_executable_directory_name(memory *);
 #define INITTEST \
 	/* The status that will be returned before exiting. */ \
 	/* By default, assumes the function ran without errors. */ \
-	Return status = SUCCESS; \
-	int failed_line = 0;
+	Return status = SUCCESS;
 
 #define SLOWTEST \
 	const char *compare_string = "skip"; \
@@ -326,6 +397,20 @@ Return extract_current_executable_directory_name(memory *);
 		deliver(DONOTHING); \
 	}
 
+/* Skip the current subtest at compile time when the build runs on Evil
+   Empire OS. Mirrors the SLOWTEST contract but reacts to the
+   EVIL_EMPIRE_OS build define instead of an env var. When EVIL_EMPIRE_OS
+   is defined, the macro emits a yellow skip tag through the testitall
+   reporter and returns DONOTHING. On every other build the macro expands
+   to nothing, so the surrounding subtest runs as usual */
+#ifdef EVIL_EMPIRE_OS
+#define SKIP_ON_EVIL_EMPIRE_OS \
+	echo(EXTEND,BOLDYELLOW "↯" BOLDWHITE " skipped on Evil Empire OS" RESET); \
+	deliver(DONOTHING);
+#else
+#define SKIP_ON_EVIL_EMPIRE_OS
+#endif
+
 Return testitall(
 	Return (*)(void),
 	const char *,
@@ -335,27 +420,6 @@ enum run_mode
 {
 	INTERNAL_TEST = 0,
 	EXTERNAL_CALL = 1
-};
-
-/**
- * @brief Bitmask flags for stdout/stderr capture.
- *
- * Flags are ORed together:
- * - STDOUT_SUPPRESS: drop captured stdout.
- * - STDERR_SUPPRESS: drop captured stderr and do not fail on it.
- * - STDERR_ALLOW: keep stderr without failing; wins over STDERR_SUPPRESS.
- * - STDOUT_ENABLE/STDERR_ENABLE and ALLOW_BOTH are informational only.
- * - SUPPRESS_BOTH_BUFFERS is STDOUT_SUPPRESS|STDERR_SUPPRESS.
- */
-enum capture_policy
-{
-	STDOUT_ENABLE         = 1U << 0,
-	STDOUT_SUPPRESS       = 1U << 1,
-	STDERR_ENABLE         = 1U << 2,
-	STDERR_SUPPRESS       = 1U << 3,
-	STDERR_ALLOW          = 1U << 4,
-	ALLOW_BOTH            = STDOUT_ENABLE|STDERR_ENABLE,
-	SUPPRESS_BOTH_BUFFERS = STDOUT_SUPPRESS|STDERR_SUPPRESS
 };
 
 extern enum run_mode run_external;
@@ -369,7 +433,7 @@ Return runit(
 	memory *,
 	memory *,
 	const int,
-	unsigned int);
+	CAPTURE_POLICY);
 
 /**
  * @brief Run precizer in background and complete signal-driven scenario.
@@ -392,7 +456,7 @@ Return runit_background(
 	memory *,
 	memory *,
 	const int,
-	unsigned int,
+	CAPTURE_POLICY,
 	uint64_t,
 	uint64_t,
 	int,

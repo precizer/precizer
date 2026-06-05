@@ -1,8 +1,11 @@
 #include "rational.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 // Global flag to manage output of all logging messages
 // in an application and its default value
-_Atomic char rational_logger_mode = REGULAR;
+_Atomic LOGMODES rational_logger_mode = REGULAR;
 _Atomic Return global_return_status = SUCCESS;
 
 /**
@@ -13,7 +16,7 @@ _Atomic Return global_return_status = SUCCESS;
  *          are separated by " | ". For example, (VERBOSE | SILENT) will be
  *          converted to "VERBOSE | SILENT"
  *
- * @param mode Integer containing the combination of LOGMODES flags
+ * @param mode Combination of LOGMODES flags
  * @return char* Pointer to static string containing flag names
  *
  * @note The function uses a static buffer which means:
@@ -24,7 +27,7 @@ _Atomic Return global_return_status = SUCCESS;
  *
  * @warning Maximum resulting string length is limited to 256 characters
  */
-char *rational_reconvert(int mode)
+char *rational_reconvert(LOGMODES mode)
 {
 	/* Static buffer to store the resulting string */
 	static char buffer[MAX_CHARACTERS];
@@ -37,7 +40,7 @@ char *rational_reconvert(int mode)
 	 * The array is terminated with {0, NULL} for easy iteration
 	 */
 	static const struct {
-		int flag;          /* Flag value from LOGMODES enum */
+		LOGMODES flag;     /* Flag value from LOGMODES constants */
 		const char *name;  /* String representation of the flag */
 	} mapping[] = {
 		{REGULAR,"REGULAR"},
@@ -180,15 +183,15 @@ static void logger_line_append(
 }
 
 __attribute__((format(printf,7,0)))
-void logger_line(
-	char               **line,
-	int                *line_len,
-	const unsigned int level,
-	const char *const  filename,
-	size_t             line_number,
-	const char *const  funcname,
-	const char         *fmt,
-	va_list            args)
+static void logger_line(
+	char              **line,
+	int               *line_len,
+	const LOGMODES    level,
+	const char *const filename,
+	size_t            line_number,
+	const char *const funcname,
+	const char        *fmt,
+	va_list           args)
 {
 	if(rational_logger_mode & SILENT)
 	{
@@ -264,11 +267,11 @@ void logger_line(
  */
 __attribute__((format(printf,5,6))) // Without this we will get warning
 void rational_logger(
-	const unsigned int level,
-	const char *const  filename,
-	size_t             line,
-	const char *const  funcname,
-	const char         *fmt,
+	const LOGMODES    level,
+	const char *const filename,
+	size_t            line,
+	const char *const funcname,
+	const char        *fmt,
 	...)
 {
 

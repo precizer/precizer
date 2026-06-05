@@ -4,11 +4,11 @@
 #include <sys/wait.h>
 
 // Global buffers for captured output streams
-memory _STDOUT = {sizeof(char),0,0,NULL};
+memory _STDOUT = m_init_static(char,MEMORY_STRING);
 memory *STDOUT = &_STDOUT;
-memory _STDERR = {sizeof(char),0,0,NULL};
+memory _STDERR = m_init_static(char,MEMORY_STRING);
 memory *STDERR = &_STDERR;
-memory _EXTEND = {sizeof(char),0,0,NULL};
+memory _EXTEND = m_init_static(char,MEMORY_STRING);
 memory *EXTEND = &_EXTEND;
 
 extern char **environ; // Environment variables used by posix_spawnp
@@ -25,7 +25,7 @@ extern char **environ; // Environment variables used by posix_spawnp
 static Return external_call_impl(
 	const char   *command,
 	const int    expected_return_code,
-	unsigned int buffer_policy)
+	CAPTURE_POLICY buffer_policy)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -117,22 +117,27 @@ static Return external_call_impl(
 
 	if(total_read > 0)
 	{
-		if(resize(STDOUT,total_read + 1) != SUCCESS)
+		if(m_resize(STDOUT,total_read + 1) != SUCCESS)
 		{
 			free(tmp_stdout_buffer);
 			deliver(FAILURE);
 		}
 
-		char *stdout_mem = data(char,STDOUT);
+		char *stdout_data_rewritable = m_data(char,STDOUT);
 
-		if(stdout_mem == NULL)
+		if(stdout_data_rewritable == NULL)
 		{
 			free(tmp_stdout_buffer);
 			deliver(FAILURE);
 		}
 
-		memcpy(stdout_mem,tmp_stdout_buffer,(size_t)total_read);
-		stdout_mem[STDOUT->length - 1] = '\0';
+		memcpy(stdout_data_rewritable,tmp_stdout_buffer,(size_t)total_read);
+
+		if(m_finalize_string(STDOUT,total_read,WRITE_TERMINATOR_ALWAYS) != SUCCESS)
+		{
+			free(tmp_stdout_buffer);
+			deliver(FAILURE);
+		}
 	}
 
 	free(tmp_stdout_buffer); // Free allocated memory
@@ -173,22 +178,27 @@ static Return external_call_impl(
 
 	if(total_read > 0)
 	{
-		if(resize(STDERR,total_read + 1) != SUCCESS)
+		if(m_resize(STDERR,total_read + 1) != SUCCESS)
 		{
 			free(tmp_stderr_buffer);
 			deliver(FAILURE);
 		}
 
-		char *stderr_mem = data(char,STDERR);
+		char *stderr_data_rewritable = m_data(char,STDERR);
 
-		if(stderr_mem == NULL)
+		if(stderr_data_rewritable == NULL)
 		{
 			free(tmp_stderr_buffer);
 			deliver(FAILURE);
 		}
 
-		memcpy(stderr_mem,tmp_stderr_buffer,(size_t)total_read);
-		stderr_mem[STDERR->length - 1] = '\0';
+		memcpy(stderr_data_rewritable,tmp_stderr_buffer,(size_t)total_read);
+
+		if(m_finalize_string(STDERR,total_read,WRITE_TERMINATOR_ALWAYS) != SUCCESS)
+		{
+			free(tmp_stderr_buffer);
+			deliver(FAILURE);
+		}
 	}
 
 	free(tmp_stderr_buffer);
@@ -211,8 +221,8 @@ static Return external_call_impl(
 	{
 		// Format stderr output
 		char *str;
-		const char *stderr_view = getcstring(STDERR);
-		const char *stdout_view = getcstring(STDOUT);
+		const char *stderr_view = m_text(STDERR);
+		const char *stdout_view = m_text(STDOUT);
 		int rt = asprintf(&str,YELLOW "ERROR: Unexpected exit code!" RESET "\n"
 			YELLOW "External command call:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
 			YELLOW "Exited with code " RESET "%d " YELLOW "but expected " RESET "%d\n"
@@ -229,9 +239,9 @@ static Return external_call_impl(
 		if(rt > -1)
 		{
 			// Copy str into STDERR buffer
-			run(resize(STDERR,(size_t)rt + 1));
+			run(m_resize(STDERR,(size_t)rt + 1));
 
-			run(copy_literal(STDERR,str));
+			run(m_copy_fixed_string(STDERR,(size_t)rt + 1U,str));
 
 		} else {
 			report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);
@@ -242,19 +252,19 @@ static Return external_call_impl(
 		deliver(FAILURE);
 	}
 
-	if(STDERR->length > 0)
+	if(STDERR->string_length > 0U)
 	{
 		if(allow_stderr == true)
 		{
 			// Keep STDERR contents without failing
 		} else if(suppress_stderr == true){
 			// Suppress the output from the STDERR buffer
-			del(STDERR);
+			m_del(STDERR);
 
 		} else {
 			// Format stderr output
 			char *str;
-			const char *stderr_view = getcstring(STDERR);
+			const char *stderr_view = m_text(STDERR);
 			int rt = asprintf(&str, \
 				YELLOW "Warning! STDERR buffer is not empty!\n"
 				"External command call:\n" YELLOW ">>" RESET "%s" YELLOW "<<" RESET "\n"
@@ -264,9 +274,9 @@ static Return external_call_impl(
 			if(rt > -1)
 			{
 				// Copy str into STDERR buffer
-				run(resize(STDERR,(size_t)rt + 1));
+				run(m_resize(STDERR,(size_t)rt + 1));
 
-				run(copy_literal(STDERR,str));
+				run(m_copy_fixed_string(STDERR,(size_t)rt + 1U,str));
 
 			} else {
 				report("Memory allocation failed, requested size: %zu bytes",(size_t)rt + 1);
@@ -278,13 +288,13 @@ static Return external_call_impl(
 		}
 	}
 
-	if(STDOUT->length > 0)
+	if(STDOUT->string_length > 0U)
 	{
 		// Suppress the output from the STDOUT buffer if needed
 		if(suppress_stdout == true)
 		{
 			// Suppress the output from the STDOUT buffer
-			del(STDOUT);
+			m_del(STDOUT);
 
 		}
 	}
@@ -304,7 +314,7 @@ Return external_call(
 	memory       *stdout_result,
 	memory       *stderr_result,
 	const int    expected_return_code,
-	unsigned int buffer_policy)
+	CAPTURE_POLICY buffer_policy)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -312,24 +322,24 @@ Return external_call(
 	const bool allow_stderr = (buffer_policy & STDERR_ALLOW) != 0U;
 
 	// Clear data from previous usage
-	call(del(STDOUT));
-	call(del(STDERR));
+	call(m_del(STDOUT));
+	call(m_del(STDERR));
 
 	run(external_call_impl(command,expected_return_code,buffer_policy));
 
-	if(NULL != stdout_result && STDOUT->length > 0U)
+	if(NULL != stdout_result && STDOUT->string_length > 0U)
 	{
-		call(copy(stdout_result,STDOUT));
+		call(m_copy(stdout_result,STDOUT));
 	}
 
-	if(NULL != stderr_result && STDERR->length > 0U)
+	if(NULL != stderr_result && STDERR->string_length > 0U)
 	{
-		call(copy(stderr_result,STDERR));
+		call(m_copy(stderr_result,STDERR));
 	}
 
 	if(true == allow_stderr)
 	{
-		run(del(STDERR));
+		run(m_del(STDERR));
 	}
 
 	deliver(status);

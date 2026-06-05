@@ -4,11 +4,11 @@ Return long_relative_path_test(void)
 {
 	INITTEST;
 
-	create(char,pattern);
+	m_create(char,pattern);
 
 	// Create memory for the result
-	create(char,result);
-	create(char,chunk);
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,chunk,MEMORY_STRING);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -22,12 +22,12 @@ Return long_relative_path_test(void)
 	const char *filename = "templates/0014_001_1.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db tests/fixtures/long";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	const char *command = "cd ${TMPDIR} && "
 	        "rm database1.db";
@@ -37,9 +37,9 @@ Return long_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Second test in the series. First, create a file database with a very
@@ -51,13 +51,13 @@ Return long_relative_path_test(void)
 	filename = "templates/0014_001_2.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db "
 	        "tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	command = "cd ${TMPDIR} && "
 	        "rm database1.db";
@@ -67,9 +67,9 @@ Return long_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Third test in the series. Very long path as the
@@ -98,7 +98,7 @@ Return long_relative_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONGEST_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=database1.db tests/fixtures/long/${LONGEST_PATH}";
 
@@ -114,8 +114,8 @@ Return long_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	/*
 	 * Test #4 in the series. A very long relative path will
@@ -145,7 +145,7 @@ Return long_relative_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONG_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=tests/fixtures/long/${LONG_PATH}/database1.db "
 	        "--ignore=\"^${LONG_PATH}/database1\\.db.*$\" "
@@ -163,8 +163,8 @@ Return long_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -173,11 +173,11 @@ Return long_absolute_path_test(void)
 {
 	INITTEST;
 
-	create(char,pattern);
+	m_create(char,pattern);
 
 	// Create memory for the result
-	create(char,result);
-	create(char,chunk);
+	m_create(char,result);
+	m_create(char,chunk);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -192,13 +192,13 @@ Return long_absolute_path_test(void)
 	const char *filename = "templates/0014_002_1.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db "
 	        "${TMPDIR}/tests/fixtures/long";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	const char *command = "cd ${TMPDIR} && "
 	        "rm ${TMPDIR}/database1.db";
@@ -208,9 +208,9 @@ Return long_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Second test in the series. First, create a file database with a very
@@ -223,13 +223,13 @@ Return long_absolute_path_test(void)
 	filename = "templates/0014_002_2.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db "
 	        "${TMPDIR}/tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	command = "cd ${TMPDIR} && "
 	        "rm ${TMPDIR}/database1.db";
@@ -239,9 +239,9 @@ Return long_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Third test in the series. Very long path as the
@@ -270,7 +270,7 @@ Return long_absolute_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONGEST_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=${TMPDIR}/database1.db "
 	        "${TMPDIR}/tests/fixtures/long/${LONGEST_PATH}";
@@ -287,8 +287,8 @@ Return long_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	/*
 	 * Test #4 in the series. A very long relative path will
@@ -318,7 +318,7 @@ Return long_absolute_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONG_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=${TMPDIR}/tests/fixtures/long/${LONG_PATH}/database1.db "
 	        "--ignore=\"^${LONG_PATH}/database1\\.db.*$\" "
@@ -336,8 +336,8 @@ Return long_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -346,11 +346,11 @@ Return reset_relative_path_test(void)
 {
 	INITTEST;
 
-	create(char,pattern);
+	m_create(char,pattern);
 
 	// Create memory for the result
-	create(char,result);
-	create(char,chunk);
+	m_create(char,result);
+	m_create(char,chunk);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -364,12 +364,12 @@ Return reset_relative_path_test(void)
 	const char *filename = "templates/0014_003_1.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db tests/fixtures/long";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	const char *command = "cd ${TMPDIR} && "
 	        "/bin/rm database1.db";
@@ -379,9 +379,9 @@ Return reset_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Second test in the series. The PATH variable has been removed.
@@ -394,13 +394,13 @@ Return reset_relative_path_test(void)
 	filename = "templates/0014_003_2.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=database1.db "
 	        "tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	command = "cd ${TMPDIR} && "
 	        "/bin/rm database1.db";
@@ -410,9 +410,9 @@ Return reset_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Third test in the series. The PATH variable has been removed.
@@ -442,7 +442,7 @@ Return reset_relative_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONGEST_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=database1.db tests/fixtures/long/${LONGEST_PATH}";
 
@@ -458,8 +458,8 @@ Return reset_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	/*
 	 * Test #4 in the series. The PATH variable has been removed.
@@ -490,7 +490,7 @@ Return reset_relative_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONG_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=tests/fixtures/long/${LONG_PATH}/database1.db "
 	        "--ignore=\"^${LONG_PATH}/database1\\.db.*$\" "
@@ -508,8 +508,8 @@ Return reset_relative_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -518,11 +518,11 @@ Return reset_absolute_path_test(void)
 {
 	INITTEST;
 
-	create(char,pattern);
+	m_create(char,pattern);
 
 	// Create memory for the result
-	create(char,result);
-	create(char,chunk);
+	m_create(char,result);
+	m_create(char,chunk);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -538,13 +538,13 @@ Return reset_absolute_path_test(void)
 	const char *filename = "templates/0014_004_1.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db "
 	        "${TMPDIR}/tests/fixtures/long";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	const char *command = "cd ${TMPDIR} && "
 	        "/bin/rm ${TMPDIR}/database1.db";
@@ -554,9 +554,9 @@ Return reset_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Second test in the series. The PATH variable has been removed.
@@ -570,13 +570,13 @@ Return reset_absolute_path_test(void)
 	filename = "templates/0014_004_2.txt";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == copy(result,chunk));
+	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	arguments = "--update --force --database=${TMPDIR}/database1.db "
 	        "${TMPDIR}/tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == concat_strings(result,chunk));
+	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	command = "cd ${TMPDIR} && "
 	        "/bin/rm ${TMPDIR}/database1.db";
@@ -586,9 +586,9 @@ Return reset_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
-	del(chunk);
+	m_del(pattern);
+	m_del(result);
+	m_del(chunk);
 
 	/*
 	 * Third test in the series. The PATH variable has been removed.
@@ -618,7 +618,7 @@ Return reset_absolute_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONGEST_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=${TMPDIR}/database1.db "
 	        "${TMPDIR}/tests/fixtures/long/${LONGEST_PATH}";
@@ -635,8 +635,8 @@ Return reset_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	/*
 	 * Test #4 in the series. The PATH variable has been removed.
@@ -667,7 +667,7 @@ Return reset_absolute_path_test(void)
 
 	ASSERT(SUCCESS == set_environment_variable("LONG_PATH",line));
 
-	reset(&line);
+	m_reset(&line);
 
 	arguments = "--database=${TMPDIR}/tests/fixtures/long/${LONG_PATH}/database1.db "
 	        "--ignore=\"^${LONG_PATH}/database1\\.db.*$\" "
@@ -685,8 +685,8 @@ Return reset_absolute_path_test(void)
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
 	// Clean to use it iteratively
-	del(pattern);
-	del(result);
+	m_del(pattern);
+	m_del(result);
 
 	RETURN_STATUS;
 }
@@ -696,10 +696,10 @@ Return test0014(void)
 {
 	INITTEST;
 
-	TEST(long_relative_path_test,"Very long relative path…");
-	TEST(long_absolute_path_test,"Long absolute path…");
-	TEST(reset_relative_path_test,"Reset PATH and relative path…");
-	TEST(reset_absolute_path_test,"Reset PATH and absolute path…");
+	TEST(long_relative_path_test,"Very long relative path");
+	TEST(long_absolute_path_test,"Long absolute path");
+	TEST(reset_relative_path_test,"Reset PATH and relative path");
+	TEST(reset_absolute_path_test,"Reset PATH and absolute path");
 
 	RETURN_STATUS;
 }

@@ -14,8 +14,6 @@ Return write_to_temp_file(const char *buffer)
 
 	int fd = -1;
 	FILE *temp_file = NULL;
-	char template[] = "/tmp/testitall_XXXXXX";
-	int write_result;
 
 	if(SUCCESS == status)
 	{
@@ -27,6 +25,8 @@ Return write_to_temp_file(const char *buffer)
 
 	if(SUCCESS == status)
 	{
+		char template[] = "/tmp/testitall_XXXXXX";
+
 		fd = mkstemp(template);
 
 		if(fd == -1)
@@ -47,7 +47,7 @@ Return write_to_temp_file(const char *buffer)
 
 	if(SUCCESS == status)
 	{
-		write_result = fprintf(temp_file,"%s",buffer);
+		int write_result = fprintf(temp_file,"%s",buffer);
 
 		if(write_result < 0)
 		{

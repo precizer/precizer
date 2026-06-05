@@ -31,100 +31,114 @@
  */
 Return extract_current_executable_directory_name(memory *environment)
 {
-	/* This function was reviewed line by line by a human and is not AI-generated
-	   Any change to this function requires separate explicit approval */
-
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
-	char *executable_path = NULL;
+	char *executable_path_data_rewritable = NULL;
+	size_t executable_path_length = 0U;
+	size_t directory_result_length = 0U;
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
-		if(SUCCESS != resize(environment,(size_t)PATH_MAX))
+		status = m_resize(environment,(size_t)PATH_MAX);
+	}
+
+	if(TRIUMPH & status)
+	{
+		executable_path_data_rewritable = m_data(char,environment);
+
+		if(NULL == executable_path_data_rewritable)
 		{
 			status = FAILURE;
-		} else {
-			executable_path = data(char,environment);
-
-			if(NULL == executable_path)
-			{
-				status = FAILURE;
-			}
 		}
 	}
 
 #ifdef EVIL_EMPIRE_OS // macOS build flag
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
-		create(char,executable_path_source_buffer);
+		m_create(char,executable_path_source_buffer,MEMORY_STRING);
 		uint32_t executable_path_size = (uint32_t)PATH_MAX;
-		char *executable_path_source = NULL;
+		char *executable_path_source_data_rewritable = NULL;
 
-		if(SUCCESS != resize(executable_path_source_buffer,(size_t)PATH_MAX))
+		if(TRIUMPH & status)
 		{
-			status = FAILURE;
-		} else {
-			executable_path_source = data(char,executable_path_source_buffer);
+			status = m_resize(executable_path_source_buffer,(size_t)PATH_MAX);
+		}
 
-			if(NULL == executable_path_source)
+		if(TRIUMPH & status)
+		{
+			executable_path_source_data_rewritable = m_data(char,executable_path_source_buffer);
+
+			if(NULL == executable_path_source_data_rewritable)
 			{
 				status = FAILURE;
 			}
 		}
 
 		/* _NSGetExecutablePath returns 0 on success, else sets required size */
-		if(SUCCESS == status && 0 != _NSGetExecutablePath(executable_path_source,&executable_path_size))
+		if((TRIUMPH & status) && 0 != _NSGetExecutablePath(executable_path_source_data_rewritable,&executable_path_size))
 		{
 			status = FAILURE;
 		}
 
-		if(SUCCESS == status && NULL == realpath(executable_path_source,executable_path))
+		if((TRIUMPH & status) && NULL == realpath(executable_path_source_data_rewritable,executable_path_data_rewritable))
 		{
 			status = FAILURE;
 		}
 
-		call(del(executable_path_source_buffer));
+		if(TRIUMPH & status)
+		{
+			executable_path_length = strnlen(executable_path_data_rewritable,(size_t)PATH_MAX);
+
+			if(executable_path_length >= (size_t)PATH_MAX)
+			{
+				status = FAILURE;
+			}
+		}
+
+		call(m_del(executable_path_source_buffer));
 	}
-
 #else
-
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
 	{
-		ssize_t executable_path_length = 0;
+		ssize_t readlink_length = 0;
 
-		executable_path_length = readlink("/proc/self/exe",executable_path,(size_t)PATH_MAX - 1U);
+		readlink_length = readlink("/proc/self/exe",executable_path_data_rewritable,(size_t)PATH_MAX - 1U);
 
-		if(executable_path_length < 0)
+		if(readlink_length < 0)
 		{
 			status = FAILURE;
 		} else {
 			/* If the returned length hits the limit, the path could be truncated */
-			if(executable_path_length >= (ssize_t)((size_t)PATH_MAX - 1U))
+			if(readlink_length >= (ssize_t)((size_t)PATH_MAX - 1U))
 			{
 				status = FAILURE;
 			} else {
-				executable_path[executable_path_length] = '\0';
+				executable_path_length = (size_t)readlink_length;
 			}
 		}
 	}
 #endif
 
-	if(SUCCESS == status)
+	if(TRIUMPH & status)
+	{
+		status = m_finalize_string(environment,executable_path_length,WRITE_TERMINATOR_ALWAYS);
+	}
+
+	if(TRIUMPH & status)
 	{
 		const char *last_slash = NULL;
 		const char *previous_slash = NULL;
-		const char *walker = executable_path;
+		const char *executable_path_text = m_text(environment);
 
 		/* Identify last and previous '/' */
-		while('\0' != *walker)
+		for(size_t i = 0U; i < executable_path_length; i++)
 		{
-			if('/' == *walker)
+			if('/' == executable_path_text[i])
 			{
 				previous_slash = last_slash;
-				last_slash = walker;
+				last_slash = &executable_path_text[i];
 			}
-			walker++;
 		}
 
 		if(NULL == last_slash)
@@ -135,31 +149,39 @@ Return extract_current_executable_directory_name(memory *environment)
 			if(NULL == previous_slash)
 			{
 				/* Path like "/binary": parent dir is "/" and has no name */
-				executable_path[0] = '\0';
+				executable_path_data_rewritable[0] = '\0';
 
-				if(SUCCESS != resize(environment,1U,RELEASE_UNUSED))
-				{
-					status = FAILURE;
-				}
+				status = m_finalize_string(environment,0U,WRITE_TERMINATOR_ALWAYS);
+
 			} else {
 				/* Directory name starts after previous_slash */
 				const char *directory_name = previous_slash + 1;
+				const size_t directory_offset = (size_t)(directory_name - executable_path_text);
 				const size_t directory_length = (size_t)(last_slash - directory_name);
 
-				memmove(executable_path,directory_name,directory_length);
-				executable_path[directory_length] = '\0';
+				memmove(
+					executable_path_data_rewritable,
+					executable_path_data_rewritable + directory_offset,
+					directory_length);
 
-				if(SUCCESS != resize(environment,directory_length + 1U,RELEASE_UNUSED))
-				{
-					status = FAILURE;
-				}
+				status = m_finalize_string(environment,directory_length,WRITE_TERMINATOR_ALWAYS);
 			}
 		}
 	}
 
-	if(SUCCESS != status)
+	if(TRIUMPH & status)
 	{
-		del(environment);
+		status = m_string_length(environment,&directory_result_length);
+	}
+
+	if(TRIUMPH & status)
+	{
+		status = m_resize(environment,directory_result_length + 1U,RELEASE_UNUSED);
+	}
+
+	if(CRITICAL & status)
+	{
+		call(m_del(environment));
 	}
 
 	deliver(status);

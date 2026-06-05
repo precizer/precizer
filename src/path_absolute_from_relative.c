@@ -45,9 +45,22 @@ Return path_absolute_from_relative(
 		snprintf(*absolute_path,len,"%s",path);
 
 	} else {
-		// The provided path is indeed relative!
-		// running_dir_size already counts the trailing '\0'; +1 adds space for '/' and the new terminator.
-		len = (size_t)config->running_dir_size + path_size + 1;
+		/* The provided path is indeed relative!
+		   string_length is the visible path length without '\0'; +2 adds space for '/' and the new terminator */
+		if(conf(running_dir)->string_length == 0)
+		{
+			report("Absolute path construction requires a non-empty running directory");
+			provide(FAILURE);
+		}
+
+		const char *running_dir = m_data_ro(char,conf(running_dir));
+
+		if(running_dir == NULL)
+		{
+			provide(FAILURE);
+		}
+
+		len = conf(running_dir)->string_length + path_size + 2U;
 		*absolute_path = (char *)malloc(len);
 
 		if(*absolute_path == NULL)
@@ -57,7 +70,7 @@ Return path_absolute_from_relative(
 			provide(status);
 		}
 
-		snprintf(*absolute_path,len,"%s/%s",config->running_dir,path);
+		snprintf(*absolute_path,len,"%s/%s",running_dir,path);
 	}
 
 	provide(status);

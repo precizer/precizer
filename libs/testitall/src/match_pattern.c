@@ -35,8 +35,8 @@ Return match_pattern(
 	if(SUCCESS == status)
 	{
 		/* Acquire null-terminated views guarded by libmem */
-		text_view = getcstring(text);
-		pattern_view = getcstring(pattern);
+		text_view = m_text(text);
+		pattern_view = m_text(pattern);
 
 		if((text_view == NULL) || (pattern_view == NULL))
 		{

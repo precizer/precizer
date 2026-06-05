@@ -1,10 +1,10 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/'apostrophe/'apostrophe
+TESTING:argument:roots=tests/fixtures/'apostrophe/'apostrophe
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:progress=yes
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/'apostrophe/'apostrophe exists
@@ -64,11 +64,11 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=tests/fixtures/apostrophe'/'apostrophe/apostrophe'
+TESTING:argument:roots=tests/fixtures/apostrophe'/'apostrophe/apostrophe'
 TESTING:argument:database=database2\.db
 TESTING:argument:db_file_name=database2\.db
 TESTING:argument:progress=yes
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/apostrophe'/'apostrophe/apostrophe' exists
@@ -128,11 +128,10 @@ TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS
 TESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:paths=database1\.db, database2\.db
 TESTING:argument:db_file_paths=database1\.db, database2\.db
 TESTING:argument:db_file_names=database1\.db, database2\.db
 TESTING:argument:compare=yes
-TESTING:Argument parsing is complete
+TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Comparing databases. Directory path verification is not required
 TESTING:Set signal SIGUSR2 OK:pid:\d+

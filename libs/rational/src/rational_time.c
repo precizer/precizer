@@ -1,5 +1,10 @@
 #include "rational.h"
 
+#include <stdio.h>
+
+// Time functions (gettimeofday)
+#include <sys/time.h>
+
 /**
  * @brief Current time in milliseconds
  * @return Returns long long int the number of milliseconds since the UNIX epoch
@@ -48,18 +53,20 @@ long long int cur_time_monotonic_ns(void)
 #endif
 
 /**
+ * @brief Convert a UNIX time in seconds to a local-time ISO-like timestamp
  *
- * @brief Convert from UNIXtime seconds to ISO datetimes
- * @param seconds - if a parameter is passed in the form of milliseconds,
- * then exactly the specified time will be converted to ISO format.
- * If 0 is passed, the current time will be printed out in ISO format.
+ * @details The input is interpreted as seconds since the Unix epoch and
+ * converted to local time through localtime_r(). The returned text has the
+ * fixed shape "YYYY-MM-DD HH:MM:SS" and is written into a function-local
+ * static buffer, so consecutive calls reuse the same storage and overwrite
+ * the previous result. To obtain the current time, pass the result of
+ * `time(NULL)` rather than zero; zero refers to the Unix epoch itself
  *
+ * @param seconds Seconds since the Unix epoch to format
+ * @return Pointer to a static buffer with the formatted text
  */
 char *seconds_to_ISOdate(time_t seconds)
 {
-	struct timeval curTime;
-	gettimeofday(&curTime,NULL);
-
 	// String to store converted time
 	static char str_t[sizeof "2011-10-18 07:07:09"] = "";
 	str_t[0] = '\0';  /* Initialize buffer as empty string */

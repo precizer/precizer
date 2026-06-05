@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
 
 /**
  * @brief Safely prints an error message with system error description to stderr
@@ -42,8 +44,10 @@ void SERP(
  * @brief Reports an error message with debug info to stderr
  *
  * This function generates a formatted error message with variable arguments and
- * writes it directly to stderr without using dynamic memory allocation.
- * Includes source location information and system error details.
+ * writes it directly to stderr without using dynamic memory allocation. It uses
+ * fixed-size stack buffers and writes to @c STDERR_FILENO so the error message
+ * can still be emitted when the heap has no spare bytes left. Includes source
+ * location information and system error details.
  *
  * @param source_file Name of the source file where error occurred (must not be NULL)
  * @param func_name Name of the function where error occurred (must not be NULL)
@@ -53,6 +57,8 @@ void SERP(
  * @return void
  *
  * @note Maximum message length is limited by MAX_CHARACTERS
+ * @note This function must not allocate heap memory because it is used on
+ *       low-memory error paths
  *
  * @example
  *    REPORT(__FILE__, __func__, __LINE__, "Failed to allocate %d bytes", size);

@@ -1,7 +1,12 @@
 #include "precizer.h"
 
 /**
- * @brief Free global configuration resources and restore terminal state
+ * @brief Release resources owned by the global configuration
+ *
+ * The function restores terminal input mode when stdin is a terminal, then
+ * releases every dynamically managed configuration field. Libmem descriptors
+ * are deleted through the matching `m_del()` or `m_array_del()` helpers, while
+ * plain pointer arrays and compiled PCRE2 arrays use their own free helpers
  */
 void free_config(void)
 {
@@ -17,11 +22,20 @@ void free_config(void)
 		tcsetattr(fileno(stdin),0,&term);
 	}
 
-	free(config->running_dir);
+	// Runtime working directory used to resolve relative paths
+	(void)m_del(conf(running_dir));
 
-	(void)del(conf(db_primary_file_path));
+	// Primary database file path used for read and write operations
+	(void)m_del(conf(db_primary_file_path));
 
-	(void)del(conf(db_file_name));
+	// Primary database file name used in diagnostics and derived path handling
+	(void)m_del(conf(db_file_name));
+
+	// Filesystem traversal roots supplied as positional arguments outside --compare
+	(void)m_array_del(conf(roots));
+
+	// Database file paths supplied as positional arguments in --compare mode
+	(void)m_array_del(conf(db_file_paths));
 
 	// Database file name list built by db_determine_name()
 	free_string_array(&(config->db_file_names));

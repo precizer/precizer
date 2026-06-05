@@ -8,7 +8,6 @@ RUN set -eux; \
       gcc clang-20 lld-20 llvm-20 libclang-rt-20-dev make \
       libpcre2-dev \
       libsqlite3-dev \
-      libcmocka0 libcmocka-dev \
       upx-ucl; \
     rm -rf /var/lib/apt/lists/*;
 

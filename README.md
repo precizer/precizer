@@ -817,7 +817,7 @@ In this example, every difference under `2/`, `3/`, `4/`, `path1/`, and `path2/`
 ### Example 9
 Protecting immutable archives with `--lock-checksum`
 
-Use `--lock-checksum` for archival folders whose contents must never be rewritten. It accepts PCRE2 regular expressions for **relative** paths (same format as `--ignore`). Paths matching any lock pattern are written to the database once. After that their checksums are not recalculated, even with `--update`. Any later change in size, or in timestamps when `--watch-timestamps` is enabled, is treated as data corruption and reported instead of updating the record. You can provide multiple patterns by repeating the option.
+Use `--lock-checksum` for archival folders whose contents must never be rewritten. It accepts PCRE2 regular expressions for **relative** paths (same format as `--ignore`). Paths matching any lock pattern are written to the database once. After that their checksums are not recalculated, even with `--update`. Any later size change, any timestamp drift when `--watch-timestamps` is enabled, the file disappearing from disk, a loss of read access, or an unexpected access-check failure is treated as data corruption and reported instead of updating the record. When a locked file disappears or becomes unavailable, its database row is kept so the violation remains visible in later runs. Lock protection takes priority over `--ignore`, `--db-drop-ignored`, and `--db-drop-inaccessible`: matching those filters does not silently drop the locked record from the database. The same protection also remains active when `--include` restores only part of an ignored subtree. You can provide multiple patterns by repeating the option.
 
 ```sh
 precizer \
@@ -841,7 +841,7 @@ Files outside the lock patterns follow normal update rules. For entries locked v
 ### Example 10
 Deep verification of locked data with `--rehash-locked`
 
-The `--rehash-locked` option works only together with `--lock-checksum`. When it is enabled, every file that matches a lock pattern and already exists in the database is read again, its SHA512 checksum is recomputed, and the result is compared against the stored checksum. This provides an explicit integrity sweep for immutable archives at the cost of extra disk I/O. The option ignores whether `--watch-timestamps` is enabled or not. If the recalculated checksum and recorded size match, the file is considered consistent; if its timestamps on disk differ from the database, the ctime/mtime fields in the database are updated with the new values.
+The `--rehash-locked` option works only together with `--lock-checksum`. When it is enabled, every file that matches a lock pattern and already exists in the database is read again, its SHA512 checksum is recomputed, and the result is compared against the stored checksum. This provides an explicit integrity sweep for immutable archives at the cost of extra disk I/O. The option ignores whether `--watch-timestamps` is enabled or not. If the recalculated checksum and recorded size match, the file is considered consistent; if its timestamps on disk differ from the database, the ctime/mtime fields in the database are updated with the new values. If a locked path also matches `--ignore`, `--rehash-locked` still traverses and verifies that path instead of suppressing the check.
 
 ```sh
 precizer --update \
@@ -858,6 +858,8 @@ The following cases illustrate how `--lock-checksum`, `--watch-timestamps`, and 
 4. **Size matches, timestamps differ; `--watch-timestamps` is enabled and `--rehash-locked` is omitted.** The file is flagged as a “locked checksum violation” only due to timestamp drift, and `precizer` finishes with the `WARNING` status.
 5. **Size matches; `--rehash-locked` is enabled.** Only the checksum and the size stored in the database matter. If both match, the file is considered consistent. If the on-disk timestamps changed, the new ctime/mtime values are saved to the database regardless of whether `--watch-timestamps` was used.
 
+Detailed examples of behavior in difficult situations are collected in test No. 30 (`tests/src/test0030.c`). It covers deleted locked files, lost access, access-check failures, and interactions with `--ignore`, `--include`, `--db-drop-ignored`, and `--db-drop-inaccessible`.
+
 A practical workflow is to run a quick daily scan without `--rehash-locked` (and even without `--watch-timestamps` if timestamp drift is acceptable) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to force checksum-level verification of the frozen data set.
 
 ### Example 11
@@ -871,7 +873,9 @@ precizer --update --db-drop-inaccessible /mnt/storage
 
 <sub>drop due to inaccessible archive/secret.bin</sub>
 
-Note: this example applies only to files that have a record in the database but are truly inaccessible on disk for some reason. This can happen due to incorrect `chmod`/`chown` permissions or an incorrectly mounted volume. WARNING: if the file (or even its path) is actually deleted, not just temporarily inaccessible, then updating the database with `--update` will remove its record unconditionally — no extra options are needed.
+Important: `--db-drop-inaccessible` is not about files that are gone. It is about files that cannot be read right now, or files whose access state cannot be checked reliably. For example, permissions, ownership, ACLs, or the filesystem itself may temporarily prevent access. By default, these records stay in the database so a temporary access problem does not erase useful history. If you are sure those records should be removed, add `--db-drop-inaccessible`.
+
+If a file, or one of the directories in its path, is not visible in the filesystem at all, `precizer` treats a regular record not protected by `--lock-checksum` as deleted and removes it from the database during `--update` without any extra option. The program cannot tell whether this is a real deletion or a mount point that exists but currently shows an empty directory because the expected volume was not mounted. Before updating a database for external, network, or removable volumes, first make sure the expected volume is actually mounted. For important archive paths, use `--lock-checksum`: then a missing or unavailable file is reported as a warning, and its database record is preserved.
 
 ## TROUBLESHOOTING
 
@@ -942,9 +946,9 @@ Alternatives to **precizer** with open architectures and source code. More alter
 
 * **Open Source Tripwire** — [github.com/Tripwire/tripwire-open-source](https://github.com/Tripwire/tripwire-open-source)
   * Platforms/architectures: POSIX-like OSes (Linux/macOS/*BSD/Solaris, etc.), Windows via Cygwin (x86_64, arm64, etc.)
-  * Written in: C++, last changes 8 years ago
-    * Advanced policy language and the practice of signing policies/configs/databases (chain of trust around the baseline).
-    * No SQLite database as the primary data format and no resumption of interrupted hashing inside a large file.
+  * Written in: C++, ended in 2018
+    * Tripwire as an open source project ended in 2018 and has not been developed since then.
+    * precizer is more of a tool for integrity checking of large file trees, specifically designed for fast comparison. It is noticeably easier to get started with and can solve the comparison task in three commands. Tripwire addresses similar needs, but it is a classic file integrity monitoring tool. It requires a policy file, configs, database, and digital signatures for all of that.
 
 * **integrit** — [github.com/integrit/integrit](https://github.com/integrit/integrit)
   * Platforms/architectures: Linux/*BSD (x86_64, arm64, etc.)
@@ -955,9 +959,8 @@ Alternatives to **precizer** with open architectures and source code. More alter
 * **mtree (NetBSD mtree)** — [man.netbsd.org/mtree.8](https://man.netbsd.org/mtree.8)
   * Platforms/architectures: *BSD, Linux (x86_64, arm64, etc.)
   * Written in: C, last changes 18 years ago
-    * Tree specification (spec) is convenient in "canonical layout/permissions/ownership" scenarios that call for a declarative format.
     * Very old codebase (effectively frozen).
-    * Spec-file format/workflow rather than SQLite snapshot + fast SQL diffs; no resumption of interrupted hashing inside a large file.
+    * mtree and go-mtree use a text-based snapshot format that is not intended for indexing or high-speed comparison. For workloads involving millions or hundreds of millions of files, precizer provides better performance.
 
 * **hashdeep (md5deep/sha*deep)** — [github.com/jessek/hashdeep](https://github.com/jessek/hashdeep)
   * Platforms/architectures: Linux, Windows, macOS (x86_64, arm64, etc.)
