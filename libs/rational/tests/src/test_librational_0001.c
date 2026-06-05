@@ -539,8 +539,9 @@ static Return test_librational_0001_6(void)
  * rejection, caller-buffer isolation between consecutive calls, return
  * of the caller-provided buffer pointer for successful calls, and
  * well-terminated truncation when the destination buffer is too small
- * to hold the full decomposition). The simulated snprintf() failure
- * branch is also exercised through the testmocking helpers
+ * to hold the full decomposition). Builds with GNU ld --wrap support also
+ * exercise the simulated snprintf() failure branch through the testmocking
+ * helpers
  *
  * @return Return describing success or failure
  */
@@ -556,7 +557,9 @@ static Return test_librational_0001_4(void)
 	char bkb_r_tiny_6[6] = {'X','X','X','X','X','X'};
 	char bkb_r_tiny_9[9] = {'X','X','X','X','X','X','X','X','X'};
 	char bkb_r_tiny_10[10] = {'X','X','X','X','X','X','X','X','X','X'};
+#ifndef EVIL_EMPIRE_OS
 	char bkb_r_snprintf_failure[MAX_CHARACTERS] = "not empty";
+#endif
 	const size_t kibibyte = 1024ULL;
 	const size_t mebibyte = kibibyte * 1024ULL;
 	const size_t gibibyte = mebibyte * 1024ULL;
@@ -622,10 +625,12 @@ static Return test_librational_0001_4(void)
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(1536U,FULL_VIEW,bkb_r_tiny_10,sizeof(bkb_r_tiny_10)),"1KiB 512B"));
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(mixed_units,FULL_VIEW,bkb_r_tiny_10,sizeof(bkb_r_tiny_10)),"4EiB 5PiB"));
 
+#ifndef EVIL_EMPIRE_OS
 	/* Simulated snprintf() failure must leave the caller with an empty, terminated result */
 	testmocking_snprintf_fail_next(1);
 	ASSERT(0 == strcmp(bkbmbgbtbpbeb_r(kibibyte,FULL_VIEW,bkb_r_snprintf_failure,sizeof(bkb_r_snprintf_failure)),""));
 	testmocking_snprintf_disable();
+#endif
 
 	RETURN_STATUS;
 }

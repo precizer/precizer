@@ -89,6 +89,7 @@ static const char expected_serp_stderr_pattern[] =
         "\\A"
         "ERROR: Failed to open file \\[File: [^\\n]*src/test_librational_0004\\.c, Function: serp_case\\] Errno: \\(2\\) No such file or directory\\Z";
 
+#ifndef EVIL_EMPIRE_OS
 static const char expected_write_fallback_stderr_pattern[] =
         "\\AERROR: Failed to write error message\n\\Z";
 
@@ -97,6 +98,7 @@ static const char expected_logger_time_failure_stdout_pattern[] =
         " [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:gettimeofday failure\n"
         " [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:localtime_r failure\n"
         " [^\\n]*src/test_librational_0004\\.c:[0-9]+:logger_time_failure_cases:snprintf failure\\Z";
+#endif
 
 /**
  * @brief Emit two report() messages with controlled errno values
@@ -249,6 +251,7 @@ static void no_output_test(void)
 {
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Exercise slog() when timestamp construction helpers fail
  */
@@ -352,6 +355,7 @@ static Return capture_librational_logger_vsnprintf_failure(void)
 
 	deliver(status);
 }
+#endif
 
 /**
  * @brief Capture an ERROR log while no logger mode accepts it
@@ -370,6 +374,7 @@ static Return capture_librational_logger_disabled_error_mode(void)
 	deliver(status);
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Capture REMEMBER calls that have no usable payload
  *
@@ -392,6 +397,7 @@ static Return capture_librational_logger_remember_without_payload(void)
 
 	deliver(status);
 }
+#endif
 
 /**
  * @brief Capture the basic report() stderr contract
@@ -437,6 +443,7 @@ static Return capture_librational_serp_case(void)
 	deliver(status);
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Capture report() when formatting the final message fails
  *
@@ -487,6 +494,7 @@ static Return capture_librational_report_write_full_failure(void)
 
 	deliver(status);
 }
+#endif
 
 /**
  * @brief Check report() formatting with errno and source location
@@ -542,6 +550,7 @@ static Return test_librational_0004_3(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check that report() stays silent when message formatting fails
  *
@@ -550,8 +559,6 @@ static Return test_librational_0004_3(void)
 static Return test_librational_0004_4(void)
 {
 	INITTEST;
-
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	/* NULL patterns require both captured streams to stay empty */
 	ASSERT(SUCCESS == match_function_output(
@@ -570,8 +577,6 @@ static Return test_librational_0004_4(void)
 static Return test_librational_0004_5(void)
 {
 	INITTEST;
-
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	m_create(char,captured_stdout,MEMORY_STRING);
 	m_create(char,captured_stderr,MEMORY_STRING);
@@ -613,8 +618,6 @@ static Return test_librational_0004_6(void)
 {
 	INITTEST;
 
-	SKIP_ON_EVIL_EMPIRE_OS;
-
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		expected_write_fallback_stderr_pattern,
@@ -632,8 +635,6 @@ static Return test_librational_0004_7(void)
 {
 	INITTEST;
 
-	SKIP_ON_EVIL_EMPIRE_OS;
-
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		NULL,
@@ -641,6 +642,7 @@ static Return test_librational_0004_7(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief Check rational_reconvert() edge cases around empty and REMEMBER modes
@@ -685,6 +687,7 @@ static Return test_librational_0004_9(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check that slog() stays silent when logger line allocation fails
  *
@@ -693,8 +696,6 @@ static Return test_librational_0004_9(void)
 static Return test_librational_0004_10(void)
 {
 	INITTEST;
-
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
@@ -713,8 +714,6 @@ static Return test_librational_0004_11(void)
 {
 	INITTEST;
 
-	SKIP_ON_EVIL_EMPIRE_OS;
-
 	ASSERT(SUCCESS == match_function_output(
 		expected_logger_time_failure_stdout_pattern,
 		NULL,
@@ -732,8 +731,6 @@ static Return test_librational_0004_12(void)
 {
 	INITTEST;
 
-	SKIP_ON_EVIL_EMPIRE_OS;
-
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		NULL,
@@ -741,6 +738,7 @@ static Return test_librational_0004_12(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief Check that slog(ERROR) stays silent when no mode accepts ERROR
@@ -759,6 +757,7 @@ static Return test_librational_0004_13(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check that REMEMBER has no output when no payload is available
  *
@@ -768,8 +767,6 @@ static Return test_librational_0004_14(void)
 {
 	INITTEST;
 
-	SKIP_ON_EVIL_EMPIRE_OS;
-
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		NULL,
@@ -777,6 +774,7 @@ static Return test_librational_0004_14(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief Check that function_capture() flushes pending stdout before redirection
@@ -856,17 +854,23 @@ Return test_librational_0004(void)
 	TEST(test_librational_0004_1,"report() writes formatted errno messages with source location");
 	TEST(test_librational_0004_2,"slog() honors logger modes, decorations and silent visibility");
 	TEST(test_librational_0004_3,"serp() writes errno, source file and function name");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test_librational_0004_4,"report() stays silent when final message formatting fails");
 	TEST(test_librational_0004_5,"report() keeps a truncated fixed-size message buffer terminated");
 	TEST(test_librational_0004_6,"report() writes fallback text after primary write failure");
 	TEST(test_librational_0004_7,"report() stays silent when primary and fallback writes fail");
+#endif
 	TEST(test_librational_0004_8,"rational_reconvert() covers empty and REMEMBER edge cases");
 	TEST(test_librational_0004_9,"rational_reconvert() names every logger flag");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test_librational_0004_10,"slog() stays silent when line allocation fails");
 	TEST(test_librational_0004_11,"slog() keeps payloads visible when time formatting fails");
 	TEST(test_librational_0004_12,"slog() stays silent when vsnprintf fails");
+#endif
 	TEST(test_librational_0004_13,"slog(ERROR) stays silent when no mode accepts ERROR");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test_librational_0004_14,"slog(REMEMBER) skips empty or unformatted payloads");
+#endif
 
 	RETURN_STATUS;
 }

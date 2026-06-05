@@ -61,6 +61,7 @@ static Return test0037_2(void)
 	RETURN_STATUS;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  *
  * @brief delete_path() should report remove() failure for a regular file
@@ -69,7 +70,6 @@ static Return test0037_2(void)
 static Return test0037_3(void)
 {
 	INITTEST;
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	size_t remove_calls = 0;
 	const char *file_path = "0037_read_only_dir/file.txt";
@@ -102,7 +102,6 @@ static Return test0037_3(void)
 static Return test0037_4(void)
 {
 	INITTEST;
-	SKIP_ON_EVIL_EMPIRE_OS;
 
 	size_t remove_calls = 0;
 	const char *file_path = "0037_locked_tree/a/b/file.txt";
@@ -126,6 +125,7 @@ static Return test0037_4(void)
 
 	RETURN_STATUS;
 }
+#endif
 
 /**
  * @brief Run delete_path() diagnostics unit tests
@@ -136,8 +136,10 @@ Return test0037(void)
 
 	TEST(test0037_1,"delete_path() reports NULL input path");
 	TEST(test0037_2,"delete_path() reports missing path lstat() failure");
+#ifndef EVIL_EMPIRE_OS
 	TEST(test0037_3,"delete_path() reports remove() failure for a regular file");
 	TEST(test0037_4,"delete_path() reports nftw() callback remove() failure");
+#endif
 
 	RETURN_STATUS;
 }
