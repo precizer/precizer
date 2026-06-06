@@ -6,6 +6,27 @@
 #include "precizer.h"
 
 /**
+ * @brief Return the number of rows changed by the current SQLite connection
+ *
+ * SQLite 3.37.0 added `sqlite3_total_changes64()`. Older system SQLite
+ * packages only provide `sqlite3_total_changes()`, so dynamic builds use the
+ * older 32-bit counter and widen its result to keep the local return type stable.
+ * This legacy can be removed in 2036 (10-year Long-Term Support)
+ * Replacement: `db_retrieve_total_changes()` -> `sqlite3_total_changes64()`
+ *
+ * @param[in] db SQLite database connection
+ * @return Total number of changed rows reported by SQLite for this connection
+ */
+static sqlite3_int64 db_retrieve_total_changes(sqlite3 *db)
+{
+#if SQLITE_VERSION_NUMBER >= 3037000
+	return(sqlite3_total_changes64(db));
+#else
+	return((sqlite3_int64)sqlite3_total_changes(db));
+#endif
+}
+
+/**
  * @brief Save the current traversal roots into the `paths` table
  *
  * The positional directories accepted by normal scanning mode are stored in
@@ -69,7 +90,7 @@ Return db_save_prefixes(void)
 	 * Remember how many rows this database connection has changed so far. After
 	 * the transaction, a larger value means that prefix rows were actually changed
 	 */
-	const sqlite3_int64 total_changes_before = sqlite3_total_changes64(config->db);
+	const sqlite3_int64 total_changes_before = db_retrieve_total_changes(config->db);
 
 	/*
 	 * Start one transaction for the complete prefix update. This keeps removals
@@ -238,7 +259,7 @@ Return db_save_prefixes(void)
 
 	if(SUCCESS == status
 	        && config->dry_run == false
-	        && total_changes_before < sqlite3_total_changes64(config->db))
+	        && total_changes_before < db_retrieve_total_changes(config->db))
 	{
 		/*
 		 * In-memory dry-run prefix writes are only simulation data.
