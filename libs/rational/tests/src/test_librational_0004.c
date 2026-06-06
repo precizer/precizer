@@ -955,9 +955,9 @@ Return test_librational_0004(void)
 	TEST(test_librational_0004_12,"slog() stays silent when vsnprintf fails");
 #endif
 	TEST(test_librational_0004_13,"slog(ERROR) stays silent when no mode accepts ERROR");
-	#ifndef EVIL_EMPIRE_OS
+#ifndef EVIL_EMPIRE_OS
 	TEST(test_librational_0004_14,"slog(REMEMBER) skips empty or unformatted payloads");
-	#endif
+#endif
 	TEST(test_librational_0004_15,"slog() escapes unsafe terminal bytes while preserving normal UTF-8");
 
 	RETURN_STATUS;
