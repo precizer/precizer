@@ -430,6 +430,44 @@ static Return capture_librational_slog_test(void)
 }
 
 /**
+ * @brief Capture a log line that contains unsafe terminal bytes
+ */
+static void librational_logger_terminal_safety_case(void)
+{
+	/*
+	 * The payload mixes terminal-hostile bytes with ordinary UTF-8 text.
+	 * It deliberately keeps raw ESC because this first sanitizer pass preserves
+	 * existing logger decorations until an explicit decoration whitelist exists
+	 */
+	static const char payload[] =
+	        "ascii"
+	        "\001"
+	        "del"
+	        "\177"
+	        "c1"
+	        "\302\220"
+	        "invalid"
+	        "\303("
+	        "overlong"
+	        "\300\257"
+	        "keep"
+	        "\t\r\n"
+	        "esc"
+	        "\033[1m"
+	        "utf8"
+	        "°"
+	        "à"
+	        "Привет"
+	        "天地玄黄宇宙洪荒日月盈昃辰宿列張"
+	        "いろはにほへとちりぬるを"
+	        "日本語漢字仮名交じり文";
+
+	rational_logger_mode = REGULAR;
+	slog(REGULAR|UNDECOR,"%s",payload);
+	rational_logger_mode = REGULAR;
+}
+
+/**
  * @brief Capture one serp() stderr message
  *
  * @return Return describing success or failure
@@ -777,6 +815,55 @@ static Return test_librational_0004_14(void)
 #endif
 
 /**
+ * @brief Check that slog() escapes terminal-hostile text without damaging normal UTF-8
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0004_15(void)
+{
+	INITTEST;
+
+	m_create(char,captured_stdout,MEMORY_STRING);
+	m_create(char,captured_stderr,MEMORY_STRING);
+
+	static const char expected_stdout[] =
+	        "ascii"
+	        "\\x01"
+	        "del"
+	        "\\x7F"
+	        "c1"
+	        "\\xC2\\x90"
+	        "invalid"
+	        "\\xC3("
+	        "overlong"
+	        "\\xC0\\xAF"
+	        "keep"
+	        "\t\r\n"
+	        "esc"
+	        "\033[1m"
+	        "utf8"
+	        "°"
+	        "à"
+	        "Привет"
+	        "天地玄黄宇宙洪荒日月盈昃辰宿列張"
+	        "いろはにほへとちりぬるを"
+	        "日本語漢字仮名交じり文";
+
+	ASSERT(SUCCESS == function_capture(
+		librational_logger_terminal_safety_case,
+		captured_stdout,
+		captured_stderr));
+
+	ASSERT(0 == strcmp(m_text(captured_stdout),expected_stdout));
+	ASSERT(captured_stderr->length == 0U);
+
+	call(m_del(captured_stdout));
+	call(m_del(captured_stderr));
+
+	RETURN_STATUS;
+}
+
+/**
  * @brief Check that function_capture() flushes pending stdout before redirection
  *
  * @return Return describing success or failure
@@ -868,9 +955,10 @@ Return test_librational_0004(void)
 	TEST(test_librational_0004_12,"slog() stays silent when vsnprintf fails");
 #endif
 	TEST(test_librational_0004_13,"slog(ERROR) stays silent when no mode accepts ERROR");
-#ifndef EVIL_EMPIRE_OS
+	#ifndef EVIL_EMPIRE_OS
 	TEST(test_librational_0004_14,"slog(REMEMBER) skips empty or unformatted payloads");
-#endif
+	#endif
+	TEST(test_librational_0004_15,"slog() escapes unsafe terminal bytes while preserving normal UTF-8");
 
 	RETURN_STATUS;
 }

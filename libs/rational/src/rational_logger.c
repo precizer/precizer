@@ -1,4 +1,6 @@
 #include "rational.h"
+#include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -182,6 +184,338 @@ static void logger_line_append(
 	va_end(args);
 }
 
+/**
+ * @brief Append one byte as a visible hexadecimal escape
+ *
+ * @param[in,out] line Destination buffer with enough free space
+ * @param[in,out] line_len Current destination length in bytes
+ * @param[in] byte Byte to append as \xNN
+ */
+static void logger_line_append_hex_escape(
+	char          *line,
+	size_t        *line_len,
+	unsigned char byte)
+{
+	/*
+	 * Use an explicit digit table instead of sprintf().
+	 * This helper is used from the logger cleanup path, so it should not depend
+	 * on formatting functions or temporary buffers just to render one byte
+	 */
+	static const char hex_digits[] = "0123456789ABCDEF";
+
+	/*
+	 * Write the escape directly into the caller-owned output buffer.
+	 * The sanitizer allocates enough room before calling this helper, and
+	 * line_len is advanced after every written character so the next append can
+	 * continue from the correct position
+	 */
+	line[(*line_len)++] = '\\';
+	line[(*line_len)++] = 'x';
+	line[(*line_len)++] = hex_digits[byte >> 4U];
+	line[(*line_len)++] = hex_digits[byte & 0x0FU];
+}
+
+/**
+ * @brief Decode one UTF-8 sequence from a bounded byte range
+ *
+ * @details
+ * The logger uses this small decoder instead of locale-dependent multibyte
+ * conversion because the process locale is not guaranteed to be initialized
+ * before a log line is printed. The function accepts only shortest-form UTF-8,
+ * rejects surrogate code points, and rejects values outside the Unicode range
+ *
+ * @param[in] line Source byte range
+ * @param[in] line_len Number of bytes available at @p line
+ * @param[out] codepoint Decoded Unicode code point
+ * @return Number of bytes consumed, or 0 when the input is not valid UTF-8
+ */
+static size_t logger_line_decode_utf8(
+	const char *line,
+	size_t     line_len,
+	uint32_t   *codepoint)
+{
+	/*
+	 * Refuse invalid input before looking at the first byte.
+	 * Returning 0 tells the caller to treat the current byte as unsafe and
+	 * print it as a visible escape instead of trusting it as text
+	 */
+	if(line == NULL || codepoint == NULL || line_len == 0U)
+	{
+		return(0U);
+	}
+
+	const unsigned char first_byte = (unsigned char)line[0];
+
+	/*
+	 * ASCII is a single-byte subset of UTF-8.
+	 * Decoding it here keeps the rest of the function focused on multibyte
+	 * sequences and lets the caller apply its own ASCII control-character policy
+	 */
+	if(first_byte < 0x80U)
+	{
+		*codepoint = (uint32_t)first_byte;
+		return(1U);
+	}
+
+	/*
+	 * Classify the leading byte and prepare the partial code point.
+	 * The first byte tells us how many continuation bytes must follow and also
+	 * provides the high bits of the decoded Unicode value
+	 */
+	size_t expected_len = 0U;
+	uint32_t decoded_codepoint = 0U;
+	uint32_t lowest_codepoint = 0U;
+
+	if(first_byte >= 0xC2U && first_byte <= 0xDFU)
+	{
+		expected_len = 2U;
+		decoded_codepoint = (uint32_t)(first_byte & 0x1FU);
+		lowest_codepoint = 0x80U;
+	} else if(first_byte >= 0xE0U && first_byte <= 0xEFU){
+		expected_len = 3U;
+		decoded_codepoint = (uint32_t)(first_byte & 0x0FU);
+		lowest_codepoint = 0x800U;
+	} else if(first_byte >= 0xF0U && first_byte <= 0xF4U){
+		expected_len = 4U;
+		decoded_codepoint = (uint32_t)(first_byte & 0x07U);
+		lowest_codepoint = 0x10000U;
+	} else {
+		/*
+		 * Bytes outside these leading-byte ranges cannot start a valid UTF-8
+		 * sequence. This includes continuation bytes seen without a starter,
+		 * obsolete overlong starters, and values beyond the Unicode limit
+		 */
+		return(0U);
+	}
+
+	/*
+	 * A valid sequence must be complete inside the provided byte range.
+	 * The logger works with bounded buffers, so an incomplete trailing sequence
+	 * is escaped byte by byte rather than reading past the formatted line
+	 */
+	if(line_len < expected_len)
+	{
+		return(0U);
+	}
+
+	/*
+	 * Every byte after the leading byte must have the UTF-8 continuation shape
+	 * 10xxxxxx. While checking that shape, assemble the final code point by
+	 * shifting in the six payload bits carried by each continuation byte
+	 */
+	for(size_t i = 1U; i < expected_len; i++)
+	{
+		const unsigned char continuation_byte = (unsigned char)line[i];
+
+		if((continuation_byte & 0xC0U) != 0x80U)
+		{
+			return(0U);
+		}
+
+		decoded_codepoint = (decoded_codepoint << 6U) | (uint32_t)(continuation_byte & 0x3FU);
+	}
+
+	/*
+	 * Reject overlong encodings.
+	 * UTF-8 has exactly one shortest byte representation for each code point,
+	 * and accepting longer aliases would let unsafe bytes hide behind another
+	 * spelling of the same character
+	 */
+	if(decoded_codepoint < lowest_codepoint)
+	{
+		return(0U);
+	}
+
+	/*
+	 * UTF-16 surrogate values are not Unicode scalar values.
+	 * They are invalid in UTF-8 text, so the logger escapes their original bytes
+	 * instead of copying them into terminal output
+	 */
+	if(decoded_codepoint >= 0xD800U && decoded_codepoint <= 0xDFFFU)
+	{
+		return(0U);
+	}
+
+	/*
+	 * Unicode ends at U+10FFFF.
+	 * Anything above that value is invalid input and must be shown as escaped
+	 * bytes, not as trusted text
+	 */
+	if(decoded_codepoint > 0x10FFFFU)
+	{
+		return(0U);
+	}
+
+	/*
+	 * At this point the byte sequence is well-formed UTF-8.
+	 * Return both the decoded code point and the number of bytes consumed so the
+	 * sanitizer can decide whether the character is safe to copy
+	 */
+	*codepoint = decoded_codepoint;
+	return(expected_len);
+}
+
+/**
+ * @brief Escape bytes that can disrupt terminal output
+ *
+ * @details
+ * The logger receives an already formatted line, so this layer cannot tell
+ * whether bytes came from a file name, a database path, an error message, or
+ * fixed application text. The filter therefore treats the complete log line as
+ * terminal output and escapes only byte patterns that are unsafe to write as
+ * text. Plain printable ASCII, newline, carriage return, tab, raw ESC, and
+ * valid non-C1 UTF-8 multibyte sequences are preserved. Invalid multibyte input
+ * is escaped byte by byte so malformed file names remain visible without being
+ * interpreted by the terminal. Unicode C1 control characters such as U+0090
+ * are also escaped, even though their UTF-8 byte sequence is formally valid,
+ * because terminals may interpret them as control strings and hide later output.
+ *
+ * This first pass deliberately leaves raw ESC bytes unchanged. The project uses
+ * ESC-based decorations such as bold and colors, and distinguishing those
+ * trusted decorations from path bytes requires a separate whitelist policy. That
+ * whitelist can be added later without changing slog() call sites
+ *
+ * @param[in,out] line Pointer to the allocated line buffer
+ * @param[in,out] line_len Current line length in bytes, updated on success
+ */
+static void logger_line_sanitize_for_terminal(
+	char **line,
+	int  *line_len)
+{
+	/*
+	 * Nothing useful can be sanitized without an existing allocated buffer and a
+	 * positive byte count. Returning quietly preserves the logger's current
+	 * best-effort behavior for allocation and formatting failure paths
+	 */
+	if(line == NULL || *line == NULL || line_len == NULL || *line_len <= 0)
+	{
+		return;
+	}
+
+	const size_t input_len = (size_t)*line_len;
+
+	/*
+	 * Escaping one input byte as \xNN needs four output bytes.
+	 * This guard keeps the worst-case allocation and the final int length update
+	 * inside representable bounds
+	 */
+	if(input_len > (size_t)INT_MAX / 4U)
+	{
+		return;
+	}
+
+	/*
+	 * Allocate for the worst case where every input byte becomes \xNN.
+	 * The extra byte is for a terminator because the logger stores text in a C
+	 * string buffer even though fwrite() uses the explicit byte length
+	 */
+	char *sanitized_line = malloc((input_len * 4U) + 1U);
+
+	if(sanitized_line == NULL)
+	{
+		return;
+	}
+
+	/*
+	 * input_position walks through the original formatted line.
+	 * output_len tracks the next free position in the sanitized replacement
+	 * buffer, which may grow faster than the input when bytes are escaped
+	 */
+	size_t input_position = 0U;
+	size_t output_len = 0U;
+
+	/*
+	 * Consume one ASCII byte or one complete UTF-8 sequence per loop.
+	 * The loop never trusts a multibyte sequence until it has been decoded and
+	 * checked, so damaged input cannot leak raw terminal controls into output
+	 */
+	while(input_position < input_len)
+	{
+		const unsigned char byte = (unsigned char)(*line)[input_position];
+
+		if(byte < 0x80U)
+		{
+			/*
+			 * ASCII printable characters are safe to copy.
+			 * Newline, carriage return, and tab are preserved because log lines
+			 * legitimately use them for layout. ESC is also preserved for now so
+			 * existing color and bold decorations keep working until an explicit
+			 * decoration whitelist is added
+			 */
+			if(byte == '\n' || byte == '\r' || byte == '\t' || byte == '\033' || (byte >= 0x20U && byte != 0x7FU))
+			{
+				sanitized_line[output_len++] = (char)byte;
+			} else {
+				/*
+				 * Other ASCII control bytes and DEL are not safe terminal text.
+				 * Showing them as \xNN makes the byte visible to the user while
+				 * preventing the terminal from treating it as an action
+				 */
+				logger_line_append_hex_escape(sanitized_line,&output_len,byte);
+			}
+
+			input_position++;
+			continue;
+		}
+
+		/*
+		 * Non-ASCII input must first prove that it is valid UTF-8.
+		 * The decoder is intentionally local and locale-independent so logger
+		 * safety does not depend on whether setlocale() has already run
+		 */
+		uint32_t codepoint = 0U;
+		const size_t decoded_len = logger_line_decode_utf8(*line + input_position,
+			input_len - input_position,
+			&codepoint);
+
+		/*
+		 * Invalid UTF-8 is escaped one byte at a time.
+		 * This preserves every original byte in a readable form and then retries
+		 * from the next byte, which helps recover cleanly after a malformed prefix
+		 */
+		if(decoded_len == 0U)
+		{
+			logger_line_append_hex_escape(sanitized_line,&output_len,byte);
+			input_position++;
+			continue;
+		}
+
+		/*
+		 * C1 controls are dangerous even when encoded as valid UTF-8.
+		 * U+0090, for example, is a terminal control-string introducer on some
+		 * terminals, so the original bytes are escaped instead of being copied
+		 */
+		if(codepoint >= 0x80U && codepoint <= 0x9FU)
+		{
+			for(size_t i = 0U; i < decoded_len; i++)
+			{
+				const unsigned char control_byte = (unsigned char)(*line)[input_position + i];
+				logger_line_append_hex_escape(sanitized_line,&output_len,control_byte);
+			}
+		} else {
+			/*
+			 * Valid non-C1 UTF-8 is copied unchanged.
+			 * This keeps ordinary international file names and messages readable
+			 * instead of turning every non-ASCII character into escapes
+			 */
+			memcpy(sanitized_line + output_len,*line + input_position,decoded_len);
+			output_len += decoded_len;
+		}
+
+		input_position += decoded_len;
+	}
+
+	/*
+	 * Replace the original formatted line with the sanitized version.
+	 * The caller will pass the same buffer to REMEMBER and fwrite(), so both
+	 * delayed warnings and immediate terminal output see identical safe text
+	 */
+	sanitized_line[output_len] = '\0';
+	free(*line);
+	*line = sanitized_line;
+	*line_len = (int)output_len;
+}
+
 __attribute__((format(printf,7,0)))
 static void logger_line(
 	char              **line,
@@ -282,6 +616,13 @@ void rational_logger(
 	va_start(args,fmt);
 	logger_line(&logger_line_text,&line_len,level,filename,line,funcname,fmt,args);
 	va_end(args);
+
+	/*
+	 * Sanitize the final formatted line before any consumer sees it.
+	 * This keeps immediate terminal output and delayed REMEMBER output identical,
+	 * and prevents path bytes from being interpreted as terminal controls
+	 */
+	logger_line_sanitize_for_terminal(&logger_line_text,&line_len);
 
 	if((level & REMEMBER) && rational_remember && logger_line_text != NULL && line_len > 0)
 	{
