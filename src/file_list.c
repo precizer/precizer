@@ -398,13 +398,6 @@ Return file_list(TraversalSummary *summary)
 							locked_unavailable_violation = true;
 
 						} else {
-							if(access_status == FILE_ACCESS_ERROR)
-							{
-								status = FAILURE;
-								continue_the_loop = false;
-								break;
-							}
-
 							file->is_readable = (access_status == FILE_ACCESS_ALLOWED);
 						}
 

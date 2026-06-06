@@ -2,6 +2,12 @@
 
 All notable changes will be documented in this file
 
+# Release 0.15.0 2026-06-06
+
+## Fixed
+
+- File system scans are more resilient: precizer now continues working when an access check fails for one file or directory, treating that path as inaccessible instead of stopping the whole scan
+
 # Release 0.14.0 2026-06-04
 
 ## Changed
