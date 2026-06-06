@@ -2,6 +2,12 @@
 
 All notable changes will be documented in this file
 
+# Release 0.15.1 2026-06-07
+
+## Fixed
+
+- Fixed a terminal output issue where rare file names containing control characters could make later scan messages disappear from the screen. Such bytes are now printed as readable `\xNN` escapes, while normal Unicode file names remain readable
+
 # Release 0.15.0 2026-06-06
 
 ## Fixed
