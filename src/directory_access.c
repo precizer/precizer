@@ -11,7 +11,7 @@
  * @param[in] root_path Descriptor holding the traversal root without a trailing slash
  * @param[in,out] first_iteration Banner sentinel for the first visible output line
  * @param[in,out] summary Traversal state used by slog_show()
- * @return SUCCESS when the directory was handled cleanly, otherwise FAILURE
+ * @return SUCCESS when the directory access state was handled cleanly
  */
 Return directory_access_verify(
 	FTS              *file_systems,
@@ -34,16 +34,13 @@ Return directory_access_verify(
 	   execute permission lets it enter the directory and reach child paths */
 	FileAccessStatus access_status = file_check_access(entry->fts_path,(size_t)entry->fts_pathlen,R_OK | X_OK);
 
-	if(access_status == FILE_ACCESS_ERROR)
-	{
-		provide(FAILURE);
-	}
-
 	/* When a directory cannot be read or has disappeared during traversal, show
 	   the user its relative path and remember the warning for the final summary.
 	   If no --include rules were supplied, the whole subtree can be skipped
 	   because there is no later include pattern that could make a child visible */
-	if(access_status == FILE_ACCESS_DENIED || access_status == FILE_NOT_FOUND)
+	if(access_status == FILE_ACCESS_DENIED
+	        || access_status == FILE_NOT_FOUND
+	        || access_status == FILE_ACCESS_ERROR)
 	{
 		m_create(char,relative_path,MEMORY_STRING);
 

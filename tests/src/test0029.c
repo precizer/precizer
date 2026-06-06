@@ -98,6 +98,68 @@ static Return test0029_2(void)
 }
 
 /**
+ * @brief Verify that an access-check failure for one regular file does not stop traversal
+ *
+ * Forces one early file to report FILE_ACCESS_ERROR during an update run, then
+ * changes a later file. The update for the later file proves that traversal
+ * continued after the access-check failure
+ */
+static Return test0029_3(void)
+{
+	INITTEST;
+
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+	m_create(char,target_path,MEMORY_STRING);
+
+	const char *db_filename = "database3.db";
+	const char *access_error_file_path = "tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt";
+	const char *changed_later_file_path = "tests/fixtures/diffs/diff1/4/AAA/BBB/CCC/a.txt";
+
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--silent --database=database3.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(result->length == 0);
+
+	ASSERT(SUCCESS == replase_to_string("access check failure must not stop traversal",changed_later_file_path));
+
+	ASSERT(SUCCESS == construct_path(access_error_file_path,target_path));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",access_error_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
+	ASSERT(FILE_ACCESS_ERROR == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	arguments = "--update --database=database3.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+
+	const char *filename = "templates/0029_003.txt";
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	m_del(target_path);
+	m_del(pattern);
+	m_del(result);
+
+	ASSERT(SUCCESS == delete_path(db_filename));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	RETURN_STATUS;
+}
+
+/**
  *
  * Testing how the application behaves with inaccessible files
  *
@@ -108,6 +170,7 @@ Return test0029(void)
 
 	TEST(test0029_1,"\"inaccessible\" message of file_show() function");
 	TEST(test0029_2,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths");
+	TEST(test0029_3,"Access-check failure for a regular file does not stop traversal");
 
 	RETURN_STATUS;
 }
