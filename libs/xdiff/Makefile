@@ -14,8 +14,7 @@ UNAME_S := $(shell uname -s)
 #
 # USE_LLD and AR are exported by the root Makefile when COMPILER=clang
 # to use LLVM's own linker and archiver, avoiding gold plugin version mismatch
-CFLAGS += -pipe -std=c2x -finline-functions
-CFLAGS += -fbuiltin
+CFLAGS += -std=c2x -finline-functions
 
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
@@ -88,7 +87,8 @@ DBG_LDPATH = -L$(DBG_LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
+DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
@@ -110,7 +110,8 @@ COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
 # This coverage target intentionally does not add gcov instrumentation.
 # This keeps coverage statistics focused on files whose coverage has strategic value
-COV_CFLAGS = $(CFLAGS) -g -O0 -fno-omit-frame-pointer -DDEBUG
+COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+COV_CFLAGS = $(CFLAGS) $(COV_OPT_CFLAGS) -g -DDEBUG
 
 #
 # Sanitize build settings
@@ -123,11 +124,12 @@ SNTZ_LDPATH = -L$(SNTZ_LIBDIR)
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
+SNTZ_OPTIONS = -fsanitize=address,undefined
 ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO)
 endif
-SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
+SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
 SNTZ_LDFLAGS += $(USE_LLD) $(SNTZ_OPTIONS)
 
 #
@@ -141,7 +143,8 @@ PROD_LDPATH = -L$(PROD_LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
-PROD_CFLAGS ?= $(CFLAGS) $(LTO) -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(LTO) -Wl,-O3 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
@@ -169,7 +172,8 @@ PRTB_LDPATH = -L$(PRTB_LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
-PRTB_CFLAGS = $(CFLAGS) $(LTO) -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)

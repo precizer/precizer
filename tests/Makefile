@@ -9,8 +9,7 @@ MAKEFLAGS += --no-print-directory
 # Compiler flags
 #
 
-CFLAGS += -pipe -std=c2x -finline-functions
-CFLAGS += -fbuiltin
+CFLAGS += -std=c2x -finline-functions
 
 UNAME_S := $(shell uname -s)
 
@@ -138,7 +137,8 @@ LIB_TESTS_COV_OBJS = $(patsubst ../%.c,$(COV_OBJDIR)/%.o,$(LIB_TESTS_SRCS))
 # Adding it to the global CFLAGS leaks it into recursive builds such as
 # `make -C ../ sanitize`, which disables main() in the standalone precizer
 # binary and enables test-only hooks there
-COV_CFLAGS = $(CFLAGS) -g -ggdb3 -O0 -fno-omit-frame-pointer -fprofile-arcs -ftest-coverage -DTESTITALL -DTESTITALL_TEST_HOOKS
+COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -ggdb3 -DTESTITALL -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS = -lgcov --coverage
 
 #
@@ -160,8 +160,9 @@ SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/
 else
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/../../$(SNTZ_LIBDIR)
 endif
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
-SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_OPTIONS = -fsanitize=address,undefined
+SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
+SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
@@ -190,7 +191,8 @@ DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/..
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
 endif
-DBG_CFLAGS = $(CFLAGS) -g -ggdb3 -Og -fno-omit-frame-pointer -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+DBG_OPT_CFLAGS ?= -pipe -fbuiltin -Og -fno-omit-frame-pointer
+DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 
 #
 # Dynamic debug build settings

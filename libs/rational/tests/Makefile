@@ -12,8 +12,7 @@ MAKEFLAGS += --no-print-directory
 # Compiler flags
 #
 
-CFLAGS += -pipe -std=c2x -finline-functions
-CFLAGS += -fbuiltin
+CFLAGS += -std=c2x -finline-functions
 
 UNAME_S := $(shell uname -s)
 
@@ -118,7 +117,8 @@ COV_RPATH = -Wl,-rpath,@executable_path/../../../$(COV)/libs,-rpath,@executable_
 else
 COV_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(COV)/libs
 endif
-COV_CFLAGS = $(CFLAGS) -g -O0 -fprofile-arcs -ftest-coverage -DTESTITALL -DTESTITALL_TEST_HOOKS
+COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DTESTITALL -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS = -lgcov --coverage
 
 #
@@ -138,8 +138,9 @@ SNTZ_RPATH = -Wl,-rpath,@executable_path/../../../$(SNTZ)/libs,-rpath,@executabl
 else
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(SNTZ)/libs
 endif
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
-SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_OPTIONS = -fsanitize=address,undefined
+SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS) -fno-omit-frame-pointer
+SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
 else
@@ -163,7 +164,8 @@ DBG_RPATH = -Wl,-rpath,@executable_path/../../../$(DBG)/libs,-rpath,@executable_
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(DBG)/libs
 endif
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0
+DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 
 .PHONY: all clean purge debug sanitize coverage run test tests tests-sanitize tests-debug tests-coverage coverage-report coverage-html format
 .PHONY: testedlib-coverage testedlib-sanitize testedlib-debug

@@ -55,8 +55,7 @@ COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 # Compiler flags
 #
 
-CFLAGS += -pipe -std=c2x -finline-functions
-CFLAGS += -fbuiltin
+CFLAGS += -std=c2x -finline-functions
 
 # To pass a #define into the build:
 # make DEFINES=-DWRITE_CSV=false memtest
@@ -226,7 +225,8 @@ DBG_LIBS = $(LIBS)
 DBG_LIB_OBJS = $(foreach lib,$(DBG_LIBS),$(DBG_LIBDIR)/obj/$(lib)/*.o)
 DBG_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_LIBS)),$(LDLIBS))
 DBG_INCPATH = $(INCPATH)
-DBG_CFLAGS = $(CFLAGS) -g -ggdb3 -Og -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_OPT_CFLAGS ?= -pipe -fbuiltin -Og -fno-omit-frame-pointer
+DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
@@ -274,7 +274,8 @@ COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
 COV_LIB_OBJS = $(foreach lib,$(LIBS),$(COV_LIBDIR)/obj/$(lib)/*.o)
 COV_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
+COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS = $(USE_LLD) -lgcov --coverage
 
 #
@@ -288,8 +289,9 @@ SNTZ_EXE = $(SNTZ_DIR)/$(EXE)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_LIB_OBJS = $(foreach lib,$(LIBS),$(SNTZ_LIBDIR)/obj/$(lib)/*.o)
 SNTZ_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
-SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_OPTIONS = -fsanitize=address,undefined
+SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
+SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 ifeq ($(UNAME_S),Darwin)
 SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
 SNTZ_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
@@ -312,7 +314,8 @@ PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
 PROD_LIB_OBJS = $(foreach lib,$(LIBS),$(PROD_LIBDIR)/obj/$(lib)/*.o)
 PROD_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
-PROD_CFLAGS ?= $(CFLAGS) $(LTO) -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
 # PROD_LDFLAGS and PROD_CFLAGS use ?= so that distribution package managers
 # (Gentoo Portage, Debian dpkg-buildflags, RPM macros, etc.) can override them
 # with system-wide hardening and optimization flags via the command line:
@@ -353,7 +356,8 @@ PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_LIB_OBJS = $(foreach lib,$(LIBS),$(PRTB_LIBDIR)/obj/$(lib)/*.o)
 PRTB_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
-PRTB_CFLAGS = $(CFLAGS) $(LTO) -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,-dead_strip
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
