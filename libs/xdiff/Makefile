@@ -340,7 +340,7 @@ $(PRTB_LIBDIR):
 purge: clean-compile-commands
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
 	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
-	@echo Quick cleanup of all artifacts
+	@echo $(LIBNAME) artifacts cleared
 
 clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)

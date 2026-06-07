@@ -317,7 +317,7 @@ $(PRTB_LIBDIR):
 purge:
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
 	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
-	@echo Quick cleanup of all artifacts
+	@echo $(LIBNAME) artifacts cleared
 
 clean:
 	@rm -rf $(PROD_SO) $(PROD_STAT) $(PROD_OBJS)
