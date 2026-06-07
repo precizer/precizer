@@ -233,10 +233,12 @@ DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/li
 DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
-DBG_LDFLAGS = $(USE_LLD) -Wl,--as-needed
+DBG_OPT_LDFLAGS ?= -Wl,--as-needed
+DBG_LDFLAGS = $(USE_LLD) $(DBG_OPT_LDFLAGS)
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
-DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs -Wl,--as-needed
+DBG_OPT_LDFLAGS ?= -Wl,--as-needed
+DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs $(DBG_OPT_LDFLAGS)
 endif
 # Activate the Gprof profiler.
 # Works incorrectly with Valgrind.
@@ -324,11 +326,14 @@ PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
 # when not overridden, it expands to empty (LDFLAGS is not set in this project).
 # See .packaging/gentoo/ for a real-world example.
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(LTO) -Wl,-O3 -Wl,-dead_strip
+PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,-dead_strip
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS)
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(LTO) -Wl,-O3 -Wl,--gc-sections
+PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--gc-sections
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS)
 else
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
 endif
 
 #
@@ -359,11 +364,14 @@ PRTB_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
 PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,-dead_strip
+PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,-dead_strip
+PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS)
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,--gc-sections
+PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--gc-sections
+PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS)
 else
-PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections
+PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
