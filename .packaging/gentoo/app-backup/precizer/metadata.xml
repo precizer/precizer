@@ -12,6 +12,13 @@
 		walks directory trees and builds a database of files and their checksums
 		for fast, repeatable comparisons.
 	</longdescription>
+	<longdescription lang="ru">
+		Precizer — крошечное и быстрое консольное приложение, полностью
+		написанное на чистом Си. Предназначено для проверки целостности и
+		сравнения файлов. Особенно полезно для проверки результатов синхронизации.
+		Программа обходит дерево каталогов и создаёт базу данных файлов и их
+		контрольных сумм с последующим быстрым сравнением.
+	</longdescription>
 	<upstream>
 		<remote-id type="github">precizer/precizer</remote-id>
 		<bugs-to>https://github.com/precizer/precizer/issues</bugs-to>
