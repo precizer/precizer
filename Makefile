@@ -82,12 +82,7 @@ ifeq ($(UNAME_S),Darwin)
 STATIC =
 STRIP ?= -Wl,-x
 else
-# tests-dynamic disables static linking so the debug test build can use shared libraries
-ifneq ($(TESTS_DYNAMIC),)
-STATIC =
-else
 STATIC = -static -static-libgcc -Wl,--gc-sections
-endif
 STRIP ?= -s
 endif
 
@@ -220,14 +215,17 @@ ASM = $(SRCS:.c=.asm)
 #
 # Debug build settings
 #
-DBG_DIR = $(BUILDDIR)/debug
+DBG = debug
+DBG_DIR = $(BUILDDIR)/$(DBG)
 DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_DIR)/obj
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
 DBG_EXE = $(DBG_DIR)/$(EXE)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(notdir $(OBJS)))
-DBG_LIB_OBJS = $(foreach lib,$(LIBS),$(DBG_LIBDIR)/obj/$(lib)/*.o)
-DBG_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
+DBG_LIBS = $(LIBS)
+DBG_LIB_OBJS = $(foreach lib,$(DBG_LIBS),$(DBG_LIBDIR)/obj/$(lib)/*.o)
+DBG_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_LIBS)),$(LDLIBS))
+DBG_INCPATH = $(INCPATH)
 DBG_CFLAGS = $(CFLAGS) -g -ggdb3 -Og -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
 LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
@@ -240,17 +238,29 @@ else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
 DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs -Wl,--as-needed
 endif
-# tests-dynamic injects a debug-only rpath so copied test binaries can find shared libraries
-ifneq ($(TESTS_DYNAMIC),)
-DBG_LINK_RPATH = $(DBG_RPATH)
-else
-DBG_LINK_RPATH =
-endif
 # Activate the Gprof profiler.
 # Works incorrectly with Valgrind.
 # It is better to use Callgrind - the call graph format
 # is supported by visualization tools like kcachegrind.
 #DBG_CFLAGS += -pg
+
+#
+# Dynamic debug build settings
+#
+DBG_DYN = debug-dynamic
+DBG_DYN_DIR = $(BUILDDIR)/$(DBG_DYN)
+DBG_DYN_LIBDIR = $(DBG_LIBDIR)
+DBG_DYN_OBJDIR = $(DBG_DYN_DIR)/obj
+DBG_DYN_LDPATH = $(LDPATH)
+DBG_DYN_EXE = $(DBG_DYN_DIR)/$(EXE)
+DBG_DYN_OBJS = $(addprefix $(DBG_DYN_OBJDIR)/, $(notdir $(OBJS)))
+DBG_DYN_LIBS = $(STATLIBS)
+DBG_DYN_LIB_OBJS = $(foreach lib,$(DBG_DYN_LIBS),$(DBG_DYN_LIBDIR)/obj/$(lib)/*.o)
+DBG_DYN_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_DYN_LIBS)),$(LDLIBS))
+DBG_DYN_INCPATH = $(DYNAMIC_INCPATH)
+DBG_DYN_HDRS = $(wildcard $(SRC_DIR)/*.h) $(foreach d,$(DBG_DYN_LIBS),$(wildcard libs/$d/src/*.h))
+DBG_DYN_CFLAGS = $(DBG_CFLAGS)
+DBG_DYN_LDFLAGS = $(DBG_LDFLAGS)
 
 #
 # Coverage build settings
@@ -364,7 +374,7 @@ printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debuglibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: all clean debug debug-dynamic remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debug-build debug-dynamic-build debuglibs debugdynlibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal debugdynfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done portable-done
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm test test-coverage tests-sanitize tests-debug tests-dynamic analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
@@ -380,15 +390,17 @@ $(LIBS_MATRIX_BUILDS) $(LIBS_MATRIX_TESTS):
 #
 debug: $(DBG_EXE) debugfinal
 
+debug-build: $(DBG_EXE)
+
 debugfinal: $(DBG_EXE)
 	@$(DBG_EXE) --version
 	@echo "The application has been built and is located: $(DBG_EXE)"
 
 debuglibs:
-	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(LIBS)" BUILDDIR=../../$(BUILDDIR)
+	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(DBG_LIBS)" BUILDDIR=../../$(BUILDDIR)
 
 $(DBG_EXE): $(DBG_OBJS) debuglibs
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LINK_RPATH) $(DBG_LDFLAGS) $(DBG_OBJS) $(DBG_LIB_OBJS) $(DBG_EXT_LDLIBS) -o $@
+	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) $(DBG_OBJS) $(DBG_LIB_OBJS) $(DBG_EXT_LDLIBS) -o $@
 ifeq ($(UNAME_S),Darwin)
 	@echo "$@ linked dynamically, not stripped"
 else
@@ -396,11 +408,33 @@ else
 endif
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
-	@$(CC) -c $(INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
+	@$(CC) -c $(DBG_INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
 	@echo "$< compiled with debug flags"
 
 $(DBG_OBJDIR):
 	@mkdir -p $(DBG_OBJDIR)
+
+debug-dynamic: $(DBG_DYN_EXE) debugdynfinal
+
+debug-dynamic-build: $(DBG_DYN_EXE)
+
+debugdynfinal: $(DBG_DYN_EXE)
+	@$(DBG_DYN_EXE) --version
+	@echo "The application has been built and is located: $(DBG_DYN_EXE)"
+
+debugdynlibs:
+	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(DBG_DYN_LIBS)" BUILDDIR=../../$(BUILDDIR)
+
+$(DBG_DYN_EXE): $(DBG_DYN_OBJS) debugdynlibs
+	@$(CC) $(DBG_DYN_LDPATH) $(DBG_DYN_LDFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $@
+	@echo "$@ linked dynamically, not stripped"
+
+$(DBG_DYN_OBJDIR)/%.o: $(SRC_DIR)/%.c $(DBG_DYN_HDRS) | $(DBG_DYN_OBJDIR)
+	@$(CC) -c $(DBG_DYN_INCPATH) $(WFLAGS) $(DBG_DYN_CFLAGS) -o $@ $<
+	@echo "$< compiled with dynamic debug flags"
+
+$(DBG_DYN_OBJDIR):
+	@mkdir -p $(DBG_DYN_OBJDIR)
 
 #
 # Coverage rules
@@ -563,13 +597,16 @@ clean-compile-commands:
 
 clean: | clean-preproc clean-asm clean-tests clean-compile-commands
 	@rm -f *.out.* doc
-	@rm -f $(DBG_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
-	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
+	@rm -f $(DBG_EXE) $(DBG_DYN_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
+	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(DBG_DYN_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
 
 	@test -d $(DBG_LIBDIR)/obj && rm -d $(DBG_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
+
+	@test -d $(DBG_DYN_OBJDIR) && rm -d $(DBG_DYN_OBJDIR) 2>/dev/null || true
+	@test -d $(DBG_DYN_DIR) && rm -d $(DBG_DYN_DIR) 2>/dev/null || true
 
 	@test -d $(COV_LIBDIR)/obj && rm -d $(COV_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
@@ -604,7 +641,8 @@ purge: clean-compile-commands
 	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
 	@$(MAKE) -s -C libs purge
 	@$(MAKE) -C $(TEST_DIR) clean-hugetestfile
-	@echo Quick cleanup of all artifacts
+	@echo $(TEST_DIR) huge test file artifacts cleared
+	@echo $(EXE) artifacts cleared
 
 clean-all: clean-tests clean clean-tools clean-docker
 	@$(MAKE) -C libs clean
@@ -631,7 +669,7 @@ tests-debug:
 
 # Run the debug test suite without static linking to avoid requiring static external libraries
 tests-dynamic:
-	@$(MAKE) -s -C $(TEST_DIR) debug TESTS_DYNAMIC=1
+	@$(MAKE) -s -C $(TEST_DIR) debug-dynamic
 
 #
 # Build and test within a Docker container

@@ -20,12 +20,7 @@ CFLAGS += -DEVIL_EMPIRE_OS
 endif
 
 SRC = src
-# tests-dynamic clears STATIC so the test runner uses shared libraries during debug runs
-ifneq ($(TESTS_DYNAMIC),)
-STATIC =
-else
 STATIC = -static -static-libgcc -Wl,--gc-sections
-endif
 
 APP_SRC_DIR = ../src
 BUILDDIR = ../.builds
@@ -189,6 +184,7 @@ DBG_LIB_OBJDIR = $(BUILDDIR)/$(DBG)/libs/obj
 DBG_LIB_OBJS = $(foreach lib,$(LIBS),$(DBG_LIB_OBJDIR)/$(lib)/*.o)
 DBG_LIBDIR = $(BUILDDIR)/$(DBG)/libs
 DBG_LDPATH = -L$(DBG_LIBDIR) $(LDPATH)
+DBG_INCPATH = $(INCPATH)
 ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/../../$(DBG_LIBDIR)
 else
@@ -196,9 +192,30 @@ DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN
 endif
 DBG_CFLAGS = $(CFLAGS) -g -ggdb3 -Og -fno-omit-frame-pointer -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
 
-.PHONY: all clean debug sanitize coverage run test tests tests-sanitize tests-debug tests-dynamic coverage-report coverage-html format
-.PHONY: precizer-coverage precizer-sanitize precizer-debug hugetestfile purge static-analyzers static-analyzers-cli gcc-analyzer cppcheck clang-analyzer clang-analyzer-cli print-%
-.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug debug-build compile-commands clean-compile-commands
+#
+# Dynamic debug build settings
+#
+DBG_DYN = debug-dynamic
+DBG_DYN_DIR = $(TEST_BUILDDIR)/$(DBG_DYN)
+DBG_DYN_EXE = $(DBG_DYN_DIR)/$(EXE)
+DBG_DYN_OBJDIR = $(DBG_DYN_DIR)/obj
+DBG_DYN_OBJS = $(addprefix $(DBG_DYN_OBJDIR)/, $(notdir $(OBJS)))
+DBG_DYN_APP_OBJS = $(addprefix $(DBG_DYN_OBJDIR)/, $(notdir $(APP_OBJS)))
+LIB_TESTS_DBG_DYN_OBJS = $(patsubst ../%.c,$(DBG_DYN_OBJDIR)/%.o,$(LIB_TESTS_SRCS))
+DBG_DYN_LIBS = $(filter-out sqlite3,$(LIBS))
+DBG_DYN_LIB_OBJDIR = $(DBG_LIB_OBJDIR)
+DBG_DYN_LIBDIR = $(DBG_LIBDIR)
+DBG_DYN_LIB_OBJS = $(foreach lib,$(DBG_DYN_LIBS),$(DBG_DYN_LIB_OBJDIR)/$(lib)/*.o)
+DBG_DYN_LDPATH = $(LDPATH)
+DBG_DYN_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_DYN_LIBS)),$(LDLIBS))
+DBG_DYN_INCPATH = $(filter-out -I../libs/sqlite3/src/,$(INCPATH))
+DBG_DYN_HDRS = $(wildcard $(SRC)/*.h) $(foreach d,$(DBG_DYN_LIBS),$(wildcard ../libs/$d/src/*.h))
+DBG_DYN_ALLHDRS = $(DBG_DYN_HDRS) $(APP_HDRS) $(LIB_TESTS_HDRS)
+DBG_DYN_CFLAGS = $(DBG_CFLAGS)
+
+.PHONY: all clean debug debug-dynamic sanitize coverage run test tests tests-sanitize tests-debug tests-dynamic coverage-report coverage-html format
+.PHONY: precizer-coverage precizer-sanitize precizer-debug precizer-debug-dynamic hugetestfile purge static-analyzers static-analyzers-cli gcc-analyzer cppcheck clang-analyzer clang-analyzer-cli print-%
+.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug testlibs-debug-dynamic debug-build debug-dynamic-build compile-commands clean-compile-commands
 
 # Default build
 all: sanitize
@@ -211,8 +228,7 @@ tests-sanitize: sanitize
 
 tests-debug: debug
 
-tests-dynamic:
-	@$(MAKE) -s debug TESTS_DYNAMIC=1
+tests-dynamic: debug-dynamic
 
 run: sanitize
 
@@ -223,6 +239,9 @@ testlibs-sanitize: precizer-sanitize
 	@$(MAKE) -s -C ../libs sanitize SUBDIRS="xdiff testitall testmocking" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
 
 testlibs-debug: precizer-debug
+	@$(MAKE) -s -C ../libs debug SUBDIRS="xdiff testitall testmocking" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
+
+testlibs-debug-dynamic: precizer-debug-dynamic
 	@$(MAKE) -s -C ../libs debug SUBDIRS="xdiff testitall testmocking" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
 
 #
@@ -299,6 +318,9 @@ $(SNTZ_OBJDIR):
 precizer-debug:
 	@$(MAKE) -s -C ../ debug
 
+precizer-debug-dynamic:
+	@$(MAKE) -s -C ../ debug-dynamic
+
 debug-build: $(DBG_EXE)
 
 debug: hugetestfile debug-build
@@ -306,27 +328,48 @@ debug: hugetestfile debug-build
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS) precizer-debug testlibs-debug
 	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS) -o $(DBG_EXE)
-ifneq ($(TESTS_DYNAMIC),)
-	@echo "$@ linked dynamically with debug flags, not stripped"
-else
 	@echo "$@ linked statically with debug flags, not stripped"
-endif
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
-	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo "$< compiled with debug flags"
 
 $(DBG_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
-	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo "$< compiled with debug flags"
 
 $(DBG_OBJDIR)/%.o: ../%.c $(ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(DBG_OBJDIR)
 	@mkdir -p "$(dir $@)"
-	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo "$< compiled with debug flags"
 
 $(DBG_OBJDIR):
 	@mkdir -p "$(DBG_OBJDIR)"
+
+debug-dynamic-build: $(DBG_DYN_EXE)
+
+debug-dynamic: hugetestfile debug-dynamic-build
+	@./$(DBG_DYN_EXE)
+
+$(DBG_DYN_EXE): $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS) precizer-debug-dynamic testlibs-debug-dynamic
+	@$(CC) $(DBG_DYN_LDPATH) $(WRAPFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $(DBG_DYN_EXE)
+	@echo "$@ linked dynamically with debug flags, not stripped"
+
+$(DBG_DYN_OBJDIR)/%.o: $(SRC)/%.c $(DBG_DYN_ALLHDRS) $(TMPLTS) | $(DBG_DYN_OBJDIR)
+	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo "$< compiled with dynamic debug flags"
+
+$(DBG_DYN_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(DBG_DYN_ALLHDRS) $(TMPLTS) | $(DBG_DYN_OBJDIR)
+	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo "$< compiled with dynamic debug flags"
+
+$(DBG_DYN_OBJDIR)/%.o: ../%.c $(DBG_DYN_ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(DBG_DYN_OBJDIR)
+	@mkdir -p "$(dir $@)"
+	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
+	@echo "$< compiled with dynamic debug flags"
+
+$(DBG_DYN_OBJDIR):
+	@mkdir -p "$(DBG_DYN_OBJDIR)"
 
 #
 # Format rules
@@ -346,17 +389,22 @@ clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 
 clean: clean-hugetestfile clean-compile-commands
-	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(COV_EXE)
+	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(DBG_DYN_EXE) $(COV_EXE)
 	@rm -f $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS)
+	@rm -f $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS)
 	@rm -f $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(LIB_TESTS_SNTZ_OBJS)
 	@rm -f $(COV_OBJS) $(COV_APP_OBJS) $(LIB_TESTS_COV_OBJS)
 	@rm -rf $(DBG_OBJDIR)/libs
+	@rm -rf $(DBG_DYN_OBJDIR)/libs
 	@rm -rf $(SNTZ_OBJDIR)/libs
 	@rm -rf $(COV_OBJDIR)/libs
 
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
+
+	@test -d $(DBG_DYN_OBJDIR) && rm -d $(DBG_DYN_OBJDIR) 2>/dev/null || true
+	@test -d $(DBG_DYN_DIR) && rm -d $(DBG_DYN_DIR) 2>/dev/null || true
 
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
