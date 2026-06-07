@@ -23,6 +23,81 @@ static pcre2_code *compile_test_pattern(
 		NULL);
 }
 
+static REGEXP noisy_null_relative_path_response = MATCH;
+static REGEXP noisy_damaged_path_response = MATCH;
+static REGEXP noisy_invalid_utf8_path_response = MATCH;
+
+/**
+ * @brief Capture the NULL relative-path negative case
+ *
+ * @return SUCCESS when the negative call was exercised
+ */
+static Return capture_noisy_null_relative_path_case(void)
+{
+	INITTEST;
+
+	pcre2_code *compiled_pattern = compile_test_pattern(".",0);
+
+	ASSERT(compiled_pattern != NULL);
+	noisy_null_relative_path_response = match_regexp(compiled_pattern,NULL);
+
+	pcre2_code_free(compiled_pattern);
+
+	deliver(status);
+}
+
+/**
+ * @brief Capture the damaged relative-path descriptor negative case
+ *
+ * @return SUCCESS when the negative call was exercised
+ */
+static Return capture_noisy_damaged_path_case(void)
+{
+	INITTEST;
+
+	memory damaged_path = {
+		.single_element_size = sizeof(char),
+		.actually_allocated_bytes = sizeof(char),
+		.length = 1,
+		.string_length = 0,
+		.is_string = true,
+		.data = NULL
+	};
+	pcre2_code *compiled_pattern = compile_test_pattern(".",0);
+
+	ASSERT(compiled_pattern != NULL);
+	noisy_damaged_path_response = match_regexp(compiled_pattern,&damaged_path);
+
+	pcre2_code_free(compiled_pattern);
+
+	deliver(status);
+}
+
+/**
+ * @brief Capture the invalid UTF-8 PCRE2 runtime error case
+ *
+ * @return SUCCESS when the negative call was exercised
+ */
+static Return capture_noisy_invalid_utf8_path_case(void)
+{
+	INITTEST;
+
+	static const char invalid_utf8_subject[] = {
+		(char)0xC3,'(',0
+	};
+	m_create(char,relative_path,MEMORY_STRING);
+	pcre2_code *compiled_pattern = compile_test_pattern(".",PCRE2_UTF);
+
+	ASSERT(compiled_pattern != NULL);
+	ASSERT(SUCCESS == m_copy_string(relative_path,sizeof(invalid_utf8_subject),invalid_utf8_subject));
+	noisy_invalid_utf8_path_response = match_regexp(compiled_pattern,relative_path);
+
+	pcre2_code_free(compiled_pattern);
+	call(m_del(relative_path));
+
+	deliver(status);
+}
+
 /**
  * @brief match_regexp() should report MATCH for a matching relative path
  */
@@ -125,12 +200,13 @@ static Return test0006_6(void)
 {
 	INITTEST;
 
-	pcre2_code *compiled_pattern = compile_test_pattern(".",0);
+	noisy_null_relative_path_response = MATCH;
 
-	ASSERT(compiled_pattern != NULL);
-	ASSERT(REGEXP_ERROR == match_regexp(compiled_pattern,NULL));
-
-	pcre2_code_free(compiled_pattern);
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		NULL,
+		capture_noisy_null_relative_path_case));
+	ASSERT(REGEXP_ERROR == noisy_null_relative_path_response);
 
 	RETURN_STATUS;
 }
@@ -142,20 +218,18 @@ static Return test0006_7(void)
 {
 	INITTEST;
 
-	memory damaged_path = {
-		.single_element_size = sizeof(char),
-		.actually_allocated_bytes = sizeof(char),
-		.length = 1,
-		.string_length = 0,
-		.is_string = true,
-		.data = NULL
-	};
-	pcre2_code *compiled_pattern = compile_test_pattern(".",0);
+	static const char expected_stderr_pattern[] =
+	        "\\A"
+	        "ERROR: [^\\n]*Memory management; Descriptor has non-zero length with NULL data pointer[^\\n]*\n"
+	        "\\Z";
 
-	ASSERT(compiled_pattern != NULL);
-	ASSERT(REGEXP_ERROR == match_regexp(compiled_pattern,&damaged_path));
+	noisy_damaged_path_response = MATCH;
 
-	pcre2_code_free(compiled_pattern);
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		expected_stderr_pattern,
+		capture_noisy_damaged_path_case));
+	ASSERT(REGEXP_ERROR == noisy_damaged_path_response);
 
 	RETURN_STATUS;
 }
@@ -167,18 +241,18 @@ static Return test0006_8(void)
 {
 	INITTEST;
 
-	static const char invalid_utf8_subject[] = {
-		(char)0xC3,'(',0
-	};
-	m_create(char,relative_path,MEMORY_STRING);
-	pcre2_code *compiled_pattern = compile_test_pattern(".",PCRE2_UTF);
+	static const char expected_stdout_pattern[] =
+	        "\\A"
+	        "ERROR: PCRE2 match error -8: UTF-8 error: byte 2 top bits not 0x80 for path: \\\\xC3\\(\n"
+	        "\\Z";
 
-	ASSERT(compiled_pattern != NULL);
-	ASSERT(SUCCESS == m_copy_string(relative_path,sizeof(invalid_utf8_subject),invalid_utf8_subject));
-	ASSERT(REGEXP_ERROR == match_regexp(compiled_pattern,relative_path));
+	noisy_invalid_utf8_path_response = MATCH;
 
-	pcre2_code_free(compiled_pattern);
-	call(m_del(relative_path));
+	ASSERT(SUCCESS == match_function_output(
+		expected_stdout_pattern,
+		NULL,
+		capture_noisy_invalid_utf8_path_case));
+	ASSERT(REGEXP_ERROR == noisy_invalid_utf8_path_response);
 
 	RETURN_STATUS;
 }
