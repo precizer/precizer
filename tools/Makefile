@@ -7,9 +7,8 @@ CC := gcc
 #
 # Compiler flags
 #
-CFLAGS += -pipe -std=c2x -flto
-CFLAGS += -fbuiltin
-CFLAGS += -O2
+CFLAGS += -std=c2x -finline-functions
+OPT_CFLAGS ?= -pipe -fbuiltin -flto -O2
 
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
@@ -49,7 +48,7 @@ all: $(BINS)
 
 # Rule to build binaries
 %: $(SRC_DIR)/%.c
-	@$(CC) $(CFLAGS) $(WFLAGS) $< -o $(BIN_DIR)/$@
+	@$(CC) $(CFLAGS) $(OPT_CFLAGS) $(WFLAGS) $< -o $(BIN_DIR)/$@
 	@echo $@ done
 
 #

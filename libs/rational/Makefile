@@ -19,8 +19,7 @@ endif
 #
 # USE_LLD and AR are exported by the root Makefile when COMPILER=clang
 # to use LLVM's own linker and archiver, avoiding gold plugin version mismatch
-CFLAGS += -pipe -std=c2x -finline-functions
-CFLAGS += -fbuiltin
+CFLAGS += -std=c2x -finline-functions
 
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
@@ -84,7 +83,8 @@ DBG_OBJDIR = $(DBG_LIBDIR)/obj/$(LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
@@ -103,7 +103,8 @@ COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL_TEST_HOOKS
+COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL_TEST_HOOKS
 COV_LDFLAGS += $(USE_LLD) -lgcov --coverage
 
 #
@@ -116,11 +117,12 @@ SNTZ_OBJDIR = $(SNTZ_LIBDIR)/obj/$(LIBDIR)
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
+SNTZ_OPTIONS = -fsanitize=address,undefined
 ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO)
 endif
-SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
+SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 SNTZ_LDFLAGS += $(USE_LLD) $(SNTZ_OPTIONS)
 
 #
@@ -133,13 +135,17 @@ PROD_OBJDIR = $(PROD_LIBDIR)/obj/$(LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
-PROD_CFLAGS ?= $(CFLAGS) $(LTO) -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(LTO) -Wl,-O3 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,-dead_strip
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(LTO) -Wl,-O3 -Wl,--gc-sections
+PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--gc-sections
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS)
 else
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections
+PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -160,13 +166,17 @@ PRTB_OBJDIR = $(PRTB_LIBDIR)/obj/$(LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
-PRTB_CFLAGS = $(CFLAGS) $(LTO) -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
-PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,-dead_strip -Wl,-undefined,dynamic_lookup
+PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,-dead_strip
+PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,--gc-sections
+PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--gc-sections
+PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS)
 else
-PRTB_LDFLAGS = $(USE_LLD) $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections -Wl,-z,defs
+PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections
+PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -315,7 +325,7 @@ $(PRTB_LIBDIR):
 purge: clean-compile-commands
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
 	@test -f $(EXE) && rm $(EXE) 2>/dev/null || true
-	@echo Quick cleanup of all artifacts
+	@echo $(LIBNAME) artifacts cleared
 
 clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)

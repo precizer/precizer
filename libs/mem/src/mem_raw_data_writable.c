@@ -25,7 +25,7 @@
  * @param memory_object Pointer to a descriptor
  * @return Writable storage pointer on success. `NULL` when the descriptor is too broken to expose safely
  */
-inline __attribute__((always_inline)) void *mem_raw_data_writable(memory *memory_object)
+void *mem_raw_data_writable(memory *memory_object)
 {
 	if(memory_object == NULL)
 	{

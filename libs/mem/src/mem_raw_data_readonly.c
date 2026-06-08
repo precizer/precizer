@@ -25,7 +25,7 @@
  * @param memory_object Pointer to a descriptor
  * @return Read-only storage pointer on success. `NULL` when the descriptor is too broken to expose safely
  */
-inline __attribute__((always_inline)) const void *mem_raw_data_readonly(const memory *memory_object)
+const void *mem_raw_data_readonly(const memory *memory_object)
 {
 	if(memory_object == NULL)
 	{

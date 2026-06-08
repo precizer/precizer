@@ -19,8 +19,7 @@ endif
 #
 # USE_LLD and AR are exported by the root Makefile when COMPILER=clang
 # to use LLVM's own linker and archiver, avoiding gold plugin version mismatch
-CFLAGS += -pipe -std=c2x -finline-functions
-CFLAGS += -fbuiltin
+CFLAGS += -std=c2x -finline-functions
 
 # This wrap library is intentionally static-only. Its objects define
 # __wrap_malloc and __wrap_realloc and must be linked only by test binaries
@@ -89,7 +88,8 @@ DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_LIBDIR)/obj/$(LIBDIR)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
-DBG_CFLAGS = $(CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -fno-omit-frame-pointer -DDEBUG
+DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
 
 #
 # Coverage build settings
@@ -100,7 +100,8 @@ COV_LIBDIR = $(COV_DIR)/libs
 COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage -g -O0 -fno-omit-frame-pointer -DDEBUG -DTESTITALL
+COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL
 
 #
 # Sanitize build settings
@@ -111,8 +112,9 @@ SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_LIBDIR)/obj/$(LIBDIR)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
-SNTZ_OPTIONS = -fsanitize=address,undefined -fno-omit-frame-pointer
-SNTZ_CFLAGS = $(DBG_CFLAGS) $(SNTZ_OPTIONS)
+SNTZ_OPTIONS = -fsanitize=address,undefined
+SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
+SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
 
 #
 # Production build settings
@@ -123,7 +125,8 @@ PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_LIBDIR)/obj/$(LIBDIR)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
-PROD_CFLAGS ?= $(CFLAGS) $(LTO) -O3 -march=native -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 PROD_WFLAGS += -Wsuggest-attribute=const
@@ -142,7 +145,8 @@ PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_LIBDIR)/obj/$(LIBDIR)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
-PRTB_CFLAGS = $(CFLAGS) $(LTO) -O2 -mtune=generic -funroll-loops -pipe -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
+PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 PRTB_WFLAGS += -Wsuggest-attribute=const
@@ -259,7 +263,7 @@ $(PRTB_LIBDIR):
 
 purge: clean-compile-commands
 	@test -d $(BUILDDIR) && rm -rf $(BUILDDIR) 2>/dev/null || true
-	@echo Quick cleanup of all artifacts
+	@echo $(LIBNAME) artifacts cleared
 
 clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)

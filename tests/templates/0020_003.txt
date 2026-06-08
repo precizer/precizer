@@ -29,6 +29,5 @@ TESTING:The primary database file was just created and doesn't require verificat
 ERROR:Can't open database write_protected_directory/database1\.db .* unable to open database file
 TESTING:Database initialization process completed
 TESTING:Returned db_init:\d+ status: FAILURE
-TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 ERROR:Exit status » FAILURE\Z

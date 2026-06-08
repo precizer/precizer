@@ -20,23 +20,21 @@ RDEPEND="
 DEPEND="
 	${RDEPEND}
 "
-BDEPEND="
-	test? ( llvm-core/llvm )
-"
-
 S="${WORKDIR}/${P}"
 DOCS=( README.md CHANGELOG.md )
 
 src_compile() {
 	emake dynamic-production-build \
-		PROD_CFLAGS='$(CFLAGS)' \
-		PROD_LDFLAGS='$(LDFLAGS)' \
+		PROD_OPT_CFLAGS='${CFLAGS}' \
+		PROD_OPT_LDFLAGS='${LDFLAGS}' \
 		STRIP= \
 		UPX=:
 }
 
 src_test() {
-	emake tests
+	emake tests-dynamic \
+		PROD_OPT_CFLAGS='${CFLAGS}' \
+		PROD_OPT_LDFLAGS='${LDFLAGS}'
 }
 
 src_install() {
