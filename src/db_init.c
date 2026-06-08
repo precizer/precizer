@@ -44,6 +44,8 @@ Return db_init(void)
 			NULL,
 			"Can't open database %s",
 			confstr(db_primary_file_path));
+		sqlite3_close(config->db);
+		config->db = NULL;
 		status = FAILURE;
 	}
 
