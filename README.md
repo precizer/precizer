@@ -14,6 +14,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 * In-process integration tests
 * Out-of-process CLI system tests
+* Unit tests
 
 #### Test coverage:
 
@@ -28,7 +29,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 ### Security:
 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)  
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/precizer/precizer/badge)](https://scorecard.dev/viewer/?uri=github.com/precizer/precizer)
 
 ## TL;DR
