@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# Release 0.15.2 2026-06-08
+
+- Improved internal resilience, build and packaging workflows, documentation, and test reliability
+
 # Release 0.15.1 2026-06-07
 
 ## Fixed
