@@ -8,14 +8,17 @@
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-## Гибридный интеграционно-системный набор тестов
+## Continuous integration and automation
+
+### Гибридный интеграционно-системный набор тестов
 
 * In-process integration tests
 * Out-of-process CLI system tests
 
-### Test coverage:
+#### Test coverage:
 
-<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-total.svg" height="20" alt="Total completed tests" /><br>
+<img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
 <img src=".html/img/test-coverage-functions.svg" height="20" alt="Functions covered by tests" /><br>
 <img src=".html/img/test-coverage-branches.svg" height="20" alt="Code branches covered by tests" /></a>
 
