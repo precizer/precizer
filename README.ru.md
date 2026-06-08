@@ -14,6 +14,7 @@
 
 * In-process integration tests
 * Out-of-process CLI system tests
+* Unit tests
 
 #### Test coverage:
 

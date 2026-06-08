@@ -14,6 +14,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 * In-process integration tests
 * Out-of-process CLI system tests
+* Unit tests
 
 #### Test coverage:
 
