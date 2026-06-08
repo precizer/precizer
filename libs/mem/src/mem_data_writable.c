@@ -18,7 +18,7 @@
  * @param expected_single_element_size Expected element size in bytes, usually `sizeof(T)`
  * @return Writable data pointer on success. `NULL` when the descriptor is invalid or the element size does not match
  */
-inline __attribute__((always_inline)) void *mem_data_writable(
+void *mem_data_writable(
 	memory *memory_structure,
 	size_t expected_single_element_size)
 {
