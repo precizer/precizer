@@ -189,7 +189,9 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 * Подсказка `--help` сделана максимально подробной специально для помощи пользователям, не обладающим специализированными техническими знаниями.
 * Обратиться к автору можно:
+  * По электронной почте: [jpy95dg6@anonaddy.com](mailto:jpy95dg6@anonaddy.com)
   * [Через форму GitHub Дискуссий](https://github.com/precizer/precizer/discussions).
+  * Приватно сообщить о проблеме безопасности можно через [GitHub Security Advisories](https://github.com/precizer/precizer/security/advisories/new)
   * Там же на GitHub можно [опубликовать багрепорт или feature request](https://github.com/precizer/precizer/issues/new).
 
 ## УЧАСТИЕ В ПРОЕКТЕ

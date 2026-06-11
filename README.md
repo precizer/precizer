@@ -191,7 +191,9 @@ The following scenario illustrates the issue:
 
 * The `--help` option is designed to be as detailed as possible, specifically to assist users who may not have advanced technical knowledge.
 * Author contact options:
+  * By email: [jpy95dg6@anonaddy.com](mailto:jpy95dg6@anonaddy.com)
   * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
+  * Report security issues privately through [GitHub Security Advisories](https://github.com/precizer/precizer/security/advisories/new)
   * [Bug reports and feature requests](https://github.com/precizer/precizer/issues/new).
 
 ## CONTRIBUTING
