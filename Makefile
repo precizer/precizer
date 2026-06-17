@@ -403,6 +403,7 @@ $(LIBS_MATRIX_BUILDS) $(LIBS_MATRIX_TESTS):
 debug: $(DBG_EXE) debugfinal
 
 debug-build: $(DBG_EXE)
+	@$(DBG_EXE) --version
 
 debugfinal: $(DBG_EXE)
 	@$(DBG_EXE) --version
@@ -429,6 +430,7 @@ $(DBG_OBJDIR):
 debug-dynamic: $(DBG_DYN_EXE) debugdynfinal
 
 debug-dynamic-build: $(DBG_DYN_EXE)
+	@$(DBG_DYN_EXE) --version
 
 debugdynfinal: $(DBG_DYN_EXE)
 	@$(DBG_DYN_EXE) --version
@@ -546,6 +548,7 @@ $(PROD_OBJDIR):
 dynamic-production: banner-dynamic-production
 
 dynamic-production-build: $(DYNP_EXE)
+	@$(DYNP_EXE) --version
 
 banner-dynamic-production: dynprodfinal
 	@$(BUILD_USAGE_BANNER)
