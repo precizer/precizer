@@ -1,4 +1,4 @@
-FROM gentoo/stage3@sha256:1fb7567c1f8073aed24fd8a8b5dcad62a20b1dac1df0311f5d7f9eb55a6824b9 AS gentoo
+FROM gentoo/stage3@sha256:91134e1375edb5d0b69951bab06d229e6695b66ce9726d46a5a4293fc305eb34 AS gentoo
 
 # deps: gcc, make, llvm, pcre2 (static), upx, useradd
 RUN mkdir -p /var/db/repos/gentoo; \
