@@ -8,14 +8,18 @@
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-## Гибридный интеграционно-системный набор тестов
+## Continuous integration and automation
+
+### Гибридный интеграционно-системный набор тестов
 
 * In-process integration tests
 * Out-of-process CLI system tests
+* Unit tests
 
-### Test coverage:
+#### Test coverage:
 
-<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-total.svg" height="20" alt="Total completed tests" /><br>
+<img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
 <img src=".html/img/test-coverage-functions.svg" height="20" alt="Functions covered by tests" /><br>
 <img src=".html/img/test-coverage-branches.svg" height="20" alt="Code branches covered by tests" /></a>
 
@@ -25,8 +29,7 @@
 
 ### Security:
 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)
-
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)  
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/precizer/precizer/badge)](https://scorecard.dev/viewer/?uri=github.com/precizer/precizer)
 
 ## КРАТКО
@@ -186,7 +189,9 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 * Подсказка `--help` сделана максимально подробной специально для помощи пользователям, не обладающим специализированными техническими знаниями.
 * Обратиться к автору можно:
-  * [Через форму GitHub Дискуссий](https://github.com/precizer/precizer/discussions).
+  * По электронной почте: [jpy95dg6@anonaddy.com](mailto:jpy95dg6@anonaddy.com)
+  * [Через форму GitHub Дискуссий](https://github.com/precizer/precizer/discussions)
+  * Приватно сообщить о проблеме безопасности можно через [GitHub Security Advisories](https://github.com/precizer/precizer/security/advisories/new)
   * Там же на GitHub можно [опубликовать багрепорт или feature request](https://github.com/precizer/precizer/issues/new).
 
 ## УЧАСТИЕ В ПРОЕКТЕ

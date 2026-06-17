@@ -8,11 +8,18 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
-## Comprehensive hybrid test suite
+## Continuous integration and automation
 
-### Test coverage:
+### Comprehensive hybrid test suite
 
-<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
+* In-process integration tests
+* Out-of-process CLI system tests
+* Unit tests
+
+#### Test coverage:
+
+<a href="https://precizer.github.io/code_coverage_report/"><img src=".html/img/test-coverage-total.svg" height="20" alt="Total completed tests" /><br>
+<img src=".html/img/test-coverage-lines.svg" height="20" alt="Lines of code covered by tests" /><br>
 <img src=".html/img/test-coverage-functions.svg" height="20" alt="Functions covered by tests" /><br>
 <img src=".html/img/test-coverage-branches.svg" height="20" alt="Code branches covered by tests" /></a>
 
@@ -22,8 +29,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 
 ### Security:
 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)
-
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)  
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/precizer/precizer/badge)](https://scorecard.dev/viewer/?uri=github.com/precizer/precizer)
 
 ## TL;DR
@@ -185,7 +191,9 @@ The following scenario illustrates the issue:
 
 * The `--help` option is designed to be as detailed as possible, specifically to assist users who may not have advanced technical knowledge.
 * Author contact options:
-  * [GitHub Discussions](https://github.com/precizer/precizer/discussions).
+  * By email: [jpy95dg6@anonaddy.com](mailto:jpy95dg6@anonaddy.com)
+  * [GitHub Discussions](https://github.com/precizer/precizer/discussions)
+  * Report security issues privately through [GitHub Security Advisories](https://github.com/precizer/precizer/security/advisories/new)
   * [Bug reports and feature requests](https://github.com/precizer/precizer/issues/new).
 
 ## CONTRIBUTING
