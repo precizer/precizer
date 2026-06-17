@@ -1,9 +1,9 @@
 # Complete build & test matrix across all platforms.
 #
 # 1) "discover" scans .docker/Dockerfile.* and emits a JSON list of OS names.
-# 2) "test" uses strategy.matrix to spawn one parallel job per OS — each job
-#    runs on its own runner simultaneously.  fail-fast is disabled so that
-#    a failure in one OS does not cancel the others.
+# 2) "test" uses strategy.matrix to spawn one parallel job per OS and CPU
+#    architecture. Each job runs on its own runner simultaneously. fail-fast is
+#    disabled so that a failure in one target does not cancel the others.
 name: Complete build & test matrix across all platforms
 
 on:
@@ -38,15 +38,20 @@ jobs:
           echo "Discovered: $os_list"
 
   test:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} / ${{ matrix.platform.arch }}
     needs: discover
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.platform.runner }}
     timeout-minutes: 60
     strategy:
       fail-fast: false
       max-parallel: 3
       matrix:
         os: ${{ fromJson(needs.discover.outputs.os-list) }}
+        platform:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
