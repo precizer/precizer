@@ -710,6 +710,23 @@ DOCKER_COMPILER_TAG = $(if $(DOCKER_COMPILER),-$(DOCKER_COMPILER),)
 DOCKER_TEST_TYPE ?=
 DOCKER_TEST_TYPE_TAG = $(if $(DOCKER_TEST_TYPE),-$(DOCKER_TEST_TYPE),)
 
+# Normalize Docker host architecture for per-platform build customization
+DOCKER_HOST_MACHINE ?= $(firstword $(subst -, ,$(MAKE_HOST)))
+ifeq ($(DOCKER_HOST_MACHINE),x86_64)
+DOCKER_PLATFORM_ARCH ?= amd64
+else ifeq ($(DOCKER_HOST_MACHINE),aarch64)
+DOCKER_PLATFORM_ARCH ?= arm64
+else ifeq ($(DOCKER_HOST_MACHINE),arm64)
+DOCKER_PLATFORM_ARCH ?= arm64
+else
+DOCKER_PLATFORM_ARCH ?= $(DOCKER_HOST_MACHINE)
+endif
+
+# Extra arguments passed to the Dockerfile build-time make invocation
+# Per-OS and architecture overrides follow DOCKER_BUILD_MAKE_ARGS_<os>_<arch>
+DOCKER_BUILD_MAKE_ARGS_ubuntu_arm64 ?= UPX=true
+DOCKER_BUILD_MAKE_ARGS ?= $(DOCKER_BUILD_MAKE_ARGS_$(DOCKER_OS)_$(DOCKER_PLATFORM_ARCH))
+
 DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
 # Make the container name unique per OS/build/compiler/test-type to avoid clobbering
 DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)$(DOCKER_TEST_TYPE_TAG)
@@ -738,7 +755,7 @@ DOCKER_LABEL_ARGS    = --label "$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)"
 # Build the image
 build-docker:
 	@test -f "$(DOCKERFILE)" || { echo "No Dockerfile: $(DOCKERFILE)"; exit 2; }
-	@docker build $(DOCKER_LABEL_ARGS) -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" --build-arg COMPILER="$(DOCKER_COMPILER)" -t "$(DOCKER_IMAGE)" .
+	@docker build $(DOCKER_LABEL_ARGS) -f "$(DOCKERFILE)" --build-arg BUILD="$(DOCKER_BUILD)" --build-arg COMPILER="$(DOCKER_COMPILER)" $(if $(DOCKER_BUILD_MAKE_ARGS),--build-arg MAKE_ARGS="$(DOCKER_BUILD_MAKE_ARGS)",) -t "$(DOCKER_IMAGE)" .
 
 # Create a named container from the image (same container will be used for run+copy)
 create-docker:
