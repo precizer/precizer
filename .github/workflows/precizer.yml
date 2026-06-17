@@ -131,6 +131,8 @@ jobs:
 
       - name: Build project (Linux arm64)
         run: |
+          # UPX is disabled on Linux ARM64 because UPX-compressed binaries currently core dump at runtime
+          # TODO: Remove this legacy workaround after UPX-compressed Linux ARM64 binaries run reliably
           make -j portable UPX=true
           mkdir v${{ env.VERSION }}
           cp -a .builds/portable/precizer v${{ env.VERSION }}/

@@ -19,8 +19,9 @@ RUN useradd -m builder && chown -R builder:builder /precizer
 USER builder
 ARG BUILD=production
 ARG COMPILER=
+ARG MAKE_ARGS=
 ENV COMPILER=${COMPILER}
 ENV TEST_TYPE=tests
-RUN make -j ${BUILD}
+RUN make -j ${BUILD} ${MAKE_ARGS}
 
 CMD ["sh", "-c", "make -j ${TEST_TYPE}"]
