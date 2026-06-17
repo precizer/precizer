@@ -1,11 +1,12 @@
 FROM gentoo/stage3@sha256:91134e1375edb5d0b69951bab06d229e6695b66ce9726d46a5a4293fc305eb34 AS gentoo
 
 # deps: gcc, make, llvm, pcre2 (static), upx, useradd
-RUN mkdir -p /var/db/repos/gentoo; \
+RUN set -eux; \
+    mkdir -p /var/db/repos/gentoo; \
     echo 'FEATURES="-ipc-sandbox -network-sandbox -pid-sandbox"' >> /etc/portage/make.conf; \
     (emerge-webrsync -q || emerge --sync); \
     getuto; \
-    emerge --ask=n --getbinpkg --usepkgonly llvm-core/llvm llvm-core/clang; \
+    emerge --ask=n --getbinpkg --usepkgonly --binpkg-respect-use=y llvm-core/clang; \
     echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2; \
     emerge --ask=n dev-libs/libpcre2 app-arch/upx; \
     emerge --depclean

@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
-	<maintainer type="project">
+	<maintainer type="person" proxied="yes">
 		<email>jpy95dg6@anonaddy.com</email>
-		<name>Precizer Project</name>
+		<name>Dennis Razumovsky</name>
+	</maintainer>
+	<maintainer type="project" proxied="proxy">
+		<email>proxy-maint@gentoo.org</email>
+		<name>Proxy Maintainers</name>
 	</maintainer>
 	<longdescription lang="en">
 		Precizer is a lightweight, high-performance CLI tool written in pure C.
