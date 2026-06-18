@@ -7,6 +7,8 @@
 #include "mem.h"
 #include "xdiff.h"
 #include "helpers.h"
+#include "mocks.h"
+#include "testmocking.h"
 
 Return test0003(void);
 Return test0004(void);

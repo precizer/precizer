@@ -1,5 +1,4 @@
 #include "sute.h"
-#include "testmocking.h"
 
 /* Test-only sysconf() control for file_buffer_memory().
    file_buffer_memory.c routes only its own TESTITALL sysconf() calls through

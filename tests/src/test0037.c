@@ -1,6 +1,4 @@
 #include "sute.h"
-#include "mocks.h"
-#include <errno.h>
 
 static Return assert_stderr_matches(const char *template_file)
 {
