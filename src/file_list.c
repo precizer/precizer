@@ -376,7 +376,7 @@ Return file_list(TraversalSummary *summary)
 					// Determine read access for non-ignored paths
 					if(file->ignore == false)
 					{
-						FileAccessStatus access_status = file_check_access(p->fts_path,(size_t)p->fts_pathlen,R_OK);
+						FileAccessStatus access_status = file_check_access_absolute(p->fts_path,(size_t)p->fts_pathlen,R_OK);
 						bool locked_unavailable_violation = false;
 
 						if(path_known == true
