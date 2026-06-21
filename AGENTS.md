@@ -22,6 +22,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - If a change only affects function documentation or comments, including adding, updating, or refreshing them, no plan approval is required and the work should begin immediately
 - This exception does not apply to `README.md` or `README.ru.md`
 - Perform file renames and deletions using git commands only (`git mv` and `git rm`)
+- If a build or test fails after a change, stop making further changes immediately, explain the cause, and propose possible solutions. Do not modify code or tests merely to work around the failure without explicit user approval. After a successful implementation, carefully review the changes and repeat the verification-and-correction cycle until the result is reliable and maintainable
 - If a function body contains a `/* ... */` comment stating that the function was reviewed line by line by a human and requires separate explicit approval for changes, treat that statement as a mandatory repository rule
 - Any modification of such a function requires separate explicit human approval before the change is made
 - When an AI is asked to modify such a function, it must explicitly remind the human that the changed function must be reviewed again line by line by a human before it is considered trusted
