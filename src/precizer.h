@@ -13,6 +13,8 @@
 #include "sha512.h"
 #include "mem.h"
 #include "sqlite3.h"
+// Application name and current code version
+#include "version.h"
 
 /*
  *
@@ -646,10 +648,6 @@ Return sha512sum(
 	TraversalSummary *,
 	File *);
 
-#ifdef TESTITALL_TEST_HOOKS
-void signal_wait_at_point(unsigned int);
-#endif
-
 size_t file_buffer_memory(void);
 
 void free_string_array(char ***);
@@ -680,10 +678,10 @@ Return path_absolute_from_relative(
 /**
  * @brief Result of checking accessibility for a given path
  *
- * FILE_ACCESS_ALLOWED    — path is readable by direct or fallback absolute check
- * FILE_ACCESS_DENIED     — path exists but is not readable
+ * FILE_ACCESS_ALLOWED    — requested access to the path is permitted
+ * FILE_ACCESS_DENIED     — requested access to the path is denied
  * FILE_NOT_FOUND         — path or one of its components does not exist
- * FILE_ACCESS_ERROR      — access failed for another reason or fallback path construction failed
+ * FILE_ACCESS_ERROR      — access checking failed for another reason
  */
 typedef enum FileAccessStatus : unsigned int
 {
@@ -694,9 +692,20 @@ typedef enum FileAccessStatus : unsigned int
 
 } FileAccessStatus;
 
-FileAccessStatus file_check_access(
+FileAccessStatus file_access_status(const int);
+
+FileAccessStatus directory_open(
+	const char *,
+	int *);
+
+FileAccessStatus file_check_access_absolute(
 	const char *,
 	const size_t,
+	const int);
+
+FileAccessStatus file_check_access(
+	const int,
+	const char *,
 	const int);
 
 Return show_locked_checksum_unavailable_violation(
@@ -898,6 +907,8 @@ extern Config _config;
 
 extern Config *config;
 
-// Application name and current code version
-#include "version.h"
+#ifdef TESTITALL_TEST_HOOKS
+#include "testitall_test_hooks.h"
+#endif
+
 #endif /* _PRECIZER_H */

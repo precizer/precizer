@@ -1,113 +1,8 @@
 #include "precizer.h"
 #include <errno.h>
 
-#ifdef TESTITALL_TEST_HOOKS
-static bool test_hook_path_matches_suffix(
-	const char *path,
-	const char *suffix)
-{
-	size_t path_len = 0;
-	size_t suffix_len = 0;
-
-	if(path == NULL || suffix == NULL)
-	{
-		return false;
-	}
-
-	if(strcmp(path,suffix) == 0)
-	{
-		return true;
-	}
-
-	path_len = strlen(path);
-	suffix_len = strlen(suffix);
-
-	if(path_len < suffix_len + 1U)
-	{
-		return false;
-	}
-
-	if(path[path_len - suffix_len - 1U] != '/')
-	{
-		return false;
-	}
-
-	return strcmp(path + (path_len - suffix_len),suffix) == 0;
-}
-
-static bool test_hook_override_file_access_status(
-	const char       *path,
-	FileAccessStatus *access_status_out)
-{
-	const char *target_suffix = getenv("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX");
-	const char *forced_status = getenv("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS");
-
-	if(path == NULL
-	        || access_status_out == NULL
-	        || target_suffix == NULL
-	        || forced_status == NULL
-	        || target_suffix[0] == '\0'
-	        || forced_status[0] == '\0')
-	{
-		return false;
-	}
-
-	if(test_hook_path_matches_suffix(path,target_suffix) == false)
-	{
-		return false;
-	}
-
-	if(strcmp(forced_status,"FILE_ACCESS_ALLOWED") == 0)
-	{
-		*access_status_out = FILE_ACCESS_ALLOWED;
-
-	} else if(strcmp(forced_status,"FILE_ACCESS_DENIED") == 0){
-		*access_status_out = FILE_ACCESS_DENIED;
-
-	} else if(strcmp(forced_status,"FILE_NOT_FOUND") == 0){
-		*access_status_out = FILE_NOT_FOUND;
-
-	} else if(strcmp(forced_status,"FILE_ACCESS_ERROR") == 0){
-		*access_status_out = FILE_ACCESS_ERROR;
-
-	} else {
-		slog(ERROR,"Test hook failed: unsupported TESTITALL_TEST_ENV_FILE_ACCESS_STATUS value %s\n",forced_status);
-		*access_status_out = FILE_ACCESS_ERROR;
-	}
-
-	return true;
-}
-#endif
-
 /**
- * @brief Classify errno from a failed access() into FileAccessStatus
- *
- * Maps common filesystem errors to a stable, high-level status:
- * - ENOENT, ENOTDIR -> FILE_NOT_FOUND
- * - EACCES, EPERM   -> FILE_ACCESS_DENIED
- * - otherwise       -> FILE_ACCESS_ERROR
- *
- * @param err errno value (typically `errno` after a failed `access()` call)
- * @return FileAccessStatus classification
- *
- */
-static FileAccessStatus classify_access_errno(int err)
-{
-	if(err == ENOENT || err == ENOTDIR)
-	{
-		return(FILE_NOT_FOUND);
-	}
-
-	if(err == EACCES || err == EPERM)
-	{
-		return(FILE_ACCESS_DENIED);
-	}
-
-	return(FILE_ACCESS_ERROR);
-}
-
-/**
- * @brief Check access for a path, first as provided, then by its absolute form
+ * @brief Check access with an absolute-path fallback
  *
  * @details
  * The function first calls `access()` for the path exactly as supplied
@@ -126,16 +21,20 @@ static FileAccessStatus classify_access_errno(int err)
  * @return `FILE_ACCESS_ALLOWED`, `FILE_ACCESS_DENIED`, `FILE_NOT_FOUND`, or
  *         `FILE_ACCESS_ERROR` based on the direct check or the fallback
  *         absolute-path check
+ *
+ * @deprecated New callers should use file_check_access() with an explicitly
+ *             opened directory descriptor
  */
-FileAccessStatus file_check_access(
+FileAccessStatus file_check_access_absolute(
 	const char   *path,
 	const size_t path_size,
 	const int    mode)
 {
+	// TODO: Replace remaining uses of this legacy implementation with the directory-relative file_check_access()
 #ifdef TESTITALL_TEST_HOOKS
 	FileAccessStatus forced_status = FILE_ACCESS_ALLOWED;
 
-	if(test_hook_override_file_access_status(path,&forced_status) == true)
+	if(testitall_file_access_status_override(path,&forced_status) == true)
 	{
 		return(forced_status);
 	}
@@ -158,7 +57,7 @@ FileAccessStatus file_check_access(
 
 		} else {
 
-			access_status = classify_access_errno(errno);
+			access_status = file_access_status(errno);
 		}
 	} else {
 		access_status = FILE_ACCESS_ERROR;
@@ -170,4 +69,53 @@ FileAccessStatus file_check_access(
 	}
 
 	return(access_status);
+}
+
+/**
+ * @brief Check access to a path using an open directory as its base
+ *
+ * @details
+ * Passes the supplied path to `faccessat()` without changing the process
+ * working directory or constructing an absolute path. A relative path is
+ * resolved from @p directory_fd. As specified by `faccessat()`, an absolute
+ * path is resolved independently and causes @p directory_fd to be ignored
+ *
+ * The function uses the process real user and group IDs, matching `access()`
+ * semantics. A successful check returns `FILE_ACCESS_ALLOWED`; a failed check
+ * is translated from `errno` into the corresponding `FileAccessStatus`
+ *
+ * @param[in] directory_fd File descriptor used as the base for a relative path
+ * @param[in] relative_path Path passed to `faccessat()`. Callers that require
+ *            root confinement must ensure that this value is relative
+ * @param[in] mode Access mode such as `F_OK`, `R_OK`, `W_OK`, or `X_OK`
+ * @return `FILE_ACCESS_ALLOWED`, `FILE_ACCESS_DENIED`, `FILE_NOT_FOUND`, or
+ *         `FILE_ACCESS_ERROR`. A NULL path returns `FILE_ACCESS_ERROR`
+ */
+FileAccessStatus file_check_access(
+	const int  directory_fd,
+	const char *relative_path,
+	const int  mode)
+{
+	if(relative_path == NULL)
+	{
+		return(FILE_ACCESS_ERROR);
+	}
+
+#ifdef TESTITALL_TEST_HOOKS
+	FileAccessStatus forced_status = FILE_ACCESS_ALLOWED;
+
+	if(testitall_file_access_status_override(relative_path,&forced_status) == true)
+	{
+		return(forced_status);
+	}
+#endif
+
+	if(faccessat(directory_fd,relative_path,mode,0) == 0)
+	{
+		return(FILE_ACCESS_ALLOWED);
+	}
+
+	const int access_errno = errno;
+
+	return(file_access_status(access_errno));
 }

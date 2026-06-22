@@ -1,56 +1,6 @@
 #include "precizer.h"
 #include <errno.h>
 
-#ifdef TESTITALL_TEST_HOOKS
-/**
- * @brief Check whether a path points to the large interruption test file
- *
- * @param[in] path Path being hashed during a test build
- * @return true when the path ends with the interruption fixture name
- */
-static bool is_huge_interruption_target(const char *path)
-{
-	if(path == NULL)
-	{
-		return(false);
-	}
-
-	const char *needle = "hugetestfile";
-	const size_t path_length = strlen(path);
-	const size_t needle_length = strlen(needle);
-
-	if(path_length < needle_length)
-	{
-		return(false);
-	}
-
-	return(0 == strcmp(path + (path_length - needle_length),needle));
-}
-
-/**
- * @brief Generate a pseudo-random stop byte in the closed range [1, file_size]
- *
- * @param[in] file_size File size used as the inclusive upper bound
- * @return Selected byte offset, or zero when @p file_size is zero
- */
-static uint64_t random_stop_byte(const uint64_t file_size)
-{
-	if(file_size == 0U)
-	{
-		return(0U);
-	}
-
-	struct timespec now = {0};
-	(void)clock_gettime(CLOCK_MONOTONIC,&now);
-
-	uint64_t seed = (uint64_t)now.tv_nsec;
-	seed ^= ((uint64_t)now.tv_sec << 32);
-	seed ^= (uint64_t)getpid();
-
-	return((seed % file_size) + 1U);
-}
-#endif
-
 /**
  * @brief Read a file and update its SHA512 state when hashing is enabled
  *
@@ -191,7 +141,7 @@ Return sha512sum(
 	 * without selecting a new random stop point.
 	 */
 	if(file->checksum_offset == 0
-	        && is_huge_interruption_target(path) == true
+	        && testitall_is_huge_interruption_target(path) == true
 	        && file->stat.st_size > 0)
 	{
 		random_stop_limit = (uint64_t)file->stat.st_size;
@@ -201,7 +151,7 @@ Return sha512sum(
 		 * the first chunk can be bounded and the stop point can land
 		 * anywhere in [1, file_size].
 		 */
-		random_stop_byte_value = random_stop_byte(random_stop_limit);
+		random_stop_byte_value = testitall_random_stop_byte(random_stop_limit);
 
 		/* Defensive fallback: never allow a zero stop byte. */
 		if(random_stop_byte_value == 0U)

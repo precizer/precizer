@@ -1603,14 +1603,14 @@ static Return test0030_10(void)
 	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_before,sha512_before));
 	ASSERT(SUCCESS == construct_path(deleted_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Delete one checksum-locked file from disk.
 	 * This must be treated as a lock violation, not as a normal missing-file cleanup
 	 */
 	ASSERT(SUCCESS == delete_path(deleted_file_path));
-	ASSERT(FILE_NOT_FOUND == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_NOT_FOUND == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update with the same lock pattern.
@@ -1755,15 +1755,15 @@ static Return test0030_11(void)
 	 * This test covers an access-denied report, not a missing-file scenario
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Force access checks for exactly this locked file to return access denied.
 	 * This models a protected file that the application can see in the tree but cannot read
 	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_DENIED"));
-	ASSERT(FILE_ACCESS_DENIED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_DENIED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that would normally drop inaccessible records.
@@ -1914,15 +1914,15 @@ static Return test0030_12(void)
 	 * This test covers an access-check failure, not a missing-file scenario
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Force access checks for exactly this locked file to return an access-check failure.
 	 * This models an unexpected access-check problem while the checksum lock is active
 	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
-	ASSERT(FILE_ACCESS_ERROR == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ERROR == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that would normally drop inaccessible records.
@@ -2073,9 +2073,9 @@ static Return test0030_13(void)
 	 * The later update must treat this as a checksum-lock violation, not ignored cleanup
 	 */
 	ASSERT(SUCCESS == construct_path(deleted_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 	ASSERT(SUCCESS == delete_path(deleted_file_path));
-	ASSERT(FILE_NOT_FOUND == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_NOT_FOUND == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that ignores the whole protected subtree and allows ignored DB cleanup.
@@ -2365,9 +2365,9 @@ static Return test0030_15(void)
 	 * The later update must treat this as a checksum-lock violation, not ignored cleanup
 	 */
 	ASSERT(SUCCESS == construct_path(deleted_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 	ASSERT(SUCCESS == delete_path(deleted_file_path));
-	ASSERT(FILE_NOT_FOUND == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_NOT_FOUND == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that ignores the protected subtree, restores one different
@@ -2667,15 +2667,15 @@ static Return test0030_17(void)
 	 * This test covers access denial for an existing ignored locked file
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Force access checks for exactly this locked file to return access denied.
 	 * This models a visible protected file that cannot be read during traversal
 	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_DENIED"));
-	ASSERT(FILE_ACCESS_DENIED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_DENIED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that ignores the protected subtree and would normally drop
@@ -2827,15 +2827,15 @@ static Return test0030_18(void)
 	 * This test covers an access-check failure for an existing ignored locked file
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Force access checks for exactly this locked file to return an access-check failure.
 	 * This models an unexpected access-check problem during ignored locked traversal
 	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
-	ASSERT(FILE_ACCESS_ERROR == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ERROR == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that ignores the protected subtree and would normally drop
@@ -2987,9 +2987,9 @@ static Return test0030_19(void)
 	 * This makes the later cleanup pass handle a real access-denied DB row
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 	ASSERT(SUCCESS == change_mode(locked_file_path,0000));
-	ASSERT(FILE_ACCESS_DENIED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_DENIED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Skip both file_list passes.
@@ -3147,16 +3147,16 @@ static Return test0030_20(void)
 	 * This test covers an access-check failure for an existing DB row
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Skip both file_list passes and force access checks for exactly this
 	 * locked file to return an access-check failure
 	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST","1"));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
-	ASSERT(FILE_ACCESS_ERROR == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ERROR == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that would normally drop inaccessible records.
@@ -3309,16 +3309,16 @@ static Return test0030_21(void)
 	 * This test covers an access-check failure for an existing ignored DB row
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Skip both file_list passes and force access checks for exactly this
 	 * locked file to return an access-check failure
 	 */
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST","1"));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
-	ASSERT(FILE_ACCESS_ERROR == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ERROR == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	/*
 	 * Run an update that would normally drop ignored records.

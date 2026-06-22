@@ -1,7 +1,11 @@
 #include "sute.h"
 
 /**
- * "inaccessible" message of file_show() function
+ * @brief Verify reporting and preservation of inaccessible paths
+ *
+ * Makes one file and one directory inaccessible, runs an update without
+ * `--db-drop-inaccessible`, and verifies that the expected inaccessible-path
+ * messages are produced while their database records are retained
  */
 static Return test0029_1(void)
 {
@@ -49,7 +53,11 @@ static Return test0029_1(void)
 }
 
 /**
- * --db-drop-inaccessible option. Dropping DB records for inaccessible paths
+ * @brief Verify removal of inaccessible records with --db-drop-inaccessible
+ *
+ * Makes one file and one directory inaccessible, enables
+ * `--db-drop-inaccessible`, and verifies that their database records are
+ * removed during the update
  */
 static Return test0029_2(void)
 {
@@ -114,6 +122,7 @@ static Return test0029_3(void)
 
 	const char *db_filename = "database3.db";
 	const char *access_error_file_path = "tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt";
+	const char *access_error_relative_path = "1/AAA/ZAW/D/e/f/b_file.txt";
 	const char *changed_later_file_path = "tests/fixtures/diffs/diff1/4/AAA/BBB/CCC/a.txt";
 
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -129,11 +138,11 @@ static Return test0029_3(void)
 	ASSERT(SUCCESS == replase_to_string("access check failure must not stop traversal",changed_later_file_path));
 
 	ASSERT(SUCCESS == construct_path(access_error_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",access_error_file_path));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",access_error_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
-	ASSERT(FILE_ACCESS_ERROR == file_check_access(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(FILE_ACCESS_ERROR == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -160,9 +169,83 @@ static Return test0029_3(void)
 }
 
 /**
+ * @brief Verify that every root opening failure safely skips metadata cleanup
  *
- * Testing how the application behaves with inaccessible files
+ * Creates a baseline database, skips file traversal, and forces root opening
+ * to report access denied, not found, and an unexpected access error. Every
+ * update uses `--db-drop-inaccessible` and must still finish successfully
+ * without deleting file records. The complete output from every update is
+ * matched against the same PCRE2 template
+ */
+static Return test0029_4(void)
+{
+	INITTEST;
+
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+
+	const char *db_filename = "database4.db";
+	const char *filename = "templates/0029_004.txt";
+	const char *root_access_statuses[] = {
+		"FILE_ACCESS_DENIED",
+		"FILE_NOT_FOUND",
+		"FILE_ACCESS_ERROR"
+	};
+	const size_t root_access_status_count =
+		sizeof(root_access_statuses) / sizeof(root_access_statuses[0]);
+	int files_count_before = 0;
+
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--silent --database=database4.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(result->length == 0);
+	ASSERT(SUCCESS == db_read_files_count(db_filename,&files_count_before));
+	ASSERT(files_count_before > 0);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST","1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX","diff1"));
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+	arguments = "--update --db-drop-inaccessible --database=database4.db "
+	        "tests/fixtures/diffs/diff1";
+
+	for(size_t index = 0; index < root_access_status_count; index++)
+	{
+		int files_count_after = 0;
+
+		ASSERT(SUCCESS == set_environment_variable(
+			"TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",
+			root_access_statuses[index]));
+
+		ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		ASSERT(SUCCESS == db_read_files_count(db_filename,&files_count_after));
+		ASSERT(files_count_after == files_count_before);
+	}
+
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST",""));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+
+	m_del(pattern);
+	m_del(result);
+
+	ASSERT(SUCCESS == delete_path(db_filename));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Run inaccessible-path behavior tests
  *
+ * Covers preservation, explicit removal, unexpected file access-check failure,
+ * and safe cleanup skipping when the root itself cannot be opened
  */
 Return test0029(void)
 {
@@ -171,6 +254,7 @@ Return test0029(void)
 	TEST(test0029_1,"\"inaccessible\" message of file_show() function");
 	TEST(test0029_2,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths");
 	TEST(test0029_3,"Access-check failure for a regular file does not stop traversal");
+	TEST(test0029_4,"Root opening failures skip metadata cleanup without deleting records");
 
 	RETURN_STATUS;
 }

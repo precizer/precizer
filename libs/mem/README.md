@@ -180,6 +180,7 @@ guarantee exactly one trailing `'\0'`
 | `m_copy_fixed_string(dest, source_size, source)` | Replace contents with a fixed-size string source that already ends with one terminator |
 | `m_copy_literal(dest, "literal")` | Replace contents from a real narrow string literal without spelling out `sizeof(...)` manually |
 | `m_copy_string(dest, n, buf)` | Replace contents with the visible part of a bounded string buffer |
+| `m_copy_string(dest, buf)` | Replace contents from a guaranteed null-terminated C string without a separate source bound |
 | `m_finalize_string(dest, len[, flags])` | Finalize a direct string-buffer write and cache the visible length |
 | `m_formatted_string(dest, fmt, ...)` | Replace contents with a printf-style formatted result; a `char` format targets a `char` descriptor and a `wchar_t` format targets a `wchar_t` descriptor; NULL `fmt` is rejected |
 | `m_concat_fixed_string(dest, source_size, source)` | Append a fixed-size string source that already ends with one terminator |
@@ -192,6 +193,32 @@ guarantee exactly one trailing `'\0'`
 | `m_text(desc)` | Thin `const char *` wrapper over `m_string(...)` for byte-sized string descriptors |
 | `m_string_length(desc, &len)` | Measure the visible string length |
 | `m_to_string(desc)` | Explicitly promote a data descriptor to string mode and cache the length; empty descriptors remain unallocated |
+
+`m_copy_fixed_string(dest, source_size_bytes, source)` replaces the complete
+contents of a string descriptor from a fixed-size source string.
+`source_size_bytes` is the complete source size in bytes, including its
+terminating zero element. The final logical source element must already be the
+terminator, so the function trusts that position and does not scan the source
+for an earlier zero element.
+
+`m_copy_string(dest, source_limit_bytes, source)` replaces the destination with
+the visible part of a bounded source string. `source_limit_bytes` is the maximum
+number of bytes within which the function searches for the first zero element.
+When a terminator appears before the bound, only the visible prefix is copied.
+When no terminator appears within the bound, all `source_limit_bytes` bytes are
+copied and the library adds a terminator to the destination descriptor.
+
+`m_copy_string(dest, source)` handles an ordinary C string without a separately
+known buffer bound. It searches for the first zero terminator without limiting
+the number of bytes read, so this form is valid only when the source is
+guaranteed to be null-terminated.
+
+The essential difference is how the source size and terminator are interpreted.
+`m_copy_fixed_string(...)` receives the complete size of an already terminated
+string, including its terminator, trusts the final element, and avoids scanning.
+The three-argument `m_copy_string(...)` receives a read bound and searches for a
+terminator within it. The two-argument `m_copy_string(...)` also searches for a
+terminator, but without an upper bound.
 
 #### String descriptor contract
 

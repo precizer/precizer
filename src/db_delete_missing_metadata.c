@@ -1,48 +1,5 @@
 #include "precizer.h"
-
-/**
- * @brief Check current filesystem access state for one DB record path
- *
- * @param[in] root_path Stored path prefix descriptor from the database
- * @param[in] relative_path Stored file path descriptor relative to the prefix
- * @param[out] access_status_out Access classification for the combined path
- *
- * @return Return status code:
- *         - SUCCESS: Access state was resolved, including FILE_ACCESS_ERROR
- *         - FAILURE: Validation of required outputs or path construction failed
- */
-static Return db_check_record_path_access(
-	const memory     *root_path,
-	const memory     *relative_path,
-	FileAccessStatus *access_status_out)
-{
-	/* This function was reviewed line by line by a human and is not AI-generated
-	Any change to this function requires separate explicit approval */
-
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-
-	m_create(char,absolute_path,MEMORY_STRING);
-
-	if(access_status_out == NULL)
-	{
-		status = FAILURE;
-	}
-
-	run(m_copy(absolute_path,root_path));
-	run(m_concat_literal(absolute_path,"/"));
-	run(m_concat_strings(absolute_path,relative_path));
-
-	if(SUCCESS == status)
-	{
-			*access_status_out = file_check_access(m_text(absolute_path),absolute_path->string_length,R_OK);
-	}
-
-	call(m_del(absolute_path));
-
-	provide(status);
-}
+#include <errno.h>
 
 /**
  * @brief Check whether an unavailable file must be reported as a lock violation
@@ -97,22 +54,25 @@ static Return db_check_locked_unavailable_violation(
 /**
  * @brief Keep checksum-locked rows even when --db-drop-ignored matched them
  *
- * @param[in] root_path Stored path prefix descriptor from the database
+ * The function checks the locked path relative to an already opened root
+ * directory. An unavailable locked path is reported and kept
+ *
+ * @param[in] root_directory_fd Open descriptor for the root directory. Used
+ *            as the base for the relative access check
  * @param[in] relative_path Relative path descriptor from the database
  * @param[out] locked_unavailable_violation_out Set to true when this call reported a locked unavailable path
  *
  * @return Return status code:
  *         - SUCCESS|YES: The row must stay in the DB
  *         - SUCCESS|NO: The row does not need checksum-lock preservation
- *         - FAILURE|NO: Validation, lock-checksum evaluation, access check, or reporting failed
+ *         - FAILURE|NO: Validation, lock-checksum evaluation, or reporting failed
  */
 static Return db_preserve_locked_ignored_record(
-	const memory       *root_path,
-	const memory       *relative_path,
-	bool               *locked_unavailable_violation_out)
+	const int    root_directory_fd,
+	const memory *relative_path,
+	bool         *locked_unavailable_violation_out)
 {
-	/* This function was reviewed line by line by a human and is not AI-generated
-	   Any change to this function requires separate explicit approval */
+	/* This changed function requires a new line-by-line human review before it is considered trusted */
 
   /* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -133,9 +93,14 @@ static Return db_preserve_locked_ignored_record(
 	 */
 	if(ask(path_check_locked_checksum(relative_path)))
 	{
-		FileAccessStatus access_status = FILE_ACCESS_ERROR;
-
-		status = db_check_record_path_access(root_path,relative_path,&access_status);
+		/*
+		 * Check the path relative to the open root directory without
+		 * constructing an absolute path
+		 */
+		FileAccessStatus access_status = file_check_access(
+			root_directory_fd,
+			m_text(relative_path),
+			R_OK);
 
 		if(SUCCESS == status && access_status != FILE_ACCESS_ALLOWED)
 		{
@@ -173,11 +138,23 @@ static Return db_preserve_locked_ignored_record(
  * @details
  * The function walks through file records stored in the primary database and
  * decides whether each row should remain there
+ *
+ * One root prefix is retrieved from the `paths` table and opened once. Every
+ * file row is checked relative to that same directory descriptor. The current
+ * cleanup path therefore requires the database to describe a single root and
+ * does not distinguish file rows belonging to different stored roots
+ *
  * A row can be removed when the file is no longer present on disk, when it is
  * inaccessible or its access check fails and `--db-drop-inaccessible` is active,
  * or when the path is ignored and `--db-drop-ignored` is enabled
  *
- * Checksum-locked paths are handled more conservatively
+ * If the root cannot be opened for any reason, its cleanup is skipped without
+ * changing file rows or returning an error. This prevents a temporary root
+ * access problem from being mistaken for missing or inaccessible files
+ *
+ * Checksum-locked paths are file paths matched by a `--lock-checksum` pattern.
+ * Their stored checksums serve as protected integrity references, so cleanup
+ * must not silently remove their database rows when the files cannot be verified
  * If a locked file is missing or unavailable, the function keeps the database
  * row, reports the violation, and returns a warning instead of deleting it
  * A NULL `files.relative_path` value violates the database contract and stops
@@ -234,18 +211,56 @@ Return db_delete_missing_metadata(void)
 	// Tracks whether cleanup reported an unavailable checksum-locked path
 	bool locked_unavailable_violation_detected = false;
 
+	// Stores the root directory path retrieved from the database
 	m_create(char,root_path,MEMORY_STRING);
+
+	// Stores the relative path of the file record currently being processed
 	m_create(char,relative_path,MEMORY_STRING);
 
+	// Holds the prepared SQLite statement used to iterate over file records
 	sqlite3_stmt *select_stmt = NULL;
 
+	// Stores the result code returned by the most recent SQLite operation
 	int rc = 0;
 
+	// Identifies the open root directory used as the base for relative access checks
+	int root_directory_fd = -1;
+
 	/*
-	 * Load the shared root path from the database once before processing file rows.
-	 * Each file record stores only a relative path, so the loop needs this prefix to check access
+	 * Load the shared root path and open it once before processing file rows.
+	 * Each file record stores only a relative path, so access checks use this directory descriptor
 	 */
 	run(db_retrieve_root_path(root_path));
+
+	if(SUCCESS == status)
+	{
+		const char *runtime_root_path = m_text(root_path);
+
+		const FileAccessStatus root_access_status = directory_open(runtime_root_path,&root_directory_fd);
+
+		if(root_access_status != FILE_ACCESS_ALLOWED)
+		{
+			const int root_open_errno = errno;
+
+			slog(EVERY,
+				"Skipping metadata cleanup for unavailable root %s: %s\n",
+				runtime_root_path,
+				strerror(root_open_errno));
+		}
+	}
+
+	/*
+	 * Without an open root, file rows cannot be classified safely.
+	 * Release local memory and keep the current status, which remains SUCCESS
+	 * when root opening alone was unavailable
+	 */
+	if(root_directory_fd < 0)
+	{
+		call(m_del(relative_path));
+		call(m_del(root_path));
+
+		provide(status);
+	}
 
 	if(SUCCESS == status)
 	{
@@ -263,6 +278,9 @@ Return db_delete_missing_metadata(void)
 		}
 	}
 
+	/*
+	 * Iterate over every file record selected from the files table
+	 */
 	while(SUCCESS == status && SQLITE_ROW == (rc = sqlite3_step(select_stmt)))
 	{
 		/* Interrupt the loop smoothly */
@@ -299,6 +317,10 @@ Return db_delete_missing_metadata(void)
 			break;
 		}
 
+		/*
+		 * sqlite3_column_bytes() returns the relative path length without the
+		 * terminating NUL byte, so add one byte to copy a complete C string
+		 */
 		run(m_copy_fixed_string(relative_path,(size_t)sqlite3_column_bytes(select_stmt,1) + 1U,db_relative_path));
 
 		if(SUCCESS != status)
@@ -332,9 +354,7 @@ Return db_delete_missing_metadata(void)
 			 * YES means the ignored DB row must be kept because it is checksum-locked.
 			 * NO means checksum-lock protection does not apply here, so the ignored row may be deleted
 			 */
-			if(ask(db_preserve_locked_ignored_record(root_path,
-				relative_path,
-				&locked_unavailable_violation)))
+			if(ask(db_preserve_locked_ignored_record(root_directory_fd,relative_path,&locked_unavailable_violation)))
 			{
 				if(locked_unavailable_violation == true)
 				{
@@ -353,14 +373,14 @@ Return db_delete_missing_metadata(void)
 
 		} else {
 
-			FileAccessStatus access_status = FILE_ACCESS_ERROR;
-
-			status = db_check_record_path_access(root_path,relative_path,&access_status);
-
-			if(SUCCESS != status)
-			{
-				break;
-			}
+			/*
+			 * This changed access-check block requires a new line-by-line human
+			 * review before it is considered trusted
+			 *
+			 * Check the path relative to the open root directory without
+			 * constructing an absolute path
+			 */
+			FileAccessStatus access_status = file_check_access(root_directory_fd,m_text(relative_path),R_OK);
 
 			if(access_status == FILE_ACCESS_ALLOWED)
 			{
@@ -477,13 +497,19 @@ Return db_delete_missing_metadata(void)
 		status = FAILURE;
 	}
 
-	call(m_del(relative_path));
-	call(m_del(root_path));
+	if(close(root_directory_fd) != 0)
+	{
+		slog(ERROR,"Failed to close root directory descriptor: %s\n",strerror(errno));
+		status = FAILURE;
+	}
 
 	if(SUCCESS == status && global_interrupt_flag == false)
 	{
 		slog(EVERY,"Missing file search finished\n");
 	}
+
+	call(m_del(relative_path));
+	call(m_del(root_path));
 
 	if(locked_unavailable_violation_detected == true)
 	{

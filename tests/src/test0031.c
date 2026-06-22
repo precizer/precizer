@@ -1,6 +1,4 @@
 #include "sute.h"
-#include "mocks.h"
-#include <errno.h>
 
 #define READ_FAIL_REL_PATH "tests/fixtures/diffs/diff1/path1/AAA/ZAW/D/e/f/b_file.txt"
 
