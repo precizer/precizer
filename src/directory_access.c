@@ -32,7 +32,7 @@ Return directory_access_verify(
 	/* Directory traversal needs both read permission and execute permission.
 	   Read permission lets the program list entries inside the directory, while
 	   execute permission lets it enter the directory and reach child paths */
-	FileAccessStatus access_status = file_check_access(entry->fts_path,(size_t)entry->fts_pathlen,R_OK | X_OK);
+	FileAccessStatus access_status = file_check_access_absolute(entry->fts_path,(size_t)entry->fts_pathlen,R_OK | X_OK);
 
 	/* When a directory cannot be read or has disappeared during traversal, show
 	   the user its relative path and remember the warning for the final summary.
