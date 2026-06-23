@@ -54,7 +54,6 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 ## Coding Style & Naming Conventions
 - Language standard is `C2x`; builds use strict warnings and `-Werror`.
 - Formatting is enforced with `uncrustify` (`Uncrustify.cfg`)
-- After all changes are complete, run `uncrustify` individually for each changed source or header file. Do not use global formatting targets for agent changes
 - Follow existing naming: lowercase snake_case for files/functions (for example `db_check_changes.c`, `parse_arguments`).
 - Keep changes localized; avoid broad refactors in feature PRs.
 - Variable, function, and struct names should be self-explanatory, even if that makes them long
