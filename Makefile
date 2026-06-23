@@ -727,9 +727,10 @@ endif
 
 # Extra arguments passed to the Dockerfile build-time make invocation
 # Per-OS and architecture overrides follow DOCKER_BUILD_MAKE_ARGS_<os>_<arch>
-# UPX=true disables UPX for Ubuntu ARM64 because UPX-compressed binaries
-# currently core dump at runtime
-# TODO: Remove this legacy workaround after UPX-compressed Linux ARM64 binaries run reliably
+# UPX=true disables UPX for platform combinations where compressed binaries
+# currently crash at runtime
+# TODO: Remove these workarounds after UPX-compressed binaries run reliably
+DOCKER_BUILD_MAKE_ARGS_alpine_amd64 ?= UPX=true
 DOCKER_BUILD_MAKE_ARGS_ubuntu_arm64 ?= UPX=true
 DOCKER_BUILD_MAKE_ARGS ?= $(DOCKER_BUILD_MAKE_ARGS_$(DOCKER_OS)_$(DOCKER_PLATFORM_ARCH))
 

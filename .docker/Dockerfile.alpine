@@ -11,9 +11,10 @@ RUN adduser -D builder && chown -R builder:builder /precizer
 USER builder
 ARG BUILD=production
 ARG COMPILER=
+ARG MAKE_ARGS=
 ENV COMPILER=${COMPILER}
 ENV TEST_TYPE=tests-debug
-RUN make -j ${BUILD}
+RUN make -j ${BUILD} ${MAKE_ARGS}
 
 # musl doesn't have working sanitizer at all, that's why tests-debug is the default:
 CMD ["sh", "-c", "make -j ${TEST_TYPE}"]
