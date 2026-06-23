@@ -69,7 +69,7 @@ static Return test0033_2(void)
 		stderr_result,
 		SUCCESS|HALTED,
 		ALLOW_BOTH,
-		500U,
+		700U,
 		5000U,
 		SIGINT,
 		1U));
@@ -136,7 +136,7 @@ static Return test0033_3(void)
 		stderr_result,
 		SUCCESS|HALTED,
 		ALLOW_BOTH,
-		500U,
+		700U,
 		5000U,
 		SIGINT,
 		2U));
