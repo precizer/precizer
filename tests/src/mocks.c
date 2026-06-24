@@ -1,16 +1,20 @@
 #include "mocks.h"
 #include <errno.h>
+#ifndef EVIL_EMPIRE_OS
 #include <fcntl.h>
 #include <stdarg.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 
 static bool mock_fread_enabled = false;
 static size_t mock_fread_calls = 0;
 static const char *mock_fread_target_suffix = NULL;
+#ifndef EVIL_EMPIRE_OS
 static int mock_fread_target_fd = -1;
 static FILE *mock_fread_target_stream = NULL;
 static bool mock_fread_error_seen = false;
+#endif
 static int mock_fread_errno = EIO;
 static bool mock_remove_enabled = false;
 static size_t mock_remove_calls = 0;
@@ -21,6 +25,7 @@ static size_t mock_access_calls = 0;
 static const char *mock_access_target_suffix = NULL;
 static int mock_access_errno = EIO;
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check whether a path is exactly a suffix or ends with it as a path component
  *
@@ -60,6 +65,7 @@ static bool mock_path_matches_suffix(
 
 	return strcmp(path + (path_len - suffix_len),suffix) == 0;
 }
+#endif
 
 /**
  * @brief Select the path suffix whose opened stream should receive a mocked fread error
@@ -89,12 +95,15 @@ void mocks_fread_reset(void)
 	mock_fread_enabled = false;
 	mock_fread_calls = 0;
 	mock_fread_target_suffix = NULL;
+#ifndef EVIL_EMPIRE_OS
 	mock_fread_target_fd = -1;
 	mock_fread_target_stream = NULL;
 	mock_fread_error_seen = false;
+#endif
 	mock_fread_errno = EIO;
 }
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check whether openat() flags require the variadic mode argument
  *
@@ -193,6 +202,7 @@ FILE *__wrap_fdopen(
 
 	return stream;
 }
+#endif
 
 /**
  * @brief Return the number of fread calls intercepted by the mock failure path
@@ -316,6 +326,7 @@ void mocks_access_set_errno(int err)
 	mock_access_errno = err;
 }
 
+#ifndef EVIL_EMPIRE_OS
 FILE *__real_fopen(
 	const char *path,
 	const char *mode);
@@ -454,3 +465,4 @@ int __wrap_access(
 
 	return __real_access(path,mode);
 }
+#endif
