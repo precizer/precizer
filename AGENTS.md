@@ -65,6 +65,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - Choose one test command based on the required coverage. Do not run the default and full commands consecutively
 - Add/adjust tests in `tests/src/` (pattern: `testXXXX.c`).
 - Update expected outputs in `tests/templates/` when behavior changes.
+- For output-oriented tests of the main application, prefer full golden templates in `tests/templates/` over inline partial regular expressions, and compare the complete output whenever practical
 - Add fixture data under `tests/fixtures/` only when needed for reproducible cases.
 
 ## Commit & Pull Request Guidelines
