@@ -86,9 +86,6 @@ int test_main(
 	// Initialize signals interception like Ctrl+C
 	run(init_signals());
 
-	// The current directory where app being executed
-	run(determine_running_dir());
-
 	// Generate DB file name if
 	// not passed as an argument
 	run(db_determine_name());

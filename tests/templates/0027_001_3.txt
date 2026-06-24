@@ -16,7 +16,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: lock\.db
 TESTING:Primary database file path: lock\.db
 TESTING:Finished determining database name
@@ -45,7 +44,7 @@ TESTING:File system traversal initiated to calculate file count and storage usag
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB lock\.db
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock\.db:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
 update stat diff2/2/AAA/BBB/CZC/a\.txt

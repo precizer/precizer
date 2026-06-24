@@ -12,7 +12,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: %DB_NAME%
 TESTING:Primary database file path: %DB_NAME%
 TESTING:Finished determining database name
@@ -39,7 +38,7 @@ TESTING:The database %DB_NAME% has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB %DB_NAME%
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 new AAA/BBB/CCC/a\.txt
 new AAA/BBB/uuu\.txt

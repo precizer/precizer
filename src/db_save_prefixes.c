@@ -30,8 +30,10 @@ static sqlite3_int64 db_retrieve_total_changes(sqlite3 *db)
  * @brief Save the current traversal roots into the `paths` table
  *
  * The positional directories accepted by normal scanning mode are stored in
- * `config->roots`. This function writes each normalized root into the database
- * once, so later file records can be resolved relative to those root prefixes.
+ * `config->roots`. This function writes each root exactly as it was accepted
+ * from the command line, so the database keeps the user's chosen root spelling
+ * while file records stay relative to that root
+ *
  * In `--compare` mode the function returns immediately because compare
  * arguments are database files
  *
@@ -150,7 +152,7 @@ Return db_save_prefixes(void)
 	}
 
 	/*
-	 * Insert every normalized traversal root that is not already present.
+	 * Insert every configured traversal root that is not already present.
 	 * Read-only dry-run scans return before the transaction starts. Each loop
 	 * iteration exposes the current root descriptor as `root`
 	 */

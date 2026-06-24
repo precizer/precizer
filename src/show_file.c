@@ -98,12 +98,14 @@ static void print_changes(
 }
 
 /**
- * @brief Show traversal banners once before the first visible log line of the main pass
+ * @brief Show traversal banners once before the first visible log line of the current root
  *
+ * The traversal-start banner includes `summary->root`, so multi-root output
+ * tells the user which configured root is currently producing messages
  */
 static void show_banners(
-	bool       *first_iteration,
-	const bool stats_only_pass)
+	bool                   *first_iteration,
+	const TraversalSummary *summary)
 {
 	if(first_iteration == NULL)
 	{
@@ -119,7 +121,7 @@ static void show_banners(
 	{
 		*first_iteration = false;
 
-		if(stats_only_pass == false)
+		if(summary->stats_only_pass == false)
 		{
 			show_traversal_started = true;
 
@@ -146,7 +148,7 @@ static void show_banners(
 
 	if(show_traversal_started == true)
 	{
-		slog(EVERY,"File traversal started\n");
+		slog(EVERY,"File traversal started for %s\n",m_text(summary->root));
 	}
 
 	if(show_changes_will_be_reflected == true)
@@ -161,13 +163,14 @@ static void show_banners(
 }
 
 /**
- * @brief Log a line with banner/quiet handling and update output flags.
+ * @brief Log one traversal line and emit root-aware banners when needed
  *
- * Uses the call site metadata from the slog_show macro
- * Banners are emitted only for the main traversal pass
+ * Uses the call-site metadata from the slog_show macro. The first visible line
+ * for a root also triggers the traversal banners and marks the current
+ * traversal summary as having produced visible output
  *
  */
-__attribute__((format(printf,9,10)))
+__attribute__((format(printf,8,9)))
 void slog_show_impl(
 	const char         *filename,
 	const char         *funcname,
@@ -175,8 +178,7 @@ void slog_show_impl(
 	const unsigned int level,
 	const bool         respect_quiet,
 	bool               *first_iteration,
-	bool               *at_least_one_file_was_shown,
-	const bool         stats_only_pass,
+	TraversalSummary   *summary,
 	const char         *fmt,
 	...)
 {
@@ -190,12 +192,9 @@ void slog_show_impl(
 		return;
 	}
 
-	show_banners(first_iteration,stats_only_pass);
+	show_banners(first_iteration,summary);
 
-	if(at_least_one_file_was_shown != NULL)
-	{
-		*at_least_one_file_was_shown = true;
-	}
+	summary->at_least_one_file_was_shown = true;
 
 	char *line_text = NULL;
 

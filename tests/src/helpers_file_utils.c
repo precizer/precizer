@@ -96,6 +96,84 @@ Return open_file_stream(
 }
 
 /**
+ * @brief Verify access to a file path relative to a test root under TMPDIR
+ *
+ * Builds the absolute root path from TMPDIR, opens that root once, and checks
+ * @p relative_path through file_check_access(). This mirrors the application's
+ * current traversal access model while keeping tests compact
+ *
+ * @param[in] root_path_to_tmpdir Root directory path relative to TMPDIR
+ * @param[in] relative_path Path to check relative to the opened root
+ * @param[in] mode Access mode passed to file_check_access()
+ * @param[in] expected_status Required access-check result
+ *
+ * @return SUCCESS when the access check matches @p expected_status, otherwise FAILURE
+ */
+Return expect_file_access_from_root(
+	const char       *root_path_to_tmpdir,
+	const char       *relative_path,
+	const int        mode,
+	FileAccessStatus expected_status)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	int root_directory_fd = -1;
+
+	m_create(char,root_path,MEMORY_STRING);
+	m_create(char,relative_path_memory,MEMORY_STRING);
+
+	if(root_path_to_tmpdir == NULL || relative_path == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(root_path_to_tmpdir,root_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = m_copy_string(relative_path_memory,strlen(relative_path) + 1U,relative_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		if(directory_open(root_path,&root_directory_fd) != FILE_ACCESS_ALLOWED)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
+		const FileAccessStatus access_status = file_check_access(
+			root_directory_fd,
+			relative_path_memory,
+			mode);
+
+		if(access_status != expected_status)
+		{
+			status = FAILURE;
+		}
+	}
+
+	if(root_directory_fd >= 0)
+	{
+		if(close(root_directory_fd) != 0)
+		{
+			status = FAILURE;
+		}
+	}
+
+	m_del(relative_path_memory);
+	m_del(root_path);
+
+	return(status);
+}
+
+/**
  * @brief Apply source mtime to destination path using utimensat
  *
  * @param[in] destination_path Destination filesystem path

@@ -1,6 +1,6 @@
 #include "sute.h"
 
-/* Mock only tecting in unit-mode so the linker wraps are active */
+/* Run mock-only tests in unit mode so linker wraps are active */
 Return comprehensive_mock_testing(void)
 {
 	INITTEST;

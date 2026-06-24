@@ -1,4 +1,5 @@
 #include "precizer.h"
+#include <errno.h>
 
 /**
  * @brief Compare two FTS entries by filename
@@ -72,8 +73,7 @@ Return file_list(TraversalSummary *summary)
 		provide(status);
 	}
 
-	// Flags that reflect the presence of any changes
-	// since the last research
+	// Per-pass state used to control visible output and checksum-lock warnings
 
 	// Print traversal/update banners only once
 	bool first_iteration = true;
@@ -85,6 +85,15 @@ Return file_list(TraversalSummary *summary)
 	FTSENT *p = NULL;
 
 	int fts_options = FTS_PHYSICAL;
+
+#ifdef FTS_NOCHDIR
+	/*
+	 * Keep FTS from changing the process working directory during traversal.
+	 * File operations use the opened root descriptor and root-relative paths,
+	 * so traversal does not need process-wide working directory changes
+	 */
+	fts_options |= FTS_NOCHDIR;
+#endif
 
 	if(config->start_device_only == true)
 	{
@@ -109,20 +118,17 @@ Return file_list(TraversalSummary *summary)
 	// Track whether any output was produced
 	summary->at_least_one_file_was_shown = false;
 
+	// Root path currently being traversed by this pass.
+	summary->root = NULL;
+
 	// Sum of per-file hashing elapsed time in nanoseconds.
 	summary->total_hashing_elapsed_ns = 0LL;
 
-	/*
-	 * Determine the absolute path prefix.
-	 * We are only interested in relative paths in the database.
-	 * To obtain a relative path, trim the prefix from the absolute path.
-	 */
-	m_create(char,root_path,MEMORY_STRING);
 #if 0 // Disabled multi-root path index implementation
 	/**
-	 * Index of the path prefix
-	 * All full runtime paths are stored in the table "paths".
-	 * A real path can be retrieved due to its index ID
+	 * Path-prefix index reserved for the disabled per-file root mapping.
+	 * Active traversal code currently builds each file path relative to the
+	 * root being scanned and does not use this value
 	 */
 	sqlite3_int64 runtime_root_path_index = -1;
 #endif
@@ -140,7 +146,7 @@ Return file_list(TraversalSummary *summary)
 
 	bool continue_the_loop = true;
 
-	// Allocate space for a memory structure
+	// Allocate reusable buffers shared by entries in this traversal pass
 	m_create(unsigned char,file_buffer);
 	m_create(char,relative_path,MEMORY_STRING);
 
@@ -160,6 +166,8 @@ Return file_list(TraversalSummary *summary)
 	// Open one FTS stream per traversal root
 	m_string_array_foreach(conf(roots),root)
 	{
+		summary->root = root;
+
 		char *root_path_text = m_data(char,root);
 
 		if(root_path_text == NULL)
@@ -169,10 +177,41 @@ Return file_list(TraversalSummary *summary)
 			break;
 		}
 
+		/*
+		 * fts_open() expects a NULL-terminated array of root path strings, even
+		 * when only one root is opened. file_list() processes configured roots
+		 * one by one, so this short array keeps the current FTS stream scoped to
+		 * the current root only
+		 */
 		char *root_argv[] = {
 			root_path_text,
 			NULL
 		};
+
+		/*
+		 * Descriptor for the current traversal root. Content-pass access checks
+		 * use it as the base directory for relative paths
+		 */
+		int root_directory_fd = -1;
+
+		/*
+		 * The stats-only pass does not perform directory-relative access checks,
+		 * so it can traverse the root path directly through FTS. The content pass
+		 * needs a stable root descriptor because file and directory access checks
+		 * are made with paths relative to this root. If the root cannot be
+		 * opened, directory_open_root() reports and remembers the
+		 * warning, and this loop skips only the unavailable root before
+		 * continuing with the next configured traversal root
+		 */
+		if(summary->stats_only_pass == false)
+		{
+			const FileAccessStatus root_access_status = directory_open_root(root,&root_directory_fd);
+
+			if(root_access_status != FILE_ACCESS_ALLOWED)
+			{
+				continue;
+			}
+		}
 
 		if((file_systems = fts_open(root_argv,fts_options,compare_by_name)) == NULL)
 		{
@@ -190,39 +229,21 @@ Return file_list(TraversalSummary *summary)
 				break;
 			}
 
-			/* Get absolute path prefix from FTSENT structure and current runtime path */
+	#if 0 // Disabled multi-root path index implementation
 			if(p->fts_level == FTS_ROOTLEVEL)
 			{
-				run(m_copy_fixed_string(root_path,(size_t)p->fts_pathlen + 1U,p->fts_path));
-
-				if(SUCCESS != status)
-				{
-					continue_the_loop = false;
-					break;
-				}
-
-				// Remove unnecessary trailing slash at the end of the directory path
-				run(remove_trailing_slash(root_path));
-
-				if(SUCCESS != status)
-				{
-					continue_the_loop = false;
-					break;
-				}
-
-	#if 0 // Disabled multi-root path index implementation
 				// If several paths were passed as arguments,
 				// then the counting of the path prefix index
 				// will start from zero
 				if(SUCCESS != (status = db_get_runtime_root_path_index(config,
-					root_path,
+					root,
 					&runtime_root_path_index)))
 				{
 					continue_the_loop = false;
 					break;
 				}
-#endif
 			}
+#endif
 
 			if(config->maxdepth > -1 && p->fts_level > config->maxdepth + 1)
 			{
@@ -238,7 +259,7 @@ Return file_list(TraversalSummary *summary)
 			{
 				case FTS_D:
 				{
-					run(extract_relative_path(relative_path,p->fts_path,(size_t)p->fts_pathlen,root_path));
+					run(path_build_relative(relative_path,p));
 
 					if((TRIUMPH & status) == 0)
 					{
@@ -288,8 +309,14 @@ Return file_list(TraversalSummary *summary)
 
 					if(summary->stats_only_pass == false)
 					{
-						// Check access and skip subtrees that are not readable.
-						status = directory_access_verify(file_systems,p,root_path,&first_iteration,summary);
+						// Check directory access and skip subtrees that cannot be entered
+						status = directory_access_verify(
+							file_systems,
+							p,
+							root_directory_fd,
+							relative_path,
+							&first_iteration,
+							summary);
 					}
 
 					if((TRIUMPH & status) == 0)
@@ -318,7 +345,7 @@ Return file_list(TraversalSummary *summary)
 					DBrow dbrow = {0};
 					file->db = &dbrow;
 
-					run(extract_relative_path(relative_path,p->fts_path,(size_t)p->fts_pathlen,root_path));
+					run(path_build_relative(relative_path,p));
 
 					if((TRIUMPH & status) == 0)
 					{
@@ -326,7 +353,7 @@ Return file_list(TraversalSummary *summary)
 						break;
 					}
 
-					/* Get all file's metadata from the database */
+					/* Load the database row, if any, for this root-relative file path */
 #if 0 // Disabled multi-root path index implementation
 					run(db_read_file_data_from(file,&runtime_root_path_index,relative_path));
 #else
@@ -376,7 +403,7 @@ Return file_list(TraversalSummary *summary)
 					// Determine read access for non-ignored paths
 					if(file->ignore == false)
 					{
-						FileAccessStatus access_status = file_check_access_absolute(p->fts_path,(size_t)p->fts_pathlen,R_OK);
+						FileAccessStatus access_status = file_check_access(root_directory_fd,relative_path,R_OK);
 						bool locked_unavailable_violation = false;
 
 						if(path_known == true
@@ -468,8 +495,7 @@ Return file_list(TraversalSummary *summary)
 						file->rehash = true;
 					}
 
-					/* For a file which had been changed before creation
-					   of its checksum has been already finished */
+					/* Handle files whose previous checksum pass stopped before completion */
 
 					// Can we resume hashing from a previous partial state?
 					bool can_resume_partial_hash = has_saved_offset == true
@@ -488,8 +514,7 @@ Return file_list(TraversalSummary *summary)
 						memcpy(&file->mdContext,&file->db->saved_mdContext,sizeof(SHA512_Context));
 
 					} else if(partial_hash_invalidated == true){
-						/* The SHA512 hashing of the file had not been
-						   finished previously and the file has been changed */
+						/* The previous partial hash is no longer valid because file metadata changed */
 						// Signal that hashing must restart from byte zero
 						file->rehashing_from_the_beginning = true;
 					}
@@ -535,8 +560,8 @@ Return file_list(TraversalSummary *summary)
 						{
 							if(SUCCESS == status)
 							{
-								status = sha512sum(p->fts_path,
-									(size_t)p->fts_pathlen,
+								status = sha512sum(root_directory_fd,
+									relative_path,
 									file_buffer,
 									summary,
 									file);
@@ -675,7 +700,7 @@ Return file_list(TraversalSummary *summary)
 						break;
 					}
 
-					run(extract_relative_path(relative_path,p->fts_path,(size_t)p->fts_pathlen,root_path));
+					run(path_build_relative(relative_path,p));
 
 					if((TRIUMPH & status) == 0)
 					{
@@ -711,6 +736,15 @@ Return file_list(TraversalSummary *summary)
 			file_systems = NULL;
 		}
 
+		if(root_directory_fd >= 0)
+		{
+			if(close(root_directory_fd) != 0)
+			{
+				slog(ERROR,"Failed to close traversal root directory descriptor: %s\n",strerror(errno));
+				status = FAILURE;
+			}
+		}
+
 		if(global_interrupt_flag == true || (TRIUMPH & status) == 0)
 		{
 			break;
@@ -720,7 +754,9 @@ Return file_list(TraversalSummary *summary)
 	m_del(relative_path);
 	m_del(file_buffer);
 
-	m_del(root_path);
+	// Clear the traversal root pointer before returning from this pass.
+	// The root descriptors belong to config->roots and must not be treated as active after the loop finishes
+	summary->root = NULL;
 
 	// Print completion banner only when traversal emitted visible path-level lines.
 	// Print preflight totals only for the stats-only pass from main().

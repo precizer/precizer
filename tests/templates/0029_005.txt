@@ -1,0 +1,19 @@
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: database5\.db
+The path database5\.db doesn't exist or it is not a file
+The primary DB file not yet exists. Brand new database will be created
+Unable to open traversal root tests/fixtures/diffs/diff1/1: [^\r\n]+
+File traversal started for tests/fixtures/diffs/diff1/4
+(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database5\.db:(?:\x1B\[[0-9;]*m)*
+new AAA/BBB/CCC/a\.txt
+File traversal complete
+(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
+Unable to open traversal root tests/fixtures/diffs/diff1/1: [^\r\n]+
+Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
+Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+Start vacuuming the primary database…
+The primary database has been vacuumed
+(?:\x1B\[[0-9;]*m)*The brand-new primary database file database5\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
+The precizer completed as expected
+Exit status » SUCCESS
+Enjoy your life!\Z

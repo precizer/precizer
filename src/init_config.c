@@ -9,8 +9,8 @@
  *
  * The function clears the shared `Config` object and then initializes every
  * field that needs a non-zero default. Path-like data owned by libmem is
- * prepared as string descriptors or descriptor arrays: `running_dir`,
- * `db_primary_file_path`, `db_file_name`, `roots`, and `db_file_paths`
+ * prepared as string descriptors or descriptor arrays: `db_primary_file_path`,
+ * `db_file_name`, `roots`, and `db_file_paths`
  *
  * Normal scan roots are collected later in `config->roots`, while `--compare`
  * database arguments are collected in `config->db_file_paths`
@@ -25,10 +25,6 @@ void init_config(void)
 
 	// Application start time for total runtime reporting.
 	config->app_start_time_ns = cur_time_monotonic_ns();
-
-	// Absolute path name of the working directory
-	// A directory where the program was executed
-	config->running_dir = m_init(char,MEMORY_STRING);
 
 	// Show progress bar
 	config->progress = false;

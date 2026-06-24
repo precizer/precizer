@@ -10,7 +10,6 @@ roots=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals\.c:\d+:init_signals:Set signal SIGINT OK:pid:\d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals\.c:\d+:init_signals:Set signal SIGTERM OK:pid:\d+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/init_signals\.c:\d+:init_signals:Signals initialized
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/determine_running_dir\.c:\d+:determine_running_dir:Current directory: [^\r\n]*
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_name\.c:\d+:db_determine_name:Primary database file name: database1\.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_name\.c:\d+:db_determine_name:Primary database file path: database1\.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_name\.c:\d+:db_determine_name:Finished determining database name

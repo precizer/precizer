@@ -3,7 +3,7 @@ Primary database file name: 0034_lsize_vs_asize_flags\.db
 Starting database file 0034_lsize_vs_asize_flags\.db integrity check…
 Database 0034_lsize_vs_asize_flags\.db has been verified and is in good condition
 Update mode enabled for DB 0034_lsize_vs_asize_flags\.db
-File traversal started
+File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0034_lsize_vs_asize_flags\.db:(?:\x1B\[[0-9;]*m)*
 update & rehash, changed: asize[^\r\n]* path1/AAA/BCB/CCC/a\.txt
 File traversal complete

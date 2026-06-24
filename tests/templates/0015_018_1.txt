@@ -13,7 +13,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: 0015_database_future_version\.db
 TESTING:Primary database file path: 0015_database_future_version\.db
 TESTING:Finished determining database name

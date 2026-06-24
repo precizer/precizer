@@ -14,7 +14,6 @@ TESTING:Set signal SIGUSR2 OK:pid:[0-9]+
 TESTING:Set signal SIGINT OK:pid:[0-9]+
 TESTING:Set signal SIGTERM OK:pid:[0-9]+
 TESTING:Signals initialized
-TESTING:Current directory: [^\n]+
 TESTING:Primary database file name: 0033_interrupt_resume\.db
 TESTING:Primary database file path: 0033_interrupt_resume\.db
 TESTING:Finished determining database name

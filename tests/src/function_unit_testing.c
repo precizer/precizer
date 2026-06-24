@@ -22,8 +22,8 @@ Return function_unit_testing(void)
 	TEST(test0021,"Native international UTF8 encoding test set");
 #endif
 	TEST(test0022,"remove_trailing_slash(): test set");
-	TEST(test0023,"extract_relative_path(): test set");
-	SUTE(test0026,"file_check_access(): test set");
+	TEST(test0023,"path_build_relative(): stable paths across root spellings");
+	SUTE(test0026,"file_check_access(): directory-relative access statuses");
 	TEST(test0036,"delete_path(): removes a regular file");
 	SUTE(test0037,"delete_path(): diagnostics test set");
 

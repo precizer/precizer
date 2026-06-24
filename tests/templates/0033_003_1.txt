@@ -14,7 +14,6 @@ TESTING:Set signal SIGUSR2 OK:pid:[0-9]+
 TESTING:Set signal SIGINT OK:pid:[0-9]+
 TESTING:Set signal SIGTERM OK:pid:[0-9]+
 TESTING:Signals initialized
-TESTING:Current directory: /[^\n]+
 TESTING:Primary database file name: 0033_interrupt_resume\.db
 TESTING:Primary database file path: 0033_interrupt_resume\.db
 TESTING:Finished determining database name
@@ -40,7 +39,7 @@ TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Notify quit!
 TESTING:The global return status and exit flag has been set to HALTED
 TESTING:Interrupting the application\. Please wait while the database will be closed smoothly…
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB 0033_interrupt_resume\.db:(?:\x1B\[[0-9;]*m)*
 new hugetestfile
 TESTING:SHA512 checksum for the file hugetestfile has been gracefully interrupted at byte: .+

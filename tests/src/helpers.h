@@ -312,6 +312,25 @@ Return open_file_stream(
 	FILE         **opened_file_stream_out);
 
 /**
+ * @brief Verify access to a file path relative to a test root under TMPDIR
+ *
+ * The root path is resolved from TMPDIR, opened with directory_open(), and the
+ * relative path is checked with file_check_access()
+ *
+ * @param[in] root_path_to_tmpdir Root directory path relative to TMPDIR
+ * @param[in] relative_path Path to check relative to the opened root
+ * @param[in] mode Access mode passed to file_check_access()
+ * @param[in] expected_status Required access-check result
+ *
+ * @return Return status code
+ */
+Return expect_file_access_from_root(
+	const char       *root_path_to_tmpdir,
+	const char       *relative_path,
+	const int        mode,
+	FileAccessStatus expected_status);
+
+/**
  * @brief Write string to file with explicit append or replace mode
  *
  * The function writes bytes exactly as provided without adding a trailing newline

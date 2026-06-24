@@ -15,7 +15,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database1\.db
 TESTING:Primary database file path: database1\.db
 TESTING:Finished determining database name
@@ -68,7 +67,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database1\.db
 TESTING:Primary database file path: database1\.db
 TESTING:Finished determining database name
@@ -97,7 +95,7 @@ TESTING:File system traversal initiated to calculate file count and storage usag
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB database1\.db
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
 update & rehash, changed: lsize was:\d+.*, now:\d+.* & ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) & mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+), now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.(\d+) 1/AAA/BCB/CCC/a\.txt
 add as empty 1/AAA/BCB/CCC/c\.txt

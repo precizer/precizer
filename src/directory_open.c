@@ -18,19 +18,20 @@
  * override also sets a representative `errno` value so callers exercise the
  * same diagnostics as a real `open()` failure
  *
- * @param[in] directory_path Directory path to open
+ * @param[in] directory_path Descriptor containing the directory path to open
  * @param[out] directory_fd_out Receives the opened descriptor. Set to -1 before
  *             `open()` is attempted
  * @return `FILE_ACCESS_ALLOWED` when the directory was opened.
  *         `FILE_NOT_FOUND` or `FILE_ACCESS_DENIED` for the corresponding
- *         `open()` failure. `FILE_ACCESS_ERROR` for invalid arguments or any
- *         other failure
+ *         `open()` failure. `FILE_ACCESS_ERROR` when the output pointer is
+ *         invalid or another `open()` failure cannot be classified more
+ *         specifically
  */
 FileAccessStatus directory_open(
-	const char *directory_path,
-	int        *directory_fd_out)
+	const memory *directory_path,
+	int          *directory_fd_out)
 {
-	if(directory_path == NULL || directory_fd_out == NULL)
+	if(directory_fd_out == NULL)
 	{
 		errno = EINVAL;
 		return(FILE_ACCESS_ERROR);
@@ -38,10 +39,12 @@ FileAccessStatus directory_open(
 
 	*directory_fd_out = -1;
 
+	const char *runtime_directory_path = m_text(directory_path);
+
 #ifdef TESTITALL_TEST_HOOKS
 	FileAccessStatus forced_status = FILE_ACCESS_ALLOWED;
 
-	if(testitall_file_access_status_override(directory_path,&forced_status) == true
+	if(testitall_file_access_status_override(runtime_directory_path,&forced_status) == true
 	        && forced_status != FILE_ACCESS_ALLOWED)
 	{
 		if(forced_status == FILE_ACCESS_DENIED)
@@ -81,7 +84,7 @@ FileAccessStatus directory_open(
 	open_flags |= O_RDONLY;
 #endif
 
-	const int directory_fd = open(directory_path,open_flags);
+	const int directory_fd = open(runtime_directory_path,open_flags);
 
 	if(directory_fd >= 0)
 	{

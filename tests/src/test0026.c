@@ -29,43 +29,55 @@ static Return test0026_prepare_tmpdir(
 }
 
 /**
- * @brief Verify that an existing absolute path is reported as accessible
+ * @brief Verify that an existing relative path is reported as accessible
  *
  * @details
- * Creates a readable temporary file and passes its complete path to
- * file_check_access_absolute(). Because the file exists and can be read, the
- * function must return FILE_ACCESS_ALLOWED
+ * Creates a readable temporary file, opens its parent directory, and passes
+ * only the file name to file_check_access(). Because the file exists and can
+ * be read, the function must return FILE_ACCESS_ALLOWED
  */
 static Return test0026_1(void)
 {
 	INITTEST;
 
 	m_create(char,tmpdir,MEMORY_STRING);
+	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
 	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_accessible.txt"));
 
-	char abs_path[PATH_MAX] = "";
+	char absolute_file_path[PATH_MAX] = "";
 	FILE *file = NULL;
 	m_create(char,absolute_path,MEMORY_STRING);
-	const int written = snprintf(abs_path,sizeof(abs_path),"%s/%s",tmpdir_path,"test0026_abs.txt");
+	const int written = snprintf(absolute_file_path,
+		sizeof(absolute_file_path),
+		"%s/%s",
+		tmpdir_path,
+		m_text(relative_path));
 
-	ASSERT(written > 0 && (size_t)written < sizeof(abs_path));
+	ASSERT(written > 0 && (size_t)written < sizeof(absolute_file_path));
 
-	ASSERT(SUCCESS == m_copy_string(absolute_path,(size_t)written + 1U,abs_path));
+	ASSERT(SUCCESS == m_copy_string(absolute_path,(size_t)written + 1U,absolute_file_path));
 	ASSERT(SUCCESS == open_file_stream(absolute_path,"wb",&file));
 	ASSERT(file != NULL);
 	ASSERT(fclose(file) == 0);
 
-	ASSERT(file_check_access_absolute(abs_path,(size_t)written,R_OK) == FILE_ACCESS_ALLOWED);
+	int directory_fd = -1;
 
-	const int remove_file_status = remove(abs_path);
+	ASSERT(directory_open(tmpdir,&directory_fd) == FILE_ACCESS_ALLOWED);
+	ASSERT(file_check_access(directory_fd,relative_path,R_OK) == FILE_ACCESS_ALLOWED);
+
+	const int close_status = close(directory_fd);
+	const int remove_file_status = remove(absolute_file_path);
 	call(m_del(absolute_path));
 	const int remove_tmpdir_status = rmdir(tmpdir_path);
 
+	ASSERT(close_status == 0);
 	ASSERT(remove_file_status == 0);
 	ASSERT(remove_tmpdir_status == 0);
 
+	call(m_del(relative_path));
 	call(m_del(tmpdir));
 
 	RETURN_STATUS;
@@ -84,23 +96,24 @@ static Return test0026_2(void)
 	INITTEST;
 
 	m_create(char,tmpdir,MEMORY_STRING);
+	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
 	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_missing.txt"));
 
-	char missing_path[PATH_MAX] = "";
-	const int written = snprintf(missing_path,sizeof(missing_path),"%s/%s",tmpdir_path,"test0026_missing.txt");
+	int directory_fd = -1;
 
-	ASSERT(written > 0 && (size_t)written < sizeof(missing_path));
+	ASSERT(directory_open(tmpdir,&directory_fd) == FILE_ACCESS_ALLOWED);
+	ASSERT(file_check_access(directory_fd,relative_path,R_OK) == FILE_NOT_FOUND);
 
-	remove(missing_path); // Make sure no leftover file can change the expected result
-
-	ASSERT(file_check_access_absolute(missing_path,strlen(missing_path),R_OK) == FILE_NOT_FOUND);
-
+	const int close_status = close(directory_fd);
 	const int remove_tmpdir_status = rmdir(tmpdir_path);
 
+	ASSERT(close_status == 0);
 	ASSERT(remove_tmpdir_status == 0);
 
+	call(m_del(relative_path));
 	call(m_del(tmpdir));
 
 	RETURN_STATUS;
@@ -112,17 +125,19 @@ static Return test0026_2(void)
  * @details
  * Creates a file and then removes every permission from its parent directory.
  * The file still exists, but the process cannot pass through the directory to
- * reach it. file_check_access_absolute() must therefore return
- * FILE_ACCESS_DENIED rather than FILE_NOT_FOUND
+ * reach it. file_check_access() must therefore return FILE_ACCESS_DENIED
+ * rather than FILE_NOT_FOUND
  */
 static Return test0026_3(void)
 {
 	INITTEST;
 
 	m_create(char,tmpdir,MEMORY_STRING);
+	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
 	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_locked_dir/file.txt"));
 
 	char locked_dir[PATH_MAX] = "";
 	const int dir_written = snprintf(locked_dir,sizeof(locked_dir),"%s/%s",tmpdir_path,"test0026_locked_dir");
@@ -134,7 +149,11 @@ static Return test0026_3(void)
 	char locked_file_path[PATH_MAX] = "";
 	FILE *file = NULL;
 	m_create(char,locked_path,MEMORY_STRING);
-	const int file_written = snprintf(locked_file_path,sizeof(locked_file_path),"%s/%s",locked_dir,"file.txt");
+	const int file_written = snprintf(locked_file_path,
+		sizeof(locked_file_path),
+		"%s/%s",
+		tmpdir_path,
+		m_text(relative_path));
 
 	ASSERT(file_written > 0 && (size_t)file_written < sizeof(locked_file_path));
 
@@ -145,8 +164,12 @@ static Return test0026_3(void)
 
 	ASSERT(chmod(locked_dir,0000) == 0);
 
-	ASSERT(file_check_access_absolute(locked_file_path,(size_t)file_written,R_OK) == FILE_ACCESS_DENIED);
+	int directory_fd = -1;
 
+	ASSERT(directory_open(tmpdir,&directory_fd) == FILE_ACCESS_ALLOWED);
+	ASSERT(file_check_access(directory_fd,relative_path,R_OK) == FILE_ACCESS_DENIED);
+
+	const int close_status = close(directory_fd);
 	const int restore_status = chmod(locked_dir,0700);
 	const int remove_file_status = remove(locked_file_path);
 	const int remove_dir_status = rmdir(locked_dir);
@@ -154,40 +177,46 @@ static Return test0026_3(void)
 	call(m_del(locked_path));
 	const int remove_tmpdir_status = rmdir(tmpdir_path);
 
+	ASSERT(close_status == 0);
 	ASSERT(restore_status == 0);
 	ASSERT(remove_file_status == 0);
 	ASSERT(remove_dir_status == 0);
 	ASSERT(remove_tmpdir_status == 0);
 
+	call(m_del(relative_path));
 	call(m_del(tmpdir));
 
 	RETURN_STATUS;
 }
 
-#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Verify that an unexpected access failure is reported as FILE_ACCESS_ERROR
  *
  * @details
- * Creates a real file and makes the test replacement for access() report EIO,
- * which represents a low-level input/output failure. Because this error means
- * neither "missing" nor "permission denied", file_check_access_absolute() must
- * return FILE_ACCESS_ERROR
+ * Creates a real file and uses the test access-status hook to force
+ * FILE_ACCESS_ERROR for that relative path. Because this error means neither
+ * "missing" nor "permission denied", file_check_access() must return
+ * FILE_ACCESS_ERROR
  */
 static Return test0026_4(void)
 {
 	INITTEST;
 
 	m_create(char,tmpdir,MEMORY_STRING);
+	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
 	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_error.txt"));
 
 	char error_path[PATH_MAX] = "";
 	FILE *file = NULL;
 	m_create(char,error_target,MEMORY_STRING);
-	size_t access_call_count = 0;
-	const int written = snprintf(error_path,sizeof(error_path),"%s/%s",tmpdir_path,"test0026_error.txt");
+	const int written = snprintf(error_path,
+		sizeof(error_path),
+		"%s/%s",
+		tmpdir_path,
+		m_text(relative_path));
 
 	ASSERT(written > 0 && (size_t)written < sizeof(error_path));
 
@@ -196,109 +225,27 @@ static Return test0026_4(void)
 	ASSERT(file != NULL);
 	ASSERT(fclose(file) == 0);
 
-	mocks_access_reset();
-	mocks_access_set_target_suffix(error_path);
-	mocks_access_set_errno(EIO);
-	mocks_access_enable(true);
+	int directory_fd = -1;
 
-	ASSERT(file_check_access_absolute(error_path,strlen(error_path),R_OK) == FILE_ACCESS_ERROR);
+	ASSERT(directory_open(tmpdir,&directory_fd) == FILE_ACCESS_ALLOWED);
+	ASSERT(file_check_access(directory_fd,relative_path,R_OK) == FILE_ACCESS_ALLOWED);
 
-	mocks_access_enable(false);
-	access_call_count = mocks_access_call_count();
-	mocks_access_reset();
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",m_text(relative_path)));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
+	ASSERT(file_check_access(directory_fd,relative_path,R_OK) == FILE_ACCESS_ERROR);
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
 
+	const int close_status = close(directory_fd);
 	const int remove_file_status = remove(error_path);
 	call(m_del(error_target));
 	const int remove_tmpdir_status = rmdir(tmpdir_path);
 
-	ASSERT(access_call_count > 0U);
-	ASSERT(remove_file_status == 0);
-	ASSERT(remove_tmpdir_status == 0);
-
-	call(m_del(tmpdir));
-
-	RETURN_STATUS;
-}
-#endif
-
-/**
- * @brief Verify directory-relative access to an existing file
- *
- * Creates a file inside a temporary directory and opens that directory once.
- * The returned descriptor identifies the directory and is passed to
- * file_check_access() together with only the file name. A successful result
- * confirms that the relative name is resolved inside the opened directory
- * without constructing another absolute path
- */
-static Return test0026_5(void)
-{
-	INITTEST;
-
-	m_create(char,tmpdir,MEMORY_STRING);
-	const char *tmpdir_path = "";
-	const char *relative_file_name = "test0026_5_relative.txt";
-
-	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
-
-	char absolute_file_path[PATH_MAX] = "";
-	const int written = snprintf(absolute_file_path,
-		sizeof(absolute_file_path),
-		"%s/%s",
-		tmpdir_path,
-		relative_file_name);
-
-	ASSERT(written > 0 && (size_t)written < sizeof(absolute_file_path));
-
-	FILE *file = fopen(absolute_file_path,"wb");
-
-	ASSERT(file != NULL);
-	ASSERT(fclose(file) == 0);
-
-	int directory_fd = -1;
-
-	ASSERT(directory_open(tmpdir_path,&directory_fd) == FILE_ACCESS_ALLOWED);
-	ASSERT(file_check_access(directory_fd,relative_file_name,R_OK) == FILE_ACCESS_ALLOWED);
-
-	const int close_status = close(directory_fd);
-	const int remove_file_status = remove(absolute_file_path);
-	const int remove_tmpdir_status = rmdir(tmpdir_path);
-
 	ASSERT(close_status == 0);
 	ASSERT(remove_file_status == 0);
 	ASSERT(remove_tmpdir_status == 0);
 
-	call(m_del(tmpdir));
-
-	RETURN_STATUS;
-}
-
-/**
- * @brief Verify directory-relative classification of a missing file
- *
- * Opens an empty temporary directory and checks a file name relative to its
- * descriptor. Because no file with that name exists inside the directory,
- * file_check_access() must return FILE_NOT_FOUND
- */
-static Return test0026_6(void)
-{
-	INITTEST;
-
-	m_create(char,tmpdir,MEMORY_STRING);
-	const char *tmpdir_path = "";
-
-	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
-
-	int directory_fd = -1;
-
-	ASSERT(directory_open(tmpdir_path,&directory_fd) == FILE_ACCESS_ALLOWED);
-	ASSERT(file_check_access(directory_fd,"test0026_6_missing_relative.txt",R_OK) == FILE_NOT_FOUND);
-
-	const int close_status = close(directory_fd);
-	const int remove_tmpdir_status = rmdir(tmpdir_path);
-
-	ASSERT(close_status == 0);
-	ASSERT(remove_tmpdir_status == 0);
-
+	call(m_del(relative_path));
 	call(m_del(tmpdir));
 
 	RETURN_STATUS;
@@ -313,22 +260,23 @@ static Return test0026_6(void)
  * directory and checking the known relative file name must still succeed,
  * proving that this workflow does not require directory read permission
  */
-static Return test0026_7(void)
+static Return test0026_5(void)
 {
 	INITTEST;
 
 	m_create(char,tmpdir,MEMORY_STRING);
+	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
-	const char *relative_file_name = "test0026_7_search_only.txt";
 
 	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_5_search_only.txt"));
 
 	char absolute_file_path[PATH_MAX] = "";
 	const int written = snprintf(absolute_file_path,
 		sizeof(absolute_file_path),
 		"%s/%s",
 		tmpdir_path,
-		relative_file_name);
+		m_text(relative_path));
 
 	ASSERT(written > 0 && (size_t)written < sizeof(absolute_file_path));
 
@@ -340,8 +288,8 @@ static Return test0026_7(void)
 
 	int directory_fd = -1;
 
-	ASSERT(directory_open(tmpdir_path,&directory_fd) == FILE_ACCESS_ALLOWED);
-	ASSERT(file_check_access(directory_fd,relative_file_name,R_OK) == FILE_ACCESS_ALLOWED);
+	ASSERT(directory_open(tmpdir,&directory_fd) == FILE_ACCESS_ALLOWED);
+	ASSERT(file_check_access(directory_fd,relative_path,R_OK) == FILE_ACCESS_ALLOWED);
 
 	const int close_status = close(directory_fd);
 	const int restore_status = chmod(tmpdir_path,0700);
@@ -354,32 +302,29 @@ static Return test0026_7(void)
 	ASSERT(remove_tmpdir_status == 0);
 
 	call(m_del(tmpdir));
+	call(m_del(relative_path));
 
 	RETURN_STATUS;
 }
 
 /**
- * @brief Test absolute and directory-relative file access checks
+ * @brief Test directory-relative file access checks
  *
  * @details
  * Covers readable, missing, permission-denied, and unexpected-error results for
- * absolute paths. It also verifies that a directory can be opened once and
- * reused to check relative file names, including a directory that can be
- * searched but cannot be listed
+ * paths checked relative to an opened directory. It also verifies that a
+ * directory can be opened once and reused to check relative file names,
+ * including a directory that can be searched but cannot be listed
  */
 Return test0026(void)
 {
 	INITTEST;
 
-	TEST(test0026_1,"file_check_access_absolute(): readable absolute path");
-	TEST(test0026_2,"file_check_access_absolute(): missing file");
-	TEST(test0026_3,"file_check_access_absolute(): unreadable path");
-#ifndef EVIL_EMPIRE_OS
-	TEST(test0026_4,"file_check_access_absolute(): unexpected access failure");
-#endif
-	TEST(test0026_5,"file_check_access(): readable path relative to a directory descriptor");
-	TEST(test0026_6,"file_check_access(): missing path relative to a directory descriptor");
-	TEST(test0026_7,"file_check_access(): readable path below a search-only directory");
+	TEST(test0026_1,"file_check_access(): readable path relative to a directory descriptor");
+	TEST(test0026_2,"file_check_access(): missing path relative to a directory descriptor");
+	TEST(test0026_3,"file_check_access(): inaccessible path relative to a directory descriptor");
+	TEST(test0026_4,"file_check_access(): forced access-check failure");
+	TEST(test0026_5,"file_check_access(): readable path below a search-only directory");
 
 	RETURN_STATUS;
 }

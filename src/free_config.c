@@ -22,9 +22,6 @@ void free_config(void)
 		tcsetattr(fileno(stdin),0,&term);
 	}
 
-	// Runtime working directory used to resolve relative paths
-	(void)m_del(conf(running_dir));
-
 	// Primary database file path used for read and write operations
 	(void)m_del(conf(db_primary_file_path));
 

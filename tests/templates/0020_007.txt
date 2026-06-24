@@ -15,7 +15,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database1\.db
 TESTING:Primary database file path: database1\.db
 TESTING:Finished determining database name
@@ -46,7 +45,7 @@ TESTING:The (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option has been used, 
 tests/fixtures/diffs/diff2
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB database1\.db
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
 update stat 1/AAA/BCB/CCC/a\.txt
 update stat 1/AAA/ZAW/A/b/c/a_file\.txt
