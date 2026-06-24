@@ -1,9 +1,13 @@
 #include "sute.h"
 
-#define READ_FAIL_REL_PATH "tests/fixtures/diffs/diff1/path1/AAA/ZAW/D/e/f/b_file.txt"
+#define READ_FAIL_REL_PATH "path1/AAA/ZAW/D/e/f/b_file.txt"
 
 /**
- * Simulate fread failure for a specific file to verify error handling.
+ * @brief Verify read-error handling during file hashing
+ *
+ * Forces one fread() call to fail for a selected root-relative file path.
+ * The application should report the file problem in normal traversal output,
+ * keep running, and avoid writing anything to stderr
  */
 Return test0031(void)
 {
@@ -28,7 +32,7 @@ Return test0031(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,error_buffer,COMPLETED,ALLOW_BOTH));
 
-	/* Always disable the mock and restore the previous run mode. */
+	/* Disable the fread hook before checking output and cleaning up */
 	mocks_fread_enable(false);
 
 	ASSERT(error_buffer->length == 0);

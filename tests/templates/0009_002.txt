@@ -2,7 +2,7 @@
 Primary database file name: database0009_2\.db
 The path database0009_2\.db doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
-File traversal started
+File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009_2\.db:(?:\x1B\[[0-9;]*m)*
 new alpha_m0n9k2_zz\.txt
 new hold_a1r9v-0pq\.bak

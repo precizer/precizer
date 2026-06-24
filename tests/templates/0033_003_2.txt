@@ -15,7 +15,6 @@ TESTING:Set signal SIGUSR2 OK:pid:[0-9]+
 TESTING:Set signal SIGINT OK:pid:[0-9]+
 TESTING:Set signal SIGTERM OK:pid:[0-9]+
 TESTING:Signals initialized
-TESTING:Current directory: /[^\n]+
 TESTING:Primary database file name: 0033_interrupt_resume\.db
 TESTING:Primary database file path: 0033_interrupt_resume\.db
 TESTING:Finished determining database name
@@ -44,7 +43,7 @@ TESTING:File system traversal initiated to calculate file count and storage usag
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB 0033_interrupt_resume\.db
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0033_interrupt_resume\.db:(?:\x1B\[[0-9;]*m)*
 continue to rehash from .+ hugetestfile
 TESTING:File traversal complete

@@ -5,7 +5,7 @@ Database lock1\.db has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 Update mode enabled for DB lock1\.db
-File traversal started
+File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock1\.db:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
 update stat diff2/2/AAA/BBB/CZC/a\.txt

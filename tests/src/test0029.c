@@ -118,10 +118,9 @@ static Return test0029_3(void)
 
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
-	m_create(char,target_path,MEMORY_STRING);
 
 	const char *db_filename = "database3.db";
-	const char *access_error_file_path = "tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt";
+	const char *access_error_root_path = "tests/fixtures/diffs/diff1";
 	const char *access_error_relative_path = "1/AAA/ZAW/D/e/f/b_file.txt";
 	const char *changed_later_file_path = "tests/fixtures/diffs/diff1/4/AAA/BBB/CCC/a.txt";
 
@@ -137,12 +136,19 @@ static Return test0029_3(void)
 
 	ASSERT(SUCCESS == replase_to_string("access check failure must not stop traversal",changed_later_file_path));
 
-	ASSERT(SUCCESS == construct_path(access_error_file_path,target_path));
-	ASSERT(FILE_ACCESS_ALLOWED == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(SUCCESS == expect_file_access_from_root(
+		access_error_root_path,
+		access_error_relative_path,
+		R_OK,
+		FILE_ACCESS_ALLOWED));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",access_error_relative_path));
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
-	ASSERT(FILE_ACCESS_ERROR == file_check_access_absolute(m_text(target_path),target_path->string_length,R_OK));
+	ASSERT(SUCCESS == expect_file_access_from_root(
+		access_error_root_path,
+		access_error_relative_path,
+		R_OK,
+		FILE_ACCESS_ERROR));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -158,7 +164,6 @@ static Return test0029_3(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	m_del(target_path);
 	m_del(pattern);
 	m_del(result);
 
@@ -192,7 +197,7 @@ static Return test0029_4(void)
 		"FILE_ACCESS_ERROR"
 	};
 	const size_t root_access_status_count =
-		sizeof(root_access_statuses) / sizeof(root_access_statuses[0]);
+	        sizeof(root_access_statuses) / sizeof(root_access_statuses[0]);
 	int files_count_before = 0;
 
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -242,19 +247,66 @@ static Return test0029_4(void)
 }
 
 /**
+ * @brief Verify that an unavailable PATH root does not stop later roots
+ *
+ * Forces the first of two traversal roots to fail during root opening. The
+ * unavailable root must be reported immediately and shown again in the final
+ * warning summary, while a file from the second root must still be written to
+ * the database
+ */
+static Return test0029_5(void)
+{
+	INITTEST;
+
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+
+	const char *db_filename = "database5.db";
+	const char *filename = "templates/0029_005.txt";
+	const char *available_relative_path = "AAA/BBB/CCC/a.txt";
+	bool available_path_exists = false;
+
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX","diff1/1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_DENIED"));
+
+	const char *arguments = "--database=database5.db "
+	        "tests/fixtures/diffs/diff1/1 tests/fixtures/diffs/diff1/4";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+	ASSERT(SUCCESS == db_relative_path_exists(db_filename,available_relative_path,&available_path_exists));
+	ASSERT(available_path_exists == true);
+
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+
+	m_del(pattern);
+	m_del(result);
+
+	ASSERT(SUCCESS == delete_path(db_filename));
+
+	RETURN_STATUS;
+}
+
+/**
  * @brief Run inaccessible-path behavior tests
  *
  * Covers preservation, explicit removal, unexpected file access-check failure,
- * and safe cleanup skipping when the root itself cannot be opened
+ * safe cleanup skipping, and continued traversal after a PATH root cannot be
+ * opened
  */
 Return test0029(void)
 {
 	INITTEST;
 
-	TEST(test0029_1,"\"inaccessible\" message of file_show() function");
-	TEST(test0029_2,"--db-drop-inaccessible option. Dropping DB records for inaccessible paths");
+	TEST(test0029_1,"Inaccessible paths are reported and kept by default");
+	TEST(test0029_2,"--db-drop-inaccessible drops inaccessible DB records");
 	TEST(test0029_3,"Access-check failure for a regular file does not stop traversal");
 	TEST(test0029_4,"Root opening failures skip metadata cleanup without deleting records");
+	TEST(test0029_5,"Unavailable PATH root is remembered while later roots continue");
 
 	RETURN_STATUS;
 }

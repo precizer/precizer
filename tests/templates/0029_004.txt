@@ -15,7 +15,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database4\.db
 TESTING:Primary database file path: database4\.db
 TESTING:Finished determining database name
@@ -41,7 +40,9 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database4\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:Searching for files that no longer exist on the file system…
-TESTING:Skipping metadata cleanup for unavailable root tests/fixtures/diffs/diff1: [^\r\n]+
+Unable to open traversal root tests/fixtures/diffs/diff1: [^\r\n]+
+TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
+Unable to open traversal root tests/fixtures/diffs/diff1: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database4\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*

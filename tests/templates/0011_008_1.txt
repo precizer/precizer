@@ -5,7 +5,7 @@ Database %DB_NAME% has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 Update mode enabled for DB %DB_NAME%
-File traversal started
+File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 ignore directory diff1/path2/AAA
 ignore directory diff1/path2/AAA/BCB

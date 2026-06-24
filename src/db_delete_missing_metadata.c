@@ -99,7 +99,7 @@ static Return db_preserve_locked_ignored_record(
 		 */
 		FileAccessStatus access_status = file_check_access(
 			root_directory_fd,
-			m_text(relative_path),
+			relative_path,
 			R_OK);
 
 		if(SUCCESS == status && access_status != FILE_ACCESS_ALLOWED)
@@ -226,35 +226,29 @@ Return db_delete_missing_metadata(void)
 	// Identifies the open root directory used as the base for relative access checks
 	int root_directory_fd = -1;
 
+	// Stores whether the database root was opened for directory-relative checks
+	FileAccessStatus root_access_status = FILE_ACCESS_ERROR;
+
 	/*
 	 * Load the shared root path and open it once before processing file rows.
-	 * Each file record stores only a relative path, so access checks use this directory descriptor
+	 * Each file record stores only a relative path, so access checks use this
+	 * directory descriptor. If the root cannot be opened, the open helper has
+	 * already reported and remembered the warning, and cleanup safely stops
+	 * without treating that root-level access problem as a technical failure
 	 */
 	run(db_retrieve_root_path(root_path));
 
 	if(SUCCESS == status)
 	{
-		const char *runtime_root_path = m_text(root_path);
-
-		const FileAccessStatus root_access_status = directory_open(runtime_root_path,&root_directory_fd);
-
-		if(root_access_status != FILE_ACCESS_ALLOWED)
-		{
-			const int root_open_errno = errno;
-
-			slog(EVERY,
-				"Skipping metadata cleanup for unavailable root %s: %s\n",
-				runtime_root_path,
-				strerror(root_open_errno));
-		}
+		root_access_status = directory_open_root(root_path,&root_directory_fd);
 	}
 
 	/*
 	 * Without an open root, file rows cannot be classified safely.
-	 * Release local memory and keep the current status, which remains SUCCESS
-	 * when root opening alone was unavailable
+	 * Release local memory and keep the current status when the root was not
+	 * opened or no descriptor was returned for directory-relative checks
 	 */
-	if(root_directory_fd < 0)
+	if(root_access_status != FILE_ACCESS_ALLOWED || root_directory_fd < 0)
 	{
 		call(m_del(relative_path));
 		call(m_del(root_path));
@@ -380,7 +374,7 @@ Return db_delete_missing_metadata(void)
 			 * Check the path relative to the open root directory without
 			 * constructing an absolute path
 			 */
-			FileAccessStatus access_status = file_check_access(root_directory_fd,m_text(relative_path),R_OK);
+			FileAccessStatus access_status = file_check_access(root_directory_fd,relative_path,R_OK);
 
 			if(access_status == FILE_ACCESS_ALLOWED)
 			{

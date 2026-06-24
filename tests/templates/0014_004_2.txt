@@ -13,7 +13,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: /.*$
 TESTING:Primary database file name: database1\.db
 TESTING:Primary database file path: /.*/database1\.db
 TESTING:Finished determining database name
@@ -33,7 +32,7 @@ TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
 длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a\.txt
 длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file\.txt
@@ -86,7 +85,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: /.*$
 TESTING:Primary database file name: database1\.db
 TESTING:Primary database file path: /.*database1\.db
 TESTING:Finished determining database name
@@ -116,7 +114,7 @@ TESTING:Paths saved in the database:
 TESTING:The (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option has been used, so the following paths will be written to the database1\.db:
 ^/.*/examples/diffs/diff2
 TESTING:Update mode enabled for DB database1\.db
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
 1/AAA/BCB/CCC/a\.txt add
 1/AAA/ZAW/A/b/c/a_file\.txt add

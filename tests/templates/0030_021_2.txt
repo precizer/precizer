@@ -17,7 +17,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: lock_s21\.db
 TESTING:Primary database file path: lock_s21\.db
 TESTING:Finished determining database name

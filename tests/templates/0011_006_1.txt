@@ -2,7 +2,7 @@
 Primary database file name: %DB_NAME%
 The path %DB_NAME% doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
-File traversal started
+File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
 ignore directory diff1/1/AAA
 new diff1/2/AAA/BBB/CZC/a\.txt

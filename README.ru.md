@@ -511,7 +511,6 @@ paths=tests/fixtures/diffs/diff1; database=database1.db; db_file_name=database1.
 2025-01-25 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770  
 2025-01-25 09:55:59:821 src/init_signals.c:052:init_signals:Set signal SIGTERM OK:pid:604770  
 2025-01-25 09:55:59:821 src/init_signals.c:055:init_signals:Signals initialized  
-2025-01-25 09:55:59:821 src/determine_running_dir.c:018:determine_running_dir:Current directory: /tmp  
 2025-01-25 09:55:59:821 src/db_determine_name.c:099:db_determine_name:Primary database file name: database1.db  
 2025-01-25 09:55:59:821 src/db_determine_name.c:105:db_determine_name:Primary database file path: database1.db  
 2025-01-25 09:55:59:821 src/db_determine_name.c:109:db_determine_name:DB name determined  

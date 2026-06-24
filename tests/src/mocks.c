@@ -1,13 +1,20 @@
 #include "mocks.h"
 #include <errno.h>
+#ifndef EVIL_EMPIRE_OS
+#include <fcntl.h>
+#include <stdarg.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 
 static bool mock_fread_enabled = false;
 static size_t mock_fread_calls = 0;
 static const char *mock_fread_target_suffix = NULL;
+#ifndef EVIL_EMPIRE_OS
+static int mock_fread_target_fd = -1;
 static FILE *mock_fread_target_stream = NULL;
 static bool mock_fread_error_seen = false;
+#endif
 static int mock_fread_errno = EIO;
 static bool mock_remove_enabled = false;
 static size_t mock_remove_calls = 0;
@@ -18,6 +25,7 @@ static size_t mock_access_calls = 0;
 static const char *mock_access_target_suffix = NULL;
 static int mock_access_errno = EIO;
 
+#ifndef EVIL_EMPIRE_OS
 /**
  * @brief Check whether a path is exactly a suffix or ends with it as a path component
  *
@@ -57,6 +65,7 @@ static bool mock_path_matches_suffix(
 
 	return strcmp(path + (path_len - suffix_len),suffix) == 0;
 }
+#endif
 
 /**
  * @brief Select the path suffix whose opened stream should receive a mocked fread error
@@ -86,10 +95,114 @@ void mocks_fread_reset(void)
 	mock_fread_enabled = false;
 	mock_fread_calls = 0;
 	mock_fread_target_suffix = NULL;
+#ifndef EVIL_EMPIRE_OS
+	mock_fread_target_fd = -1;
 	mock_fread_target_stream = NULL;
 	mock_fread_error_seen = false;
+#endif
 	mock_fread_errno = EIO;
 }
+
+#ifndef EVIL_EMPIRE_OS
+/**
+ * @brief Check whether openat() flags require the variadic mode argument
+ *
+ * @param[in] flags Flags passed to openat()
+ * @return true when the caller must provide the file mode argument
+ */
+static bool mock_open_flags_require_mode(const int flags)
+{
+	if((flags & O_CREAT) != 0)
+	{
+		return true;
+	}
+
+#ifdef O_TMPFILE
+	if((flags & O_TMPFILE) == O_TMPFILE)
+	{
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+int __real_openat(
+	int         directory_fd,
+	const char *path,
+	int         flags,
+	...);
+
+/**
+ * @brief Track the descriptor for the configured fread target opened through openat()
+ *
+ * @param[in] directory_fd Directory descriptor passed to openat()
+ * @param[in] path Path passed to openat()
+ * @param[in] flags Flags passed to openat()
+ * @return Real openat result
+ */
+int __wrap_openat(
+	int         directory_fd,
+	const char *path,
+	int         flags,
+	...)
+{
+	int file_descriptor = -1;
+
+	if(mock_open_flags_require_mode(flags) == true)
+	{
+		va_list arguments;
+		va_start(arguments,flags);
+		const mode_t mode = va_arg(arguments,mode_t);
+		va_end(arguments);
+
+		file_descriptor = __real_openat(directory_fd,path,flags,mode);
+
+	} else {
+		file_descriptor = __real_openat(directory_fd,path,flags);
+	}
+
+	if(file_descriptor >= 0 && mock_fread_target_suffix != NULL)
+	{
+		if(mock_path_matches_suffix(path,mock_fread_target_suffix))
+		{
+			mock_fread_target_fd = file_descriptor;
+		}
+	}
+
+	return file_descriptor;
+}
+
+FILE *__real_fdopen(
+	int         file_descriptor,
+	const char *mode);
+
+/**
+ * @brief Bind the tracked openat() descriptor to the stream later used by fread()
+ *
+ * @param[in] file_descriptor Descriptor passed to fdopen()
+ * @param[in] mode Mode passed to fdopen()
+ * @return Real fdopen result
+ */
+FILE *__wrap_fdopen(
+	int         file_descriptor,
+	const char *mode)
+{
+	FILE *stream = __real_fdopen(file_descriptor,mode);
+
+	if(file_descriptor == mock_fread_target_fd)
+	{
+		if(stream != NULL)
+		{
+			mock_fread_target_stream = stream;
+		}
+
+		mock_fread_target_fd = -1;
+	}
+
+	return stream;
+}
+#endif
 
 /**
  * @brief Return the number of fread calls intercepted by the mock failure path
@@ -213,6 +326,7 @@ void mocks_access_set_errno(int err)
 	mock_access_errno = err;
 }
 
+#ifndef EVIL_EMPIRE_OS
 FILE *__real_fopen(
 	const char *path,
 	const char *mode);
@@ -351,3 +465,4 @@ int __wrap_access(
 
 	return __real_access(path,mode);
 }
+#endif

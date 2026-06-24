@@ -81,8 +81,7 @@
  * All the macros are here
  */
 #define slog_show(level,respect_quiet,first_iteration,summary,...) \
-	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration), \
-	&((summary)->at_least_one_file_was_shown),((summary)->stats_only_pass),__VA_ARGS__)
+	slog_show_impl(__FILE__,__func__,__LINE__,(level),(respect_quiet),(first_iteration),(summary),__VA_ARGS__)
 
 /**
  * @brief Get a pointer to a field in the global @ref Config instance.
@@ -293,10 +292,6 @@ typedef struct {
 // The main Configuration
 typedef struct {
 
-	/// Absolute path name of the working directory stored as a managed string descriptor
-	/// A directory where the program was executed
-	memory running_dir;
-
 	/// Application start timestamp in monotonic nanoseconds.
 	/// Used for reporting total process runtime.
 	long long int app_start_time_ns;
@@ -407,8 +402,7 @@ typedef struct {
 	/// integrity verification
 	char db_check_level;
 
-	/// Flag that reflects the presence of any changes
-	/// since the last research
+	/// True when the primary database changed during the current scan
 	bool db_primary_file_modified;
 
 	/// Recursion depth limit. The depth of the traversal,
@@ -520,6 +514,10 @@ typedef struct {
 	 * This is an output marker, not a counter of file changes.
 	 */
 	bool at_least_one_file_was_shown;
+
+	/// Root path currently being traversed.
+	/// Used by slog_show() to include root context in traversal-start output
+	const memory *root;
 
 	/// Total elapsed hashing time in nanoseconds for this traversal pass.
 	/// Accumulated per-file in sha512sum() from read-loop start to finish.
@@ -642,8 +640,8 @@ void show_statistics(const TraversalSummary *);
 void show_elapsed(const TraversalSummary *);
 
 Return sha512sum(
-	const char *,
-	const size_t,
+	const int,
+	const memory *,
 	memory *,
 	TraversalSummary *,
 	File *);
@@ -660,20 +658,13 @@ Return add_string_to_array(
 
 Return remove_trailing_slash(memory *);
 
-Return extract_relative_path(
+Return path_build_relative(
 	memory *,
-	const char *,
-	size_t,
-	const memory *);
+	const FTSENT *);
 
 LockChecksum match_checksum_lock_pattern(const memory *);
 
 Return path_check_locked_checksum(const memory *);
-
-Return path_absolute_from_relative(
-	char **,
-	const char *,
-	const size_t);
 
 /**
  * @brief Result of checking accessibility for a given path
@@ -695,17 +686,16 @@ typedef enum FileAccessStatus : unsigned int
 FileAccessStatus file_access_status(const int);
 
 FileAccessStatus directory_open(
-	const char *,
+	const memory *,
 	int *);
 
-FileAccessStatus file_check_access_absolute(
-	const char *,
-	const size_t,
-	const int);
+FileAccessStatus directory_open_root(
+	const memory *,
+	int *);
 
 FileAccessStatus file_check_access(
 	const int,
-	const char *,
+	const memory *,
 	const int);
 
 Return show_locked_checksum_unavailable_violation(
@@ -715,8 +705,6 @@ Return show_locked_checksum_unavailable_violation(
 	TraversalSummary *);
 
 void signal_notify_quit_handler(int);
-
-Return determine_running_dir(void);
 
 void init_config(void);
 
@@ -829,8 +817,7 @@ void slog_show_impl(
 	const unsigned int,
 	const bool,
 	bool *,
-	bool *,
-	const bool,
+	TraversalSummary *,
 	const char *,
 	...);
 
@@ -869,6 +856,7 @@ Return show_remembered_messages(void);
 Return directory_access_verify(
 	FTS *,
 	FTSENT *,
+	const int,
 	const memory *,
 	bool *,
 	TraversalSummary *);

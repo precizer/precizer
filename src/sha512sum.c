@@ -1,19 +1,23 @@
 #include "precizer.h"
 #include <errno.h>
+#include <fcntl.h>
 
 /**
  * @brief Read a file and update its SHA512 state when hashing is enabled
  *
- * Opens @p path directly and falls back to an absolute path based on
- * `config->running_dir` when needed. When normal hashing is enabled, or when
- * dry-run uses `--dry-run=with-checksums`, the function reads file data
- * starting from @p file->checksum_offset, updates @p file->mdContext, counts
- * hashed bytes in @p summary, and finalizes @p file->sha512 after an
+ * Opens @p relative_path from @p root_directory_fd. When normal hashing is
+ * enabled, or when dry-run uses `--dry-run=with-checksums`, the function reads
+ * file data starting from @p file->checksum_offset, updates @p file->mdContext,
+ * counts hashed bytes in @p summary, and finalizes @p file->sha512 after an
  * uninterrupted pass. In dry-run mode without checksum calculation, the file is
  * opened and seek-checked but the checksum state is not advanced
  *
- * @param path File path, relative or absolute
- * @param path_size Length of @p path without the terminating null byte
+ * File opening problems are stored in @p file as read errors and do not turn
+ * into a function failure. Technical problems that prevent safe hashing still
+ * return FAILURE
+ *
+ * @param root_directory_fd Open traversal root descriptor used as the path base
+ * @param relative_path File path relative to @p root_directory_fd
  * @param file_buffer Read buffer descriptor
  * @param summary Traversal counters updated with hashed byte count and hashing time
  * @param file Per-file state object used as input and output. checksum_offset is the
@@ -25,8 +29,8 @@
  * @return SUCCESS when the file was handled cleanly, otherwise FAILURE
  */
 Return sha512sum(
-	const char       *path,
-	const size_t     path_size,
+	const int        root_directory_fd,
+	const memory     *relative_path,
 	memory           *file_buffer,
 	TraversalSummary *summary,
 	File             *file)
@@ -41,56 +45,36 @@ Return sha512sum(
 		provide(FAILURE);
 	}
 
-	char *absolute_path = NULL;
+	const char *runtime_relative_path = m_text(relative_path);
 
-	FILE *fileptr = fopen(path,"rb");
+	const int file_descriptor = openat(root_directory_fd,runtime_relative_path,O_RDONLY | O_CLOEXEC);
+
+	if(file_descriptor < 0)
+	{
+		// Flag the read failure
+		file->read_error = true;
+
+		// Preserve errno before returning
+		file->read_errno = errno;
+
+		provide(status);
+	}
+
+	FILE *fileptr = fdopen(file_descriptor,"rb");
 
 	if(fileptr == NULL)
 	{
-		// No read permission
-		if(errno == EACCES)
+		const int fdopen_errno = errno;
+
+		if(close(file_descriptor) != 0)
 		{
-			// Flag the read failure
-			file->read_error = true;
-
-			// Preserve errno before returning
-			file->read_errno = errno;
-
-			provide(status);
+			slog(ERROR,"Error closing file descriptor for %s\n",runtime_relative_path);
 		}
 
-		status = path_absolute_from_relative(&absolute_path,path,path_size);
+		file->read_error = true;
+		file->read_errno = fdopen_errno;
 
-		if(absolute_path == NULL || (TRIUMPH & status) == 0)
-		{
-			slog(ERROR,"Can't constructs an absolute path from the base directory %s and a relative path %s\n",confstr(running_dir),path);
-
-			if(absolute_path != NULL)
-			{
-				free(absolute_path);
-			}
-			provide(status);
-		}
-
-		fileptr = fopen(absolute_path,"rb");
-
-		if(fileptr == NULL)
-		{
-			// No read permission
-			if(errno == EACCES)
-			{
-				file->read_error = true;
-
-				file->read_errno = errno;
-
-				free(absolute_path);
-				provide(status);
-			}
-
-			slog(ERROR,"Can open the file using neither relative %s nor absolute %s path with errno: %d\n",path,absolute_path,errno);
-			free(absolute_path);
-			provide(FAILURE);
-		}
+		provide(status);
 	}
 
 	// Move the file pointer checksum_offset bytes from the beginning of the file
@@ -101,7 +85,6 @@ Return sha512sum(
 		 * Doesn't need to return FAILURE status.
 		 */
 		file->wrong_file_type = true;
-		free(absolute_path);
 		fclose(fileptr);
 		provide(status);
 	}
@@ -128,7 +111,6 @@ Return sha512sum(
 		if(sha512_init(&file->mdContext) != CRYPT_OK)
 		{
 			slog(ERROR,"SHA512 initialization failed\n");
-			free(absolute_path);
 			fclose(fileptr);
 			provide(FAILURE);
 		}
@@ -141,7 +123,7 @@ Return sha512sum(
 	 * without selecting a new random stop point.
 	 */
 	if(file->checksum_offset == 0
-	        && testitall_is_huge_interruption_target(path) == true
+	        && testitall_is_huge_interruption_target(runtime_relative_path) == true
 	        && file->stat.st_size > 0)
 	{
 		random_stop_limit = (uint64_t)file->stat.st_size;
@@ -290,10 +272,8 @@ Return sha512sum(
 
 	if(fclose(fileptr) != 0)
 	{
-		slog(ERROR,"Error closing file %s\n",path);
+		slog(ERROR,"Error closing file %s\n",runtime_relative_path);
 	}
-
-	free(absolute_path);
 
 	if(SUCCESS == status
 	        && perform_file_hashing == true

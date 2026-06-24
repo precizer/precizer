@@ -15,7 +15,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: lock_s16\.db
 TESTING:Primary database file path: lock_s16\.db
 TESTING:Finished determining database name
@@ -38,7 +37,7 @@ TESTING:The brand new database has just been created. No need to verify the path
 TESTING:File system traversal initiated to calculate file count and storage usage
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB lock_s16\.db:(?:\x1B\[[0-9;]*m)*
 new 1/AAA/BCB/CCC/a\.txt
 new 1/AAA/ZAW/A/b/c/a_file\.txt

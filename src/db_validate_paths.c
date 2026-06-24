@@ -5,9 +5,12 @@
  *
  * @details Skips validation in compare mode. When the primary database has just
  * been created, no stored-prefix comparison is needed. Otherwise the function
- * compares the normalized roots in `config->roots` with prefixes stored in the
- * database. Prefixes missing from the current root set are recorded for later
- * cleanup when the user explicitly allows it
+ * compares the root strings in `config->roots` with prefixes stored in the
+ * database. The comparison is textual on purpose: `another_path`,
+ * `./another_path`, and `/absolute/path/another_path` are different database
+ * roots because the user chose different root spellings. Prefixes missing from
+ * the current root set are recorded for later cleanup when the user explicitly
+ * allows it
  *
  * If mismatches are found and `--force` is not enabled, the function returns
  * `WARNING` so the caller can stop before replacing stored path metadata. When
@@ -52,7 +55,7 @@ Return db_validate_paths(void)
 	int rc = 0;
 
 	/* The paths are assumed to match until SQLite returns at least one stored
-	   prefix that is missing from the current normalized roots */
+	   prefix that is missing from the current command-line roots */
 	bool paths_are_equal = true;
 
 	/* The SELECT text is assembled dynamically because the number of roots is not
@@ -74,7 +77,7 @@ Return db_validate_paths(void)
 
 		bool has_previous_root = false;
 
-		/* Add one SQL placeholder for each normalized traversal root. Commas are
+		/* Add one SQL placeholder for each configured traversal root. Commas are
 		   inserted only between placeholders, which keeps the generated SQL valid
 		   for any number of roots */
 		m_string_array_foreach(conf(roots),root)
@@ -335,9 +338,9 @@ Return db_validate_paths(void)
 					{
 						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",confstr(db_file_name));
 
-						/* Show the normalized traversal roots that will replace
-						   stored prefixes. These are the paths the program will
-						   treat as the database scope from now on */
+						/* Show the configured traversal roots that will replace
+						   stored prefixes. These are the root strings the program
+						   will treat as the database scope from now on */
 						m_string_array_foreach(conf(roots),root)
 						{
 							slog(EVERY|UNDECOR,"%s\n",m_text(root));

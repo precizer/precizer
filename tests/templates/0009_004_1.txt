@@ -15,7 +15,6 @@ TESTING:Set signal SIGUSR2 OK:pid:\d+
 TESTING:Set signal SIGINT OK:pid:\d+
 TESTING:Set signal SIGTERM OK:pid:\d+
 TESTING:Signals initialized
-TESTING:Current directory: [^\r\n]*
 TESTING:Primary database file name: database0009_4\.db
 TESTING:Primary database file path: database0009_4\.db
 TESTING:Finished determining database name
@@ -36,7 +35,7 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
-TESTING:File traversal started
+TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009_4\.db:(?:\x1B\[[0-9;]*m)*
 new alpha_m0n9k2_zz\.txt
 new hold_a1r9v-0pq\.bak
