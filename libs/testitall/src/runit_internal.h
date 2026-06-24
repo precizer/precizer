@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RUNIT_INTERNAL_H
+#define RUNIT_INTERNAL_H
 
 #include "testitall.h"
 
@@ -119,3 +120,5 @@ Return runit_wait_child(
 	pid_t,
 	int *,
 	const char *);
+
+#endif /* RUNIT_INTERNAL_H */

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef XDIFF_H
+#define XDIFF_H
+
 #define _GNU_SOURCE
 #include "rational.h"
 #include <fcntl.h>
@@ -330,3 +332,5 @@ void *wrap_realloc(
 	void *,
 	void *,
 	unsigned int);
+
+#endif /* XDIFF_H */

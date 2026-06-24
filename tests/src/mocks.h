@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _TEST_MOCKS_H
+#define _TEST_MOCKS_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -32,3 +33,5 @@ void mocks_access_set_errno(int);
 void mocks_access_reset(void);
 
 size_t mocks_access_call_count(void);
+
+#endif /* _TEST_MOCKS_H */

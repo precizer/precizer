@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TESTITALL_H
+#define TESTITALL_H
 
 // This definition is used to disable specific functions in the application being tested,
 // such as the main() function.
@@ -451,3 +452,5 @@ Return runit_background(
 Return trim_trailing_eol(memory *);
 
 extern bool show_subheader;
+
+#endif /* TESTITALL_H */

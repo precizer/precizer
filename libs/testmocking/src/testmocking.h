@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TESTMOCKING_H
+#define TESTMOCKING_H
 
 #include <stddef.h>
 
@@ -42,3 +43,5 @@ void testmocking_sysconf_return_next(
 void testmocking_sysconf_disable(void);
 
 long testmocking_sysconf(int);
+
+#endif /* TESTMOCKING_H */

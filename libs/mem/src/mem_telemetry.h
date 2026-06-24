@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MEM_TELEMETRY_H
+#define MEM_TELEMETRY_H
 
 #include <stddef.h>
 
@@ -351,3 +352,5 @@ void telemetry_expected_arithmetic_guard_failures(void);
  * and in red when they did not, so a leftover allocation or payload imbalance is immediately visible
  */
 void telemetry_summary(void);
+
+#endif /* MEM_TELEMETRY_H */
