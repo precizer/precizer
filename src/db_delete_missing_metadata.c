@@ -146,7 +146,9 @@ static Return db_preserve_locked_ignored_record(
  *
  * A row can be removed when the file is no longer present on disk, when it is
  * inaccessible or its access check fails and `--db-drop-inaccessible` is active,
- * or when the path is ignored and `--db-drop-ignored` is enabled
+ * or when the path is ignored and `--db-drop-ignored` is enabled. Ignored rows
+ * are otherwise kept outside missing-file cleanup, except checksum-locked rows
+ * that must still report unavailable protected files
  *
  * If the root cannot be opened for any reason, its cleanup is skipped without
  * changing file rows or returning an error. This prevents a temporary root
@@ -288,6 +290,9 @@ Return db_delete_missing_metadata(void)
 
 		const unsigned char *db_relative_path = sqlite3_column_text(select_stmt,1);
 
+		// Marks paths excluded by the current --ignore/--include scope
+		bool ignored = false;
+
 		// Marks deletions triggered by --db-drop-ignored
 		bool drop_ignored = false;
 
@@ -325,18 +330,61 @@ Return db_delete_missing_metadata(void)
 		const char *runtime_relative_path = m_text(relative_path);
 
 		/*
-		 * Remove from the database mention of
-		 * files that matches the regular expression
-		 * passed through the ignore option(s)
-		 *
+		 * Apply the current include and ignore scope to database rows before
+		 * checking filesystem availability. Ignored rows stay outside normal
+		 * missing-file cleanup unless --db-drop-ignored explicitly allows removing them
 		 */
-		if(config->db_drop_ignored == true)
+		if(config->ignore != NULL)
 		{
-			status = match_include_ignore(relative_path,NULL,&drop_ignored);
+			status = match_include_ignore(relative_path,NULL,&ignored);
 
 			if(SUCCESS != status)
 			{
 				break;
+			}
+		}
+
+		if(ignored == true)
+		{
+			if(config->db_drop_ignored == true)
+			{
+				drop_ignored = true;
+
+			} else {
+
+				/*
+				 * YES means the ignored row is checksum-locked and still needs
+				 * an availability check. NO means normal ignore protection keeps
+				 * the row without touching the filesystem
+				 */
+				if(ask(path_check_locked_checksum(relative_path)))
+				{
+					FileAccessStatus access_status = file_check_access(root_directory_fd,relative_path,R_OK);
+
+					if(access_status != FILE_ACCESS_ALLOWED)
+					{
+						/*
+						 * YES means the unavailable ignored row was reported as a checksum-lock violation.
+						 * NO is not expected after the positive lock-check above, but keeps status handling explicit
+						 */
+						if(ask(db_check_locked_unavailable_violation(relative_path,access_status)))
+						{
+							locked_unavailable_violation_detected = true;
+						}
+
+						if(SUCCESS != status)
+						{
+							break;
+						}
+					}
+				}
+
+				if(SUCCESS != status)
+				{
+					break;
+				}
+
+				continue;
 			}
 		}
 
