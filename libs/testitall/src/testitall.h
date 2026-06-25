@@ -426,15 +426,21 @@ Return runit(
  * @brief Run precizer in background and complete signal-driven scenario.
  *
  * The helper starts the process, configures delay control environment variables
- * (`TESTITALL_SIGNAL_WAIT_MS` and `TESTITALL_SIGNAL_WAIT_POINT`), waits
- * `min_delay_ms`, attempts to send `signal_number` to the child, waits for
- * completion, and finalizes output capture and exit-code validation.
+ * (`TESTITALL_SIGNAL_WAIT_MS`, `TESTITALL_SIGNAL_WAIT_POINT`, and optionally
+ * `TESTITALL_SIGNAL_WAIT_READY_FD`), sends `signal_number` to the child, waits
+ * for completion, and finalizes output capture and exit-code validation.
+ *
+ * When `min_delay_ms` is greater than zero, the helper waits that long before
+ * signal delivery. When `min_delay_ms` is zero, the helper waits until the
+ * child reports that the configured wait point was reached, then sends the
+ * signal immediately.
  *
  * If the child exits before signal delivery, the helper returns failure.
  *
- * `max_delay_ms` is used both as:
+ * `max_delay_ms` is used as:
  * - value for `TESTITALL_SIGNAL_WAIT_MS`
  * - watchdog timeout (SIGKILL after timeout if child is still alive)
+ * - wait-point notification timeout when `min_delay_ms` is zero
  *
  * @note Supports both EXTERNAL_CALL and INTERNAL_TEST modes.
  */

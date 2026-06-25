@@ -1,7 +1,139 @@
 #include "precizer.h"
 
 #ifdef TESTITALL_TEST_HOOKS
+#include <errno.h>
+#include <limits.h>
+#include <stdint.h>
 #include <utime.h>
+
+static const char *const signal_wait_ready_fd_env_name = "TESTITALL_SIGNAL_WAIT_READY_FD";
+
+/**
+ * @brief Notify the background test parent that the configured wait point was reached
+ *
+ * The notification descriptor is supplied by runit_background() only for
+ * zero-min-delay scenarios. The helper closes the descriptor after one
+ * notification so repeated visits to the same wait point do not emit another
+ * readiness byte
+ */
+static void signal_wait_notify_ready(void)
+{
+	const char *ready_fd_text = getenv(signal_wait_ready_fd_env_name);
+
+	if(NULL == ready_fd_text || '\0' == ready_fd_text[0])
+	{
+		return;
+	}
+
+	errno = 0;
+	char *end_ptr = NULL;
+	unsigned long long parsed_ready_fd = strtoull(ready_fd_text,&end_ptr,10);
+
+	if(errno != 0
+	        || end_ptr == ready_fd_text
+	        || '\0' != *end_ptr
+	        || parsed_ready_fd > (unsigned long long)INT_MAX)
+	{
+		return;
+	}
+
+	const int ready_fd = (int)parsed_ready_fd;
+	const char notification = 'R';
+	ssize_t bytes_written = 0;
+
+	do {
+		bytes_written = write(ready_fd,&notification,sizeof(notification));
+	} while(bytes_written == -1 && errno == EINTR);
+
+	(void)close(ready_fd);
+	(void)unsetenv(signal_wait_ready_fd_env_name);
+}
+
+/**
+ * @brief Pause a test run at a configured wait point
+ *
+ * Used by signal-driven tests to delay a known execution point. The wait point
+ * and duration are selected with `TESTITALL_SIGNAL_WAIT_POINT` and
+ * `TESTITALL_SIGNAL_WAIT_MS`. The delay ends early when `global_interrupt_flag`
+ * is set. When `TESTITALL_SIGNAL_WAIT_READY_FD` is present, the function first
+ * notifies runit_background() that the configured wait point was reached
+ *
+ * @param point_id Wait point identifier reached by the caller
+ */
+void signal_wait_at_point(unsigned int point_id)
+{
+	const char *configured_point = getenv("TESTITALL_SIGNAL_WAIT_POINT");
+
+	if(NULL == configured_point || '\0' == configured_point[0])
+	{
+		return;
+	}
+
+	errno = 0;
+	char *point_end_ptr = NULL;
+	unsigned long long parsed_point_id = strtoull(configured_point,&point_end_ptr,10);
+
+	if(errno != 0 || point_end_ptr == configured_point || '\0' != *point_end_ptr)
+	{
+		return;
+	}
+
+	if(parsed_point_id != (unsigned long long)point_id)
+	{
+		return;
+	}
+
+	signal_wait_notify_ready();
+
+	const char *timeout_text = getenv("TESTITALL_SIGNAL_WAIT_MS");
+
+	if(NULL == timeout_text || '\0' == timeout_text[0])
+	{
+		return;
+	}
+
+	errno = 0;
+	char *end_ptr = NULL;
+	unsigned long long parsed_timeout_ms = strtoull(timeout_text,&end_ptr,10);
+
+	if(errno != 0 || end_ptr == timeout_text || '\0' != *end_ptr || parsed_timeout_ms == 0ULL)
+	{
+		return;
+	}
+
+	uint64_t remaining_timeout_ms = (uint64_t)parsed_timeout_ms;
+
+	while(remaining_timeout_ms > 0U)
+	{
+		/* Allow tests to release the delay as soon as the signal handler sets the flag. */
+		if(atomic_load(&global_interrupt_flag) == true)
+		{
+			return;
+		}
+
+		uint64_t chunk_ms = remaining_timeout_ms;
+
+		if(chunk_ms > 10U)
+		{
+			chunk_ms = 10U;
+		}
+
+		struct timespec delay = {
+			.tv_sec = 0,
+			.tv_nsec = (long)(chunk_ms * 1000000ULL)
+		};
+
+		while(nanosleep(&delay,&delay) == -1 && errno == EINTR)
+		{
+			if(atomic_load(&global_interrupt_flag) == true)
+			{
+				return;
+			}
+		}
+
+		remaining_timeout_ms -= chunk_ms;
+	}
+}
 
 /**
  * @brief Check whether a path matches a configured test suffix

@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <inttypes.h>
+#include <poll.h>
 #include <signal.h>
 #include <time.h>
 
@@ -11,18 +12,32 @@
  * @brief Snapshot of wait-control environment variables.
  *
  * Stores previous values of TESTITALL_SIGNAL_WAIT_MS and
- * TESTITALL_SIGNAL_WAIT_POINT so they can be restored after the run.
+ * TESTITALL_SIGNAL_WAIT_POINT, plus the optional synchronization pipe
+ * descriptor, so they can be restored after the run.
  */
 enum runit_wait_env_key
 {
 	RUNIT_WAIT_ENV_MS = 0,
 	RUNIT_WAIT_ENV_POINT,
+	RUNIT_WAIT_ENV_READY_FD,
 	RUNIT_WAIT_ENV_COUNT
 };
 
 static const char *const runit_wait_env_names[RUNIT_WAIT_ENV_COUNT] = {
 	"TESTITALL_SIGNAL_WAIT_MS",
-	"TESTITALL_SIGNAL_WAIT_POINT"
+	"TESTITALL_SIGNAL_WAIT_POINT",
+	"TESTITALL_SIGNAL_WAIT_READY_FD"
+};
+
+enum
+{
+	RUNIT_SIGNAL_SYNC_DISABLED_FD = -1
+};
+
+struct runit_signal_sync {
+	int read_fd;
+	int write_fd;
+	bool enabled;
 };
 
 struct runit_wait_env {
@@ -54,14 +69,20 @@ static void runit_wait_env_cleanup(struct runit_wait_env *state)
 static uint64_t runit_wait_env_target_value(
 	const enum runit_wait_env_key key,
 	uint64_t                      max_delay_ms,
-	unsigned int                  wait_point)
+	unsigned int                  wait_point,
+	int                           ready_fd)
 {
 	if(RUNIT_WAIT_ENV_MS == key)
 	{
 		return(max_delay_ms);
 	}
 
-	return((uint64_t)wait_point);
+	if(RUNIT_WAIT_ENV_POINT == key)
+	{
+		return((uint64_t)wait_point);
+	}
+
+	return((uint64_t)ready_fd);
 }
 
 /**
@@ -186,6 +207,30 @@ static Return runit_wait_env_set_numeric(
 }
 
 /**
+ * @brief Unset one wait-control environment variable
+ *
+ * Used to prevent stale externally supplied variables from affecting a
+ * background run when that specific wait feature is disabled
+ *
+ * @param[in] name Environment variable name to unset
+ * @return SUCCESS when the variable was unset, otherwise FAILURE
+ */
+static Return runit_wait_env_unset_one(const char *name)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	if(0 != unsetenv(name))
+	{
+		echo(STDERR,"Failed to unset %s (errno %d)",name,errno);
+		status = FAILURE;
+	}
+
+	deliver(status);
+}
+
+/**
  * @brief Restore one saved environment variable value.
  */
 static Return runit_wait_env_restore_one(
@@ -225,6 +270,7 @@ static Return runit_wait_env_restore_one(
 static Return runit_wait_env_set(
 	uint64_t              max_delay_ms,
 	unsigned int          wait_point,
+	int                   ready_fd,
 	struct runit_wait_env *state)
 {
 	/* Status returned by this function through provide()
@@ -246,12 +292,21 @@ static Return runit_wait_env_set(
 
 	for(size_t i = 0U; i < RUNIT_WAIT_ENV_COUNT; i++)
 	{
-		const uint64_t target_value = runit_wait_env_target_value(
-			(enum runit_wait_env_key)i,
-			max_delay_ms,
-			wait_point);
+		const enum runit_wait_env_key key = (enum runit_wait_env_key)i;
 
-		run(runit_wait_env_set_numeric(runit_wait_env_names[i],target_value));
+		if(RUNIT_WAIT_ENV_READY_FD == key && ready_fd < 0)
+		{
+			run(runit_wait_env_unset_one(runit_wait_env_names[i]));
+
+		} else {
+			const uint64_t target_value = runit_wait_env_target_value(
+				key,
+				max_delay_ms,
+				wait_point,
+				ready_fd);
+
+			run(runit_wait_env_set_numeric(runit_wait_env_names[i],target_value));
+		}
 	}
 
 	deliver(status);
@@ -278,12 +333,266 @@ static Return runit_wait_env_restore(const struct runit_wait_env *state)
 }
 
 /**
+ * @brief Initialize signal synchronization pipe state
+ *
+ * @param[out] signal_sync State to reset
+ */
+static void runit_signal_sync_init(struct runit_signal_sync *signal_sync)
+{
+	signal_sync->read_fd = RUNIT_SIGNAL_SYNC_DISABLED_FD;
+	signal_sync->write_fd = RUNIT_SIGNAL_SYNC_DISABLED_FD;
+	signal_sync->enabled = false;
+}
+
+/**
+ * @brief Close one synchronization pipe descriptor
+ *
+ * @param[in,out] fd Descriptor to close and mark as disabled
+ */
+static void runit_signal_sync_close_fd(int *fd)
+{
+	if(*fd >= 0)
+	{
+		(void)close(*fd);
+		*fd = RUNIT_SIGNAL_SYNC_DISABLED_FD;
+	}
+}
+
+/**
+ * @brief Close all descriptors owned by signal synchronization state
+ *
+ * @param[in,out] signal_sync State whose descriptors must be closed
+ */
+static void runit_signal_sync_cleanup(struct runit_signal_sync *signal_sync)
+{
+	runit_signal_sync_close_fd(&signal_sync->read_fd);
+	runit_signal_sync_close_fd(&signal_sync->write_fd);
+	signal_sync->enabled = false;
+}
+
+/**
+ * @brief Create a pipe used to detect when the target reaches a wait point
+ *
+ * The pipe is created only for zero-min-delay runs. Its write descriptor is
+ * inherited by the target process through the environment, while the parent
+ * waits on the read descriptor before sending the requested signal
+ *
+ * @param[in,out] signal_sync State that receives the pipe descriptors
+ * @param[in] enabled Whether synchronization is required for this run
+ * @return SUCCESS when synchronization is disabled or the pipe was created
+ */
+static Return runit_signal_sync_prepare(
+	struct runit_signal_sync *signal_sync,
+	bool                     enabled)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	if(enabled == false)
+	{
+		deliver(status);
+	}
+
+	int pipe_fds[2] = {
+		RUNIT_SIGNAL_SYNC_DISABLED_FD,
+		RUNIT_SIGNAL_SYNC_DISABLED_FD
+	};
+
+	if(0 != pipe(pipe_fds))
+	{
+		echo(STDERR,"Failed to create signal wait pipe (errno %d)",errno);
+		status = FAILURE;
+
+	} else {
+		signal_sync->read_fd = pipe_fds[0];
+		signal_sync->write_fd = pipe_fds[1];
+		signal_sync->enabled = true;
+	}
+
+	deliver(status);
+}
+
+/**
+ * @brief Poll a child process before attempting signal delivery
+ *
+ * @param[in] app_pid Child process PID
+ * @param[out] wait_status Receives child status when the child already exited
+ * @param[out] child_waited Set to true when this helper consumes the child
+ * @return SUCCESS when the child is still running, otherwise FAILURE
+ */
+static Return runit_poll_background_process_before_signal(
+	pid_t app_pid,
+	int   *wait_status,
+	bool  *child_waited)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	pid_t poll_pid = (pid_t)-1;
+
+	do {
+		poll_pid = waitpid(app_pid,wait_status,WNOHANG);
+	} while(poll_pid == (pid_t)-1 && errno == EINTR);
+
+	if(poll_pid == app_pid)
+	{
+		*child_waited = true;
+		echo(STDERR,"Background process exited before signal delivery");
+		status = FAILURE;
+
+	} else if(poll_pid == (pid_t)-1){
+		echo(STDERR,
+			"Failed to poll background PID %d before signal (errno %d)",
+			(int)app_pid,
+			errno);
+		status = FAILURE;
+	}
+
+	deliver(status);
+}
+
+/**
+ * @brief Wait until the child reports that the configured wait point was reached
+ *
+ * The wait uses bounded poll() intervals so child exit is detected promptly and
+ * the same @p timeout_ms limit can report a missing wait-point notification
+ *
+ * @param[in] ready_fd Read descriptor of the synchronization pipe
+ * @param[in] app_pid Child process PID
+ * @param[in] timeout_ms Maximum time to wait for the notification
+ * @param[out] wait_status Receives child status when the child already exited
+ * @param[out] child_waited Set to true when this helper consumes the child
+ * @return SUCCESS after a notification byte is read, otherwise FAILURE
+ */
+static Return runit_wait_for_signal_ready(
+	int      ready_fd,
+	pid_t    app_pid,
+	uint64_t timeout_ms,
+	int      *wait_status,
+	bool     *child_waited)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	uint64_t remaining_timeout_ms = timeout_ms;
+
+	while(SUCCESS == status && remaining_timeout_ms > 0U)
+	{
+		run(runit_poll_background_process_before_signal(app_pid,wait_status,child_waited));
+
+		if(SUCCESS != status)
+		{
+			break;
+		}
+
+		uint64_t chunk_ms = remaining_timeout_ms;
+
+		if(chunk_ms > 25U)
+		{
+			chunk_ms = 25U;
+		}
+
+		struct pollfd ready_pipe = {
+			.fd = ready_fd,
+			.events = POLLIN,
+			.revents = 0
+		};
+
+		int poll_result = 0;
+
+		do {
+			poll_result = poll(&ready_pipe,1U,(int)chunk_ms);
+		} while(poll_result == -1 && errno == EINTR);
+
+		if(poll_result == -1)
+		{
+			echo(STDERR,"Failed to poll signal wait pipe (errno %d)",errno);
+			status = FAILURE;
+
+		} else if(poll_result > 0){
+			if((ready_pipe.revents & POLLIN) != 0)
+			{
+				char notification = '\0';
+				ssize_t bytes_read = 0;
+
+				do {
+					bytes_read = read(ready_fd,&notification,sizeof(notification));
+				} while(bytes_read == -1 && errno == EINTR);
+
+				if(bytes_read == (ssize_t)sizeof(notification))
+				{
+					deliver(status);
+				}
+
+				if(bytes_read == 0)
+				{
+					echo(STDERR,"Signal wait pipe closed before wait-point notification");
+
+				} else {
+					echo(STDERR,"Failed to read signal wait pipe (errno %d)",errno);
+				}
+
+				status = FAILURE;
+
+			} else if((ready_pipe.revents & (POLLHUP | POLLERR | POLLNVAL)) != 0){
+				echo(STDERR,"Signal wait pipe failed before wait-point notification");
+				status = FAILURE;
+			}
+		}
+
+		remaining_timeout_ms -= chunk_ms;
+	}
+
+	if(SUCCESS == status)
+	{
+		echo(STDERR,"Timed out waiting for background wait-point notification");
+		status = FAILURE;
+	}
+
+	deliver(status);
+}
+
+/**
+ * @brief Send the requested signal to the background child process
+ *
+ * @param[in] app_pid Child process PID
+ * @param[in] signal_number Signal number to send
+ * @return SUCCESS when kill() reports successful delivery, otherwise FAILURE
+ */
+static Return runit_send_background_signal(
+	pid_t app_pid,
+	int   signal_number)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	errno = 0;
+
+	if(0 != kill(app_pid,signal_number))
+	{
+		echo(STDERR,
+			"Failed to send signal %d to background PID %d (errno %d)",
+			signal_number,
+			(int)app_pid,
+			errno);
+		status = FAILURE;
+	}
+
+	deliver(status);
+}
+
+/**
  * @brief Run precizer in background and complete signal-driven scenario.
  *
  * The function starts a child process, configures wait-control environment
- * variables, waits for @p min_delay_ms, attempts to send @p signal_number to
- * the child, and then waits for completion while finalizing stdout/stderr
- * capture.
+ * variables, and sends @p signal_number to the child. When @p min_delay_ms is
+ * greater than zero, delivery happens after that delay. When @p min_delay_ms is
+ * zero, delivery happens immediately after the child reports that the configured
+ * wait point was reached. The function then waits for completion while
+ * finalizing stdout/stderr capture.
  *
  * If the child exits before signal delivery, the function reports failure.
  *
@@ -294,15 +603,15 @@ static Return runit_wait_env_restore(const struct runit_wait_env *state)
  * and exist to remove code duplication.
  */
 Return runit_background(
-	const char   *arguments,
-	memory       *stdout_result,
-	memory       *stderr_result,
-	const int    expected_return_code,
+	const char     *arguments,
+	memory         *stdout_result,
+	memory         *stderr_result,
+	const int      expected_return_code,
 	CAPTURE_POLICY buffer_policy,
-	uint64_t     min_delay_ms,
-	uint64_t     max_delay_ms,
-	int          signal_number,
-	unsigned int wait_point)
+	uint64_t       min_delay_ms,
+	uint64_t       max_delay_ms,
+	int            signal_number,
+	unsigned int   wait_point)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -327,6 +636,11 @@ Return runit_background(
 
 	struct runit_wait_env wait_environment;
 	runit_wait_env_init(&wait_environment);
+
+	struct runit_signal_sync signal_sync;
+	runit_signal_sync_init(&signal_sync);
+
+	const bool wait_for_ready_point = (min_delay_ms == 0U);
 
 	call(m_del(STDOUT));
 	call(m_del(STDERR));
@@ -365,10 +679,13 @@ Return runit_background(
 		expected_return_code,
 		buffer_policy));
 
+	run(runit_signal_sync_prepare(&signal_sync,wait_for_ready_point));
+
 	/* max_delay_ms also defines how long in-app wait helpers may pause. */
 	run(runit_wait_env_set(
 		max_delay_ms,
 		wait_point,
+		signal_sync.write_fd,
 		&wait_environment));
 
 	if(SUCCESS == status)
@@ -390,6 +707,8 @@ Return runit_background(
 			status = FAILURE;
 
 		} else if(0 == app_pid){
+			runit_signal_sync_close_fd(&signal_sync.read_fd);
+
 			if(chdir(runit_call_data.tmpdir) != 0)
 			{
 				_exit(127);
@@ -411,6 +730,7 @@ Return runit_background(
 
 			if(watchdog_pid == 0)
 			{
+				runit_signal_sync_close_fd(&signal_sync.write_fd);
 				run_watchdog(protected_pid,max_delay_ms,25U);
 			}
 
@@ -427,6 +747,7 @@ Return runit_background(
 
 		} else {
 			child_started = true;
+			runit_signal_sync_close_fd(&signal_sync.write_fd);
 			/* Parent keeps paths only; capture fds are no longer needed in this process. */
 			runit_capture_close_fds(&capture);
 		}
@@ -434,41 +755,28 @@ Return runit_background(
 
 	if(SUCCESS == status)
 	{
-		/* Give the app time to reach signal_wait_at_point(), then inject the requested signal. */
-		sleep_for_milliseconds(min_delay_ms);
-
-		pid_t poll_pid = (pid_t)-1;
-
-		do {
-			poll_pid = waitpid(app_pid,&wait_status,WNOHANG);
-		} while(poll_pid == (pid_t)-1 && errno == EINTR);
-
-		if(poll_pid == app_pid)
+		if(wait_for_ready_point == true)
 		{
-			child_waited = true;
-			echo(STDERR,"Background process exited before signal delivery");
-			status = FAILURE;
-
-		} else if(poll_pid == 0){
-			errno = 0;
-
-			if(0 != kill(app_pid,signal_number))
-			{
-				echo(STDERR,
-					"Failed to send signal %d to background PID %d (errno %d)",
-					signal_number,
-					(int)app_pid,
-					errno);
-				status = FAILURE;
-			}
+			run(runit_wait_for_signal_ready(
+				signal_sync.read_fd,
+				app_pid,
+				max_delay_ms,
+				&wait_status,
+				&child_waited));
 
 		} else {
-			echo(STDERR,
-				"Failed to poll background PID %d before signal (errno %d)",
-				(int)app_pid,
-				errno);
-			status = FAILURE;
+			/* Give the app time to reach signal_wait_at_point(), then inject the requested signal. */
+			sleep_for_milliseconds(min_delay_ms);
+			run(runit_poll_background_process_before_signal(
+				app_pid,
+				&wait_status,
+				&child_waited));
 		}
+	}
+
+	if(SUCCESS == status)
+	{
+		run(runit_send_background_signal(app_pid,signal_number));
 	}
 
 	if(true == child_started)
@@ -502,6 +810,7 @@ Return runit_background(
 	}
 
 	runit_wait_env_cleanup(&wait_environment);
+	runit_signal_sync_cleanup(&signal_sync);
 	runit_release_call_and_capture(&capture,&runit_call_data);
 
 	run(m_del(STDERR));
