@@ -66,7 +66,7 @@ static Return db_tamper_locked_checksum(
 
 	m_del(db_path);
 
-	return(status);
+	deliver(status);
 }
 
 /**
@@ -151,7 +151,7 @@ static Return read_cmpctstat_from_db(
 
 	m_del(db_path);
 
-	return(status);
+	deliver(status);
 }
 
 /**
