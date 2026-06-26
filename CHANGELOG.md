@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# Release 0.15.3 2026-06-26
+
+- Improved performance when updating the database with `--update/-u` by traversing files that have already been saved to the database.
+
 # Release 0.15.2 2026-06-08
 
 - Improved internal resilience, build and packaging workflows, documentation, and test reliability
