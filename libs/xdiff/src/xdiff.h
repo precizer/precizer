@@ -12,8 +12,6 @@
 #include <unistd.h>
 #include <string.h>
 
-/* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libxdiff 0.23"
 #define XDF_NEED_MINIMAL (1 << 1)
 #define XDL_PATCH_NORMAL '-'
 #define XDL_PATCH_REVERSE '+'
