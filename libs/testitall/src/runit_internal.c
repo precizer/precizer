@@ -68,9 +68,9 @@ Return runit_validate_runtime_mode(enum run_mode mode)
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && INTERNAL_TEST == mode && NULL == test_main)
+	if(SUCCESS == status && INTERNAL_TEST == mode && NULL == testitall_get_test_main())
 	{
-		echo(STDERR,"test_main symbol is not available for INTERNAL_TEST mode");
+		echo(STDERR,"test_main entry point is not registered for INTERNAL_TEST mode");
 		status = FAILURE;
 	}
 

@@ -411,9 +411,11 @@ enum run_mode
 
 extern enum run_mode run_external;
 
-extern int test_main(
+typedef int (*testitall_test_main_callback)(
 	int,
-	char **) __attribute__((weak));
+	char **);
+
+void testitall_set_test_main(testitall_test_main_callback);
 
 Return runit(
 	const char *,
