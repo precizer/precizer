@@ -20,12 +20,14 @@ static void test0031_reset_read_mocks(void)
  */
 static Return test0031_prepare_case(void)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
 
-	RETURN_STATUS;
+	deliver(status);
 }
 
 /**
@@ -43,7 +45,9 @@ static Return test0031_check_case(
 	memory     *error_buffer,
 	const char *template_name)
 {
-	INITTEST;
+	/* The status that will be returned before exiting */
+	/* By default, assumes the function ran without errors */
+	Return status = SUCCESS;
 
 	ASSERT(error_buffer->length == 0);
 	ASSERT(SUCCESS == get_file_content(template_name,pattern));
@@ -52,7 +56,7 @@ static Return test0031_check_case(
 	ASSERT(SUCCESS == delete_path("read_fail.db"));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
 
-	RETURN_STATUS;
+	deliver(status);
 }
 
 /**
