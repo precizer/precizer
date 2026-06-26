@@ -14,6 +14,34 @@ void mocks_fread_reset(void);
 
 size_t mocks_fread_call_count(void);
 
+void mocks_ferror_enable(bool);
+
+void mocks_ferror_set_errno(int);
+
+void mocks_ferror_reset(void);
+
+size_t mocks_ferror_call_count(void);
+
+void mocks_openat_set_target_suffix(const char *);
+
+void mocks_openat_enable(bool);
+
+void mocks_openat_set_errno(int);
+
+void mocks_openat_reset(void);
+
+size_t mocks_openat_call_count(void);
+
+void mocks_fdopen_set_target_suffix(const char *);
+
+void mocks_fdopen_enable(bool);
+
+void mocks_fdopen_set_errno(int);
+
+void mocks_fdopen_reset(void);
+
+size_t mocks_fdopen_call_count(void);
+
 void mocks_remove_set_target_suffix(const char *);
 
 void mocks_remove_enable(bool);

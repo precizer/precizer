@@ -8,8 +8,7 @@ RUN set -eux; \
     getuto; \
     emerge --ask=n --getbinpkg --usepkgonly --binpkg-respect-use=y llvm-core/clang; \
     echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2; \
-    emerge --ask=n dev-libs/libpcre2 app-arch/upx; \
-    emerge --depclean
+    emerge --ask=n dev-libs/libpcre2 app-arch/upx
 
 WORKDIR /precizer
 

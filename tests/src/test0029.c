@@ -292,6 +292,58 @@ static Return test0029_5(void)
 }
 
 /**
+ * @brief Verify --db-drop-inaccessible does not override ignore scope
+ *
+ * Makes one file inaccessible and ignores the same relative path during update.
+ * Even with --db-drop-inaccessible, the ignored non-locked row must stay in the
+ * DB and must not be reported through inaccessible cleanup
+ */
+static Return test0029_6(void)
+{
+	INITTEST;
+
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+
+	const char *db_filename = "database6.db";
+	const char *ignored_relative_path = "1/AAA/ZAW/D/e/f/b_file.txt";
+	bool ignored_path_exists = false;
+
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+
+	const char *arguments = "--silent --database=database6.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(result->length == 0);
+
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt",0000));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	arguments = "--update --db-drop-inaccessible "
+		"--ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		"--database=database6.db tests/fixtures/diffs/diff1";
+
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0029_006.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == db_relative_path_exists(db_filename,ignored_relative_path,&ignored_path_exists));
+	ASSERT(ignored_path_exists == true);
+
+	m_del(pattern);
+	m_del(result);
+
+	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt",0666));
+	ASSERT(SUCCESS == delete_path(db_filename));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	RETURN_STATUS;
+}
+
+/**
  * @brief Run inaccessible-path behavior tests
  *
  * Covers preservation, explicit removal, unexpected file access-check failure,
@@ -307,6 +359,7 @@ Return test0029(void)
 	TEST(test0029_3,"Access-check failure for a regular file does not stop traversal");
 	TEST(test0029_4,"Root opening failures skip metadata cleanup without deleting records");
 	TEST(test0029_5,"Unavailable PATH root is remembered while later roots continue");
+	TEST(test0029_6,"--db-drop-inaccessible does not override ignore scope");
 
 	RETURN_STATUS;
 }

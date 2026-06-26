@@ -239,6 +239,190 @@ static Return test0009_4(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Verify ignored missing DB rows stay outside cleanup without --db-drop-ignored
+ *
+ * The test creates a database with all fixture files, removes one file below a
+ * later ignored subtree, then runs update with the matching --ignore pattern.
+ * The deleted ignored row must remain in the DB and must not be reported as
+ * missing-file cleanup
+ */
+static Return test0009_5(void)
+{
+	INITTEST;
+
+	const char *db_file_name = "database0009_5.db";
+	const char *ignored_relative_path = "path2/AAA/ZAW/D/e/f/b_file.txt";
+	const char *arguments = NULL;
+	bool ignored_row_exists = false;
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	arguments = "--database=database0009_5.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
+
+	arguments = "--update --ignore=\"^path2/AAA/ZAW/.*\" "
+		"--database=database0009_5.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_005.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
+	ASSERT(ignored_row_exists == true);
+
+	ASSERT(SUCCESS == delete_path(db_file_name));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	m_del(pattern);
+	m_del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Verify --include restores an ignored missing DB row to cleanup scope
+ *
+ * The test deletes a file that matches both --ignore and --include during the
+ * update run. The include pattern must make cleanup treat the missing row as a
+ * normal tracked path, delete it from the DB, and report it as no longer present
+ */
+static Return test0009_6(void)
+{
+	INITTEST;
+
+	const char *db_file_name = "database0009_6.db";
+	const char *included_relative_path = "path2/AAA/ZAW/D/e/f/b_file.txt";
+	const char *arguments = NULL;
+	bool included_row_exists = true;
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	arguments = "--database=database0009_6.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
+
+	arguments = "--update --ignore=\"^path2/AAA/ZAW/.*\" "
+		"--include=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		"--database=database0009_6.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_006.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,included_relative_path,&included_row_exists));
+	ASSERT(included_row_exists == false);
+
+	ASSERT(SUCCESS == delete_path(db_file_name));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	m_del(pattern);
+	m_del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Verify --db-drop-ignored removes an ignored missing DB row as ignored
+ *
+ * A deleted file row that matches --ignore must be classified as ignored cleanup
+ * when --db-drop-ignored is present, not as ordinary missing-file cleanup
+ */
+static Return test0009_7(void)
+{
+	INITTEST;
+
+	const char *db_file_name = "database0009_7.db";
+	const char *ignored_relative_path = "path2/AAA/ZAW/D/e/f/b_file.txt";
+	const char *arguments = NULL;
+	bool ignored_row_exists = true;
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	arguments = "--database=database0009_7.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
+
+	arguments = "--update --db-drop-ignored "
+		"--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		"--database=database0009_7.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_007.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
+	ASSERT(ignored_row_exists == false);
+
+	ASSERT(SUCCESS == delete_path(db_file_name));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	m_del(pattern);
+	m_del(result);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Verify --db-drop-ignored removes an ignored existing DB row
+ *
+ * The ignored file still exists on disk, so this covers explicit ignored
+ * cleanup independently from missing-file cleanup
+ */
+static Return test0009_8(void)
+{
+	INITTEST;
+
+	const char *db_file_name = "database0009_8.db";
+	const char *ignored_relative_path = "path2/AAA/ZAW/D/e/f/b_file.txt";
+	const char *arguments = NULL;
+	bool ignored_row_exists = true;
+	m_create(char,result,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+
+	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
+	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
+
+	arguments = "--database=database0009_8.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	arguments = "--update --db-drop-ignored "
+		"--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		"--database=database0009_8.db tests/fixtures/diffs/diff1";
+	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+
+	const char *filename = "templates/0009_008.txt";
+	ASSERT(SUCCESS == get_file_content(filename,pattern));
+	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
+	ASSERT(ignored_row_exists == false);
+
+	ASSERT(SUCCESS == delete_path(db_file_name));
+	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
+
+	m_del(pattern);
+	m_del(result);
+
+	RETURN_STATUS;
+}
+
 Return test0009(void)
 {
 	INITTEST;
@@ -247,6 +431,10 @@ Return test0009(void)
 	TEST(test0009_2,"Ignore most files and include back selected ones");
 	TEST(test0009_3,"Directory ignore with selective child include");
 	TEST(test0009_4,"Create then update included files with and without detailed change output");
+	TEST(test0009_5,"Ignored missing DB rows stay outside cleanup without --db-drop-ignored");
+	TEST(test0009_6,"--include restores an ignored missing DB row to cleanup scope");
+	TEST(test0009_7,"--db-drop-ignored removes an ignored missing DB row as ignored");
+	TEST(test0009_8,"--db-drop-ignored removes an ignored existing DB row");
 
 	RETURN_STATUS;
 }
