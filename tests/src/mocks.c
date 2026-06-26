@@ -324,6 +324,7 @@ int __wrap_openat(
 	return file_descriptor;
 }
 
+#ifdef __GLIBC__
 int __real___openat_2(
 	int         directory_fd,
 	const char *path,
@@ -357,6 +358,7 @@ int __wrap___openat_2(
 
 	return file_descriptor;
 }
+#endif
 
 FILE *__real_fdopen(
 	int         file_descriptor,
