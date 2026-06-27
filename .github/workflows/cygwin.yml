@@ -40,7 +40,7 @@ jobs:
             upx
 
       - name: Build and stage Cygwin executable
-        shell: bash
+        shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
         run: |
           set -euo pipefail
 
