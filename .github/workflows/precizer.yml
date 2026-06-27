@@ -285,7 +285,6 @@ jobs:
             libpcre2-devel
             libsqlite3-devel
             make
-            upx
 
       - name: Build and stage Cygwin executable
         shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
@@ -303,7 +302,7 @@ jobs:
           project_dir="$(cygpath -u "$GITHUB_WORKSPACE")"
 
           cd "$project_dir"
-          make dynamic-production WFLAGS=
+          make dynamic-production WFLAGS= UPX=true
 
           built_exe=".builds/dynamic-production/precizer.exe"
           if [ ! -f "$built_exe" ]; then
