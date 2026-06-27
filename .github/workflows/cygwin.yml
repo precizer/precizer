@@ -131,6 +131,8 @@ jobs:
           $ErrorActionPreference = 'Stop'
 
           $portable = Join-Path $env:GITHUB_WORKSPACE "package\precizer.exe"
+          Write-Output "Running portable executable outside Cygwin: $portable --version"
+
           & $portable --version
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
