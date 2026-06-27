@@ -48,6 +48,8 @@ Return runit_reset_result_buffers(
 	memory *,
 	memory *);
 
+testitall_test_main_callback testitall_get_test_main(void) __attribute__ ((pure));
+
 Return runit_validate_runtime_mode(enum run_mode);
 
 /**

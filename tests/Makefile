@@ -53,6 +53,9 @@ INCPATH += $(shell pkg-config --cflags libpcre2-8)
 INCPATH += -I/opt/homebrew/include
 LDPATH += -L/opt/homebrew/lib
 LDLIBS += -largp
+else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+# argp is not part of Cygwin's C library
+LDLIBS += -largp
 endif
 
 # Detect whether we're using GCC

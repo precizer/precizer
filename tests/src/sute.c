@@ -1,5 +1,9 @@
 #include "sute.h"
 
+int test_main(
+	int,
+	char **);
+
 /**
  * @brief Run the top-level test suite executable
  *
@@ -8,6 +12,8 @@
 int main(void)
 {
 	SUTESTART;
+
+	testitall_set_test_main(test_main);
 
 	HEADER("Preparations");
 	TEST(prepare,"Preparation for tests");

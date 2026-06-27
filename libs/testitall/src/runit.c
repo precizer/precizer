@@ -264,11 +264,13 @@ Return runit(
 
 	if(INTERNAL_TEST == run_external)
 	{
+		const testitall_test_main_callback internal_test_main = testitall_get_test_main();
+
 		run(runit_internal_enter(&internal_guard,runit_call_data.tmpdir,&capture));
 
-		if(SUCCESS == status)
+		if(SUCCESS == status && NULL != internal_test_main)
 		{
-			const int test_main_result = test_main((int)runit_call_data.argc,runit_call_data.argv);
+			const int test_main_result = internal_test_main((int)runit_call_data.argc,runit_call_data.argv);
 			fflush(stdout);
 			fflush(stderr);
 

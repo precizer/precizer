@@ -740,7 +740,13 @@ Return runit_background(
 				_exit(127);
 			}
 
-			const int test_main_result = test_main((int)runit_call_data.argc,runit_call_data.argv);
+			const testitall_test_main_callback internal_test_main = testitall_get_test_main();
+			if(NULL == internal_test_main)
+			{
+				_exit(127);
+			}
+
+			const int test_main_result = internal_test_main((int)runit_call_data.argc,runit_call_data.argv);
 			fflush(stdout);
 			fflush(stderr);
 			_exit(test_main_result);

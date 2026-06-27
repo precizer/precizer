@@ -2,6 +2,8 @@
 
 bool show_subheader = false;
 
+static testitall_test_main_callback registered_test_main = NULL;
+
 /**
  * @brief Number of test functions that reached their normal result reporting step
  *
@@ -10,6 +12,26 @@ bool show_subheader = false;
  * before it returns its status to the surrounding suite
  */
 size_t testitall_completed_tests = 0;
+
+/**
+ * @brief Register the application entry point used by INTERNAL_TEST mode
+ *
+ * @param callback Function that accepts argc and argv and returns an application exit code
+ */
+void testitall_set_test_main(testitall_test_main_callback callback)
+{
+	registered_test_main = callback;
+}
+
+/**
+ * @brief Return the application entry point registered for INTERNAL_TEST mode
+ *
+ * @return Registered callback, or NULL when INTERNAL_TEST mode is unavailable
+ */
+testitall_test_main_callback testitall_get_test_main(void)
+{
+	return registered_test_main;
+}
 
 static struct {
 	bool has_failure;
