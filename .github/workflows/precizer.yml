@@ -1,7 +1,7 @@
 permissions:
   contents: read
 
-name: Linux and macOS builds
+name: Release builds
 
 on:
   push:
@@ -248,3 +248,164 @@ jobs:
           unzip -jqo precizer.zip '*/precizer' -d ./
           # Run
           ./precizer --version
+
+  build_windows_x64:
+    name: Build & attach Windows x64
+    runs-on: windows-latest
+    needs: get_tag_info
+
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
+    env:
+      VERSION: ${{ needs.get_tag_info.outputs.version }}
+
+    steps:
+      - name: Configure Git line endings
+        run: git config --global core.autocrlf input
+
+      - name: Checkout repository (exclude tests/fixtures/long)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !tests/fixtures/long/**
+
+      - name: Install Cygwin dependencies
+        uses: cygwin/cygwin-install-action@3f0a3f9f988f7e96b8c18098ae05eaec175f5b52 # v6
+        with:
+          packages: |
+            gcc-core
+            libargp-devel
+            libpcre2-devel
+            libsqlite3-devel
+            make
+            upx
+
+      - name: Build and stage Cygwin executable
+        shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
+        run: |
+          set -euo pipefail
+
+          case "$(uname -s)" in
+            CYGWIN*) ;;
+            *)
+              echo "Expected Cygwin shell, got $(uname -s)" >&2
+              exit 1
+              ;;
+          esac
+
+          project_dir="$(cygpath -u "$GITHUB_WORKSPACE")"
+
+          cd "$project_dir"
+          make dynamic-production WFLAGS=
+
+          built_exe=".builds/dynamic-production/precizer.exe"
+          if [ ! -f "$built_exe" ]; then
+            built_exe=".builds/dynamic-production/precizer"
+          fi
+          if [ ! -f "$built_exe" ]; then
+            echo "Dynamic production executable not found" >&2
+            exit 1
+          fi
+
+          rm -rf package
+          mkdir -p package/cygwin
+          cp "$built_exe" package/cygwin/precizer.exe
+
+          cygcheck "$built_exe" | tee package/cygwin-dependencies.txt
+          while IFS= read -r dependency
+          do
+            dependency="${dependency#"${dependency%%[![:space:]]*}"}"
+            if [[ "$dependency" != *.dll ]]; then
+              continue
+            fi
+
+            dependency_unix="$(cygpath -u "$dependency" 2>/dev/null || true)"
+            if [ -z "$dependency_unix" ]; then
+              continue
+            fi
+
+            dependency_name="$(basename "$dependency_unix")"
+            if [[ -f "$dependency_unix" && "$dependency_name" == cyg*.dll ]]; then
+              cp -f "$dependency_unix" package/cygwin/
+            fi
+          done < package/cygwin-dependencies.txt
+
+          test -f package/cygwin/cygwin1.dll
+          test -f package/cygwin/cygargp-0.dll
+          test -f package/cygwin/cygpcre2-8-0.dll
+          test -f package/cygwin/cygsqlite3-0.dll
+
+          ls -la package/cygwin
+
+      - name: Install NSIS
+        shell: pwsh
+        run: choco install nsis -y --no-progress
+
+      - name: Build portable wrapper with NSIS
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+          if (-not (Test-Path $makensis)) {
+            $makensis = "${env:ProgramFiles}\NSIS\makensis.exe"
+          }
+          if (-not (Test-Path $makensis)) {
+            throw "makensis.exe was not found"
+          }
+
+          $script = Join-Path $env:GITHUB_WORKSPACE ".github\workflows\cygwin.nsi"
+          $staging = Join-Path $env:GITHUB_WORKSPACE "package\cygwin"
+          $output = Join-Path $env:GITHUB_WORKSPACE "package\precizer.exe"
+
+          & $makensis /NOCD "/DOUTPUT_EXE=$output" "/DSTAGING_DIR=$staging" $script
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+          if (-not (Test-Path $output)) {
+            throw "Portable executable was not created"
+          }
+
+      - name: Create Windows x64 archive
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $versionDir = "v${env:VERSION}"
+          New-Item -ItemType Directory -Force -Path $versionDir | Out-Null
+          Copy-Item -Path "package\precizer.exe" -Destination $versionDir
+
+          Compress-Archive `
+            -Path $versionDir `
+            -DestinationPath "precizer_windows_x64_portable.zip" `
+            -Force
+
+      - name: Generate attestation (Windows x64)
+        id: attest_windows_x64
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_windows_x64_portable.zip
+
+      - name: Save Sigstore bundle (Windows x64)
+        shell: pwsh
+        run: |
+          Copy-Item `
+            -Path "${{ steps.attest_windows_x64.outputs.bundle-path }}" `
+            -Destination "precizer_windows_x64_portable.zip.sigstore.json"
+
+      - name: Upload Windows x64 asset
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} `
+            "precizer_windows_x64_portable.zip" `
+            "precizer_windows_x64_portable.zip.sigstore.json" `
+            --clobber
