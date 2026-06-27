@@ -250,8 +250,8 @@ jobs:
           # Run
           ./precizer --version
 
-  build_windows_x64:
-    name: Build & attach Windows x64
+  build_cygwin_x64:
+    name: Build & attach Cygwin x64
     runs-on: windows-latest
     needs: get_tag_info
 
@@ -344,63 +344,46 @@ jobs:
 
           ls -la package/cygwin
 
-      - name: Install NSIS
-        shell: pwsh
-        run: choco install nsis -y --no-progress
-
-      - name: Build portable wrapper with NSIS
+      - name: Run Cygwin executable outside Cygwin
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
-          $makensis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
-          if (-not (Test-Path $makensis)) {
-            $makensis = "${env:ProgramFiles}\NSIS\makensis.exe"
-          }
-          if (-not (Test-Path $makensis)) {
-            throw "makensis.exe was not found"
-          }
-
-          $script = Join-Path $env:GITHUB_WORKSPACE ".github\workflows\cygwin.nsi"
-          $staging = Join-Path $env:GITHUB_WORKSPACE "package\cygwin"
-          $output = Join-Path $env:GITHUB_WORKSPACE "package\precizer.exe"
-
-          & $makensis /NOCD "/DOUTPUT_EXE=$output" "/DSTAGING_DIR=$staging" $script
+          $precizer = Join-Path $env:GITHUB_WORKSPACE "package\cygwin\precizer.exe"
+          & $precizer --version
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
-          if (-not (Test-Path $output)) {
-            throw "Portable executable was not created"
-          }
 
-      - name: Create Windows x64 archive
+      - name: Create Cygwin x64 archive
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
           $versionDir = "v${env:VERSION}"
           New-Item -ItemType Directory -Force -Path $versionDir | Out-Null
-          Copy-Item -Path "package\precizer.exe" -Destination $versionDir
+          Copy-Item -Path "package\cygwin\*" -Destination $versionDir -Recurse
+          Get-ChildItem -Path $versionDir | Format-Table -AutoSize
 
           Compress-Archive `
             -Path $versionDir `
             -DestinationPath "precizer_windows_x64_portable.zip" `
             -Force
 
-      - name: Generate attestation (Windows x64)
+      - name: Generate attestation (Cygwin x64)
         id: attest_windows_x64
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: precizer_windows_x64_portable.zip
 
-      - name: Save Sigstore bundle (Windows x64)
+      - name: Save Sigstore bundle (Cygwin x64)
         shell: pwsh
         run: |
           Copy-Item `
             -Path "${{ steps.attest_windows_x64.outputs.bundle-path }}" `
             -Destination "precizer_windows_x64_portable.zip.sigstore.json"
 
-      - name: Upload Windows x64 asset
+      - name: Upload Cygwin x64 asset
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
