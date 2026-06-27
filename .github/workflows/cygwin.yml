@@ -113,7 +113,7 @@ jobs:
             throw "makensis.exe was not found"
           }
 
-          $script = Join-Path $env:GITHUB_WORKSPACE ".github\workflows\windows-cygwin.nsi"
+          $script = Join-Path $env:GITHUB_WORKSPACE ".github\workflows\cygwin.nsi"
           $staging = Join-Path $env:GITHUB_WORKSPACE "package\cygwin"
           $output = Join-Path $env:GITHUB_WORKSPACE "package\precizer.exe"
 
