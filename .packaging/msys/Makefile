@@ -8,6 +8,7 @@ MSYS_RUNTIME = $(PROJECT_DIR)/package/msys-payload/msys-2.0.dll
 OUTPUT_EXE = $(PROJECT_DIR)/precizer_windows_x64_portable.exe
 CC = $(shell cygpath -am /ucrt64/bin/gcc.exe)
 WINDRES = $(shell cygpath -am /ucrt64/bin/windres.exe)
+PATH := /ucrt64/bin:$(PATH)
 
 .PHONY: all launcher clean
 
