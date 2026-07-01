@@ -482,6 +482,7 @@ jobs:
 
       - name: Upload release provenance
         env:
+          GH_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} \
