@@ -9,8 +9,10 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "launcher_config.h"
-#include "launcher.h"
+#include "version.h"
+
+#define IDR_PRECIZER_EXE 101
+#define IDR_MSYS_DLL 102
 
 typedef struct {
 	const unsigned char *data;
@@ -293,7 +295,7 @@ static bool prepare_cache_directory(WideBuffer *output)
 
 	if(success == true)
 	{
-		success = wide_buffer_append_path_component(output,PRECIZER_LAUNCHER_VERSION);
+		success = wide_buffer_append_path_component(output,L"" APP_VERSION);
 	}
 
 	if(success == true)

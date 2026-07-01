@@ -467,7 +467,7 @@ jobs:
           cp "$built_exe" package/msys-payload/precizer.exe
           cp /usr/bin/msys-2.0.dll package/msys-payload/msys-2.0.dll
 
-          cygcheck ./package/msys-payload/precizer.exe | tee package/msys-payload-dependencies.txt
+          cygcheck package/msys-payload/precizer.exe | tee package/msys-payload-dependencies.txt
           if ! grep -qi 'msys-2\.0\.dll' package/msys-payload-dependencies.txt; then
             echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
             exit 1
@@ -480,7 +480,7 @@ jobs:
           make -C .packaging/msys
 
           /ucrt64/bin/objdump -x precizer_windows_x64_portable.exe | grep -i subsystem
-          cygcheck precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
+          cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
           if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' package/msys-launcher-dependencies.txt; then
             echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
             exit 1
