@@ -91,6 +91,14 @@ jobs:
           cp "${{ steps.attest_linux_x86_64.outputs.bundle-path }}" \
              "precizer_linux_x86_64_portable.zip.sigstore.json"
 
+      - name: Upload Sigstore bundle artifact (Linux x86_64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-sigstore-bundle-linux-x86-64
+          path: precizer_linux_x86_64_portable.zip.sigstore.json
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Upload Linux x86_64 asset
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -157,6 +165,14 @@ jobs:
         run: |
           cp "${{ steps.attest_linux_arm64.outputs.bundle-path }}" \
              "precizer_linux_aarch64_portable.zip.sigstore.json"
+
+      - name: Upload Sigstore bundle artifact (Linux arm64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-sigstore-bundle-linux-arm64
+          path: precizer_linux_aarch64_portable.zip.sigstore.json
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Upload Linux arm64 asset
         env:
@@ -230,6 +246,14 @@ jobs:
         run: |
           cp "${{ steps.attest_macos_arm64.outputs.bundle-path }}" \
              "precizer_macos_arm64.zip.sigstore.json"
+
+      - name: Upload Sigstore bundle artifact (macOS arm64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-sigstore-bundle-macos-arm64
+          path: precizer_macos_arm64.zip.sigstore.json
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Upload macOS arm64 asset
         env:
@@ -391,6 +415,16 @@ jobs:
             -Path "${{ steps.attest_windows_x64_zip.outputs.bundle-path }}" `
             -Destination "precizer_windows_x64_portable.zip.sigstore.json"
 
+      - name: Upload Sigstore bundle artifact (MSYS x64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-sigstore-bundle-msys-x64
+          path: |
+            precizer_windows_x64_portable.exe.sigstore.json
+            precizer_windows_x64_portable.zip.sigstore.json
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Upload MSYS x64 asset
         shell: pwsh
         env:
@@ -401,4 +435,55 @@ jobs:
             "precizer_windows_x64_portable.exe.sigstore.json" `
             "precizer_windows_x64_portable.zip" `
             "precizer_windows_x64_portable.zip.sigstore.json" `
+            --clobber
+
+  upload_release_provenance:
+    name: Upload release provenance
+    runs-on: ubuntu-24.04
+    needs:
+      - get_tag_info
+      - build_linux_x86_64
+      - build_linux_arm64
+      - build_evil_empire_os_arm64
+      - build_msys_x64
+
+    permissions:
+      contents: read
+
+    env:
+      VERSION: ${{ needs.get_tag_info.outputs.version }}
+
+    steps:
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gh jq
+
+      - name: Download Sigstore bundle artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: release-sigstore-bundle-*
+          path: release-sigstore-bundles
+          merge-multiple: true
+
+      - name: Create release provenance
+        run: |
+          set -euo pipefail
+
+          provenance_file="precizer_${VERSION}.intoto.jsonl"
+          jq -c -e '.dsseEnvelope | if type == "object" then . else error("missing dsseEnvelope") end' \
+            release-sigstore-bundles/precizer_linux_x86_64_portable.zip.sigstore.json \
+            release-sigstore-bundles/precizer_linux_aarch64_portable.zip.sigstore.json \
+            release-sigstore-bundles/precizer_macos_arm64.zip.sigstore.json \
+            release-sigstore-bundles/precizer_windows_x64_portable.exe.sigstore.json \
+            release-sigstore-bundles/precizer_windows_x64_portable.zip.sigstore.json \
+            > "$provenance_file"
+
+          line_count="$(wc -l < "$provenance_file" | tr -d '[:space:]')"
+          test "$line_count" -eq 5
+
+      - name: Upload release provenance
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} \
+            "precizer_${VERSION}.intoto.jsonl" \
             --clobber
