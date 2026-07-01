@@ -3,8 +3,8 @@
 PROJECT_DIR = ../..
 BUILD_DIR = $(PROJECT_DIR)/.builds/msys-launcher
 PAYLOAD_DIR = $(BUILD_DIR)/payload
-PRECIZER_PAYLOAD = $(PROJECT_DIR)/package/msys-payload/precizer.exe
-MSYS_RUNTIME = $(PROJECT_DIR)/package/msys-payload/msys-2.0.dll
+PRECIZER_PAYLOAD = $(PROJECT_DIR)/package/msys/precizer.exe
+MSYS_RUNTIME = $(PROJECT_DIR)/package/msys/msys-2.0.dll
 OUTPUT_EXE = $(PROJECT_DIR)/precizer_windows_x64_portable.exe
 CC = $(shell cygpath -am /ucrt64/bin/gcc.exe)
 WINDRES = $(shell cygpath -am /ucrt64/bin/windres.exe)
@@ -31,7 +31,7 @@ $(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) $(PROJECT_DIR)/src/version.h 
 		-i launcher.rc \
 		-o launcher.res
 	@"$(CC)" \
-		-std=c17 \
+		-std=c2x \
 		-O2 \
 		-Wall \
 		-Wextra \
