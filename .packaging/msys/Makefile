@@ -6,8 +6,8 @@ PAYLOAD_DIR = $(BUILD_DIR)/payload
 PRECIZER_PAYLOAD = $(PROJECT_DIR)/package/msys-payload/precizer.exe
 MSYS_RUNTIME = $(PROJECT_DIR)/package/msys-payload/msys-2.0.dll
 OUTPUT_EXE = $(PROJECT_DIR)/precizer_windows_x64_portable.exe
-CC = /ucrt64/bin/gcc
-WINDRES = /ucrt64/bin/windres
+CC = $(shell cygpath -am /ucrt64/bin/gcc.exe)
+WINDRES = $(shell cygpath -am /ucrt64/bin/windres.exe)
 
 .PHONY: all launcher clean
 
