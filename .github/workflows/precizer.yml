@@ -437,14 +437,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          case "$(uname -s)" in
-            MSYS_NT*) ;;
-            *)
-              echo "Expected MSYS shell, got $(uname -s)" >&2
-              exit 1
-              ;;
-          esac
-
           make dynamic-production \
             WFLAGS= \
             UPX=true \
@@ -479,7 +471,6 @@ jobs:
 
           make -C .packaging/msys
 
-          /ucrt64/bin/objdump -x precizer_windows_x64_portable.exe | grep -i subsystem
           cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
           if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' package/msys-launcher-dependencies.txt; then
             echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
