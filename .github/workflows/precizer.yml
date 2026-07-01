@@ -252,6 +252,7 @@ jobs:
 
   build_cygwin_x64:
     name: Build & attach Cygwin x64
+    if: ${{ false }}
     runs-on: windows-latest
     needs: get_tag_info
 
@@ -391,4 +392,131 @@ jobs:
           gh release upload ${{ github.ref_name }} `
             "precizer_windows_x64_portable.zip" `
             "precizer_windows_x64_portable.zip.sigstore.json" `
+            --clobber
+
+  build_msys_x64:
+    name: Build & attach MSYS x64
+    runs-on: windows-latest
+    needs: get_tag_info
+
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
+    steps:
+      - name: Configure Git line endings
+        run: git config --global core.autocrlf input
+
+      - name: Checkout repository (exclude tests/fixtures/long)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !tests/fixtures/long/**
+
+      - name: Install MSYS dependencies
+        uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2
+        with:
+          msystem: MSYS
+          update: true
+          install: >-
+            gcc
+            make
+            libsqlite-devel
+            pcre2-devel
+            libargp-devel
+            mingw-w64-ucrt-x86_64-binutils
+            mingw-w64-ucrt-x86_64-gcc
+
+      - name: Build MSYS payload and native launcher
+        shell: msys2 {0}
+        run: |
+          set -euo pipefail
+
+          case "$(uname -s)" in
+            MSYS_NT*) ;;
+            *)
+              echo "Expected MSYS shell, got $(uname -s)" >&2
+              exit 1
+              ;;
+          esac
+
+          make dynamic-production \
+            WFLAGS= \
+            UPX=true \
+            LTO= \
+            PROD_OPT_CFLAGS='-pipe -fbuiltin -O2 -mtune=generic -ffunction-sections -fdata-sections -fomit-frame-pointer' \
+            PROD_LDFLAGS='-Wl,-O2 -Wl,--gc-sections' \
+            DYNP_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
+
+          built_exe=".builds/dynamic-production/precizer.exe"
+          if [ ! -f "$built_exe" ]; then
+            built_exe=".builds/dynamic-production/precizer"
+          fi
+          if [ ! -f "$built_exe" ]; then
+            echo "Dynamic production executable not found" >&2
+            exit 1
+          fi
+
+          rm -rf package
+          mkdir -p package/msys-payload
+          cp "$built_exe" package/msys-payload/precizer.exe
+          cp /usr/bin/msys-2.0.dll package/msys-payload/msys-2.0.dll
+
+          cygcheck package/msys-payload/precizer.exe | tee package/msys-payload-dependencies.txt
+          if ! grep -qi 'msys-2\.0\.dll' package/msys-payload-dependencies.txt; then
+            echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
+            exit 1
+          fi
+          if grep -Eiq 'msys-(argp|pcre2|sqlite3?|gcc|stdc\+\+|winpthread).*\.dll' package/msys-payload-dependencies.txt; then
+            echo "The MSYS payload still has an unexpected dynamic MSYS dependency" >&2
+            exit 1
+          fi
+
+          make -C .packaging/msys
+
+          /ucrt64/bin/objdump -x precizer_windows_x64_portable.exe | grep -i subsystem
+          cygcheck precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
+          if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' package/msys-launcher-dependencies.txt; then
+            echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
+            exit 1
+          fi
+
+      - name: Run native launcher outside MSYS
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $env:Path = (($env:Path -split ';') | Where-Object { $_ -notmatch '\\msys64\\' }) -join ';'
+          $precizer = Join-Path $env:GITHUB_WORKSPACE "precizer_windows_x64_portable.exe"
+          & $precizer --version
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Generate attestation (MSYS x64)
+        id: attest_windows_x64
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_windows_x64_portable.exe
+
+      - name: Save Sigstore bundle (MSYS x64)
+        shell: pwsh
+        run: |
+          Copy-Item `
+            -Path "${{ steps.attest_windows_x64.outputs.bundle-path }}" `
+            -Destination "precizer_windows_x64_portable.exe.sigstore.json"
+
+      - name: Upload MSYS x64 asset
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} `
+            "precizer_windows_x64_portable.exe" `
+            "precizer_windows_x64_portable.exe.sigstore.json" `
             --clobber
