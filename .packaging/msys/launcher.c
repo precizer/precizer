@@ -10,7 +10,7 @@
 #include <wchar.h>
 
 #include "launcher_config.h"
-#include "launcher_resources.h"
+#include "launcher.h"
 
 typedef struct {
 	const unsigned char *data;

@@ -6,8 +6,8 @@ PAYLOAD_DIR = $(BUILD_DIR)/payload
 PRECIZER_PAYLOAD = $(PROJECT_DIR)/package/msys-payload/precizer.exe
 MSYS_RUNTIME = $(PROJECT_DIR)/package/msys-payload/msys-2.0.dll
 OUTPUT_EXE = $(PROJECT_DIR)/precizer_windows_x64_portable.exe
-WINDRES = /ucrt64/bin/windres
 CC = /ucrt64/bin/gcc
+WINDRES = /ucrt64/bin/windres
 
 .PHONY: all launcher clean
 
@@ -15,10 +15,10 @@ all: launcher
 
 launcher: $(OUTPUT_EXE)
 
-$(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) Makefile launcher.c launcher.rc.in launcher_resources.h | $(PAYLOAD_DIR)
+$(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) Makefile launcher.c launcher.h launcher.rc.in | $(PAYLOAD_DIR)
 	@cp "$(PRECIZER_PAYLOAD)" "$(PAYLOAD_DIR)/precizer.exe"
 	@cp "$(MSYS_RUNTIME)" "$(PAYLOAD_DIR)/msys-2.0.dll"
-	@cp launcher_resources.h "$(BUILD_DIR)/launcher_resources.h"
+	@cp launcher.h "$(BUILD_DIR)/launcher.h"
 	@cp launcher.rc.in "$(BUILD_DIR)/launcher.rc"
 	@version_path="$$(sed -n 's/^#define APP_VERSION "\([^"]*\)"/\1/p' "$(PROJECT_DIR)/src/version.h" | sed 's/[^A-Za-z0-9._-]/_/g')"; \
 	if [ -z "$$version_path" ]; then \
@@ -42,7 +42,14 @@ $(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) Makefile launcher.c launcher.
 	} > "$(BUILD_DIR)/launcher_config.h"; \
 	echo "Embedded version path: $$version_path"; \
 	echo "Embedded payload hash path: $$payload_hash_path"
-	@cd "$(BUILD_DIR)" && "$(WINDRES)" -O coff -i launcher.rc -o launcher.res
+	@cd "$(BUILD_DIR)" && "$(WINDRES)" \
+		--preprocessor="$(CC)" \
+		--preprocessor-arg=-E \
+		--preprocessor-arg=-xc \
+		--preprocessor-arg=-DRC_INVOKED \
+		-O coff \
+		-i launcher.rc \
+		-o launcher.res
 	@"$(CC)" \
 		-std=c17 \
 		-O2 \

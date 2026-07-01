@@ -1,4 +1,2 @@
-#include "launcher_resources.h"
-
-IDR_PRECIZER_EXE RCDATA "payload/precizer.exe"
-IDR_MSYS_DLL RCDATA "payload/msys-2.0.dll"
+101 RCDATA "payload/precizer.exe"
+102 RCDATA "payload/msys-2.0.dll"
