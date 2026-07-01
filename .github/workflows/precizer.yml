@@ -250,8 +250,8 @@ jobs:
           # Run
           ./precizer --version
 
-  build_cygwin_x64:
-    name: Build & attach Cygwin x64
+  build_msys_x64:
+    name: Build & attach MSYS x64
     runs-on: windows-latest
     needs: get_tag_info
 
@@ -277,33 +277,32 @@ jobs:
             /*
             !tests/fixtures/long/**
 
-      - name: Install Cygwin dependencies
-        uses: cygwin/cygwin-install-action@3f0a3f9f988f7e96b8c18098ae05eaec175f5b52 # v6
+      - name: Install MSYS dependencies
+        uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2
         with:
-          packages: |
-            gcc-core
-            libargp-devel
-            libpcre2-devel
-            libsqlite3-devel
+          msystem: MSYS
+          update: true
+          install: >-
+            gcc
             make
+            libsqlite-devel
+            pcre2-devel
+            libargp-devel
+            mingw-w64-ucrt-x86_64-binutils
+            mingw-w64-ucrt-x86_64-gcc
 
-      - name: Build and stage Cygwin executable
-        shell: bash --noprofile --norc -e -o pipefail -o igncr {0}
+      - name: Build MSYS payload and native launcher
+        shell: msys2 {0}
         run: |
           set -euo pipefail
 
-          case "$(uname -s)" in
-            CYGWIN*) ;;
-            *)
-              echo "Expected Cygwin shell, got $(uname -s)" >&2
-              exit 1
-              ;;
-          esac
-
-          project_dir="$(cygpath -u "$GITHUB_WORKSPACE")"
-
-          cd "$project_dir"
-          make dynamic-production WFLAGS= UPX=true
+          make dynamic-production \
+            WFLAGS= \
+            UPX=true \
+            LTO= \
+            PROD_OPT_CFLAGS='-pipe -fbuiltin -O2 -mtune=generic -ffunction-sections -fdata-sections -fomit-frame-pointer' \
+            PROD_LDFLAGS='-Wl,-O2 -Wl,--gc-sections' \
+            DYNP_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
 
           built_exe=".builds/dynamic-production/precizer.exe"
           if [ ! -f "$built_exe" ]; then
@@ -315,54 +314,50 @@ jobs:
           fi
 
           rm -rf package
-          mkdir -p package/cygwin
-          cp "$built_exe" package/cygwin/precizer.exe
+          mkdir -p package/msys
+          cp "$built_exe" package/msys/precizer.exe
+          cp /usr/bin/msys-2.0.dll package/msys/msys-2.0.dll
 
-          cygcheck "$built_exe" | tee package/cygwin-dependencies.txt
-          while IFS= read -r dependency
-          do
-            dependency="${dependency#"${dependency%%[![:space:]]*}"}"
-            if [[ "$dependency" != *.dll ]]; then
-              continue
-            fi
+          cygcheck package/msys/precizer.exe | tee package/msys-dependencies.txt
+          if ! grep -qi 'msys-2\.0\.dll' package/msys-dependencies.txt; then
+            echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
+            exit 1
+          fi
+          if grep -Eiq 'msys-(argp|pcre2|sqlite3?|gcc|stdc\+\+|winpthread).*\.dll' package/msys-dependencies.txt; then
+            echo "The MSYS payload still has an unexpected dynamic MSYS dependency" >&2
+            exit 1
+          fi
 
-            dependency_unix="$(cygpath -u "$dependency" 2>/dev/null || true)"
-            if [ -z "$dependency_unix" ]; then
-              continue
-            fi
+          make -C .packaging/msys
 
-            dependency_name="$(basename "$dependency_unix")"
-            if [[ -f "$dependency_unix" && "$dependency_name" == cyg*.dll ]]; then
-              cp -f "$dependency_unix" package/cygwin/
-            fi
-          done < package/cygwin-dependencies.txt
+          cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
+          if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' package/msys-launcher-dependencies.txt; then
+            echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
+            exit 1
+          fi
 
-          test -f package/cygwin/cygwin1.dll
-          test -f package/cygwin/cygargp-0.dll
-          test -f package/cygwin/cygpcre2-8-0.dll
-          test -f package/cygwin/cygsqlite3-0.dll
-
-          ls -la package/cygwin
-
-      - name: Run Cygwin executable outside Cygwin
+      - name: Run native launcher outside MSYS
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
-          $precizer = Join-Path $env:GITHUB_WORKSPACE "package\cygwin\precizer.exe"
+          $env:Path = (($env:Path -split ';') | Where-Object { $_ -notmatch '\\msys64\\' }) -join ';'
+          $precizer = Join-Path $env:GITHUB_WORKSPACE "precizer_windows_x64_portable.exe"
           & $precizer --version
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
 
-      - name: Create Cygwin x64 archive
+      - name: Create MSYS x64 archive
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
           $versionDir = "v${env:VERSION}"
+          Remove-Item -Path $versionDir -Recurse -Force -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force -Path $versionDir | Out-Null
-          Copy-Item -Path "package\cygwin\*" -Destination $versionDir -Recurse
+          Copy-Item -Path "package\msys\precizer.exe" -Destination $versionDir
+          Copy-Item -Path "package\msys\msys-2.0.dll" -Destination $versionDir
           Get-ChildItem -Path $versionDir | Format-Table -AutoSize
 
           Compress-Archive `
@@ -370,25 +365,40 @@ jobs:
             -DestinationPath "precizer_windows_x64_portable.zip" `
             -Force
 
-      - name: Generate attestation (Cygwin x64)
-        id: attest_windows_x64
+      - name: Generate attestation (MSYS x64 self-extracting exe)
+        id: attest_windows_x64_exe
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_windows_x64_portable.exe
+
+      - name: Save Sigstore bundle (MSYS x64 self-extracting exe)
+        shell: pwsh
+        run: |
+          Copy-Item `
+            -Path "${{ steps.attest_windows_x64_exe.outputs.bundle-path }}" `
+            -Destination "precizer_windows_x64_portable.exe.sigstore.json"
+
+      - name: Generate attestation (MSYS x64 zip)
+        id: attest_windows_x64_zip
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: precizer_windows_x64_portable.zip
 
-      - name: Save Sigstore bundle (Cygwin x64)
+      - name: Save Sigstore bundle (MSYS x64 zip)
         shell: pwsh
         run: |
           Copy-Item `
-            -Path "${{ steps.attest_windows_x64.outputs.bundle-path }}" `
+            -Path "${{ steps.attest_windows_x64_zip.outputs.bundle-path }}" `
             -Destination "precizer_windows_x64_portable.zip.sigstore.json"
 
-      - name: Upload Cygwin x64 asset
+      - name: Upload MSYS x64 asset
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           gh release upload ${{ github.ref_name }} `
+            "precizer_windows_x64_portable.exe" `
+            "precizer_windows_x64_portable.exe.sigstore.json" `
             "precizer_windows_x64_portable.zip" `
             "precizer_windows_x64_portable.zip.sigstore.json" `
             --clobber
