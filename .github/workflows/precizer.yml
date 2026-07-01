@@ -467,7 +467,7 @@ jobs:
           cp "$built_exe" package/msys-payload/precizer.exe
           cp /usr/bin/msys-2.0.dll package/msys-payload/msys-2.0.dll
 
-          cygcheck package/msys-payload/precizer.exe | tee package/msys-payload-dependencies.txt
+          cygcheck ./package/msys-payload/precizer.exe | tee package/msys-payload-dependencies.txt
           if ! grep -qi 'msys-2\.0\.dll' package/msys-payload-dependencies.txt; then
             echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
             exit 1
