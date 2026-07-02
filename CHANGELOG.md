@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# Release 0.16.0 2026-07-01
+
+- Experimental Windows support. The build is not code signed yet. The ZIP archive includes the executable and the required DLL dependency. A portable EXE is also available. It does not require any dependencies, but Defender flags it immediately.
+
 # Release 0.15.3 2026-06-26
 
 - Improved performance when updating the database with `--update/-u` by traversing files that have already been saved to the database.
