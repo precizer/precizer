@@ -7,7 +7,6 @@ on:
   push:
     tags:
       - "*.*.*"
-  workflow_dispatch:
 
 jobs:
   get_tag_info:
@@ -274,24 +273,31 @@ jobs:
           # Run
           ./precizer --version
 
+  # Build and attach the MSYS-based Windows x64 release assets
   build_msys_x64:
     name: Build & attach MSYS x64
+
+    # Run the Windows-specific packaging workflow after the release tag metadata is ready
     runs-on: windows-latest
     needs: get_tag_info
 
+    # Allow this job to read sources and publish artifact attestations
     permissions:
       contents: read
       id-token: write
       attestations: write
       artifact-metadata: write
 
+    # Reuse the tag version detected by the release metadata job
     env:
       VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
+      # Keep checked-out shell scripts and generated files in Unix line-ending form
       - name: Configure Git line endings
         run: git config --global core.autocrlf input
 
+      # Fetch the source tree while skipping the long filesystem fixture set
       - name: Checkout repository (exclude tests/fixtures/long)
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
@@ -301,6 +307,7 @@ jobs:
             /*
             !tests/fixtures/long/**
 
+      # Install the MSYS toolchain, payload libraries, and UCRT launcher tools
       - name: Install MSYS dependencies
         uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2
         with:
@@ -315,11 +322,13 @@ jobs:
             mingw-w64-ucrt-x86_64-binutils
             mingw-w64-ucrt-x86_64-gcc
 
+      # Compile the MSYS payload, package its runtime files, and build the native launcher
       - name: Build MSYS payload and native launcher
         shell: msys2 {0}
         run: |
           set -euo pipefail
 
+          # Build the MSYS payload with static third-party libraries
           make dynamic-production \
             WFLAGS= \
             UPX=true \
@@ -328,20 +337,25 @@ jobs:
             PROD_LDFLAGS='-Wl,-O2 -Wl,--gc-sections' \
             DYNP_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
 
+          # Resolve the executable produced by the dynamic production build
           built_exe=".builds/dynamic-production/precizer.exe"
           if [ ! -f "$built_exe" ]; then
             built_exe=".builds/dynamic-production/precizer"
           fi
+
+          # Stop if the build did not produce an executable
           if [ ! -f "$built_exe" ]; then
             echo "Dynamic production executable not found" >&2
             exit 1
           fi
 
+          # Prepare the payload files used by the zip archive and native launcher
           rm -rf package
           mkdir -p package/msys
           cp "$built_exe" package/msys/precizer.exe
           cp /usr/bin/msys-2.0.dll package/msys/msys-2.0.dll
 
+          # Verify that the payload keeps only the expected MSYS runtime dependency
           cygcheck package/msys/precizer.exe | tee package/msys-dependencies.txt
           if ! grep -qi 'msys-2\.0\.dll' package/msys-dependencies.txt; then
             echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
@@ -352,69 +366,89 @@ jobs:
             exit 1
           fi
 
+          # Build the native launcher that embeds the payload files
           make -C .packaging/msys
 
+          # Verify that the launcher does not import MSYS2 DLLs from the runner
           cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
           if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' package/msys-launcher-dependencies.txt; then
             echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
             exit 1
           fi
 
+      # Confirm that the self-extracting launcher works without MSYS2 on PATH
       - name: Run native launcher outside MSYS
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
+          # Remove MSYS2 directories from PATH to simulate a clean Windows environment
           $env:Path = (($env:Path -split ';') | Where-Object { $_ -notmatch '\\msys64\\' }) -join ';'
+
+          # Run the launcher and forward its exit code to the workflow
           $precizer = Join-Path $env:GITHUB_WORKSPACE "precizer_windows_x64_portable.exe"
           & $precizer --version
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
 
+      # Create the zip distribution with the MSYS payload files
       - name: Create MSYS x64 archive
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
+          # Recreate the versioned archive root directory
           $versionDir = "v${env:VERSION}"
           Remove-Item -Path $versionDir -Recurse -Force -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force -Path $versionDir | Out-Null
+
+          # Copy the executable and its MSYS runtime into the archive root
           Copy-Item -Path "package\msys\precizer.exe" -Destination $versionDir
           Copy-Item -Path "package\msys\msys-2.0.dll" -Destination $versionDir
+
+          # Print the archive root contents for the workflow log
           Get-ChildItem -Path $versionDir | Format-Table -AutoSize
 
+          # Compress the archive root into the release zip asset
           Compress-Archive `
             -Path $versionDir `
             -DestinationPath "precizer_windows_x64_portable.zip" `
             -Force
 
+      # Generate a Sigstore attestation for the self-extracting executable
       - name: Generate attestation (MSYS x64 self-extracting exe)
         id: attest_windows_x64_exe
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: precizer_windows_x64_portable.exe
 
+      # Save the executable attestation bundle under the release asset name
       - name: Save Sigstore bundle (MSYS x64 self-extracting exe)
         shell: pwsh
         run: |
+          # Copy the generated bundle from the action output path
           Copy-Item `
             -Path "${{ steps.attest_windows_x64_exe.outputs.bundle-path }}" `
             -Destination "precizer_windows_x64_portable.exe.sigstore.json"
 
+      # Generate a Sigstore attestation for the zip distribution
       - name: Generate attestation (MSYS x64 zip)
         id: attest_windows_x64_zip
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: precizer_windows_x64_portable.zip
 
+      # Save the zip attestation bundle under the release asset name
       - name: Save Sigstore bundle (MSYS x64 zip)
         shell: pwsh
         run: |
+          # Copy the generated bundle from the action output path
           Copy-Item `
             -Path "${{ steps.attest_windows_x64_zip.outputs.bundle-path }}" `
             -Destination "precizer_windows_x64_portable.zip.sigstore.json"
 
+      # Preserve both Sigstore bundles for the final release provenance job
       - name: Upload Sigstore bundle artifact (MSYS x64)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -425,11 +459,13 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      # Attach the Windows x64 release assets and their Sigstore bundles to the GitHub Release
       - name: Upload MSYS x64 asset
         shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          # Upload all Windows x64 assets for the current tag and replace stale copies
           gh release upload ${{ github.ref_name }} `
             "precizer_windows_x64_portable.exe" `
             "precizer_windows_x64_portable.exe.sigstore.json" `
