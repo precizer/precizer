@@ -135,24 +135,22 @@ TEST_DIR = tests
 # Tools directory
 TOOLS_DIR = tools
 
-# Extra libs for linking
-LDLIBS += -lpcre2-8
-
 # Additional include headers of external libraries
 DYNAMIC_INCPATH += $(foreach d,$(STATLIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 
 ifeq ($(UNAME_S),Darwin)
-#DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
-#INCPATH += $(shell pkg-config --cflags libpcre2-8)
 # argp lib
-DYNAMIC_INCPATH += -I/opt/homebrew/include
-INCPATH += -I/opt/homebrew/include
-LDPATH += -L/opt/homebrew/lib
+DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
+INCPATH += $(shell pkg-config --cflags libpcre2-8)
+LDLIBS += $(shell pkg-config --libs libpcre2-8)
 LDLIBS += -largp
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else
+LDLIBS += -lpcre2-8
+ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 # argp is not part of Cygwin's C library
 LDLIBS += -largp
+endif
 endif
 
 # Default build

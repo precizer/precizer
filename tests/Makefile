@@ -25,7 +25,7 @@ APP_SRC_DIR = ../src
 BUILDDIR = ../.builds
 TEST_BUILDDIR = $(BUILDDIR)/$(EXE)
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
-LIBS = testitall testmocking mem sha512 rational sqlite3 xdiff
+LIBS = testitall testmocking mem sha512 rational sqlite3 xdiff monocypher
 
 TESTED_APP_NAME := $(shell awk '$$2 == "APP_NAME" && $$3 ~ /^"/ { gsub(/"/,"",$$3); print $$3; exit }' $(APP_SRC_DIR)/version.h)
 ifeq ($(TESTED_APP_NAME),)
@@ -33,7 +33,12 @@ $(error Failed to extract APP_NAME from $(APP_SRC_DIR)/version.h)
 endif
 
 # Extra libs for linking
-LDLIBS += $(foreach d,$(LIBS),-l$d) -lpcre2-8
+LDLIBS += $(foreach d,$(LIBS),-l$d)
+ifeq ($(UNAME_S),Darwin)
+LDLIBS += $(shell pkg-config --libs libpcre2-8)
+else
+LDLIBS += -lpcre2-8
+endif
 EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 
 SYS := $(shell $(CC) -dumpmachine 2>/dev/null)
@@ -49,9 +54,6 @@ INCPATH += -I$(APP_SRC_DIR)
 
 ifeq ($(UNAME_S),Darwin)
 INCPATH += $(shell pkg-config --cflags libpcre2-8)
-# argp lib
-INCPATH += -I/opt/homebrew/include
-LDPATH += -L/opt/homebrew/lib
 LDLIBS += -largp
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 # argp is not part of Cygwin's C library
@@ -238,16 +240,16 @@ tests-dynamic: debug-dynamic
 run: sanitize
 
 testlibs-coverage: precizer-coverage
-	@$(MAKE) -s -C ../libs coverage SUBDIRS="xdiff testitall testmocking" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
+	@$(MAKE) -s -C ../libs coverage SUBDIRS="xdiff testitall testmocking monocypher" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
 
 testlibs-sanitize: precizer-sanitize
-	@$(MAKE) -s -C ../libs sanitize SUBDIRS="xdiff testitall testmocking" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
+	@$(MAKE) -s -C ../libs sanitize SUBDIRS="xdiff testitall testmocking monocypher" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
 
 testlibs-debug: precizer-debug
-	@$(MAKE) -s -C ../libs debug SUBDIRS="xdiff testitall testmocking" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
+	@$(MAKE) -s -C ../libs debug SUBDIRS="xdiff testitall testmocking monocypher" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
 
 testlibs-debug-dynamic: precizer-debug-dynamic
-	@$(MAKE) -s -C ../libs debug SUBDIRS="xdiff testitall testmocking" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
+	@$(MAKE) -s -C ../libs debug SUBDIRS="xdiff testitall testmocking monocypher" TESTITALL_APP_NAME=$(TESTED_APP_NAME) BUILDDIR=../$(BUILDDIR)
 
 #
 # Coverage rules

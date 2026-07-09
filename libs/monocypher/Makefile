@@ -1,10 +1,5 @@
-#
-# “The Winner Test It All”
-#                  © ABBA
-#
-
 # Name of the library
-LIBNAME=libtestitall
+LIBNAME=libmonocypher
 
 # Defaults to a local .builds when running `make` from this directory.
 # When the umbrella project drives the build, BUILDDIR is overridden via the
@@ -14,21 +9,12 @@ COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 
 UNAME_S := $(shell uname -s)
 
-# macOS-specific code
-ifeq ($(UNAME_S),Darwin)
-CFLAGS += -DEVIL_EMPIRE_OS
-endif
-
 #
 # Compiler flags
 #
 # USE_LLD and AR are exported by the root Makefile when COMPILER=clang
 # to use LLVM's own linker and archiver, avoiding gold plugin version mismatch
 CFLAGS += -std=c2x -finline-functions
-
-ifneq ($(TESTITALL_APP_NAME),)
-CFLAGS += -DTESTITALL_APP_NAME=\"$(TESTITALL_APP_NAME)\"
-endif
 
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
@@ -56,7 +42,7 @@ WFLAGS += -Wshadow
 WFLAGS += -Wextra
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
-WFLAGS += -Wswitch-default -Wtrigraphs -Wstrict-overflow=5
+WFLAGS += -Wswitch-default -Wtrigraphs
 WFLAGS += -Wfloat-equal -Wundef
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
 WFLAGS += -Wwrite-strings
@@ -64,13 +50,6 @@ WFLAGS += -Winline
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 WFLAGS += -Wlogical-op
-WFLAGS += -Wsuggest-attribute=const
-WFLAGS += -Wsuggest-attribute=pure
-WFLAGS += -Wsuggest-attribute=noreturn
-WFLAGS += -Wsuggest-attribute=format
-WFLAGS += -Wmissing-format-attribute
-else
-WFLAGS += -Wno-gnu-zero-variadic-macro-arguments
 endif
 
 #
@@ -78,28 +57,11 @@ endif
 #
 SRC_DIR = src
 SRCS = $(wildcard $(SRC_DIR)/*.c)
-HDRS = $(wildcard $(SRC_DIR)/*.h) $(foreach d,$(LIBS),$(wildcard ../$d/src/*.h))
+HDRS = $(wildcard $(SRC_DIR)/*.h)
 
 # Exclude a file
 OBJS = $(SRCS:$(SRC_DIR)/%.c=%.o)
-
-LIBS = rational mem xdiff monocypher
 LIBDIR = $(patsubst lib%,%,$(LIBNAME))
-DEPLIB_BUILDDIR = ../$(LIBDIR)/$(BUILDDIR)
-
-# Additional include paths for external libraries
-INCPATH += -I$(SRC_DIR)
-INCPATH += $(foreach d,$(LIBS),-I../$d/src/)
-ifeq ($(UNAME_S),Darwin)
-INCPATH += $(shell pkg-config --cflags libpcre2-8)
-endif
-
-LDLIBS = $(foreach l,$(LIBS),-l$(l))
-ifeq ($(UNAME_S),Darwin)
-LDLIBS += $(shell pkg-config --libs libpcre2-8)
-else
-LDLIBS += -lpcre2-8
-endif
 
 #
 # Debug build settings
@@ -108,7 +70,6 @@ DBG = debug
 DBG_DIR = $(BUILDDIR)/$(DBG)
 DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_LIBDIR)/obj/$(LIBDIR)
-DBG_LDPATH = -L$(DBG_LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
@@ -129,14 +90,12 @@ COV = coverage
 COV_DIR = $(BUILDDIR)/$(COV)
 COV_LIBDIR = $(COV_DIR)/libs
 COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
-COV_LDPATH = -L$(COV_LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
-# This coverage target intentionally does not add gcov instrumentation.
-# This keeps coverage statistics focused on files whose coverage has strategic value
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-COV_CFLAGS = $(CFLAGS) $(COV_OPT_CFLAGS) -g -DDEBUG
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG
+COV_LDFLAGS += $(USE_LLD) -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -145,7 +104,6 @@ SNTZ = sanitize
 SNTZ_DIR = $(BUILDDIR)/$(SNTZ)
 SNTZ_LIBDIR = $(SNTZ_DIR)/libs
 SNTZ_OBJDIR = $(SNTZ_LIBDIR)/obj/$(LIBDIR)
-SNTZ_LDPATH = -L$(SNTZ_LIBDIR)
 SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
@@ -164,7 +122,6 @@ PROD = production
 PROD_DIR = $(BUILDDIR)/$(PROD)
 PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_LIBDIR)/obj/$(LIBDIR)
-PROD_LDPATH = -L$(PROD_LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
@@ -180,15 +137,6 @@ else
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections
 PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
 endif
-# Extra warnings enabled only for GCC
-ifneq ($(GCC),)
-PROD_WFLAGS += -Wsuggest-attribute=const
-PROD_WFLAGS += -Wsuggest-attribute=pure
-PROD_WFLAGS += -Wsuggest-attribute=noreturn
-PROD_WFLAGS += -Wsuggest-attribute=format
-PROD_WFLAGS += -Wmissing-format-attribute
-endif
-
 #
 # Portable build settings
 #
@@ -196,7 +144,6 @@ PRTB = portable
 PRTB_DIR = $(BUILDDIR)/$(PRTB)
 PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_LIBDIR)/obj/$(LIBDIR)
-PRTB_LDPATH = -L$(PRTB_LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
@@ -212,19 +159,9 @@ else
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections
 PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
 endif
-# Extra warnings enabled only for GCC
-ifneq ($(GCC),)
-PRTB_WFLAGS += -Wsuggest-attribute=const
-PRTB_WFLAGS += -Wsuggest-attribute=pure
-PRTB_WFLAGS += -Wsuggest-attribute=noreturn
-PRTB_WFLAGS += -Wsuggest-attribute=format
-PRTB_WFLAGS += -Wmissing-format-attribute
-endif
-
 .PHONY: all purge clean debug production prod portable sanitize format gcc-analyzer
 .PHONY: coverage memtest tests test tests-sanitize tests-debug tests-coverage
-.PHONY: testlibs-coverage testlibs-sanitize testlibs-debug
-.PHONY: testlibs-production testlibs-portable cppcheck clang-analyzer compile-commands clean-compile-commands print-%
+.PHONY: cppcheck clang-analyzer compile-commands clean-compile-commands print-%
 
 # Default build
 all: debug production portable
@@ -244,34 +181,18 @@ tests-debug:
 
 tests-coverage:
 	@$(MAKE) -s -C tests/ coverage-report BUILDDIR=../$(BUILDDIR)
-
-testlibs-debug:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) debug BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
-
-testlibs-coverage:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) coverage BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
-
-testlibs-sanitize:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) sanitize BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
-
-testlibs-production:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) production BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
-
-testlibs-portable:
-	@$(foreach lib,$(LIBS),$(MAKE) -s -C ../$(lib) portable BUILDDIR="$(DEPLIB_BUILDDIR)" || exit $$?;)
-
 debug: $(DBG_SO) $(DBG_STAT)
 
 $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@$(AR) rcs $@ $+
 	@echo "$@ prepared as debug static library archive"
 
-$(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR) testlibs-debug
-	@$(CC) -shared $(DBG_LDFLAGS) $(DBG_LDPATH) -o $@ $^ $(LDLIBS)
+$(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR)
+	@$(CC) -shared $(DBG_LDFLAGS) -o $@ $^
 	@echo "$@ prepared as debug shared library, not stripped"
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled with debug flags"
 
 $(DBG_OBJDIR): | $(DBG_LIBDIR)
@@ -289,12 +210,12 @@ $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
 	@$(AR) rcs $@ $+
 	@echo "$@ prepared as coverage static library archive"
 
-$(COV_SO): $(COV_OBJS) | $(COV_LIBDIR) testlibs-coverage
-	@$(CC) -shared $(COV_LDPATH) -o $@ $^ $(LDLIBS)
+$(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
+	@$(CC) -shared $(COV_LDFLAGS) -o $@ $^
 	@echo "$@ prepared as coverage shared library, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(COV_CFLAGS) $(WFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled with coverage flags"
 
 $(COV_OBJDIR): | $(COV_LIBDIR)
@@ -312,12 +233,12 @@ $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@$(AR) rcs $@ $+
 	@echo "$@ prepared as sanitizer static library archive"
 
-$(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR) testlibs-sanitize
-	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDPATH) -o $@ $^ $(LDLIBS)
+$(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
+	@$(CC) -shared $(SNTZ_LDFLAGS) -o $@ $^
 	@echo "$@ prepared as sanitizer shared library, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR): | $(SNTZ_LIBDIR)
@@ -336,12 +257,12 @@ $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@$(AR) rcs $@ $+
 	@echo "$@ prepared as release static library archive"
 
-$(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR) testlibs-production
-	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) $(PROD_LDPATH) -o $@ $^ $(LDLIBS)
+$(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
+	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) -o $@ $^
 	@echo "$@ prepared as release shared library, stripped"
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled with release flags"
 
 $(PROD_OBJDIR): | $(PROD_LIBDIR)
@@ -359,12 +280,12 @@ $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@$(AR) rcs $@ $+
 	@echo "$@ prepared as portable static library archive"
 
-$(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR) testlibs-portable
-	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) $(PRTB_LDPATH) -o $@ $^ $(LDLIBS)
+$(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR)
+	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) -o $@ $^
 	@echo "$@ prepared as portable shared library, stripped"
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PRTB_WFLAGS) $(PRTB_CFLAGS) -o $@ $<
+	@$(CC) -c -fPIC $(WFLAGS) $(PRTB_WFLAGS) $(PRTB_CFLAGS) -o $@ $<
 	@echo "$(notdir $<) compiled with portable flags"
 
 $(PRTB_OBJDIR): | $(PRTB_LIBDIR)
@@ -446,7 +367,7 @@ clang-analyzer:
 
 # Optional preprocessor files
 $(SRC_DIR)/%.i: $(SRC_DIR)/%.c
-	@$(CC) -E -C -o $@ $(INCPATH) $(PROD_CFLAGS) $<
+	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
 	@bcpp -na -s -i 4 $@ > $@.h
 	@sed -i 's/[ \t]*\# [[:digit:]]\+ \".*//g' $@.h
 

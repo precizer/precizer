@@ -43,7 +43,11 @@ DEPLIB_BUILDDIR = ../$(LIBDIR)/tests/$(BUILDDIR)
 
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LINK_LIBS),-l$d)
+ifeq ($(UNAME_S),Darwin)
+LDLIBS += $(shell pkg-config --libs libpcre2-8)
+else
 LDLIBS += -lpcre2-8
+endif
 # Keep external libraries in this list. Internal libraries are linked through
 # object files so --wrap can intercept calls made inside those libraries
 EXT_LDLIBS = $(filter-out $(foreach d,$(LINK_LIBS),-l$d),$(LDLIBS))
@@ -61,6 +65,9 @@ endif
 # Additional include paths for external libraries
 INCPATH += -I../src/
 INCPATH += $(foreach d,$(LINK_LIBS),-I../../$(d)/src/)
+ifeq ($(UNAME_S),Darwin)
+INCPATH += $(shell pkg-config --cflags libpcre2-8)
+endif
 
 # Detect whether GCC is in use
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
