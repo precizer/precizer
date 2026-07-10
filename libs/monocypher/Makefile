@@ -358,7 +358,7 @@ compile-commands: $(COMPILE_COMMANDS)
 
 $(COMPILE_COMMANDS):
 	@mkdir -p "$(BUILDDIR)"
-	bear --output $@ -- $(MAKE) -B -s -C tests debug-build
+	bear --output $@ -- $(MAKE) -B -s debug
 
 cppcheck: compile-commands
 	cppcheck --check-level=exhaustive --project=$(COMPILE_COMMANDS) --suppress=missingIncludeSystem --enable=all --platform=unix64 --std=c2x -q --force --inconclusive
