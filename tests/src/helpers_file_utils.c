@@ -1,4 +1,5 @@
 #include "sute.h"
+#include "monocypher-ed25519.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <ftw.h>
@@ -1728,16 +1729,16 @@ Return rewrite_file_dense_with_same_size(
 }
 
 /**
- * @brief Compute SHA512 for a file using the project SHA512 library
+ * @brief Compute SHA512 for a file using Monocypher
  *
  * @param[in] file_path File path passed directly to `fopen()`
  * @param[out] sha512_out Output SHA512 digest buffer
  *
  * @return Return status code:
  *         - SUCCESS: SHA512 digest computed successfully
- *         - FAILURE: Validation, I/O, or hash operation failed
+ *         - FAILURE: Validation, I/O, or digest-size check failed
  */
-Return compute_file_sha512(
+Return compute_file_sha512_monocypher(
 	const char    *file_path,
 	unsigned char *sha512_out)
 {
@@ -1745,10 +1746,15 @@ Return compute_file_sha512(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *file = NULL;
+	crypto_sha512_ctx context = {0};
 	unsigned char buffer[65536];
-	SHA512_Context context = {0};
 
 	if(file_path == NULL || sha512_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SHA512_DIGEST_LENGTH != 64)
 	{
 		status = FAILURE;
 	}
@@ -1763,9 +1769,9 @@ Return compute_file_sha512(
 		}
 	}
 
-	if(SUCCESS == status && sha512_init(&context) != CRYPT_OK)
+	if(SUCCESS == status)
 	{
-		status = FAILURE;
+		crypto_sha512_init(&context);
 	}
 
 	while(SUCCESS == status)
@@ -1781,15 +1787,12 @@ Return compute_file_sha512(
 			break;
 		}
 
-		if(sha512_update(&context,buffer,bytes_read) != CRYPT_OK)
-		{
-			status = FAILURE;
-		}
+		crypto_sha512_update(&context,buffer,bytes_read);
 	}
 
-	if(SUCCESS == status && sha512_final(&context,sha512_out) != CRYPT_OK)
+	IF(SUCCESS == status)
 	{
-		status = FAILURE;
+		crypto_sha512_final(&context,sha512_out);
 	}
 
 	IF(file != NULL)

@@ -272,14 +272,14 @@ Return rewrite_file_dense_with_same_size(
 	const blkcnt_t blocks_before_rewrite);
 
 /**
- * @brief Calculate SHA512 digest of a file
+ * @brief Calculate SHA512 digest of a file using Monocypher
  *
  * @param[in] file_path File path passed directly to `fopen()`
  * @param[out] sha512_out Output SHA512 bytes with SHA512_DIGEST_LENGTH size
  *
  * @return Return status code
  */
-Return compute_file_sha512(
+Return compute_file_sha512_monocypher(
 	const char    *file_path,
 	unsigned char *sha512_out);
 
