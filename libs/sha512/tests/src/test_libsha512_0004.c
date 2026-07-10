@@ -110,24 +110,30 @@ static Return check_sha512_boundary_size(size_t message_size)
 	m_create(size_t,chunks);
 	m_create(unsigned char,one_shot_digest);
 	m_create(unsigned char,chunked_digest);
+	m_create(unsigned char,monocypher_digest);
 
 	/* Build one deterministic boundary-sized message and a chunk plan that
 	   finishes it with a one-byte update */
 	ASSERT(SUCCESS == prepare_boundary_message(message,message_size));
 	ASSERT(SUCCESS == prepare_boundary_chunks(chunks,message_size));
 
-	/* Hash the exact same bytes through the one-shot and chunked paths. Boundary
-	   behavior is correct only if both paths produce the same digest */
+	/* Hash the exact same bytes through both libsha512 paths and the Monocypher
+	   reference. Boundary behavior is correct only if every digest matches */
 	ASSERT(SUCCESS == calculate_sha512_digest(
 		m_data_ro(unsigned char,message),
 		message->length,
 		one_shot_digest));
+	ASSERT(SUCCESS == calculate_sha512_digest_monocypher(
+		m_data_ro(unsigned char,message),
+		message->length,
+		monocypher_digest));
 	ASSERT(SUCCESS == calculate_sha512_digest_in_chunks(
 		m_data_ro(unsigned char,message),
 		message->length,
 		chunks,
 		chunked_digest));
-	ASSERT(SUCCESS == assert_sha512_digest_matches(one_shot_digest,chunked_digest));
+	ASSERT(SUCCESS == assert_sha512_digest_matches(one_shot_digest,monocypher_digest));
+	ASSERT(SUCCESS == assert_sha512_digest_matches(chunked_digest,monocypher_digest));
 
 	/* Free descriptors with call() so a failed boundary check does not leak the
 	   buffers allocated for that size */
@@ -135,6 +141,7 @@ static Return check_sha512_boundary_size(size_t message_size)
 	call(m_del(chunks));
 	call(m_del(one_shot_digest));
 	call(m_del(chunked_digest));
+	call(m_del(monocypher_digest));
 
 	provide(status);
 }

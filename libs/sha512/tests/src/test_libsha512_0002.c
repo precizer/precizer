@@ -49,20 +49,26 @@ Return test_libsha512_0002(void)
 	m_create(size_t,chunks);
 	m_create(unsigned char,one_shot_digest);
 	m_create(unsigned char,chunked_digest);
+	m_create(unsigned char,monocypher_digest);
 
 	/* Prepare the message, resolve its libmem-tracked length through the public
-	   helper, and compute the one-shot reference digest that every chunked
-	   variant below must reproduce byte-for-byte */
+	   helper, and compute the libsha512 one-shot digest checked below */
 	ASSERT(SUCCESS == m_copy_fixed_string(message,sizeof(message_text),message_text));
 	ASSERT(SUCCESS == m_string_length(message,&message_length));
 	ASSERT(SUCCESS == calculate_sha512_digest(
 		(const unsigned char *)m_text(message),
 		message_length,
 		one_shot_digest));
+	ASSERT(SUCCESS == calculate_sha512_digest_monocypher(
+		(const unsigned char *)m_text(message),
+		message_length,
+		monocypher_digest));
+	ASSERT(SUCCESS == assert_sha512_digest_matches(one_shot_digest,monocypher_digest));
 
 	/* Replay the message through every chunk plan. m_copy_buffer rewrites the
 	   chunks descriptor from scratch on each iteration, so plans are isolated
-	   from one another */
+	   from one another. Every chunked digest is checked against Monocypher, not
+	   only against libsha512's one-shot path */
 	for(size_t plan_index = 0U; SUCCESS == status && plan_index < sizeof(chunk_plans) / sizeof(chunk_plans[0]); plan_index++)
 	{
 		ASSERT(SUCCESS == m_copy_buffer(
@@ -74,7 +80,7 @@ Return test_libsha512_0002(void)
 			message_length,
 			chunks,
 			chunked_digest));
-		ASSERT(SUCCESS == assert_sha512_digest_matches(one_shot_digest,chunked_digest));
+		ASSERT(SUCCESS == assert_sha512_digest_matches(chunked_digest,monocypher_digest));
 	}
 
 	/* Release every descriptor through call() so cleanup still runs after an
@@ -83,6 +89,7 @@ Return test_libsha512_0002(void)
 	call(m_del(chunks));
 	call(m_del(one_shot_digest));
 	call(m_del(chunked_digest));
+	call(m_del(monocypher_digest));
 
 	RETURN_STATUS;
 }

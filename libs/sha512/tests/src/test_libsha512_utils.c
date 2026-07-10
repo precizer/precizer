@@ -1,5 +1,7 @@
 #include "test_libsha512_utils.h"
 
+#include "monocypher-ed25519.h"
+
 /**
  * @brief Hash one complete message with libsha512
  * @details This helper gives tests a small, readable way to ask libsha512 for
@@ -40,6 +42,47 @@ Return calculate_sha512_digest(
 	ASSERT(CRYPT_OK == sha512_init(&context));
 	ASSERT(CRYPT_OK == sha512_update(&context,message,message_size));
 	ASSERT(CRYPT_OK == sha512_final(&context,digest_data));
+
+	provide(status);
+}
+
+/**
+ * @brief Hash one complete message with Monocypher SHA512
+ * @details The tests use this helper as an independent reference implementation
+ * for libsha512. It keeps Monocypher setup and length validation in one place
+ * while the individual tests stay focused on the input shape they exercise
+ *
+ * @param message Message bytes that should be hashed
+ * @param message_size Number of bytes from @p message to include in the hash
+ * @param digest Output descriptor that receives the 64-byte SHA-512 digest
+ * @return SUCCESS when Monocypher produced one SHA-512 digest, otherwise FAILURE
+ */
+Return calculate_sha512_digest_monocypher(
+	const unsigned char *message,
+	size_t              message_size,
+	memory              *digest)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	unsigned char *digest_data = NULL;
+
+	ASSERT(message != NULL);
+	ASSERT(digest != NULL);
+	ASSERT(SUCCESS == m_resize(digest,SHA512_DIGEST_LENGTH,ZERO_NEW_MEMORY));
+
+	IF(digest != NULL)
+	{
+		digest_data = m_data(unsigned char,digest);
+	}
+
+	ASSERT(digest_data != NULL);
+
+	if(SUCCESS == status)
+	{
+		crypto_sha512(digest_data,message,message_size);
+	}
 
 	provide(status);
 }
@@ -191,6 +234,7 @@ Return check_sha512_vector(const sha512_digest_vector *vector)
 	m_create(char,message,MEMORY_STRING);
 	m_create(unsigned char,digest);
 	m_create(unsigned char,expected_digest);
+	m_create(unsigned char,monocypher_digest);
 
 	/* Validate the vector and copy its text into libmem-managed storage. The
 	   string length check catches accidental vector size drift */
@@ -207,16 +251,22 @@ Return check_sha512_vector(const sha512_digest_vector *vector)
 		(const unsigned char *)m_text(message),
 		message_length,
 		digest));
+	ASSERT(SUCCESS == calculate_sha512_digest_monocypher(
+		(const unsigned char *)m_text(message),
+		message_length,
+		monocypher_digest));
 	ASSERT(SUCCESS == m_copy_buffer(
 		expected_digest,
 		SHA512_DIGEST_LENGTH,
 		vector->expected_digest));
-	ASSERT(SUCCESS == assert_sha512_digest_matches(digest,expected_digest));
+	ASSERT(SUCCESS == assert_sha512_digest_matches(expected_digest,monocypher_digest));
+	ASSERT(SUCCESS == assert_sha512_digest_matches(digest,monocypher_digest));
 
 	/* Clean up every descriptor even when a vector assertion fails */
 	call(m_del(message));
 	call(m_del(digest));
 	call(m_del(expected_digest));
+	call(m_del(monocypher_digest));
 
 	provide(status);
 }
