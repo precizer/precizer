@@ -72,6 +72,7 @@ sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev upx-ucl
 
 * зависимости из пунктов 1 и 2
 * тулчейн санитайзеров (`ASan`/`UBSan`) и `llvm-symbolizer`
+* встроенная библиотека Monocypher используется как независимый эталон SHA512 в тестах и не требует внешних пакетов
 
 Ubuntu/Debian:
 

@@ -30,8 +30,8 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 ## Project Structure & Module Organization
 - `src/`: main application source (`precizer.c`, argument parsing, DB/checksum logic)
 - `Makefile`: root build entrypoint
-- `libs/`: internal libraries (`sqlite3`, `sha512`, `mem`, `rational`, `xdiff`, `testitall`), each with its own `Makefile` and `src/`
-- `libs/sqlite3/src/` contains third-party SQLite amalgamation sources (`sqlite3.c` and header). Treat this as vendor code and never modify it
+- `libs/`: internal and bundled libraries (`sqlite3`, `sha512`, `mem`, `rational`, `xdiff`, `testitall`, `monocypher`), each with its own `Makefile` and `src/`
+- `libs/sqlite3/src/` and `libs/monocypher/src/` contain third-party vendored sources. Treat this as vendor code and never modify it directly
 - `tests/`: hybrid test suite (`tests/src/`, golden outputs in `tests/templates/`, filesystem fixtures in `tests/fixtures/`)
 - `tools/`: auxiliary developer utilities
 - `.builds/`: generated build/test artifacts (do not commit)
