@@ -23,6 +23,9 @@ STATIC = -static -static-libgcc -Wl,--gc-sections
 
 APP_SRC_DIR = ../src
 BUILDDIR = ../.builds
+# Returns a concise path for build messages.
+# Plain file names stay unchanged; nested paths keep only final-directory/file
+short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
 TEST_BUILDDIR = $(BUILDDIR)/$(EXE)
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 LIBS = testitall testmocking mem sha512 rational sqlite3 xdiff monocypher
@@ -261,20 +264,20 @@ coverage: hugetestfile coverage-html
 
 $(COV_EXE): $(COV_OBJS) $(COV_APP_OBJS) $(LIB_TESTS_COV_OBJS) precizer-coverage testlibs-coverage
 	@$(CC) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) $(WRAPFLAGS) $(COV_OBJS) $(COV_APP_OBJS) $(LIB_TESTS_COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) -o $(COV_EXE)
-	@echo "$@ linked dynamically with coverage flags, not stripped"
+	@echo "$(call short_path,$@) linked dynamically with coverage flags, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with coverage flags"
+	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with coverage flags"
+	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR)/%.o: ../%.c $(ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(COV_OBJDIR)
 	@mkdir -p "$(dir $@)"
 	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with coverage flags"
+	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR):
 	@mkdir -p "$(COV_OBJDIR)"
@@ -301,20 +304,20 @@ sanitize: precizer-sanitize hugetestfile $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(LIB_TESTS_SNTZ_OBJS) precizer-sanitize testlibs-sanitize
 	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(LIB_TESTS_SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS) -o $(SNTZ_EXE)
-	@echo "$@ linked dynamically with sanitizer flags, not stripped"
+	@echo "$(call short_path,$@) linked dynamically with sanitizer flags, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with sanitizer flags"
+	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with sanitizer flags"
+	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR)/%.o: ../%.c $(ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(SNTZ_OBJDIR)
 	@mkdir -p "$(dir $@)"
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with sanitizer flags"
+	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
 	@mkdir -p "$(SNTZ_OBJDIR)"
@@ -335,20 +338,20 @@ debug: hugetestfile debug-build
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS) precizer-debug testlibs-debug
 	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS) -o $(DBG_EXE)
-	@echo "$@ linked statically with debug flags, not stripped"
+	@echo "$(call short_path,$@) linked statically with debug flags, not stripped"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
 	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with debug flags"
+	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
 	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with debug flags"
+	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR)/%.o: ../%.c $(ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(DBG_OBJDIR)
 	@mkdir -p "$(dir $@)"
 	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with debug flags"
+	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR):
 	@mkdir -p "$(DBG_OBJDIR)"
@@ -360,20 +363,20 @@ debug-dynamic: hugetestfile debug-dynamic-build
 
 $(DBG_DYN_EXE): $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS) precizer-debug-dynamic testlibs-debug-dynamic
 	@$(CC) $(DBG_DYN_LDPATH) $(WRAPFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $(DBG_DYN_EXE)
-	@echo "$@ linked dynamically with debug flags, not stripped"
+	@echo "$(call short_path,$@) linked dynamically with debug flags, not stripped"
 
 $(DBG_DYN_OBJDIR)/%.o: $(SRC)/%.c $(DBG_DYN_ALLHDRS) $(TMPLTS) | $(DBG_DYN_OBJDIR)
 	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with dynamic debug flags"
+	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(DBG_DYN_ALLHDRS) $(TMPLTS) | $(DBG_DYN_OBJDIR)
 	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with dynamic debug flags"
+	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR)/%.o: ../%.c $(DBG_DYN_ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(DBG_DYN_OBJDIR)
 	@mkdir -p "$(dir $@)"
 	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with dynamic debug flags"
+	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR):
 	@mkdir -p "$(DBG_DYN_OBJDIR)"

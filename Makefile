@@ -49,6 +49,9 @@
 .SUFFIXES: .c .o .h # Define our suffix list
 
 BUILDDIR = .builds
+# Returns a concise path for build messages.
+# Plain file names stay unchanged; nested paths keep only final-directory/file
+short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 
 #
@@ -413,14 +416,14 @@ debuglibs:
 $(DBG_EXE): $(DBG_OBJS) debuglibs
 	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) $(DBG_OBJS) $(DBG_LIB_OBJS) $(DBG_EXT_LDLIBS) -o $@
 ifeq ($(UNAME_S),Darwin)
-	@echo "$@ linked dynamically, not stripped"
+	@echo "$(call short_path,$@) linked dynamically, not stripped"
 else
-	@echo "$@ linked statically, not stripped"
+	@echo "$(call short_path,$@) linked statically, not stripped"
 endif
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
 	@$(CC) -c $(DBG_INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
-	@echo "$< compiled with debug flags"
+	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR):
 	@mkdir -p $(DBG_OBJDIR)
@@ -439,11 +442,11 @@ debugdynlibs:
 
 $(DBG_DYN_EXE): $(DBG_DYN_OBJS) debugdynlibs
 	@$(CC) $(DBG_DYN_LDPATH) $(DBG_DYN_LDFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $@
-	@echo "$@ linked dynamically, not stripped"
+	@echo "$(call short_path,$@) linked dynamically, not stripped"
 
 $(DBG_DYN_OBJDIR)/%.o: $(SRC_DIR)/%.c $(DBG_DYN_HDRS) | $(DBG_DYN_OBJDIR)
 	@$(CC) -c $(DBG_DYN_INCPATH) $(WFLAGS) $(DBG_DYN_CFLAGS) -o $@ $<
-	@echo "$< compiled with dynamic debug flags"
+	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR):
 	@mkdir -p $(DBG_DYN_OBJDIR)
@@ -464,14 +467,14 @@ coveragelibs:
 $(COV_EXE): $(COV_OBJS) coveragelibs
 	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(COV_LIB_OBJS) $(COV_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
-	@echo "$@ linked dynamically, not stripped"
+	@echo "$(call short_path,$@) linked dynamically, not stripped"
 else
-	@echo "$@ linked statically, not stripped"
+	@echo "$(call short_path,$@) linked statically, not stripped"
 endif
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
-	@echo "$< compiled with coverage flags"
+	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR):
 	@mkdir -p $(COV_OBJDIR)
@@ -496,11 +499,11 @@ sanitizelibs:
 
 $(SNTZ_EXE): $(SNTZ_OBJS) sanitizelibs
 	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(SNTZ_EXT_LDLIBS) -o $@
-	@echo "$@ linked dynamically, not stripped"
+	@echo "$(call short_path,$@) linked dynamically, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
-	@echo "$< compiled with sanitizer flags"
+	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
 	@mkdir -p $(SNTZ_OBJDIR)
@@ -528,14 +531,14 @@ prodlibs:
 $(PROD_EXE): $(PROD_OBJS) prodlibs
 	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(PROD_LIB_OBJS) $(PROD_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
-	@echo "$@ linked dynamically, stripped"
+	@echo "$(call short_path,$@) linked dynamically, stripped"
 else
-	@echo "$@ linked statically, stripped"
+	@echo "$(call short_path,$@) linked statically, stripped"
 endif
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
-	@echo "$< compiled with release flags"
+	@echo "$(call short_path,$<) compiled with release flags"
 
 $(PROD_OBJDIR):
 	@mkdir -p $(PROD_OBJDIR)
@@ -562,11 +565,11 @@ dynprodlibs:
 
 $(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
 	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_LIB_OBJS) $(DYNP_SHARED_LIBS)
-	@echo "$@ linked dynamically, stripped"
+	@echo "$(call short_path,$@) linked dynamically, stripped"
 
 $(DYNP_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DYNP_OBJDIR)
 	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
-	@echo "$< compiled with release flags"
+	@echo "$(call short_path,$<) compiled with release flags"
 
 $(DYNP_OBJDIR):
 	@mkdir -p $(DYNP_OBJDIR)
@@ -593,14 +596,14 @@ portablelibs:
 $(PRTB_EXE): $(PRTB_OBJS) portablelibs
 	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(PRTB_LIB_OBJS) $(PRTB_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
-	@echo "$@ linked dynamically, stripped"
+	@echo "$(call short_path,$@) linked dynamically, stripped"
 else
-	@echo "$@ linked statically, stripped"
+	@echo "$(call short_path,$@) linked statically, stripped"
 endif
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
-	@echo "$< compiled with portable flags"
+	@echo "$(call short_path,$<) compiled with portable flags"
 
 $(PRTB_OBJDIR):
 	@mkdir -p $(PRTB_OBJDIR)
