@@ -313,6 +313,39 @@ static Return runit_wait_env_set(
 }
 
 /**
+ * @brief Clear wait-control environment variables for a run without signal delivery
+ *
+ * The current values are copied to caller-owned storage so they can be restored
+ * after the background run finishes.
+ */
+static Return runit_wait_env_clear(struct runit_wait_env *state)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+
+	for(size_t i = 0U; i < RUNIT_WAIT_ENV_COUNT; i++)
+	{
+		run(runit_wait_env_snapshot(
+			runit_wait_env_names[i],
+			&state->old_value[i],
+			&state->had_value[i]));
+	}
+
+	if(SUCCESS == status)
+	{
+		state->snapshot_ready = true;
+	}
+
+	for(size_t i = 0U; i < RUNIT_WAIT_ENV_COUNT; i++)
+	{
+		run(runit_wait_env_unset_one(runit_wait_env_names[i]));
+	}
+
+	deliver(status);
+}
+
+/**
  * @brief Restore previously saved wait-control environment variable values.
  */
 static Return runit_wait_env_restore(const struct runit_wait_env *state)
@@ -585,16 +618,21 @@ static Return runit_send_background_signal(
 }
 
 /**
- * @brief Run precizer in background and complete signal-driven scenario.
+ * @brief Run precizer in background and optionally complete a signal-driven scenario.
  *
- * The function starts a child process, configures wait-control environment
- * variables, and sends @p signal_number to the child. When @p min_delay_ms is
- * greater than zero, delivery happens after that delay. When @p min_delay_ms is
- * zero, delivery happens immediately after the child reports that the configured
- * wait point was reached. The function then waits for completion while
- * finalizing stdout/stderr capture.
+ * The function starts a child process under output capture and a watchdog. When
+ * @p signal_number is positive, it configures wait-control environment
+ * variables and sends that signal to the child. When @p min_delay_ms is greater
+ * than zero, delivery happens after that delay. When @p min_delay_ms is zero,
+ * delivery happens immediately after the child reports that the configured wait
+ * point was reached.
  *
- * If the child exits before signal delivery, the function reports failure.
+ * When @p signal_number is zero, wait-control environment variables are
+ * temporarily cleared, no signal is sent, and the helper only waits for the
+ * child to exit naturally under the watchdog.
+ *
+ * If signal delivery is enabled and the child exits before delivery, the
+ * function reports failure.
  *
  * Internal helper-to-helper calls inside this closed API use lightweight
  * argument checks by design to improve readability and reduce overhead.
@@ -640,7 +678,8 @@ Return runit_background(
 	struct runit_signal_sync signal_sync;
 	runit_signal_sync_init(&signal_sync);
 
-	const bool wait_for_ready_point = (min_delay_ms == 0U);
+	const bool signal_delivery_enabled = (signal_number > 0);
+	const bool wait_for_ready_point = (signal_delivery_enabled == true && min_delay_ms == 0U);
 
 	call(m_del(STDOUT));
 	call(m_del(STDERR));
@@ -662,9 +701,9 @@ Return runit_background(
 		status = FAILURE;
 	}
 
-	if(SUCCESS == status && signal_number <= 0)
+	if(SUCCESS == status && signal_number < 0)
 	{
-		echo(STDERR,"Signal number must be positive, got: %d",signal_number);
+		echo(STDERR,"Signal number must not be negative, got: %d",signal_number);
 		status = FAILURE;
 	}
 
@@ -681,12 +720,18 @@ Return runit_background(
 
 	run(runit_signal_sync_prepare(&signal_sync,wait_for_ready_point));
 
-	/* max_delay_ms also defines how long in-app wait helpers may pause. */
-	run(runit_wait_env_set(
-		max_delay_ms,
-		wait_point,
-		signal_sync.write_fd,
-		&wait_environment));
+	if(signal_delivery_enabled == true)
+	{
+		/* max_delay_ms also defines how long in-app wait helpers may pause. */
+		run(runit_wait_env_set(
+			max_delay_ms,
+			wait_point,
+			signal_sync.write_fd,
+			&wait_environment));
+
+	} else {
+		run(runit_wait_env_clear(&wait_environment));
+	}
 
 	if(SUCCESS == status)
 	{
@@ -759,7 +804,7 @@ Return runit_background(
 		}
 	}
 
-	if(SUCCESS == status)
+	if(SUCCESS == status && signal_delivery_enabled == true)
 	{
 		if(wait_for_ready_point == true)
 		{
@@ -780,7 +825,7 @@ Return runit_background(
 		}
 	}
 
-	if(SUCCESS == status)
+	if(SUCCESS == status && signal_delivery_enabled == true)
 	{
 		run(runit_send_background_signal(app_pid,signal_number));
 	}
