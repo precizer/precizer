@@ -321,6 +321,7 @@ jobs:
             libargp-devel
             mingw-w64-ucrt-x86_64-binutils
             mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-upx
 
       # Compile the MSYS payload, package its runtime files, and build the native launcher
       - name: Build MSYS payload and native launcher
@@ -368,6 +369,12 @@ jobs:
 
           # Build the native launcher that embeds the payload files
           make -C .packaging/msys
+
+          # Compress the native launcher with the UCRT-native UPX package
+          /ucrt64/bin/upx --best --lzma -qqq ./precizer_windows_x64_portable.exe
+
+          # Verify the compressed executable before dependency and runtime checks
+          /ucrt64/bin/upx -t ./precizer_windows_x64_portable.exe
 
           # Verify that the launcher does not import MSYS2 DLLs from the runner
           cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
