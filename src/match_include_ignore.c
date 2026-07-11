@@ -13,8 +13,8 @@
  */
 Return match_include_ignore(
 	const memory *relative_path,
-	bool       *include,
-	bool       *ignore)
+	bool         *include,
+	bool         *ignore)
 {
 	const char *runtime_relative_path = m_text(relative_path);
 

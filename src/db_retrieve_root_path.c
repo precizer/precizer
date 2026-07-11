@@ -64,7 +64,7 @@ Return db_retrieve_root_path(memory *root_path)
 				status = FAILURE;
 			}
 
-		} else if(SQLITE_DONE == rc) {
+		} else if(SQLITE_DONE == rc){
 			slog(ERROR,"The required root path prefix is missing from the paths table\n");
 			status = FAILURE;
 
