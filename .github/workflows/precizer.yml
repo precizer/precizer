@@ -70,7 +70,7 @@ jobs:
           make -j portable
           mkdir v${{ env.VERSION }}
           cp -a precizer v${{ env.VERSION }}/
-          zip -r precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/
+          zip -9 -r precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
           ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_portable.zip
           ./precizer --version
@@ -145,7 +145,7 @@ jobs:
           make -j portable UPX=true
           mkdir v${{ env.VERSION }}
           cp -a .builds/portable/precizer v${{ env.VERSION }}/
-          zip -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/
+          zip -9 -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
           ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
           echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
           ./.builds/portable/precizer --version
@@ -228,7 +228,7 @@ jobs:
           otool -l precizer
           mkdir v${{ env.VERSION }}
           cp -a precizer v${{ env.VERSION }}/
-          zip -r precizer_macos_arm64.zip v${{ env.VERSION }}/
+          zip -9 -r precizer_macos_arm64.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
           ./precizer --version
           make purge
 
@@ -322,6 +322,7 @@ jobs:
             mingw-w64-ucrt-x86_64-binutils
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-upx
+            zip
 
       # Compile the MSYS payload, package its runtime files, and build the native launcher
       - name: Build MSYS payload and native launcher
@@ -401,27 +402,25 @@ jobs:
 
       # Create the zip distribution with the MSYS payload files
       - name: Create MSYS x64 archive
-        shell: pwsh
+        shell: msys2 {0}
         run: |
-          $ErrorActionPreference = 'Stop'
+          set -euo pipefail
 
           # Recreate the versioned archive root directory
-          $versionDir = "v${env:VERSION}"
-          Remove-Item -Path $versionDir -Recurse -Force -ErrorAction SilentlyContinue
-          New-Item -ItemType Directory -Force -Path $versionDir | Out-Null
+          version_dir="v${VERSION}"
+          rm -rf "$version_dir"
+          mkdir -p "$version_dir"
 
           # Copy the executable and its MSYS runtime into the archive root
-          Copy-Item -Path "package\msys\precizer.exe" -Destination $versionDir
-          Copy-Item -Path "package\msys\msys-2.0.dll" -Destination $versionDir
+          cp -a package/msys/precizer.exe "$version_dir/"
+          cp -a package/msys/msys-2.0.dll "$version_dir/"
 
           # Print the archive root contents for the workflow log
-          Get-ChildItem -Path $versionDir | Format-Table -AutoSize
+          ls -la "$version_dir"
 
           # Compress the archive root into the release zip asset
-          Compress-Archive `
-            -Path $versionDir `
-            -DestinationPath "precizer_windows_x64_portable.zip" `
-            -Force
+          rm -f precizer_windows_x64_portable.zip
+          zip -9 -r precizer_windows_x64_portable.zip "$version_dir/" COPYING README.ru.md README.md CHANGELOG.md
 
       # Generate a Sigstore attestation for the self-extracting executable
       - name: Generate attestation (MSYS x64 self-extracting exe)
