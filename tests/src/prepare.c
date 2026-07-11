@@ -16,6 +16,7 @@ Return prepare(void)
 	INITTEST;
 
 	const char *environment_name = NULL;
+	struct utsname utsname = {0};
 
 	m_create(char,path,MEMORY_STRING);
 	m_create(char,environment_build_path,MEMORY_STRING);
@@ -38,7 +39,12 @@ Return prepare(void)
 	environment_name = getenv("ENVIRONMENT");
 	ASSERT(environment_name != NULL);
 
-	ASSERT(SUCCESS == execute_and_set_variable("DBNAME","echo \"$(hostname).db\"",0));
+	// Build the expected default DB name from the same hostname source as the application
+	ASSERT(uname(&utsname) == 0);
+	ASSERT(SUCCESS == m_copy_string(path,utsname.nodename));
+	ASSERT(SUCCESS == m_concat_literal(path,".db"));
+	ASSERT(SUCCESS == set_environment_variable("DBNAME",m_text(path)));
+	call(m_del(path));
 
 	ASSERT(SUCCESS == create_directory("tests/fixtures/diffs"));
 	ASSERT(SUCCESS == create_directory("tests/templates"));
