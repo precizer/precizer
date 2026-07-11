@@ -33,6 +33,9 @@ endif
 # directory standalone. The parent Makefile of this library overrides
 # BUILDDIR with the same path, so both entrypoints write to one artifact tree
 BUILDDIR ?= ../.builds
+# Returns a concise path for build messages.
+# Plain file names stay unchanged; nested paths keep only final-directory/file
+short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
 LIBDIR = $(patsubst lib%,%,$(LIBNAME))
 TEST_BUILDDIR = $(BUILDDIR)/$(LIBDIR)/$(EXE)
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
@@ -43,7 +46,11 @@ DEPLIB_BUILDDIR = ../$(LIBDIR)/tests/$(BUILDDIR)
 
 # Extra libs for linking
 LDLIBS += $(foreach d,$(LINK_LIBS),-l$d)
+ifeq ($(UNAME_S),Darwin)
+LDLIBS += $(shell pkg-config --libs libpcre2-8)
+else
 LDLIBS += -lpcre2-8
+endif
 # Keep external libraries in this list. Internal libraries are linked through
 # object files so --wrap can intercept calls made inside those libraries
 EXT_LDLIBS = $(filter-out $(foreach d,$(LINK_LIBS),-l$d),$(LDLIBS))
@@ -61,6 +68,9 @@ endif
 # Additional include paths for external libraries
 INCPATH += -I../src/
 INCPATH += $(foreach d,$(LINK_LIBS),-I../../$(d)/src/)
+ifeq ($(UNAME_S),Darwin)
+INCPATH += $(shell pkg-config --cflags libpcre2-8)
+endif
 
 # Detect whether GCC is in use
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
@@ -206,11 +216,11 @@ coverage: coverage-html
 
 $(COV_EXE): $(COV_OBJS) testlibs-coverage
 	@$(CC) $(COV_LDPATH) $(COV_RPATH) $(WRAPFLAGS) -o $(COV_EXE) $(COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) $(COV_LDFLAGS)
-	@echo "$@ linked dynamically with coverage flags, not stripped"
+	@echo "$(call short_path,$@) linked dynamically with coverage flags, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(COV_OBJDIR)
 	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with coverage flags"
+	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR):
 	@mkdir -p "$(COV_OBJDIR)"
@@ -237,11 +247,11 @@ sanitize: $(SNTZ_EXE) | testlibs-sanitize
 
 $(SNTZ_EXE): $(SNTZ_OBJS) testlibs-sanitize
 	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) -o $(SNTZ_EXE) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS)
-	@echo "$@ linked dynamically with sanitizer flags, not stripped"
+	@echo "$(call short_path,$@) linked dynamically with sanitizer flags, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
 	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with sanitizer flags"
+	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
 	@mkdir -p "$(SNTZ_OBJDIR)"
@@ -260,14 +270,14 @@ debug: debug-build | testlibs-debug
 $(DBG_EXE): $(DBG_OBJS) testlibs-debug
 	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $(DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS)
 ifneq ($(TESTS_DYNAMIC),)
-	@echo "$@ linked dynamically with debug flags, not stripped"
+	@echo "$(call short_path,$@) linked dynamically with debug flags, not stripped"
 else
-	@echo "$@ linked statically with debug flags, not stripped"
+	@echo "$(call short_path,$@) linked statically with debug flags, not stripped"
 endif
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(DBG_OBJDIR)
 	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$< compiled with debug flags"
+	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR):
 	@mkdir -p "$(DBG_OBJDIR)"

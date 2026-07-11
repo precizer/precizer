@@ -163,9 +163,13 @@ The following scenario illustrates the issue:
 * To overcome these limitations, precizer was developed. The program identifies exactly which files differ between "A" and "B" so that they can be resynchronized with the necessary corrections. The tool operates at maximum speed (pushing hardware performance to its limits) because it is written in pure C and utilizes high-performance algorithms optimized for efficiency. The program is designed to handle both small files and petabyte-scale data volumes, with no upper limits*.
 * The name precizer comes from the word precision, implying something that enhances accuracy.
 * The program precisely analyzes directory contents, including subdirectories, computing checksums for every encountered file while storing metadata in an SQLite database (a regular binary file).
-* precizer is fault-tolerant and can resume execution from the point of interruption. For example, if the program is terminated via Ctrl+C while analyzing a petabyte-scale file, it will NOT restart from the beginning but continue exactly where it left off using previously recorded data in the database. This significantly saves resources, time, and effort for system administrators.
-* The program can be interrupted at any time using any method, and this is completely safe for both the scanned data and the database created by precizer.
-* If the program is intentionally or accidentally stopped, there is no need to worry about losing progress. All results are fully preserved and can be used in subsequent runs.
+* precizer can be stopped and resumed without risking the data being checked. The program does not modify scanned files or directories; it only saves its own progress and results to the SQLite database.
+* If the user presses Ctrl+C, or if the process exits while a large file is being processed, precizer uses the progress already saved in the database. On the next run with `--update`, the program continues hashing from the nearest saved point instead of always starting that file from the beginning.
+* During a long SHA512 calculation, precizer saves progress regularly. It currently tries to do this about once every 14,930,016,475 nanoseconds, so after an unexpected stop it usually loses only the small amount of work done after the most recent save, not all work already spent on the large file.
+* If the file changed after intermediate progress was saved, the old progress can no longer be trusted. In that case, precizer starts SHA512 calculation for that file from the beginning so the final checksum belongs to the file's current contents.
+* The check for intermediate progress is intentionally strict: precizer resumes from a saved point only when the current file looks exactly the same as it did when that progress was saved. The file size, allocated block count when the file system reports it, `mtime`, and `ctime` must all match. If any of these values differs, the program treats the file as possibly changed and starts SHA512 calculation from the beginning.
+* In `--dry-run` and `--dry-run=with-checksums` modes, progress is not saved to the database because these modes must not modify the database.
+* For a regular file, the database may temporarily store state for resuming hashing instead of the complete SHA512. The same can happen for a file that already matches `--lock-checksum` but has not yet been read to the end: on the next run, precizer resumes from the saved point. After the file has been read successfully to the end, the temporary state is replaced with the complete SHA512. From that point on, the protected file is sealed: the complete SHA512 becomes the reference value, and temporary progress from later verification passes no longer overwrites that reference checksum.
 * Checksum calculations rely on the cryptographic SHA512 hash algorithm, which is reliable, fast, and provides very strong practical collision resistance. If two large files differ by even one byte, SHA512 will overwhelmingly likely produce different checksums; unlike CRC32 and the now-outdated SHA1, it is designed for robust data integrity verification
 * The algorithms in precizer are designed to make it easy to keep the database up to date without having to recalculate everything from scratch. Simply run the program with the `--update` parameter, and new files will be added to the database, while entries for deleted files will be removed. If a file has been modified and its size has changed, its SHA512 checksum will be recalculated and updated in the database.
 * During `--update`, entries for missing files are removed, but records for inaccessible files (permission denied) are kept by default. This protection exists because permissions can temporarily change (ownership, ACLs, transient mount issues), and dropping records in that state would silently erase valid database history. Using `--db-drop-inaccessible` with `--update` is intended only when those database records must be dropped.
@@ -325,9 +329,11 @@ make tests
 
 Just copy the resulting **precizer** executable to any location listed in the `$PATH` environment variable for quick invocation.
 
-#### Build dependencies for specific OS
+#### Build and test dependencies for specific OS
 
-Install build and compile tools on Linux
+Install build and compile tools for Linux
+
+The test suite uses the bundled Monocypher library as an independent reference for checking SHA512 values produced by the internal library. Running `make tests` does not require external cryptography packages
 
 #### Arch Linux
 
@@ -400,6 +406,23 @@ path2/AAA/BCB/CCC/a.txt
 Comparison of database1.db and database2.db databases is complete  
 The precizer completed its execution without any issues  
 </sub>
+
+#### Filtering comparison report categories
+
+By default, `--compare` prints all three difference categories: paths that exist only in the first database named in the command; paths that exist only in the second database named in the command; and paths that exist in both databases but have different SHA512 checksums. The `--compare-filter` option limits the report to one or more categories and works only together with `--compare`. The `checksum-mismatch` value leaves only SHA512 differences. The `first-source` value leaves only paths from the first database. The `second-source` value leaves only paths from the second database
+
+```sh
+precizer --compare --compare-filter=checksum-mismatch database1.db database2.db
+
+precizer --compare --compare-filter=first-source database1.db database2.db
+
+precizer --compare \
+	--compare-filter=first-source \
+	--compare-filter=second-source \
+	database1.db database2.db
+```
+
+When `--compare-filter` is specified more than once, precizer combines the selected categories. The last example prints only paths that are present in one database and missing from the other, while SHA512 differences for common paths are not shown
 
 In `--compare` mode, `--ignore` and `--include` limit the relative-path scope used to build the comparison report. If filters hide part of the differences, the equality messages apply only to the remaining filtered scope. Any path brought back with `--include` participates again in both the difference lists and the final summaries
 

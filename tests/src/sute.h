@@ -43,6 +43,7 @@ Return test0034(void);
 
 Return test0036(void);
 Return test0037(void);
+Return test0038(void);
 
 Return comprehensive_system_testing(void);
 Return comprehensive_unit_testing(void);

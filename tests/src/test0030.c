@@ -3,180 +3,6 @@
 static const char test0030_fixture_root[] = "tests/fixtures/diffs/diff1";
 
 /**
- * @brief Corrupt stored SHA512 bytes for one locked file row in DB
- *
- * @param[in] db_filename Database filename relative to TMPDIR
- * @param[in] relative_path Relative path key in files table
- *
- * @return Return status code:
- *         - SUCCESS: SHA512 value was updated for at least one row
- *         - FAILURE: Validation, DB access, bind, step, or change check failed
- */
-static Return db_tamper_locked_checksum(
-	const char *db_filename,
-	const char *relative_path)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-	sqlite3 *db = NULL;
-	sqlite3_stmt *stmt = NULL;
-	const char *sql = "UPDATE files SET sha512 = (substr(sha512,1,2) || X'BEEF' || substr(sha512,5)) " "WHERE relative_path = ?1;";
-
-	m_create(char,db_path,MEMORY_STRING);
-
-	if(SUCCESS == status && (db_filename == NULL || relative_path == NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		status = construct_path(db_filename,db_path);
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(m_text(db_path),&db,SQLITE_OPEN_READWRITE,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && SQLITE_DONE != sqlite3_step(stmt))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && sqlite3_changes(db) < 1)
-	{
-		status = FAILURE;
-	}
-
-	(void)sqlite3_finalize(stmt);
-
-	(void)sqlite3_close(db);
-
-	m_del(db_path);
-
-	deliver(status);
-}
-
-/**
- * @brief Read CmpctStat blob for one file by relative path
- *
- * @param[in] db_filename Database filename relative to TMPDIR
- * @param[in] relative_path Relative path key in files table
- * @param[out] stat_out Output compact stat structure
- *
- * @return Return status code:
- *         - SUCCESS: CmpctStat value was read
- *         - FAILURE: Validation, DB access, blob size check, or row parsing failed
- */
-static Return read_cmpctstat_from_db(
-	const char *db_filename,
-	const char *relative_path,
-	CmpctStat  *stat_out)
-{
-	/* Status returned by this function through provide()
-	   Default value assumes successful completion */
-	Return status = SUCCESS;
-	sqlite3 *db = NULL;
-	sqlite3_stmt *stmt = NULL;
-	const char *sql = "SELECT stat FROM files WHERE relative_path = ?1;";
-	m_create(char,db_path,MEMORY_STRING);
-
-	if(SUCCESS == status && (db_filename == NULL || relative_path == NULL || stat_out == NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		status = construct_path(db_filename,db_path);
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_open_v2(m_text(db_path),&db,SQLITE_OPEN_READONLY,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_prepare_v2(db,sql,-1,&stmt,NULL))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status && SQLITE_OK != sqlite3_bind_text(stmt,1,relative_path,(int)strlen(relative_path),SQLITE_TRANSIENT))
-	{
-		status = FAILURE;
-	}
-
-	if(SUCCESS == status)
-	{
-		int rc = sqlite3_step(stmt);
-
-		if(rc == SQLITE_ROW)
-		{
-			const void *blob = sqlite3_column_blob(stmt,0);
-			int bytes = sqlite3_column_bytes(stmt,0);
-
-			if(blob == NULL || bytes != (int)sizeof(CmpctStat))
-			{
-				status = FAILURE;
-			} else {
-				memcpy(stat_out,blob,sizeof(CmpctStat));
-			}
-
-			rc = sqlite3_step(stmt);
-
-			if(SUCCESS == status && rc != SQLITE_DONE)
-			{
-				status = FAILURE;
-			}
-		} else {
-			status = FAILURE;
-		}
-	}
-
-	(void)sqlite3_finalize(stmt);
-
-	(void)sqlite3_close(db);
-
-	m_del(db_path);
-
-	deliver(status);
-}
-
-/**
- * @brief Check whether DB compact-stat timestamps match the current file stat timestamps
- *
- * @param[in] db_stat Compact stat loaded from the database
- * @param[in] file_stat Current filesystem stat structure
- * @return `true` when both ctime and mtime fields match exactly, otherwise `false`
- */
-static bool cmpctstat_matches_stat_timestamps(
-	const CmpctStat   *db_stat,
-	const struct stat *file_stat)
-{
-	if(db_stat == NULL || file_stat == NULL)
-	{
-		return(false);
-	}
-
-	return(db_stat->mtim_tv_sec == file_stat->st_mtim.tv_sec &&
-	       db_stat->mtim_tv_nsec == file_stat->st_mtim.tv_nsec &&
-	       db_stat->ctim_tv_sec == file_stat->st_ctim.tv_sec &&
-	       db_stat->ctim_tv_nsec == file_stat->st_ctim.tv_nsec);
-}
-
-/**
  * @brief Verify that a checksum-locked file size change is reported but not saved
  *
  * Covers README Example 10, case 1
@@ -250,7 +76,7 @@ static Return test0030_1(void)
 	 * Read the locked row before corrupting the on-disk file.
 	 * These values are expected to remain unchanged after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -282,7 +108,7 @@ static Return test0030_1(void)
 	 * Re-read the same protected row after the warning run.
 	 * The row must keep its original metadata, offset, and SHA512 checksum
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -378,7 +204,7 @@ static Return test0030_2(void)
 	 * Read the locked row before changing file timestamps.
 	 * These values are expected to remain unchanged after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -410,7 +236,7 @@ static Return test0030_2(void)
 	 * Re-read the same protected row after the warning run.
 	 * The row must keep its original metadata, offset, and SHA512 checksum
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -511,7 +337,7 @@ static Return test0030_3(void)
 	 * Before any drift, the file timestamps should match the stored metadata
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before));
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
@@ -552,7 +378,7 @@ static Return test0030_3(void)
 	 * Re-read the same protected row after the successful update run.
 	 * The row must keep its original metadata, offset, and SHA512 checksum
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -655,7 +481,7 @@ static Return test0030_4(void)
 	 * Before any drift, the file timestamps should match the stored metadata
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before));
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
@@ -697,7 +523,7 @@ static Return test0030_4(void)
 	 * Re-read the protected row and current file state after the update.
 	 * The database timestamps must now match the file again
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
@@ -810,7 +636,7 @@ static Return test0030_5(void)
 	 * Before any drift, the file timestamps should match the stored metadata
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before));
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before,&file_stat_before));
@@ -851,7 +677,7 @@ static Return test0030_5(void)
 	 * Re-read the protected row and current file state after the update.
 	 * The database timestamps must now match the file again
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
 	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
@@ -984,13 +810,13 @@ static Return test0030_6(void)
 	 */
 	ASSERT(SUCCESS == construct_path(drift_file_path,drift_target_path));
 	ASSERT(SUCCESS == construct_path(mismatch_file_path,mismatch_target_path));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,drift_relative_path,&drift_db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,drift_relative_path,&drift_db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,drift_relative_path,&drift_offset_before,drift_sha512_before));
 	ASSERT(SUCCESS == get_file_stat(m_text(drift_target_path),&drift_file_stat_before));
 	ASSERT(cmpctstat_matches_stat_timestamps(&drift_db_stat_before,&drift_file_stat_before));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,mismatch_relative_path,&mismatch_db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,mismatch_relative_path,&mismatch_db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_before,mismatch_sha512_before));
-	ASSERT(SUCCESS == compute_file_sha512(m_text(mismatch_target_path),mismatch_file_sha512));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(mismatch_target_path),mismatch_file_sha512));
 	ASSERT(0 == memcmp(mismatch_sha512_before,mismatch_file_sha512,(size_t)SHA512_DIGEST_LENGTH));
 
 	/*
@@ -1010,7 +836,7 @@ static Return test0030_6(void)
 	 * Corrupt the stored checksum for a different locked file.
 	 * The file on disk stays unchanged, so the next rehash must detect a mismatch
 	 */
-	ASSERT(SUCCESS == db_tamper_locked_checksum(db_filename,mismatch_relative_path));
+	ASSERT(SUCCESS == db_tamper_sha512(db_filename,mismatch_relative_path));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_tampered,mismatch_sha512_tampered));
 	ASSERT(mismatch_offset_before == mismatch_offset_tampered);
 	ASSERT(0 != memcmp(mismatch_sha512_before,mismatch_sha512_tampered,(size_t)SHA512_DIGEST_LENGTH));
@@ -1040,7 +866,7 @@ static Return test0030_6(void)
 	 * Re-read the drift row and current file state after the warning run.
 	 * The database timestamps must now match the file again
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,drift_relative_path,&drift_db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,drift_relative_path,&drift_db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,drift_relative_path,&drift_offset_after,drift_sha512_after));
 	ASSERT(SUCCESS == get_file_stat(m_text(drift_target_path),&drift_file_stat_after_update));
 	ASSERT(cmpctstat_matches_stat_timestamps(&drift_db_stat_after,&drift_file_stat_after_update));
@@ -1060,7 +886,7 @@ static Return test0030_6(void)
 	 * Re-read the mismatched row after the warning run.
 	 * The corrupted stored checksum must remain unchanged instead of being repaired
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,mismatch_relative_path,&mismatch_db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,mismatch_relative_path,&mismatch_db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_after,mismatch_sha512_after));
 	ASSERT(0 == memcmp(&mismatch_db_stat_before,&mismatch_db_stat_after,sizeof(CmpctStat)));
 	ASSERT(mismatch_offset_tampered == mismatch_offset_after);
@@ -1164,9 +990,9 @@ static Return test0030_7(void)
 	 * Before tampering, the stored checksum must match the real file checksum
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,db_sha512_before));
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_before));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_before));
 	ASSERT(0 == memcmp(db_sha512_before,file_sha512_before,(size_t)SHA512_DIGEST_LENGTH));
 
 	/*
@@ -1179,7 +1005,7 @@ static Return test0030_7(void)
 	 * Confirm that the test setup produced real content corruption.
 	 * The current file checksum must no longer match the protected DB checksum
 	 */
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_after_tamper));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_after_tamper));
 	ASSERT(0 != memcmp(file_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 	ASSERT(0 != memcmp(db_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 
@@ -1206,7 +1032,7 @@ static Return test0030_7(void)
 	 * Re-read the same protected row after the warning run.
 	 * The row must keep its original metadata, offset, and SHA512 checksum
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -1309,9 +1135,9 @@ static Return test0030_8(void)
 	 * Before tampering, the stored checksum must match the real file checksum
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,db_sha512_before));
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_before));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_before));
 	ASSERT(0 == memcmp(db_sha512_before,file_sha512_before,(size_t)SHA512_DIGEST_LENGTH));
 
 	/*
@@ -1324,7 +1150,7 @@ static Return test0030_8(void)
 	 * Confirm that the test setup produced real content corruption.
 	 * The current file checksum must no longer match the protected DB checksum
 	 */
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_after_tamper));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_after_tamper));
 	ASSERT(0 != memcmp(file_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 	ASSERT(0 != memcmp(db_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 
@@ -1352,7 +1178,7 @@ static Return test0030_8(void)
 	 * Re-read the same protected row after the warning run.
 	 * The row must keep its original metadata, offset, and SHA512 checksum
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -1466,7 +1292,7 @@ static Return test0030_9(void)
 	for(size_t index = 0; index < locked_path_count; index++)
 	{
 		ASSERT(SUCCESS == construct_path(locked_file_paths[index],target_path));
-		ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_paths[index],&db_stat_before[index]));
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_paths[index],&db_stat_before[index]));
 		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_paths[index],&offset_before[index],sha512_before[index]));
 		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_before[index]));
 		ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_before[index],&file_stat_before[index]));
@@ -1498,7 +1324,7 @@ static Return test0030_9(void)
 	for(size_t index = 0; index < locked_path_count; index++)
 	{
 		ASSERT(SUCCESS == construct_path(locked_file_paths[index],target_path));
-		ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_paths[index],&db_stat_after[index]));
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_paths[index],&db_stat_after[index]));
 		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_paths[index],&offset_after[index],sha512_after[index]));
 		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after[index]));
 		ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after[index],&file_stat_after[index]));
@@ -1602,7 +1428,7 @@ static Return test0030_10(void)
 	 * Read the locked row before deleting its file.
 	 * The same values must still be present after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_before,sha512_before));
 	ASSERT(SUCCESS == construct_path(deleted_file_path,target_path));
 	ASSERT(SUCCESS == expect_file_access_from_root(test0030_fixture_root,deleted_relative_path,R_OK,FILE_ACCESS_ALLOWED));
@@ -1637,7 +1463,7 @@ static Return test0030_10(void)
 	 * Re-read the deleted file row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -1749,7 +1575,7 @@ static Return test0030_11(void)
 	 * Read the locked row before making access checks fail.
 	 * The same values must still be present after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -1796,7 +1622,7 @@ static Return test0030_11(void)
 	 * Re-read the access-denied locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -1908,7 +1734,7 @@ static Return test0030_12(void)
 	 * Read the locked row before making access checks fail.
 	 * The same values must still be present after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -1955,7 +1781,7 @@ static Return test0030_12(void)
 	 * Re-read the access-check-failed locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -2067,7 +1893,7 @@ static Return test0030_13(void)
 	 * Read the locked row before deleting its file.
 	 * The same values must still be present after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -2102,7 +1928,7 @@ static Return test0030_13(void)
 	 * Re-read the deleted locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -2214,9 +2040,9 @@ static Return test0030_14(void)
 	 * Before tampering, the stored checksum must match the real file checksum
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,db_sha512_before));
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_before));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_before));
 	ASSERT(0 == memcmp(db_sha512_before,file_sha512_before,(size_t)SHA512_DIGEST_LENGTH));
 
 	/*
@@ -2229,7 +2055,7 @@ static Return test0030_14(void)
 	 * Confirm that the test setup produced real content corruption.
 	 * The current file checksum must no longer match the protected DB checksum
 	 */
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_after_tamper));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_after_tamper));
 	ASSERT(0 != memcmp(file_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 	ASSERT(0 != memcmp(db_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 
@@ -2256,7 +2082,7 @@ static Return test0030_14(void)
 	 * Re-read the same protected row after the warning run.
 	 * The row must keep its original metadata, offset, and SHA512 checksum
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -2359,7 +2185,7 @@ static Return test0030_15(void)
 	 * Read the locked row before deleting its file.
 	 * The same values must still be present after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -2396,7 +2222,7 @@ static Return test0030_15(void)
 	 * Re-read the deleted locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,deleted_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -2512,9 +2338,9 @@ static Return test0030_16(void)
 	 */
 	ASSERT(SUCCESS == construct_path(locked_file_path,target_path));
 	ASSERT(0 == stat(m_text(target_path),&file_stat_before));
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,db_sha512_before));
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_before));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_before));
 	ASSERT(0 == memcmp(db_sha512_before,file_sha512_before,(size_t)SHA512_DIGEST_LENGTH));
 
 	/*
@@ -2529,7 +2355,7 @@ static Return test0030_16(void)
 	 */
 	ASSERT(0 == stat(m_text(target_path),&file_stat_after_tamper));
 	ASSERT(file_stat_before.st_size == file_stat_after_tamper.st_size);
-	ASSERT(SUCCESS == compute_file_sha512(m_text(target_path),file_sha512_after_tamper));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(target_path),file_sha512_after_tamper));
 	ASSERT(0 != memcmp(file_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 	ASSERT(0 != memcmp(db_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 
@@ -2558,7 +2384,7 @@ static Return test0030_16(void)
 	 * Re-read the same protected row after the warning run.
 	 * The row must keep its original metadata, offset, and SHA512 checksum
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -2661,7 +2487,7 @@ static Return test0030_17(void)
 	 * Read the locked row before making access checks fail.
 	 * The same values must still be present after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -2708,7 +2534,7 @@ static Return test0030_17(void)
 	 * Re-read the access-denied locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -2821,7 +2647,7 @@ static Return test0030_18(void)
 	 * Read the locked row before making access checks fail.
 	 * The same values must still be present after the warning run
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -2868,7 +2694,7 @@ static Return test0030_18(void)
 	 * Re-read the access-check-failed locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -2981,7 +2807,7 @@ static Return test0030_19(void)
 	 * Read the locked row before making its file unreadable.
 	 * The same values must still be present after cleanup reports the warning
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -3028,7 +2854,7 @@ static Return test0030_19(void)
 	 * Re-read the access-denied locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -3141,7 +2967,7 @@ static Return test0030_20(void)
 	 * Read the locked row before making its access check fail.
 	 * The same values must still be present after cleanup reports the warning
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -3190,7 +3016,7 @@ static Return test0030_20(void)
 	 * Re-read the access-check-failed locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
@@ -3303,7 +3129,7 @@ static Return test0030_21(void)
 	 * Read the locked row before making its access check fail.
 	 * The same values must still be present after ignored cleanup reports the warning
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_before));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_before));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_before,sha512_before));
 
 	/*
@@ -3353,7 +3179,7 @@ static Return test0030_21(void)
 	 * Re-read the ignored access-check-failed locked row after the warning run.
 	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
 	 */
-	ASSERT(SUCCESS == read_cmpctstat_from_db(db_filename,locked_relative_path,&db_stat_after));
+	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
 	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);

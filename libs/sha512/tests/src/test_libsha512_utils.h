@@ -14,6 +14,11 @@ Return calculate_sha512_digest(
 	size_t,
 	memory *);
 
+Return calculate_sha512_digest_monocypher(
+	const unsigned char *,
+	size_t,
+	memory *);
+
 Return calculate_sha512_digest_in_chunks(
 	const unsigned char *,
 	size_t,

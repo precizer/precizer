@@ -1,4 +1,5 @@
 #include "sute.h"
+#include "monocypher-ed25519.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <ftw.h>
@@ -8,7 +9,6 @@ static const char *copy_source_root_for_nftw = NULL;
 static const char *copy_destination_root_for_nftw = NULL;
 static size_t copy_source_root_length_for_nftw = 0U;
 static size_t copy_destination_root_length_for_nftw = 0U;
-static const char mutable_fixture_backup_root[] = ".fixture_backups";
 
 /**
  * @brief Reset nftw copy context to an empty state
@@ -1034,6 +1034,124 @@ Return delete_path(const char *relative_path_to_tmpdir)
 }
 
 /**
+ * @brief Remove a file or directory tree when it exists
+ *
+ * This helper is intended for cleanup paths that may or may not have been
+ * created before a test scenario stopped. Missing paths are accepted. Any
+ * other filesystem error is reported as a failure so stale test state is not
+ * silently ignored
+ *
+ * @param[in] relative_path_to_tmpdir File or directory path relative to TMPDIR
+ *
+ * @return Return status code:
+ *         - SUCCESS: Path was absent or removed successfully
+ *         - FAILURE: Validation, path construction, stat, or removal failed
+ */
+Return delete_path_if_present(const char *relative_path_to_tmpdir)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	struct stat path_stat = {0};
+	m_create(char,absolute_path,MEMORY_STRING);
+
+	if(relative_path_to_tmpdir == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(relative_path_to_tmpdir,absolute_path);
+	}
+
+	if(SUCCESS == status)
+	{
+		errno = 0;
+
+		if(lstat(m_text(absolute_path),&path_stat) == 0)
+		{
+			status = delete_path(relative_path_to_tmpdir);
+
+		} else if(errno != ENOENT){
+			status = FAILURE;
+		}
+	}
+
+	m_del(absolute_path);
+
+	return(status);
+}
+
+/**
+ * @brief Prepare an isolated working copy of the huge-file fixture
+ *
+ * The fixture is copied from ORIGIN_DIR into TMPDIR and the output path points
+ * to the copied `hugetestfile`. The optional stat output lets tests assert
+ * interruption offsets against the real file size
+ *
+ * @param[out] huge_file_path Absolute path to the copied fixture file
+ * @param[out] huge_file_stat_out Optional file metadata read from the copied fixture
+ *
+ * @return Return status code:
+ *         - SUCCESS: Fixture copy is ready and output path was filled
+ *         - FAILURE: Environment setup, copy, path construction, or stat failed
+ */
+Return prepare_huge_fixture(
+	memory      *huge_file_path,
+	struct stat *huge_file_stat_out)
+{
+	/* Status returned by this function through provide()
+	   Default value assumes successful completion */
+	Return status = SUCCESS;
+	struct stat huge_file_stat = {0};
+	static const char huge_fixture_root[] = "tests/fixtures/huge";
+	static const char huge_fixture_file[] = "tests/fixtures/huge/hugetestfile";
+
+	if(huge_file_path == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status)
+	{
+		status = set_environment_variable("TESTING","true");
+	}
+
+	if(SUCCESS == status)
+	{
+		status = create_directory("tests/fixtures");
+	}
+
+	if(SUCCESS == status)
+	{
+		status = copy_from_origin(huge_fixture_root,huge_fixture_root,REQUIRE_SOURCE_EXISTS);
+	}
+
+	if(SUCCESS == status)
+	{
+		status = construct_path(huge_fixture_file,huge_file_path);
+	}
+
+	if(SUCCESS == status && stat(m_text(huge_file_path),&huge_file_stat) != 0)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && huge_file_stat.st_size <= 0)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && huge_file_stat_out != NULL)
+	{
+		*huge_file_stat_out = huge_file_stat;
+	}
+
+	return(status);
+}
+
+/**
  * @brief Copy filesystem object from one absolute path to another
  *
  * @param[in] source_absolute_path Source absolute path
@@ -1374,6 +1492,7 @@ static Return construct_mutable_fixture_backup_path(
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
+	static const char mutable_fixture_backup_root[] = ".fixture_backups";
 
 	if(fixture_path == NULL || backup_path_out == NULL || fixture_path[0] == '\0')
 	{
@@ -1728,16 +1847,16 @@ Return rewrite_file_dense_with_same_size(
 }
 
 /**
- * @brief Compute SHA512 for a file using the project SHA512 library
+ * @brief Compute SHA512 for a file using Monocypher
  *
  * @param[in] file_path File path passed directly to `fopen()`
  * @param[out] sha512_out Output SHA512 digest buffer
  *
  * @return Return status code:
  *         - SUCCESS: SHA512 digest computed successfully
- *         - FAILURE: Validation, I/O, or hash operation failed
+ *         - FAILURE: Validation, I/O, or digest-size check failed
  */
-Return compute_file_sha512(
+Return compute_file_sha512_monocypher(
 	const char    *file_path,
 	unsigned char *sha512_out)
 {
@@ -1745,10 +1864,15 @@ Return compute_file_sha512(
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *file = NULL;
+	crypto_sha512_ctx context = {0};
 	unsigned char buffer[65536];
-	SHA512_Context context = {0};
 
 	if(file_path == NULL || sha512_out == NULL)
+	{
+		status = FAILURE;
+	}
+
+	if(SUCCESS == status && SHA512_DIGEST_LENGTH != 64)
 	{
 		status = FAILURE;
 	}
@@ -1763,9 +1887,9 @@ Return compute_file_sha512(
 		}
 	}
 
-	if(SUCCESS == status && sha512_init(&context) != CRYPT_OK)
+	if(SUCCESS == status)
 	{
-		status = FAILURE;
+		crypto_sha512_init(&context);
 	}
 
 	while(SUCCESS == status)
@@ -1781,15 +1905,12 @@ Return compute_file_sha512(
 			break;
 		}
 
-		if(sha512_update(&context,buffer,bytes_read) != CRYPT_OK)
-		{
-			status = FAILURE;
-		}
+		crypto_sha512_update(&context,buffer,bytes_read);
 	}
 
-	if(SUCCESS == status && sha512_final(&context,sha512_out) != CRYPT_OK)
+	IF(SUCCESS == status)
 	{
-		status = FAILURE;
+		crypto_sha512_final(&context,sha512_out);
 	}
 
 	IF(file != NULL)

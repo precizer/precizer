@@ -72,6 +72,7 @@ Required components:
 
 * dependencies from sections 1 and 2
 * sanitizer toolchain (`ASan`/`UBSan`) and `llvm-symbolizer`
+* the bundled Monocypher library is used as the independent SHA512 reference in tests and does not require external packages
 
 Ubuntu/Debian:
 

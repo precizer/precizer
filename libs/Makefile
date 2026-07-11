@@ -3,7 +3,7 @@
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
-SUBDIRS  = sqlite3 rational sha512 mem xdiff testitall
+SUBDIRS  = sqlite3 rational sha512 mem xdiff testitall monocypher
 PURGE_SUBDIRS = $(SUBDIRS) testmocking
 
 TOPTARGETS := all clean debug prod production portable sanitize test tests-debug tests-sanitize tests-coverage gcc-analyzer format coverage compile-commands purge
@@ -13,7 +13,7 @@ TOPTARGETS := all clean debug prod production portable sanitize test tests-debug
 # Dependencies between libraries
 mem: rational
 xdiff: rational
-testitall: mem xdiff rational
+testitall: mem xdiff rational monocypher
 
 # Each child library Makefile defaults to its own local .builds directory.
 # Callers that need a shared artifact tree pass BUILDDIR explicitly

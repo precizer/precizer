@@ -30,8 +30,8 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 ## Project Structure & Module Organization
 - `src/`: main application source (`precizer.c`, argument parsing, DB/checksum logic)
 - `Makefile`: root build entrypoint
-- `libs/`: internal libraries (`sqlite3`, `sha512`, `mem`, `rational`, `xdiff`, `testitall`), each with its own `Makefile` and `src/`
-- `libs/sqlite3/src/` contains third-party SQLite amalgamation sources (`sqlite3.c` and header). Treat this as vendor code and never modify it
+- `libs/`: internal and bundled libraries (`sqlite3`, `sha512`, `mem`, `rational`, `xdiff`, `testitall`, `monocypher`), each with its own `Makefile` and `src/`
+- `libs/sqlite3/src/` and `libs/monocypher/src/` contain third-party vendored sources. Treat this as vendor code and never modify it directly
 - `tests/`: hybrid test suite (`tests/src/`, golden outputs in `tests/templates/`, filesystem fixtures in `tests/fixtures/`)
 - `tools/`: auxiliary developer utilities
 - `.builds/`: generated build/test artifacts (do not commit)
@@ -64,6 +64,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - Full test command when the change warrants slow scenarios or before opening a pull request: `make tests-debug`
 - Choose one test command based on the required coverage. Do not run the default and full commands consecutively
 - Add/adjust tests in `tests/src/` (pattern: `testXXXX.c`).
+- When creating new tests, look first for suitable shared helpers in `tests/src/helpers_db_utils.c` and `tests/src/helpers_file_utils.c`. Add local `static` helpers only when the shared helpers do not already provide the needed behavior
 - Update expected outputs in `tests/templates/` when behavior changes.
 - For output-oriented tests of the main application, prefer full golden templates in `tests/templates/` over inline partial regular expressions, and compare the complete output whenever practical
 - Add fixture data under `tests/fixtures/` only when needed for reproducible cases.

@@ -5,6 +5,9 @@ LIBNAME=libmem
 # When the umbrella project drives the build, BUILDDIR is overridden via the
 # library dispatcher Makefile to point at the project-wide .builds
 BUILDDIR ?= .builds
+# Returns a concise path for build messages.
+# Plain file names stay unchanged; nested paths keep only final-directory/file
+short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 
 UNAME_S := $(shell uname -s)
@@ -242,15 +245,15 @@ debug: $(DBG_SO) $(DBG_STAT)
 
 $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@$(AR) rcs $@ $+
-	@echo "$@ prepared as debug static library archive"
+	@echo "$(call short_path,$@) prepared as debug static library archive"
 
 $(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR) testlibs-debug
 	@$(CC) -shared $(DBG_LDFLAGS) $(DBG_LDPATH) -o $@ $^ $(LDLIBS)
-	@echo "$@ prepared as debug shared library, not stripped"
+	@echo "$(call short_path,$@) prepared as debug shared library, not stripped"
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$(notdir $<) compiled with debug flags"
+	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR): | $(DBG_LIBDIR)
 	@mkdir -p "$@"
@@ -265,15 +268,15 @@ coverage: $(COV_SO) $(COV_STAT)
 
 $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
 	@$(AR) rcs $@ $+
-	@echo "$@ prepared as coverage static library archive"
+	@echo "$(call short_path,$@) prepared as coverage static library archive"
 
 $(COV_SO): $(COV_OBJS) | $(COV_LIBDIR) testlibs-coverage
 	@$(CC) -shared $(COV_LDFLAGS) $(COV_LDPATH) -o $@ $^ $(LDLIBS)
-	@echo "$@ prepared as coverage shared library, not stripped"
+	@echo "$(call short_path,$@) prepared as coverage shared library, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
-	@echo "$(notdir $<) compiled with coverage flags"
+	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR): | $(COV_LIBDIR)
 	@mkdir -p "$@"
@@ -288,15 +291,15 @@ sanitize: $(SNTZ_SO) $(SNTZ_STAT)
 
 $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@$(AR) rcs $@ $+
-	@echo "$@ prepared as sanitizer static library archive"
+	@echo "$(call short_path,$@) prepared as sanitizer static library archive"
 
 $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR) testlibs-sanitize
 	@$(CC) -shared $(SNTZ_LDFLAGS) $(SNTZ_LDPATH) -o $@ $^ $(LDLIBS)
-	@echo "$@ prepared as sanitizer shared library, not stripped"
+	@echo "$(call short_path,$@) prepared as sanitizer shared library, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
-	@echo "$(notdir $<) compiled with sanitizer flags"
+	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR): | $(SNTZ_LIBDIR)
 	@mkdir -p "$@"
@@ -312,15 +315,15 @@ production: $(PROD_SO) $(PROD_STAT)
 
 $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@$(AR) rcs $@ $+
-	@echo "$@ prepared as release static library archive"
+	@echo "$(call short_path,$@) prepared as release static library archive"
 
 $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR) testlibs-production
 	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) $(PROD_LDPATH) -o $@ $^ $(LDLIBS)
-	@echo "$@ prepared as release shared library, stripped"
+	@echo "$(call short_path,$@) prepared as release shared library, stripped"
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
-	@echo "$(notdir $<) compiled with release flags"
+	@echo "$(call short_path,$<) compiled with release flags"
 
 $(PROD_OBJDIR): | $(PROD_LIBDIR)
 	@mkdir -p "$@"
@@ -335,15 +338,15 @@ portable: $(PRTB_SO) $(PRTB_STAT)
 
 $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@$(AR) rcs $@ $+
-	@echo "$@ prepared as portable static library archive"
+	@echo "$(call short_path,$@) prepared as portable static library archive"
 
 $(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR) testlibs-portable
 	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) $(PRTB_LDPATH) -o $@ $^ $(LDLIBS)
-	@echo "$@ prepared as portable shared library, stripped"
+	@echo "$(call short_path,$@) prepared as portable shared library, stripped"
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
 	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PRTB_WFLAGS) $(PRTB_CFLAGS) -o $@ $<
-	@echo "$(notdir $<) compiled with portable flags"
+	@echo "$(call short_path,$<) compiled with portable flags"
 
 $(PRTB_OBJDIR): | $(PRTB_LIBDIR)
 	@mkdir -p "$@"

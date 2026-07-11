@@ -12,6 +12,7 @@ Both modes use the same test oracles and checks:
 
 * **Output contract verification**: `stdout/stderr` and exit codes are treated as part of the CLI interface contract and matched against expected patterns using **PCRE2 regular expressions** (regex-based assertions / CLI output contract testing).
 * **State verification**: since the program creates or mutates a database, post-conditions are asserted via **database state checks**—validating DB contents after the scenario completes.
+* **SHA512 reference verification**: scenarios that need independent checksum validation compute the reference value through the bundled **Monocypher** library and compare it with the SHA512 value produced by the program's internal library.
 
 A scenario is considered correct only when the observed behavior agrees in both modes. This is the basis of **cross-checking**: the “in-process” and “black-box” runs must conform to the same output contract and produce the same expected data state.
 
@@ -28,4 +29,3 @@ That’s why the main emphasis is on **system/integration (E2E/CLI) tests** that
 It’s also important to look at coverage **per test suite**. If you only look at aggregate coverage across everything, unit tests can “cover” lines and branches that your integration/E2E tests never touch—and it’s easy to miss that gap. Split coverage gives a more honest picture: what’s validated by real end-to-end runs versus what’s only validated in isolation.
 
 None of this is an argument against unit tests. They’re valuable when you need fast, precise checks for small pieces of logic, edge cases, and rare failure modes that are hard or expensive to reproduce end-to-end (including via mocks/fakes). The point is that each testing layer should add unique value instead of duplicating the same scenario without a reason.
-

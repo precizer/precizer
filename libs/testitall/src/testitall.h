@@ -425,24 +425,31 @@ Return runit(
 	CAPTURE_POLICY);
 
 /**
- * @brief Run precizer in background and complete signal-driven scenario.
+ * @brief Run precizer in background and optionally complete a signal-driven scenario
  *
  * The helper starts the process, configures delay control environment variables
  * (`TESTITALL_SIGNAL_WAIT_MS`, `TESTITALL_SIGNAL_WAIT_POINT`, and optionally
- * `TESTITALL_SIGNAL_WAIT_READY_FD`), sends `signal_number` to the child, waits
- * for completion, and finalizes output capture and exit-code validation.
+ * `TESTITALL_SIGNAL_WAIT_READY_FD`) when signal delivery is enabled, waits for
+ * completion, and finalizes output capture and exit-code validation.
  *
+ * When `signal_number` is positive, the helper sends that signal to the child.
  * When `min_delay_ms` is greater than zero, the helper waits that long before
- * signal delivery. When `min_delay_ms` is zero, the helper waits until the
- * child reports that the configured wait point was reached, then sends the
- * signal immediately.
+ * signal delivery. When `min_delay_ms` is zero, the helper waits until the child
+ * reports that the configured wait point was reached, then sends the signal
+ * immediately.
  *
- * If the child exits before signal delivery, the helper returns failure.
+ * When `signal_number` is zero, the helper temporarily clears wait-control
+ * environment variables, does not send a signal, and waits for the child to
+ * exit naturally under the watchdog.
+ *
+ * If signal delivery is enabled and the child exits before delivery, the helper
+ * returns failure.
  *
  * `max_delay_ms` is used as:
- * - value for `TESTITALL_SIGNAL_WAIT_MS`
+ * - value for `TESTITALL_SIGNAL_WAIT_MS` when signal delivery is enabled
  * - watchdog timeout (SIGKILL after timeout if child is still alive)
- * - wait-point notification timeout when `min_delay_ms` is zero
+ * - wait-point notification timeout when `signal_number` is positive and
+ *   `min_delay_ms` is zero
  *
  * @note Supports both EXTERNAL_CALL and INTERNAL_TEST modes.
  */

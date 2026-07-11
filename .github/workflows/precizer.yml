@@ -321,6 +321,7 @@ jobs:
             libargp-devel
             mingw-w64-ucrt-x86_64-binutils
             mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-upx
 
       # Compile the MSYS payload, package its runtime files, and build the native launcher
       - name: Build MSYS payload and native launcher
@@ -368,6 +369,12 @@ jobs:
 
           # Build the native launcher that embeds the payload files
           make -C .packaging/msys
+
+          # Compress the native launcher with the UCRT-native UPX package
+          /ucrt64/bin/upx --best --lzma -qqq ./precizer_windows_x64_portable.exe
+
+          # Verify the compressed executable before dependency and runtime checks
+          /ucrt64/bin/upx -t ./precizer_windows_x64_portable.exe
 
           # Verify that the launcher does not import MSYS2 DLLs from the runner
           cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
@@ -465,6 +472,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          $ErrorActionPreference = 'Stop'
+
           # Upload all Windows x64 assets for the current tag and replace stale copies
           gh release upload ${{ github.ref_name }} `
             "precizer_windows_x64_portable.exe" `
@@ -472,6 +481,66 @@ jobs:
             "precizer_windows_x64_portable.zip" `
             "precizer_windows_x64_portable.zip.sigstore.json" `
             --clobber
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          #
+          # Testing automation for downloading and unarchiving new versions (example from the README documentation)
+          #
+          # Download
+          $downloadBase = "https://github.com/precizer/precizer/releases/latest/download"
+          Invoke-WebRequest `
+            -Uri "$downloadBase/precizer_windows_x64_portable.exe" `
+            -OutFile "downloaded_precizer_windows_x64_portable.exe"
+          Invoke-WebRequest `
+            -Uri "$downloadBase/precizer_windows_x64_portable.exe.sigstore.json" `
+            -OutFile "downloaded_precizer_windows_x64_portable.exe.sigstore.json"
+          Invoke-WebRequest `
+            -Uri "$downloadBase/precizer_windows_x64_portable.zip" `
+            -OutFile "downloaded_precizer_windows_x64_portable.zip"
+          Invoke-WebRequest `
+            -Uri "$downloadBase/precizer_windows_x64_portable.zip.sigstore.json" `
+            -OutFile "downloaded_precizer_windows_x64_portable.zip.sigstore.json"
+
+          # Remove MSYS2 directories from PATH to simulate a clean Windows environment
+          $env:Path = (($env:Path -split ';') | Where-Object { $_ -notmatch '\\msys64\\' }) -join ';'
+
+          # Run the downloaded self-extracting launcher
+          $downloadedLauncher = Join-Path $PWD.Path "downloaded_precizer_windows_x64_portable.exe"
+          & $downloadedLauncher --version
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          # Extract the downloaded zip distribution
+          $downloadedZipDir = Join-Path $PWD.Path "downloaded_windows_zip"
+          Remove-Item -Path $downloadedZipDir -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path $downloadedZipDir | Out-Null
+          Expand-Archive `
+            -Path "downloaded_precizer_windows_x64_portable.zip" `
+            -DestinationPath $downloadedZipDir `
+            -Force
+
+          # Verify that the archive contains the expected executable and MSYS runtime
+          $downloadedPayload = Get-ChildItem `
+            -LiteralPath $downloadedZipDir `
+            -Filter "precizer.exe" `
+            -File `
+            -Recurse | Select-Object -First 1
+          if ($null -eq $downloadedPayload) {
+            throw "The downloaded Windows zip does not contain precizer.exe"
+          }
+          $downloadedRuntime = Join-Path $downloadedPayload.DirectoryName "msys-2.0.dll"
+          if (!(Test-Path -LiteralPath $downloadedRuntime -PathType Leaf)) {
+            throw "The downloaded Windows zip does not contain msys-2.0.dll"
+          }
+
+          # Run the executable from the downloaded zip
+          & ($downloadedPayload.FullName) --version
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
 
   upload_release_provenance:
     name: Upload release provenance
