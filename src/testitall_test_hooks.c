@@ -7,6 +7,35 @@
 #include <utime.h>
 
 static const char *const signal_wait_ready_fd_env_name = "TESTITALL_SIGNAL_WAIT_READY_FD";
+static const int testitall_hash_checkpoint_exit_code_default = 77;
+
+/**
+ * @brief Check whether a boolean test hook environment flag is enabled
+ *
+ * Only the exact string `true` enables the hook. Empty values, missing
+ * variables, and all other values leave the hook disabled
+ *
+ * @param[in] env_name Environment variable name to inspect
+ * @return true when the flag is explicitly enabled, otherwise false
+ */
+static bool testitall_env_flag_is_true(const char *env_name)
+{
+	const char *flag_value = NULL;
+
+	if(env_name == NULL)
+	{
+		return(false);
+	}
+
+	flag_value = getenv(env_name);
+
+	if(flag_value == NULL || strcmp(flag_value,"true") != 0)
+	{
+		return(false);
+	}
+
+	return(true);
+}
 
 /**
  * @brief Notify the background test parent that the configured wait point was reached
@@ -397,5 +426,61 @@ uint64_t testitall_random_stop_byte(const uint64_t file_size)
 	seed ^= (uint64_t)getpid();
 
 	return((seed % file_size) + 1U);
+}
+
+/**
+ * @brief Check whether SHA512 checkpoint tests should checkpoint at a random byte
+ *
+ * Enabled by `TESTITALL_TEST_ENV_HASH_CHECKPOINT_AT_RANDOM_BYTE=true`
+ *
+ * @return true when the hook is enabled, otherwise false
+ */
+bool testitall_hash_checkpoint_at_random_byte_enabled(void)
+{
+	return(testitall_env_flag_is_true("TESTITALL_TEST_ENV_HASH_CHECKPOINT_AT_RANDOM_BYTE"));
+}
+
+/**
+ * @brief Check whether SHA512 checkpoint tests should terminate after checkpoint
+ *
+ * Enabled by `TESTITALL_TEST_ENV_EXIT_AFTER_HASH_CHECKPOINT=true`
+ *
+ * @return true when the hook is enabled, otherwise false
+ */
+bool testitall_exit_after_hash_checkpoint_enabled(void)
+{
+	return(testitall_env_flag_is_true("TESTITALL_TEST_ENV_EXIT_AFTER_HASH_CHECKPOINT"));
+}
+
+/**
+ * @brief Terminate the current process after a test-controlled hash checkpoint
+ *
+ * The exit status is read from `TESTITALL_TEST_ENV_HASH_CHECKPOINT_EXIT_CODE`.
+ * Invalid, empty, zero, and out-of-range values fall back to 77 so the process
+ * never exits successfully by accident
+ */
+void testitall_exit_after_hash_checkpoint(void)
+{
+	int exit_code = testitall_hash_checkpoint_exit_code_default;
+	const char *exit_code_text = getenv("TESTITALL_TEST_ENV_HASH_CHECKPOINT_EXIT_CODE");
+
+	if(exit_code_text != NULL && exit_code_text[0] != '\0')
+	{
+		errno = 0;
+		char *end_ptr = NULL;
+		const long parsed_exit_code = strtol(exit_code_text,&end_ptr,10);
+
+		if(errno == 0
+		        && end_ptr != exit_code_text
+		        && *end_ptr == '\0'
+		        && parsed_exit_code > 0L
+		        && parsed_exit_code <= 255L)
+		{
+			exit_code = (int)parsed_exit_code;
+		}
+	}
+
+	slog(TESTING,"Test hook: exiting after hash checkpoint with code %d\n",exit_code);
+	exit(exit_code);
 }
 #endif
