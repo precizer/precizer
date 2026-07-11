@@ -96,9 +96,11 @@ COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
+# This coverage target intentionally does not add gcov instrumentation.
+# This keeps coverage statistics focused on files whose coverage has strategic value
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG
-COV_LDFLAGS += $(USE_LLD) -lgcov --coverage
+COV_CFLAGS = $(CFLAGS) $(COV_OPT_CFLAGS) -g -DDEBUG
+COV_LDFLAGS += $(USE_LLD)
 
 #
 # Sanitize build settings
