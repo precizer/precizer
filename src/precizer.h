@@ -644,7 +644,8 @@ Return sha512sum(
 	const memory *,
 	memory *,
 	TraversalSummary *,
-	File *);
+	File *,
+	bool *);
 
 size_t file_buffer_memory(void);
 
@@ -746,6 +747,12 @@ Return db_update_the_record_by_id(const File *);
 Return db_insert_the_record(
 	const memory *,
 	const File *);
+
+Return db_save_file_record(
+	const memory *,
+	File *,
+	bool *,
+	const bool);
 
 Return db_determine_name(void);
 

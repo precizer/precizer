@@ -366,8 +366,11 @@ Return file_list(TraversalSummary *summary)
 						break;
 					}
 
-					// Tracks whether the current relative path existed in DB before current file processing
-					const bool path_known = file->db->relative_path_was_in_db_before_processing == true;
+					/*
+					 * Mutable row-existence flag for the current relative path.
+					 * It starts with the state loaded before file processing and may become true after sha512sum() writes the first periodic checkpoint for a new file
+					 */
+					bool path_known = file->db->relative_path_was_in_db_before_processing == true;
 
 					/*
 					 * YES means the current relative path is checksum-locked and the file must be marked as protected.
@@ -564,7 +567,8 @@ Return file_list(TraversalSummary *summary)
 									relative_path,
 									file_buffer,
 									summary,
-									file);
+									file,
+									&path_known);
 							}
 
 							if(TRIUMPH & status)
@@ -628,52 +632,58 @@ Return file_list(TraversalSummary *summary)
 						/* Update in DB */
 						show_log = true;
 
-						bool allow_locked_update = file->locked_checksum_file == false
+						/*
+						 * True when this file was absent at the start of processing.
+						 * A periodic checkpoint may already have inserted its row, so the final save must still be allowed and reported as a new file
+						 */
+						bool path_inserted_during_processing = file->db->relative_path_was_in_db_before_processing == false;
+
+						/*
+						 * Controls whether the final save may update an existing row.
+						 * Regular files, forced locked-file rehashes, resumed partial hashes, and rows inserted during this pass are allowed to be saved
+						 */
+						bool allow_locked_update = path_inserted_during_processing == true
+						        || file->locked_checksum_file == false
 						        || config->rehash_locked == true
 						        || has_saved_offset == true;
 
+						/*
+						 * Final database-save decision for a known row.
+						 * It is true when the row was created by a checkpoint, the hash advanced, a resumed hash completed, or the file metadata changed
+						 */
 						bool should_update_db = allow_locked_update == true
-						        && (file->checksum_offset > file->db->saved_offset
+						        && (path_inserted_during_processing == true
+						        || file->checksum_offset > file->db->saved_offset
 						        || (has_saved_offset == true && file->checksum_offset == 0)
 						        || file_metadata_identical == false);
 
 						if(should_update_db == true)
 						{
-							/* Update record in DB */
+							/* Save record in DB */
 							if(TRIUMPH & status)
 							{
-								status = db_update_the_record_by_id(file);
+								status = db_save_file_record(relative_path,file,&path_known,true);
 
 								if((TRIUMPH & status) == 0)
 								{
 									continue_the_loop = false;
 									break;
 								}
-								// Record that the DB row was updated
-								file->db_record_updated = true;
 							}
 						}
 					} else {
 						show_log = true;
 
-						/* Insert into DB */
+						/* Save record in DB */
 						if(TRIUMPH & status)
 						{
-#if 0 // Disabled multi-root path index implementation
-							status = db_insert_the_record(&runtime_root_path_index,
-								relative_path,
-								file);
-#else
-							status = db_insert_the_record(relative_path,file);
-#endif
+							status = db_save_file_record(relative_path,file,&path_known,true);
 
 							if((TRIUMPH & status) == 0)
 							{
 								continue_the_loop = false;
 								break;
 							}
-							// Record that a new DB row was inserted
-							file->new_db_record_inserted = true;
 						}
 					}
 

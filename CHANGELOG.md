@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# Release 0.17.0 2026-07-10
+
+- Long-running SHA512 calculations now periodically save resumable progress in the database. After an unexpected interruption, the next run with `--update` can continue from the latest saved point instead of hashing the file from the beginning, provided its metadata has not changed
+
 # Release 0.16.0 2026-07-01
 
 - Experimental Windows support. The build is not code signed yet. The ZIP archive includes the executable and the required DLL dependency. A portable EXE is also available. It does not require any dependencies, but Defender flags it immediately.
