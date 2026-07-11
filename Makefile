@@ -143,10 +143,13 @@ DYNAMIC_INCPATH += $(foreach d,$(STATLIBS),-Ilibs/$d/src/)
 INCPATH += $(foreach d,$(LIBS),-Ilibs/$d/src/)
 
 ifeq ($(UNAME_S),Darwin)
-# argp lib
 DYNAMIC_INCPATH += $(shell pkg-config --cflags libpcre2-8)
 INCPATH += $(shell pkg-config --cflags libpcre2-8)
 LDLIBS += $(shell pkg-config --libs libpcre2-8)
+ARGP_PREFIX ?= $(shell brew --prefix argp-standalone 2>/dev/null)
+DYNAMIC_INCPATH += -I$(ARGP_PREFIX)/include
+INCPATH += -I$(ARGP_PREFIX)/include
+LDPATH += -L$(ARGP_PREFIX)/lib
 LDLIBS += -largp
 else
 LDLIBS += -lpcre2-8

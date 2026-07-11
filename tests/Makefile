@@ -39,6 +39,8 @@ endif
 LDLIBS += $(foreach d,$(LIBS),-l$d)
 ifeq ($(UNAME_S),Darwin)
 LDLIBS += $(shell pkg-config --libs libpcre2-8)
+ARGP_PREFIX ?= $(shell brew --prefix argp-standalone 2>/dev/null)
+LDPATH += -L$(ARGP_PREFIX)/lib
 else
 LDLIBS += -lpcre2-8
 endif
@@ -57,6 +59,7 @@ INCPATH += -I$(APP_SRC_DIR)
 
 ifeq ($(UNAME_S),Darwin)
 INCPATH += $(shell pkg-config --cflags libpcre2-8)
+INCPATH += -I$(ARGP_PREFIX)/include
 LDLIBS += -largp
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 # argp is not part of Cygwin's C library
