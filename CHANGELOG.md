@@ -2,6 +2,12 @@
 
 All notable changes will be documented in this file
 
+# Release 0.17.1 2026-07-11
+
+- Improved output for scripted workflows. Escape sequences no longer clutter the output, making it cleaner and easier to parse programmatically.
+- Reduced nonessential output to make automated processing more reliable.
+- Renamed `--start-device-only` to `--one-file-system`, following rsync terminology. The new name more accurately describes the option's behavior. The old name will remain supported for backward compatibility for the next 10 years.
+
 # Release 0.17.0 2026-07-10
 
 - Long-running SHA512 calculations now periodically save resumable progress in the database. After an unexpected interruption, the next run with `--update` can continue from the latest saved point instead of hashing the file from the beginning, provided its metadata has not changed
