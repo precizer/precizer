@@ -11,8 +11,7 @@
  * @param[in] ID Unique row ID from the `files` table
  * @return Return status code
  */
-Return db_delete_the_record_by_id(
-	const sqlite_int64 *ID)
+Return db_delete_the_record_by_id(const sqlite_int64 *ID)
 {
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */

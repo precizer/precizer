@@ -8,7 +8,7 @@
  * @return MATCH, NOT_MATCH, or REGEXP_ERROR
  */
 REGEXP match_regexp(
-	pcre2_code *compiled_pattern,
+	pcre2_code   *compiled_pattern,
 	const memory *relative_path)
 {
 	if(compiled_pattern == NULL || relative_path == NULL)

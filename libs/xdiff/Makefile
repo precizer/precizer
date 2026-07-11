@@ -213,13 +213,7 @@ memtest: debug
 tests: test
 test: tests-sanitize
 
-tests-sanitize:
-	@true
-
-tests-debug:
-	@true
-
-tests-coverage:
+tests-sanitize tests-debug tests-coverage:
 	@true
 
 testlibs-debug:

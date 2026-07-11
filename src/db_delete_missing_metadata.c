@@ -20,7 +20,7 @@ static Return db_check_locked_unavailable_violation(
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */
 
-  /* Status returned by this function through provide()
+	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
@@ -74,7 +74,7 @@ static Return db_preserve_locked_ignored_record(
 {
 	/* This changed function requires a new line-by-line human review before it is considered trusted */
 
-  /* Status returned by this function through provide()
+	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 

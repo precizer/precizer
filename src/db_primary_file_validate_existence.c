@@ -36,9 +36,9 @@ Return db_primary_file_validate_existence(void)
 	// Primary DB file exists or not
 	config->db_primary_file_exists = false;
 
-  const char *db_primary_file_path = confstr(db_primary_file_path);
+	const char *db_primary_file_path = confstr(db_primary_file_path);
 
-  size_t db_primary_file_path_length;
+	size_t db_primary_file_path_length;
 
 	status = m_string_length(conf(db_primary_file_path),&db_primary_file_path_length);
 
