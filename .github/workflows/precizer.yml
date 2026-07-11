@@ -14,34 +14,39 @@ jobs:
     runs-on: ubuntu-24.04
 
     outputs:
-      version: ${{ steps.tag_message.outputs.version }}
-      body: ${{ steps.tag_message.outputs.body }}
+      version: ${{ steps.release_info.outputs.version }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - name: Get annotated tag message
-        id: tag_message
+      - name: Get release version
+        id: release_info
         run: |
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-
           VERSION="${GITHUB_REF#refs/tags/}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-          {
-            echo "version=$VERSION"
-            echo 'body<<EOF'
-            git tag -l --format='%(contents)' "$VERSION"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+      - name: Install latest stable mdq
+        run: |
+          curl -fsSL \
+            https://github.com/yshavit/mdq/releases/latest/download/mdq-linux-x64-musl.tar.gz | \
+            tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/mdq" --version
+
+      - name: Render release notes
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: bash tools/scripts/render-release-notes.sh "$RELEASE_TAG" release-notes.md
 
       - name: Create GitHub Release with gh CLI
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          gh release create ${{ github.ref_name }} \
-            --title "v${{ github.ref_name }}" \
-            --notes "${{ steps.tag_message.outputs.body }}" \
+          gh release create "$RELEASE_TAG" \
+            --title "v$RELEASE_TAG" \
+            --notes-file release-notes.md \
             --draft
 
   build_linux_x86_64:
