@@ -110,18 +110,13 @@ static Return test0033_3(void)
 	/*
 	 * Step 1: Prepare isolated test data in TMPDIR and start from a clean DB
 	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == create_directory("tests/fixtures"));
-	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/huge","tests/fixtures/huge",REQUIRE_SOURCE_EXISTS));
-
-	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
+	struct stat huge_file_stat = {0};
+	ASSERT(SUCCESS == prepare_huge_fixture(huge_file_path,&huge_file_stat));
 
 	/*
-	 * Read the real file size from the filesystem once and use it as
+	 * Use the real file size from the prepared fixture as
 	 * an upper bound for the interrupted offset assertions below
 	 */
-	struct stat huge_file_stat = {0};
-	ASSERT(0 == stat(m_text(huge_file_path),&huge_file_stat));
 	ASSERT(huge_file_stat.st_size > 0);
 
 	const char *arguments = "--progress --database=0033_interrupt_resume.db tests/fixtures/huge";
@@ -190,7 +185,7 @@ static Return test0033_3(void)
 
 	ASSERT(0 == final_offset);
 
-	ASSERT(SUCCESS == compute_file_sha512(m_text(huge_file_path),expected_sha512));
+	ASSERT(SUCCESS == compute_file_sha512_monocypher(m_text(huge_file_path),expected_sha512));
 	ASSERT(0 == memcmp(db_sha512,expected_sha512,(size_t)SHA512_DIGEST_LENGTH));
 
 	/* Step 7: Cleanup temporary test artifacts */
@@ -224,10 +219,7 @@ static Return test0033_4(void)
 	m_create(char,stderr_pattern,MEMORY_STRING);
 	m_create(char,huge_file_path,MEMORY_STRING);
 
-	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == create_directory("tests/fixtures"));
-	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/huge","tests/fixtures/huge",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == construct_path("tests/fixtures/huge/hugetestfile",huge_file_path));
+	ASSERT(SUCCESS == prepare_huge_fixture(huge_file_path,NULL));
 
 	const char *arguments = "--progress --database=0033_interrupt_rehash.db tests/fixtures/huge";
 

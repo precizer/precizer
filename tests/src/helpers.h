@@ -16,6 +16,11 @@
 #define FILE_WRITE_APPEND  ((unsigned int)1U)
 #define FILE_WRITE_REPLACE ((unsigned int)2U)
 
+Return open_db_from_tmpdir(
+	const char *db_filename,
+	const int  open_flags,
+	sqlite3    **db_out);
+
 /**
  * @brief Verify that files.relative_path values in DB match expected list
  *
@@ -44,6 +49,25 @@ Return db_relative_path_exists(
 	const char *relative_path,
 	bool       *exists_out);
 
+Return db_read_file_id(
+	const char    *db_filename,
+	const char    *relative_path,
+	sqlite3_int64 *id_out);
+
+Return db_read_first_row_id(
+	const char    *db_filename,
+	sqlite3_int64 *row_id_out);
+
+Return db_overwrite_stat_blob_by_row_id(
+	const char          *db_filename,
+	const sqlite3_int64 row_id,
+	const void          *blob,
+	const int           blob_size);
+
+Return db_corrupt_first_row_stat_blob(
+	const char    *db_filename,
+	sqlite3_int64 *row_id_out);
+
 /**
  * @brief Read resume-related state for one file from files table
  *
@@ -60,6 +84,10 @@ Return read_resume_state_from_db(
 	sqlite3_int64 *offset_out,
 	int           *md_context_bytes_out);
 
+Return db_resume_state_is_empty(
+	const char *db_filename,
+	const char *relative_path);
+
 /**
  * @brief Read number of rows from files table
  *
@@ -70,6 +98,11 @@ Return read_resume_state_from_db(
  */
 Return db_read_files_count(
 	const char *db_filename,
+	int        *count_out);
+
+Return db_read_files_count_with_blob_size(
+	const char *db_filename,
+	const int  blob_size,
 	int        *count_out);
 
 /**
@@ -83,6 +116,31 @@ Return db_read_files_count(
 Return read_db_version_from_metadata(
 	const char *db_filename,
 	int        *db_version_out);
+
+Return set_db_version_in_metadata(
+	const char *db_filename,
+	const int  db_version);
+
+Return db_read_stat_blob_by_row_id(
+	const char          *db_filename,
+	const sqlite3_int64 row_id,
+	unsigned char       *blob_out,
+	const size_t        blob_out_size,
+	int                 *blob_size_out);
+
+Return db_read_cmpctstat_by_row_id(
+	const char          *db_filename,
+	const sqlite3_int64 row_id,
+	CmpctStat           *stat_out);
+
+Return db_read_cmpctstat_by_relative_path(
+	const char *db_filename,
+	const char *relative_path,
+	CmpctStat  *stat_out);
+
+bool cmpctstat_matches_stat_timestamps(
+	const CmpctStat   *db_stat,
+	const struct stat *file_stat);
 
 /**
  * @brief Read final offset and SHA512 checksum for one file from files table
@@ -100,6 +158,11 @@ Return read_final_sha512_from_db(
 	sqlite3_int64 *offset_out,
 	unsigned char *sha512_out);
 
+Return db_final_sha512_matches_file(
+	const char *db_filename,
+	const char *relative_path,
+	const char *file_path);
+
 /**
  * @brief Set files.sha512 to NULL for one row in the database
  *
@@ -109,6 +172,10 @@ Return read_final_sha512_from_db(
  * @return Return status code
  */
 Return db_set_sha512_to_null(
+	const char *db_filename,
+	const char *relative_path);
+
+Return db_tamper_sha512(
 	const char *db_filename,
 	const char *relative_path);
 
@@ -172,6 +239,12 @@ Return create_directory(const char *relative_path_to_tmpdir);
  * @return Return status code
  */
 Return delete_path(const char *relative_path_to_tmpdir);
+
+Return delete_path_if_present(const char *relative_path_to_tmpdir);
+
+Return prepare_huge_fixture(
+	memory      *huge_file_path,
+	struct stat *huge_file_stat_out);
 
 /**
  * @brief Copy file or directory tree by path relative to TMPDIR
