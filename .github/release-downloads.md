@@ -1,4 +1,3 @@
----
 
 ## Downloads
 
@@ -41,8 +40,11 @@ experimental and the executable is not code-signed, so Microsoft Defender may di
 
 [Download precizer for macOS Apple Silicon ARM64](https://github.com/precizer/precizer/releases/download/{{TAG}}/precizer_macos_arm64.zip)
 
-The macOS builds use dynamic libraries and require `sqlite3`, `pcre2`, `argp`, and `fts` to be available on the system.
+The macOS builds use dynamic libraries. Install the required dependencies before running Precizer:
 
+```sh
+brew install sqlite pcre2 argp-standalone
+```
 ## Documentation
 
 [English documentation](https://github.com/precizer/precizer/blob/{{TAG}}/README.md) | [Russian documentation](https://github.com/precizer/precizer/blob/{{TAG}}/README.ru.md) | [Changelog](https://github.com/precizer/precizer/blob/{{TAG}}/CHANGELOG.md)
