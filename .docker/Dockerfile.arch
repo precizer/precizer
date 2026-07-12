@@ -1,4 +1,4 @@
-FROM archlinux@sha256:a9a1e6db522cf5f8018c920d035e2bfbf8e39c485ee737ce0388990898f2f042 AS arch
+FROM archlinux@sha256:681569955d1d17313ef7134acc8b5cd8adcda2fc24709bed472d95e1cf3d71a1 AS arch
 
 RUN set -eux; \
      pacman -Syu --noconfirm --needed base-devel gcc-libs clang sqlite llvm pcre2 upx; \
