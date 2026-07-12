@@ -2,9 +2,15 @@
 
 All notable changes will be documented in this file
 
+# Release 0.17.1 2026-07-11
+
+- Improved output for scripted workflows. Escape sequences no longer clutter the output, making it cleaner and easier to parse programmatically.
+- Reduced nonessential output to make automated processing more reliable.
+- Renamed `--start-device-only/-o` to `--one-file-system/-x`, following rsync terminology. The new name more accurately describes the option's behavior. The old name will remain supported for backward compatibility for the next 10 years.
+
 # Release 0.17.0 2026-07-10
 
-- Long-running SHA512 calculations now periodically save resumable progress in the database. After an unexpected interruption, the next run with `--update` can continue from the latest saved point instead of hashing the file from the beginning, provided its metadata has not changed
+- Long-running SHA512 calculations now periodically save resumable progress in the database. After an unexpected interruption, the next run with `--update/-u` can continue from the latest saved point instead of hashing the file from the beginning, provided its metadata has not changed
 
 # Release 0.16.0 2026-07-01
 
@@ -81,16 +87,16 @@ Clarified in the README and CLI help that `--compare` reports, summaries, and eq
 ## Fixed
 - Improved compatibility when building precizer on macOS
 
-# v0.8.0 2026-03-05
+# Release 0.8.0 2026-03-05
 
 ## Changed
 - precizer is now distributed under the GPLv3 license
 
-# v0.7.0 2026-02-28
+# Release 0.7.0 2026-02-28
 
 This version mainly improves test reliability (including complex `--ignore`/`--include`, interruption, and file metadata change scenarios) and includes minor output and documentation polish without noticeable user-facing CLI behavior changes
 
-# v0.6.0 2026-02-10
+# Release 0.6.0 2026-02-10
 
 ## Added
 - Added reporting for filesystem traversal time and the average per second throughput for reading files and calculating checksums.
@@ -104,7 +110,7 @@ This version mainly improves test reliability (including complex `--ignore`/`--i
 ## Documentation
 - Added a `TROUBLESHOOTING` section to `README.md` with guidance for diagnosing slow filesystem walks, checksum computation, and SQLite `.db` write performance.
 
-# v0.5.0 2026-01-29 Pull Request #45
+# Release 0.5.0 2026-01-29
 
 ## Added
 - New CLI option `--quiet-ignored` to suppress log lines for files filtered out via `--ignore`/`--include`.

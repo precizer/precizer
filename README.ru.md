@@ -220,6 +220,7 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 * Alpine
 * Arch
 * Debian
+* Fedora
 * Gentoo
 * Rocky
 * Ubuntu
@@ -347,7 +348,7 @@ sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
 sudo apk add --update build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
 ```
 
-#### Almalinux/Rocky Linux
+#### Almalinux/Rocky/Fedora Linux
 
 ```sh
 sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static

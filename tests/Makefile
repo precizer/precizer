@@ -292,8 +292,7 @@ coverage-report: hugetestfile precizer-coverage $(COV_EXE)
 
 coverage-html: coverage-report
 	@echo "Generating HTML coverage report..."
-	@lcov --capture --branch-coverage --rc lcov_excl_br_line='(^\s*RETURN_STATUS|SLOWTEST\s*;)|(\b(?:provide|deliver|ask|run|call|ASSERT|IF|HEADER|TEST|SUTE)\s*\()' --directory $(COV_OBJDIR) --directory $(COV_APP_OBJDIR) --directory $(COV_LIB_OBJDIR) --output-file $(COV_OBJDIR)/coverage.raw.info
-	@lcov --remove $(COV_OBJDIR)/coverage.raw.info '*/tests/src/mocks.c' --output-file $(COV_OBJDIR)/coverage.info
+	@lcov --capture --branch-coverage --exclude '*/tests/src/mocks.c' --rc lcov_excl_br_line='(^\s*RETURN_STATUS|SLOWTEST\s*;)|(\b(?:provide|deliver|ask|run|call|ASSERT|IF|HEADER|TEST|SUTE)\s*\()' --directory $(COV_OBJDIR) --directory $(COV_APP_OBJDIR) --directory $(COV_LIB_OBJDIR) --output-file $(COV_OBJDIR)/coverage.info
 	@genhtml --branch-coverage $(COV_OBJDIR)/coverage.info --output-directory $(COV_REPORTDIR)
 	@echo "HTML coverage report generated in $(COV_REPORTDIR) directory"
 
@@ -423,7 +422,7 @@ clean: clean-hugetestfile clean-compile-commands
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
 
-	@rm -f $(COV_OBJDIR)/*.gcno $(COV_OBJDIR)/*.gcda $(COV_OBJDIR)/*.gcov $(COV_OBJDIR)/coverage.raw.info $(COV_OBJDIR)/coverage.info
+	@rm -f $(COV_OBJDIR)/*.gcno $(COV_OBJDIR)/*.gcda $(COV_OBJDIR)/*.gcov $(COV_OBJDIR)/coverage.info
 	@rm -rf $(COV_REPORTDIR)
 	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
 	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
