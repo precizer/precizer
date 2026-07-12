@@ -33,11 +33,15 @@ experimental and the executable is not code-signed, so Microsoft Defender may di
 
 ### macOS
 
+**Intel processor (x86_64)**
+
+[Download precizer for macOS Intel x86_64](https://github.com/precizer/precizer/releases/download/{{TAG}}/precizer_macos_x86_64.zip)
+
 **Apple Silicon processor (M1 or newer, ARM64)**
 
 [Download precizer for macOS Apple Silicon ARM64](https://github.com/precizer/precizer/releases/download/{{TAG}}/precizer_macos_arm64.zip)
 
-The macOS build uses dynamic libraries and requires `sqlite3`, `pcre2`, `argp`, and `fts` to be available on the system.
+The macOS builds use dynamic libraries and require `sqlite3`, `pcre2`, `argp`, and `fts` to be available on the system.
 
 ## Documentation
 

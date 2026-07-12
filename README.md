@@ -104,6 +104,7 @@ Download [https://github.com/precizer/precizer/releases/latest/](https://github.
 
 * Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
 * Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
+* macOS x86_64 for Intel-based Macs [precizer_macos_x86_64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_x86_64.zip)
 * macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
 * Windows portable EXE [precizer_windows_x64_portable.exe](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.exe)
 * Windows portable ZIP. The ZIP archive includes the executable and the required DLL dependency. [precizer_windows_x64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.zip)

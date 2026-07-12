@@ -278,6 +278,87 @@ jobs:
           # Run
           ./precizer --version
 
+  build_evil_empire_os_x86_64:
+    name: Build & attach macOS x86_64
+    runs-on: macos-15-intel
+    needs: get_tag_info
+
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
+    env:
+      VERSION: ${{ needs.get_tag_info.outputs.version }}
+
+    steps:
+      - name: Checkout repository (exclude tests/fixtures/long)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !tests/fixtures/long/**
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install llvm argp-standalone || true
+
+      - name: Build project (macOS x86_64)
+        run: |
+          make -j dynamic-production
+          otool -L precizer
+          otool -l precizer
+          mkdir v${{ env.VERSION }}
+          cp -a precizer v${{ env.VERSION }}/
+          zip -9 -r precizer_macos_x86_64.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
+          ./precizer --version
+          make purge
+
+      - name: Run tests (macOS x86_64)
+        run: make -j tests
+
+      - name: Generate attestation (macOS x86_64)
+        id: attest_macos_x86_64
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_macos_x86_64.zip
+
+      - name: Save Sigstore bundle (macOS x86_64)
+        run: |
+          cp "${{ steps.attest_macos_x86_64.outputs.bundle-path }}" \
+             "precizer_macos_x86_64.zip.sigstore.json"
+
+      - name: Upload Sigstore bundle artifact (macOS x86_64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-sigstore-bundle-macos-x86-64
+          path: precizer_macos_x86_64.zip.sigstore.json
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload macOS x86_64 asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} \
+            "precizer_macos_x86_64.zip" \
+            "precizer_macos_x86_64.zip.sigstore.json" \
+            --clobber
+          #
+          # Testing automation for downloading and unarchiving new versions (example from the README documentation)
+          #
+          # Download
+          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          # Extract the archive
+          unzip -jqo precizer.zip '*/precizer' -d ./
+          # Run
+          ./precizer --version
+
   # Build and attach the MSYS-based Windows x64 release assets
   build_msys_x64:
     name: Build & attach MSYS x64
@@ -554,6 +635,7 @@ jobs:
       - build_linux_x86_64
       - build_linux_arm64
       - build_evil_empire_os_arm64
+      - build_evil_empire_os_x86_64
       - build_msys_x64
 
     permissions:
@@ -582,12 +664,13 @@ jobs:
             release-sigstore-bundles/precizer_linux_x86_64_portable.zip.sigstore.json \
             release-sigstore-bundles/precizer_linux_aarch64_portable.zip.sigstore.json \
             release-sigstore-bundles/precizer_macos_arm64.zip.sigstore.json \
+            release-sigstore-bundles/precizer_macos_x86_64.zip.sigstore.json \
             release-sigstore-bundles/precizer_windows_x64_portable.exe.sigstore.json \
             release-sigstore-bundles/precizer_windows_x64_portable.zip.sigstore.json \
             > "$provenance_file"
 
           line_count="$(wc -l < "$provenance_file" | tr -d '[:space:]')"
-          test "$line_count" -eq 5
+          test "$line_count" -eq 6
 
       - name: Upload release provenance
         env:
