@@ -167,7 +167,7 @@ void init_config(void)
 	/// This option prevents directory traversal from descending into
 	/// directories that have a different device number than the file
 	/// from  which the descent began
-	config->start_device_only = false;
+	config->one_file_system = false;
 
 	// Pre-compiled PCRE2 patterns for --ignore, populated by compile_patterns() only if --ignore was specified
 	config->ignore_pcre_compiled = NULL;

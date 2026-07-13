@@ -95,7 +95,7 @@ Return file_list(TraversalSummary *summary)
 	fts_options |= FTS_NOCHDIR;
 #endif
 
-	if(config->start_device_only == true)
+	if(config->one_file_system == true)
 	{
 		fts_options |= FTS_XDEV;
 	}

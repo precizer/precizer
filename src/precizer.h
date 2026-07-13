@@ -462,7 +462,7 @@ typedef struct {
 	/// This option prevents directory traversal from descending into
 	/// directories that have a different device number than the file
 	/// from  which the descent began
-	bool start_device_only;
+	bool one_file_system;
 
 	/// Pre-compiled PCRE2 patterns for --ignore (parallel to ignore[])
 	/// Compiled once by compile_patterns() after argument parsing

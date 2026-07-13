@@ -9,9 +9,9 @@ Usage: precizer \[OPTION\.\.\.\] PATH
 [\s\S]*?  -l, --check-level=FULL\|QUICK[^\n]*
 [\s\S]*?  -m, --maxdepth=NUMBER[^\n]*
 [\s\S]*?  -n, --dry-run\[=MODE\][^\n]*
-[\s\S]*?  -o, --start-device-only[^\n]*
 [\s\S]*?  -T, --watch-timestamps[^\n]*
 [\s\S]*?  -u, --update[^\n]*
+[\s\S]*?  -x, --one-file-system[^\n]*
 [\s\S]*?  -X, --db-drop-inaccessible[^\n]*
 [\s\S]*? Locked Checksum Protection:
 [\s\S]*?  -C, --db-drop-ignored[^\n]*

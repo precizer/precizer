@@ -112,7 +112,8 @@ static struct argp_option options[] = {
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.",0},
 	{"dry-run",'n',"MODE",OPTION_ARG_OPTIONAL,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET ". "
 	 "Supported mode: " BOLD "--dry-run=with-checksums" RESET " (read files and calculate checksums during dry run).",0},
-	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.",0 },
+	{"one-file-system",'x',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.",0 },
+	{"start-device-only",'o',0,OPTION_ALIAS | OPTION_HIDDEN,0,0}, // This legacy can be removed in 2036 (10-year Long-Term Support)
 	{"force",'f',0,0,"Use this option only in case when the PATHs that were written into the database as a result of the last scanning really need to be renewed. Warning! If this option will be used in incorrect way, information about files and their checksums against the database would be lost.",0},
 	{"update",'u',0,0,"Updates the database to reflect file system changes (new, modified and deleted files). Must be used with the same initial PATH that was used when creating the database, as existing records will be replaced with data from the specified location. This option modifies database consistency. Use with caution, especially in automated scripts, as incorrect usage may lead to loss of file checksums and metadata.",0 },
 	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname.",0 },
@@ -268,8 +269,9 @@ static error_t parse_opt(
 				return(EINVAL);
 			}
 			break;
-		case 'o':
-			config->start_device_only = true;
+		case 'o': // This legacy can be removed in 2036 (10-year Long-Term Support)
+		case 'x':
+			config->one_file_system = true;
 			break;
 		case 'C':
 			config->db_drop_ignored = true;
@@ -624,9 +626,9 @@ static void parse_arguments_show_testing_diagnostics(void)
 		parse_arguments_slog(TESTING,"argument:dry-run=%s\n",config->dry_run_with_checksums ? "with-checksums" : "yes");
 	}
 
-	if(config->start_device_only)
+	if(config->one_file_system)
 	{
-		parse_arguments_slog(TESTING,"argument:start-device-only=%s\n",config->start_device_only ? "yes" : "no");
+		parse_arguments_slog(TESTING,"argument:one-file-system=%s\n",config->one_file_system ? "yes" : "no");
 	}
 }
 
@@ -742,7 +744,7 @@ static void parse_arguments_show_verbose_diagnostics(void)
 		}
 	}
 
-	parse_arguments_slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+	parse_arguments_slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, one-file-system=%s, check-level=%s, rational_logger_mode=%s",
 		config->verbose ? "yes" : "no",
 		config->maxdepth,
 		config->quiet_ignored ? "yes" : "no",
@@ -755,7 +757,7 @@ static void parse_arguments_show_verbose_diagnostics(void)
 		config->db_drop_ignored ? "yes" : "no",
 		config->db_drop_inaccessible ? "yes" : "no",
 		dry_run_mode,
-		config->start_device_only ? "yes" : "no",
+		config->one_file_system ? "yes" : "no",
 		config->db_check_level == QUICK ? "QUICK" : "FULL",
 		rational_reconvert(rational_logger_mode));
 
