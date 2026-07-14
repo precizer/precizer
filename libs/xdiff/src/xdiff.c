@@ -1288,6 +1288,7 @@ static int xdl_clean_mmatch(
 	long       e)
 {
 	long r,rdis0,rpdis0,rdis1,rpdis1;
+	long scan_before,scan_after;
 
 	/*
 	 * Limits the window the is examined during the similar-lines
@@ -1305,6 +1306,8 @@ static int xdl_clean_mmatch(
 	{
 		e = i + XDL_SIMSCAN_WINDOW;
 	}
+	scan_before = i - s;
+	scan_after = e - i;
 
 	/*
 	 * Scans the lines before 'i' to find a run of lines that either
@@ -1312,7 +1315,7 @@ static int xdl_clean_mmatch(
 	 * Note that we always call this function with dis[i] > 1, so the
 	 * current line (i) is already a multimatch line.
 	 */
-	for(r = 1,rdis0 = 0,rpdis0 = 1; (i - r) >= s; r++)
+	for(r = 1,rdis0 = 0,rpdis0 = 1; r <= scan_before; r++)
 	{
 		if(!dis[i - r])
 		{
@@ -1335,7 +1338,7 @@ static int xdl_clean_mmatch(
 		return 0;
 	}
 
-	for(r = 1,rdis1 = 0,rpdis1 = 1; (i + r) <= e; r++)
+	for(r = 1,rdis1 = 0,rpdis1 = 1; r <= scan_after; r++)
 	{
 		if(!dis[i + r])
 		{
