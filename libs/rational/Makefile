@@ -27,6 +27,14 @@ C_STANDARD := -std=c2x
 CPPFLAGS ?=
 LDFLAGS ?=
 
+# Shared librational builds on macOS resolve optional callbacks from the
+# application at runtime
+ifeq ($(UNAME_S),Darwin)
+SHARED_LDFLAGS ?= -Wl,-undefined,dynamic_lookup
+else
+SHARED_LDFLAGS ?=
+endif
+
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
 
@@ -96,11 +104,11 @@ DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
 DBG_CFLAGS ?= $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 DBG_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
-DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) $(SHARED_LDFLAGS)
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS)
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) $(SHARED_LDFLAGS)
 else
-DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-z,defs
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-z,defs $(SHARED_LDFLAGS)
 endif
 
 #
@@ -119,7 +127,7 @@ COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
 COV_CFLAGS ?= -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL_TEST_HOOKS
 COV_OPT_LDFLAGS ?=
-COV_LDFLAGS ?= $(USE_LLD) $(COV_OPT_LDFLAGS) -lgcov --coverage
+COV_LDFLAGS ?= $(USE_LLD) $(COV_OPT_LDFLAGS) -lgcov --coverage $(SHARED_LDFLAGS)
 
 #
 # Sanitize build settings
@@ -137,9 +145,9 @@ SNTZ_OPTIONS = -fsanitize=address,undefined
 # while later required sanitizer flags take final priority
 SNTZ_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
-SNTZ_LDFLAGS ?= -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO) $(SNTZ_OPT_LDFLAGS) $(USE_LLD) $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= -install_name @rpath/$(SO) $(SNTZ_OPT_LDFLAGS) $(USE_LLD) $(SNTZ_OPTIONS) $(SHARED_LDFLAGS)
 else
-SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) $(USE_LLD) $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) $(USE_LLD) $(SNTZ_OPTIONS) $(SHARED_LDFLAGS)
 endif
 SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
 SNTZ_CFLAGS ?= $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
@@ -161,13 +169,13 @@ PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffun
 PROD_CFLAGS ?= $(PROD_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,-dead_strip
-PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) $(SHARED_LDFLAGS)
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--gc-sections
-PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS)
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) $(SHARED_LDFLAGS)
 else
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections
-PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs $(SHARED_LDFLAGS)
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -194,7 +202,7 @@ DIST_OBJS = $(addprefix $(DIST_OBJDIR)/, $(OBJS))
 DIST_OPT_CFLAGS ?= -O2
 DIST_CFLAGS ?= $(DIST_OPT_CFLAGS)
 DIST_OPT_LDFLAGS ?=
-DIST_LDFLAGS ?= $(DIST_OPT_LDFLAGS)
+DIST_LDFLAGS ?= $(DIST_OPT_LDFLAGS) $(SHARED_LDFLAGS)
 
 #
 # Portable build settings
@@ -213,13 +221,13 @@ PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffu
 PRTB_CFLAGS ?= $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,-dead_strip
-PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) $(SHARED_LDFLAGS)
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--gc-sections
-PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS)
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) $(SHARED_LDFLAGS)
 else
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections
-PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs $(SHARED_LDFLAGS)
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
