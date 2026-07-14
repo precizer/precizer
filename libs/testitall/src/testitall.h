@@ -224,7 +224,7 @@ Return match_function_output(
 Return match_pattern(
 	const memory *,
 	const memory *,
-	...);
+	const char *);
 
 /**
  * @brief Execute a shell command and match its output against a file template
