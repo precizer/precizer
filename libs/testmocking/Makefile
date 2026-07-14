@@ -11,6 +11,7 @@ short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 
 UNAME_S := $(shell uname -s)
+CFLAGS ?= -finline-functions
 
 # macOS-specific code
 ifeq ($(UNAME_S),Darwin)
@@ -22,7 +23,9 @@ endif
 #
 # USE_LLD and AR are exported by the root Makefile when COMPILER=clang
 # to use LLVM's own linker and archiver, avoiding gold plugin version mismatch
-CFLAGS += -std=c2x -finline-functions
+C_STANDARD := -std=c2x
+CPPFLAGS ?=
+LDFLAGS ?=
 
 # This wrap library is intentionally static-only. Its objects define
 # __wrap_malloc and __wrap_realloc and must be linked only by test binaries
@@ -91,8 +94,10 @@ DBG_LIBDIR = $(DBG_DIR)/libs
 DBG_OBJDIR = $(DBG_LIBDIR)/obj/$(LIBDIR)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through DBG_OPT_CFLAGS. When combined,
+# debug optimization flags follow CFLAGS and win conflicts
 DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
+DBG_CFLAGS ?= $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
 
 #
 # Coverage build settings
@@ -103,8 +108,10 @@ COV_LIBDIR = $(COV_DIR)/libs
 COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through COV_OPT_CFLAGS. When combined,
+# coverage optimization flags follow CFLAGS and win conflicts
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL
+COV_CFLAGS ?= -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL
 
 #
 # Sanitize build settings
@@ -116,8 +123,10 @@ SNTZ_OBJDIR = $(SNTZ_LIBDIR)/obj/$(LIBDIR)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
 SNTZ_OPTIONS = -fsanitize=address,undefined
+# Callers may replace these defaults through SNTZ_OPT_CFLAGS. These flags
+# follow CFLAGS and win conflicts, while later SNTZ_OPTIONS take final priority
 SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
-SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
+SNTZ_CFLAGS ?= $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
 
 #
 # Production build settings
@@ -128,8 +137,10 @@ PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_LIBDIR)/obj/$(LIBDIR)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through PROD_OPT_CFLAGS. When combined,
+# production optimization flags follow CFLAGS and win conflicts
 PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
-PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
+PROD_CFLAGS ?= $(PROD_OPT_CFLAGS)
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 PROD_WFLAGS += -Wsuggest-attribute=const
@@ -140,6 +151,22 @@ PROD_WFLAGS += -Wmissing-format-attribute
 endif
 
 #
+# Distribution package build settings
+#
+DIST = distribution
+DIST_DIR = $(BUILDDIR)/$(DIST)
+DIST_LIBDIR = $(DIST_DIR)/libs
+DIST_OBJDIR = $(DIST_LIBDIR)/obj/$(LIBDIR)
+DIST_STAT = $(DIST_LIBDIR)/$(STATLIB)
+DIST_OBJS = $(addprefix $(DIST_OBJDIR)/, $(OBJS))
+# Callers may replace this fallback through DIST_OPT_CFLAGS. When combined,
+# CFLAGS follow distribution optimization flags and win conflicts
+DIST_OPT_CFLAGS ?= -O2
+DIST_CFLAGS ?= $(DIST_OPT_CFLAGS)
+# Distribution linker variables are intentionally omitted. This Makefile
+# creates static archives only and never invokes the linker
+
+#
 # Portable build settings
 #
 PRTB = portable
@@ -148,8 +175,10 @@ PRTB_LIBDIR = $(PRTB_DIR)/libs
 PRTB_OBJDIR = $(PRTB_LIBDIR)/obj/$(LIBDIR)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through PRTB_OPT_CFLAGS. When combined,
+# portable optimization flags follow CFLAGS and win conflicts
 PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
-PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
+PRTB_CFLAGS ?= $(PRTB_OPT_CFLAGS)
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 PRTB_WFLAGS += -Wsuggest-attribute=const
@@ -159,7 +188,7 @@ PRTB_WFLAGS += -Wsuggest-attribute=format
 PRTB_WFLAGS += -Wmissing-format-attribute
 endif
 
-.PHONY: all purge clean debug production prod portable sanitize format gcc-analyzer
+.PHONY: all purge clean debug production prod distribution portable sanitize format gcc-analyzer
 .PHONY: coverage memtest tests test cppcheck clang-analyzer compile-commands clean-compile-commands print-%
 
 # Default build
@@ -178,7 +207,7 @@ $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@echo "$(call short_path,$@) prepared as debug static library archive"
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(INCPATH) $(CFLAGS) $(DBG_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR): | $(DBG_LIBDIR)
@@ -197,7 +226,7 @@ $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
 	@echo "$(call short_path,$@) prepared as coverage static library archive"
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(INCPATH) $(CFLAGS) $(COV_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR): | $(COV_LIBDIR)
@@ -216,7 +245,7 @@ $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@echo "$(call short_path,$@) prepared as sanitizer static library archive"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(INCPATH) $(WFLAGS) $(CFLAGS) $(SNTZ_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR): | $(SNTZ_LIBDIR)
@@ -236,13 +265,32 @@ $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@echo "$(call short_path,$@) prepared as release static library archive"
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(INCPATH) $(WFLAGS) $(PROD_WFLAGS) $(CFLAGS) $(PROD_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with release flags"
 
 $(PROD_OBJDIR): | $(PROD_LIBDIR)
 	@mkdir -p "$@"
 
 $(PROD_LIBDIR):
+	@mkdir -p "$@"
+
+#
+# Distribution package rules
+#
+distribution: $(DIST_STAT)
+
+$(DIST_STAT): $(DIST_OBJS) | $(DIST_LIBDIR)
+	@$(AR) rcs $@ $+
+	@echo "$(call short_path,$@) prepared as distribution static library archive"
+
+$(DIST_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DIST_OBJDIR)
+	@$(CC) -c $(CPPFLAGS) -fPIC $(INCPATH) $(WFLAGS) $(DIST_CFLAGS) $(CFLAGS) $(C_STANDARD) -o $@ $<
+	@echo "$(call short_path,$<) compiled with distribution flags"
+
+$(DIST_OBJDIR): | $(DIST_LIBDIR)
+	@mkdir -p "$@"
+
+$(DIST_LIBDIR):
 	@mkdir -p "$@"
 
 #
@@ -255,7 +303,7 @@ $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@echo "$(call short_path,$@) prepared as portable static library archive"
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
-	@$(CC) -c -fPIC $(INCPATH) $(WFLAGS) $(PRTB_WFLAGS) $(PRTB_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(INCPATH) $(WFLAGS) $(PRTB_WFLAGS) $(CFLAGS) $(PRTB_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with portable flags"
 
 $(PRTB_OBJDIR): | $(PRTB_LIBDIR)
@@ -273,6 +321,7 @@ clean-compile-commands:
 
 clean: clean-compile-commands
 	@rm -rf $(PROD_STAT) $(PROD_OBJS)
+	@rm -rf $(DIST_STAT) $(DIST_OBJS)
 	@rm -rf $(PRTB_STAT) $(PRTB_OBJS)
 	@rm -rf $(DBG_STAT) $(DBG_OBJS)
 	@rm -rf $(COV_STAT) $(COV_OBJS)
@@ -336,7 +385,7 @@ clang-analyzer:
 
 # Optional preprocessor files
 $(SRC_DIR)/%.i: $(SRC_DIR)/%.c
-	@$(CC) -E -C -o $@ $(INCPATH) $(PROD_CFLAGS) $<
+	@$(CC) -E -C $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(PROD_CFLAGS) $(C_STANDARD) -o $@ $<
 	@bcpp -na -s -i 4 $@ > $@.h
 	@sed -i 's/[ \t]*\# [[:digit:]]\+ \".*//g' $@.h
 

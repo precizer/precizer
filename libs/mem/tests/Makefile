@@ -12,7 +12,10 @@ MAKEFLAGS += --no-print-directory
 # Compiler flags
 #
 
-CFLAGS += -std=c2x -finline-functions
+C_STANDARD := -std=c2x
+CPPFLAGS ?=
+CFLAGS ?= -finline-functions
+LDFLAGS ?=
 
 UNAME_S := $(shell uname -s)
 
@@ -127,9 +130,13 @@ COV_RPATH = -Wl,-rpath,@executable_path/../../../$(COV)/libs,-rpath,@executable_
 else
 COV_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(COV)/libs
 endif
+# Callers may replace these defaults through COV_OPT_CFLAGS and
+# COV_OPT_LDFLAGS. Coverage optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DTESTITALL
-COV_LDFLAGS = -lgcov --coverage
+COV_CFLAGS ?= -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DTESTITALL
+COV_OPT_LDFLAGS ?=
+COV_LDFLAGS ?= $(COV_OPT_LDFLAGS) -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -149,12 +156,16 @@ else
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(SNTZ)/libs
 endif
 SNTZ_OPTIONS = -fsanitize=address,undefined
+# Callers may replace these defaults through SNTZ_OPT_CFLAGS and
+# SNTZ_OPT_LDFLAGS. Sanitizer optimization flags follow CFLAGS and LDFLAGS,
+# while later required sanitizer flags take final priority
 SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS) -fno-omit-frame-pointer
-SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL
+SNTZ_CFLAGS ?= $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL
+SNTZ_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
-SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
 else
-SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) -Wl,-z,defs $(SNTZ_OPTIONS)
 endif
 
 #
@@ -174,8 +185,13 @@ DBG_RPATH = -Wl,-rpath,@executable_path/../../../$(DBG)/libs,-rpath,@executable_
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/../../../$(DBG)/libs
 endif
+# Callers may replace these defaults through DBG_OPT_CFLAGS and
+# DBG_OPT_LDFLAGS. Debug optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0
-DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL
+DBG_CFLAGS ?= $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL
+DBG_OPT_LDFLAGS ?=
+DBG_LDFLAGS ?= $(DBG_OPT_LDFLAGS)
 
 .PHONY: all clean purge debug sanitize coverage run test tests tests-sanitize tests-debug tests-coverage coverage-report coverage-html format
 .PHONY: testedlib-coverage testedlib-sanitize testedlib-debug
@@ -215,11 +231,11 @@ testedlib-coverage:
 coverage: coverage-html
 
 $(COV_EXE): $(COV_OBJS) testlibs-coverage
-	@$(CC) $(COV_LDPATH) $(COV_RPATH) $(WRAPFLAGS) -o $(COV_EXE) $(COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) $(COV_LDFLAGS)
+	@$(CC) $(LDFLAGS) $(COV_LDPATH) $(COV_RPATH) $(WRAPFLAGS) -o $(COV_EXE) $(COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) $(COV_LDFLAGS)
 	@echo "$(call short_path,$@) linked dynamically with coverage flags, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(COV_OBJDIR)
-	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(COV_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR):
@@ -246,11 +262,11 @@ sanitize: $(SNTZ_EXE) | testlibs-sanitize
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) testlibs-sanitize
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) -o $(SNTZ_EXE) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS)
+	@$(CC) $(LDFLAGS) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) -o $(SNTZ_EXE) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS)
 	@echo "$(call short_path,$@) linked dynamically with sanitizer flags, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
-	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(SNTZ_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
@@ -268,7 +284,7 @@ debug: debug-build | testlibs-debug
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) testlibs-debug
-	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $(DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS)
+	@$(CC) $(LDFLAGS) $(DBG_LDPATH) $(DBG_LDFLAGS) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) -o $(DBG_EXE) $(DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS)
 ifneq ($(TESTS_DYNAMIC),)
 	@echo "$(call short_path,$@) linked dynamically with debug flags, not stripped"
 else
@@ -276,7 +292,7 @@ else
 endif
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(HDRS) $(TMPLTS) | $(DBG_OBJDIR)
-	@$(CC) -c $(INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(DBG_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR):

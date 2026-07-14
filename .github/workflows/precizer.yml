@@ -228,13 +228,14 @@ jobs:
 
       - name: Build project (macOS arm64)
         run: |
-          make -j dynamic-production
-          otool -L precizer
-          otool -l precizer
+          make -j distribution
+          built_exe=".builds/distribution/precizer"
+          otool -L "$built_exe"
+          otool -l "$built_exe"
           mkdir v${{ env.VERSION }}
-          cp -a precizer v${{ env.VERSION }}/
+          cp -a "$built_exe" "v${{ env.VERSION }}/precizer"
           zip -9 -r precizer_macos_arm64.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
-          ./precizer --version
+          "$built_exe" --version
           make purge
 
       - name: Run tests (macOS arm64)
@@ -309,13 +310,14 @@ jobs:
 
       - name: Build project (macOS x86_64)
         run: |
-          make -j dynamic-production
-          otool -L precizer
-          otool -l precizer
+          make -j distribution
+          built_exe=".builds/distribution/precizer"
+          otool -L "$built_exe"
+          otool -l "$built_exe"
           mkdir v${{ env.VERSION }}
-          cp -a precizer v${{ env.VERSION }}/
+          cp -a "$built_exe" "v${{ env.VERSION }}/precizer"
           zip -9 -r precizer_macos_x86_64.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
-          ./precizer --version
+          "$built_exe" --version
           make purge
 
       - name: Run tests (macOS x86_64)
@@ -416,24 +418,21 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Build the MSYS payload with static third-party libraries
-          make dynamic-production \
+          # Build the MSYS distribution payload with static third-party libraries
+          make distribution \
             WFLAGS= \
-            UPX=true \
-            LTO= \
-            PROD_OPT_CFLAGS='-pipe -fbuiltin -O2 -mtune=generic -ffunction-sections -fdata-sections -fomit-frame-pointer' \
-            PROD_LDFLAGS='-Wl,-O2 -Wl,--gc-sections' \
-            DYNP_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
+            LDFLAGS='-s' \
+            DIST_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
 
-          # Resolve the executable produced by the dynamic production build
-          built_exe=".builds/dynamic-production/precizer.exe"
+          # Resolve the executable produced by the distribution build
+          built_exe=".builds/distribution/precizer.exe"
           if [ ! -f "$built_exe" ]; then
-            built_exe=".builds/dynamic-production/precizer"
+            built_exe=".builds/distribution/precizer"
           fi
 
           # Stop if the build did not produce an executable
           if [ ! -f "$built_exe" ]; then
-            echo "Dynamic production executable not found" >&2
+            echo "Distribution executable not found" >&2
             exit 1
           fi
 

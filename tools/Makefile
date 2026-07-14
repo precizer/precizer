@@ -7,8 +7,16 @@ CC := gcc
 #
 # Compiler flags
 #
-CFLAGS += -std=c2x -finline-functions
+C_STANDARD := -std=c2x
+CPPFLAGS ?=
+CFLAGS ?= -finline-functions
+LDFLAGS ?=
+# Callers may replace these defaults through OPT_CFLAGS and OPT_LDFLAGS.
+# Tool optimization flags follow CFLAGS and LDFLAGS and win conflicts
 OPT_CFLAGS ?= -pipe -fbuiltin -flto -O2
+TOOL_CFLAGS ?= $(OPT_CFLAGS)
+OPT_LDFLAGS ?=
+TOOL_LDFLAGS ?= $(OPT_LDFLAGS)
 
 # Detect whether we're using GCC
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
@@ -48,7 +56,7 @@ all: $(BINS)
 
 # Rule to build binaries
 %: $(SRC_DIR)/%.c
-	@$(CC) $(CFLAGS) $(OPT_CFLAGS) $(WFLAGS) $< -o $(BIN_DIR)/$@
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(TOOL_CFLAGS) $(WFLAGS) $(C_STANDARD) $< $(LDFLAGS) $(TOOL_LDFLAGS) -o $(BIN_DIR)/$@
 	@echo $@ done
 
 #

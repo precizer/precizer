@@ -9,7 +9,10 @@ MAKEFLAGS += --no-print-directory
 # Compiler flags
 #
 
-CFLAGS += -std=c2x -finline-functions
+C_STANDARD := -std=c2x
+CPPFLAGS ?=
+CFLAGS ?= -finline-functions
+LDFLAGS ?=
 
 UNAME_S := $(shell uname -s)
 
@@ -148,9 +151,13 @@ LIB_TESTS_COV_OBJS = $(patsubst ../%.c,$(COV_OBJDIR)/%.o,$(LIB_TESTS_SRCS))
 # Adding it to the global CFLAGS leaks it into recursive builds such as
 # `make -C ../ sanitize`, which disables main() in the standalone precizer
 # binary and enables test-only hooks there
+# Callers may replace these defaults through COV_OPT_CFLAGS and
+# COV_OPT_LDFLAGS. Coverage optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -ggdb3 -DTESTITALL -DTESTITALL_TEST_HOOKS
-COV_LDFLAGS = -lgcov --coverage
+COV_CFLAGS ?= -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -ggdb3 -DTESTITALL -DTESTITALL_TEST_HOOKS
+COV_OPT_LDFLAGS ?=
+COV_LDFLAGS ?= $(COV_OPT_LDFLAGS) -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -172,14 +179,18 @@ else
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/../../$(SNTZ_LIBDIR)
 endif
 SNTZ_OPTIONS = -fsanitize=address,undefined
+# Callers may replace these defaults through SNTZ_OPT_CFLAGS and
+# SNTZ_OPT_LDFLAGS. Sanitizer optimization flags follow CFLAGS and LDFLAGS,
+# while later required sanitizer flags take final priority
 SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
-SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+SNTZ_CFLAGS ?= $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+SNTZ_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
-SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-SNTZ_LDFLAGS = $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) $(SNTZ_OPTIONS)
 else
-SNTZ_LDFLAGS = -Wl,-z,defs $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) -Wl,-z,defs $(SNTZ_OPTIONS)
 endif
 
 #
@@ -202,8 +213,13 @@ DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/..
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/../../$(DBG_LIBDIR)
 endif
+# Callers may replace these defaults through DBG_OPT_CFLAGS and
+# DBG_OPT_LDFLAGS. Debug optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 DBG_OPT_CFLAGS ?= -pipe -fbuiltin -Og -fno-omit-frame-pointer
-DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+DBG_CFLAGS ?= $(DBG_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+DBG_OPT_LDFLAGS ?=
+DBG_LDFLAGS ?= $(DBG_OPT_LDFLAGS)
 
 #
 # Dynamic debug build settings
@@ -224,7 +240,13 @@ DBG_DYN_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_DYN_LIBS)),$(LDLIBS))
 DBG_DYN_INCPATH = $(filter-out -I../libs/sqlite3/src/,$(INCPATH))
 DBG_DYN_HDRS = $(wildcard $(SRC)/*.h) $(foreach d,$(DBG_DYN_LIBS),$(wildcard ../libs/$d/src/*.h))
 DBG_DYN_ALLHDRS = $(DBG_DYN_HDRS) $(APP_HDRS) $(LIB_TESTS_HDRS)
-DBG_DYN_CFLAGS = $(DBG_CFLAGS)
+# Callers may replace these defaults through DBG_DYN_OPT_CFLAGS and
+# DBG_DYN_OPT_LDFLAGS. Dynamic debug optimization flags follow CFLAGS and
+# LDFLAGS and win conflicts
+DBG_DYN_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
+DBG_DYN_CFLAGS ?= $(DBG_DYN_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL -DTESTITALL_TEST_HOOKS
+DBG_DYN_OPT_LDFLAGS ?= $(DBG_OPT_LDFLAGS)
+DBG_DYN_LDFLAGS ?= $(DBG_DYN_OPT_LDFLAGS)
 
 .PHONY: all clean debug debug-dynamic sanitize coverage run test tests tests-sanitize tests-debug tests-dynamic coverage-report coverage-html format
 .PHONY: precizer-coverage precizer-sanitize precizer-debug precizer-debug-dynamic hugetestfile purge static-analyzers static-analyzers-cli gcc-analyzer cppcheck clang-analyzer clang-analyzer-cli print-%
@@ -266,20 +288,20 @@ precizer-coverage:
 coverage: hugetestfile coverage-html
 
 $(COV_EXE): $(COV_OBJS) $(COV_APP_OBJS) $(LIB_TESTS_COV_OBJS) precizer-coverage testlibs-coverage
-	@$(CC) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) $(WRAPFLAGS) $(COV_OBJS) $(COV_APP_OBJS) $(LIB_TESTS_COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) -o $(COV_EXE)
+	@$(CC) $(LDFLAGS) $(COV_LDPATH) $(COV_LDFLAGS) $(COV_RPATH) $(WRAPFLAGS) $(COV_OBJS) $(COV_APP_OBJS) $(LIB_TESTS_COV_OBJS) $(COV_LIB_OBJS) $(EXT_LDLIBS) -o $(COV_EXE)
 	@echo "$(call short_path,$@) linked dynamically with coverage flags, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
-	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(COV_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(ALLHDRS) $(TMPLTS) | $(COV_OBJDIR)
-	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(COV_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR)/%.o: ../%.c $(ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(COV_OBJDIR)
 	@mkdir -p "$(dir $@)"
-	@$(CC) -c $(INCPATH) $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(COV_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR):
@@ -306,20 +328,20 @@ sanitize: precizer-sanitize hugetestfile $(SNTZ_EXE)
 	ASAN_OPTIONS=symbolize=1 ASAN_SYMBOLIZER_PATH=$(shell which llvm-symbolizer) $(SNTZ_EXE)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(LIB_TESTS_SNTZ_OBJS) precizer-sanitize testlibs-sanitize
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(LIB_TESTS_SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS) -o $(SNTZ_EXE)
+	@$(CC) $(LDFLAGS) $(SNTZ_LDPATH) $(SNTZ_LDFLAGS) $(SNTZ_RPATH) $(WRAPFLAGS) $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(LIB_TESTS_SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(EXT_LDLIBS) -o $(SNTZ_EXE)
 	@echo "$(call short_path,$@) linked dynamically with sanitizer flags, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
-	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(SNTZ_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(ALLHDRS) $(TMPLTS) | $(SNTZ_OBJDIR)
-	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(SNTZ_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR)/%.o: ../%.c $(ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(SNTZ_OBJDIR)
 	@mkdir -p "$(dir $@)"
-	@$(CC) -c $(INCPATH) $(SNTZ_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(SNTZ_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
@@ -340,20 +362,20 @@ debug: hugetestfile debug-build
 	@./$(DBG_EXE)
 
 $(DBG_EXE): $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS) precizer-debug testlibs-debug
-	@$(CC) $(DBG_LDPATH) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS) -o $(DBG_EXE)
+	@$(CC) $(LDFLAGS) $(DBG_LDPATH) $(DBG_LDFLAGS) $(DBG_RPATH) $(STATIC) $(WRAPFLAGS) $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS) $(DBG_LIB_OBJS) $(EXT_LDLIBS) -o $(DBG_EXE)
 	@echo "$(call short_path,$@) linked statically with debug flags, not stripped"
 
 $(DBG_OBJDIR)/%.o: $(SRC)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
-	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_INCPATH) $(CFLAGS) $(DBG_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(ALLHDRS) $(TMPLTS) | $(DBG_OBJDIR)
-	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_INCPATH) $(CFLAGS) $(DBG_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR)/%.o: ../%.c $(ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(DBG_OBJDIR)
 	@mkdir -p "$(dir $@)"
-	@$(CC) -c $(DBG_INCPATH) $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_INCPATH) $(CFLAGS) $(DBG_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR):
@@ -365,20 +387,20 @@ debug-dynamic: hugetestfile debug-dynamic-build
 	@./$(DBG_DYN_EXE)
 
 $(DBG_DYN_EXE): $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS) precizer-debug-dynamic testlibs-debug-dynamic
-	@$(CC) $(DBG_DYN_LDPATH) $(WRAPFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $(DBG_DYN_EXE)
+	@$(CC) $(LDFLAGS) $(DBG_DYN_LDPATH) $(DBG_DYN_LDFLAGS) $(WRAPFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $(DBG_DYN_EXE)
 	@echo "$(call short_path,$@) linked dynamically with debug flags, not stripped"
 
 $(DBG_DYN_OBJDIR)/%.o: $(SRC)/%.c $(DBG_DYN_ALLHDRS) $(TMPLTS) | $(DBG_DYN_OBJDIR)
-	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_DYN_INCPATH) $(CFLAGS) $(DBG_DYN_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR)/%.o: $(APP_SRC_DIR)/%.c $(DBG_DYN_ALLHDRS) $(TMPLTS) | $(DBG_DYN_OBJDIR)
-	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_DYN_INCPATH) $(CFLAGS) $(DBG_DYN_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR)/%.o: ../%.c $(DBG_DYN_ALLHDRS) $(LIB_TESTS_HDRS) $(LIB_TESTS_TMPLTS) | $(DBG_DYN_OBJDIR)
 	@mkdir -p "$(dir $@)"
-	@$(CC) -c $(DBG_DYN_INCPATH) $(DBG_DYN_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_DYN_INCPATH) $(CFLAGS) $(DBG_DYN_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR):
@@ -485,7 +507,7 @@ purge: clean-hugetestfile clean-compile-commands
 
 # Optional preprocessor files
 %.i:%.c
-	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
+	@$(CC) -E -C $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(C_STANDARD) -o $@ $<
 # C-C++ Beautifier
 #	@bcpp -na $@ > $@.h
 	@bcpp -na -s -i 4 $@ > $@.h

@@ -11,6 +11,7 @@ short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 
 UNAME_S := $(shell uname -s)
+CFLAGS ?= -finline-functions
 
 # macOS-specific code
 ifeq ($(UNAME_S),Darwin)
@@ -22,7 +23,9 @@ endif
 #
 # USE_LLD and AR are exported by the root Makefile when COMPILER=clang
 # to use LLVM's own linker and archiver, avoiding gold plugin version mismatch
-CFLAGS += -std=c2x -finline-functions
+C_STANDARD := -std=c2x
+CPPFLAGS ?=
+LDFLAGS ?=
 
 SO = $(LIBNAME).so
 STATLIB = $(LIBNAME).a
@@ -86,14 +89,18 @@ DBG_OBJDIR = $(DBG_LIBDIR)/obj/$(LIBDIR)
 DBG_SO = $(DBG_LIBDIR)/$(SO)
 DBG_STAT = $(DBG_LIBDIR)/$(STATLIB)
 DBG_OBJS = $(addprefix $(DBG_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through DBG_OPT_CFLAGS and
+# DBG_OPT_LDFLAGS. Debug optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 DBG_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_CFLAGS ?= $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
-DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-DBG_LDFLAGS = $(USE_LLD)
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS)
 else
-DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-z,defs
 endif
 
 #
@@ -106,9 +113,13 @@ COV_OBJDIR = $(COV_LIBDIR)/obj/$(LIBDIR)
 COV_SO = $(COV_LIBDIR)/$(SO)
 COV_STAT = $(COV_LIBDIR)/$(STATLIB)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through COV_OPT_CFLAGS and
+# COV_OPT_LDFLAGS. Coverage optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL_TEST_HOOKS
-COV_LDFLAGS += $(USE_LLD) -lgcov --coverage
+COV_CFLAGS ?= -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL_TEST_HOOKS
+COV_OPT_LDFLAGS ?=
+COV_LDFLAGS ?= $(USE_LLD) $(COV_OPT_LDFLAGS) -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -121,12 +132,17 @@ SNTZ_SO = $(SNTZ_LIBDIR)/$(SO)
 SNTZ_STAT = $(SNTZ_LIBDIR)/$(STATLIB)
 SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(OBJS))
 SNTZ_OPTIONS = -fsanitize=address,undefined
+# Callers may replace these defaults through SNTZ_OPT_CFLAGS and
+# SNTZ_OPT_LDFLAGS. Sanitizer optimization flags follow CFLAGS and LDFLAGS,
+# while later required sanitizer flags take final priority
+SNTZ_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
-SNTZ_LDFLAGS = -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO)
+SNTZ_LDFLAGS ?= -Wl,-undefined,dynamic_lookup -install_name @rpath/$(SO) $(SNTZ_OPT_LDFLAGS) $(USE_LLD) $(SNTZ_OPTIONS)
+else
+SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) $(USE_LLD) $(SNTZ_OPTIONS)
 endif
 SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
-SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
-SNTZ_LDFLAGS += $(USE_LLD) $(SNTZ_OPTIONS)
+SNTZ_CFLAGS ?= $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 
 #
 # Production build settings
@@ -138,17 +154,20 @@ PROD_OBJDIR = $(PROD_LIBDIR)/obj/$(LIBDIR)
 PROD_SO = $(PROD_LIBDIR)/$(SO)
 PROD_STAT = $(PROD_LIBDIR)/$(STATLIB)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through PROD_OPT_CFLAGS and
+# PROD_OPT_LDFLAGS. Production optimization flags follow CFLAGS and LDFLAGS
+# and win conflicts
 PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
-PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
+PROD_CFLAGS ?= $(PROD_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,-dead_strip
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--gc-sections
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS)
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS)
 else
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -160,6 +179,24 @@ PROD_WFLAGS += -Wmissing-format-attribute
 endif
 
 #
+# Distribution package build settings
+#
+DIST = distribution
+DIST_DIR = $(BUILDDIR)/$(DIST)
+DIST_LIBDIR = $(DIST_DIR)/libs
+DIST_OBJDIR = $(DIST_LIBDIR)/obj/$(LIBDIR)
+DIST_SO = $(DIST_LIBDIR)/$(SO)
+DIST_STAT = $(DIST_LIBDIR)/$(STATLIB)
+DIST_OBJS = $(addprefix $(DIST_OBJDIR)/, $(OBJS))
+# Callers may replace these fallbacks through DIST_OPT_CFLAGS and
+# DIST_OPT_LDFLAGS. CFLAGS and LDFLAGS follow distribution optimization flags
+# and win conflicts
+DIST_OPT_CFLAGS ?= -O2
+DIST_CFLAGS ?= $(DIST_OPT_CFLAGS)
+DIST_OPT_LDFLAGS ?=
+DIST_LDFLAGS ?= $(DIST_OPT_LDFLAGS)
+
+#
 # Portable build settings
 #
 PRTB = portable
@@ -169,17 +206,20 @@ PRTB_OBJDIR = $(PRTB_LIBDIR)/obj/$(LIBDIR)
 PRTB_SO = $(PRTB_LIBDIR)/$(SO)
 PRTB_STAT = $(PRTB_LIBDIR)/$(STATLIB)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(OBJS))
+# Callers may replace these defaults through PRTB_OPT_CFLAGS and
+# PRTB_OPT_LDFLAGS. Portable optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
-PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
+PRTB_CFLAGS ?= $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,-dead_strip
-PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
 else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--gc-sections
-PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS)
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS)
 else
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections
-PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
 endif
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
@@ -190,7 +230,7 @@ PRTB_WFLAGS += -Wsuggest-attribute=format
 PRTB_WFLAGS += -Wmissing-format-attribute
 endif
 
-.PHONY: all purge clean debug production prod portable sanitize format gcc-analyzer
+.PHONY: all purge clean debug production prod distribution portable sanitize format gcc-analyzer
 .PHONY: coverage memtest tests test tests-sanitize tests-debug tests-coverage
 .PHONY: cppcheck clang-analyzer compile-commands clean-compile-commands print-%
 
@@ -219,11 +259,11 @@ $(DBG_STAT): $(DBG_OBJS) | $(DBG_LIBDIR)
 	@echo "$(call short_path,$@) prepared as debug static library archive"
 
 $(DBG_SO): $(DBG_OBJS) | $(DBG_LIBDIR)
-	@$(CC) -shared $(DBG_LDFLAGS) -o $@ $^
+	@$(CC) $(LDFLAGS) -shared $(DBG_LDFLAGS) -o $@ $^
 	@echo "$(call short_path,$@) prepared as debug shared library, not stripped"
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
-	@$(CC) -c -fPIC $(DBG_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(CFLAGS) $(DBG_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR): | $(DBG_LIBDIR)
@@ -242,11 +282,11 @@ $(COV_STAT): $(COV_OBJS) | $(COV_LIBDIR)
 	@echo "$(call short_path,$@) prepared as coverage static library archive"
 
 $(COV_SO): $(COV_OBJS) | $(COV_LIBDIR)
-	@$(CC) -shared $(COV_LDFLAGS) -o $@ $^
+	@$(CC) $(LDFLAGS) -shared $(COV_LDFLAGS) -o $@ $^
 	@echo "$(call short_path,$@) prepared as coverage shared library, not stripped"
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
-	@$(CC) -c -fPIC $(COV_CFLAGS) $(WFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(CFLAGS) $(COV_CFLAGS) $(WFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR): | $(COV_LIBDIR)
@@ -265,11 +305,11 @@ $(SNTZ_STAT): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
 	@echo "$(call short_path,$@) prepared as sanitizer static library archive"
 
 $(SNTZ_SO): $(SNTZ_OBJS) | $(SNTZ_LIBDIR)
-	@$(CC) -shared $(SNTZ_LDFLAGS) -o $@ $^
+	@$(CC) $(LDFLAGS) -shared $(SNTZ_LDFLAGS) -o $@ $^
 	@echo "$(call short_path,$@) prepared as sanitizer shared library, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	@$(CC) -c -fPIC $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(WFLAGS) $(CFLAGS) $(SNTZ_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR): | $(SNTZ_LIBDIR)
@@ -289,17 +329,40 @@ $(PROD_STAT): $(PROD_OBJS) | $(PROD_LIBDIR)
 	@echo "$(call short_path,$@) prepared as release static library archive"
 
 $(PROD_SO): $(PROD_OBJS) | $(PROD_LIBDIR)
-	@$(CC) -shared $(STRIP) $(PROD_LDFLAGS) -o $@ $^
+	@$(CC) $(LDFLAGS) -shared $(STRIP) $(PROD_LDFLAGS) -o $@ $^
 	@echo "$(call short_path,$@) prepared as release shared library, stripped"
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
-	@$(CC) -c -fPIC $(WFLAGS) $(PROD_WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(WFLAGS) $(PROD_WFLAGS) $(CFLAGS) $(PROD_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with release flags"
 
 $(PROD_OBJDIR): | $(PROD_LIBDIR)
 	@mkdir -p "$@"
 
 $(PROD_LIBDIR):
+	@mkdir -p "$@"
+
+#
+# Distribution package rules
+#
+distribution: $(DIST_SO) $(DIST_STAT)
+
+$(DIST_STAT): $(DIST_OBJS) | $(DIST_LIBDIR)
+	@$(AR) rcs $@ $+
+	@echo "$(call short_path,$@) prepared as distribution static library archive"
+
+$(DIST_SO): $(DIST_OBJS) | $(DIST_LIBDIR)
+	@$(CC) $(DIST_LDFLAGS) $(LDFLAGS) -shared -o $@ $^
+	@echo "$(call short_path,$@) prepared as distribution shared library, not stripped"
+
+$(DIST_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DIST_OBJDIR)
+	@$(CC) -c $(CPPFLAGS) -fPIC $(WFLAGS) $(DIST_CFLAGS) $(CFLAGS) $(C_STANDARD) -o $@ $<
+	@echo "$(call short_path,$<) compiled with distribution flags"
+
+$(DIST_OBJDIR): | $(DIST_LIBDIR)
+	@mkdir -p "$@"
+
+$(DIST_LIBDIR):
 	@mkdir -p "$@"
 
 #
@@ -312,11 +375,11 @@ $(PRTB_STAT): $(PRTB_OBJS) | $(PRTB_LIBDIR)
 	@echo "$(call short_path,$@) prepared as portable static library archive"
 
 $(PRTB_SO): $(PRTB_OBJS) | $(PRTB_LIBDIR)
-	@$(CC) -shared $(STRIP) $(PRTB_LDFLAGS) -o $@ $^
+	@$(CC) $(LDFLAGS) -shared $(STRIP) $(PRTB_LDFLAGS) -o $@ $^
 	@echo "$(call short_path,$@) prepared as portable shared library, stripped"
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
-	@$(CC) -c -fPIC $(WFLAGS) $(PRTB_WFLAGS) $(PRTB_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) -fPIC $(WFLAGS) $(PRTB_WFLAGS) $(CFLAGS) $(PRTB_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with portable flags"
 
 $(PRTB_OBJDIR): | $(PRTB_LIBDIR)
@@ -335,6 +398,7 @@ clean-compile-commands:
 
 clean: clean-compile-commands
 	@rm -rf $(PROD_SO) $(PROD_STAT) $(PROD_OBJS)
+	@rm -rf $(DIST_SO) $(DIST_STAT) $(DIST_OBJS)
 	@rm -rf $(PRTB_SO) $(PRTB_STAT) $(PRTB_OBJS)
 	@rm -rf $(DBG_SO) $(DBG_STAT) $(DBG_OBJS)
 	@rm -rf $(COV_SO) $(COV_STAT) $(COV_OBJS)
@@ -398,7 +462,7 @@ clang-analyzer:
 
 # Optional preprocessor files
 $(SRC_DIR)/%.i: $(SRC_DIR)/%.c
-	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
+	@$(CC) -E -C $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(C_STANDARD) -o $@ $<
 	@bcpp -na -s -i 4 $@ > $@.h
 	@sed -i 's/[ \t]*\# [[:digit:]]\+ \".*//g' $@.h
 
