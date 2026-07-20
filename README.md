@@ -98,22 +98,53 @@ abc/def/aaa.txt
 
 This ensures that even when files reside in different mount points or sources, they can still be compared accurately under the same relative paths and their respective checksums.
 
-## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
+## Downloads/Скачивание
 
-Download [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) executables for:
+The appropriate package is determined by the operating system and processor architecture. These links point only to files intended for regular use
 
-* Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
-* Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
-* macOS x86_64 for Intel-based Macs [precizer_macos_x86_64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_x86_64.zip)
-* macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
-* Windows portable EXE [precizer_windows_x64_portable.exe](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.exe)
-* Windows portable ZIP. The ZIP archive includes the executable and the required DLL dependency. [precizer_windows_x64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.zip)
+### Linux
 
-The release packages contain portable executables in a zip archive.
+**64-bit Intel or AMD processor (x86_64)**
 
-### Download, unzip, and run
+[Download precizer for Linux x86_64](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
 
-A universal approach to automating upgrades to newer versions
+Portable, statically linked build for most desktop and server Linux distributions. No additional runtime libraries are required
+
+**64-bit ARM processor (ARM64 / AArch64)**
+
+[Download precizer for Linux ARM64](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
+
+Portable, statically linked build for 64-bit ARM systems. No additional runtime libraries are required
+
+### Windows
+
+Windows support is experimental.
+
+**64-bit Intel or AMD processor (x64)**
+
+[Download the Windows ZIP package](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.zip)
+
+Recommended Windows package. After extraction, `precizer.exe` and `msys-2.0.dll` must remain in the same directory
+
+[Download the standalone Windows EXE](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.exe)
+
+Single self-extracting executable that does not require separate runtime files. Windows support is experimental and the executable is not code-signed, so Microsoft Defender may display a warning.
+
+### macOS
+
+**Intel processor (x86_64)**
+
+[Download precizer for macOS Intel x86_64](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_x86_64.zip)
+
+**Apple Silicon processor (M1 or newer, ARM64)**
+
+[Download precizer for macOS Apple Silicon ARM64](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
+
+The macOS builds use dynamic libraries. Packages required at runtime are listed under [“System libraries required at runtime”](#system-libraries-required-at-runtime).
+
+### Download, unzip, and run automatically on Linux and macOS
+
+This script detects the operating system and processor architecture, downloads the matching build from the latest release, extracts it, and verifies that precizer starts successfully
 
 ```sh
 # Automation for downloading and unarchiving new versions
@@ -230,19 +261,13 @@ Building the program is already supported via Docker. Several tuned platforms ar
 
 Configuration details and installed libraries are listed in the corresponding Dockerfiles under `.docker/`.
 
-Build targets use the form `docker-<distro>-<build>` (for example `debian` and `dynamic-production`).
+Build targets use the form `docker-<distro>-<build>` (for example `debian` and `dynamic-production`). The available targets are listed under [“Build variants available through Make”](#build-variants-available-through-make).
 
 ```sh
 make docker-gentoo-production
 ```
 
 This builds a production binary using the Gentoo Docker container.
-
-```sh
-make docker-ubuntu-production
-```
-
-This builds the same `production` target using Ubuntu.
 
 After the build completes, an executable `precizer` appears in the project directory (built inside the container). The main benefit of using Docker is that a full build toolchain, libraries, and their dependencies are not required on the host system; running Docker yields the binary. The next step is choosing the binary variant. When in doubt, `make portable` is a good starting point. All available build variants are described below.
 
@@ -255,7 +280,68 @@ git clone --depth=1 https://github.com/precizer/precizer.git
 cd precizer
 ```
 
-#### Portable binary
+All build targets honor `CPPFLAGS`, `CFLAGS`, and `LDFLAGS` values supplied through the environment or command line. The required `-std=c2x` language standard is added separately and cannot be disabled by overriding `CFLAGS`
+
+#### Dependencies for manual builds
+
+The following commands install the compiler, tools, and library headers required to build the application. UPX is used by the `portable`, `production`, and `dynamic-production` targets; the `distribution` target does not require it.
+
+Dependency installation commands used during automated builds for supported distributions are provided in the corresponding Dockerfiles under [`.docker/`](.docker/).
+
+##### Arch Linux
+
+```sh
+sudo pacman -S --needed base-devel sqlite pcre2 upx
+```
+
+##### Ubuntu/Debian Linux
+
+```sh
+sudo apt update
+sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
+```
+
+##### Alpine Linux
+
+```sh
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
+```
+
+##### AlmaLinux/Rocky/Fedora Linux
+
+Available repositories and static library package names differ between releases of these distributions. Building every variant requires GCC, Make, the glibc, SQLite, and PCRE2 headers and static libraries, and UPX:
+
+```sh
+sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static
+```
+
+On AlmaLinux and Rocky Linux, the `pcre2-static` and `glibc-static` packages may require enabling CRB, EPEL, and the development repository first.
+
+Detailed commands for enabling repositories and installing packages are provided in the corresponding distribution Dockerfile under [`.docker/`](.docker/).
+
+##### Gentoo Linux
+
+```sh
+echo "dev-libs/libpcre2 static-libs" | sudo tee /etc/portage/package.use/libpcre2
+sudo emerge dev-libs/libpcre2 app-arch/upx
+```
+
+##### macOS
+
+The Xcode command-line tools and Homebrew dependencies are required for building. They are installed with the following commands:
+
+```sh
+xcode-select --install
+brew install llvm sqlite pcre2 argp-standalone
+```
+
+#### Build variants available through Make
+
+Four build variants are available: `portable`, `production`, `dynamic-production`, and `distribution`. The appropriate variant depends on portability, performance, and system library requirements
+
+Static linking is not supported on macOS. The `distribution` and `dynamic-production` dynamic build variants are available
+
+##### Portable binary
 
 ```sh
 make portable
@@ -270,12 +356,12 @@ Compilation and linking flags: `-static -O2 -mtune=generic`
 Docker alternative:
 
 ```sh
-make docker-ubuntu-portable
+make docker-gentoo-portable
 ```
 
-or replace `-ubuntu-` with any distro from the list above.
+or replace `-gentoo-` with any distro from the list above.
 
-#### Single binary optimized for the local CPU
+##### Single binary optimized for the local CPU
 
 ```sh
 make production
@@ -290,12 +376,12 @@ Compilation and linking flags: `-static -O3 -march=native`
 Docker alternative:
 
 ```sh
-make docker-ubuntu-production
+make docker-gentoo-production
 ```
 
-or replace `-ubuntu-` with any distro from the list above.
+or replace `-gentoo-` with any distro from the list above.
 
-#### Dynamically linked binary optimized for the local CPU
+##### Dynamically linked binary optimized for the local CPU
 
 ```sh
 make dynamic-production
@@ -305,67 +391,74 @@ The result is an ELF executable of about **50 kilobytes**. It is tuned for the l
 
 The binary is optimized for **maximum performance and minimal size**.
 
+At runtime, the program uses dynamic libraries installed on the system. They may be built with optimization settings that differ from those used to build precizer, so overall performance also depends on these libraries
+
 Compilation flags: `-O3 -march=native`
 
 Docker alternative:
 
 ```sh
-make docker-ubuntu-dynamic-production
+make docker-gentoo-dynamic-production
 ```
 
-or replace `-ubuntu-` with any distro from the list above.
+or replace `-gentoo-` with any distro from the list above.
 
-#### Tests
-
-The test sets in the `tests/fixtures/` directory can be used to evaluate the program’s capabilities.
-
-Test execution:
+##### Executable for a distribution package
 
 ```sh
-git clone https://github.com/precizer/precizer.git
-cd precizer
-make tests
+make distribution
 ```
+
+The `distribution` target is intended for packages built by Gentoo, Debian, Ubuntu, Fedora, and other distributions, as well as macOS release executables. The program is dynamically linked with installed system libraries
+
+The build honors the standard `CPPFLAGS`, `CFLAGS`, and `LDFLAGS` variables, does not add tuning for the processor of the machine on which the build runs, does not strip debug symbols, and does not use UPX
+
+Optimization, hardening, debug information processing, and package creation are controlled by the distribution build system
 
 #### Installation
 
 Just copy the resulting **precizer** executable to any location listed in the `$PATH` environment variable for quick invocation.
 
-#### Build and test dependencies for specific OS
+#### System libraries required at runtime
 
-Install build and compile tools for Linux
+These dependencies are required when the application is built with `dynamic-production` or `distribution`. The static Linux `portable` and `production` builds include the required libraries in the executable and do not need the packages listed below.
 
-The test suite uses the bundled Monocypher library as an independent reference for checking SHA512 values produced by the internal library. Running `make tests` does not require external cryptography packages
-
-#### Arch Linux
+##### Arch Linux
 
 ```sh
-sudo pacman -S --noconfirm base-devel gcc-libs sqlite pcre2 upx
+sudo pacman -S --needed sqlite pcre2
 ```
 
-#### Ubuntu/Debian Linux
+##### Ubuntu/Debian Linux
 
 ```sh
-sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
+sudo apt -y install libpcre2-8-0 libsqlite3-0
 ```
 
-#### Alpine Linux
+##### Alpine Linux
 
 ```sh
-sudo apk add --update build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
+sudo apk add --no-cache pcre2 sqlite-libs argp-standalone fts
 ```
 
-#### Almalinux/Rocky/Fedora Linux
+##### AlmaLinux/Rocky/Fedora Linux
 
 ```sh
-sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static
+sudo dnf -y install sqlite-libs pcre2
 ```
 
-#### Gentoo Linux
+##### Gentoo Linux
 
 ```sh
-echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2;
-emerge dev-libs/libpcre2 app-arch/upx
+sudo emerge dev-db/sqlite dev-libs/libpcre2
+```
+
+##### macOS
+
+Every macOS build variant is dynamically linked, and release executables use the `distribution` target. The following Homebrew system libraries are required at runtime:
+
+```sh
+brew install sqlite pcre2 argp-standalone
 ```
 
 #### Clean up
@@ -375,6 +468,30 @@ emerge dev-libs/libpcre2 app-arch/upx
 ```sh
 make purge
 ```
+
+### Testing
+
+The test suite checks individual functions, command-line application behavior, and file-processing results based on `tests/fixtures/`.
+
+The regular Linux verification command uses a debug build without sanitizers:
+
+```sh
+SLOWTEST=skip make tests-debug
+```
+
+The `SLOWTEST=skip` variable skips long-running scenarios. The full set of the same tests runs without this variable:
+
+```sh
+make tests-debug
+```
+
+The `make tests` target additionally enables AddressSanitizer and UndefinedBehaviorSanitizer. This mode requires sanitizer libraries and `llvm-symbolizer`:
+
+```sh
+make tests
+```
+
+The complete list of system packages and installation commands is provided under [“System packages for testing”](CONTRIBUTING.md#system-packages-for-testing).
 
 ## USAGE EXAMPLES
 

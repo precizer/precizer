@@ -98,21 +98,53 @@ abc/def/aaa.txt
 
 и с соответствующими контрольными суммами.
 
-## [DOWNLOAD](https://github.com/precizer/precizer/releases/latest/)
+## Скачивание/Download
 
-Скачать [https://github.com/precizer/precizer/releases/latest/](https://github.com/precizer/precizer/releases/latest/) исполняемые файлы для:
+Подходящий пакет определяется по операционной системе и архитектуре процессора.
 
-* Linux x86_64 [precizer_linux_x86_64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
-* Linux arm aarch64 [precizer_linux_aarch64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
-* macOS x86_64 для компьютеров Mac с процессором Intel [precizer_macos_x86_64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_x86_64.zip)
-* macOS arm64 [precizer_macos_arm64.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
-* Windows portable EXE [precizer_windows_x64_portable.exe](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.exe)
-* Windows portable ZIP. The ZIP archive includes the executable and the required DLL dependency. [precizer_windows_x64_portable.zip](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.zip)
+### Linux
 
-Пакеты содержат переносимые исполняемые бинарные файлы в архиве zip (portable‑версии).
+**64-разрядный процессор Intel или AMD (x86_64)**
 
-### Скачать, распаковать и запустить
-Универсальный способ для автоматизации обновлений на новые версии
+[Скачать precizer для Linux x86_64](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_x86_64_portable.zip)
+
+Переносимая статически слинкованная сборка для большинства настольных и серверных дистрибутивов Linux. Дополнительные динамические библиотеки не требуются
+
+**64-разрядный процессор ARM (ARM64 / AArch64)**
+
+[Скачать precizer для Linux ARM64](https://github.com/precizer/precizer/releases/latest/download/precizer_linux_aarch64_portable.zip)
+
+Переносимая статически слинкованная сборка для 64-разрядных ARM-систем. Дополнительные динамические библиотеки не требуются
+
+### Windows
+
+Поддержка Windows экспериментальная.
+
+**64-разрядный процессор Intel или AMD (x64)**
+
+[Скачать ZIP-пакет для Windows](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.zip)
+
+Рекомендуемый пакет для Windows. После распаковки архива файлы `precizer.exe` и `msys-2.0.dll` должны находиться в одном каталоге
+
+[Скачать отдельный EXE-файл для Windows](https://github.com/precizer/precizer/releases/latest/download/precizer_windows_x64_portable.exe)
+
+Самораспаковывающийся исполняемый файл, которому не нужны сторонние библиотеки. Поддержка Windows экспериментальная и исполняемый файл не имеет цифровой подписи, поэтому Defender может показать предупреждение
+
+### macOS
+
+Сборки для macOS используют динамические библиотеки. Необходимые для запуска пакеты перечислены в разделе [«Системные библиотеки для запуска приложения»](#системные-библиотеки-для-запуска-приложения).
+
+**Процессор Apple Silicon (M1 или новее, ARM64)**
+
+[Скачать precizer для macOS Apple Silicon ARM64](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
+
+**Процессор Intel (x86_64)**
+
+[Скачать precizer для macOS Intel x86_64](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_x86_64.zip)
+
+### Автоматическое скачивание, распаковка и запуск в Linux и macOS
+
+Этот сценарий определяет операционную систему и архитектуру процессора, скачивает подходящую сборку последнего релиза, распаковывает её и проверяет запуск precizer
 
 ```sh
 # Automation for downloading and unarchiving new versions
@@ -131,9 +163,9 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 * Готовая Linux сборка представляет собой один исполняемый, статически слинкованный бинарный файл в формате ELF, не привязанный к какому-либо определённому дистрибутиву. Файл может быть запущен сразу, практически на любом дистрибутиве Linux и не требует использования внешних, динамически подгружаемых библиотек.
 
-* Файл собран CI/CD автосборкой ресурса GitHub, затем сжат с помощью [UPX (архиватора исполняемых файлов)](https://upx.github.io). После этого самораспаковывающийся сжатый бинарный файл вкладывается в ZIP-архив для удобного скачивания. Для использования достаточно распаковать файл из архива и запустить.
+* Файл собирается CI/CD автосборкой actions GitHub, затем сжимается с помощью [UPX (архиватора исполняемых файлов)](https://upx.github.io). После этого самораспаковывающийся сжатый бинарный файл вкладывается в ZIP-архив для удобного скачивания. Для использования достаточно распаковать файл из архива и запустить.
 
-* На macOS статическая линковка не поддерживается, поэтому для запуска скачанного приложения нужно озаботиться наличием в системе таких библиотек, как sqlite3, pcre2, argp и fts.
+* На macOS статическая линковка не поддерживается. Необходимые для запуска приложения системные библиотеки перечислены в разделе [«Системные библиотеки для запуска приложения»](#системные-библиотеки-для-запуска-приложения).
 
 ## ИСТОРИЯ ИЗМЕНЕНИЙ
 
@@ -228,7 +260,7 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 Ознакомиться с подробностями настроек и устанавливаемыми библиотеками можно в соответствующих Docker‑файлах в поддиректории проекта `.docker/`
 
-Для сборки достаточно указать команду `make`, ключевое слово `docker`, дистрибутив `debian` (например), а затем цель `dynamic-production` или другую.
+Для сборки достаточно указать команду `make`, ключевое слово `docker`, дистрибутив `debian` (например), а затем цель `dynamic-production` или другой [вариант сборки](#варианты-сборки-с-помощью-make).
 
 Пример сборки в контейнере:
 
@@ -237,12 +269,6 @@ make docker-gentoo-production
 ```
 
 Команда соберёт программу в режиме production, используя Docker‑контейнер с дистрибутивом Gentoo.
-
-```sh
-make docker-ubuntu-production
-```
-
-Команда соберёт программу в том же режиме `production`, но уже используя дистрибутив Ubuntu.
 
 В результате запуска в директории проекта появится исполняемый файл **precizer**, который был собран внутри контейнера. При этом явным преимуществом использования Docker является то, что нет необходимости в систему устанавливать много инструментов для сборки и тестирования, библиотек и их зависимостей. Достаточно запустить Docker и получить результат — исполняемый файл. Дальше нужно определиться с типом этого исполняемого файла. В случае сомнений лучше остановить выбор на `make portable` как на наиболее универсальном варианте. Описания всех доступных вариантов сборки представлены ниже.
 
@@ -255,7 +281,68 @@ git clone --depth=1 https://github.com/precizer/precizer.git
 cd precizer
 ```
 
-#### Портируемый бинарный файл
+Все цели сборки учитывают переданные через окружение или командную строку переменные `CPPFLAGS`, `CFLAGS` и `LDFLAGS`.
+
+#### Зависимости для самостоятельной сборки
+
+Следующие команды устанавливают компилятор, инструменты и заголовочные файлы библиотек, необходимые для сборки приложения. UPX используется целями `portable`, `production` и `dynamic-production`; для цели `distribution` он не нужен.
+
+Команды установки зависимостей, используемые при автоматической сборке поддерживаемых дистрибутивов, приведены в соответствующих Dockerfile в каталоге [`.docker/`](.docker/).
+
+##### Arch Linux
+
+```sh
+sudo pacman -S --needed base-devel sqlite pcre2 upx
+```
+
+##### Ubuntu/Debian Linux
+
+```sh
+sudo apt update
+sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
+```
+
+##### Alpine Linux
+
+```sh
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
+```
+
+##### AlmaLinux/Rocky/Fedora Linux
+
+Набор доступных репозиториев и названия пакетов со статическими библиотеками различаются между выпусками этих дистрибутивов. Для сборки всех вариантов нужны GCC, Make, заголовочные и статические библиотеки glibc, SQLite и PCRE2, а также UPX:
+
+```sh
+sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static
+```
+
+В AlmaLinux и Rocky Linux пакеты `pcre2-static` и `glibc-static` могут потребовать предварительного подключения репозиториев CRB, EPEL и репозитория для разработчиков.
+
+Подробные команды подключения репозиториев и установки пакетов приведены в Dockerfile соответствующего дистрибутива в каталоге [`.docker/`](.docker/).
+
+##### Gentoo Linux
+
+```sh
+echo "dev-libs/libpcre2 static-libs" | sudo tee /etc/portage/package.use/libpcre2
+sudo emerge dev-libs/libpcre2 app-arch/upx
+```
+
+##### macOS
+
+Для сборки требуются инструменты командной строки Xcode и зависимости из Homebrew. Они устанавливаются следующими командами:
+
+```sh
+xcode-select --install
+brew install llvm sqlite pcre2 argp-standalone
+```
+
+#### Варианты сборки с помощью Make
+
+Доступны четыре варианта сборки: `portable`, `production`, `dynamic-production` и `distribution`. Подходящий вариант определяется требованиями к переносимости, производительности и системным библиотекам
+
+На macOS статическая линковка не поддерживается. Для сборки доступны динамические варианты `distribution` и `dynamic-production`
+
+##### Портируемый бинарный файл
 
 ```sh
 make portable
@@ -269,11 +356,11 @@ make portable
 
 Альтернатива с использованием докера:
 ```sh
-make docker-ubuntu-portable
+make docker-gentoo-portable
 ```
-или замените `-ubuntu-` на любой из вышеперечисленных дистрибутивов
+или замените `-gentoo-` на любой из вышеперечисленных дистрибутивов
 
-#### Единый бинарный файл с оптимизацией под локальный CPU
+##### Единый бинарный файл с оптимизацией под локальный CPU
 
 ```sh
 make production
@@ -287,11 +374,11 @@ make production
 
 Альтернатива с использованием докера:
 ```sh
-make docker-ubuntu-production
+make docker-gentoo-production
 ```
-или замените `-ubuntu-` на любой из вышеперечисленных дистрибутивов
+или замените `-gentoo-` на любой из вышеперечисленных дистрибутивов
 
-#### Исполняемый файл с динамически подгружаемыми библиотеками и оптимизацией под локальный CPU
+##### Исполняемый файл с динамически подгружаемыми библиотеками и оптимизацией под локальный CPU
 
 ```sh
 make dynamic-production
@@ -301,65 +388,72 @@ make dynamic-production
 
 Файл оптимизирован под **максимальную производительность и минимальный размер**.
 
+При работе программа использует установленные в системе динамические библиотеки. Они могут быть собраны с параметрами оптимизации, отличающимися от параметров сборки precizer, поэтому общая производительность также зависит от этих библиотек
+
 Особенности компиляции: `-O3 -march=native`
 
 Альтернатива с использованием докера:
 ```sh
-make docker-ubuntu-dynamic-production
+make docker-gentoo-dynamic-production
 ```
-или замените `-ubuntu-` на любой из вышеперечисленных дистрибутивов
+или замените `-gentoo-` на любой из вышеперечисленных дистрибутивов
 
-#### Тесты
-
-Для проверки возможностей программы можно использовать наборы тестов из директории tests/fixtures/ в исходном коде программы
-
-Запуск тестов:
+##### Исполняемый файл для дистрибутивного пакета
 
 ```sh
-git clone https://github.com/precizer/precizer.git
-cd precizer
-make tests
+make distribution
 ```
+
+Цель `distribution` предназначена для сборки пакетов Gentoo, Debian, Ubuntu, Fedora и других дистрибутивов, а также исполняемых файлов релизов для macOS. Программа динамически связывается с установленными системными библиотеками.
+
+Сборка учитывает стандартные переменные `CPPFLAGS`, `CFLAGS` и `LDFLAGS`, не добавляет настройки для процессора машины, на которой выполняется сборка, не удаляет отладочные символы и не применяет UPX.
+
+Оптимизацию, усиление защиты, обработку отладочной информации и создание пакета должна выполнять сборочная система дистрибутива
 
 #### Установка
 
 Просто скопируйте получившийся исполняемый файл **precizer** в любое место, прописанное в системной переменной $PATH для быстрого вызова.
 
-#### Зависимости для сборки и тестов на определённых OS
+#### Системные библиотеки для запуска приложения
 
-Установите инструменты сборки и компиляции для Linux
+Эти зависимости нужны, если приложение собрано с помощью `dynamic-production` или `distribution`. Статические Linux-сборки `portable` и `production` включают необходимые библиотеки в исполняемый файл и не требуют перечисленных ниже пакетов.
 
-Тестовый набор использует встроенную библиотеку Monocypher как независимый эталон для проверки SHA512, вычисленного внутренней библиотекой. Для запуска `make tests` не нужны внешние криптографические пакеты
-
-#### Arch Linux
+##### Arch Linux
 
 ```sh
-sudo pacman -S --noconfirm base-devel gcc-libs sqlite pcre2 upx
+sudo pacman -S --needed sqlite pcre2
 ```
 
-#### Ubuntu/Debian Linux
+##### Ubuntu/Debian Linux
 
 ```sh
-sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
+sudo apt -y install libpcre2-8-0 libsqlite3-0
 ```
 
-#### Alpine Linux
+##### Alpine Linux
 
 ```sh
-sudo apk add --update build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
+sudo apk add --no-cache pcre2 sqlite-libs argp-standalone fts
 ```
 
-#### Almalinux/Rocky/Fedora Linux
+##### AlmaLinux/Rocky/Fedora Linux
 
 ```sh
-sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static
+sudo dnf -y install sqlite-libs pcre2
 ```
 
-#### Gentoo Linux
+##### Gentoo Linux
 
 ```sh
-echo "dev-libs/libpcre2 static-libs" >> /etc/portage/package.use/libpcre2;
-emerge dev-libs/libpcre2 app-arch/upx
+sudo emerge dev-db/sqlite dev-libs/libpcre2
+```
+
+##### macOS
+
+На macOS все варианты сборки динамические, а исполняемые файлы релизов собираются в режиме `distribution`. Для запуска требуются системные библиотеки из Homebrew:
+
+```sh
+brew install sqlite pcre2 argp-standalone
 ```
 
 #### Очистка от старых сборок и артефактов
@@ -369,6 +463,30 @@ emerge dev-libs/libpcre2 app-arch/upx
 ```sh
 make purge
 ```
+
+### Тестирование
+
+Тестовый набор проверяет отдельные функции, работу приложения через командную строку и результаты обработки файлов из `tests/fixtures/`.
+
+Для обычной проверки в Linux используется отладочная сборка без санитайзеров:
+
+```sh
+SLOWTEST=skip make tests-debug
+```
+
+Переменная `SLOWTEST=skip` пропускает продолжительные сценарии. Полный набор тех же тестов запускается без этой переменной:
+
+```sh
+make tests-debug
+```
+
+Цель `make tests` дополнительно включает AddressSanitizer и UndefinedBehaviorSanitizer. Этот режим требует библиотек санитайзеров и `llvm-symbolizer`:
+
+```sh
+make tests
+```
+
+Полный перечень системных пакетов и команды их установки приведены в разделе [«Системные пакеты для тестирования»](CONTRIBUTING.ru.md#системные-пакеты-для-тестирования).
 
 ## ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ
 
