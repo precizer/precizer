@@ -1,7 +1,7 @@
 
 ## Downloads
 
-Choose the package that matches your operating system and processor. These links point only to files intended for regular use
+The appropriate package is determined by the operating system and processor architecture.
 
 ### Linux
 
@@ -23,7 +23,7 @@ Portable, statically linked build for 64-bit ARM systems. No additional runtime 
 
 [Download the Windows ZIP package](https://github.com/precizer/precizer/releases/download/{{TAG}}/precizer_windows_x64_portable.zip)
 
-Recommended Windows package. Extract the archive and keep `precizer.exe` and `msys-2.0.dll` in the same directory
+Recommended Windows package. After extraction, `precizer.exe` and `msys-2.0.dll` must remain in the same directory
 
 [Download the standalone Windows EXE](https://github.com/precizer/precizer/releases/download/{{TAG}}/precizer_windows_x64_portable.exe)
 
@@ -31,6 +31,12 @@ Single self-extracting executable that does not require separate runtime files. 
 experimental and the executable is not code-signed, so Microsoft Defender may display a warning.
 
 ### macOS
+
+The macOS builds use dynamic libraries. The following Homebrew packages are required at runtime:
+
+```sh
+brew install sqlite pcre2 argp-standalone
+```
 
 **Apple Silicon processor (M1 or newer, ARM64)**
 
@@ -40,11 +46,6 @@ experimental and the executable is not code-signed, so Microsoft Defender may di
 
 [Download precizer for macOS Intel x86_64](https://github.com/precizer/precizer/releases/download/{{TAG}}/precizer_macos_x86_64.zip)
 
-The macOS builds use dynamic libraries. Install the required dependencies before running Precizer:
-
-```sh
-brew install sqlite pcre2 argp-standalone
-```
 ## Documentation
 
 [English documentation](https://github.com/precizer/precizer/blob/{{TAG}}/README.md) | [Russian documentation](https://github.com/precizer/precizer/blob/{{TAG}}/README.ru.md) | [Changelog](https://github.com/precizer/precizer/blob/{{TAG}}/CHANGELOG.md)
