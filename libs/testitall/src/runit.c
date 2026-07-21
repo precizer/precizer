@@ -2,7 +2,7 @@
 
 #include "runit_internal.h"
 
-enum run_mode run_external = EXTERNAL_CALL;
+enum run_mode testitall_runit_mode = EXTERNAL_CALL;
 
 /**
  * @brief Process-state guard used for INTERNAL_TEST in-process execution.
@@ -176,10 +176,10 @@ static Return runit_internal_leave(struct runit_internal_guard *guard)
  * @return SUCCESS when the run completes with the expected exit code; FAILURE otherwise.
  */
 Return runit(
-	const char   *arguments,
-	memory       *stdout_result,
-	memory       *stderr_result,
-	const int    expected_return_code,
+	const char     *arguments,
+	memory         *stdout_result,
+	memory         *stderr_result,
+	const int      expected_return_code,
 	CAPTURE_POLICY buffer_policy)
 {
 	/* Status returned by this function through provide()
@@ -208,18 +208,18 @@ Return runit(
 	call(m_del(STDOUT));
 	call(m_del(STDERR));
 
-	run(runit_validate_runtime_mode(run_external));
+	run(runit_validate_runtime_mode(testitall_runit_mode));
 
 	const char *call_label = "Internal call";
 
-	if(EXTERNAL_CALL == run_external)
+	if(EXTERNAL_CALL == testitall_runit_mode)
 	{
 		call_label = "External call";
 	}
 	run(runit_prepare_call_and_capture(
 		&runit_call_data,
 		&capture,
-		run_external,
+		testitall_runit_mode,
 		safe_arguments,
 		call_label,
 		stdout_result,
@@ -227,7 +227,7 @@ Return runit(
 		expected_return_code,
 		buffer_policy));
 
-	if(SUCCESS == status && EXTERNAL_CALL == run_external)
+	if(SUCCESS == status && EXTERNAL_CALL == testitall_runit_mode)
 	{
 		const pid_t app_pid = fork();
 
@@ -262,7 +262,7 @@ Return runit(
 		}
 	}
 
-	if(INTERNAL_TEST == run_external)
+	if(INTERNAL_TEST == testitall_runit_mode)
 	{
 		const testitall_test_main_callback internal_test_main = testitall_get_test_main();
 

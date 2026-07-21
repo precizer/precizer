@@ -64,7 +64,7 @@ Return runit_validate_runtime_mode(enum run_mode mode)
 
 	if(EXTERNAL_CALL != mode && INTERNAL_TEST != mode)
 	{
-		echo(STDERR,"Unsupported run_external mode: %d",(int)mode);
+		echo(STDERR,"Unsupported runit mode: %d",(int)mode);
 		status = FAILURE;
 	}
 

@@ -4,13 +4,13 @@ Return comprehensive_unit_testing(void)
 {
 	INITTEST;
 
-	enum run_mode prev_run_mode = run_external;
+	enum run_mode prev_run_mode = testitall_runit_mode;
 
-	run_external = INTERNAL_TEST;
+	testitall_runit_mode = INTERNAL_TEST;
 
 	#include "comprehensive_unit_and_system_testing.cc"
 
-	run_external = prev_run_mode;
+	testitall_runit_mode = prev_run_mode;
 
 	RETURN_STATUS;
 }

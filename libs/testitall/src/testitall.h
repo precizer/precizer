@@ -409,7 +409,7 @@ enum run_mode
 	EXTERNAL_CALL = 1
 };
 
-extern enum run_mode run_external;
+extern enum run_mode testitall_runit_mode;
 
 typedef int (*testitall_test_main_callback)(
 	int,
@@ -467,5 +467,4 @@ Return runit_background(
 Return trim_trailing_eol(memory *);
 
 extern bool show_subheader;
-
 #endif /* TESTITALL_H */
