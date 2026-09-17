@@ -87,11 +87,7 @@ STATIC = -static -static-libgcc -Wl,--gc-sections
 STRIP ?= -s
 endif
 
-ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-LTO =
-else
 LTO = -flto=auto
-endif
 
 # UPX compression (disabled on macOS)
 ifeq ($(UNAME_S),Darwin)
@@ -152,10 +148,9 @@ LDPATH += -L$(ARGP_PREFIX)/lib
 LDLIBS += -largp
 else
 LDLIBS += -lpcre2-8
-ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-# argp is not part of Cygwin's C library
-LDLIBS += -largp
-endif
+# The MSYS runtime needs a separate argp library
+# Resolve IS_MSYS after the compiler selection below
+LDLIBS += $(if $(IS_MSYS),-largp)
 endif
 
 # Default build
@@ -193,6 +188,9 @@ AR := llvm-ar
 endif
 export AR
 endif
+
+# Detect the MSYS runtime target after the compiler has been selected
+IS_MSYS := $(shell $(CC) $(CPPFLAGS) $(CFLAGS) -dM -E -x c /dev/null 2>/dev/null | awk '$$2 == "__MSYS__" { print 1; exit }')
 
 SYS := $(shell $(CC) -dumpmachine 2>/dev/null)
 ifneq (, $(findstring alpine, $(SYS)))
@@ -238,7 +236,7 @@ ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
 DBG_OPT_LDFLAGS ?=
 DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
 DBG_OPT_LDFLAGS ?= -Wl,--as-needed
 DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS)
@@ -276,7 +274,7 @@ DBG_DYN_CFLAGS ?= $(DBG_DYN_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 DBG_DYN_OPT_LDFLAGS ?= $(DBG_OPT_LDFLAGS)
 ifeq ($(UNAME_S),Darwin)
 DBG_DYN_LDFLAGS ?= $(USE_LLD) $(DBG_DYN_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 DBG_DYN_LDFLAGS ?= $(USE_LLD) $(DBG_DYN_OPT_LDFLAGS)
 else
 DBG_DYN_LDFLAGS ?= $(USE_LLD) -Wl,-z,defs $(DBG_DYN_OPT_LDFLAGS)
@@ -323,7 +321,7 @@ SNTZ_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
 SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
 SNTZ_LDFLAGS ?= $(USE_LLD) $(SNTZ_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
 SNTZ_LDFLAGS ?= $(USE_LLD) $(SNTZ_OPT_LDFLAGS) $(SNTZ_OPTIONS)
 else
@@ -353,7 +351,7 @@ PROD_CFLAGS ?= $(PROD_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,-dead_strip
 PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--gc-sections
 PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS)
 else
@@ -379,7 +377,7 @@ DYN_PROD_CFLAGS ?= $(DYN_PROD_OPT_CFLAGS)
 DYN_PROD_OPT_LDFLAGS ?= $(PROD_OPT_LDFLAGS)
 ifeq ($(UNAME_S),Darwin)
 DYN_PROD_LDFLAGS ?= $(USE_LLD) $(DYN_PROD_OPT_LDFLAGS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 DYN_PROD_LDFLAGS ?= $(USE_LLD) $(DYN_PROD_OPT_LDFLAGS)
 else
 DYN_PROD_LDFLAGS ?= $(USE_LLD) $(DYN_PROD_OPT_LDFLAGS) -Wl,-z,defs
@@ -424,7 +422,7 @@ PRTB_CFLAGS ?= $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,-dead_strip
 PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--gc-sections
 PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS)
 else

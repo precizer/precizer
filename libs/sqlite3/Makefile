@@ -22,6 +22,9 @@ CFLAGS ?= -finline-functions
 LDFLAGS ?=
 CFLAGS += -w
 
+# Detect the MSYS runtime target, independently of the active shell
+IS_MSYS := $(shell $(CC) $(CPPFLAGS) $(CFLAGS) -dM -E -x c /dev/null 2>/dev/null | awk '$$2 == "__MSYS__" { print 1; exit }')
+
 # Disable threads and other options
 CFLAGS += -DSQLITE_LIKE_DOESNT_MATCH_BLOBS \
  -DSQLITE_MAX_EXPR_DEPTH=0 \
@@ -53,11 +56,7 @@ else
 STRIP ?= -s
 endif
 
-ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-LTO =
-else
 LTO = -flto=auto
-endif
 
 # Warning flags for additional checks
 WFLAGS += -Wall
@@ -94,7 +93,7 @@ DBG_CFLAGS ?= $(DBG_OPT_CFLAGS) -g -ggdb -ggdb1 -ggdb2 -ggdb3 -DDEBUG
 DBG_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
 DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS)
 else
 DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-z,defs
@@ -161,7 +160,7 @@ PROD_CFLAGS ?= $(PROD_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,-dead_strip
 PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--gc-sections
 PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS)
 else
@@ -205,7 +204,7 @@ PRTB_CFLAGS ?= $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,-dead_strip
 PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--gc-sections
 PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS)
 else

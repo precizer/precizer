@@ -49,6 +49,9 @@ LDLIBS += -lpcre2-8
 endif
 EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 
+# Detect the MSYS runtime target, independently of the active shell
+IS_MSYS := $(shell $(CC) $(CPPFLAGS) $(CFLAGS) -dM -E -x c /dev/null 2>/dev/null | awk '$$2 == "__MSYS__" { print 1; exit }')
+
 SYS := $(shell $(CC) -dumpmachine 2>/dev/null)
 ifneq (, $(findstring alpine, $(SYS)))
 # Alpine Linux uses external libraries
@@ -64,8 +67,8 @@ ifeq ($(UNAME_S),Darwin)
 INCPATH += $(shell pkg-config --cflags libpcre2-8)
 INCPATH += -I$(ARGP_PREFIX)/include
 LDLIBS += -largp
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-# argp is not part of Cygwin's C library
+else ifneq ($(IS_MSYS),)
+# The MSYS runtime needs a separate argp library
 LDLIBS += -largp
 endif
 
@@ -187,7 +190,7 @@ SNTZ_CFLAGS ?= $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb3 -DDEBUG -DTESTITALL 
 SNTZ_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
 SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+else ifneq ($(IS_MSYS),)
 SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) $(SNTZ_OPTIONS)
 else
 SNTZ_LDFLAGS ?= $(SNTZ_OPT_LDFLAGS) -Wl,-z,defs $(SNTZ_OPTIONS)

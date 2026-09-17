@@ -9,7 +9,7 @@
  *         respectively, to be less than, to match, or be greater than second
  */
 static int compare_by_name(
-#ifdef __CYGWIN__
+#ifdef __MSYS__
 	const FTSENT * const *first,
 	const FTSENT * const *second)
 #else

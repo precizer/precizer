@@ -42,11 +42,7 @@ else
 STRIP ?= -s
 endif
 
-ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-LTO =
-else
 LTO = -flto=auto
-endif
 
 # Warning flags for additional checks
 WFLAGS += -Wall
