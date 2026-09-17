@@ -152,7 +152,7 @@ Return file_list(TraversalSummary *summary)
 
 	if(summary->stats_only_pass == false)
 	{
-		status = m_resize(file_buffer,file_buffer_memory());
+		status = m_resize(file_buffer,FILE_READ_BUFFER_SIZE);
 
 		if(SUCCESS != status)
 		{

@@ -44,7 +44,6 @@ roots=tests/fixtures/diffs/diff1; database=0015_database_v2\.db; db_file_name=00
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_compare\.c:\d+:db_compare:Database comparison mode is not enabled. Skipping comparison
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_contains_data\.c:\d+:db_contains_data:The database 0015_database_v2\.db has already been created previously
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_validate_paths\.c:\d+:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_buffer_memory\.c:\d+:file_buffer_memory:Bytes that can be allocated for the file buffer: \d+.*
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:Update mode enabled for DB 0015_database_v2\.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:File traversal started for [^\r\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0015_database_v2\.db:(?:\x1B\[[0-9;]*m)*

@@ -34,7 +34,6 @@ TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled\. Skipping comparison
 TESTING:The brand new database has just been created\. No need to verify the paths stored in the database against those passed as command-line arguments
-TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB dry_run_regular\.db:(?:\x1B\[[0-9;]*m)*
 new 1/AAA/BCB/CCC/a\.txt

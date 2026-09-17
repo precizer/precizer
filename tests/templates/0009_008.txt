@@ -40,7 +40,6 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database0009_8\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:The (?:\x1B\[[0-9;]*m)*--db-drop-ignored(?:\x1B\[[0-9;]*m)* option has been used, so the information about ignored files will be removed against the database database0009_8\.db
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database0009_8\.db:(?:\x1B\[[0-9;]*m)*

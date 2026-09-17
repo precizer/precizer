@@ -59,6 +59,11 @@
 
 #define SQL_DRY_RUN_MODE ((int)-1)
 
+/* Reusable heap buffer size in bytes for file reading. In x86_64 file-reading
+   and SHA-512 benchmarks, 64 KiB was among the fastest tested sizes while
+   keeping buffer memory use low. Performance may vary by workload and platform */
+#define FILE_READ_BUFFER_SIZE 65536U
+
 #define POSIX_STAT_BLOCK_BYTES 512ULL
 /*
  * st_blocks value used in migrated v4 records when legacy DB versions
@@ -646,8 +651,6 @@ Return sha512sum(
 	TraversalSummary *,
 	File *,
 	bool *);
-
-size_t file_buffer_memory(void);
 
 void free_string_array(char ***);
 
