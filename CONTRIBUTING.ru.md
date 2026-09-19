@@ -15,13 +15,13 @@
 
 * Один pull request — одно логическое изменение.
 * Для всего, что не совсем тривиально, сначала согласуйте идею и рамки в issue/обсуждении, и только потом пишите код.
-* Если меняется поведение во время выполнения, обновляйте тесты **и** пользовательскую документацию в том же pull request’е.
+* Если меняется поведение во время выполнения, обновляйте тесты **и пользовательскую документацию** в том же pull request’е.
 
 ## Разработка с AI-ассистентами
 
 Работа над кодом с помощью AI ассистентов всячески приветствуется! Это не только помогает защититься от банальных ошибок, сделанных случайно, но и позволяет избавиться от рутины печатания текстов в пользу превращения программирования в творческий процесс по "творению" если не миров, то кода. Хе хе :-)
 
-Как местному демиургу Вам нельзя позволять ассистенту управлять Вами и принимать решения вместо Вас, поэтому созданный код обязательно должен быть проверен вручную.
+Как демиургу Вам нельзя позволять ассистенту управлять Вами и принимать решения вместо Вас, поэтому созданный код обязательно должен быть проверен вручную.
 
 Пожалуйста, не используйте слабые AI модели для программирования.
 
@@ -29,86 +29,114 @@
 
 ### Зависимости по сценариям
 
-Ниже — матрица зависимостей для четырёх типовых сценариев.
+* Пакеты для сборки приложения перечислены по операционным системам в основной документации в разделе [«Самостоятельная сборка»](README.ru.md#самостоятельная-сборка)
+* Пакеты, необходимые для запуска приложения, собранного с динамическими системными библиотеками, перечислены в подразделе [«Системные библиотеки для запуска приложения»](README.ru.md#системные-библиотеки-для-запуска-приложения)
+* Команды установки пакетов для поддерживаемых дистрибутивов приведены в соответствующих Dockerfile в каталоге [`.docker/`](.docker/)
+* Пакеты для тестов перечислены в подразделе [«Системные пакеты для тестирования»](#системные-пакеты-для-тестирования)
 
-Источники: `Makefile`, `tests/Makefile`, `.docker/Dockerfile.*`, `.github/workflows/precizer.yml`.
-Подробности по пакетам для конкретных дистрибутивов (AlmaLinux, Alpine, Arch, Debian, Gentoo, Rocky, Ubuntu) — в `.docker/Dockerfile.<distro>`.
+#### Статический анализ и дополнительные инструменты
 
-#### 1. Статическая сборка (`make portable` или `make production`)
-
-Нужно:
-
-* компилятор: `gcc` (или `clang` при `make clang`)
-* сборка: `make`
-* заголовки regex-библиотеки: `libpcre2-dev`
-* упаковщик исполняемого файла, который используется в сборке: `upx-ucl`
-* `llvm` рекомендуется для дальнейших сценариев с санитайзерами/отладкой
-
-Ubuntu/Debian:
+Цель `make cppcheck` использует `bear` для создания `compile_commands.json`, после чего запускает `cppcheck`. В Ubuntu и Debian требуются следующие пакеты:
 
 ```sh
 sudo apt-get update
-sudo apt-get install -y gcc clang make libpcre2-dev upx-ucl llvm llvm-dev
+sudo apt-get install -y bear cppcheck
 ```
 
-Примечание: для `portable/production` `sqlite3` собирается из `libs/sqlite3`, системный пакет `libsqlite3-dev` для этих статических таргетов не нужен.
-
-#### 2. Динамическая сборка (`make dynamic-production`)
-
-Дополнительно нужно:
-
-* системные dev-библиотеки для `sqlite3` и `pcre2`
-
-Ubuntu/Debian:
+Дополнительные цели анализа, измерения производительности и подготовки документации используют Clang Static Analyzer, Valgrind, Sparse, Splint, Doxygen, Cloc и Gource:
 
 ```sh
-sudo apt-get update
-sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev upx-ucl
-```
-
-#### 3. Запуск тестов (`make tests`) с санитайзерами
-
-Нужно:
-
-* зависимости из пунктов 1 и 2
-* тулчейн санитайзеров (`ASan`/`UBSan`) и `llvm-symbolizer`
-* встроенная библиотека Monocypher используется как независимый эталон SHA512 в тестах и не требует внешних пакетов
-
-Ubuntu/Debian:
-
-```sh
-sudo apt-get update
-sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev upx-ucl
-```
-
-#### 4. Статический анализ и инструменты (`cppcheck` и связанные таргеты)
-
-Минимум для `make cppcheck`:
-
-```sh
-sudo apt-get update
-sudo apt-get install -y cppcheck
-```
-
-Базовый набор диагностик из комментариев `Makefile`:
-
-```sh
-sudo apt-get install -y cloc valgrind clang-tools cppcheck
-```
-
-Расширенный набор для дополнительных таргетов (`make analyze`, `make perf`, `make sparse-analyzer`, `make splint`, `make doc`, `make spellcheck`):
-
-```sh
-sudo apt-get install -y valgrind cppcheck clang-20 clang-tools-20 sparse splint doxygen cloc gource
+sudo apt-get install -y clang clang-tools valgrind sparse splint doxygen cloc gource
 sudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-$(uname -r)
 ```
 
-Примечание: `make clang-analyzer` сейчас использует имена `clang-20` и `scan-build-20` из `Makefile`. Если на вашей системе пакеты называются иначе, подстройте окружение соответствующим образом.
+Цель `make clang-analyzer` автоматически выбирает старшую доступную в `PATH` версию `clang` и соответствующую версию `scan-build`. Если исполняемые файлы с номером версии не найдены, используются команды `clang` и `scan-build` без суффикса.
 
 `make spellcheck` использует `typos` из Cargo (`~/.cargo/bin/typos`):
 
 ```sh
 cargo install typos-cli
+```
+
+### Системные пакеты для тестирования
+
+Тестовый набор проверяет отдельные функции, работу приложения через командную строку и результаты обработки файлов из `tests/fixtures/`. SQLite и криптографическая библиотека Monocypher входят в исходный код проекта. Monocypher используется как независимый эталон для проверки SHA512, вычисленного внутренней библиотекой. Отдельные системные пакеты SQLite и внешние криптографические пакеты для запуска тестов не требуются.
+
+Следующие команды устанавливают зависимости для `make tests-debug` и, кроме Alpine Linux, для `make tests` с санитайзерами.
+
+#### Arch Linux
+
+```sh
+sudo pacman -S --needed base-devel pcre2 llvm
+```
+
+#### Ubuntu/Debian Linux
+
+```sh
+sudo apt update
+sudo apt -y install gcc make libpcre2-dev llvm libubsan1
+```
+
+#### Alpine Linux
+
+```sh
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone
+```
+
+На Alpine Linux санитайзерный режим не поддерживается. Тесты запускаются командой `make tests-debug`.
+
+#### Fedora Linux
+
+```sh
+sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static
+```
+
+#### AlmaLinux/Rocky Linux
+
+Для стандарта C2x и санитайзеров используется GCC Toolset 15. Пакеты со статическими библиотеками могут потребовать подключения CRB, EPEL и репозитория для разработчиков, как в соответствующем Dockerfile из каталога `.docker/`.
+
+```sh
+sudo dnf -y install dnf-plugins-core epel-release
+sudo dnf config-manager --set-enabled crb
+sudo dnf -y install gcc-toolset-15-gcc gcc-toolset-15-libasan-devel gcc-toolset-15-libubsan-devel make llvm pcre2-devel
+sudo dnf -y --enablerepo=devel install pcre2-static glibc-static
+```
+
+В AlmaLinux перед установкой статических библиотек также требуется пакет `almalinux-release-devel`:
+
+```sh
+sudo dnf -y install almalinux-release-devel
+```
+
+Тесты запускаются в окружении GCC Toolset 15:
+
+```sh
+scl enable gcc-toolset-15 -- make tests-debug
+scl enable gcc-toolset-15 -- make tests
+```
+
+#### Gentoo Linux
+
+Для PCRE2 требуется поддержка статических библиотек:
+
+```sh
+echo "dev-libs/libpcre2 static-libs" | sudo tee /etc/portage/package.use/libpcre2
+sudo emerge llvm-core/clang dev-libs/libpcre2
+```
+
+#### macOS
+
+Для тестовой сборки требуются инструменты командной строки Xcode и библиотеки из Homebrew:
+
+```sh
+xcode-select --install
+brew install llvm pcre2 argp-standalone
+```
+
+На macOS используется динамическая сборка с санитайзерами:
+
+```sh
+make tests
 ```
 
 ### Клонирование и сборка
@@ -120,13 +148,7 @@ make production
 ./precizer --version
 ```
 
-Варианты сборки:
-
-* `make portable` — статически линкованный переносимый бинарник (Linux)
-* `make production` — статический бинарник, оптимизированный под локальный CPU
-* `make dynamic-production` — динамически линкованный бинарник, оптимизированный под локальный CPU
-
-Поведение режимов сборки и технические различия подробно описаны в `README.md`, раздел [Building with Docker](README.md#building-with-docker).
+Доступные режимы, команды, назначение получаемых исполняемых файлов и технические различия сборки подробно описаны в основной документации, в подразделе [«Варианты сборки с помощью Make»](README.ru.md#варианты-сборки-с-помощью-make).
 
 Очистка (рекурсивно удаляет `.builds`):
 

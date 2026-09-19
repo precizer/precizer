@@ -786,7 +786,7 @@ Return file_list(TraversalSummary *summary)
 
 	if(lock_checksum_violation_detected == true)
 	{
-		slog(EVERY,BOLD "Warning! Data corruption detected for checksum-locked file!" RESET "\n");
+		slog(EVERY,"@{bold}Warning! Data corruption detected for checksum-locked file!@{reset}\n");
 
 		if(SUCCESS == status)
 		{

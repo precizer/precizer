@@ -2,15 +2,39 @@
 
 # Precizer: data integrity verification for file systems of any scale
 
-A Tiny, High-Performance File Integrity and Comparison Tool
+A tiny, high-performance application for verifying file integrity
 
 “A truly great application will always fit on a floppy disk. Hopefully, someone out there still remembers what those were… But it’s not about the floppies, it’s about quality software!”<sup>©</sup> :-D
 
 <p width="100%" height="100%"><img width="20%" src=".html/img/micrometer_0.svg"></p>
 
+## Contents
+
+- [Continuous integration and automation](#continuous-integration-and-automation)
+- [About the program](#about-the-program)
+- [Downloads](#downloadsскачивание)
+- [Changelog](#changelog)
+- [Technical details](#technical-details)
+- [Questions and bug reports](#questions--bug-reports)
+- [Contributing](#contributing)
+- [Build and installation](#build--installation)
+	- [Packaging for distributions](#packaging-for-distributions)
+	- [Building with Docker](#building-with-docker)
+	- [Manual build](#manual-build)
+		- [Linux](#linux-1)
+		- [macOS](#macos-1)
+		- [Windows](#windows-1)
+	- [Testing](#testing)
+- [Usage examples](#usage-examples)
+- [Main command-line options](#main-command-line-options)
+- [Troubleshooting](#troubleshooting)
+- [Alternatives](#alternatives)
+- [Author](#author)
+- [License](#copying)
+
 ## Continuous integration and automation
 
-### Comprehensive hybrid test suite
+### Hybrid integration and system test suite
 
 * In-process integration tests
 * Out-of-process CLI system tests
@@ -32,7 +56,7 @@ A Tiny, High-Performance File Integrity and Comparison Tool
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12159/badge)](https://www.bestpractices.dev/projects/12159)  
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/precizer/precizer/badge)](https://scorecard.dev/viewer/?uri=github.com/precizer/precizer)
 
-## TL;DR
+## ABOUT THE PROGRAM
 
 ### Overview
 
@@ -100,7 +124,7 @@ This ensures that even when files reside in different mount points or sources, t
 
 ## Downloads/Скачивание
 
-The appropriate package is determined by the operating system and processor architecture. These links point only to files intended for regular use
+The appropriate package is determined by the operating system and processor architecture
 
 ### Linux
 
@@ -132,15 +156,15 @@ Single self-extracting executable that does not require separate runtime files. 
 
 ### macOS
 
-**Intel processor (x86_64)**
-
-[Download precizer for macOS Intel x86_64](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_x86_64.zip)
+The macOS builds use dynamic libraries. Packages required at runtime are listed under [“System libraries required at runtime”](#system-libraries-required-at-runtime)
 
 **Apple Silicon processor (M1 or newer, ARM64)**
 
 [Download precizer for macOS Apple Silicon ARM64](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_arm64.zip)
 
-The macOS builds use dynamic libraries. Packages required at runtime are listed under [“System libraries required at runtime”](#system-libraries-required-at-runtime).
+**Intel processor (x86_64)**
+
+[Download precizer for macOS Intel x86_64](https://github.com/precizer/precizer/releases/latest/download/precizer_macos_x86_64.zip)
 
 ### Download, unzip, and run automatically on Linux and macOS
 
@@ -163,7 +187,12 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 * The Linux build is a single executable, statically linked ELF binary not tied to any specific distribution. It can be run immediately on almost any Linux distro and does not require external shared libraries.
 * The binary is produced by GitHub CI/CD, then compressed with [UPX (the executable packer)](https://upx.github.io). The self-extracting compressed binary is then placed into a ZIP archive for convenient download. The file can be extracted from the archive and run directly.
-* Static linking is not supported on macOS, so running the downloaded application requires the following libraries to be available on the system: sqlite3, pcre2, argp and fts.
+
+* Windows x64 ZIP package: the program is built in the MSYS2 MSYS environment, with its main components linked statically. The archive contains `precizer.exe` and the `msys-2.0.dll` runtime library; both must remain in the same directory after extraction. MSYS2 does not need to be installed to run it
+
+* Standalone Windows x64 EXE: a self-extracting launcher embeds the same `precizer.exe` and `msys-2.0.dll`. At startup, it extracts them to a user cache and runs the program, reusing the cached files on subsequent runs. The launcher is built with MinGW-w64/UCRT and compressed with UPX; no MSYS2 installation or DLL files alongside the downloaded EXE are required
+
+* Static linking is not supported on macOS. System libraries required to run the application are listed under [“System libraries required at runtime”](#system-libraries-required-at-runtime)
 
 ## CHANGELOG
 
@@ -192,7 +221,7 @@ The following scenario illustrates the issue:
     * If the connection drops, `rsync` terminates the session, and on the next run, everything must start from scratch! Given the huge data volumes, performing a byte-by-byte verification for full data integrity becomes an impossible task.
   * Storage subsystem failures can also lead to binary inconsistencies. In such cases, file system metadata cannot reliably determine whether file contents on "A" and "B" are truly identical.
   * Over time, errors accumulate, increasing the risk of maintaining an inconsistent Disaster Recovery copy of system "A" on system "B", rendering the entire Disaster Recovery effort useless. Standard utilities do not detect these inconsistencies, and technical personnel may be completely unaware of data integrity problems in the Disaster Recovery storage.
-* To overcome these limitations, precizer was developed. The program identifies exactly which files differ between "A" and "B" so that they can be resynchronized with the necessary corrections. The tool operates at maximum speed (pushing hardware performance to its limits) because it is written in pure C and utilizes high-performance algorithms optimized for efficiency. The program is designed to handle both small files and petabyte-scale data volumes, with no upper limits*.
+* To overcome these limitations, precizer was developed. The program identifies exactly which files differ between "A" and "B" so that they can be resynchronized with the necessary corrections. The tool operates at maximum speed (pushing hardware performance to its limits) because it is written in pure C and utilizes high-performance algorithms optimized for efficiency. The program is designed to handle both small files and data volumes measured in petabytes and beyond
 * The name precizer comes from the word precision, implying something that enhances accuracy.
 * The program precisely analyzes directory contents, including subdirectories, computing checksums for every encountered file while storing metadata in an SQLite database (a regular binary file).
 * precizer can be stopped and resumed without risking the data being checked. The program does not modify scanned files or directories; it only saves its own progress and results to the SQLite database.
@@ -213,7 +242,7 @@ The following scenario illustrates the issue:
   * The program never modifies, deletes, moves, or copies any files or directories it processes.
   * The program enumerates files, computes SHA512 checksums, and updates a local database; all changes are strictly confined to the database.
   * The database does not store file contents. It stores relative paths, checksums, and metadata such as size and timestamps (ctime/mtime).
-  * The program does not open network sockets.
+  * The program does not open sockets
   * The program does not transmit data.
   * The program does not require privileged execution and does not use the SUID bit or other unsafe permission bits.
   * No functionality is provided for privilege escalation or other security violations.
@@ -273,7 +302,7 @@ After the build completes, an executable `precizer` appears in the project direc
 
 ### Manual Build
 
-#### Preparation
+Git is required to obtain the source code. Build commands run from the project root after the dependencies for the corresponding operating system have been installed
 
 ```sh
 git clone --depth=1 https://github.com/precizer/precizer.git
@@ -282,32 +311,66 @@ cd precizer
 
 All build targets honor `CPPFLAGS`, `CFLAGS`, and `LDFLAGS` values supplied through the environment or command line. The required `-std=c2x` language standard is added separately and cannot be disabled by overriding `CFLAGS`
 
-#### Dependencies for manual builds
+Previous builds and artifacts can be removed with the following command:
 
-The following commands install the compiler, tools, and library headers required to build the application. UPX is used by the `portable`, `production`, and `dynamic-production` targets; the `distribution` target does not require it.
+```sh
+make purge
+```
 
-Dependency installation commands used during automated builds for supported distributions are provided in the corresponding Dockerfiles under [`.docker/`](.docker/).
+#### Linux
+
+The following commands install the compiler, tools, and library headers required to build the application. UPX is used by the `portable`, `production`, and `dynamic-production` targets; the `distribution` target does not require it
+
+Runtime dependencies are required only for the `dynamic-production` and `distribution` dynamic builds. The static `portable` and `production` builds include the required libraries in the executable and do not need the packages listed below at runtime
+
+Dependency installation commands used during automated builds for supported distributions are provided in the corresponding Dockerfiles under [`.docker/`](.docker/)
 
 ##### Arch Linux
+
+**Build tools and libraries:**
 
 ```sh
 sudo pacman -S --needed base-devel sqlite pcre2 upx
 ```
 
+**Dynamic build runtime dependencies:**
+
+```sh
+sudo pacman -S --needed sqlite pcre2
+```
+
 ##### Ubuntu/Debian Linux
+
+**Build tools and libraries:**
 
 ```sh
 sudo apt update
 sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
 ```
 
+**Dynamic build runtime dependencies:**
+
+```sh
+sudo apt -y install libpcre2-8-0 libsqlite3-0
+```
+
 ##### Alpine Linux
+
+**Build tools and libraries:**
 
 ```sh
 sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
 ```
 
+**Dynamic build runtime dependencies:**
+
+```sh
+sudo apk add --no-cache pcre2 sqlite-libs argp-standalone fts
+```
+
 ##### AlmaLinux/Rocky/Fedora Linux
+
+**Build tools and libraries:**
 
 Available repositories and static library package names differ between releases of these distributions. Building every variant requires GCC, Make, the glibc, SQLite, and PCRE2 headers and static libraries, and UPX:
 
@@ -315,41 +378,44 @@ Available repositories and static library package names differ between releases 
 sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static
 ```
 
-On AlmaLinux and Rocky Linux, the `pcre2-static` and `glibc-static` packages may require enabling CRB, EPEL, and the development repository first.
+On AlmaLinux and Rocky Linux, the `pcre2-static` and `glibc-static` packages may require enabling CRB, EPEL, and the development repository first
 
-Detailed commands for enabling repositories and installing packages are provided in the corresponding distribution Dockerfile under [`.docker/`](.docker/).
+Detailed commands for enabling repositories and installing packages are provided in the corresponding distribution Dockerfile under [`.docker/`](.docker/)
+
+**Dynamic build runtime dependencies:**
+
+```sh
+sudo dnf -y install sqlite-libs pcre2
+```
 
 ##### Gentoo Linux
+
+**Build tools and libraries:**
 
 ```sh
 echo "dev-libs/libpcre2 static-libs" | sudo tee /etc/portage/package.use/libpcre2
 sudo emerge dev-libs/libpcre2 app-arch/upx
 ```
 
-##### macOS
-
-The Xcode command-line tools and Homebrew dependencies are required for building. They are installed with the following commands:
+**Dynamic build runtime dependencies:**
 
 ```sh
-xcode-select --install
-brew install llvm sqlite pcre2 argp-standalone
+sudo emerge dev-db/sqlite dev-libs/libpcre2
 ```
 
-#### Build variants available through Make
+##### Build variants available through Make
 
 Four build variants are available: `portable`, `production`, `dynamic-production`, and `distribution`. The appropriate variant depends on portability, performance, and system library requirements
 
-Static linking is not supported on macOS. The `distribution` and `dynamic-production` dynamic build variants are available
-
-##### Portable binary
+**Portable binary**
 
 ```sh
 make portable
 ```
 
-The result is a single statically linked, self-extracting compressed UPX ELF file with no dynamic dependencies. It contains the whole program and can be run on almost any modern Linux distribution. The file can be copied to any platform of the same architecture (x64/arm/etc).
+The result is a single statically linked, self-extracting compressed UPX ELF file with no dynamic dependencies. It contains the whole program and can be run on almost any modern Linux distribution. The file is portable between systems with the same processor architecture (x64, ARM, and others)
 
-The program is optimized for **maximum portability**.
+The program is optimized for **maximum portability**
 
 Compilation and linking flags: `-static -O2 -mtune=generic`
 
@@ -359,17 +425,17 @@ Docker alternative:
 make docker-gentoo-portable
 ```
 
-or replace `-gentoo-` with any distro from the list above.
+Any distribution listed above can be specified instead of `-gentoo-`
 
-##### Single binary optimized for the local CPU
+**Single binary optimized for the local CPU**
 
 ```sh
 make production
 ```
 
-The result is a statically linked, self-extracting compressed UPX ELF file tuned for the local CPU. It contains the whole program, can be run on the local machine, and will use the maximum available CPU features.
+The result is a statically linked, self-extracting compressed UPX ELF file tuned for the local CPU. It contains the whole program, can be run on the local machine, and will use the maximum available CPU features
 
-The program is optimized for **maximum possible performance on local hardware**.
+The program is optimized for **maximum possible performance on local hardware**
 
 Compilation and linking flags: `-static -O3 -march=native`
 
@@ -379,17 +445,17 @@ Docker alternative:
 make docker-gentoo-production
 ```
 
-or replace `-gentoo-` with any distro from the list above.
+Any distribution listed above can be specified instead of `-gentoo-`
 
-##### Dynamically linked binary optimized for the local CPU
+**Dynamically linked binary optimized for the local CPU**
 
 ```sh
 make dynamic-production
 ```
 
-The result is an ELF executable of about **50 kilobytes**. It is tuned for the local CPU and dynamically linked against libraries installed on the system; it is also self-extracting and UPX-compressed. It can be built and run on the local machine if libraries such as sqlite3, pcre2, argp and fts are installed.
+The result is an ELF executable of about **50 kilobytes**. It is tuned for the local CPU and dynamically linked against libraries installed on the system; it is also self-extracting and UPX-compressed. It can be built and run on the local machine if libraries such as sqlite3, pcre2, argp, and fts are installed
 
-The binary is optimized for **maximum performance and minimal size**.
+The binary is optimized for **maximum performance and minimal size**
 
 At runtime, the program uses dynamic libraries installed on the system. They may be built with optimization settings that differ from those used to build precizer, so overall performance also depends on these libraries
 
@@ -401,59 +467,56 @@ Docker alternative:
 make docker-gentoo-dynamic-production
 ```
 
-or replace `-gentoo-` with any distro from the list above.
+Any distribution listed above can be specified instead of `-gentoo-`
 
-##### Executable for a distribution package
+**Executable for a distribution package**
 
 ```sh
 make distribution
 ```
 
-The `distribution` target is intended for packages built by Gentoo, Debian, Ubuntu, Fedora, and other distributions, as well as macOS release executables. The program is dynamically linked with installed system libraries
+The `distribution` target is intended for packages built by Gentoo, Debian, Ubuntu, Fedora, and other distributions. The program is dynamically linked with installed system libraries
 
 The build honors the standard `CPPFLAGS`, `CFLAGS`, and `LDFLAGS` variables, does not add tuning for the processor of the machine on which the build runs, does not strip debug symbols, and does not use UPX
 
 Optimization, hardening, debug information processing, and package creation are controlled by the distribution build system
 
-#### Installation
+##### Installation
 
-Just copy the resulting **precizer** executable to any location listed in the `$PATH` environment variable for quick invocation.
+For quick invocation, the `precizer` executable is placed in a directory listed in `$PATH`. The `portable`, `production`, and `dynamic-production` builds create this file in the project root; the `distribution` result is located at `.builds/distribution/precizer`
 
-#### System libraries required at runtime
+#### macOS
 
-These dependencies are required when the application is built with `dynamic-production` or `distribution`. The static Linux `portable` and `production` builds include the required libraries in the executable and do not need the packages listed below.
+Static linking is not supported on macOS. The `distribution` and `dynamic-production` dynamic build variants are available; UPX compression is not used
 
-##### Arch Linux
+##### Build dependencies
 
-```sh
-sudo pacman -S --needed sqlite pcre2
-```
-
-##### Ubuntu/Debian Linux
+The Xcode command-line tools and Homebrew dependencies are required for building. They are installed with the following commands:
 
 ```sh
-sudo apt -y install libpcre2-8-0 libsqlite3-0
+xcode-select --install
+brew install llvm sqlite pcre2 argp-standalone
 ```
 
-##### Alpine Linux
+##### Build and installation
+
+The `distribution` target builds without tuning for a specific computer's processor:
 
 ```sh
-sudo apk add --no-cache pcre2 sqlite-libs argp-standalone fts
+make distribution
 ```
 
-##### AlmaLinux/Rocky/Fedora Linux
+The result is located at `.builds/distribution/precizer`. The build honors `CPPFLAGS`, `CFLAGS`, and `LDFLAGS` and does not strip debug symbols
+
+The `dynamic-production` target provides a build optimized for the local processor:
 
 ```sh
-sudo dnf -y install sqlite-libs pcre2
+make dynamic-production
 ```
 
-##### Gentoo Linux
+In this case, the resulting `precizer` executable is placed in the project root. For quick invocation, the executable is placed in a directory listed in `$PATH`
 
-```sh
-sudo emerge dev-db/sqlite dev-libs/libpcre2
-```
-
-##### macOS
+##### System libraries required at runtime
 
 Every macOS build variant is dynamically linked, and release executables use the `distribution` target. The following Homebrew system libraries are required at runtime:
 
@@ -461,12 +524,75 @@ Every macOS build variant is dynamically linked, and release executables use the
 brew install sqlite pcre2 argp-standalone
 ```
 
-#### Clean up
+#### Windows
 
-##### Remove all build artifacts
+##### MSYS2 preparation
+
+[MSYS2](https://www.msys2.org/) is required to build for Windows x64. Commands run in the **MSYS2 MSYS** terminal, rather than UCRT64 or MINGW64
+
+Packages are updated before building:
 
 ```sh
-make purge
+pacman -Syu
+```
+
+If the update requires closing the terminal, the **MSYS2 MSYS** terminal is reopened after confirmation, and the command is repeated to complete the update. Details are available in the [MSYS2 update instructions](https://www.msys2.org/docs/updating/)
+
+Dependencies are installed with the following command:
+
+```sh
+pacman -S --needed git gcc make libsqlite-devel pcre2-devel libargp-devel zip
+```
+
+Obtaining the source code is described at the beginning of [Manual Build](#manual-build). All remaining commands run from the project root in the same terminal
+
+##### EXE with a DLL alongside it
+
+The following commands build the program and place the required MSYS2 library next to it:
+
+```sh
+make distribution \
+	CC=/usr/bin/gcc \
+	WFLAGS= \
+	LDFLAGS='-s' \
+	DIST_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
+
+built_exe=".builds/distribution/precizer.exe"
+if [ ! -f "$built_exe" ]; then
+	built_exe=".builds/distribution/precizer"
+fi
+
+mkdir -p package/msys
+cp "$built_exe" package/msys/precizer.exe
+cp /usr/bin/msys-2.0.dll package/msys/msys-2.0.dll
+```
+
+The result is `precizer.exe` and `msys-2.0.dll` in `package/msys/`. Both files must remain in the same directory. MSYS2 does not need to be installed to run them on another computer. SQLite, PCRE2, and argp are already included in the EXE
+
+A ZIP archive can be created if needed:
+
+```sh
+zip -j precizer_windows_x64_portable.zip \
+	package/msys/precizer.exe package/msys/msys-2.0.dll \
+	COPYING README.ru.md README.md CHANGELOG.md
+```
+
+##### Single self-extracting EXE
+
+The build and file-copying steps in the previous subsection are required first. The following commands install the additional tools and create an EXE with the program and DLL embedded:
+
+```sh
+pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils
+make -C .packaging/msys
+```
+
+There is no need to switch terminals: the build selects the UCRT compiler automatically. The resulting `precizer_windows_x64_portable.exe` appears in the project root. This is the only file required for distribution and execution: it extracts the program and DLL into a per-user cache directory when launched
+
+The file size can be reduced with UPX:
+
+```sh
+pacman -S --needed mingw-w64-ucrt-x86_64-upx
+/ucrt64/bin/upx --best --lzma ./precizer_windows_x64_portable.exe
 ```
 
 ### Testing
@@ -554,7 +680,7 @@ The previous example is run again. First attempt. Warning message.
 precizer --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
-<sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when it is certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.  
+<sub>The database database1.db was previously created and already contains data with files and their checksums. Use the `--update` option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.  
 ERROR: The precizer process terminated unexpectedly due to an error  
 </sub>
 
@@ -815,7 +941,7 @@ Start vacuuming the primary database…
 The primary database has been vacuumed  
 **The database myhost.db has been modified since the last check (files were added, removed, or updated)**  
 The precizer completed its execution without any issues  
-Enjoy life!  
+Enjoy your life!  
 </sub>
 
 Repeat the same example, but this time without the `--ignore` option to include the three previously ignored files:
@@ -973,7 +1099,7 @@ In this example, every difference under `2/`, `3/`, `4/`, `path1/`, and `path2/`
 ### Example 9
 Protecting immutable archives with `--lock-checksum`
 
-Use `--lock-checksum` for archival folders whose contents must never be rewritten. It accepts PCRE2 regular expressions for **relative** paths (same format as `--ignore`). Paths matching any lock pattern are written to the database once. After that their checksums are not recalculated, even with `--update`. Any later size change, any timestamp drift when `--watch-timestamps` is enabled, the file disappearing from disk, a loss of read access, or an unexpected access-check failure is treated as data corruption and reported instead of updating the record. When a locked file disappears or becomes unavailable, its database row is kept so the violation remains visible in later runs. Lock protection takes priority over `--ignore`, `--db-drop-ignored`, and `--db-drop-inaccessible`: matching those filters does not silently drop the locked record from the database. The same protection also remains active when `--include` restores only part of an ignored subtree. You can provide multiple patterns by repeating the option.
+The `--lock-checksum` option protects archival directories or files whose contents must not be overwritten. It accepts PCRE2 regular expressions for **relative** paths (same format as `--ignore`). Paths matching any lock pattern are written to the database once. After that their checksums are not recalculated, even with `--update`. Any later size change, any timestamp drift when `--watch-timestamps` is enabled, the file disappearing from disk, a loss of read access, or an unexpected access-check failure is treated as data corruption and reported instead of updating the record. When a locked file disappears or becomes unavailable, its database row is kept so the violation remains visible in later runs. Lock protection takes priority over `--ignore`, `--db-drop-ignored`, and `--db-drop-inaccessible`: matching those filters does not silently drop the locked record from the database. The same protection also remains active when `--include` restores only part of an ignored subtree. Multiple patterns can be specified by repeating `--lock-checksum`:
 
 ```sh
 precizer \
@@ -997,7 +1123,7 @@ Files outside the lock patterns follow normal update rules. For entries locked v
 ### Example 10
 Deep verification of locked data with `--rehash-locked`
 
-The `--rehash-locked` option works only together with `--lock-checksum`. When it is enabled, every file that matches a lock pattern and already exists in the database is read again, its SHA512 checksum is recomputed, and the result is compared against the stored checksum. This provides an explicit integrity sweep for immutable archives at the cost of extra disk I/O. The option ignores whether `--watch-timestamps` is enabled or not. If the recalculated checksum and recorded size match, the file is considered consistent; if its timestamps on disk differ from the database, the ctime/mtime fields in the database are updated with the new values. If a locked path also matches `--ignore`, `--rehash-locked` still traverses and verifies that path instead of suppressing the check.
+The `--rehash-locked` option works only together with `--lock-checksum`. When it is enabled, every file that matches a lock pattern and already exists in the database is read again byte by byte during each `--update` run. Its SHA512 checksum is recomputed and compared with the stored value. This provides an explicit integrity sweep for immutable archives at the cost of extra disk I/O. The option ignores whether `--watch-timestamps` is enabled or not. If the recalculated checksum and recorded size match, the file is considered consistent; if its timestamps on disk differ from the database, the ctime/mtime fields in the database are updated with the new values. If a locked path also matches `--ignore`, `--rehash-locked` still traverses and verifies that path instead of suppressing the check
 
 ```sh
 precizer --update \
@@ -1033,6 +1159,83 @@ Important: `--db-drop-inaccessible` is not about files that are gone. It is abou
 
 If a file, or one of the directories in its path, is not visible in the filesystem at all, `precizer` treats a regular record not protected by `--lock-checksum` as deleted and removes it from the database during `--update` without any extra option. The program cannot tell whether this is a real deletion or a mount point that exists but currently shows an empty directory because the expected volume was not mounted. Before updating a database for external, network, or removable volumes, first make sure the expected volume is actually mounted. For important archive paths, use `--lock-checksum`: then a missing or unavailable file is reported as a warning, and its database record is preserved.
 
+## MAIN COMMAND-LINE OPTIONS
+
+The options below cover everyday use. In scanning mode, place the starting directories after the options; with `--compare`, provide two database files instead. To see every option and the detailed help, run:
+
+```sh
+precizer --help
+```
+
+### Scanning and updating a database
+
+- `--database=FILE`, `-d FILE` — Select the database file. The default name is the hostname followed by `.db`
+
+- `--update`, `-u` — Allow a scan to update an existing database: add new files, update changed files, and remove records for files that are gone. Use the same starting directories as when the database was created
+
+- `--watch-timestamps`, `-T` — Consider changes to modification time `mtime` and metadata change time `ctime`, in addition to file size, when deciding whether to recalculate a checksum
+
+- `--dry-run`, `-n` — Perform a trial traversal without writing to the database. The `--dry-run=with-checksums` variant also reads files and computes checksums. This option has no effect on `--compare`
+
+`--update` does not recalculate every checksum. For regular files already in the database, recalculation is triggered by a size change, or by a timestamp change when `--watch-timestamps` is enabled. Archive protection through `--lock-checksum` is described in [Example 9](#example-9), and forced verification of those files is covered in [Example 10](#example-10)
+
+### Comparing databases
+
+- `--compare`, `-c` — Compare two databases by relative paths and checksums, for example `precizer --compare first.db second.db`
+
+- `--compare-filter=TYPE`, `-F TYPE` — Select report categories: `checksum-mismatch` for different checksums, `first-source` for files only in the first database, or `second-source` for files only in the second. Requires `--compare`; repeat the option to combine categories
+
+Without `--compare-filter`, all three categories are reported. See [Filtering comparison report categories](#filtering-comparison-report-categories) for a detailed example
+
+### Selecting files and traversal depth
+
+- `--ignore=REGEXP`, `-e REGEXP` — Exclude paths matching a PCRE2 regular expression
+
+- `--include=REGEXP`, `-i REGEXP` — Bring back paths excluded by `--ignore`. On its own, this option does not restrict processing to matching paths
+
+- `--maxdepth=N`, `-m N` — Limit traversal depth. The starting directory has depth `0`; `--maxdepth=0` processes files directly in that directory without entering subdirectories
+
+`--ignore` and `--include` patterns match paths relative to the starting directory. Both options can be repeated. In `--compare` mode, these filters limit both the difference lists and the scope of the final equality messages. Excluding a path with `--ignore` does not by itself remove existing database records; [Example 7](#example-7) explains how to control that removal
+
+### Output detail
+
+- `--progress`, `-p` — Show processing progress and data volume. To estimate progress, the program first performs an additional traversal and counts files
+
+- `--verbose`, `-v` — Print detailed diagnostic messages to help understand what the program is doing
+
+- `--silent`, `-s` — Suppress ordinary output. In `--compare` mode, comparison results remain visible; category headings are retained when more than one category is active
+
+### Color and text styling
+
+The `--color=auto|always|never` option controls color and text effects, such as bold, in program messages. A value is required: use, for example, `--color=never` or the short form `-S never`
+
+- `auto` — the default. Styling is enabled for terminal output, including a pseudoterminal, and disabled for files and pipes. Output is also unstyled in CI, cron, or a system service without a terminal
+- `always` — add ANSI styling sequences even when writing to a file or pipe
+- `never` — do not add ANSI styling sequences, including style resets, even when writing to a terminal
+
+In `auto` mode, the presence of the `NO_COLOR` environment variable, even with an empty value, or `TERM=dumb` disables styling. This also applies when `--color=auto` is specified explicitly. The `always` and `never` modes take precedence over these variables
+
+The check applies to the stream receiving the message. For example, when `stdout` is redirected to a file, messages in that stream remain unstyled in `auto` mode even if `stderr` is still connected to a terminal. The `auto` mode detects a terminal connection but does not check which colors or effects the terminal supports
+
+Examples using two existing databases, `first.db` and `second.db`:
+
+```sh
+# Use automatic styling in an interactive terminal
+precizer --compare --color=auto first.db second.db
+
+# Save the comparison report without styling in the default auto mode
+precizer --compare first.db second.db > comparison.txt
+
+# Preserve styling when piping the report to another program
+precizer --compare --color=always first.db second.db | cat
+
+# Disable styling even in an interactive terminal
+precizer --compare -S never first.db second.db
+
+# Disable automatic styling through the environment
+NO_COLOR=1 precizer --compare first.db second.db
+```
+
 ## TROUBLESHOOTING
 
 ### Slow file walk, slow checksums, slow database writes ("everything is slow")
@@ -1041,7 +1244,7 @@ To pinpoint the bottleneck, try running `precizer` in `--dry-run` or `--dry-run=
 
 `--dry-run` recursively walks the **file system**. In this mode, nothing happens except directory tree traversal. You can add `--progress` to also count total bytes and files, but no database writes will occur. This mode helps validate file system accessibility and, to a degree, the underlying hardware. If it is slow even with `--dry-run`, the root cause is unlikely to be `precizer` itself.
 
-`--dry-run=with-checksums` differs from `--dry-run` only in that every encountered file is fully read (byte-by-byte) and a checksum is computed. This is significantly more resource-intensive and is close to the program's real workload, but it still does not write to the database. With `--progress` enabled, `precizer` also prints how many bytes were hashed and the average hashing throughput in B/s. That number can be compared against third-party benchmarks to help spot the bottleneck.
+`--dry-run=with-checksums` differs from `--dry-run` only in that every encountered file is read completely, byte by byte, and a checksum is computed. This is significantly more resource-intensive and closely resembles the program's real workload. It exercises the hardware without writing to the database. With `--progress` enabled, the number of bytes hashed and the average hashing rate in B/s are reported after the traversal. This rate can be compared with third-party benchmarks to help locate the bottleneck
 
 It is also possible that `--dry-run=with-checksums` is fast, but real runs (non-dry-run) slow down noticeably, especially when many records are being added or changed. In that case, check the file system that stores the database file — the issue may be there.
 
@@ -1071,7 +1274,7 @@ Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually 
 
 | Step | Mode/command                      | What it measures                                                      | If it is slow here                                                        | Next steps                                                                                         |
 | ---- | --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1    | precizer --dry-run                | File system accessibility, directory walk speed, baseline I/O         | Most likely outside `precizer`: file system/disk/network/system load      | Check storage subsystem, mount status, and overall system load                                     |
+| 1    | precizer --dry-run                | File system accessibility, directory walk speed, baseline I/O         | Most likely outside `precizer`: file system/disk/network/system load      | Check the file system and storage subsystem, mount status, and overall system load                                     |
 | 2    | precizer --dry-run=with-checksums | Real read + checksum compute speed (no DB writes)                     | Bottleneck: data reads (disk/network/file system) or CPU (more rarely)    | Check disk/network throughput, file system settings, and CPU resource limits (VMs/containers)      |
 | 3    | Normal run (not dry-run)          | Impact of SQLite writes and transactions                              | Often the file system hosting `.db` is the issue (slow/network/compressed)| Check the `.db` file system; try moving `.db` temporarily to a faster medium or `tmpfs`            |
 
@@ -1081,30 +1284,30 @@ Alternatives to **precizer** with open architectures and source code. More alter
 
 * **AIDE** — [aide.github.io](https://aide.github.io/)
   * Platforms/architectures: Linux/*BSD/macOS (x86_64, arm64, etc.)
-  * Written in: C, actively maintained
+  * Written in: C, maintained
     * Supports selecting/combining different hash algorithms and controlling more non-hash attributes (ACL/xattr/SELinux, etc.) at the rule level.
     * Snapshot/database uses a text format (optionally gzip), not SQLite: less suited for complex queries/analytics over the database.
     * No resumption of interrupted hashing inside a large file: a re-scan typically starts over from scratch.
 
 * **Samhain** — [www.la-samhna.de/samhain](https://www.la-samhna.de/samhain/)
   * Platforms/architectures: Linux/Unix/POSIX, Windows (x86_64, arm64, etc.)
-  * Written in: C, actively maintained
+  * Written in: C, maintained
     * Built-in agent + central server model (centralized collection/control), which goes beyond "one local database".
     * Emphasis on tamper-resistance (signatures/cryptographic protection of some artifacts).
     * Significantly more complex deployment/maintenance (agents/server/keys) if all you need is a quick comparison of two trees via SQLite.
 
 * **OSSEC** — [www.ossec.net](https://www.ossec.net/)
   * Platforms/architectures: Linux, Windows, macOS, *BSD (x86_64, arm64, etc.)
-  * Written in: C, actively maintained
+  * Written in: C, maintained
     * Event-driven/agent-based HIDS platform: real-time alerts, rules, correlation, response — a different class of tasks than "snapshot + diff".
     * Centralized architecture out of the box.
     * Not designed for storing a file snapshot specifically in SQLite or for resuming interrupted checksum computation inside a large file.
 
 * **Open Source Tripwire** — [github.com/Tripwire/tripwire-open-source](https://github.com/Tripwire/tripwire-open-source)
   * Platforms/architectures: POSIX-like OSes (Linux/macOS/*BSD/Solaris, etc.), Windows via Cygwin (x86_64, arm64, etc.)
-  * Written in: C++, ended in 2018
-    * Tripwire as an open source project ended in 2018 and has not been developed since then.
-    * precizer is more of a tool for integrity checking of large file trees, specifically designed for fast comparison. It is noticeably easier to get started with and can solve the comparison task in three commands. Tripwire addresses similar needs, but it is a classic file integrity monitoring tool. It requires a policy file, configs, database, and digital signatures for all of that.
+  * Written in: C++, last changes 8 years ago
+    * Advanced policy language and signing of policies, configurations, and the database, creating a chain of trust around the baseline
+    * No SQLite database as the primary data format and no resumption of interrupted hashing within a large file
 
 * **integrit** — [github.com/integrit/integrit](https://github.com/integrit/integrit)
   * Platforms/architectures: Linux/*BSD (x86_64, arm64, etc.)
@@ -1115,8 +1318,9 @@ Alternatives to **precizer** with open architectures and source code. More alter
 * **mtree (NetBSD mtree)** — [man.netbsd.org/mtree.8](https://man.netbsd.org/mtree.8)
   * Platforms/architectures: *BSD, Linux (x86_64, arm64, etc.)
   * Written in: C, last changes 18 years ago
-    * Very old codebase (effectively frozen).
-    * mtree and go-mtree use a text-based snapshot format that is not intended for indexing or high-speed comparison. For workloads involving millions or hundreds of millions of files, precizer provides better performance.
+    * A declarative tree specification is useful for defining an expected directory layout, permissions, and ownership
+    * The last changes are very old; development is effectively frozen
+    * Uses a specification-file format and workflow rather than SQLite snapshots and fast SQL comparisons; does not resume interrupted hashing within a large file
 
 * **hashdeep (md5deep/sha*deep)** — [github.com/jessek/hashdeep](https://github.com/jessek/hashdeep)
   * Platforms/architectures: Linux, Windows, macOS (x86_64, arm64, etc.)
@@ -1126,25 +1330,25 @@ Alternatives to **precizer** with open architectures and source code. More alter
 
 * **hashit** — [github.com/boyter/hashit](https://github.com/boyter/hashit)
   * Platforms/architectures: Linux, Windows, macOS (x86_64, arm64, etc.)
-  * Written in: Go, actively maintained
+  * Written in: Go, maintained
     * Can compute multiple different hashes for one file in a single pass.
     * No SQLite snapshot and no database update mechanisms.
 
 * **RHash** — [github.com/rhash/RHash](https://github.com/rhash/RHash)
   * Platforms/architectures: Linux, Windows, macOS, *BSD (x86_64, arm64, etc.)
-  * Written in: C, actively maintained
+  * Written in: C, maintained
     * Very wide range of algorithms/output formats (including magnet links, etc.) when compatibility with external ecosystems is required.
     * Does not maintain a SQLite snapshot of a directory tree as a primary entity (more "compute/verify hashes" than "maintain a snapshot database").
 
 * **rsync** — [rsync.samba.org](https://rsync.samba.org/)
   * Platforms/architectures: Linux, *BSD, macOS (x86_64, arm64, etc.), Windows via Cygwin/MSYS2
-  * Written in: C, actively maintained
+  * Written in: C, maintained
     * Combines transfer/synchronization with verification: divergences can be corrected immediately rather than just detected.
     * Checksums are not persisted between runs: after interruptions or re-checks the computation starts over from scratch.
 
 * **rclone** — [rclone.org](https://rclone.org/)
   * Platforms/architectures: Linux, Windows, macOS, *BSD (amd64/arm/arm64, etc.)
-  * Written in: Go, actively maintained
+  * Written in: Go, maintained
     * Oriented toward remote/cloud storage: S3/Drive/etc.
     * Does not maintain a local SQLite snapshot of a directory tree for fast offline A↔B comparisons.
     * Integrity checking often depends on the capabilities of the specific backend (which hashes/metadata it exposes).
@@ -1157,7 +1361,7 @@ Alternatives to **precizer** with open architectures and source code. More alter
 
 * **restic** — [restic.net](https://restic.net/)
   * Platforms/architectures: Linux, Windows, macOS, *BSD (x86_64, arm64, etc.)
-  * Written in: Go, actively maintained
+  * Written in: Go, maintained
     * Backup repository with snapshots, deduplication, and encryption — if the goal is "store history and transfer it", this is more powerful than simply comparing two trees.
     * Different approach: chunk/dedup model instead of "SQLite snapshot + diff"; may be overkill for the pure A↔B comparison task.
     * Does not provide a straightforward model for comparing two local directory trees through a single SQL database.

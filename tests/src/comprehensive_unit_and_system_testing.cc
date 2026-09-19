@@ -16,3 +16,4 @@ SUTE(test0028,"--compare mode across different types of responses");
 SUTE(test0033,"Background interruption scenarios with timeout guard");
 TEST(test0034,"Metadata diffs: logical size vs allocated blocks");
 SUTE(test0039,"Legacy CLI argument compatibility");
+SUTE(test0040,"Command-line color output modes");

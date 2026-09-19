@@ -1,0 +1,1 @@
+\Aprecizer: ERROR: Unsupported --color value 'invalid-value'\. Supported values: auto, always, or never\Z

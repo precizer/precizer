@@ -25,6 +25,7 @@ Usage: precizer \[OPTION\.\.\.\] PATH
 [\s\S]*?  -p, --progress[^\n]*
 [\s\S]*?  -q, --quiet-ignored[^\n]*
 [\s\S]*?  -s, --silent[^\n]*
+[\s\S]*?  -S, --color=auto\|always\|never[^\n]*
 [\s\S]*?  -v, --verbose[^\n]*
 [\s\S]*?  -V, --version[^\n]*
 [\s\S]*?  -z, --usage[^\n]*

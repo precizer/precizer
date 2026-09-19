@@ -7,6 +7,10 @@
 /**
  * @brief Initialize global runtime configuration with explicit defaults
  *
+ * Global logger and color settings are initialized from their defaults and
+ * environment overrides before the shared `Config` object is cleared.
+ * Command-line options can override these settings during argument parsing
+ *
  * The function clears the shared `Config` object and then initializes every
  * field that needs a non-zero default. Path-like data owned by libmem is
  * prepared as string descriptors or descriptor arrays: `db_primary_file_path`,
@@ -19,6 +23,50 @@ void init_config(void)
 {
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */
+
+	/* Initialize process-wide output settings before the Config fields.
+	   These settings do not depend on Config and apply to initialization
+	   diagnostics as well as later application output */
+
+	// Define the comparison string
+	const char *compare_string = "true";
+
+	// Read the TESTING environment variable for the initial logger mode
+	const char *env_var = getenv("TESTING");
+
+	// Enable test diagnostics only when the value equals "true", ignoring case
+	/* rational_logger_mode controls which categories of log messages are shown.
+	   TESTING=true selects diagnostic output for test comparisons; otherwise,
+	   REGULAR selects normal user-facing output. The command-line options
+	   --silent and --verbose can override this initial mode */
+	if(env_var != NULL && strcasecmp(env_var,compare_string) == 0)
+	{
+		// Use predictable diagnostic output for test comparisons
+		rational_logger_mode = TESTING;
+	} else {
+		// Use normal application output when test diagnostics are not requested
+		rational_logger_mode = REGULAR;
+	}
+
+	/* rational_color_mode controls whether terminal styling may be emitted.
+	   AUTO lets the output policy inspect each stream, NO_COLOR, and TERM when
+	   a message is written. Resetting the mode prevents a previous in-process
+	   run from leaving its color setting active. An explicit --color option
+	   parsed later takes priority over this default and the test override */
+	rational_color_mode = COLOR_MODE_AUTO;
+
+	/* Test runners use ANSI-decorated golden output by default.
+	   The test-only environment override applies to internal calls and is
+	   inherited by external runit and runit_background processes. Only builds
+	   with TESTITALL_TEST_HOOKS honor this override */
+	#ifdef TESTITALL_TEST_HOOKS
+	const char *test_color_mode = getenv("TESTITALL_TEST_ENV_COLOR_MODE");
+
+	if(test_color_mode != NULL && 0 == strcmp(test_color_mode,"always"))
+	{
+		rational_color_mode = COLOR_MODE_ALWAYS;
+	}
+	#endif
 
 	// Fill out with zeroes
 	memset(config,0,sizeof(Config));
@@ -144,25 +192,6 @@ void init_config(void)
 
 	// Allow hashing in dry-run mode (--dry-run=with-checksums)
 	config->dry_run_with_checksums = false;
-
-	// Define the comparison string
-	const char *compare_string = "true";
-
-	// Retrieve the value of the "TESTING" environment variable,
-	// Validate if the environment variable TESTING exists
-	// and if it match to "true" display ONLY testing
-	// messages for System Testing purposes.
-	const char *env_var = getenv("TESTING");
-
-	// Check if it exists and compare it to "true"
-	if(env_var != NULL && strcasecmp(env_var,compare_string) == 0)
-	{
-		// Global variable
-		rational_logger_mode = TESTING;
-	} else {
-		// Global variable, default value
-		rational_logger_mode = REGULAR;
-	}
 
 	/// This option prevents directory traversal from descending into
 	/// directories that have a different device number than the file

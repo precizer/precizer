@@ -488,17 +488,17 @@ Return db_delete_missing_metadata(void)
 				{
 					if(config->db_drop_ignored == false)
 					{
-						slog(EVERY,"If the information about ignored files should be removed from the database the " BOLD "--db-drop-ignored" RESET " option must be specified. This is special protection against accidental deletion of information from the database\n");
+						slog(EVERY,"If the information about ignored files should be removed from the database the @{bold}--db-drop-ignored@{reset} option must be specified. This is special protection against accidental deletion of information from the database\n");
 					} else {
-						slog(TRACE,"The " BOLD "--db-drop-ignored" RESET " option has been used, so the information about ignored files will be removed against the database %s\n",confstr(db_file_name));
+						slog(TRACE,"The @{bold}--db-drop-ignored@{reset} option has been used, so the information about ignored files will be removed against the database %s\n",confstr(db_file_name));
 					}
 				}
 
-				if(config->db_drop_inaccessible)
+				if(config->db_drop_inaccessible == true)
 				{
-					slog(EVERY,BOLD "Dropping DB records for missing, inaccessible, or ignored paths in %s:" RESET "\n",confstr(db_file_name));
+					slog(EVERY,"@{bold}Dropping DB records for missing, inaccessible, or ignored paths in %s:@{reset}\n",confstr(db_file_name));
 				} else {
-					slog(EVERY,BOLD "Dropping DB records for missing or ignored paths in %s:" RESET "\n",confstr(db_file_name));
+					slog(EVERY,"@{bold}Dropping DB records for missing or ignored paths in %s:@{reset}\n",confstr(db_file_name));
 				}
 			}
 
@@ -555,7 +555,7 @@ Return db_delete_missing_metadata(void)
 
 	if(locked_unavailable_violation_detected == true)
 	{
-		slog(EVERY,BOLD "Warning! Data corruption detected for checksum-locked file!" RESET "\n");
+		slog(EVERY,"@{bold}Warning! Data corruption detected for checksum-locked file!@{reset}\n");
 
 		if(SUCCESS == status)
 		{
