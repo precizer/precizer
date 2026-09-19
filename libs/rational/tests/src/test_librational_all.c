@@ -24,5 +24,8 @@ Return test_librational_all(void)
 	HEADER("Return Handling");
 	SUTE(test_librational_0005,"librational Return flow, normalization and status text");
 
+	HEADER("Terminal Colors");
+	SUTE(test_librational_0006,"librational color policy and logger markup");
+
 	RETURN_STATUS;
 }
