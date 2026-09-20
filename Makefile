@@ -444,6 +444,7 @@ endef
 
 .PHONY: all clean debug debug-dynamic remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build distribution debug-build debug-dynamic-build debuglibs debugdynlibs coveragelibs sanitizelibs prodlibs dynprodlibs distlibs portablelibs debugfinal debugdynfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done portable-done
+.PHONY: msys-build windows-zip windows-exe
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm test test-coverage tests-sanitize tests-debug tests-dynamic analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: compile-commands
@@ -636,7 +637,7 @@ distribution: $(DIST_EXE)
 	@$(DIST_EXE) --version
 
 distlibs:
-	@$(MAKE) -s -C libs distribution SUBDIRS="$(STATLIBS)" BUILDDIR=../../$(BUILDDIR)
+	@$(MAKE) -s -C libs distribution SUBDIRS="$(STATLIBS)" BUILDDIR=../../$(BUILDDIR) $(DIST_LIBRARY_MAKE_ARGS)
 
 $(DIST_EXE): $(DIST_OBJS) distlibs
 	@$(CC) $(DIST_LDFLAGS) $(LDFLAGS) $(DIST_LDPATH) -o $@ $(DIST_OBJS) $(DIST_LIB_OBJS) $(DIST_SHARED_LIBS)
@@ -648,6 +649,30 @@ $(DIST_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DIST_OBJDIR)
 
 $(DIST_OBJDIR):
 	@mkdir -p $(DIST_OBJDIR)
+
+#
+# Windows packages built from the MSYS payload
+#
+# Pass the MSYS compiler and flags to the existing library build as well
+msys-build: CC = /usr/bin/gcc
+msys-build: WFLAGS =
+msys-build: LDFLAGS = -s
+msys-build: DIST_SHARED_LIBS = -l:libsqlite3.a -l:libpcre2-8.a -l:libargp.a
+msys-build: DIST_LIBRARY_MAKE_ARGS = CC="$(CC)" WFLAGS="$(WFLAGS)" LDFLAGS="$(LDFLAGS)"
+msys-build: $(DIST_EXE)
+
+# Recreate the archive and require every input file to be present and readable
+windows-zip: msys-build
+	@rm -f precizer_windows_x64_portable.zip
+	@zip -j -MM precizer_windows_x64_portable.zip \
+		"$(DIST_EXE).exe" /usr/bin/msys-2.0.dll \
+		COPYING CHANGELOG.md README.ru.md README.md
+
+# Build the native launcher with the payload taken directly from its build directory
+windows-exe: msys-build
+	@$(MAKE) -C .packaging/msys \
+		PRECIZER_PAYLOAD="$(abspath $(DIST_EXE)).exe" \
+		MSYS_RUNTIME=/usr/bin/msys-2.0.dll
 
 #
 # Portable rules

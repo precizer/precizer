@@ -448,10 +448,7 @@ jobs:
       attestations: write
       artifact-metadata: write
 
-    # Reuse the tag version detected by the release metadata job
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-
+    # Build and verify the Windows assets for the release tag
     steps:
       # Keep checked-out shell scripts and generated files in Unix line-ending form
       - name: Configure Git line endings
@@ -483,24 +480,19 @@ jobs:
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-upx
             zip
+            unzip
 
-      # Compile the MSYS payload, package its runtime files, and build the native launcher
-      - name: Build MSYS payload and native launcher
+      # Build the Windows ZIP and native launcher through the shared Makefile targets
+      - name: Build Windows x64 packages
         shell: msys2 {0}
         run: |
           set -euo pipefail
 
-          # Build the MSYS distribution payload with static third-party libraries
-          make distribution \
-            WFLAGS= \
-            LDFLAGS='-s' \
-            DIST_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
+          # Build both packages with a shared MSYS payload and static third-party libraries
+          make windows-zip windows-exe
 
-          # Resolve the executable produced by the distribution build
+          # Locate the executable produced by msys-build
           built_exe=".builds/distribution/precizer.exe"
-          if [ ! -f "$built_exe" ]; then
-            built_exe=".builds/distribution/precizer"
-          fi
 
           # Stop if the build did not produce an executable
           if [ ! -f "$built_exe" ]; then
@@ -508,25 +500,22 @@ jobs:
             exit 1
           fi
 
-          # Prepare the payload files used by the zip archive and native launcher
-          rm -rf package
-          mkdir -p package/msys
-          cp "$built_exe" package/msys/precizer.exe
-          cp /usr/bin/msys-2.0.dll package/msys/msys-2.0.dll
+          # Prepare the reports used to verify both Windows packages
+          mkdir -p .builds/msys-reports
 
           # Verify that the payload keeps only the expected MSYS runtime dependency
-          cygcheck package/msys/precizer.exe | tee package/msys-dependencies.txt
-          if ! grep -qi 'msys-2\.0\.dll' package/msys-dependencies.txt; then
+          cygcheck "$built_exe" | tee .builds/msys-reports/payload-dependencies.txt
+          if ! grep -qi 'msys-2\.0\.dll' .builds/msys-reports/payload-dependencies.txt; then
             echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
             exit 1
           fi
-          if grep -Eiq 'msys-(argp|pcre2|sqlite3?|gcc|stdc\+\+|winpthread).*\.dll' package/msys-dependencies.txt; then
+          if grep -Eiq 'msys-(argp|pcre2|sqlite3?|gcc|stdc\+\+|winpthread).*\.dll' .builds/msys-reports/payload-dependencies.txt; then
             echo "The MSYS payload still has an unexpected dynamic MSYS dependency" >&2
             exit 1
           fi
 
-          # Build the native launcher that embeds the payload files
-          make -C .packaging/msys
+          # Require the native launcher produced by windows-exe
+          test -f ./precizer_windows_x64_portable.exe
 
           # Compress the native launcher with the UCRT-native UPX package
           /ucrt64/bin/upx --best --lzma -qqq ./precizer_windows_x64_portable.exe
@@ -535,8 +524,8 @@ jobs:
           /ucrt64/bin/upx -t ./precizer_windows_x64_portable.exe
 
           # Verify that the launcher does not import MSYS2 DLLs from the runner
-          cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
-          if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' package/msys-launcher-dependencies.txt; then
+          cygcheck ./precizer_windows_x64_portable.exe | tee .builds/msys-reports/launcher-dependencies.txt
+          if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' .builds/msys-reports/launcher-dependencies.txt; then
             echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
             exit 1
           fi
@@ -557,27 +546,28 @@ jobs:
             exit $LASTEXITCODE
           }
 
-      # Create the zip distribution with the MSYS payload files
-      - name: Create MSYS x64 archive
+      # Verify the ZIP distribution produced by windows-zip
+      - name: Verify MSYS x64 archive
         shell: msys2 {0}
         run: |
           set -euo pipefail
 
-          # Recreate the versioned archive root directory
-          version_dir="v${VERSION}"
-          rm -rf "$version_dir"
-          mkdir -p "$version_dir"
+          # Read the archive member names without extracting files
+          unzip -Z1 precizer_windows_x64_portable.zip > .builds/msys-reports/archive-members.txt
 
-          # Copy the executable and its MSYS runtime into the archive root
-          cp -a package/msys/precizer.exe "$version_dir/"
-          cp -a package/msys/msys-2.0.dll "$version_dir/"
+          # Require the executable, MSYS runtime, and documentation in the archive root
+          for member in precizer.exe msys-2.0.dll COPYING CHANGELOG.md README.ru.md README.md; do
+            if ! grep -Fxq "$member" .builds/msys-reports/archive-members.txt; then
+              echo "The Windows ZIP does not contain $member in its root" >&2
+              exit 1
+            fi
+          done
 
           # Print the archive root contents for the workflow log
-          ls -la "$version_dir"
+          cat .builds/msys-reports/archive-members.txt
 
-          # Compress the archive root into the release zip asset
-          rm -f precizer_windows_x64_portable.zip
-          zip -9 -r precizer_windows_x64_portable.zip "$version_dir/" COPYING README.ru.md README.md CHANGELOG.md
+          # Verify the compressed contents of the release ZIP asset
+          unzip -t precizer_windows_x64_portable.zip
 
       # Generate a Sigstore attestation for the self-extracting executable
       - name: Generate attestation (MSYS x64 self-extracting exe)

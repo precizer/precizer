@@ -190,7 +190,7 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 * Windows x64 ZIP package: the program is built in the MSYS2 MSYS environment, with its main components linked statically. The archive contains `precizer.exe` and the `msys-2.0.dll` runtime library; both must remain in the same directory after extraction. MSYS2 does not need to be installed to run it
 
-* Standalone Windows x64 EXE: a self-extracting launcher embeds the same `precizer.exe` and `msys-2.0.dll`. At startup, it extracts them to a user cache and runs the program, reusing the cached files on subsequent runs. The launcher is built with MinGW-w64/UCRT and compressed with UPX; no MSYS2 installation or DLL files alongside the downloaded EXE are required
+* Standalone Windows x64 EXE: a self-extracting launcher embeds the same `precizer.exe` and `msys-2.0.dll`. At startup, it extracts them to a user cache and runs the program, reusing the cached files on subsequent runs. The launcher is built with MinGW-w64/UCRT. Release builds are additionally compressed with UPX. No MSYS2 installation or DLL files alongside the downloaded EXE are required
 
 * Static linking is not supported on macOS. System libraries required to run the application are listed under [“System libraries required at runtime”](#system-libraries-required-at-runtime)
 
@@ -546,49 +546,36 @@ pacman -S --needed git gcc make libsqlite-devel pcre2-devel libargp-devel zip
 
 Obtaining the source code is described at the beginning of [Manual Build](#manual-build). All remaining commands run from the project root in the same terminal
 
+The `make msys-build` command builds the program at `.builds/distribution/precizer.exe` without packaging it. Both packaging targets, `windows-zip` and `windows-exe`, automatically run this build
+
 ##### EXE with a DLL alongside it
 
-The following commands build the program and place the required MSYS2 library next to it:
+The following command builds the program and creates a ZIP archive containing the EXE, required DLL, license, changelog, and both README files:
 
 ```sh
-make distribution \
-	CC=/usr/bin/gcc \
-	WFLAGS= \
-	LDFLAGS='-s' \
-	DIST_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
-
-built_exe=".builds/distribution/precizer.exe"
-if [ ! -f "$built_exe" ]; then
-	built_exe=".builds/distribution/precizer"
-fi
-
-mkdir -p package/msys
-cp "$built_exe" package/msys/precizer.exe
-cp /usr/bin/msys-2.0.dll package/msys/msys-2.0.dll
+make windows-zip
 ```
 
-The result is `precizer.exe` and `msys-2.0.dll` in `package/msys/`. Both files must remain in the same directory. MSYS2 does not need to be installed to run them on another computer. SQLite, PCRE2, and argp are already included in the EXE
-
-A ZIP archive can be created if needed:
-
-```sh
-zip -j precizer_windows_x64_portable.zip \
-	package/msys/precizer.exe package/msys/msys-2.0.dll \
-	COPYING README.ru.md README.md CHANGELOG.md
-```
+The result is `precizer_windows_x64_portable.zip`. After extraction, `precizer.exe` and `msys-2.0.dll` must remain in the same directory. MSYS2 does not need to be installed to run them on another computer. SQLite, PCRE2, and argp are already included in the EXE
 
 ##### Single self-extracting EXE
 
-The build and file-copying steps in the previous subsection are required first. The following commands install the additional tools and create an EXE with the program and DLL embedded:
+The following commands install the additional tools, build the program, and create a self-extracting EXE with the program and DLL embedded. There is no need to run `make windows-zip` first:
 
 ```sh
 pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils
-make -C .packaging/msys
+make windows-exe
 ```
 
 There is no need to switch terminals: the build selects the UCRT compiler automatically. The resulting `precizer_windows_x64_portable.exe` appears in the project root. This is the only file required for distribution and execution: it extracts the program and DLL into a per-user cache directory when launched
 
-The file size can be reduced with UPX:
+After installing all the dependencies listed above, both packages can be built with one command. GitHub Actions uses these same targets for release builds:
+
+```sh
+make windows-zip windows-exe
+```
+
+Compressing the EXE with UPX is optional and performed separately:
 
 ```sh
 pacman -S --needed mingw-w64-ucrt-x86_64-upx

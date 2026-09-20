@@ -7,6 +7,7 @@ All notable changes will be documented in this file
 ## Added
 
 - Added `--color=auto|always|never` to control color and text styling in log output. The default `auto` mode uses styling only for terminal output; `always` keeps it in files and pipes, while `never` disables it
+- Added `msys-build`, `windows-zip`, and `windows-exe` Makefile targets to build the MSYS program, a Windows ZIP package, and a self-extracting Windows EXE. Manual builds and GitHub Actions now use the same build and packaging targets
 
 ## Improved
 
