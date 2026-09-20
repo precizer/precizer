@@ -82,7 +82,25 @@ jobs:
           make purge
 
       - name: Run tests (Linux x86_64)
-        run: make -j tests
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (Linux x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (Linux x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-linux-x86-64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Generate attestation (Linux x86_64)
         id: attest_linux_x86_64
@@ -157,7 +175,25 @@ jobs:
           make purge
 
       - name: Run tests (Linux arm64)
-        run: make -j tests
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (Linux arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (Linux arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-linux-arm64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Generate attestation (Linux arm64)
         id: attest_linux_arm64
@@ -239,7 +275,25 @@ jobs:
           make purge
 
       - name: Run tests (macOS arm64)
-        run: make -j tests
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (macOS arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (macOS arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-macos-arm64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Generate attestation (macOS arm64)
         id: attest_macos_arm64
@@ -321,7 +375,25 @@ jobs:
           make purge
 
       - name: Run tests (macOS x86_64)
-        run: make -j tests
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (macOS x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (macOS x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-macos-x86-64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Generate attestation (macOS x86_64)
         id: attest_macos_x86_64
