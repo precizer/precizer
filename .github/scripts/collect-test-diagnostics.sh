@@ -26,8 +26,11 @@ started_at=$(<"$start_file")
 
 case "$(uname -s)" in
 	Darwin)
-		# Include kernel and signing diagnostics, plus messages naming the test processes
-		predicate='process == "kernel" OR process == "amfid" OR eventMessage CONTAINS[c] "precizer" OR eventMessage CONTAINS[c] "testitall"'
+		# Allow 30 seconds for Crash Reporter to write reports before collecting diagnostics
+		sleep 30
+
+		# Include kernel, signing, and Crash Reporter diagnostics, plus messages naming the test processes
+		predicate='process == "kernel" OR process == "amfid" OR process == "ReportCrash" OR eventMessage CONTAINS[c] "precizer" OR eventMessage CONTAINS[c] "testitall"'
 		sudo -n /usr/bin/log show --start "$started_at+0000" --timezone UTC \
 			--style compact --predicate "$predicate" > "$output_directory/system.log"
 
