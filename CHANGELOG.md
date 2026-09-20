@@ -12,7 +12,7 @@ All notable changes will be documented in this file
 
 - File reading now uses a fixed 64 KiB heap buffer, allocated once and reused throughout each traversal, instead of 1% of available physical memory. x86_64 file-reading and SHA-512 benchmarks showed higher large-file throughput with small fixed buffers; 64 KiB was among the fastest tested sizes while keeping buffer memory use low
 - Improved output for scripted workflows. Escape sequences no longer clutter the output, making it cleaner and easier to parse programmatically.
-- Reduced nonessential output to make automated processing more reliable.
+- Less essential messages are now shown only in verbose mode (`--verbose`), so normal output contains only important information
 - Renamed `--start-device-only/-o` to `--one-file-system/-x`, following rsync terminology. The new name more accurately describes the option's behavior. The old name will remain supported for backward compatibility for the next 10 years.
 
 ## Fixed
