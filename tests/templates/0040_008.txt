@@ -41,4 +41,5 @@ new AAA/BBB/CZC/a\.txt
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_primary_consider_vacuum\.c:\d+:db_primary_consider_vacuum:Dry Run mode is enabled\. The primary database doesn't require vacuuming
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/status_of_changes\.c:\d+:status_of_changes:\x1B\[1mNothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)\x1B\[0m
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:The precizer completed as expected
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » SUCCESS\Z
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » SUCCESS
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Enjoy your life!\Z
