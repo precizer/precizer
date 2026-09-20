@@ -2,6 +2,14 @@
 
 #include "runit_internal.h"
 
+#include <spawn.h>
+
+#ifdef __APPLE__
+#include <Availability.h>
+#endif
+
+extern char **environ;
+
 enum run_mode testitall_runit_mode = EXTERNAL_CALL;
 
 /**
@@ -159,21 +167,26 @@ static Return runit_internal_leave(struct runit_internal_guard *guard)
 }
 
 /**
- * @brief Run precizer with arguments in-process or via external command.
+ * @brief Run precizer with arguments in-process or as a separate executable
  *
- * @param arguments Command-line arguments without the binary name.
- * @param stdout_result Buffer to receive stdout (NULL to ignore).
- * @param stderr_result Buffer to receive stderr (NULL to ignore).
- * @param expected_return_code Expected exit code from the run.
- * @param buffer_policy Bitmask controlling stdout/stderr handling (see capture_policy).
+ * External calls use posix_spawn() with the child's working directory and
+ * output redirection configured as file actions. The parent keeps its working
+ * directory and standard streams. A failure to start the executable returns
+ * FAILURE independently of the expected process exit code
+ *
+ * @param arguments Command-line arguments without the binary name
+ * @param stdout_result Buffer to receive stdout (NULL to ignore)
+ * @param stderr_result Buffer to receive stderr (NULL to ignore)
+ * @param expected_return_code Expected exit code from the run
+ * @param buffer_policy Bitmask controlling stdout/stderr handling (see capture_policy)
  *
  * @note Internal helper-to-helper calls inside this closed API use lightweight
  * argument checks by design to improve readability and reduce overhead.
  * Keep this approach in future runit* internal helpers as well: avoid redundant
  * argument validation in internal-only functions that are not externally visible
- * and exist to remove code duplication.
+ * and exist to remove code duplication
  *
- * @return SUCCESS when the run completes with the expected exit code; FAILURE otherwise.
+ * @return SUCCESS when the run completes with the expected exit code; FAILURE otherwise
  */
 Return runit(
 	const char     *arguments,
@@ -229,30 +242,60 @@ Return runit(
 
 	if(SUCCESS == status && EXTERNAL_CALL == testitall_runit_mode)
 	{
-		const pid_t app_pid = fork();
+		pid_t app_pid = (pid_t)-1;
+		posix_spawn_file_actions_t actions;
+		int spawn_error = posix_spawn_file_actions_init(&actions);
 
-		if(app_pid < 0)
+		if(0 == spawn_error)
 		{
-			serp("Failed to fork process for EXTERNAL_CALL");
+			/* Select the directory action available at the macOS deployment target */
+#if defined(__APPLE__) && defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 260000
+			spawn_error = posix_spawn_file_actions_addchdir(&actions,runit_call_data.tmpdir);
+#else
+			spawn_error = posix_spawn_file_actions_addchdir_np(&actions,runit_call_data.tmpdir);
+#endif
+
+			/* Apply redirection in the child and close its original capture descriptors */
+			if(0 == spawn_error)
+			{
+				spawn_error = posix_spawn_file_actions_adddup2(&actions,capture.stdout_fd,STDOUT_FILENO);
+			}
+
+			if(0 == spawn_error)
+			{
+				spawn_error = posix_spawn_file_actions_adddup2(&actions,capture.stderr_fd,STDERR_FILENO);
+			}
+
+			if(0 == spawn_error)
+			{
+				spawn_error = posix_spawn_file_actions_addclose(&actions,capture.stdout_fd);
+			}
+
+			if(0 == spawn_error)
+			{
+				spawn_error = posix_spawn_file_actions_addclose(&actions,capture.stderr_fd);
+			}
+
+			/* Start the executable directly with the current environment. On macOS,
+			   posix_spawn avoids running the parent's runtime fork-child handlers */
+			if(0 == spawn_error)
+			{
+				spawn_error = posix_spawn(&app_pid,runit_call_data.program_path,&actions,NULL,
+					runit_call_data.argv,environ);
+			}
+
+			(void)posix_spawn_file_actions_destroy(&actions);
+		}
+
+		runit_capture_close_fds(&capture);
+
+		if(0 != spawn_error)
+		{
+			/* Use the error number returned by the spawn functions, not errno */
+			echo(STDERR,"Failed to spawn process for EXTERNAL_CALL (errno %d)",spawn_error);
 			status = FAILURE;
 
-		} else if(0 == app_pid){
-			if(chdir(runit_call_data.tmpdir) != 0)
-			{
-				_exit(127);
-			}
-
-			if(SUCCESS != runit_capture_apply_redirect(&capture))
-			{
-				_exit(127);
-			}
-
-			(void)execv(runit_call_data.program_path,runit_call_data.argv);
-			_exit(127);
-
 		} else {
-			runit_capture_close_fds(&capture);
-
 			run(runit_wait_child(app_pid,&wait_status,"EXTERNAL_CALL"));
 
 			if(SUCCESS == status)

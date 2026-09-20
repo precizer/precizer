@@ -17,6 +17,7 @@ Return test_libtestitall_all(void)
 	TEST(test_libtestitall_0001,"External commands report expected return codes");
 	TEST(test_libtestitall_0002,"External stderr follows the selected capture policy");
 	TEST(test_libtestitall_0003,"Silent external commands complete successfully");
+	TEST(test_libtestitall_0009,"External application launches preserve context and report spawn errors");
 
 	HEADER("Output Capture");
 	TEST(test_libtestitall_0004,"Captured stdout matches an in-source expectation");
