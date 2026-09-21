@@ -49,7 +49,7 @@ $(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) $(PROJECT_DIR)/src/version.h 
 		-o "$(OUTPUT_EXE)" \
 		-lshell32
 	@$(UPX) "$(OUTPUT_EXE)"
-	@echo "Built $(OUTPUT_EXE)"
+	@echo "Built $(notdir $(OUTPUT_EXE))"
 
 $(PAYLOAD_DIR):
 	@mkdir -p "$@"
