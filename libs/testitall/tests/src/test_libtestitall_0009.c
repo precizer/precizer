@@ -40,7 +40,7 @@ static Return check_external_spawn_error(int expected_errno)
 /**
  * @brief Check external runit execution context and executable launch failures
  *
- * A temporary precizer symlink runs /bin/sh to expose the child's working
+ * A temporary precizer script runs /bin/sh to expose the child's working
  * directory, inherited environment, and quoted arguments through captured
  * output. A real exit code of 127 is accepted when requested, while missing,
  * nonexecutable, and unsupported executable files remain launch failures.
@@ -118,12 +118,27 @@ Return test_libtestitall_0009(void)
 	}
 
 	ASSERT(SUCCESS == check_external_spawn_error(ENOENT));
-	ASSERT(symlink("/bin/sh",m_text(program_path)) == 0);
+
+	if(SUCCESS == status)
+	{
+		program_file = fopen(m_text(program_path),"wb");
+		ASSERT(program_file != NULL);
+	}
 
 	if(SUCCESS == status)
 	{
 		program_created = true;
+		ASSERT(fputs("#!/bin/sh\nexec /bin/sh \"$@\"\n",program_file) != EOF);
 	}
+
+	if(program_file != NULL)
+	{
+		const int close_status = fclose(program_file);
+		program_file = NULL;
+		ASSERT(close_status == 0);
+	}
+
+	ASSERT(chmod(m_text(program_path),0700) == 0);
 
 	ASSERT(asprintf(&expected_stdout,
 		"%s\nenv=<%s>\nargc=<3>\narg1=<two words>\narg2=<>\narg3=<literal ; | & > $dollar *>\n",
