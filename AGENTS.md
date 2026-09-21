@@ -2,6 +2,7 @@
 
 ## Comments and Documentation
 - Use US English for comments and documentation
+- Use an impersonal style in documentation. Avoid addressing the reader directly or using first-person pronouns
 - If a comment or documentation block contains multiple sentences, separate them with periods. However, do not place a trailing period at the end of the last sentence in a block, at the end of a single-line comment, or at the end of a single-line documentation entry
 - Preserve existing comments in their current locations. They may be updated for accuracy or clarity, but must never be removed
 - Write function documentation in Doxygen style
