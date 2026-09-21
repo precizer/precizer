@@ -33,7 +33,7 @@ static Return test0033_1(void)
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,filename));
 
 	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
-	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,NULL));
 
 	ASSERT(SUCCESS == delete_path(cleanup_path));
 
@@ -78,7 +78,7 @@ static Return test0033_2(void)
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,filename));
 
 	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
-	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,NULL));
 
 	ASSERT(SUCCESS == delete_path(cleanup_path));
 
@@ -144,7 +144,7 @@ static Return test0033_3(void)
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,first_run_template));
 
 	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
-	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,NULL));
 
 	sqlite3_int64 interrupted_offset = 0;
 	int interrupted_md_context_bytes = 0;
@@ -171,7 +171,7 @@ static Return test0033_3(void)
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,second_run_template));
 
 	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
-	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,NULL));
 
 	sqlite3_int64 final_offset = -1;
 	unsigned char db_sha512[SHA512_DIGEST_LENGTH] = {0};
@@ -237,7 +237,7 @@ static Return test0033_4(void)
 	ASSERT(SUCCESS == get_file_content(first_run_template,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,first_run_template));
 	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
-	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,NULL));
 
 	sqlite3_int64 interrupted_offset = 0;
 	int interrupted_md_context_bytes = 0;
@@ -254,7 +254,7 @@ static Return test0033_4(void)
 	ASSERT(SUCCESS == get_file_content(second_run_template,stdout_pattern));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,second_run_template));
 	ASSERT(SUCCESS == m_copy_literal(stderr_pattern,"\\A\\Z"));
-	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern));
+	ASSERT(SUCCESS == match_pattern(stderr_result,stderr_pattern,NULL));
 
 	const char *expected_paths[] =
 	{

@@ -1,5 +1,5 @@
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-roots=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_file_name=0034_lsize_vs_asize_flags\.db; verbose=yes; [^\n]*update=yes; [^\n]*rational_logger_mode=VERBOSE
+roots=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_file_name=0034_lsize_vs_asize_flags\.db; verbose=yes; [^\n]*update=yes; [^\n]*rational_logger_mode=VERBOSE, color=always
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is finished
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Checking directory paths provided as arguments
@@ -34,7 +34,6 @@ roots=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_fil
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_compare\.c:\d+:db_compare:Database comparison mode is not enabled\. Skipping comparison
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_contains_data\.c:\d+:db_contains_data:The database 0034_lsize_vs_asize_flags\.db has already been created previously
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_validate_paths\.c:\d+:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_buffer_memory\.c:\d+:file_buffer_memory:Bytes that can be allocated for the file buffer: [^\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:Update mode enabled for DB 0034_lsize_vs_asize_flags\.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:File traversal started for [^\r\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0034_lsize_vs_asize_flags\.db:(?:\x1B\[[0-9;]*m)*
@@ -50,4 +49,5 @@ update & rehash, changed: lsize was:[^\n]*, now:[^\n]* path1/AAA/BCB/CCC/a\.txt
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close\.c:\d+:db_close:The database connection has been closed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_changes\.c:\d+:db_check_changes:(?:\x1B\[[0-9;]*m)*The database file 0034_lsize_vs_asize_flags\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:The precizer completed as expected
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » SUCCESS\Z
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » SUCCESS
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Enjoy your life!\Z

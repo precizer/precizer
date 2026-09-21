@@ -54,10 +54,10 @@ Return show_locked_checksum_unavailable_violation(
 		if(first_iteration != NULL)
 		{
 			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,
-				RED "%s" RESET " %s\n",message,runtime_relative_path);
+				"@{red}%s@{reset} %s\n",message,runtime_relative_path);
 
 		} else {
-			slog(EVERY|UNDECOR|REMEMBER,RED "%s" RESET " %s\n",message,runtime_relative_path);
+			slog(EVERY|UNDECOR|REMEMBER,"@{red}%s@{reset} %s\n",message,runtime_relative_path);
 		}
 
 		/*

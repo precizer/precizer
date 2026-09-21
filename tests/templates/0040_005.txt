@@ -1,0 +1,1 @@
+\Aprecizer: ERROR: Unsupported --color value ''\. Supported values: auto, always, or never\Z

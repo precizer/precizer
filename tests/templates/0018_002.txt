@@ -1,5 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
+TESTING:argument:color=always
 TESTING:argument:roots=/.+/tests/fixtures/levels
 TESTING:argument:database=database3\.db
 TESTING:argument:db_file_name=database3\.db
@@ -38,7 +39,6 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database3\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB database3\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database3\.db:(?:\x1B\[[0-9;]*m)*
@@ -64,5 +64,4 @@ TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database3\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

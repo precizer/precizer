@@ -1,5 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
+TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=lock_s6\.db
 TESTING:argument:db_file_name=lock_s6\.db
@@ -41,7 +42,6 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database lock_s6\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
-TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Update mode enabled for DB lock_s6\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock_s6\.db:(?:\x1B\[[0-9;]*m)*

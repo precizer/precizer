@@ -112,7 +112,8 @@ static struct argp_option options[] = {
 	{"maxdepth",'m',"NUMBER",0,"Recursion depth limit. The depth of the traversal, numbered from 0 to N, where a file could be found. Representing the maximum of the starting point (from root) of the traversal. The root itself is numbered 0. " BOLD "--maxdepth=0" RESET " completely disable recursion.",0},
 	{"dry-run",'n',"MODE",OPTION_ARG_OPTIONAL,"Perform a trial run with no changes made. The option will not affect " BOLD "--compare" RESET ". "
 	 "Supported mode: " BOLD "--dry-run=with-checksums" RESET " (read files and calculate checksums during dry run).",0},
-	{"start-device-only",'o',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.",0 },
+	{"one-file-system",'x',0,0,"This option prevents directory traversal from descending into directories that have a different device number than the file from which the descent began.",0 },
+	{"start-device-only",'o',0,OPTION_ALIAS | OPTION_HIDDEN,0,0}, // This legacy can be removed in 2036 (10-year Long-Term Support)
 	{"force",'f',0,0,"Use this option only in case when the PATHs that were written into the database as a result of the last scanning really need to be renewed. Warning! If this option will be used in incorrect way, information about files and their checksums against the database would be lost.",0},
 	{"update",'u',0,0,"Updates the database to reflect file system changes (new, modified and deleted files). Must be used with the same initial PATH that was used when creating the database, as existing records will be replaced with data from the specified location. This option modifies database consistency. Use with caution, especially in automated scripts, as incorrect usage may lead to loss of file checksums and metadata.",0 },
 	{"database",'d',"FILE",0,"Database filename. Defaults to ${HOST}.db, where HOST is the local hostname.",0 },
@@ -132,6 +133,7 @@ static struct argp_option options[] = {
 	{"quiet-ignored",'q',0,0,"Suppress per-file log lines for paths filtered by " BOLD "--ignore/--include" RESET ". This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use. Other warnings and errors remain visible.",0 },
 	{"verbose",'v',0,0,"Produce verbose output.",0 },
 	{"progress",'p',0,0,"Enabling this option displays progress information but requires an initial count of files and the space they occupy to estimate execution time. The program first traverses all specified directories, counting files, folders, and symlinks before proceeding with file analysis. This initial traversal may take a significant amount of time. It is strongly recommended not to use this option when calling the program from a script.",0 },
+	{"color",'S',"auto|always|never",0,"Choose when to apply color and text styling (-S means style). Use auto for terminal output, always to preserve styling in files and pipes, or never to disable it. The default is auto",-1},
 	{"help",'h',0,0,"Give this help list",-1 },
 	{0,'?',0,OPTION_ALIAS,0,-1 },
 	{"usage",'z',0,0,"Give a short usage message",-1 },
@@ -268,8 +270,9 @@ static error_t parse_opt(
 				return(EINVAL);
 			}
 			break;
-		case 'o':
-			config->start_device_only = true;
+		case 'o': // This legacy can be removed in 2036 (10-year Long-Term Support)
+		case 'x':
+			config->one_file_system = true;
 			break;
 		case 'C':
 			config->db_drop_ignored = true;
@@ -329,6 +332,19 @@ static error_t parse_opt(
 			// Set global logger mode
 			rational_logger_mode = VERBOSE;
 			config->verbose = true;
+			break;
+		case 'S':
+			if(0 == strcmp(arg,"auto"))
+			{
+				rational_color_mode = COLOR_MODE_AUTO;
+			} else if(0 == strcmp(arg,"always")){
+				rational_color_mode = COLOR_MODE_ALWAYS;
+			} else if(0 == strcmp(arg,"never")){
+				rational_color_mode = COLOR_MODE_NEVER;
+			} else {
+				argp_failure(state,0,0,"ERROR: Unsupported --color value '%s'. Supported values: auto, always, or never",arg);
+				return(EINVAL);
+			}
 			break;
 		case 'h':
 		case '?':
@@ -431,7 +447,30 @@ static struct argp argp = {
 	options,parse_opt,args_doc,doc,0,0,0
 };
 
-/* Keep diagnostics attributed to parse_arguments() after moving their bodies into helpers */
+/**
+ * @brief Return the selected color mode name for configuration diagnostics
+ *
+ * The name describes the configured policy, not whether a particular output
+ * stream currently permits terminal styling
+ *
+ * @return Static mode name, or "unknown" for an unsupported mode value
+ */
+static const char *parse_arguments_color_mode_name(void)
+{
+	switch(rational_color_mode)
+	{
+		case COLOR_MODE_AUTO:
+			return("auto");
+		case COLOR_MODE_ALWAYS:
+			return("always");
+		case COLOR_MODE_NEVER:
+			return("never");
+		default:
+			return("unknown");
+	}
+}
+
+/* Attribute helper diagnostics to parse_arguments() in logger output */
 #define parse_arguments_slog(level,...) rational_logger((level),__FILE__,__LINE__,"parse_arguments",__VA_ARGS__)
 
 /**
@@ -445,6 +484,7 @@ static struct argp argp = {
 static void parse_arguments_show_testing_diagnostics(void)
 {
 	parse_arguments_slog(TESTING,"rational_logger_mode=%s\n",rational_reconvert(rational_logger_mode));
+	parse_arguments_slog(TESTING,"argument:color=%s\n",parse_arguments_color_mode_name());
 
 	if(config->roots.length != 0)
 	{
@@ -624,9 +664,9 @@ static void parse_arguments_show_testing_diagnostics(void)
 		parse_arguments_slog(TESTING,"argument:dry-run=%s\n",config->dry_run_with_checksums ? "with-checksums" : "yes");
 	}
 
-	if(config->start_device_only)
+	if(config->one_file_system)
 	{
-		parse_arguments_slog(TESTING,"argument:start-device-only=%s\n",config->start_device_only ? "yes" : "no");
+		parse_arguments_slog(TESTING,"argument:one-file-system=%s\n",config->one_file_system ? "yes" : "no");
 	}
 }
 
@@ -635,8 +675,8 @@ static void parse_arguments_show_testing_diagnostics(void)
  *
  * @details
  * Verbose output is a compact, single-line configuration summary for people
- * running the program interactively. It mirrors the TESTING diagnostics while
- * preserving the existing user-facing formatting
+ * running the program interactively. It reports the same configuration values
+ * as the TESTING diagnostics
  */
 static void parse_arguments_show_verbose_diagnostics(void)
 {
@@ -742,7 +782,7 @@ static void parse_arguments_show_verbose_diagnostics(void)
 		}
 	}
 
-	parse_arguments_slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, start-device-only=%s, check-level=%s, rational_logger_mode=%s",
+	parse_arguments_slog(VERBOSE|UNDECOR,"verbose=%s; maxdepth=%d; silent=no; quiet-ignored=%s; force=%s; update=%s; watch-timestamps=%s; rehash-locked=%s; progress=%s; compare=%s, db-drop-ignored=%s, db-drop-inaccessible=%s, dry-run=%s, one-file-system=%s, check-level=%s, rational_logger_mode=%s, color=%s",
 		config->verbose ? "yes" : "no",
 		config->maxdepth,
 		config->quiet_ignored ? "yes" : "no",
@@ -755,9 +795,10 @@ static void parse_arguments_show_verbose_diagnostics(void)
 		config->db_drop_ignored ? "yes" : "no",
 		config->db_drop_inaccessible ? "yes" : "no",
 		dry_run_mode,
-		config->start_device_only ? "yes" : "no",
+		config->one_file_system ? "yes" : "no",
 		config->db_check_level == QUICK ? "QUICK" : "FULL",
-		rational_reconvert(rational_logger_mode));
+		rational_reconvert(rational_logger_mode),
+		parse_arguments_color_mode_name());
 
 	if(config->compare_filter)
 	{
@@ -794,6 +835,9 @@ static void parse_arguments_show_verbose_diagnostics(void)
  * In normal scan mode, positional arguments become traversal roots. In
  * `--compare` mode, the two positional arguments become database paths and
  * their file names are used in user-facing messages
+ *
+ * init_config() must initialize the configuration and global output settings
+ * before this function applies command-line overrides
  *
  * For example, `precizer src tests` creates two traversal roots, while
  * `precizer --compare first.db second.db` creates two compare database paths

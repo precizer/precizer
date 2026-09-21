@@ -1,6 +1,6 @@
 tests/fixtures/huge/hugetestfile
 .*
-precizer
+precizer.zip
 tools/tool_*
 *.db
 .clangd
