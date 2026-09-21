@@ -50,7 +50,7 @@
 
 BUILDDIR = .builds
 ZIP_DIR = $(BUILDDIR)/zip
-APP_VERSION := $(shell awk -F '"' '/^#define APP_VERSION / {print $$2}' src/version.h)
+APP_VERSION := $(shell awk -F '"' '/define APP_VERSION / {print $$2}' src/version.h)
 # Returns a concise path for build messages.
 # Plain file names stay unchanged; nested paths keep only final-directory/file
 short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
