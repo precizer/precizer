@@ -19,7 +19,7 @@ RUN set -eux; \
     glibc-devel \
     llvm-devel \
     pcre2 pcre2-devel \
-    upx; \
+    upx zip; \
     dnf -y --enablerepo=devel install pcre2-static glibc-static; \
     dnf -y clean all; \
     rm -rf /var/cache/dnf

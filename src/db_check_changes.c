@@ -54,7 +54,7 @@ Return db_check_changes(void)
 	{
 		if(config->db_primary_file_modified == true)
 		{
-			slog(EVERY,BOLD "The database file %s has been modified since the program was launched" RESET "\n",confstr(db_file_name));
+			slog(EVERY,"@{bold}The database file %s has been modified since the program was launched@{reset}\n",confstr(db_file_name));
 		} else {
 			slog(ERROR,"Internal error: The database file %s has changed, but according to the global variable tracking modification status, this should not have happened!\n",confstr(db_file_name));
 
@@ -70,7 +70,7 @@ Return db_check_changes(void)
 			slog(ERROR,"Internal error. The database file %s has NOT changed, but according to the state of the global variable tracking modifications, it should have!\n",confstr(db_file_name));
 			status = WARNING;
 		} else {
-			slog(EVERY,BOLD "The database file %s has NOT been modified since the program was launched" RESET "\n",confstr(db_file_name));
+			slog(EVERY,"@{bold}The database file %s has NOT been modified since the program was launched@{reset}\n",confstr(db_file_name));
 		}
 	}
 

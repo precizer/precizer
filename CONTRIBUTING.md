@@ -15,7 +15,7 @@ A few ground rules:
 
 * One pull request per logical change.
 * For anything non-trivial, align on scope/approach in an issue or discussion *before* writing a bunch of code.
-* If runtime behavior changes, update tests **and** user-facing docs in the same pull request.
+* If runtime behavior changes, update tests **and user-facing docs** in the same pull request.
 
 ## AI-Assisted Development
 
@@ -29,81 +29,28 @@ And please do not use weak AI models for programming.
 
 ### Dependencies by Scenario
 
-The dependency matrix below is organized by four common workflows.
+* Packages required to build the application are listed by operating system in the main documentation under [“Manual Build”](README.md#manual-build)
+* Packages required to run an application built with dynamic system libraries are listed under [“System libraries required at runtime”](README.md#system-libraries-required-at-runtime)
+* Package installation commands for supported distributions are provided in the corresponding Dockerfiles under [`.docker/`](.docker/)
+* Packages required for tests are listed under [“System packages for testing”](#system-packages-for-testing)
 
-Sources: `Makefile`, `tests/Makefile`, `.docker/Dockerfile.*`, `.github/workflows/precizer.yml`.
-For distro-specific package details (AlmaLinux, Alpine, Arch, Debian, Gentoo, Rocky, Ubuntu), see `.docker/Dockerfile.<distro>`.
+#### Static analysis and additional tools
 
-#### 1. Static Build (`make portable` or `make production`)
-
-Required components:
-
-* compiler: `gcc` (or `clang` when using `make clang`)
-* build tool: `make`
-* regex library headers: `libpcre2-dev`
-* executable compressor used by the build: `upx-ucl`
-* `llvm` is recommended for later sanitizer/debug workflows
-
-Ubuntu/Debian:
+The `make cppcheck` target uses `bear` to create `compile_commands.json` and then runs `cppcheck`. Ubuntu and Debian require the following packages:
 
 ```sh
 sudo apt-get update
-sudo apt-get install -y gcc clang make libpcre2-dev upx-ucl llvm llvm-dev
+sudo apt-get install -y bear cppcheck
 ```
 
-Note: for `portable/production`, `sqlite3` is built from `libs/sqlite3`; a system `libsqlite3-dev` package is not required for these static targets.
-
-#### 2. Dynamic Build (`make dynamic-production`)
-
-Additional requirements:
-
-* system development libraries for `sqlite3` and `pcre2`
-
-Ubuntu/Debian:
+Additional analysis, performance measurement, and documentation targets use Clang Static Analyzer, Valgrind, Sparse, Splint, Doxygen, Cloc, and Gource:
 
 ```sh
-sudo apt-get update
-sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev upx-ucl
-```
-
-#### 3. Test Run (`make tests`) with Sanitizers
-
-Required components:
-
-* dependencies from sections 1 and 2
-* sanitizer toolchain (`ASan`/`UBSan`) and `llvm-symbolizer`
-* the bundled Monocypher library is used as the independent SHA512 reference in tests and does not require external packages
-
-Ubuntu/Debian:
-
-```sh
-sudo apt-get update
-sudo apt-get install -y gcc make libpcre2-dev libsqlite3-dev llvm llvm-dev upx-ucl
-```
-
-#### 4. Static Analysis and Tooling (`cppcheck` and related targets)
-
-Minimum for `make cppcheck`:
-
-```sh
-sudo apt-get update
-sudo apt-get install -y cppcheck
-```
-
-Baseline diagnostics set from `Makefile` comments:
-
-```sh
-sudo apt-get install -y cloc valgrind clang-tools cppcheck
-```
-
-Extended set for additional targets (`make analyze`, `make perf`, `make sparse-analyzer`, `make splint`, `make doc`, `make spellcheck`):
-
-```sh
-sudo apt-get install -y valgrind cppcheck clang-20 clang-tools-20 sparse splint doxygen cloc gource
+sudo apt-get install -y clang clang-tools valgrind sparse splint doxygen cloc gource
 sudo apt-get install -y linux-tools-common linux-tools-generic linux-tools-$(uname -r)
 ```
 
-Note: `make clang-analyzer` currently uses `clang-20` and `scan-build-20` names in `Makefile`. If package names differ on the host system, adjust the environment accordingly.
+The `make clang-analyzer` target automatically selects the highest `clang` version available in `PATH` and the corresponding `scan-build` version. If versioned executables are not found, the unversioned `clang` and `scan-build` commands are used.
 
 `make spellcheck` uses `typos` from Cargo (`~/.cargo/bin/typos`):
 
@@ -111,24 +58,102 @@ Note: `make clang-analyzer` currently uses `clang-20` and `scan-build-20` names 
 cargo install typos-cli
 ```
 
+### System packages for testing
+
+The test suite checks individual functions, command-line application behavior, and file-processing results based on `tests/fixtures/`. SQLite and the Monocypher cryptographic library are included in the source tree. Monocypher serves as an independent reference for checking SHA512 values produced by the internal library. Separate SQLite system packages and external cryptographic packages are not required to run the tests.
+
+The following commands install dependencies for `make tests-debug` and, except on Alpine Linux, for sanitizer-enabled `make tests`
+
+#### Arch Linux
+
+```sh
+sudo pacman -S --needed base-devel pcre2 llvm zip unzip
+```
+
+#### Ubuntu/Debian Linux
+
+```sh
+sudo apt update
+sudo apt -y install gcc make libpcre2-dev llvm libubsan1 zip unzip
+```
+
+#### Alpine Linux
+
+```sh
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone zip unzip
+```
+
+Sanitizer mode is not supported on Alpine Linux. Tests run with `make tests-debug`.
+
+#### Fedora Linux
+
+```sh
+sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static zip unzip
+```
+
+#### AlmaLinux/Rocky Linux
+
+GCC Toolset 15 provides C2x and sanitizer support. The static library packages may require enabling CRB, EPEL, and the development repository as shown in the corresponding Dockerfile under `.docker/`.
+
+```sh
+sudo dnf -y install dnf-plugins-core epel-release
+sudo dnf config-manager --set-enabled crb
+sudo dnf -y install gcc-toolset-15-gcc gcc-toolset-15-libasan-devel gcc-toolset-15-libubsan-devel make llvm pcre2-devel zip unzip
+sudo dnf -y --enablerepo=devel install pcre2-static glibc-static
+```
+
+AlmaLinux also requires the `almalinux-release-devel` package before the static libraries are installed:
+
+```sh
+sudo dnf -y install almalinux-release-devel
+```
+
+Tests run inside the GCC Toolset 15 environment:
+
+```sh
+scl enable gcc-toolset-15 -- make tests-debug
+scl enable gcc-toolset-15 -- make tests
+```
+
+#### Gentoo Linux
+
+PCRE2 requires static library support:
+
+```sh
+echo "dev-libs/libpcre2 static-libs" | sudo tee /etc/portage/package.use/libpcre2
+sudo emerge llvm-core/clang dev-libs/libpcre2 app-arch/zip app-arch/unzip
+```
+
+#### macOS
+
+The `zip` archiver and `unzip` extraction tool are included with macOS. For the test build, install the Xcode command-line tools and Homebrew libraries:
+
+```sh
+xcode-select --install
+brew install llvm pcre2 argp-standalone
+```
+
+macOS uses the dynamic sanitizer-enabled build:
+
+```sh
+make tests
+```
+
 ### Clone and Build
+
+Example of building and extracting the archive on Linux x86_64 after installing dependencies:
 
 ```sh
 git clone https://github.com/precizer/precizer.git
 cd precizer
 make production
-./precizer --version
+unzip precizer.zip '*/precizer'
+"./v$(make version)/precizer" --version
 ```
 
-Build variants:
+Available modes, commands, resulting executable purposes, and technical build differences are described in detail in the main documentation under [“Build variants available through Make”](README.md#build-variants-available-through-make)
 
-* `make portable` - statically linked portable binary (Linux)
-* `make production` - static binary optimized for local CPU
-* `make dynamic-production` - dynamically linked binary optimized for local CPU
-
-Detailed build mode behavior and technical differences are documented in `README.md`, section [Building with Docker](README.md#building-with-docker).
-
-Cleanup (recursively removes `.builds`):
+Remove build files in `.builds/` while preserving completed ZIP archives in the project root:
 
 ```sh
 make purge

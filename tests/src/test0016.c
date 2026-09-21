@@ -21,7 +21,7 @@ Return test0016(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == runit("--start-device-only --database=database1.db tests/fixtures/diffs/diff1",chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--database=database1.db tests/fixtures/diffs/diff1",chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	ASSERT(SUCCESS == copy_path("database1.db","database2.db"));

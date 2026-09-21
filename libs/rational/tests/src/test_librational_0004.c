@@ -299,20 +299,123 @@ static void report_truncated_case(void)
 }
 
 /**
- * @brief Capture slog() output when logger line allocation fails
+ * @brief Capture slog() output when line allocation or sanitization fails
  *
  * @return Return describing success or failure
  */
-static Return capture_librational_logger_realloc_failure(void)
+static Return capture_librational_logger_allocation_failures(void)
 {
 	INITTEST;
+	const RATIONAL_COLOR_MODE initial_color_mode = atomic_load_explicit(&rational_color_mode,memory_order_relaxed);
+	const LOGMODES initial_logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
 
 	/* The logger should stay silent when it cannot grow the output line */
 	testmocking_realloc_fail_next(1);
 	rational_logger_mode = REGULAR;
 	slog(REGULAR|UNDECOR,"hidden");
-	rational_logger_mode = REGULAR;
 	testmocking_realloc_disable();
+
+	/* Failed sanitization must not expose raw terminal controls */
+	testmocking_malloc_fail_next(1);
+	rational_color_mode = COLOR_MODE_NEVER;
+	slog(REGULAR|UNDECOR,"%s","\033[31mhidden");
+	testmocking_malloc_disable();
+
+	rational_color_mode = initial_color_mode;
+	rational_logger_mode = initial_logger_mode;
+
+	deliver(status);
+}
+
+/**
+ * @brief Emit safe text without allocating a separate sanitization buffer
+ *
+ * @return Return describing success or failure
+ */
+static Return capture_librational_logger_safe_text_without_malloc(void)
+{
+	INITTEST;
+	const RATIONAL_COLOR_MODE initial_color_mode = atomic_load_explicit(&rational_color_mode,memory_order_relaxed);
+	const LOGMODES initial_logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
+	const int initial_errno = errno;
+
+	/* Safe ASCII, layout characters, and two-, three-, and four-byte UTF-8
+	   sequences must remain printable while sanitizer allocation is unavailable */
+	rational_color_mode = COLOR_MODE_NEVER;
+	rational_logger_mode = REGULAR;
+	testmocking_malloc_fail_next(1);
+	errno = EDOM;
+	slog(REGULAR|UNDECOR,"ASCII\t\r\n%s\n","°àПривет日本語😀");
+	const int logger_errno = errno;
+
+	/* The pending failure must reach this probe because logging safe text
+	   does not call malloc(). Disable the mock before assertions or cleanup */
+	void *allocation_probe = malloc(1U);
+	testmocking_malloc_disable();
+	ASSERT(allocation_probe == NULL);
+	ASSERT(logger_errno == EDOM);
+	free(allocation_probe);
+
+	rational_color_mode = initial_color_mode;
+	rational_logger_mode = initial_logger_mode;
+	errno = initial_errno;
+
+	deliver(status);
+}
+
+/**
+ * @brief Require prefix failures to stop further formatting and allocation
+ *
+ * @return Return describing success or failure
+ */
+static Return capture_librational_logger_prefix_failures(void)
+{
+	INITTEST;
+	const LOGMODES initial_logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
+	const int initial_errno = errno;
+	static const struct {
+		LOGMODES mode;
+		LOGMODES level;
+	} prefix_cases[] = {
+		{TESTING,TESTING},
+		{VERBOSE,VERBOSE},
+		{REGULAR,ERROR},
+		{TESTING,ERROR},
+		{TESTING|VERBOSE,TESTING|VERBOSE}
+	};
+
+	for(size_t i = 0U; i < sizeof(prefix_cases) / sizeof(prefix_cases[0]); i++)
+	{
+		/* A prefix size failure must consume only one mocked call. The next
+		   undecorated message consumes the second failure and also stays silent.
+		   Fail timestamp formatting separately so its snprintf wrapper does not
+		   consume either vsnprintf failure */
+		rational_logger_mode = prefix_cases[i].mode;
+		testmocking_snprintf_fail_next(1);
+		testmocking_vsnprintf_fail_next(2);
+		errno = EDOM;
+		slog(prefix_cases[i].level,"hidden payload");
+		const int formatting_errno = errno;
+		testmocking_snprintf_disable();
+		rational_logger_mode = REGULAR;
+		slog(REGULAR|UNDECOR,"unexpected formatting after prefix failure");
+		testmocking_vsnprintf_disable();
+		ASSERT(formatting_errno == EDOM);
+
+		/* The same short-circuit contract applies when prefix allocation fails */
+		rational_logger_mode = prefix_cases[i].mode;
+		testmocking_realloc_fail_next(2);
+		errno = EDOM;
+		slog(prefix_cases[i].level,"hidden payload");
+		const int allocation_errno = errno;
+		rational_logger_mode = REGULAR;
+		slog(REGULAR|UNDECOR,"unexpected allocation after prefix failure");
+		testmocking_realloc_disable();
+		ASSERT(allocation_errno == EDOM);
+	}
+
+	rational_logger_mode = initial_logger_mode;
+	errno = initial_errno;
 
 	deliver(status);
 }
@@ -436,8 +539,8 @@ static void librational_logger_terminal_safety_case(void)
 {
 	/*
 	 * The payload mixes terminal-hostile bytes with ordinary UTF-8 text.
-	 * It deliberately keeps raw ESC because this first sanitizer pass preserves
-	 * existing logger decorations until an explicit decoration whitelist exists
+	 * Sanitization renders raw ESC bytes as printable text before formatted
+	 * markup is interpreted
 	 */
 	static const char payload[] =
 	        "ascii"
@@ -460,10 +563,17 @@ static void librational_logger_terminal_safety_case(void)
 	        "Привет"
 	        "天地玄黄宇宙洪荒日月盈昃辰宿列張"
 	        "いろはにほへとちりぬるを"
-	        "日本語漢字仮名交じり文";
+	        "日本語漢字仮名交じり文"
+	        "four-byte😀"
+	        "isolated\200"
+	        "surrogate\355\240\200"
+	        "out-of-range\364\220\200\200"
+	        "truncated\342\202";
 
 	rational_logger_mode = REGULAR;
-	slog(REGULAR|UNDECOR,"%s",payload);
+	/* Embedded NUL is part of the formatted payload and must not hide later
+	   bytes. The final three bytes form an incomplete four-byte UTF-8 sequence */
+	slog(REGULAR|UNDECOR,"%s%cafter-null\360\237\230",payload,'\0');
 	rational_logger_mode = REGULAR;
 }
 
@@ -727,7 +837,7 @@ static Return test_librational_0004_9(void)
 
 #ifndef EVIL_EMPIRE_OS
 /**
- * @brief Check that slog() stays silent when logger line allocation fails
+ * @brief Check that slog() fails closed when line allocation or sanitization fails
  *
  * @return Return describing success or failure
  */
@@ -738,7 +848,7 @@ static Return test_librational_0004_10(void)
 	ASSERT(SUCCESS == match_function_output(
 		NULL,
 		NULL,
-		capture_librational_logger_realloc_failure));
+		capture_librational_logger_allocation_failures));
 
 	RETURN_STATUS;
 }
@@ -822,6 +932,7 @@ static Return test_librational_0004_14(void)
 static Return test_librational_0004_15(void)
 {
 	INITTEST;
+	const RATIONAL_COLOR_MODE initial_color_mode = atomic_load_explicit(&rational_color_mode,memory_order_relaxed);
 
 	m_create(char,captured_stdout,MEMORY_STRING);
 	m_create(char,captured_stderr,MEMORY_STRING);
@@ -840,15 +951,22 @@ static Return test_librational_0004_15(void)
 	        "keep"
 	        "\t\r\n"
 	        "esc"
-	        "\033[1m"
+	        "\\x1B[1m"
 	        "utf8"
 	        "°"
 	        "à"
 	        "Привет"
 	        "天地玄黄宇宙洪荒日月盈昃辰宿列張"
 	        "いろはにほへとちりぬるを"
-	        "日本語漢字仮名交じり文";
+	        "日本語漢字仮名交じり文"
+	        "four-byte😀"
+	        "isolated\\x80"
+	        "surrogate\\xED\\xA0\\x80"
+	        "out-of-range\\xF4\\x90\\x80\\x80"
+	        "truncated\\xE2\\x82"
+	        "\\x00after-null\\xF0\\x9F\\x98";
 
+	rational_color_mode = COLOR_MODE_NEVER;
 	ASSERT(SUCCESS == function_capture(
 		librational_logger_terminal_safety_case,
 		captured_stdout,
@@ -857,11 +975,48 @@ static Return test_librational_0004_15(void)
 	ASSERT(0 == strcmp(m_text(captured_stdout),expected_stdout));
 	ASSERT(captured_stderr->length == 0U);
 
+	rational_color_mode = initial_color_mode;
 	call(m_del(captured_stdout));
 	call(m_del(captured_stderr));
 
 	RETURN_STATUS;
 }
+
+#ifndef EVIL_EMPIRE_OS
+/**
+ * @brief Check safe UTF-8 output without sanitizer allocation and preserve errno
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0004_16(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == match_function_output(
+		"\\AASCII\t\r\n°àПривет日本語😀\n\\z",
+		NULL,
+		capture_librational_logger_safe_text_without_malloc));
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check that a failed prefix stops processing the rest of its message
+ *
+ * @return Return describing success or failure
+ */
+static Return test_librational_0004_17(void)
+{
+	INITTEST;
+
+	ASSERT(SUCCESS == match_function_output(
+		NULL,
+		NULL,
+		capture_librational_logger_prefix_failures));
+
+	RETURN_STATUS;
+}
+#endif
 
 /**
  * @brief Check that function_capture() flushes pending stdout before redirection
@@ -950,7 +1105,7 @@ Return test_librational_0004(void)
 	TEST(test_librational_0004_8,"rational_reconvert() covers empty and REMEMBER edge cases");
 	TEST(test_librational_0004_9,"rational_reconvert() names every logger flag");
 #ifndef EVIL_EMPIRE_OS
-	TEST(test_librational_0004_10,"slog() stays silent when line allocation fails");
+	TEST(test_librational_0004_10,"slog() fails closed when line allocation or sanitization fails");
 	TEST(test_librational_0004_11,"slog() keeps payloads visible when time formatting fails");
 	TEST(test_librational_0004_12,"slog() stays silent when vsnprintf fails");
 #endif
@@ -959,6 +1114,10 @@ Return test_librational_0004(void)
 	TEST(test_librational_0004_14,"slog(REMEMBER) skips empty or unformatted payloads");
 #endif
 	TEST(test_librational_0004_15,"slog() escapes unsafe terminal bytes while preserving normal UTF-8");
+#ifndef EVIL_EMPIRE_OS
+	TEST(test_librational_0004_16,"slog() prints safe UTF-8 without sanitizer allocation and preserves errno");
+	TEST(test_librational_0004_17,"slog() stops formatting and allocation after a prefix failure");
+#endif
 
 	RETURN_STATUS;
 }

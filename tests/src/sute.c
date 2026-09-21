@@ -14,6 +14,8 @@ int main(void)
 	SUTESTART;
 
 	testitall_set_test_main(test_main);
+	/* Enable ANSI-decorated golden output in both internal and external runs */
+	run(set_environment_variable("TESTITALL_TEST_ENV_COLOR_MODE","always"));
 
 	HEADER("Preparations");
 	TEST(prepare,"Preparation for tests");

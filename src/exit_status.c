@@ -27,10 +27,10 @@ int exit_status(
 		{
 			if((INFO & status) == 0)
 			{
-				slog(EVERY,"The %s completed as expected\n",application_file_name);
+				slog(VERBOSE,"The %s completed as expected\n",application_file_name);
 			}
 			slog(EVERY,"Exit status » %s\n",show_status(status));
-			slog(REGULAR,"Enjoy your life!\n");
+			slog(VERBOSE,"Enjoy your life!\n");
 			return((int)COMPLETED);
 		} else {
 			slog(ERROR,"The %s process terminated unexpectedly due to an error\n",application_file_name);

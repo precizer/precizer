@@ -1,7 +1,6 @@
 #define PCRE2_STATIC
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
-#include <stdarg.h>
 
 #include "testitall.h"
 
@@ -10,19 +9,19 @@
  *
  * @param text Text descriptor that stores subject data.
  * @param pattern Pattern descriptor interpreted as PCRE2 expression.
+ * @param filename Optional template filename for mismatch diagnostics, or NULL to omit file context
  * @return SUCCESS on match, FAILURE otherwise.
  */
 Return match_pattern(
 	const memory *text,
 	const memory *pattern,
-	...)
+	const char *filename)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	const char *text_view = NULL;
 	const char *pattern_view = NULL;
-	const char *filename = NULL;
 #if 0
 	char *diff = NULL;
 #endif
@@ -44,12 +43,7 @@ Return match_pattern(
 		}
 	}
 
-	va_list args;
-	va_start(args,pattern);
-
-	/* Optional third argument carries template filename for diagnostics */
-	filename = va_arg(args,const char *);
-	va_end(args);
+	/* Optional filename carries template context for mismatch diagnostics */
 
 	/* Compile the regular expression */
 	pcre2_code *compiled_pattern = NULL;

@@ -336,7 +336,7 @@ Return db_validate_paths(void)
 					   output is intentionally silent */
 					if(!(rational_logger_mode & SILENT))
 					{
-						slog(EVERY,"The " BOLD "--force" RESET " option has been used, so the following paths will be written to the %s:\n",confstr(db_file_name));
+						slog(EVERY,"The @{bold}--force@{reset} option has been used, so the following paths will be written to the %s:\n",confstr(db_file_name));
 
 						/* Show the configured traversal roots that will replace
 						   stored prefixes. These are the root strings the program
@@ -350,7 +350,7 @@ Return db_validate_paths(void)
 					/* Without --force the safe choice is to stop with a warning.
 					   This gives the user a chance to confirm the path replacement
 					   instead of losing metadata by accident */
-					slog(EVERY,"Use the " BOLD "--force" RESET " option only when the PATHS stored in the database need"
+					slog(EVERY,"Use the @{bold}--force@{reset} option only when the PATHS stored in the database need"
 						" to be updated. Warning: If this option is used incorrectly, file and checksum information"
 						" in the database may be lost or completely replaced with different values.\n");
 					status = WARNING;

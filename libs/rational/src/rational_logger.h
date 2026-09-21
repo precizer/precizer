@@ -10,7 +10,8 @@
 
 #include "rational_enumerations.h"
 
-#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 /* Atomic operations */
 #include <stdatomic.h>
@@ -32,7 +33,6 @@ typedef enum LOGMODES : unsigned int
 } LOGMODES;
 
 extern _Atomic LOGMODES rational_logger_mode;
-extern _Atomic Return global_return_status;
 
 /**
  *
@@ -61,23 +61,23 @@ char *rational_reconvert(LOGMODES);
 // context information, such as the file name, line number, and function name
 #define slog(x,...) rational_logger(x,__FILE__,__LINE__,__func__,__VA_ARGS__ )
 
-/**
- * @brief Optional callback for REMEMBER logs
+/*
+ * Optional callback contract for REMEMBER logs
  *
  * If the main program defines:
- *   void rational_remember(const char *message);
- * then any slog() call with REMEMBER will pass the fully formatted log line
- * (same prefixes as printed, without a trailing newline) to this function.
+ *   void rational_remember(const char *message, int message_length);
+ * then any slog() call with REMEMBER will pass the fully formatted plain log
+ * line and its byte length to this function, including any trailing line
+ * terminator. Terminal decorations affect immediate terminal output only;
+ * this callback never receives terminal control sequences
  *
- * If the program does not define it, the library's weak symbol resolves to
- * NULL and the logger skips the call.
+ * If the program does not define it, the logger's weak reference resolves to
+ * NULL and the call is skipped
  *
- * @param message Formatted log line without a trailing newline
- *
- * @note The message pointer is valid only during the call; copy it if needed.
- *       Avoid calling slog() inside rational_remember() to prevent recursion.
+ * The message pointer is valid only during the call; copy it if needed.
+ * Avoid calling slog() inside rational_remember() to prevent recursion
  */
-__attribute__((weak)) void rational_remember(
+void rational_remember(
 	const char *,
 	const int);
 
@@ -90,4 +90,14 @@ void rational_logger
 	const char *,
 	...);
 
+bool rational_logger_replace_all(
+	char **,
+	size_t *,
+	const char *,
+	const char *);
+
+bool rational_logger_markup_replace(
+	char **,
+	size_t *,
+	bool);
 #endif // RATIONAL_LOGGER_H

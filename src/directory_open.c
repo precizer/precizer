@@ -6,9 +6,9 @@
  * @brief Open a directory as the base for relative path access checks
  *
  * @details
- * Uses the platform search-only directory mode when available. macOS and
- * Cygwin provide `O_SEARCH`, while Linux provides `O_PATH`. The fallback uses
- * a read-only directory descriptor for platforms without either extension
+ * Uses the platform search-only directory mode when available. macOS and the
+ * MSYS2 runtime provide `O_SEARCH`, while Linux provides `O_PATH`. Platforms
+ * without either extension use a read-only directory descriptor
  *
  * `O_SEARCH` and `O_PATH` allow the descriptor to serve as a path-resolution
  * base without requiring directory enumeration. The descriptor is opened with

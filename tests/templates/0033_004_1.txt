@@ -1,5 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
+TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/huge
 TESTING:argument:database=0033_interrupt_rehash\.db
 TESTING:argument:db_file_name=0033_interrupt_rehash\.db
@@ -35,7 +36,6 @@ TESTING:Database comparison mode is not enabled\. Skipping comparison
 TESTING:The brand new database has just been created\. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File system traversal initiated to calculate file count and storage usage
 TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:Notify quit!
 TESTING:The global return status and exit flag has been set to HALTED
 TESTING:Interrupting the application\. Please wait while the database will be closed smoothly…
