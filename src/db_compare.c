@@ -444,7 +444,7 @@ Return db_compare(void)
 		run(db_report_category(compare_B_sql,
 			&first_source_differences_found,
 			show_headings_in_silent,
-			BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",
+			"@{bold}These files are no longer in the %s but still exist in the %s@{reset}\n",
 			config->db_file_names[1],
 			config->db_file_names[0]));
 	}
@@ -454,7 +454,7 @@ Return db_compare(void)
 		run(db_report_category(compare_A_sql,
 			&second_source_differences_found,
 			show_headings_in_silent,
-			BOLD "These files are no longer in the %s but still exist in the %s" RESET "\n",
+			"@{bold}These files are no longer in the %s but still exist in the %s@{reset}\n",
 			config->db_file_names[0],
 			config->db_file_names[1]));
 	}
@@ -487,7 +487,7 @@ Return db_compare(void)
 		run(db_report_category(compare_checksums_sql,
 			&checksum_mismatches_found,
 			show_headings_in_silent,
-			BOLD "The SHA512 checksums of these files do not match between %s and %s" RESET "\n",
+			"@{bold}The SHA512 checksums of these files do not match between %s and %s@{reset}\n",
 			config->db_file_names[0],
 			config->db_file_names[1]));
 	}
@@ -515,7 +515,7 @@ Return db_compare(void)
 		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
-			slog(EVERY,BOLD "All files are identical against %s and %s" RESET "\n",
+			slog(EVERY,"@{bold}All files are identical against %s and %s@{reset}\n",
 				config->db_file_names[0],
 				config->db_file_names[1]);
 
@@ -524,7 +524,7 @@ Return db_compare(void)
 			if(check_first_source == true
 			        && first_source_differences_found == false)
 			{
-				slog(EVERY,BOLD "No first-source differences found between %s and %s" RESET "\n",
+				slog(EVERY,"@{bold}No first-source differences found between %s and %s@{reset}\n",
 					config->db_file_names[0],
 					config->db_file_names[1]);
 			}
@@ -532,7 +532,7 @@ Return db_compare(void)
 			if(check_second_source == true
 			        && second_source_differences_found == false)
 			{
-				slog(EVERY,BOLD "No second-source differences found between %s and %s" RESET "\n",
+				slog(EVERY,"@{bold}No second-source differences found between %s and %s@{reset}\n",
 					config->db_file_names[0],
 					config->db_file_names[1]);
 			}
@@ -540,7 +540,7 @@ Return db_compare(void)
 
 		if(verify_checksum_consistency == true && checksum_mismatches_found == false)
 		{
-			slog(EVERY,BOLD "All SHA512 checksums of files are identical against %s and %s" RESET "\n",
+			slog(EVERY,"@{bold}All SHA512 checksums of files are identical against %s and %s@{reset}\n",
 				config->db_file_names[0],
 				config->db_file_names[1]);
 		}
@@ -550,7 +550,7 @@ Return db_compare(void)
 		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
-			slog(EVERY,BOLD "The databases %s and %s are absolutely equal" RESET "\n",
+			slog(EVERY,"@{bold}The databases %s and %s are absolutely equal@{reset}\n",
 				config->db_file_names[0],
 				config->db_file_names[1]);
 		}

@@ -41,10 +41,10 @@ Return show_remembered_messages(void)
 
 	while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
 	{
-		if(!printed_header)
+		if(printed_header == false)
 		{
 			// Print the header only when at least one row exists.
-			slog(EVERY,BOLD "Warnings and errors encountered:" RESET "\n");
+			slog(EVERY,"@{bold}Warnings and errors encountered:@{reset}\n");
 			printed_header = true;
 		}
 

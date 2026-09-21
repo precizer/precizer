@@ -25,15 +25,15 @@ Return comprehensive_system_testing(void)
 {
 	INITTEST;
 
-	enum run_mode prev_run_mode = run_external;
+	enum run_mode prev_run_mode = testitall_runit_mode;
 
-	run_external = EXTERNAL_CALL;
+	testitall_runit_mode = EXTERNAL_CALL;
 
 	#include "comprehensive_unit_and_system_testing.cc"
 
 	SUTE(test0038,"SHA512 checkpoint and resume persistence scenarios");
 
-	run_external = prev_run_mode;
+	testitall_runit_mode = prev_run_mode;
 
 	RETURN_STATUS;
 }

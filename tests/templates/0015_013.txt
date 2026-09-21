@@ -1,5 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
+TESTING:argument:color=always
 TESTING:argument:db_file_paths=0015_database_v3 это база данных с пробелами и символами UTF-8\.db, 0015_database_v4 это база данных с пробелами и символами UTF-8\.db
 TESTING:argument:db_file_names=0015_database_v3 это база данных с пробелами и символами UTF-8\.db, 0015_database_v4 это база данных с пробелами и символами UTF-8\.db
 TESTING:argument:update=yes
@@ -60,5 +61,4 @@ TESTING:Comparison mode is enabled. The primary database verification is not req
 TESTING:Comparison mode is enabled. The primary database does not require cleanup
 TESTING:The database connection has been closed
 TESTING:Comparison mode is enabled. The primary database doesn't require vacuuming
-TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

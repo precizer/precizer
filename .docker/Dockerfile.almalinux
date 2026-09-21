@@ -1,29 +1,26 @@
-FROM almalinux:9@sha256:4e5f333756e39943fe66e3b55ee4c303805eebd7c6da372f07f2418f79b23d87 AS almalinux
+FROM almalinux:10@sha256:957738702313e6ee452cdb17bc1431542c467be9a4e2f4da3b8e551b0ebb9677 AS almalinux
 
 RUN set -eux; \
-    dnf -y update; \
-    dnf -y install dnf-plugins-core; \
-    dnf config-manager --set-enabled crb; \
-    dnf -y install epel-release; \
-    dnf -y install almalinux-release-devel; \
-    dnf -y makecache; \
-    dnf -y install \
-      which \
-      gcc-toolset-15-gcc \
-      gcc-toolset-15-libubsan-devel \
-      gcc-toolset-15-libasan-devel \
-      gcc \
-      clang \
-      make \
-      llvm \
-      llvm-devel \
-      sqlite sqlite-devel \
-      glibc-devel \
-      pcre2 pcre2-devel \
-      upx; \
-    dnf -y --enablerepo=devel install pcre2-static glibc-static; \
-    dnf -y clean all; \
-    rm -rf /var/cache/dnf
+	dnf -y update; \
+	dnf -y install dnf-plugins-core; \
+	dnf config-manager --set-enabled crb; \
+	dnf -y install \
+		which \
+		gcc \
+		clang \
+		make \
+		llvm \
+		llvm-devel \
+		libasan libubsan \
+		sqlite sqlite-devel \
+		glibc-devel glibc-static \
+		pcre2 pcre2-devel pcre2-static \
+		zip; \
+	dnf -y clean all; \
+	rm -rf /var/cache/dnf
+
+# UPX is disabled because no package is available
+# TODO: Install UPX and enable compression when a working package is available
 
 WORKDIR /precizer
 
@@ -35,6 +32,6 @@ ARG BUILD=production
 ARG COMPILER=
 ENV COMPILER=${COMPILER}
 ENV TEST_TYPE=tests
-RUN if [ -n "$COMPILER" ]; then make -j ${BUILD}; else scl enable gcc-toolset-15 -- make -j ${BUILD}; fi
+RUN make -j ${BUILD} UPX=true
 
-CMD ["sh", "-c", "if [ -n \"$COMPILER\" ]; then make -j ${TEST_TYPE}; else scl enable gcc-toolset-15 -- make -j ${TEST_TYPE}; fi"]
+CMD ["sh", "-c", "make -j ${TEST_TYPE}"]

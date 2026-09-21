@@ -2,11 +2,23 @@
 
 All notable changes will be documented in this file
 
-# Release 0.17.1 2026-07-11
+# Release 0.17.1 2026-09-20
 
+## Added
+
+- Added `--color=auto|always|never` to control color and text styling in log output. The default `auto` mode uses styling only for terminal output; `always` keeps it in files and pipes, while `never` disables it
+- Added `msys-build`, `windows-zip`, and `windows-exe` Makefile targets to build the MSYS program, a Windows ZIP package, and a self-extracting Windows EXE. Manual builds and GitHub Actions now use the same build and packaging targets
+
+## Improved
+
+- File reading now uses a fixed 64 KiB heap buffer, allocated once and reused throughout each traversal, instead of 1% of available physical memory. x86_64 file-reading and SHA-512 benchmarks showed higher large-file throughput with small fixed buffers; 64 KiB was among the fastest tested sizes while keeping buffer memory use low
 - Improved output for scripted workflows. Escape sequences no longer clutter the output, making it cleaner and easier to parse programmatically.
-- Reduced nonessential output to make automated processing more reliable.
+- Less essential messages are now shown only in verbose mode (`--verbose`), so normal output contains only important information
 - Renamed `--start-device-only/-o` to `--one-file-system/-x`, following rsync terminology. The new name more accurately describes the option's behavior. The old name will remain supported for backward compatibility for the next 10 years.
+
+## Fixed
+
+- Critical build portability fix. Some internal libraries in binaries produced by GitHub Actions could inherit a compiler flag that enabled instructions specific to the build machine's processor. A binary intended to run on different processors could therefore terminate unexpectedly on a system without those instructions. All affected compiler flags have been identified and isolated by build type. Automated release binaries no longer inherit processor-specific optimization settings and now provide the intended maximum processor portability.
 
 # Release 0.17.0 2026-07-10
 

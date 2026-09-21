@@ -24,7 +24,7 @@ static const char *const test0023_expected_paths[TEST0023_EXPECTED_PATH_COUNT] =
  *         name is sorted before, matches, or is sorted after the second name
  */
 static int test0023_compare_by_name(
-#ifdef __CYGWIN__
+#ifdef __MSYS__
 	const FTSENT * const *first,
 	const FTSENT * const *second)
 #else

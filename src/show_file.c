@@ -153,12 +153,12 @@ static void show_banners(
 
 	if(show_changes_will_be_reflected == true)
 	{
-		slog(EVERY,BOLD "Changes reported during this scan against the DB %s:" RESET "\n",confstr(db_file_name));
+		slog(EVERY,"@{bold}Changes reported during this scan against the DB %s:@{reset}\n",confstr(db_file_name));
 	}
 
 	if(show_files_will_be_added == true)
 	{
-		slog(EVERY,BOLD "Items reported during this traversal against the DB %s:" RESET "\n",confstr(db_file_name));
+		slog(EVERY,"@{bold}Items reported during this traversal against the DB %s:@{reset}\n",confstr(db_file_name));
 	}
 }
 
@@ -281,11 +281,11 @@ void show_file(
 		if(file->locked_checksum_mismatch == true)
 		{
 
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked & mismatch, data corrupted" RESET " %s\n",runtime_relative_path);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{red}checksum locked & mismatch, data corrupted@{reset} %s\n",runtime_relative_path);
 
 		} else if(file->lock_checksum_violation == true){
 
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,RED "checksum locked, data corruption detected" RESET);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{red}checksum locked, data corruption detected@{reset}");
 
 			print_changes(EVERY|REMEMBER,file);
 

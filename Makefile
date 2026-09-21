@@ -49,6 +49,8 @@
 .SUFFIXES: .c .o .h # Define our suffix list
 
 BUILDDIR = .builds
+ZIP_DIR = $(BUILDDIR)/zip
+APP_VERSION := $(shell awk -F '"' '/define APP_VERSION / {print $$2}' src/version.h)
 # Returns a concise path for build messages.
 # Plain file names stay unchanged; nested paths keep only final-directory/file
 short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
@@ -58,11 +60,10 @@ COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 # Compiler flags
 #
 
-CFLAGS += -std=c2x -finline-functions
-
-# To pass a #define into the build:
-# make DEFINES=-DWRITE_CSV=false memtest
-CFLAGS += $(DEFINES)
+C_STANDARD := -std=c2x
+CPPFLAGS ?=
+CFLAGS ?= -finline-functions
+LDFLAGS ?=
 
 LIBS = sha512 mem rational sqlite3
 STATLIBS = sha512 mem rational
@@ -79,7 +80,6 @@ endif
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
-ROOT_EXE = ./$(EXE)
 ifeq ($(UNAME_S),Darwin)
 STATIC =
 STRIP ?= -Wl,-x
@@ -88,11 +88,7 @@ STATIC = -static -static-libgcc -Wl,--gc-sections
 STRIP ?= -s
 endif
 
-ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-LTO =
-else
 LTO = -flto=auto
-endif
 
 # UPX compression (disabled on macOS)
 ifeq ($(UNAME_S),Darwin)
@@ -153,10 +149,9 @@ LDPATH += -L$(ARGP_PREFIX)/lib
 LDLIBS += -largp
 else
 LDLIBS += -lpcre2-8
-ifneq ($(findstring CYGWIN,$(UNAME_S)),)
-# argp is not part of Cygwin's C library
-LDLIBS += -largp
-endif
+# The MSYS runtime needs a separate argp library
+# Resolve IS_MSYS after the compiler selection below
+LDLIBS += $(if $(IS_MSYS),-largp)
 endif
 
 # Default build
@@ -195,6 +190,9 @@ endif
 export AR
 endif
 
+# Detect the MSYS runtime target after the compiler has been selected
+IS_MSYS := $(shell $(CC) $(CPPFLAGS) $(CFLAGS) -dM -E -x c /dev/null 2>/dev/null | awk '$$2 == "__MSYS__" { print 1; exit }')
+
 SYS := $(shell $(CC) -dumpmachine 2>/dev/null)
 ifneq (, $(findstring alpine, $(SYS)))
 # Alpine Linux uses external libraries
@@ -229,20 +227,24 @@ DBG_LIBS = $(LIBS)
 DBG_LIB_OBJS = $(foreach lib,$(DBG_LIBS),$(DBG_LIBDIR)/obj/$(lib)/*.o)
 DBG_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_LIBS)),$(LDLIBS))
 DBG_INCPATH = $(INCPATH)
+# Callers may replace these defaults through DBG_OPT_CFLAGS and
+# DBG_OPT_LDFLAGS. Debug optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 DBG_OPT_CFLAGS ?= -pipe -fbuiltin -Og -fno-omit-frame-pointer
-DBG_CFLAGS = $(CFLAGS) $(DBG_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_CFLAGS ?= $(DBG_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
 LIBS_GOAL ?= debug
 ifeq ($(UNAME_S),Darwin)
 DBG_RPATH = -Wl,-rpath,@executable_path/$(DBG_LIBDIR),-rpath,@executable_path/libs
-DBG_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+DBG_OPT_LDFLAGS ?=
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
+else ifneq ($(IS_MSYS),)
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
 DBG_OPT_LDFLAGS ?= -Wl,--as-needed
-DBG_LDFLAGS = $(USE_LLD) $(DBG_OPT_LDFLAGS)
+DBG_LDFLAGS ?= $(USE_LLD) $(DBG_OPT_LDFLAGS)
 else
 DBG_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(DBG_LIBDIR),-rpath,\$$ORIGIN/libs
 DBG_OPT_LDFLAGS ?= -Wl,--as-needed
-DBG_LDFLAGS = $(USE_LLD) -Wl,-z,defs $(DBG_OPT_LDFLAGS)
+DBG_LDFLAGS ?= $(USE_LLD) -Wl,-z,defs $(DBG_OPT_LDFLAGS)
 endif
 # Activate the Gprof profiler.
 # Works incorrectly with Valgrind.
@@ -265,8 +267,19 @@ DBG_DYN_LIB_OBJS = $(foreach lib,$(DBG_DYN_LIBS),$(DBG_DYN_LIBDIR)/obj/$(lib)/*.
 DBG_DYN_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_DYN_LIBS)),$(LDLIBS))
 DBG_DYN_INCPATH = $(DYNAMIC_INCPATH)
 DBG_DYN_HDRS = $(wildcard $(SRC_DIR)/*.h) $(foreach d,$(DBG_DYN_LIBS),$(wildcard libs/$d/src/*.h))
-DBG_DYN_CFLAGS = $(DBG_CFLAGS)
-DBG_DYN_LDFLAGS = $(DBG_LDFLAGS)
+# Callers may replace these defaults through DBG_DYN_OPT_CFLAGS and
+# DBG_DYN_OPT_LDFLAGS. Dynamic debug optimization flags follow CFLAGS and
+# LDFLAGS and win conflicts
+DBG_DYN_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
+DBG_DYN_CFLAGS ?= $(DBG_DYN_OPT_CFLAGS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
+DBG_DYN_OPT_LDFLAGS ?= $(DBG_OPT_LDFLAGS)
+ifeq ($(UNAME_S),Darwin)
+DBG_DYN_LDFLAGS ?= $(USE_LLD) $(DBG_DYN_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup
+else ifneq ($(IS_MSYS),)
+DBG_DYN_LDFLAGS ?= $(USE_LLD) $(DBG_DYN_OPT_LDFLAGS)
+else
+DBG_DYN_LDFLAGS ?= $(USE_LLD) -Wl,-z,defs $(DBG_DYN_OPT_LDFLAGS)
+endif
 
 #
 # Coverage build settings
@@ -280,9 +293,13 @@ COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
 COV_LIB_OBJS = $(foreach lib,$(LIBS),$(COV_LIBDIR)/obj/$(lib)/*.o)
 COV_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
+# Callers may replace these defaults through COV_OPT_CFLAGS and
+# COV_OPT_LDFLAGS. Coverage optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 COV_OPT_CFLAGS ?= -pipe -fbuiltin -O0 -fno-omit-frame-pointer
-COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL_TEST_HOOKS
-COV_LDFLAGS = $(USE_LLD) -lgcov --coverage
+COV_CFLAGS ?= -fprofile-arcs -ftest-coverage $(COV_OPT_CFLAGS) -g -DDEBUG -DTESTITALL_TEST_HOOKS
+COV_OPT_LDFLAGS ?=
+COV_LDFLAGS ?= $(USE_LLD) $(COV_OPT_LDFLAGS) -lgcov --coverage
 
 #
 # Sanitize build settings
@@ -296,17 +313,21 @@ SNTZ_OBJS = $(addprefix $(SNTZ_OBJDIR)/, $(notdir $(OBJS)))
 SNTZ_LIB_OBJS = $(foreach lib,$(LIBS),$(SNTZ_LIBDIR)/obj/$(lib)/*.o)
 SNTZ_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 SNTZ_OPTIONS = -fsanitize=address,undefined
+# Callers may replace these defaults through SNTZ_OPT_CFLAGS and
+# SNTZ_OPT_LDFLAGS. Sanitizer optimization flags follow CFLAGS and LDFLAGS,
+# while later required sanitizer flags take final priority
 SNTZ_OPT_CFLAGS ?= $(DBG_OPT_CFLAGS)
-SNTZ_CFLAGS = $(CFLAGS) $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
+SNTZ_CFLAGS ?= $(SNTZ_OPT_CFLAGS) $(SNTZ_OPTIONS) -g -ggdb3 -DDEBUG -DTESTITALL_TEST_HOOKS
+SNTZ_OPT_LDFLAGS ?=
 ifeq ($(UNAME_S),Darwin)
 SNTZ_RPATH = -Wl,-rpath,@executable_path/$(SNTZ_LIBDIR),-rpath,@executable_path/libs,-rpath,@executable_path/../debug/libs
-SNTZ_LDFLAGS = $(USE_LLD) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+SNTZ_LDFLAGS ?= $(USE_LLD) $(SNTZ_OPT_LDFLAGS) -Wl,-undefined,dynamic_lookup $(SNTZ_OPTIONS)
+else ifneq ($(IS_MSYS),)
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
-SNTZ_LDFLAGS = $(USE_LLD) $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(USE_LLD) $(SNTZ_OPT_LDFLAGS) $(SNTZ_OPTIONS)
 else
 SNTZ_RPATH = -Wl,-rpath,\$$ORIGIN,-rpath,\$$ORIGIN/$(SNTZ_LIBDIR),-rpath,\$$ORIGIN/libs,-rpath,\$$ORIGIN/../debug/libs
-SNTZ_LDFLAGS = $(USE_LLD) -Wl,-z,defs $(SNTZ_OPTIONS)
+SNTZ_LDFLAGS ?= $(USE_LLD) $(SNTZ_OPT_LDFLAGS) -Wl,-z,defs $(SNTZ_OPTIONS)
 endif
 
 #
@@ -320,39 +341,68 @@ PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
 PROD_LIB_OBJS = $(foreach lib,$(LIBS),$(PROD_LIBDIR)/obj/$(lib)/*.o)
 PROD_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
+# Callers may replace these defaults through PROD_OPT_CFLAGS and
+# PROD_OPT_LDFLAGS. Production optimization flags follow CFLAGS and LDFLAGS
+# and win conflicts
 PROD_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O3 -march=native -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
-PROD_CFLAGS ?= $(CFLAGS) $(PROD_OPT_CFLAGS)
-# PROD_LDFLAGS and PROD_CFLAGS use ?= so that distribution package managers
-# (Gentoo Portage, Debian dpkg-buildflags, RPM macros, etc.) can override them
-# with system-wide hardening and optimization flags via the command line:
-#   emake PROD_LDFLAGS='$(LDFLAGS)' PROD_CFLAGS='$(CFLAGS)'
-# When overridden, $(LDFLAGS) is replaced by the value from the package manager;
-# when not overridden, it expands to empty (LDFLAGS is not set in this project).
-# See .packaging/gentoo/ for a real-world example.
+PROD_CFLAGS ?= $(PROD_OPT_CFLAGS)
+# The production flag groups use ?= so callers can replace the optimized
+# defaults when a specialized production build requires different tuning.
+# Distribution package builds use the separate distribution target below
 ifeq ($(UNAME_S),Darwin)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,-dead_strip
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS)
+else ifneq ($(IS_MSYS),)
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--gc-sections
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS)
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS)
 else
 PROD_OPT_LDFLAGS ?= $(LTO) -Wl,-O3 -Wl,--hash-style=gnu -Wl,--as-needed -Wl,--gc-sections
-PROD_LDFLAGS ?= $(LDFLAGS) $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
+PROD_LDFLAGS ?= $(USE_LLD) $(PROD_OPT_LDFLAGS) -Wl,-z,defs
 endif
 
 #
 # Dynamic production build settings
 #
-DYNP_DIR = $(BUILDDIR)/dynamic-production
-DYNP_OBJDIR = $(DYNP_DIR)/obj
-DYNP_LDPATH = $(LDPATH)
-DYNP_EXE = $(DYNP_DIR)/$(EXE)
-DYNP_OBJS = $(addprefix $(DYNP_OBJDIR)/, $(notdir $(OBJS)))
-DYNP_LIB_SRCS = $(foreach lib,$(STATLIBS),$(wildcard libs/$(lib)/src/*.c))
-DYNP_LIB_OBJS = $(foreach lib,$(STATLIBS),$(PROD_LIBDIR)/obj/$(lib)/*.o)
-DYNP_CFLAGS = $(PROD_CFLAGS)
-DYNP_LDFLAGS = $(PROD_LDFLAGS)
-DYNP_SHARED_LIBS = $(filter-out $(addprefix -l,$(STATLIBS)),$(LDLIBS))
+DYN_PROD_DIR = $(BUILDDIR)/dynamic-production
+DYN_PROD_OBJDIR = $(DYN_PROD_DIR)/obj
+DYN_PROD_LDPATH = $(LDPATH)
+DYN_PROD_EXE = $(DYN_PROD_DIR)/$(EXE)
+DYN_PROD_OBJS = $(addprefix $(DYN_PROD_OBJDIR)/, $(notdir $(OBJS)))
+DYN_PROD_LIB_SRCS = $(foreach lib,$(STATLIBS),$(wildcard libs/$(lib)/src/*.c))
+DYN_PROD_LIB_OBJS = $(foreach lib,$(STATLIBS),$(PROD_LIBDIR)/obj/$(lib)/*.o)
+# Callers may replace these defaults through DYN_PROD_OPT_CFLAGS and
+# DYN_PROD_OPT_LDFLAGS. Dynamic production optimization flags follow CFLAGS
+# and LDFLAGS and win conflicts
+DYN_PROD_OPT_CFLAGS ?= $(PROD_OPT_CFLAGS)
+DYN_PROD_CFLAGS ?= $(DYN_PROD_OPT_CFLAGS)
+DYN_PROD_OPT_LDFLAGS ?= $(PROD_OPT_LDFLAGS)
+ifeq ($(UNAME_S),Darwin)
+DYN_PROD_LDFLAGS ?= $(USE_LLD) $(DYN_PROD_OPT_LDFLAGS)
+else ifneq ($(IS_MSYS),)
+DYN_PROD_LDFLAGS ?= $(USE_LLD) $(DYN_PROD_OPT_LDFLAGS)
+else
+DYN_PROD_LDFLAGS ?= $(USE_LLD) $(DYN_PROD_OPT_LDFLAGS) -Wl,-z,defs
+endif
+DYN_PROD_SHARED_LIBS = $(filter-out $(addprefix -l,$(STATLIBS)),$(LDLIBS))
+
+#
+# Distribution package build settings
+#
+DIST_DIR = $(BUILDDIR)/distribution
+DIST_LIBDIR = $(DIST_DIR)/libs
+DIST_OBJDIR = $(DIST_DIR)/obj
+DIST_LDPATH = $(LDPATH)
+DIST_EXE = $(DIST_DIR)/$(EXE)
+DIST_OBJS = $(addprefix $(DIST_OBJDIR)/, $(notdir $(OBJS)))
+DIST_LIB_OBJS = $(foreach lib,$(STATLIBS),$(DIST_LIBDIR)/obj/$(lib)/*.o)
+# Callers may replace these fallbacks through DIST_OPT_CFLAGS and
+# DIST_OPT_LDFLAGS. CFLAGS and LDFLAGS follow distribution optimization flags
+# and win conflicts
+DIST_OPT_CFLAGS ?= -O2
+DIST_CFLAGS ?= $(DIST_OPT_CFLAGS)
+DIST_OPT_LDFLAGS ?=
+DIST_LDFLAGS ?= $(DIST_OPT_LDFLAGS)
+DIST_SHARED_LIBS = $(filter-out $(addprefix -l,$(STATLIBS)),$(LDLIBS))
 
 #
 # Portable build settings
@@ -365,33 +415,38 @@ PRTB_EXE = $(PRTB_DIR)/$(EXE)
 PRTB_OBJS = $(addprefix $(PRTB_OBJDIR)/, $(notdir $(OBJS)))
 PRTB_LIB_OBJS = $(foreach lib,$(LIBS),$(PRTB_LIBDIR)/obj/$(lib)/*.o)
 PRTB_EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
+# Callers may replace these defaults through PRTB_OPT_CFLAGS and
+# PRTB_OPT_LDFLAGS. Portable optimization flags follow CFLAGS and LDFLAGS and
+# win conflicts
 PRTB_OPT_CFLAGS ?= -pipe -fbuiltin $(LTO) -O2 -mtune=generic -funroll-loops -ffunction-sections -fdata-sections -fomit-frame-pointer
-PRTB_CFLAGS = $(CFLAGS) $(PRTB_OPT_CFLAGS)
+PRTB_CFLAGS ?= $(PRTB_OPT_CFLAGS)
 ifeq ($(UNAME_S),Darwin)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,-dead_strip
-PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS)
-else ifneq ($(findstring CYGWIN,$(UNAME_S)),)
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS)
+else ifneq ($(IS_MSYS),)
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--gc-sections
-PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS)
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS)
 else
 PRTB_OPT_LDFLAGS ?= $(LTO) -Wl,-O2 -Wl,--hash-style=both -Wl,--as-needed -Wl,--gc-sections
-PRTB_LDFLAGS = $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
+PRTB_LDFLAGS ?= $(USE_LLD) $(PRTB_OPT_LDFLAGS) -Wl,-z,defs
 endif
 
 # https://stackoverflow.com/questions/17834582/run-make-in-each-subdirectory
 TOPTARGETS := all
-LIBS_MATRIX_BUILDS = libs-debug libs-coverage libs-production libs-portable libs-sanitize
+LIBS_MATRIX_BUILDS = libs-debug libs-coverage libs-production libs-distribution libs-portable libs-sanitize
 LIBS_MATRIX_TESTS = libs-tests-debug libs-tests-coverage libs-tests-sanitize
 
 define BUILD_USAGE_BANNER
 printf "Now some tests could be running:\n"
+printf "\033[1mUnpacking:\033[0m\nunzip -jo $(EXE).zip 'v$(APP_VERSION)/$(EXE)'\n"
 printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/fixtures/diffs/diff1\n"
 printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/fixtures/diffs/diff2\n"
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug debug-dynamic remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build debug-build debug-dynamic-build debuglibs debugdynlibs coveragelibs sanitizelibs prodlibs dynprodlibs portablelibs debugfinal debugdynfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: all version clean debug debug-dynamic remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build distribution debug-build debug-dynamic-build debuglibs debugdynlibs coveragelibs sanitizelibs prodlibs dynprodlibs distlibs portablelibs debugfinal debugdynfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done portable-done
+.PHONY: macos-zip msys-build windows-zip windows-exe
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm test test-coverage tests-sanitize tests-debug tests-dynamic analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: compile-commands
@@ -417,7 +472,7 @@ debuglibs:
 	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(DBG_LIBS)" BUILDDIR=../../$(BUILDDIR)
 
 $(DBG_EXE): $(DBG_OBJS) debuglibs
-	@$(CC) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) $(DBG_OBJS) $(DBG_LIB_OBJS) $(DBG_EXT_LDLIBS) -o $@
+	@$(CC) $(LDFLAGS) $(STATIC) $(DBG_LDPATH) $(DBG_LDFLAGS) $(DBG_OBJS) $(DBG_LIB_OBJS) $(DBG_EXT_LDLIBS) -o $@
 ifeq ($(UNAME_S),Darwin)
 	@echo "$(call short_path,$@) linked dynamically, not stripped"
 else
@@ -425,7 +480,7 @@ else
 endif
 
 $(DBG_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DBG_OBJDIR)
-	@$(CC) -c $(DBG_INCPATH) $(WFLAGS) $(DBG_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_INCPATH) $(WFLAGS) $(CFLAGS) $(DBG_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with debug flags"
 
 $(DBG_OBJDIR):
@@ -444,11 +499,11 @@ debugdynlibs:
 	@$(MAKE) -s -C libs $(LIBS_GOAL) SUBDIRS="$(DBG_DYN_LIBS)" BUILDDIR=../../$(BUILDDIR)
 
 $(DBG_DYN_EXE): $(DBG_DYN_OBJS) debugdynlibs
-	@$(CC) $(DBG_DYN_LDPATH) $(DBG_DYN_LDFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $@
+	@$(CC) $(LDFLAGS) $(DBG_DYN_LDPATH) $(DBG_DYN_LDFLAGS) $(DBG_DYN_OBJS) $(DBG_DYN_LIB_OBJS) $(DBG_DYN_EXT_LDLIBS) -o $@
 	@echo "$(call short_path,$@) linked dynamically, not stripped"
 
 $(DBG_DYN_OBJDIR)/%.o: $(SRC_DIR)/%.c $(DBG_DYN_HDRS) | $(DBG_DYN_OBJDIR)
-	@$(CC) -c $(DBG_DYN_INCPATH) $(WFLAGS) $(DBG_DYN_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(DBG_DYN_INCPATH) $(WFLAGS) $(CFLAGS) $(DBG_DYN_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with dynamic debug flags"
 
 $(DBG_DYN_OBJDIR):
@@ -468,7 +523,7 @@ coveragelibs:
 	@$(MAKE) -s -C libs coverage SUBDIRS="$(LIBS)" BUILDDIR=../../$(BUILDDIR)
 
 $(COV_EXE): $(COV_OBJS) coveragelibs
-	@$(CC) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(COV_LIB_OBJS) $(COV_EXT_LDLIBS)
+	@$(CC) $(LDFLAGS) $(STATIC) $(COV_LDPATH) $(COV_LDFLAGS) -o $@ $(COV_OBJS) $(COV_LIB_OBJS) $(COV_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$(call short_path,$@) linked dynamically, not stripped"
 else
@@ -476,7 +531,7 @@ else
 endif
 
 $(COV_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(COV_OBJDIR)
-	@$(CC) -c $(INCPATH) $(WFLAGS) $(COV_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(WFLAGS) $(CFLAGS) $(COV_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with coverage flags"
 
 $(COV_OBJDIR):
@@ -501,11 +556,11 @@ sanitizelibs:
 	@$(MAKE) -s -C libs sanitize SUBDIRS="$(LIBS)" BUILDDIR=../../$(BUILDDIR)
 
 $(SNTZ_EXE): $(SNTZ_OBJS) sanitizelibs
-	@$(CC) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(SNTZ_EXT_LDLIBS) -o $@
+	@$(CC) $(LDFLAGS) $(SNTZ_LDPATH) $(SNTZ_RPATH) $(SNTZ_LDFLAGS) $(SNTZ_OBJS) $(SNTZ_LIB_OBJS) $(SNTZ_EXT_LDLIBS) -o $@
 	@echo "$(call short_path,$@) linked dynamically, not stripped"
 
 $(SNTZ_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(SNTZ_OBJDIR)
-	@$(CC) -c $(INCPATH) $(WFLAGS) $(SNTZ_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(WFLAGS) $(CFLAGS) $(SNTZ_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with sanitizer flags"
 
 $(SNTZ_OBJDIR):
@@ -523,16 +578,20 @@ banner-production: production-done
 	@$(BUILD_USAGE_BANNER)
 
 prodfinal: $(PROD_EXE)
-	@cp $(PROD_EXE) $(ROOT_EXE)
-	@$(UPX) $(ROOT_EXE)
-	@$(ROOT_EXE) --version
-	@echo "The $(PROD_EXE) has been copied to the current directory"
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(PROD_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@echo "Created $(EXE).zip"
 
 prodlibs:
 	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)" BUILDDIR=../../$(BUILDDIR)
 
 $(PROD_EXE): $(PROD_OBJS) prodlibs
-	@$(CC) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(PROD_LIB_OBJS) $(PROD_EXT_LDLIBS)
+	@$(CC) $(LDFLAGS) $(STATIC) $(STRIP) $(PROD_LDPATH) $(PROD_LDFLAGS) -o $@ $(PROD_OBJS) $(PROD_LIB_OBJS) $(PROD_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$(call short_path,$@) linked dynamically, stripped"
 else
@@ -540,7 +599,7 @@ else
 endif
 
 $(PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PROD_OBJDIR)
-	@$(CC) -c $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(WFLAGS) $(CFLAGS) $(PROD_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with release flags"
 
 $(PROD_OBJDIR):
@@ -551,31 +610,89 @@ $(PROD_OBJDIR):
 #
 dynamic-production: banner-dynamic-production
 
-dynamic-production-build: $(DYNP_EXE)
-	@$(DYNP_EXE) --version
+dynamic-production-build: $(DYN_PROD_EXE)
+	@$(DYN_PROD_EXE) --version
 
 banner-dynamic-production: dynprodfinal
 	@$(BUILD_USAGE_BANNER)
 
 dynprodfinal: dynamic-production-build
-	@cp $(DYNP_EXE) $(ROOT_EXE)
-	@$(UPX) $(ROOT_EXE)
-	@$(ROOT_EXE) --version
-	@echo "The $(DYNP_EXE) has been copied to the current directory"
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(DYN_PROD_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@echo "Created $(EXE).zip"
 
 dynprodlibs:
 	@$(MAKE) -s -C libs production SUBDIRS="$(STATLIBS)" BUILDDIR=../../$(BUILDDIR)
 
-$(DYNP_EXE): $(DYNP_OBJS) dynprodlibs
-	@$(CC) $(STRIP) $(DYNP_LDPATH) $(DYNP_LDFLAGS) -o $@ $(DYNP_OBJS) $(DYNP_LIB_OBJS) $(DYNP_SHARED_LIBS)
+$(DYN_PROD_EXE): $(DYN_PROD_OBJS) dynprodlibs
+	@$(CC) $(LDFLAGS) $(STRIP) $(DYN_PROD_LDPATH) $(DYN_PROD_LDFLAGS) -o $@ $(DYN_PROD_OBJS) $(DYN_PROD_LIB_OBJS) $(DYN_PROD_SHARED_LIBS)
 	@echo "$(call short_path,$@) linked dynamically, stripped"
 
-$(DYNP_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DYNP_OBJDIR)
-	@$(CC) -c $(DYNAMIC_INCPATH) $(WFLAGS) $(DYNP_CFLAGS) -o $@ $<
+$(DYN_PROD_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DYN_PROD_OBJDIR)
+	@$(CC) -c $(CPPFLAGS) $(DYNAMIC_INCPATH) $(WFLAGS) $(CFLAGS) $(DYN_PROD_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with release flags"
 
-$(DYNP_OBJDIR):
-	@mkdir -p $(DYNP_OBJDIR)
+$(DYN_PROD_OBJDIR):
+	@mkdir -p $(DYN_PROD_OBJDIR)
+
+#
+# Distribution package rules
+#
+distribution: $(DIST_EXE)
+	@$(DIST_EXE) --version
+
+distlibs:
+	@$(MAKE) -s -C libs distribution SUBDIRS="$(STATLIBS)" BUILDDIR=../../$(BUILDDIR) $(DIST_LIBRARY_MAKE_ARGS)
+
+$(DIST_EXE): $(DIST_OBJS) distlibs
+	@$(CC) $(DIST_LDFLAGS) $(LDFLAGS) $(DIST_LDPATH) -o $@ $(DIST_OBJS) $(DIST_LIB_OBJS) $(DIST_SHARED_LIBS)
+	@echo "$(call short_path,$@) linked dynamically, not stripped"
+
+$(DIST_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DIST_OBJDIR)
+	@$(CC) -c $(CPPFLAGS) $(DYNAMIC_INCPATH) $(WFLAGS) $(DIST_CFLAGS) $(CFLAGS) $(C_STANDARD) -o $@ $<
+	@echo "$(call short_path,$<) compiled with distribution flags"
+
+$(DIST_OBJDIR):
+	@mkdir -p $(DIST_OBJDIR)
+
+macos-zip: $(DIST_EXE)
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(DIST_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+
+#
+# Windows packages built from the MSYS payload
+#
+# Pass the MSYS compiler and flags to the existing library build as well
+msys-build: CC = /usr/bin/gcc
+msys-build: WFLAGS =
+msys-build: LDFLAGS = -s
+msys-build: DIST_SHARED_LIBS = -l:libsqlite3.a -l:libpcre2-8.a -l:libargp.a
+msys-build: DIST_LIBRARY_MAKE_ARGS = CC="$(CC)" WFLAGS="$(WFLAGS)" LDFLAGS="$(LDFLAGS)"
+msys-build: $(DIST_EXE)
+
+# Recreate the archive and require every input file to be present and readable
+windows-zip: msys-build
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(DIST_EXE).exe" /usr/bin/msys-2.0.dll "$(ZIP_DIR)/v$(APP_VERSION)/"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE).exe" --version
+	@rm -f $(EXE).zip
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE).exe" "v$(APP_VERSION)/msys-2.0.dll"
+	@zip -q -9 -j -MM $(EXE).zip COPYING CHANGELOG.md README.ru.md README.md
+
+# Build the native launcher with the payload taken directly from its build directory
+windows-exe: msys-build
+	@$(MAKE) -C .packaging/msys \
+		PRECIZER_PAYLOAD="$(abspath $(DIST_EXE)).exe" \
+		MSYS_RUNTIME=/usr/bin/msys-2.0.dll
 
 #
 # Portable rules
@@ -588,16 +705,20 @@ banner-portable: portable-done
 	@$(BUILD_USAGE_BANNER)
 
 portfinal: $(PRTB_EXE)
-	@cp $(PRTB_EXE) $(ROOT_EXE)
-	@$(UPX) $(ROOT_EXE)
-	@$(ROOT_EXE) --version
-	@echo "The $(PRTB_EXE) has been copied to the current directory"
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(PRTB_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@echo "Created $(EXE).zip"
 
 portablelibs:
 	@$(MAKE) -s -C libs portable SUBDIRS="$(LIBS)" BUILDDIR=../../$(BUILDDIR)
 
 $(PRTB_EXE): $(PRTB_OBJS) portablelibs
-	@$(CC) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(PRTB_LIB_OBJS) $(PRTB_EXT_LDLIBS)
+	@$(CC) $(LDFLAGS) $(STRIP) $(STATIC) $(PRTB_LDPATH) $(PRTB_LDFLAGS) -o $@ $(PRTB_OBJS) $(PRTB_LIB_OBJS) $(PRTB_EXT_LDLIBS)
 ifeq ($(UNAME_S),Darwin)
 	@echo "$(call short_path,$@) linked dynamically, stripped"
 else
@@ -605,7 +726,7 @@ else
 endif
 
 $(PRTB_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(PRTB_OBJDIR)
-	@$(CC) -c $(INCPATH) $(WFLAGS) $(PRTB_CFLAGS) -o $@ $<
+	@$(CC) -c $(CPPFLAGS) $(INCPATH) $(WFLAGS) $(CFLAGS) $(PRTB_CFLAGS) $(C_STANDARD) -o $@ $<
 	@echo "$(call short_path,$<) compiled with portable flags"
 
 $(PRTB_OBJDIR):
@@ -615,9 +736,13 @@ clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 
 clean: | clean-preproc clean-asm clean-tests clean-compile-commands
+	@rm -f $(EXE).zip
+	@rm -f $(EXE)_windows_x64_portable.exe
+	@rm -f "$(ZIP_DIR)"/v*/*
 	@rm -f *.out.* doc
-	@rm -f $(DBG_EXE) $(DBG_DYN_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYNP_EXE)
-	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(DBG_DYN_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYNP_OBJS)
+	@rm -f $(DBG_EXE) $(DBG_DYN_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYN_PROD_EXE) $(DIST_EXE)
+	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(DBG_DYN_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYN_PROD_OBJS) $(DIST_OBJS)
+	@rm -rf $(DIST_DIR)
 
 	@test -d $(DBG_LIBDIR)/obj && rm -d $(DBG_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
@@ -642,14 +767,16 @@ clean: | clean-preproc clean-asm clean-tests clean-compile-commands
 	@test -d $(PROD_OBJDIR) && rm -d $(PROD_OBJDIR) 2>/dev/null || true
 	@test -d $(PROD_DIR) && rm -d $(PROD_DIR) 2>/dev/null || true
 
-	@test -d $(DYNP_OBJDIR) && rm -d $(DYNP_OBJDIR) 2>/dev/null || true
-	@test -d $(DYNP_DIR) && rm -d $(DYNP_DIR) 2>/dev/null || true
+	@test -d $(DYN_PROD_OBJDIR) && rm -d $(DYN_PROD_OBJDIR) 2>/dev/null || true
+	@test -d $(DYN_PROD_DIR) && rm -d $(DYN_PROD_DIR) 2>/dev/null || true
 
 	@test -d $(PRTB_LIBDIR)/obj && rm -d $(PRTB_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(PRTB_LIBDIR) && rm -d $(PRTB_LIBDIR) 2>/dev/null || true
 	@test -d $(PRTB_OBJDIR) && rm -d $(PRTB_OBJDIR) 2>/dev/null || true
 	@test -d $(PRTB_DIR) && rm -d $(PRTB_DIR) 2>/dev/null || true
 
+	@rm -df "$(ZIP_DIR)"/*
+	@test -d "$(ZIP_DIR)" && rm -d "$(ZIP_DIR)" 2>/dev/null || true
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 
 	@test -f $(EXE) && rm $(EXE) || true
@@ -731,18 +858,18 @@ endif
 
 # Extra arguments passed to the Dockerfile build-time make invocation
 # Per-OS and architecture overrides follow DOCKER_BUILD_MAKE_ARGS_<os>_<arch>
-# UPX=true disables UPX for platform combinations where compressed binaries
-# currently crash at runtime
-# TODO: Remove these workarounds after UPX-compressed binaries run reliably
+# UPX=true disables UPX for Alpine amd64 and Ubuntu arm64 because compressed
+# binaries currently core dump at runtime
+# TODO: Remove these overrides after UPX-compressed binaries run without core dumps on both targets
 DOCKER_BUILD_MAKE_ARGS_alpine_amd64 ?= UPX=true
 DOCKER_BUILD_MAKE_ARGS_ubuntu_arm64 ?= UPX=true
 DOCKER_BUILD_MAKE_ARGS ?= $(DOCKER_BUILD_MAKE_ARGS_$(DOCKER_OS)_$(DOCKER_PLATFORM_ARCH))
 
-DOCKER_IMAGE     = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
+DOCKER_IMAGE = $(EXE):$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)
 # Make the container name unique per OS/build/compiler/test-type to avoid clobbering
 DOCKER_CONTAINER = $(EXE)-$(DOCKER_OS)-$(DOCKER_BUILD)$(DOCKER_COMPILER_TAG)$(DOCKER_TEST_TYPE_TAG)
 
-DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
+DOCKERFILE = .docker/Dockerfile.$(DOCKER_OS)
 # Docker flags are empty by default so automation targets do not require a TTY.
 # DOCKER_CREATE_FLAGS applies to docker-{export,run,test,all}-* because they use docker create/start.
 # DOCKER_RUN_FLAGS applies only to tests-in-docker because it uses docker run directly.
@@ -752,12 +879,12 @@ DOCKERFILE            = .docker/Dockerfile.$(DOCKER_OS)
 #   make DOCKER_RUN_FLAGS=-it tests-in-docker
 DOCKER_CREATE_FLAGS  ?=
 DOCKER_RUN_FLAGS     ?=
-DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
+DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE).zip
 # Labels mark Docker artifacts created by this project.
 # A single key/value pair keeps filtering simple during cleanup
-DOCKER_LABEL_KEY    ?= io.github.precizer
-DOCKER_LABEL_VALUE  ?= 1
-DOCKER_LABEL_ARGS    = --label "$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)"
+DOCKER_LABEL_KEY ?= io.github.precizer
+DOCKER_LABEL_VALUE ?= 1
+DOCKER_LABEL_ARGS = --label "$(DOCKER_LABEL_KEY)=$(DOCKER_LABEL_VALUE)"
 
 .PHONY: build-docker create-docker start-docker copy-from-docker
 .PHONY: docker-export docker-run docker-test docker-all docker docker-% docker-export-% docker-run-% docker-build-% docker-test-%
@@ -780,7 +907,7 @@ start-docker:
 
 # Copy the built artifact out of the container
 copy-from-docker:
-	@docker cp "$(DOCKER_CONTAINER):$(DOCKER_ARTIFACT_PATH)" "$(EXE)"
+	@docker cp "$(DOCKER_CONTAINER):$(DOCKER_ARTIFACT_PATH)" .
 
 # Remove the container
 clean-docker:
@@ -886,13 +1013,13 @@ tests-in-docker: build-docker
 #   make docker-test-alpine-debug DOCKER_TEST_TYPE=tests-debug
 #       create container -> run tests -> cleanup (image must already exist)
 #   make docker-alpine-portable DOCKER_TEST_TYPE=tests-debug
-#       build image -> create container -> run tests -> copy ./precizer -> cleanup
+#       build image -> create container -> run tests -> copy the ZIP package -> cleanup
 #
 docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
 
 # $1 = "ubuntu" or "ubuntu-dynamic-production"
 # Match $1 against known OS names discovered from .docker/Dockerfile.*
-docker_os_from_target    = $(firstword $(foreach os,$(DOCKER_OSES),$(if $(filter $(os) $(os)-%,$1),$(os))))
+docker_os_from_target = $(firstword $(foreach os,$(DOCKER_OSES),$(if $(filter $(os) $(os)-%,$1),$(os))))
 docker_build_from_target = $(if $(filter $(call docker_os_from_target,$1),$1),$(DOCKER_DEFAULT_BUILD),$(patsubst $(call docker_os_from_target,$1)-%,%,$1))
 
 # Default "docker-<os>[-<build>]" does the full pipeline (run + copy + cleanup)
@@ -933,7 +1060,8 @@ docker-test-%:
 # flavor (portable/production/…).
 #
 # This helps ensure the project can be built and tested across multiple Linux
-# distributions, build configurations (static, dynamic, debug, sanitize),
+# distributions, build configurations (static, dynamic, distribution, debug,
+# sanitize),
 # compilers (default, clang), and test types (tests, tests-debug, tests-dynamic).
 #
 # How the OS list is discovered
@@ -954,7 +1082,7 @@ docker-test-%:
 # Which build flavors run per OS
 # ------------------------------
 # By default, each OS runs the following build types:
-#   portable, production, dynamic-production, debug, sanitize
+#   portable, production, dynamic-production, distribution, debug, sanitize
 #
 # Per-OS exclusions can remove specific builds (e.g. Alpine has no sanitizer):
 #   DOCKER_MATRIX_BUILDS_EXCLUDE_alpine ?= sanitize
@@ -986,6 +1114,7 @@ docker-test-%:
 #   make docker-build-ubuntu-portable             # build only
 #   make docker-build-ubuntu-production            # build only
 #   make docker-build-ubuntu-dynamic-production    # build only
+#   make docker-build-ubuntu-distribution          # build only
 #   make docker-build-ubuntu-debug                 # build only
 #   make docker-build-ubuntu-sanitize              # build only
 #   make docker-test-ubuntu-debug  DOCKER_TEST_TYPE=tests          # test only
@@ -1022,7 +1151,7 @@ DOCKER_OSES        := $(sort $(patsubst Dockerfile.%,%,$(notdir $(DOCKER_DOCKERF
 # The list includes application builds and library-only build/test targets.
 # Per-OS exclusions: define DOCKER_MATRIX_BUILDS_EXCLUDE_<os> to remove
 # specific build types (e.g. Alpine has no sanitizer).
-DOCKER_MATRIX_BUILDS ?= portable production dynamic-production debug sanitize precizer-coverage $(LIBS_MATRIX_BUILDS) $(LIBS_MATRIX_TESTS)
+DOCKER_MATRIX_BUILDS ?= portable production dynamic-production distribution debug sanitize precizer-coverage $(LIBS_MATRIX_BUILDS) $(LIBS_MATRIX_TESTS)
 DOCKER_MATRIX_BUILDS_EXCLUDE_alpine ?= sanitize libs-sanitize libs-tests-sanitize
 
 # Compilers to test per OS.  "default" means the OS-provided compiler
@@ -1111,7 +1240,7 @@ format:
 # Optional preprocessor files
 %.i:%.c
 	@rm -f $@ $@.h
-	@$(CC) -E -C -o $@ $(INCPATH) $(CFLAGS) $<
+	@$(CC) -E -C $(CPPFLAGS) $(INCPATH) $(CFLAGS) $(C_STANDARD) -o $@ $<
 # C-C++ Beautifier
 #	@bcpp -na $@ > $@.h
 	@bcpp -na -s -i 4 $@ > $@.h
@@ -1121,7 +1250,7 @@ format:
 # Optional assembler files
 %.asm:%.c
 	@rm -f $@
-	@$(CC) -S -C $(INCPATH) $(WFLAGS) $(PROD_CFLAGS) $(PROD_LDFLAGS) -o $@ $(LDLIBS) $<
+	@$(CC) -S -C $(CPPFLAGS) $(INCPATH) $(WFLAGS) $(CFLAGS) $(PROD_CFLAGS) $(C_STANDARD) -o $@ $<
 
 #
 # Other rules
@@ -1201,6 +1330,9 @@ cloc:
 
 banner:
 	@$(BUILD_USAGE_BANNER)
+
+version:
+	@printf '%s\n' "$(APP_VERSION)"
 
 #
 # Print variables

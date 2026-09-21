@@ -56,7 +56,7 @@ Return test0021(void)
 	ASSERT(SUCCESS == get_file_content("templates/0021_0001.txt",pattern));
 
 	// Match the result against the pattern
-	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern));
+	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern,NULL));
 
 	m_del(captured_stdout);
 	m_del(captured_stderr);
