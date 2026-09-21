@@ -3,6 +3,10 @@
 
 #include "rational_enumerations.h"
 
+#include <stdatomic.h>
+
+extern _Atomic Return global_return_status;
+
 void provide(const Return);
 void deliver(const Return);
 const char *show_status(const Return);

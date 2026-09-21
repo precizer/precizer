@@ -1,5 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
+TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/ignore_include_cases/chaotic_filenames
 TESTING:argument:database=database0009_4\.db
 TESTING:argument:db_file_name=database0009_4\.db
@@ -34,7 +35,6 @@ TESTING:The TEMP table the_path_id_does_not_exists is ready for runtime checks
 TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
-TESTING:Bytes that can be allocated for the file buffer: \d+[^\r\n]*
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009_4\.db:(?:\x1B\[[0-9;]*m)*
 new alpha_m0n9k2_zz\.txt
@@ -57,5 +57,4 @@ TESTING:Start vacuuming the primary database…
 TESTING:The primary database has been vacuumed
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database0009_4\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

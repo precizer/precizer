@@ -9,7 +9,7 @@
  *         respectively, to be less than, to match, or be greater than second
  */
 static int compare_by_name(
-#ifdef __CYGWIN__
+#ifdef __MSYS__
 	const FTSENT * const *first,
 	const FTSENT * const *second)
 #else
@@ -95,7 +95,7 @@ Return file_list(TraversalSummary *summary)
 	fts_options |= FTS_NOCHDIR;
 #endif
 
-	if(config->start_device_only == true)
+	if(config->one_file_system == true)
 	{
 		fts_options |= FTS_XDEV;
 	}
@@ -152,7 +152,7 @@ Return file_list(TraversalSummary *summary)
 
 	if(summary->stats_only_pass == false)
 	{
-		status = m_resize(file_buffer,file_buffer_memory());
+		status = m_resize(file_buffer,FILE_READ_BUFFER_SIZE);
 
 		if(SUCCESS != status)
 		{
@@ -786,7 +786,7 @@ Return file_list(TraversalSummary *summary)
 
 	if(lock_checksum_violation_detected == true)
 	{
-		slog(EVERY,BOLD "Warning! Data corruption detected for checksum-locked file!" RESET "\n");
+		slog(EVERY,"@{bold}Warning! Data corruption detected for checksum-locked file!@{reset}\n");
 
 		if(SUCCESS == status)
 		{

@@ -21,6 +21,10 @@ This return style is useful when code needs to know separately:
 4. [Time helpers](#time-helpers)
 5. [Status text helpers](#status-text-helpers)
 6. [Reports and logging](#reports-and-logging)
+
+   * [Message colors and styling](#message-colors-and-styling)
+   * [Saving messages with REMEMBER](#saving-messages-with-remember)
+
 7. [Status layers](#status-layers)
 8. [Basic function](#basic-function)
 9. [Check function with YES and NO](#check-function-with-yes-and-no)
@@ -199,7 +203,7 @@ Main modes:
 * `ERROR` — error messages
 * `SILENT` — suppress regular output
 * `UNDECOR` — print only the payload without logger prefixes
-* `REMEMBER` — pass the prepared line to the optional `rational_remember()` callback
+* `REMEMBER` — pass the prepared line without ANSI styling to the optional `rational_remember()` callback
 * `VISIBLE_IN_SILENT` — allow a specific message to appear even in `SILENT`
 
 `rational_reconvert(mode)` returns a human-readable string with mode flag names, for example `REGULAR | VERBOSE`. `rational_convert(NAME)` is a simple macro-stringify helper that turns a macro name into text.
@@ -209,6 +213,95 @@ rational_logger_mode = REGULAR | VERBOSE;
 slog(REGULAR,"Started\n");
 slog(VERBOSE,"Detailed value: %d\n",value);
 ```
+
+### Message colors and styling
+
+Strings passed to `slog()` can highlight text with `@{...}` markers. They work alongside ordinary `printf` conversions such as `%s` and `%d`:
+
+```c
+rational_logger_mode = REGULAR;
+slog(REGULAR|UNDECOR,"The @{bold}--update@{reset} option\n");
+slog(REGULAR|UNDECOR,"@{bold}@{red}Cannot read %s@{reset}\n","archive.db");
+```
+
+When styling is enabled, only `--update` is bold in the first line, while the entire second message is red and bold. When styling is disabled, known markers are removed, leaving ordinary text without added ANSI sequences, including the style reset
+
+`UNDECOR` removes only logger prefixes, such as the timestamp and call site. It does not affect colors or bold text. `slog()` itself writes to `stdout`, including at the `ERROR` level. Ordinary `printf()`, as well as `report()` and `serp()`, do not process these markers
+
+#### When styling is enabled
+
+The global atomic variable `rational_color_mode` controls styling independently of `rational_logger_mode`, which controls message visibility:
+
+| Value | Behavior |
+|---|---|
+| `COLOR_MODE_AUTO` | The default. Allows styling only for a terminal or pseudoterminal unless the environment disables it |
+| `COLOR_MODE_ALWAYS` | Allows styling even in files and pipes, regardless of `NO_COLOR` and `TERM` |
+| `COLOR_MODE_NEVER` | Disables styling regardless of the stream and environment |
+
+In `AUTO` mode, the presence of `NO_COLOR`, even with an empty value, or `TERM=dumb` disables styling. Otherwise, `isatty()` checks the specific stream. Ordinary output to a file, pipe, or CI environment without a terminal therefore has no styling
+
+```c
+rational_color_mode = COLOR_MODE_NEVER;
+slog(REGULAR|UNDECOR,"@{red}Plain message@{reset}\n");
+
+rational_color_mode = COLOR_MODE_ALWAYS;
+slog(REGULAR|UNDECOR,"@{red}Styled message@{reset}\n");
+
+rational_color_mode = COLOR_MODE_AUTO;
+```
+
+The `rational_color_is_enabled(stream)` function lets you check the decision separately for `stdout` and `stderr`. In `AUTO` mode, the stream's current terminal connection is checked unless the presence of `NO_COLOR` or the value `TERM=dumb` disables styling. The function preserves `errno` and does not change buffering. Its result permits styling but does not prove that the terminal supports specific ANSI sequences, 256 colors, or true color. The library does not check capabilities through `terminfo`
+
+In precizer, the `--color` option selects this mode; user instructions are in the [application README](../../README.md)
+
+#### Available markers
+
+Names are case-sensitive and use lowercase letters:
+
+| Markers | Action |
+|---|---|
+| `@{bold}` | Enable bold text |
+| `@{black}`, `@{gray}`, `@{red}`, `@{green}`, `@{yellow}`, `@{blue}`, `@{magenta}`, `@{cyan}`, `@{white}` | Select a text color |
+| `@{boldblack}`, `@{boldred}`, `@{boldgreen}`, `@{boldyellow}`, `@{boldblue}`, `@{boldmagenta}`, `@{boldcyan}`, `@{boldwhite}` | Enable bold text and select a color |
+| `@{reset}` | Reset the color and text attributes |
+| `@{shorttab}` | Insert the `SHORTTAB` sequence (`\033[?5W`), whose effect depends on terminal support; this is not an ordinary `\t` character |
+
+Styles can be combined by placing markers next to each other: `@{bold}@{red}`. The same combination is available as `@{boldred}`. The spelling `@{bold red}` is not recognized
+
+Styled text requires an explicit `@{reset}` afterward. The logger only replaces markers: it does not track styling state or add a reset automatically. Without `@{reset}`, the color and text attributes may affect subsequent output, including after a newline or in the next `slog()` call
+
+#### Substituted text and literal markers
+
+Markers are processed after `printf` substitutions and sanitization, which turns unsafe control bytes into visible text. Markers inside `%s` therefore also apply styling:
+
+```c
+slog(REGULAR|UNDECOR,"%s\n","@{green}Ready@{reset}");
+```
+
+This call prints `Ready` in green when styling is enabled and as plain text otherwise. Each known marker is replaced literally with its ANSI sequence or an empty string. Unknown markers such as `@{unknown}` and incomplete constructs such as `@{red` remain visible. A complete known marker within such text is still replaced: for example, with styling disabled, `@{unknown @{red}}` becomes `@{unknown }`
+
+There is no marker escaping. In `@@{red}`, the first `@` remains ordinary text, while the following `@{red}` is replaced with the red color sequence or removed. This also applies to file names or other data passed through `%s`: literal matches for known markers are treated as styling
+
+Actual ESC bytes in the format or arguments are not used for styling: sanitization turns them into visible `\x1B` text before marker processing, regardless of the color mode. Styling through `slog()` uses `@{red}`, not the `RED` macro inserted into the string. `RED`, `BOLD`, `RESET`, and the other macros in `rational_decoration.h` remain ANSI sequence strings; they do not consult `rational_color_mode` on their own
+
+### Saving messages with REMEMBER
+
+The `REMEMBER` flag lets you print a styled message and pass its text to the application without ANSI styling sequences. To receive it, the application defines this callback:
+
+```c
+void rational_remember(const char *message, const int message_length);
+```
+
+For example, when regular messages are enabled:
+
+```c
+slog(REGULAR|UNDECOR|REMEMBER,
+	"@{red}Cannot read %s@{reset}\n","archive.db");
+```
+
+The terminal message is red when styling is enabled. The callback receives `Cannot read archive.db\n`: without styling markers or ANSI, but with the trailing newline. Markers from substituted arguments follow the same rules. Unless `UNDECOR` is set, ordinary logger prefixes are also part of the passed line
+
+If the application does not define `rational_remember()`, the callback is skipped and output continues to work. The flag does not bypass the logger's message filtering. The `message` pointer is valid only during the callback: copy `message_length` bytes to retain the text. Do not call `slog()` from the callback, to avoid recursive logging
 
 ## Status layers
 

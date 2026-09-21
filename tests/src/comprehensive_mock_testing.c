@@ -5,13 +5,13 @@ Return comprehensive_mock_testing(void)
 {
 	INITTEST;
 
-	enum run_mode prev_run_mode = run_external;
+	enum run_mode prev_run_mode = testitall_runit_mode;
 
-	run_external = INTERNAL_TEST;
+	testitall_runit_mode = INTERNAL_TEST;
 
 	TEST(test0031,"Read error handling during hashing");
 
-	run_external = prev_run_mode;
+	testitall_runit_mode = prev_run_mode;
 
 	RETURN_STATUS;
 }
