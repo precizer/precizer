@@ -1228,6 +1228,12 @@ NO_COLOR=1 precizer --compare first.db second.db
 
 ## TROUBLESHOOTING
 
+### Antivirus slows scanning on Windows
+
+Real-time antivirus protection can significantly slow file traversal and checksum calculation, in some cases by one or two orders of magnitude. This happens because the antivirus scans each file when it is accessed. To improve performance, adding the folders being scanned to real-time scanning exclusions is recommended
+
+`precizer` reads every byte of every file in the specified directory to calculate checksums, but does NOT launch the files or execute their contents. Antivirus protection is not required for checksum calculation itself
+
 ### Slow file walk, slow checksums, slow database writes ("everything is slow")
 
 To pinpoint the bottleneck, try running `precizer` in `--dry-run` or `--dry-run=with-checksums` mode.
