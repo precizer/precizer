@@ -3,8 +3,9 @@
 /**
  * @brief Release resources owned by the global configuration
  *
- * The function restores terminal input mode when stdin is a terminal, then
- * releases every dynamically managed configuration field. Libmem descriptors
+ * The function restores terminal input mode when stdin is a terminal and
+ * restores console QuickEdit if it was disabled, then releases every
+ * dynamically managed configuration field. Libmem descriptors
  * are deleted through the matching `m_del()` or `m_array_del()` helpers, while
  * plain pointer arrays and compiled PCRE2 arrays use their own free helpers
  */
@@ -21,6 +22,11 @@ void free_config(void)
 		term.c_lflag |= (ICANON|ECHO);
 		tcsetattr(fileno(stdin),0,&term);
 	}
+
+#ifdef __MSYS__
+	// Restore the original QuickEdit setting for mouse selection in the Windows console
+	restore_console_quick_edit();
+#endif
 
 	// Primary database file path used for read and write operations
 	(void)m_del(conf(db_primary_file_path));

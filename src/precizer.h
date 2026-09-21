@@ -714,6 +714,11 @@ void init_config(void);
 
 Return init_signals(void);
 
+#ifdef __MSYS__
+void disable_console_quick_edit(void);
+void restore_console_quick_edit(void);
+#endif
+
 void log_sqlite_error(
 	sqlite3 *,
 	int,
