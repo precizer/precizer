@@ -49,6 +49,8 @@
 .SUFFIXES: .c .o .h # Define our suffix list
 
 BUILDDIR = .builds
+ZIP_DIR = $(BUILDDIR)/zip
+APP_VERSION := $(shell awk -F '"' '/^\#define APP_VERSION / {print $$2}' src/version.h)
 # Returns a concise path for build messages.
 # Plain file names stay unchanged; nested paths keep only final-directory/file
 short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
@@ -78,7 +80,6 @@ endif
 GCC := $(findstring gcc,$(notdir $(firstword $(CC))))
 
 EXE = precizer
-ROOT_EXE = ./$(EXE)
 ifeq ($(UNAME_S),Darwin)
 STATIC =
 STRIP ?= -Wl,-x
@@ -437,14 +438,15 @@ LIBS_MATRIX_TESTS = libs-tests-debug libs-tests-coverage libs-tests-sanitize
 
 define BUILD_USAGE_BANNER
 printf "Now some tests could be running:\n"
+printf "\033[1mUnpacking:\033[0m\nunzip -jo $(EXE).zip 'v$(APP_VERSION)/$(EXE)'\n"
 printf "\033[1mStage 1. Adding:\033[0m\n./$(EXE) --progress --database=database1.db tests/fixtures/diffs/diff1\n"
 printf "\033[1mStage 2. Adding:\033[0m\n./$(EXE) --progress --database=database2.db tests/fixtures/diffs/diff2\n"
 printf "\033[1mFinal stage. Comparing:\033[0m\n./$(EXE) --compare database1.db database2.db\n"
 endef
 
-.PHONY: all clean debug debug-dynamic remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build distribution debug-build debug-dynamic-build debuglibs debugdynlibs coveragelibs sanitizelibs prodlibs dynprodlibs distlibs portablelibs debugfinal debugdynfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
+.PHONY: all version clean debug debug-dynamic remake tests sanitize banner run format portable production prod dynamic-production dynamic-production-build distribution debug-build debug-dynamic-build debuglibs debugdynlibs coveragelibs sanitizelibs prodlibs dynprodlibs distlibs portablelibs debugfinal debugdynfinal prodfinal sanitizefinal dynprodfinal portfinal coverage coveragefinal precizer-coverage print-%
 .PHONY: production-done portable-done
-.PHONY: msys-build windows-zip windows-exe
+.PHONY: macos-zip msys-build windows-zip windows-exe
 .PHONY: banner-production banner-dynamic-production banner-portable
 .PHONY: purge clean-all clean-tools clean-tests clean-preproc clean-asm test test-coverage tests-sanitize tests-debug tests-dynamic analyze static-analyzers static-analyzers-cli gcc-analyzer cppcheck memtest cachegrind callgrind helgrind massif clang-analyzer clang-analyzer-cli doc spellcheck gource perf stat cloc
 .PHONY: compile-commands
@@ -576,10 +578,14 @@ banner-production: production-done
 	@$(BUILD_USAGE_BANNER)
 
 prodfinal: $(PROD_EXE)
-	@cp $(PROD_EXE) $(ROOT_EXE)
-	@$(UPX) $(ROOT_EXE)
-	@$(ROOT_EXE) --version
-	@echo "The $(PROD_EXE) has been copied to the current directory"
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(PROD_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@echo "Created $(EXE).zip"
 
 prodlibs:
 	@$(MAKE) -s -C libs production SUBDIRS="$(LIBS)" BUILDDIR=../../$(BUILDDIR)
@@ -611,10 +617,14 @@ banner-dynamic-production: dynprodfinal
 	@$(BUILD_USAGE_BANNER)
 
 dynprodfinal: dynamic-production-build
-	@cp $(DYN_PROD_EXE) $(ROOT_EXE)
-	@$(UPX) $(ROOT_EXE)
-	@$(ROOT_EXE) --version
-	@echo "The $(DYN_PROD_EXE) has been copied to the current directory"
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(DYN_PROD_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@echo "Created $(EXE).zip"
 
 dynprodlibs:
 	@$(MAKE) -s -C libs production SUBDIRS="$(STATLIBS)" BUILDDIR=../../$(BUILDDIR)
@@ -650,6 +660,14 @@ $(DIST_OBJDIR)/%.o: $(SRC_DIR)/%.c $(HDRS) | $(DIST_OBJDIR)
 $(DIST_OBJDIR):
 	@mkdir -p $(DIST_OBJDIR)
 
+macos-zip: $(DIST_EXE)
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(DIST_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+
 #
 # Windows packages built from the MSYS payload
 #
@@ -663,10 +681,12 @@ msys-build: $(DIST_EXE)
 
 # Recreate the archive and require every input file to be present and readable
 windows-zip: msys-build
-	@rm -f precizer_windows_x64_portable.zip
-	@zip -j -MM precizer_windows_x64_portable.zip \
-		"$(DIST_EXE).exe" /usr/bin/msys-2.0.dll \
-		COPYING CHANGELOG.md README.ru.md README.md
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(DIST_EXE).exe" /usr/bin/msys-2.0.dll "$(ZIP_DIR)/v$(APP_VERSION)/"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE).exe" --version
+	@rm -f $(EXE).zip
+	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE).exe" "v$(APP_VERSION)/msys-2.0.dll"
+	@zip -9 -j -MM $(EXE).zip COPYING CHANGELOG.md README.ru.md README.md
 
 # Build the native launcher with the payload taken directly from its build directory
 windows-exe: msys-build
@@ -685,10 +705,14 @@ banner-portable: portable-done
 	@$(BUILD_USAGE_BANNER)
 
 portfinal: $(PRTB_EXE)
-	@cp $(PRTB_EXE) $(ROOT_EXE)
-	@$(UPX) $(ROOT_EXE)
-	@$(ROOT_EXE) --version
-	@echo "The $(PRTB_EXE) has been copied to the current directory"
+	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(PRTB_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@rm -f "$(EXE).zip"
+	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@echo "Created $(EXE).zip"
 
 portablelibs:
 	@$(MAKE) -s -C libs portable SUBDIRS="$(LIBS)" BUILDDIR=../../$(BUILDDIR)
@@ -712,6 +736,9 @@ clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 
 clean: | clean-preproc clean-asm clean-tests clean-compile-commands
+	@rm -f $(EXE).zip
+	@rm -f $(EXE)_windows_x64_portable.exe
+	@rm -f "$(ZIP_DIR)"/v*/*
 	@rm -f *.out.* doc
 	@rm -f $(DBG_EXE) $(DBG_DYN_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYN_PROD_EXE) $(DIST_EXE)
 	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(DBG_DYN_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYN_PROD_OBJS) $(DIST_OBJS)
@@ -748,6 +775,8 @@ clean: | clean-preproc clean-asm clean-tests clean-compile-commands
 	@test -d $(PRTB_OBJDIR) && rm -d $(PRTB_OBJDIR) 2>/dev/null || true
 	@test -d $(PRTB_DIR) && rm -d $(PRTB_DIR) 2>/dev/null || true
 
+	@rm -df "$(ZIP_DIR)"/*
+	@test -d "$(ZIP_DIR)" && rm -d "$(ZIP_DIR)" 2>/dev/null || true
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 
 	@test -f $(EXE) && rm $(EXE) || true
@@ -850,7 +879,7 @@ DOCKERFILE = .docker/Dockerfile.$(DOCKER_OS)
 #   make DOCKER_RUN_FLAGS=-it tests-in-docker
 DOCKER_CREATE_FLAGS  ?=
 DOCKER_RUN_FLAGS     ?=
-DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE)
+DOCKER_ARTIFACT_PATH ?= /$(EXE)/$(EXE).zip
 # Labels mark Docker artifacts created by this project.
 # A single key/value pair keeps filtering simple during cleanup
 DOCKER_LABEL_KEY ?= io.github.precizer
@@ -878,7 +907,7 @@ start-docker:
 
 # Copy the built artifact out of the container
 copy-from-docker:
-	@docker cp "$(DOCKER_CONTAINER):$(DOCKER_ARTIFACT_PATH)" "$(EXE)"
+	@docker cp "$(DOCKER_CONTAINER):$(DOCKER_ARTIFACT_PATH)" .
 
 # Remove the container
 clean-docker:
@@ -984,7 +1013,7 @@ tests-in-docker: build-docker
 #   make docker-test-alpine-debug DOCKER_TEST_TYPE=tests-debug
 #       create container -> run tests -> cleanup (image must already exist)
 #   make docker-alpine-portable DOCKER_TEST_TYPE=tests-debug
-#       build image -> create container -> run tests -> copy ./precizer -> cleanup
+#       build image -> create container -> run tests -> copy the ZIP package -> cleanup
 #
 docker: docker-export-$(DOCKER_DEFAULT_OS)-$(DOCKER_DEFAULT_BUILD)
 
@@ -1301,6 +1330,9 @@ cloc:
 
 banner:
 	@$(BUILD_USAGE_BANNER)
+
+version:
+	@printf '%s\n' "$(APP_VERSION)"
 
 #
 # Print variables

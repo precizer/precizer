@@ -16,7 +16,7 @@ RUN set -eux; \
       sqlite sqlite-devel \
       glibc-devel glibc-static \
       pcre2 pcre2-devel pcre2-static \
-      upx; \
+      upx zip; \
     dnf -y clean all; \
     rm -rf /var/cache/dnf /var/cache/libdnf5
 

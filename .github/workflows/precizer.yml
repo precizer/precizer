@@ -60,25 +60,18 @@ jobs:
       attestations: write
       artifact-metadata: write
 
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx zip gh
 
       - name: Build project (Linux x86_64)
         run: |
           make -j portable
-          mkdir v${{ env.VERSION }}
-          cp -a precizer v${{ env.VERSION }}/
-          zip -9 -r precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
-          ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
-          echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_portable.zip
-          ./precizer --version
+          mv precizer.zip precizer_linux_x86_64_portable.zip
+          ./.builds/portable/precizer --version
           make purge
 
       - name: Run tests (Linux x86_64)
@@ -133,12 +126,12 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          unzip -jqo precizer.zip '*/precizer' -d ./
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          ./precizer --version
+          "$RUNNER_TEMP/precizer" --version
 
   build_linux_arm64:
     name: Build & attach Linux arm64
@@ -151,26 +144,19 @@ jobs:
       attestations: write
       artifact-metadata: write
 
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm gh
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm zip gh
 
       - name: Build project (Linux arm64)
         run: |
           # UPX is disabled on Linux ARM64 because UPX-compressed binaries currently core dump at runtime
           # TODO: Remove this legacy workaround after UPX-compressed Linux ARM64 binaries run reliably
           make -j portable UPX=true
-          mkdir v${{ env.VERSION }}
-          cp -a .builds/portable/precizer v${{ env.VERSION }}/
-          zip -9 -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
-          ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
-          echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
+          mv precizer.zip precizer_linux_aarch64_portable.zip
           ./.builds/portable/precizer --version
           make purge
 
@@ -226,12 +212,12 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          unzip -jqo precizer.zip '*/precizer' -d ./
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          ./precizer --version
+          "$RUNNER_TEMP/precizer" --version
 
   build_evil_empire_os_arm64:
     name: Build & attach Evil Empire macOS arm64
@@ -243,9 +229,6 @@ jobs:
       id-token: write
       attestations: write
       artifact-metadata: write
-
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
       - name: Checkout repository (exclude tests/fixtures/long)
@@ -264,13 +247,11 @@ jobs:
 
       - name: Build project (macOS arm64)
         run: |
-          make -j distribution
+          make -j macos-zip
+          mv precizer.zip precizer_macos_arm64.zip
           built_exe=".builds/distribution/precizer"
           otool -L "$built_exe"
           otool -l "$built_exe"
-          mkdir v${{ env.VERSION }}
-          cp -a "$built_exe" "v${{ env.VERSION }}/precizer"
-          zip -9 -r precizer_macos_arm64.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
           "$built_exe" --version
           make purge
 
@@ -326,16 +307,16 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          unzip -jqo precizer.zip '*/precizer' -d ./
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          ./precizer --version
+          "$RUNNER_TEMP/precizer" --version
 
   build_evil_empire_os_x86_64:
     name: Build & attach Evil Empire macOS x86_64
-    runs-on: macos-15-intel
+    runs-on: macos-26-intel
     needs: get_tag_info
 
     permissions:
@@ -343,9 +324,6 @@ jobs:
       id-token: write
       attestations: write
       artifact-metadata: write
-
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
       - name: Checkout repository (exclude tests/fixtures/long)
@@ -360,17 +338,15 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install llvm argp-standalone || true
+          brew install llvm@20 argp-standalone
 
       - name: Build project (macOS x86_64)
         run: |
-          make -j distribution
+          make -j macos-zip
+          mv precizer.zip precizer_macos_x86_64.zip
           built_exe=".builds/distribution/precizer"
           otool -L "$built_exe"
           otool -l "$built_exe"
-          mkdir v${{ env.VERSION }}
-          cp -a "$built_exe" "v${{ env.VERSION }}/precizer"
-          zip -9 -r precizer_macos_x86_64.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
           "$built_exe" --version
           make purge
 
@@ -426,12 +402,12 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          #wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          #wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          #wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          #wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          #unzip -jqo precizer.zip '*/precizer' -d ./
+          #unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          #./precizer --version
+          #"$RUNNER_TEMP/precizer" --version
 
   # Build and attach the MSYS-based Windows x64 release assets
   build_msys_x64:
@@ -490,6 +466,7 @@ jobs:
 
           # Build both packages with a shared MSYS payload and static third-party libraries
           make windows-zip windows-exe
+          mv precizer.zip precizer_windows_x64_portable.zip
 
           # Locate the executable produced by msys-build
           built_exe=".builds/distribution/precizer.exe"
@@ -552,22 +529,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Read the archive member names without extracting files
-          unzip -Z1 precizer_windows_x64_portable.zip > .builds/msys-reports/archive-members.txt
+          # Prepare a temporary directory for the extracted files
+          archive_dir="$(mktemp -d)"
 
-          # Require the executable, MSYS runtime, and documentation in the archive root
-          for member in precizer.exe msys-2.0.dll COPYING CHANGELOG.md README.ru.md README.md; do
-            if ! grep -Fxq "$member" .builds/msys-reports/archive-members.txt; then
-              echo "The Windows ZIP does not contain $member in its root" >&2
-              exit 1
-            fi
-          done
+          # Extract the executable and MSYS runtime into the same directory
+          unzip -jqo precizer_windows_x64_portable.zip '*/precizer.exe' '*/msys-2.0.dll' -d "$archive_dir"
 
-          # Print the archive root contents for the workflow log
-          cat .builds/msys-reports/archive-members.txt
+          # Run the program from the extraction directory
+          cd "$archive_dir"
 
-          # Verify the compressed contents of the release ZIP asset
-          unzip -t precizer_windows_x64_portable.zip
+          # Print the version to verify that the extracted program starts
+          ./precizer.exe --version
 
       # Generate a Sigstore attestation for the self-extracting executable
       - name: Generate attestation (MSYS x64 self-extracting exe)

@@ -41,15 +41,18 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - When a full test run is needed, run only `make tests-debug`. It includes the slow scenarios
 - Do not run multiple test variants sequentially by default. Use `make tests` only when sanitizer verification is specifically requested or justified by the change
 - The main application Makefile and internal library Makefiles usually collect source files with `$(wildcard src/*.c)`, so newly added `.c` files are picked up automatically after creation or `git mv`
-- `make` or `make production`: default optimized build; outputs `./precizer`.
-- `make portable`: static portable Linux build (UPX-compressed).
-- `make dynamic-production`: dynamic build using system `sqlite3`/`pcre2`.
+- `make` or `make production`: default optimized build; creates a ZIP package in the project root
+- `make portable`: static portable Linux build; creates a ZIP package with an UPX-compressed executable
+- `make dynamic-production`: dynamic build using system `sqlite3`/`pcre2`; creates a ZIP package in the project root
+- `make distribution`: build a binary for distribution packages at `.builds/distribution/precizer`
+- `make macos-zip`: build and package the macOS release using the distribution build rules
 - `make debug`: build the application with debug flags.
 - `make sanitize`: build the application with ASan/UBSan.
 - `make tests-debug`: build and run the debug test suite, including slow scenarios unless `SLOWTEST=skip` is set.
 - `make tests`: build and run the sanitizer-backed test suite via `tests/Makefile`; use it only when sanitizer verification is specifically needed.
 - `make coverage`: builds and runs the coverage-instrumented test suite, then generates the coverage report.
-- `make purge`: remove build outputs and generated binaries, all artifacts in .builds/
+- `make clean`: remove build outputs, ZIP packages, attestation bundles, and package staging directories
+- `make purge`: remove build artifacts in `.builds/` while preserving release packages in the project root
 
 ## Coding Style & Naming Conventions
 - Language standard is `C2x`; builds use strict warnings and `-Werror`.

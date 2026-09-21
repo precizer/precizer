@@ -11,7 +11,7 @@ RUN set -eux; \
       llvm-dev \
       libpcre2-dev \
       libsqlite3-dev \
-      upx-ucl; \
+      upx-ucl zip; \
     rm -rf /var/lib/apt/lists/*;
 
 WORKDIR /precizer

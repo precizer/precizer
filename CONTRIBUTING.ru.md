@@ -67,20 +67,20 @@ cargo install typos-cli
 #### Arch Linux
 
 ```sh
-sudo pacman -S --needed base-devel pcre2 llvm
+sudo pacman -S --needed base-devel pcre2 llvm zip unzip
 ```
 
 #### Ubuntu/Debian Linux
 
 ```sh
 sudo apt update
-sudo apt -y install gcc make libpcre2-dev llvm libubsan1
+sudo apt -y install gcc make libpcre2-dev llvm libubsan1 zip unzip
 ```
 
 #### Alpine Linux
 
 ```sh
-sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone zip unzip
 ```
 
 На Alpine Linux санитайзерный режим не поддерживается. Тесты запускаются командой `make tests-debug`.
@@ -88,7 +88,7 @@ sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalon
 #### Fedora Linux
 
 ```sh
-sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static
+sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static zip unzip
 ```
 
 #### AlmaLinux/Rocky Linux
@@ -98,7 +98,7 @@ sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre
 ```sh
 sudo dnf -y install dnf-plugins-core epel-release
 sudo dnf config-manager --set-enabled crb
-sudo dnf -y install gcc-toolset-15-gcc gcc-toolset-15-libasan-devel gcc-toolset-15-libubsan-devel make llvm pcre2-devel
+sudo dnf -y install gcc-toolset-15-gcc gcc-toolset-15-libasan-devel gcc-toolset-15-libubsan-devel make llvm pcre2-devel zip unzip
 sudo dnf -y --enablerepo=devel install pcre2-static glibc-static
 ```
 
@@ -121,12 +121,12 @@ scl enable gcc-toolset-15 -- make tests
 
 ```sh
 echo "dev-libs/libpcre2 static-libs" | sudo tee /etc/portage/package.use/libpcre2
-sudo emerge llvm-core/clang dev-libs/libpcre2
+sudo emerge llvm-core/clang dev-libs/libpcre2 app-arch/zip app-arch/unzip
 ```
 
 #### macOS
 
-Для тестовой сборки требуются инструменты командной строки Xcode и библиотеки из Homebrew:
+Архиватор `zip` и программа распаковки `unzip` входят в macOS. Для тестовой сборки установите инструменты командной строки Xcode и библиотеки из Homebrew:
 
 ```sh
 xcode-select --install
@@ -141,16 +141,19 @@ make tests
 
 ### Клонирование и сборка
 
+Пример сборки и распаковки архива на Linux x86_64 после установки зависимостей:
+
 ```sh
 git clone https://github.com/precizer/precizer.git
 cd precizer
 make production
-./precizer --version
+unzip precizer.zip '*/precizer'
+"./v$(make version)/precizer" --version
 ```
 
 Доступные режимы, команды, назначение получаемых исполняемых файлов и технические различия сборки подробно описаны в основной документации, в подразделе [«Варианты сборки с помощью Make»](README.ru.md#варианты-сборки-с-помощью-make).
 
-Очистка (рекурсивно удаляет `.builds`):
+Удаление сборочных файлов в `.builds/` с сохранением готовых ZIP-архивов в корне проекта:
 
 ```sh
 make purge

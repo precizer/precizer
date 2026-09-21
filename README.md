@@ -290,15 +290,17 @@ Building the program is already supported via Docker. Several tuned platforms ar
 
 Configuration details and installed libraries are listed in the corresponding Dockerfiles under `.docker/`.
 
-Build targets use the form `docker-<distro>-<build>` (for example `debian` and `dynamic-production`). The available targets are listed under [“Build variants available through Make”](#build-variants-available-through-make).
+To build the program, run `make` with a target composed of `docker`, a distribution such as `debian`, and `dynamic-production` or another [build variant](#build-variants-available-through-make), separated by hyphens
+
+Example of a build in a container:
 
 ```sh
 make docker-gentoo-production
 ```
 
-This builds a production binary using the Gentoo Docker container.
+This builds the program in `production` mode inside a Gentoo container and saves the completed `precizer_linux_<architecture>_production.zip` archive in the project root
 
-After the build completes, an executable `precizer` appears in the project directory (built inside the container). The main benefit of using Docker is that a full build toolchain, libraries, and their dependencies are not required on the host system; running Docker yields the binary. The next step is choosing the binary variant. When in doubt, `make portable` is a good starting point. All available build variants are described below.
+Build tools and libraries are installed inside the container; the host system only needs Docker. For a portable build, `make docker-gentoo-portable` is recommended as the most broadly compatible option
 
 ### Manual Build
 
@@ -319,7 +321,7 @@ make purge
 
 #### Linux
 
-The following commands install the compiler, tools, and library headers required to build the application. UPX is used by the `portable`, `production`, and `dynamic-production` targets; the `distribution` target does not require it
+The following commands install the compiler, tools, and library headers required to build the application. The `zip` archiver creates the finished packages, and `unzip` extracts them. UPX compresses the copy of the program prepared for the archive in the `portable`, `production`, and `dynamic-production` targets; the `distribution` target does not require it
 
 Runtime dependencies are required only for the `dynamic-production` and `distribution` dynamic builds. The static `portable` and `production` builds include the required libraries in the executable and do not need the packages listed below at runtime
 
@@ -330,7 +332,7 @@ Dependency installation commands used during automated builds for supported dist
 **Build tools and libraries:**
 
 ```sh
-sudo pacman -S --needed base-devel sqlite pcre2 upx
+sudo pacman -S --needed base-devel sqlite pcre2 upx zip unzip
 ```
 
 **Dynamic build runtime dependencies:**
@@ -345,7 +347,7 @@ sudo pacman -S --needed sqlite pcre2
 
 ```sh
 sudo apt update
-sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl
+sudo apt -y install gcc make libpcre2-dev libsqlite3-dev upx-ucl zip unzip
 ```
 
 **Dynamic build runtime dependencies:**
@@ -359,7 +361,7 @@ sudo apt -y install libpcre2-8-0 libsqlite3-0
 **Build tools and libraries:**
 
 ```sh
-sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone sqlite-dev upx zip unzip
 ```
 
 **Dynamic build runtime dependencies:**
@@ -372,10 +374,10 @@ sudo apk add --no-cache pcre2 sqlite-libs argp-standalone fts
 
 **Build tools and libraries:**
 
-Available repositories and static library package names differ between releases of these distributions. Building every variant requires GCC, Make, the glibc, SQLite, and PCRE2 headers and static libraries, and UPX:
+Available repositories and static library package names differ between releases of these distributions. Building every variant requires GCC, Make, the glibc, SQLite, and PCRE2 headers and static libraries, UPX, and ZIP:
 
 ```sh
-sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static
+sudo dnf -y install gcc make sqlite sqlite-devel glibc-devel pcre2 pcre2-devel upx pcre2-static glibc-static zip unzip
 ```
 
 On AlmaLinux and Rocky Linux, the `pcre2-static` and `glibc-static` packages may require enabling CRB, EPEL, and the development repository first
@@ -394,7 +396,7 @@ sudo dnf -y install sqlite-libs pcre2
 
 ```sh
 echo "dev-libs/libpcre2 static-libs" | sudo tee /etc/portage/package.use/libpcre2
-sudo emerge dev-libs/libpcre2 app-arch/upx
+sudo emerge dev-libs/libpcre2 app-arch/upx app-arch/zip app-arch/unzip
 ```
 
 **Dynamic build runtime dependencies:**
@@ -413,7 +415,7 @@ Four build variants are available: `portable`, `production`, `dynamic-production
 make portable
 ```
 
-The result is a single statically linked, self-extracting compressed UPX ELF file with no dynamic dependencies. It contains the whole program and can be run on almost any modern Linux distribution. The file is portable between systems with the same processor architecture (x64, ARM, and others)
+The build produces a ZIP archive containing a single statically linked, self-extracting compressed UPX ELF file with no dynamic dependencies. It contains the whole program and can be run on almost any modern Linux distribution. The file is portable between systems with the same processor architecture (x64, ARM, and others)
 
 The program is optimized for **maximum portability**
 
@@ -433,7 +435,7 @@ Any distribution listed above can be specified instead of `-gentoo-`
 make production
 ```
 
-The result is a statically linked, self-extracting compressed UPX ELF file tuned for the local CPU. It contains the whole program, can be run on the local machine, and will use the maximum available CPU features
+The archive contains a statically linked, self-extracting compressed UPX ELF file tuned for the local CPU. It contains the whole program, can be run on the local machine, and will use the maximum available CPU features
 
 The program is optimized for **maximum possible performance on local hardware**
 
@@ -453,7 +455,7 @@ Any distribution listed above can be specified instead of `-gentoo-`
 make dynamic-production
 ```
 
-The result is an ELF executable of about **50 kilobytes**. It is tuned for the local CPU and dynamically linked against libraries installed on the system; it is also self-extracting and UPX-compressed. It can be built and run on the local machine if libraries such as sqlite3, pcre2, argp, and fts are installed
+The archive contains an ELF executable of about **50 kilobytes**. It is tuned for the local CPU and dynamically linked against libraries installed on the system; it is also self-extracting and UPX-compressed. It can be built and run on the local machine if libraries such as sqlite3, pcre2, argp, and fts are installed
 
 The binary is optimized for **maximum performance and minimal size**
 
@@ -483,15 +485,15 @@ Optimization, hardening, debug information processing, and package creation are 
 
 ##### Installation
 
-For quick invocation, the `precizer` executable is placed in a directory listed in `$PATH`. The `portable`, `production`, and `dynamic-production` builds create this file in the project root; the `distribution` result is located at `.builds/distribution/precizer`
+To run the program conveniently by name, place the `precizer` executable in a directory listed in `$PATH`. Builds create an archive containing this file in the project root
 
 #### macOS
 
-Static linking is not supported on macOS. The `distribution` and `dynamic-production` dynamic build variants are available; UPX compression is not used
+Static linking is not supported on macOS. The `macos-zip` target creates an archive with a build for the local processor. UPX compression is not used
 
 ##### Build dependencies
 
-The Xcode command-line tools and Homebrew dependencies are required for building. They are installed with the following commands:
+The Xcode command-line tools and Homebrew dependencies are required for building. Install them with the following commands:
 
 ```sh
 xcode-select --install
@@ -500,13 +502,13 @@ brew install llvm sqlite pcre2 argp-standalone
 
 ##### Build and installation
 
-The `distribution` target builds without tuning for a specific computer's processor:
+The `macos-zip` target builds and packages the program without tuning for a specific computer's processor:
 
 ```sh
-make distribution
+make macos-zip
 ```
 
-The result is located at `.builds/distribution/precizer`. The build honors `CPPFLAGS`, `CFLAGS`, and `LDFLAGS` and does not strip debug symbols
+The result is a ZIP archive in the project root. The build honors `CPPFLAGS`, `CFLAGS`, and `LDFLAGS` and does not strip debug symbols. The `make distribution` command is also available separately: it leaves only the binary at `.builds/distribution/precizer`
 
 The `dynamic-production` target provides a build optimized for the local processor:
 
@@ -514,11 +516,13 @@ The `dynamic-production` target provides a build optimized for the local process
 make dynamic-production
 ```
 
-In this case, the resulting `precizer` executable is placed in the project root. For quick invocation, the executable is placed in a directory listed in `$PATH`
+In this case, the result is `./precizer_macos_<architecture>_dynamic-production.zip`
+
+To run the program by name without specifying its path, place the extracted `precizer` file in a directory listed in `$PATH`
 
 ##### System libraries required at runtime
 
-Every macOS build variant is dynamically linked, and release executables use the `distribution` target. The following Homebrew system libraries are required at runtime:
+Every macOS build variant is dynamically linked. The following Homebrew system libraries are required at runtime:
 
 ```sh
 brew install sqlite pcre2 argp-standalone
@@ -1007,7 +1011,7 @@ rm -i "${HOST}.db"
 precizer tests/fixtures/diffs
 ```
 
-This variant uses regular expressions.
+This example uses regular expressions for a more complex task
 
 PCRE2 regular expressions for relative paths that need to be included. The specified relative paths will be included even if they were excluded using one or more `--ignore` parameters. Multiple regular expressions can be specified using `--include`.
 
@@ -1129,7 +1133,7 @@ The following cases illustrate how `--lock-checksum`, `--watch-timestamps`, and 
 
 Detailed examples of behavior in difficult situations are collected in test No. 30 (`tests/src/test0030.c`). It covers deleted locked files, lost access, access-check failures, and interactions with `--ignore`, `--include`, `--db-drop-ignored`, and `--db-drop-inaccessible`.
 
-A practical workflow is to run a quick daily scan without `--rehash-locked` (and even without `--watch-timestamps` if timestamp drift is acceptable) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to force checksum-level verification of the frozen data set.
+A practical workflow is to run a quick daily scan without `--rehash-locked` (and without `--watch-timestamps` if needed) to keep the database synchronized, then schedule a less frequent deep audit with `--rehash-locked` to verify the checksums of the frozen data set
 
 ### Example 11
 Dropping inaccessible records with `--db-drop-inaccessible`
@@ -1267,7 +1271,7 @@ Checksum computation is pure math and can be CPU-intensive. Modern CPUs usually 
 
 ## ALTERNATIVES
 
-Alternatives to **precizer** with open architectures and source code. More alternatives (kept up to date): [www.alternativeto.net](https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/)
+Alternatives to **precizer** with open architectures and source code. More alternatives (kept up to date): [alternativeto.net](https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/)
 
 * **AIDE** — [aide.github.io](https://aide.github.io/)
   * Platforms/architectures: Linux/*BSD/macOS (x86_64, arm64, etc.)
