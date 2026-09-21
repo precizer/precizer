@@ -91,28 +91,14 @@ Sanitizer mode is not supported on Alpine Linux. Tests run with `make tests-debu
 sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static zip unzip
 ```
 
-#### AlmaLinux/Rocky Linux
+#### AlmaLinux 10 / Rocky Linux 10
 
-GCC Toolset 15 provides C2x and sanitizer support. The static library packages may require enabling CRB, EPEL, and the development repository as shown in the corresponding Dockerfile under `.docker/`.
+C2x builds and tests with sanitizers use the system GCC
 
 ```sh
-sudo dnf -y install dnf-plugins-core epel-release
+sudo dnf -y install dnf-plugins-core
 sudo dnf config-manager --set-enabled crb
-sudo dnf -y install gcc-toolset-15-gcc gcc-toolset-15-libasan-devel gcc-toolset-15-libubsan-devel make llvm pcre2-devel zip unzip
-sudo dnf -y --enablerepo=devel install pcre2-static glibc-static
-```
-
-AlmaLinux also requires the `almalinux-release-devel` package before the static libraries are installed:
-
-```sh
-sudo dnf -y install almalinux-release-devel
-```
-
-Tests run inside the GCC Toolset 15 environment:
-
-```sh
-scl enable gcc-toolset-15 -- make tests-debug
-scl enable gcc-toolset-15 -- make tests
+sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static zip unzip
 ```
 
 #### Gentoo Linux

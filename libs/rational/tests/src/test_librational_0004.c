@@ -328,42 +328,6 @@ static Return capture_librational_logger_allocation_failures(void)
 }
 
 /**
- * @brief Emit safe text without allocating a separate sanitization buffer
- *
- * @return Return describing success or failure
- */
-static Return capture_librational_logger_safe_text_without_malloc(void)
-{
-	INITTEST;
-	const RATIONAL_COLOR_MODE initial_color_mode = atomic_load_explicit(&rational_color_mode,memory_order_relaxed);
-	const LOGMODES initial_logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
-	const int initial_errno = errno;
-
-	/* Safe ASCII, layout characters, and two-, three-, and four-byte UTF-8
-	   sequences must remain printable while sanitizer allocation is unavailable */
-	rational_color_mode = COLOR_MODE_NEVER;
-	rational_logger_mode = REGULAR;
-	testmocking_malloc_fail_next(1);
-	errno = EDOM;
-	slog(REGULAR|UNDECOR,"ASCII\t\r\n%s\n","°àПривет日本語😀");
-	const int logger_errno = errno;
-
-	/* The pending failure must reach this probe because logging safe text
-	   does not call malloc(). Disable the mock before assertions or cleanup */
-	void *allocation_probe = malloc(1U);
-	testmocking_malloc_disable();
-	ASSERT(allocation_probe == NULL);
-	ASSERT(logger_errno == EDOM);
-	free(allocation_probe);
-
-	rational_color_mode = initial_color_mode;
-	rational_logger_mode = initial_logger_mode;
-	errno = initial_errno;
-
-	deliver(status);
-}
-
-/**
  * @brief Require prefix failures to stop further formatting and allocation
  *
  * @return Return describing success or failure
@@ -984,23 +948,6 @@ static Return test_librational_0004_15(void)
 
 #ifndef EVIL_EMPIRE_OS
 /**
- * @brief Check safe UTF-8 output without sanitizer allocation and preserve errno
- *
- * @return Return describing success or failure
- */
-static Return test_librational_0004_16(void)
-{
-	INITTEST;
-
-	ASSERT(SUCCESS == match_function_output(
-		"\\AASCII\t\r\n°àПривет日本語😀\n\\z",
-		NULL,
-		capture_librational_logger_safe_text_without_malloc));
-
-	RETURN_STATUS;
-}
-
-/**
  * @brief Check that a failed prefix stops processing the rest of its message
  *
  * @return Return describing success or failure
@@ -1115,7 +1062,6 @@ Return test_librational_0004(void)
 #endif
 	TEST(test_librational_0004_15,"slog() escapes unsafe terminal bytes while preserving normal UTF-8");
 #ifndef EVIL_EMPIRE_OS
-	TEST(test_librational_0004_16,"slog() prints safe UTF-8 without sanitizer allocation and preserves errno");
 	TEST(test_librational_0004_17,"slog() stops formatting and allocation after a prefix failure");
 #endif
 

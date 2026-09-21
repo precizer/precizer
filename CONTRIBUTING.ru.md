@@ -91,28 +91,14 @@ sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalon
 sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static zip unzip
 ```
 
-#### AlmaLinux/Rocky Linux
+#### AlmaLinux 10 / Rocky Linux 10
 
-Для стандарта C2x и санитайзеров используется GCC Toolset 15. Пакеты со статическими библиотеками могут потребовать подключения CRB, EPEL и репозитория для разработчиков, как в соответствующем Dockerfile из каталога `.docker/`.
+Сборки C2x и тесты с санитайзерами используют системный GCC.
 
 ```sh
-sudo dnf -y install dnf-plugins-core epel-release
+sudo dnf -y install dnf-plugins-core
 sudo dnf config-manager --set-enabled crb
-sudo dnf -y install gcc-toolset-15-gcc gcc-toolset-15-libasan-devel gcc-toolset-15-libubsan-devel make llvm pcre2-devel zip unzip
-sudo dnf -y --enablerepo=devel install pcre2-static glibc-static
-```
-
-В AlmaLinux перед установкой статических библиотек также требуется пакет `almalinux-release-devel`:
-
-```sh
-sudo dnf -y install almalinux-release-devel
-```
-
-Тесты запускаются в окружении GCC Toolset 15:
-
-```sh
-scl enable gcc-toolset-15 -- make tests-debug
-scl enable gcc-toolset-15 -- make tests
+sudo dnf -y install gcc make llvm libasan libubsan glibc-devel glibc-static pcre2-devel pcre2-static zip unzip
 ```
 
 #### Gentoo Linux
