@@ -69,7 +69,7 @@ typedef enum Return : unsigned int
 
 	/// Local binary answer bits for caller-side decisions
 	// Hex: 0x0300. Dec: 768. Bin: 0000 0011 0000 0000
-	BOOLEAN = YES | NO,
+	DECISION = YES | NO,
 
 	/// Skip the normal function call based on the status flag
 	// Hex: 0x0031. Dec: 49. Bin: 0000 0000 0011 0001
