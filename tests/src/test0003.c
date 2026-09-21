@@ -38,7 +38,7 @@ static Return assert_information_mode_output(
 	run(match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
 
 	run(m_copy_literal(stderr_pattern,"\\A\\Z"));
-	run(match_pattern(stderr_result,stderr_pattern));
+	run(match_pattern(stderr_result,stderr_pattern,NULL));
 
 	call(m_del(stderr_pattern));
 	call(m_del(stdout_pattern));

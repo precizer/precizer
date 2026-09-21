@@ -45,7 +45,7 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
           gh release create "$RELEASE_TAG" \
-            --title "v$RELEASE_TAG" \
+            --title "Release $RELEASE_TAG" \
             --notes-file release-notes.md \
             --draft
 
@@ -60,29 +60,40 @@ jobs:
       attestations: write
       artifact-metadata: write
 
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx gh
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm upx zip gh
 
       - name: Build project (Linux x86_64)
         run: |
           make -j portable
-          mkdir v${{ env.VERSION }}
-          cp -a precizer v${{ env.VERSION }}/
-          zip -9 -r precizer_linux_x86_64_portable.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
-          ZIP_COMMENT="Linux x86_64 static portable binary (single executable)"
-          echo "$ZIP_COMMENT" | zip -z precizer_linux_x86_64_portable.zip
-          ./precizer --version
+          mv precizer.zip precizer_linux_x86_64_portable.zip
+          ./.builds/portable/precizer --version
           make purge
 
       - name: Run tests (Linux x86_64)
-        run: make -j tests
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (Linux x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (Linux x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-linux-x86-64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Generate attestation (Linux x86_64)
         id: attest_linux_x86_64
@@ -115,12 +126,12 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          unzip -jqo precizer.zip '*/precizer' -d ./
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          ./precizer --version
+          "$RUNNER_TEMP/precizer" --version
 
   build_linux_arm64:
     name: Build & attach Linux arm64
@@ -133,31 +144,42 @@ jobs:
       attestations: write
       artifact-metadata: write
 
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm gh
+        run: sudo apt-get update && sudo apt-get install -y gcc make libpcre2-dev llvm zip gh
 
       - name: Build project (Linux arm64)
         run: |
           # UPX is disabled on Linux ARM64 because UPX-compressed binaries currently core dump at runtime
-          # TODO: Remove this legacy workaround after UPX-compressed Linux ARM64 binaries run reliably
+          # TODO: Install UPX and remove UPX=true after compressed Linux ARM64 binaries run without core dumps
           make -j portable UPX=true
-          mkdir v${{ env.VERSION }}
-          cp -a .builds/portable/precizer v${{ env.VERSION }}/
-          zip -9 -r precizer_linux_aarch64_portable.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
-          ZIP_COMMENT="Linux arm64 static portable binary (single executable)"
-          echo "$ZIP_COMMENT" | zip -z precizer_linux_aarch64_portable.zip
+          mv precizer.zip precizer_linux_aarch64_portable.zip
           ./.builds/portable/precizer --version
           make purge
 
       - name: Run tests (Linux arm64)
-        run: make -j tests
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (Linux arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (Linux arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-linux-arm64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Generate attestation (Linux arm64)
         id: attest_linux_arm64
@@ -190,15 +212,15 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          unzip -jqo precizer.zip '*/precizer' -d ./
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          ./precizer --version
+          "$RUNNER_TEMP/precizer" --version
 
   build_evil_empire_os_arm64:
-    name: Build & attach macOS arm64
+    name: Build & attach Evil Empire macOS arm64
     runs-on: macos-latest
     needs: get_tag_info
 
@@ -207,9 +229,6 @@ jobs:
       id-token: write
       attestations: write
       artifact-metadata: write
-
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
 
     steps:
       - name: Checkout repository (exclude tests/fixtures/long)
@@ -228,17 +247,34 @@ jobs:
 
       - name: Build project (macOS arm64)
         run: |
-          make -j dynamic-production
-          otool -L precizer
-          otool -l precizer
-          mkdir v${{ env.VERSION }}
-          cp -a precizer v${{ env.VERSION }}/
-          zip -9 -r precizer_macos_arm64.zip v${{ env.VERSION }}/ COPYING README.ru.md README.md CHANGELOG.md
-          ./precizer --version
+          make -j macos-zip
+          mv precizer.zip precizer_macos_arm64.zip
+          built_exe=".builds/distribution/precizer"
+          otool -L "$built_exe"
+          otool -l "$built_exe"
+          "$built_exe" --version
           make purge
 
       - name: Run tests (macOS arm64)
-        run: make -j tests
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (macOS arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (macOS arm64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-macos-arm64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Generate attestation (macOS arm64)
         id: attest_macos_arm64
@@ -271,12 +307,107 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          wget -O precizer.zip -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          wget -O precizer.zip.sigstore.json -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          unzip -jqo precizer.zip '*/precizer' -d ./
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          ./precizer --version
+          "$RUNNER_TEMP/precizer" --version
+
+  build_evil_empire_os_x86_64:
+    name: Build & attach Evil Empire macOS x86_64
+    runs-on: macos-26-intel
+    needs: get_tag_info
+
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+
+    steps:
+      - name: Checkout repository (exclude tests/fixtures/long)
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !tests/fixtures/long/**
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install llvm@20 argp-standalone
+
+      - name: Build project (macOS x86_64)
+        run: |
+          make -j macos-zip
+          mv precizer.zip precizer_macos_x86_64.zip
+          built_exe=".builds/distribution/precizer"
+          otool -L "$built_exe"
+          otool -l "$built_exe"
+          "$built_exe" --version
+          make purge
+
+      - name: Run tests (macOS x86_64)
+        id: tests
+        run: |
+          date -u '+%Y-%m-%d %H:%M:%S' > "$RUNNER_TEMP/precizer-test-start"
+          make -j tests
+
+      - name: Collect test diagnostics (macOS x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        continue-on-error: true
+        timeout-minutes: 3
+        run: bash .github/scripts/collect-test-diagnostics.sh "$RUNNER_TEMP/precizer-test-start" "$RUNNER_TEMP/precizer-test-diagnostics"
+
+      - name: Upload test diagnostics (macOS x86_64)
+        if: ${{ failure() && steps.tests.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-diagnostics-macos-x86-64-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/precizer-test-diagnostics/
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Generate attestation (macOS x86_64)
+        id: attest_macos_x86_64
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: precizer_macos_x86_64.zip
+
+      - name: Save Sigstore bundle (macOS x86_64)
+        run: |
+          cp "${{ steps.attest_macos_x86_64.outputs.bundle-path }}" \
+             "precizer_macos_x86_64.zip.sigstore.json"
+
+      - name: Upload Sigstore bundle artifact (macOS x86_64)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-sigstore-bundle-macos-x86-64
+          path: precizer_macos_x86_64.zip.sigstore.json
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload macOS x86_64 asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} \
+            "precizer_macos_x86_64.zip" \
+            "precizer_macos_x86_64.zip.sigstore.json" \
+            --clobber
+          #
+          # Testing automation for downloading and unarchiving new versions (example from the README documentation)
+          #
+          # Download
+          #wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          #wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          # Extract the archive
+          #unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
+          # Run
+          #"$RUNNER_TEMP/precizer" --version
 
   # Build and attach the MSYS-based Windows x64 release assets
   build_msys_x64:
@@ -293,10 +424,7 @@ jobs:
       attestations: write
       artifact-metadata: write
 
-    # Reuse the tag version detected by the release metadata job
-    env:
-      VERSION: ${{ needs.get_tag_info.outputs.version }}
-
+    # Build and verify the Windows assets for the release tag
     steps:
       # Keep checked-out shell scripts and generated files in Unix line-ending form
       - name: Configure Git line endings
@@ -328,53 +456,43 @@ jobs:
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-upx
             zip
+            unzip
 
-      # Compile the MSYS payload, package its runtime files, and build the native launcher
-      - name: Build MSYS payload and native launcher
+      # Build the Windows ZIP and native launcher through the shared Makefile targets
+      - name: Build Windows x64 packages
         shell: msys2 {0}
         run: |
           set -euo pipefail
 
-          # Build the MSYS payload with static third-party libraries
-          make dynamic-production \
-            WFLAGS= \
-            UPX=true \
-            LTO= \
-            PROD_OPT_CFLAGS='-pipe -fbuiltin -O2 -mtune=generic -ffunction-sections -fdata-sections -fomit-frame-pointer' \
-            PROD_LDFLAGS='-Wl,-O2 -Wl,--gc-sections' \
-            DYNP_SHARED_LIBS='/usr/lib/libsqlite3.a /usr/lib/libpcre2-8.a /usr/lib/libargp.a'
+          # Build both packages with a shared MSYS payload and static third-party libraries
+          make windows-zip windows-exe
+          mv precizer.zip precizer_windows_x64_portable.zip
 
-          # Resolve the executable produced by the dynamic production build
-          built_exe=".builds/dynamic-production/precizer.exe"
-          if [ ! -f "$built_exe" ]; then
-            built_exe=".builds/dynamic-production/precizer"
-          fi
+          # Locate the executable produced by msys-build
+          built_exe=".builds/distribution/precizer.exe"
 
           # Stop if the build did not produce an executable
           if [ ! -f "$built_exe" ]; then
-            echo "Dynamic production executable not found" >&2
+            echo "Distribution executable not found" >&2
             exit 1
           fi
 
-          # Prepare the payload files used by the zip archive and native launcher
-          rm -rf package
-          mkdir -p package/msys
-          cp "$built_exe" package/msys/precizer.exe
-          cp /usr/bin/msys-2.0.dll package/msys/msys-2.0.dll
+          # Prepare the reports used to verify both Windows packages
+          mkdir -p .builds/msys-reports
 
           # Verify that the payload keeps only the expected MSYS runtime dependency
-          cygcheck package/msys/precizer.exe | tee package/msys-dependencies.txt
-          if ! grep -qi 'msys-2\.0\.dll' package/msys-dependencies.txt; then
+          cygcheck "$built_exe" | tee .builds/msys-reports/payload-dependencies.txt
+          if ! grep -qi 'msys-2\.0\.dll' .builds/msys-reports/payload-dependencies.txt; then
             echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
             exit 1
           fi
-          if grep -Eiq 'msys-(argp|pcre2|sqlite3?|gcc|stdc\+\+|winpthread).*\.dll' package/msys-dependencies.txt; then
+          if grep -Eiq 'msys-(argp|pcre2|sqlite3?|gcc|stdc\+\+|winpthread).*\.dll' .builds/msys-reports/payload-dependencies.txt; then
             echo "The MSYS payload still has an unexpected dynamic MSYS dependency" >&2
             exit 1
           fi
 
-          # Build the native launcher that embeds the payload files
-          make -C .packaging/msys
+          # Require the native launcher produced by windows-exe
+          test -f ./precizer_windows_x64_portable.exe
 
           # Compress the native launcher with the UCRT-native UPX package
           /ucrt64/bin/upx --best --lzma -qqq ./precizer_windows_x64_portable.exe
@@ -383,8 +501,8 @@ jobs:
           /ucrt64/bin/upx -t ./precizer_windows_x64_portable.exe
 
           # Verify that the launcher does not import MSYS2 DLLs from the runner
-          cygcheck ./precizer_windows_x64_portable.exe | tee package/msys-launcher-dependencies.txt
-          if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' package/msys-launcher-dependencies.txt; then
+          cygcheck ./precizer_windows_x64_portable.exe | tee .builds/msys-reports/launcher-dependencies.txt
+          if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' .builds/msys-reports/launcher-dependencies.txt; then
             echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
             exit 1
           fi
@@ -405,27 +523,23 @@ jobs:
             exit $LASTEXITCODE
           }
 
-      # Create the zip distribution with the MSYS payload files
-      - name: Create MSYS x64 archive
+      # Verify the ZIP distribution produced by windows-zip
+      - name: Verify MSYS x64 archive
         shell: msys2 {0}
         run: |
           set -euo pipefail
 
-          # Recreate the versioned archive root directory
-          version_dir="v${VERSION}"
-          rm -rf "$version_dir"
-          mkdir -p "$version_dir"
+          # Prepare a temporary directory for the extracted files
+          archive_dir="$(mktemp -d)"
 
-          # Copy the executable and its MSYS runtime into the archive root
-          cp -a package/msys/precizer.exe "$version_dir/"
-          cp -a package/msys/msys-2.0.dll "$version_dir/"
+          # Extract the executable and MSYS runtime into the same directory
+          unzip -jqo precizer_windows_x64_portable.zip '*/precizer.exe' '*/msys-2.0.dll' -d "$archive_dir"
 
-          # Print the archive root contents for the workflow log
-          ls -la "$version_dir"
+          # Run the program from the extraction directory
+          cd "$archive_dir"
 
-          # Compress the archive root into the release zip asset
-          rm -f precizer_windows_x64_portable.zip
-          zip -9 -r precizer_windows_x64_portable.zip "$version_dir/" COPYING README.ru.md README.md CHANGELOG.md
+          # Print the version to verify that the extracted program starts
+          ./precizer.exe --version
 
       # Generate a Sigstore attestation for the self-extracting executable
       - name: Generate attestation (MSYS x64 self-extracting exe)
@@ -554,6 +668,7 @@ jobs:
       - build_linux_x86_64
       - build_linux_arm64
       - build_evil_empire_os_arm64
+      - build_evil_empire_os_x86_64
       - build_msys_x64
 
     permissions:
@@ -582,12 +697,13 @@ jobs:
             release-sigstore-bundles/precizer_linux_x86_64_portable.zip.sigstore.json \
             release-sigstore-bundles/precizer_linux_aarch64_portable.zip.sigstore.json \
             release-sigstore-bundles/precizer_macos_arm64.zip.sigstore.json \
+            release-sigstore-bundles/precizer_macos_x86_64.zip.sigstore.json \
             release-sigstore-bundles/precizer_windows_x64_portable.exe.sigstore.json \
             release-sigstore-bundles/precizer_windows_x64_portable.zip.sigstore.json \
             > "$provenance_file"
 
           line_count="$(wc -l < "$provenance_file" | tr -d '[:space:]')"
-          test "$line_count" -eq 5
+          test "$line_count" -eq 6
 
       - name: Upload release provenance
         env:

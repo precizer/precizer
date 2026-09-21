@@ -2,6 +2,15 @@
 #include <stdio.h>
 
 /**
+ * @brief Shared process status used when normalizing function return values
+ *
+ * @details Starts at SUCCESS. Code outside the current function, such as a
+ *          signal handler, can set process-wide status here. Only INFO,
+ *          WARNING, and HALTED propagate into function returns through GLOBAL
+ */
+_Atomic Return global_return_status = SUCCESS;
+
+/**
  * @brief Normalize one function Return value with global context
  *
  * @details The function normalizes @p status, normalizes global_return_status,

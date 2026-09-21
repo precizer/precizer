@@ -1,5 +1,6 @@
 \ATESTING:Configuration initialization is finished
 TESTING:rational_logger_mode=TESTING
+TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database4\.db
 TESTING:argument:db_file_name=database4\.db
@@ -46,5 +47,4 @@ Unable to open traversal root tests/fixtures/diffs/diff1: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database4\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-TESTING:The precizer completed as expected
 TESTING:Exit status » SUCCESS\Z

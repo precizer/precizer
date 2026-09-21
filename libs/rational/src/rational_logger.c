@@ -1,6 +1,8 @@
 #include "rational.h"
+#include <errno.h>
 #include <limits.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,7 +10,12 @@
 // Global flag to manage output of all logging messages
 // in an application and its default value
 _Atomic LOGMODES rational_logger_mode = REGULAR;
-_Atomic Return global_return_status = SUCCESS;
+
+/* Keep only the logger's optional reference weak. Program implementations of
+   the REMEMBER callback remain strong symbols */
+extern void rational_remember(
+	const char *,
+	const int) __attribute__((weak));
 
 /**
  * @brief Converts LOGMODES bit flags to their string representation
@@ -136,21 +143,38 @@ static Return logger_show_time(
 	return(status);
 }
 
+/**
+ * @brief Append one printf payload while preserving the caller's errno
+ *
+ * @param[in,out] line Allocated destination line
+ * @param[in,out] line_len Current destination length
+ * @param[in] fmt Printf format string
+ * @param args Arguments associated with @p fmt
+ * @return true when the complete payload was appended, otherwise false
+ */
 __attribute__((format(printf,3,0)))
-static void logger_line_append_va(
+static bool logger_line_append_va(
 	char       **line,
 	int        *line_len,
 	const char *fmt,
 	va_list    args)
 {
+	if(line == NULL || line_len == NULL || *line_len < 0 || fmt == NULL)
+	{
+		return(false);
+	}
+
+	const int format_errno = errno;
 	va_list args_copy;
 	va_copy(args_copy,args);
+	errno = format_errno;
 	const int needed = vsnprintf(NULL,0,fmt,args_copy);
 	va_end(args_copy);
+	errno = format_errno;
 
-	if(needed < 0)
+	if(needed < 0 || needed > INT_MAX - *line_len)
 	{
-		return;
+		return(false);
 	}
 
 	const size_t new_len = (size_t)(*line_len) + (size_t)needed;
@@ -158,21 +182,38 @@ static void logger_line_append_va(
 
 	if(tmp == NULL)
 	{
-		return;
+		return(false);
 	}
 
 	*line = tmp;
 
 	va_list args_copy2;
 	va_copy(args_copy2,args);
-	vsnprintf(*line + *line_len,(size_t)needed + 1,fmt,args_copy2);
+	errno = format_errno;
+	const int written = vsnprintf(*line + *line_len,(size_t)needed + 1U,fmt,args_copy2);
 	va_end(args_copy2);
+	errno = format_errno;
+
+	if(written != needed)
+	{
+		(*line)[*line_len] = '\0';
+		return(false);
+	}
 
 	*line_len = (int)new_len;
+	return(true);
 }
 
+/**
+ * @brief Append one variadic printf payload to a log line
+ *
+ * @param[in,out] line Allocated destination line
+ * @param[in,out] line_len Current destination length
+ * @param[in] fmt Printf format string
+ * @return true when the complete payload was appended, otherwise false
+ */
 __attribute__((format(printf,3,4)))
-static void logger_line_append(
+static bool logger_line_append(
 	char       **line,
 	int        *line_len,
 	const char *fmt,
@@ -180,8 +221,10 @@ static void logger_line_append(
 {
 	va_list args;
 	va_start(args,fmt);
-	logger_line_append_va(line,line_len,fmt,args);
+	const bool was_appended = logger_line_append_va(line,line_len,fmt,args);
 	va_end(args);
+
+	return(was_appended);
 }
 
 /**
@@ -356,70 +399,29 @@ static size_t logger_line_decode_utf8(
 }
 
 /**
- * @brief Escape bytes that can disrupt terminal output
+ * @brief Measure or write text with unsafe terminal bytes escaped
  *
  * @details
- * The logger receives an already formatted line, so this layer cannot tell
- * whether bytes came from a file name, a database path, an error message, or
- * fixed application text. The filter therefore treats the complete log line as
- * terminal output and escapes only byte patterns that are unsafe to write as
- * text. Plain printable ASCII, newline, carriage return, tab, raw ESC, and
- * valid non-C1 UTF-8 multibyte sequences are preserved. Invalid multibyte input
- * is escaped byte by byte so malformed file names remain visible without being
- * interpreted by the terminal. Unicode C1 control characters such as U+0090
- * are also escaped, even though their UTF-8 byte sequence is formally valid,
- * because terminals may interpret them as control strings and hide later output.
+ * Each unsafe byte becomes a four-character \xNN escape. Passing NULL as the
+ * output buffer measures the result without writing or allocating memory.
+ * To write the result, pass a separate buffer with at least the measured size
+ * and the same unchanged input. The function does not append a terminator
  *
- * This first pass deliberately leaves raw ESC bytes unchanged. The project uses
- * ESC-based decorations such as bold and colors, and distinguishing those
- * trusted decorations from path bytes requires a separate whitelist policy. That
- * whitelist can be added later without changing slog() call sites
- *
- * @param[in,out] line Pointer to the allocated line buffer
- * @param[in,out] line_len Current line length in bytes, updated on success
+ * @param[in] input Source bytes, including any embedded null bytes
+ * @param[in] input_len Number of bytes available at @p input
+ * @param[out] output Destination buffer, or NULL to measure only
+ * @return Result length excluding the terminator, or SIZE_MAX when the result
+ *         cannot fit in an int or leave room for a terminator in size_t
  */
-static void logger_line_sanitize_for_terminal(
-	char **line,
-	int  *line_len)
+static size_t logger_line_sanitize_text(
+	const char *input,
+	size_t     input_len,
+	char       *output)
 {
 	/*
-	 * Nothing useful can be sanitized without an existing allocated buffer and a
-	 * positive byte count. Returning quietly preserves the logger's current
-	 * best-effort behavior for allocation and formatting failure paths
-	 */
-	if(line == NULL || *line == NULL || line_len == NULL || *line_len <= 0)
-	{
-		return;
-	}
-
-	const size_t input_len = (size_t)*line_len;
-
-	/*
-	 * Escaping one input byte as \xNN needs four output bytes.
-	 * This guard keeps the worst-case allocation and the final int length update
-	 * inside representable bounds
-	 */
-	if(input_len > (size_t)INT_MAX / 4U)
-	{
-		return;
-	}
-
-	/*
-	 * Allocate for the worst case where every input byte becomes \xNN.
-	 * The extra byte is for a terminator because the logger stores text in a C
-	 * string buffer even though fwrite() uses the explicit byte length
-	 */
-	char *sanitized_line = malloc((input_len * 4U) + 1U);
-
-	if(sanitized_line == NULL)
-	{
-		return;
-	}
-
-	/*
 	 * input_position walks through the original formatted line.
-	 * output_len tracks the next free position in the sanitized replacement
-	 * buffer, which may grow faster than the input when bytes are escaped
+	 * output_len tracks the sanitized length in both measurement and writing
+	 * modes, and grows faster than the input when bytes are escaped
 	 */
 	size_t input_position = 0U;
 	size_t output_len = 0U;
@@ -431,93 +433,220 @@ static void logger_line_sanitize_for_terminal(
 	 */
 	while(input_position < input_len)
 	{
-		const unsigned char byte = (unsigned char)(*line)[input_position];
+		const unsigned char byte = (unsigned char)input[input_position];
+		size_t consumed_length = 1U;
+		bool escape_required = false;
 
+		/* Printable ASCII and the permitted layout characters keep their bytes.
+		   All other ASCII controls, including embedded null bytes, need escapes */
 		if(byte < 0x80U)
 		{
 			/*
 			 * ASCII printable characters are safe to copy.
 			 * Newline, carriage return, and tab are preserved because log lines
-			 * legitimately use them for layout. ESC is also preserved for now so
-			 * existing color and bold decorations keep working until an explicit
-			 * decoration whitelist is added
+			 * legitimately use them for layout. Every other control byte remains
+			 * visible instead of controlling a terminal
 			 */
-			if(byte == '\n' || byte == '\r' || byte == '\t' || byte == '\033' || (byte >= 0x20U && byte != 0x7FU))
+			if(byte != '\n' && byte != '\r' && byte != '\t'
+			        && (byte < 0x20U || byte == 0x7FU))
 			{
-				sanitized_line[output_len++] = (char)byte;
-			} else {
 				/*
 				 * Other ASCII control bytes and DEL are not safe terminal text.
 				 * Showing them as \xNN makes the byte visible to the user while
 				 * preventing the terminal from treating it as an action
 				 */
-				logger_line_append_hex_escape(sanitized_line,&output_len,byte);
-			}
-
-			input_position++;
-			continue;
-		}
-
-		/*
-		 * Non-ASCII input must first prove that it is valid UTF-8.
-		 * The decoder is intentionally local and locale-independent so logger
-		 * safety does not depend on whether setlocale() has already run
-		 */
-		uint32_t codepoint = 0U;
-		const size_t decoded_len = logger_line_decode_utf8(*line + input_position,
-			input_len - input_position,
-			&codepoint);
-
-		/*
-		 * Invalid UTF-8 is escaped one byte at a time.
-		 * This preserves every original byte in a readable form and then retries
-		 * from the next byte, which helps recover cleanly after a malformed prefix
-		 */
-		if(decoded_len == 0U)
-		{
-			logger_line_append_hex_escape(sanitized_line,&output_len,byte);
-			input_position++;
-			continue;
-		}
-
-		/*
-		 * C1 controls are dangerous even when encoded as valid UTF-8.
-		 * U+0090, for example, is a terminal control-string introducer on some
-		 * terminals, so the original bytes are escaped instead of being copied
-		 */
-		if(codepoint >= 0x80U && codepoint <= 0x9FU)
-		{
-			for(size_t i = 0U; i < decoded_len; i++)
-			{
-				const unsigned char control_byte = (unsigned char)(*line)[input_position + i];
-				logger_line_append_hex_escape(sanitized_line,&output_len,control_byte);
+				escape_required = true;
 			}
 		} else {
 			/*
-			 * Valid non-C1 UTF-8 is copied unchanged.
-			 * This keeps ordinary international file names and messages readable
-			 * instead of turning every non-ASCII character into escapes
+			 * Non-ASCII input must first prove that it is valid UTF-8.
+			 * The decoder is intentionally local and locale-independent so logger
+			 * safety does not depend on whether setlocale() has already run
 			 */
-			memcpy(sanitized_line + output_len,*line + input_position,decoded_len);
-			output_len += decoded_len;
+			uint32_t codepoint = 0U;
+			const size_t decoded_len = logger_line_decode_utf8(input + input_position,
+				input_len - input_position,&codepoint);
+
+			/*
+			 * Invalid UTF-8 is escaped one byte at a time.
+			 * This preserves every original byte in a readable form and then retries
+			 * from the next byte, which helps recover cleanly after a malformed prefix
+			 */
+			if(decoded_len == 0U)
+			{
+				escape_required = true;
+			} else {
+				/* Consume a complete validated UTF-8 sequence. Its bytes are either
+				   retained together or individually escaped for a C1 control */
+				consumed_length = decoded_len;
+
+				/*
+				 * C1 controls are dangerous even when encoded as valid UTF-8.
+				 * U+0090, for example, is a terminal control-string introducer on some
+				 * terminals, so the original bytes are escaped instead of being copied
+				 */
+				if(codepoint >= 0x80U && codepoint <= 0x9FU)
+				{
+					escape_required = true;
+				}
+			}
 		}
 
-		input_position += decoded_len;
+		/*
+		 * Escaping one input byte as \xNN needs four output bytes.
+		 * A fragment consumes at most four input bytes, so its size can safely be
+		 * multiplied by four. Check the total before adding the fragment so both
+		 * the final int length and the size_t allocation with a terminator fit
+		 */
+		size_t fragment_length = consumed_length;
+
+		if(escape_required == true)
+		{
+			fragment_length *= 4U;
+		}
+
+		if(fragment_length > (size_t)INT_MAX - output_len
+		        || fragment_length > SIZE_MAX - output_len - 1U)
+		{
+			return(SIZE_MAX);
+		}
+
+		/* Measurement and writing use the same fragment lengths. Only the write
+		   pass touches the output buffer, which the caller has already sized */
+		if(output != NULL)
+		{
+			if(escape_required == true)
+			{
+				size_t write_position = output_len;
+
+				for(size_t i = 0U; i < consumed_length; i++)
+				{
+					logger_line_append_hex_escape(output,&write_position,
+						(unsigned char)input[input_position + i]);
+				}
+			} else {
+				/*
+				 * Printable ASCII, permitted layout bytes, and valid non-C1 UTF-8
+				 * are copied unchanged. This keeps ordinary international file
+				 * names and messages readable instead of escaping safe characters
+				 */
+				memcpy(output + output_len,input + input_position,consumed_length);
+			}
+		}
+
+		output_len += fragment_length;
+		input_position += consumed_length;
+	}
+
+	return(output_len);
+}
+
+/**
+ * @brief Escape bytes that can disrupt terminal output
+ *
+ * @details
+ * The logger receives an already formatted line, so this layer cannot tell
+ * whether bytes came from a file name, a database path, an error message, or
+ * fixed application text. The filter therefore treats the complete log line as
+ * terminal output and escapes only byte patterns that are unsafe to write as
+ * text. Plain printable ASCII, newline, carriage return, tab, and valid non-C1
+ * UTF-8 multibyte sequences are preserved. Invalid multibyte input and raw ESC
+ * bytes are escaped byte by byte so malformed file names remain visible without
+ * being interpreted by the terminal. Markup is interpreted only after this
+ * function, so every terminal sequence present at this stage is untrusted.
+ * Unicode C1 controls are escaped even when their UTF-8 representation is
+ * otherwise valid. A sizing pass retains the input buffer when no bytes need
+ * escaping; otherwise, an exactly sized buffer receives the sanitized text.
+ * Allocation failures or unrepresentable result lengths suppress the line
+ *
+ * @param[in,out] line Pointer to the allocated line buffer
+ * @param[in,out] line_len Current line length in bytes, updated on success
+ */
+static void logger_line_sanitize_for_terminal(
+	char **line,
+	int  *line_len)
+{
+	/*
+	 * Sanitization requires an allocated buffer and a positive byte count.
+	 * Missing pointers and empty lines return immediately without accessing
+	 * the buffer contents
+	 */
+	if(line == NULL || *line == NULL || line_len == NULL || *line_len <= 0)
+	{
+		return;
+	}
+
+	const size_t input_len = (size_t)*line_len;
+
+	/* Measure the result, counting four characters for each escaped byte.
+	   Every other byte keeps its original size, including valid non-C1 UTF-8 */
+	const size_t sanitized_length = logger_line_sanitize_text(*line,input_len,NULL);
+
+	if(sanitized_length == SIZE_MAX)
+	{
+		free(*line);
+		*line = NULL;
+		*line_len = 0;
+		return;
+	}
+
+	/* Fully checked text without unsafe bytes already has the required form.
+	   Keep its allocation and avoid copying the unchanged message */
+	if(sanitized_length == input_len)
+	{
+		return;
 	}
 
 	/*
-	 * Replace the original formatted line with the sanitized version.
-	 * The caller will pass the same buffer to REMEMBER and fwrite(), so both
-	 * delayed warnings and immediate terminal output see identical safe text
+	 * Allocate exactly the input length plus the growth from escaped bytes.
+	 * The extra byte is for a terminator because the logger stores text in a C
+	 * string buffer even though fwrite() uses the explicit byte length
 	 */
-	sanitized_line[output_len] = '\0';
+	char *sanitized_line = malloc(sanitized_length + 1U);
+
+	if(sanitized_line == NULL)
+	{
+		/* Suppress the line instead of allowing untrusted ESC bytes to bypass
+		   sanitization when memory is exhausted */
+		free(*line);
+		*line = NULL;
+		*line_len = 0;
+		return;
+	}
+
+	/* The input is unchanged, so writing produces exactly the measured length */
+	(void)logger_line_sanitize_text(*line,input_len,sanitized_line);
+
+	/*
+	 * Replace the original formatted line with the sanitized version.
+	 * Trusted decoration sequences are inserted only after this step
+	 */
+	sanitized_line[sanitized_length] = '\0';
 	free(*line);
 	*line = sanitized_line;
-	*line_len = (int)output_len;
+	*line_len = (int)sanitized_length;
 }
 
+/**
+ * @brief Build the common log prefix and append one payload
+ *
+ * @details A single logger-mode snapshot controls the entire line. The verbose
+ *          prefix is appended as one formatted fragment. An append failure
+ *          stops assembly, leaving the caller responsible for freeing the line
+ *
+ * @param[in,out] line Allocated output line
+ * @param[in,out] line_len Current output length
+ * @param level Requested logger modes
+ * @param[in] filename Source file name
+ * @param line_number Source line number
+ * @param[in] funcname Source function name
+ * @param[in] fmt Original printf format
+ * @param args Arguments associated with @p fmt
+ * @param format_errno errno value visible to `%m` conversions
+ * @return true when the complete line was built, otherwise false
+ */
 __attribute__((format(printf,7,0)))
-static void logger_line(
+static bool logger_line(
 	char              **line,
 	int               *line_len,
 	const LOGMODES    level,
@@ -525,79 +654,110 @@ static void logger_line(
 	size_t            line_number,
 	const char *const funcname,
 	const char        *fmt,
-	va_list           args)
+	va_list           args,
+	int               format_errno)
 {
-	if(rational_logger_mode & SILENT)
+	if(line == NULL || line_len == NULL)
+	{
+		return(false);
+	}
+
+	/* Use one atomic snapshot so all prefix and payload checks use the same
+	   mode even when another thread updates the shared setting */
+	const LOGMODES logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
+	bool payload_is_visible = false;
+
+	if(logger_mode & SILENT)
 	{
 		if(level & VISIBLE_IN_SILENT)
 		{
-			logger_line_append_va(line,line_len,fmt,args);
+			payload_is_visible = true;
+		}
+	} else {
+		if(!(level & UNDECOR) && (level & TESTING) && (logger_mode & TESTING))
+		{
+			// Print out the word "TESTING:"
+			if(logger_line_append(line,line_len,"TESTING:") == false)
+			{
+				return(false);
+			}
 		}
 
-		return;
+		if(!(level & UNDECOR) && (level & (VERBOSE|ERROR)) && (logger_mode & VERBOSE))
+		{
+			char time_string[sizeof "2011-10-18 07:07:09:000"];
+			(void)logger_show_time(time_string,sizeof(time_string));
+
+			// Print out current time
+			if(logger_line_append(line,line_len,"%s %s:%03zu:%s:",time_string,
+				// Print out the source file name
+				filename,
+				// Print out line number in source file
+				line_number,
+				// Print out name of the function itself
+				funcname) == false)
+			{
+				return(false);
+			}
+		}
+
+		if(!(level & UNDECOR) && (level & ERROR) && (logger_mode & (REGULAR | ERROR)))
+		{
+			// Print out error prefix
+			if(logger_line_append(line,line_len,"ERROR: ") == false)
+			{
+				return(false);
+			}
+
+		} else if(!(level & UNDECOR) && (level & ERROR) && (logger_mode & (TESTING | VERBOSE))){
+			// Print out the word "ERROR:"
+			if(logger_line_append(line,line_len,"ERROR:") == false)
+			{
+				return(false);
+			}
+		}
+
+		if(level & ERROR && logger_mode & ERROR)
+		{
+			// Print out other arguments
+			payload_is_visible = true;
+
+		} else if(level & (REGULAR|ERROR) && logger_mode & REGULAR){
+			// Print out other arguments
+			payload_is_visible = true;
+
+		} else if(level & (VERBOSE|ERROR) && logger_mode & VERBOSE){
+			// Print out other arguments
+			payload_is_visible = true;
+
+		} else if(level & (TESTING|ERROR) && logger_mode & TESTING){
+			// Print out other arguments
+			payload_is_visible = true;
+		}
 	}
 
-	if(!(level & UNDECOR) && (level & TESTING) && (rational_logger_mode & TESTING))
+	if(payload_is_visible == true)
 	{
-		// Print out the word "TESTING:"
-		logger_line_append(line,line_len,"TESTING:");
+		errno = format_errno;
+
+		if(logger_line_append_va(line,line_len,fmt,args) == false)
+		{
+			return(false);
+		}
+
+		errno = format_errno;
 	}
 
-	if(!(level & UNDECOR) && (level & (VERBOSE|ERROR)) && (rational_logger_mode & VERBOSE))
-	{
-		char time_string[sizeof "2011-10-18 07:07:09:000"];
-		(void)logger_show_time(time_string,sizeof(time_string));
-
-		// Print out current time
-		logger_line_append(line,line_len,"%s ",time_string);
-
-		// Print out the source file name
-		logger_line_append(line,line_len,"%s:",filename);
-
-		// Print out line number in source file
-		logger_line_append(line,line_len,"%03zu:",line_number);
-
-		// Print out name of the function itself
-		logger_line_append(line,line_len,"%s:",funcname);
-	}
-
-	if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (REGULAR | ERROR)))
-	{
-		// Print out error prefix
-		logger_line_append(line,line_len,"ERROR: ");
-
-	} else if(!(level & UNDECOR) && (level & ERROR) && (rational_logger_mode & (TESTING | VERBOSE))){
-		// Print out the word "ERROR:"
-		logger_line_append(line,line_len,"ERROR:");
-	}
-
-	if(level & ERROR && rational_logger_mode & ERROR)
-	{
-		// Print out other arguments
-		logger_line_append_va(line,line_len,fmt,args);
-
-	} else if(level & (REGULAR|ERROR) && rational_logger_mode & REGULAR){
-		// Print out other arguments
-		logger_line_append_va(line,line_len,fmt,args);
-
-	} else if(level & (VERBOSE|ERROR) && rational_logger_mode & VERBOSE){
-		// Print out other arguments
-		logger_line_append_va(line,line_len,fmt,args);
-
-	} else if(level & (TESTING|ERROR) && rational_logger_mode & TESTING){
-		// Print out other arguments
-		logger_line_append_va(line,line_len,fmt,args);
-	}
+	return(true);
 }
 
 /**
- *
  * @brief Build and print a formatted log line with file, line, and function metadata
  *
- * @details When REMEMBER is set and the weak rational_remember() symbol is defined,
- *          the formatted line (without a trailing newline) and its length are
- *          passed to that callback.
- *
+ * @details Literal markers are replaced after printf formatting and sanitization.
+ *          Colored REMEMBER messages use a plain copy for the callback, delivered
+ *          before terminal output. Other messages are transformed in place.
+ *          Allocation or replacement failures suppress the entire message
  */
 __attribute__((format(printf,5,6))) // Without this we will get warning
 void rational_logger(
@@ -608,39 +768,112 @@ void rational_logger(
 	const char        *fmt,
 	...)
 {
-
+	const int format_errno = errno;
 	char *logger_line_text = NULL;
+	char *remember_line_text = NULL;
 	int line_len = 0;
 
 	va_list args;
 	va_start(args,fmt);
-	logger_line(&logger_line_text,&line_len,level,filename,line,funcname,fmt,args);
+	bool line_is_complete = logger_line(&logger_line_text,
+		&line_len,
+		level,
+		filename,
+		line,
+		funcname,
+		fmt,
+		args,
+		format_errno);
 	va_end(args);
 
-	/*
-	 * Sanitize the final formatted line before any consumer sees it.
-	 * This keeps immediate terminal output and delayed REMEMBER output identical,
-	 * and prevents path bytes from being interpreted as terminal controls
-	 */
-	logger_line_sanitize_for_terminal(&logger_line_text,&line_len);
-
-	if((level & REMEMBER) && rational_remember && logger_line_text != NULL && line_len > 0)
+	if(line_is_complete == false)
 	{
-		rational_remember(logger_line_text,line_len);
+		free(logger_line_text);
+		logger_line_text = NULL;
+		line_len = 0;
 	}
+
+	logger_line_sanitize_for_terminal(&logger_line_text,&line_len);
 
 	if(logger_line_text != NULL)
 	{
-		fwrite(logger_line_text,sizeof(char),(size_t)line_len,stdout);
+		size_t output_length = (size_t)line_len;
+		size_t remember_length = output_length;
+		const bool remember_is_requested = (level & REMEMBER) && rational_remember;
+
+		if(strstr(logger_line_text,"@{") != NULL)
+		{
+			const bool styles_enabled = rational_color_is_enabled(stdout);
+
+			if(remember_is_requested == true && styles_enabled == true)
+			{
+				remember_line_text = strdup(logger_line_text);
+				line_is_complete = remember_line_text != NULL;
+
+				if(line_is_complete == true)
+				{
+					line_is_complete = rational_logger_markup_replace(
+						&remember_line_text,&remember_length,false);
+				}
+			}
+
+			if(line_is_complete == true)
+			{
+				line_is_complete = rational_logger_markup_replace(
+					&logger_line_text,&output_length,styles_enabled);
+			}
+		}
+
+		if(line_is_complete == true)
+		{
+			if(remember_is_requested == true)
+			{
+				if(remember_line_text != NULL && remember_length > 0U)
+				{
+					rational_remember(remember_line_text,(int)remember_length);
+				} else if(remember_line_text == NULL && output_length > 0U){
+					rational_remember(logger_line_text,(int)output_length);
+				}
+			}
+
+			flockfile(stdout);
+			(void)fwrite(logger_line_text,sizeof(char),output_length,stdout);
+			funlockfile(stdout);
+		}
 	}
 
+	free(remember_line_text);
 	free(logger_line_text);
+	errno = format_errno;
 }
 
 #ifdef TEST
 /**
- * @file test_slog.c
- * @brief Complete test suite for log functionality
+ * @brief Display the plain text received by the demonstration's REMEMBER callback
+ *
+ * @details The callback prints the supplied text directly, without calling slog().
+ *          Its output precedes the logger's styled output of the same message
+ *
+ * @param[in] message Plain message supplied by the logger
+ * @param message_length Number of message bytes to print
+ */
+void rational_remember(
+	const char *message,
+	const int  message_length)
+{
+	/* Show the callback's exact payload without applying formatting or markup */
+	printf("REMEMBER callback (plain): ");
+	(void)fwrite(message,sizeof(char),(size_t)message_length,stdout);
+}
+
+/**
+ * @brief Demonstrate logger modes, text styling, sanitization, and REMEMBER output
+ *
+ * @details Prints labeled examples for visual inspection. Automatic styling uses
+ *          the current output stream and environment. Explicit always examples
+ *          emit terminal sequences even when output is redirected
+ *
+ * @return 0 after printing the demonstration
  */
 int main(void)
 {
@@ -757,6 +990,56 @@ int main(void)
 	printf("Mode: %s\n",rational_reconvert(rational_logger_mode));
 	printf("42. Must print in SILENT without prefixes:|"); slog(EVERY|VISIBLE_IN_SILENT,"true"); printf("|\n");
 	printf("43. Must print no ERROR prefix in SILENT:|"); slog(ERROR|VISIBLE_IN_SILENT,"true"); printf("|\n");
+
+	/* Compare the same message under each color policy without changing the
+	   environment. Only auto depends on stdout, NO_COLOR, and TERM */
+	rational_logger_mode = REGULAR;
+	printf("\nColor modes: auto follows stdout, NO_COLOR, and TERM\n");
+	printf("The always examples emit ANSI sequences even when output is redirected\n");
+	rational_color_mode = COLOR_MODE_AUTO;
+	printf("44. auto: ");
+	slog(REGULAR|UNDECOR,"@{bold}@{red}styled text@{reset}, plain text\n");
+	rational_color_mode = COLOR_MODE_ALWAYS;
+	printf("45. always: ");
+	slog(REGULAR|UNDECOR,"@{bold}@{red}styled text@{reset}, plain text\n");
+	rational_color_mode = COLOR_MODE_NEVER;
+	printf("46. never: ");
+	slog(REGULAR|UNDECOR,"@{bold}@{red}styled text@{reset}, plain text\n");
+
+	/* Force styling for the palette so every supported color can be inspected.
+	   Each styled fragment supplies its own explicit reset marker */
+	rational_color_mode = COLOR_MODE_ALWAYS;
+	printf("\nColors and text styles (always)\n");
+	slog(REGULAR|UNDECOR,"47. Colors: "
+		"@{black}black@{reset} @{gray}gray@{reset} @{red}red@{reset} "
+		"@{green}green@{reset} @{yellow}yellow@{reset} @{blue}blue@{reset} "
+		"@{magenta}magenta@{reset} @{cyan}cyan@{reset} @{white}white@{reset}\n");
+	slog(REGULAR|UNDECOR,"48. Weight: @{bold}bold@{reset}, normal after reset\n");
+	slog(REGULAR|UNDECOR,"49. Bold colors: "
+		"@{boldblack}black@{reset} @{boldred}red@{reset} "
+		"@{boldgreen}green@{reset} @{boldyellow}yellow@{reset} "
+		"@{boldblue}blue@{reset} @{boldmagenta}magenta@{reset} "
+		"@{boldcyan}cyan@{reset} @{boldwhite}white@{reset}\n");
+	slog(REGULAR|UNDECOR,"50. Combined markers: @{bold}@{red}bold red@{reset}, plain text\n");
+
+	/* Markers are interpreted after printf arguments have been formatted.
+	   Unknown markers are ordinary text and remain visible */
+	printf("\nFormatted arguments and unknown markers (always)\n");
+	slog(REGULAR|UNDECOR,"51. Markup inside %%s: %s; number: %d\n",
+		"@{green}green argument@{reset}",7);
+	slog(REGULAR|UNDECOR,"52. Unknown marker stays visible: @{unknown}\n");
+
+	/* Sanitization preserves ordinary UTF-8 and makes raw ESC bytes visible.
+	   Raw terminal sequences from arguments are not trusted styling markers */
+	printf("\nTerminal-safe text (always)\n");
+	slog(REGULAR|UNDECOR,"53. UTF-8 stays readable: Привет 日本語 😀\n");
+	slog(REGULAR|UNDECOR,"54. Raw ESC stays visible: %s\n",
+		"\033[31mnot colored\033[0m");
+
+	/* The demonstration callback prints the plain message before the logger
+	   writes its styled version, making both forms visible one after the other */
+	printf("\nREMEMBER (always): plain callback output, then styled logger output\n");
+	slog(REGULAR|UNDECOR|REMEMBER,"55. @{bold}@{green}Remembered message %d@{reset}\n",7);
 
 	return 0;
 }

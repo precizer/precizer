@@ -95,6 +95,13 @@
 
 /**
  *
+ * Terminal color output policy
+ *
+ */
+#include "rational_color.h"
+
+/**
+ *
  * Prototypes of functions and macros for logging
  *
  */

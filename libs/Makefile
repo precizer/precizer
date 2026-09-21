@@ -3,10 +3,15 @@
 MAKEFLAGS += --no-print-directory
 CONFIG += ordered
 
+C_STANDARD := -std=c2x
+CPPFLAGS ?=
+CFLAGS ?= -finline-functions
+LDFLAGS ?=
+
 SUBDIRS  = sqlite3 rational sha512 mem xdiff testitall monocypher
 PURGE_SUBDIRS = $(SUBDIRS) testmocking
 
-TOPTARGETS := all clean debug prod production portable sanitize test tests-debug tests-sanitize tests-coverage gcc-analyzer format coverage compile-commands purge
+TOPTARGETS := all clean debug prod production distribution portable sanitize test tests-debug tests-sanitize tests-coverage gcc-analyzer format coverage compile-commands purge
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS)
 

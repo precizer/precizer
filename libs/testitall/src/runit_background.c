@@ -684,7 +684,7 @@ Return runit_background(
 	call(m_del(STDOUT));
 	call(m_del(STDERR));
 
-	run(runit_validate_runtime_mode(run_external));
+	run(runit_validate_runtime_mode(testitall_runit_mode));
 
 	if(SUCCESS == status && 0U == max_delay_ms)
 	{
@@ -710,7 +710,7 @@ Return runit_background(
 	run(runit_prepare_call_and_capture(
 		&runit_call_data,
 		&capture,
-		run_external,
+		testitall_runit_mode,
 		safe_arguments,
 		"Background call",
 		stdout_result,
@@ -779,13 +779,14 @@ Return runit_background(
 				run_watchdog(protected_pid,max_delay_ms,25U);
 			}
 
-			if(EXTERNAL_CALL == run_external)
+			if(EXTERNAL_CALL == testitall_runit_mode)
 			{
 				(void)execv(runit_call_data.program_path,runit_call_data.argv);
 				_exit(127);
 			}
 
 			const testitall_test_main_callback internal_test_main = testitall_get_test_main();
+
 			if(NULL == internal_test_main)
 			{
 				_exit(127);
