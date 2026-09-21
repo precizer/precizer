@@ -12,7 +12,7 @@ A tiny, high-performance application for verifying file integrity
 
 - [Continuous integration and automation](#continuous-integration-and-automation)
 - [About the program](#about-the-program)
-- [Downloads](#downloadsскачивание)
+- [Downloads](#downloads)
 - [Changelog](#changelog)
 - [Technical details](#technical-details)
 - [Questions and bug reports](#questions--bug-reports)
@@ -122,7 +122,7 @@ abc/def/aaa.txt
 
 This ensures that even when files reside in different mount points or sources, they can still be compared accurately under the same relative paths and their respective checksums.
 
-## Downloads/Скачивание
+## Downloads
 
 The appropriate package is determined by the operating system and processor architecture
 
