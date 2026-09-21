@@ -402,12 +402,12 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          #wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          #wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          #unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          #"$RUNNER_TEMP/precizer" --version
+          "$RUNNER_TEMP/precizer" --version
 
   # Build and attach the MSYS-based Windows x64 release assets
   build_msys_x64:
