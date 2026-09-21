@@ -22,7 +22,6 @@ $(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) $(PROJECT_DIR)/src/version.h 
 	@cp "$(PRECIZER_PAYLOAD)" "$(PAYLOAD_DIR)/precizer.exe"
 	@cp "$(MSYS_RUNTIME)" "$(PAYLOAD_DIR)/msys-2.0.dll"
 	@cp launcher.rc "$(BUILD_DIR)/launcher.rc"
-	@echo "Embedded payload hash path: $(PAYLOAD_HASH_PATH)"
 	@cd "$(BUILD_DIR)" && "$(WINDRES)" \
 		--preprocessor="$(CC)" \
 		--preprocessor-arg=-E \
