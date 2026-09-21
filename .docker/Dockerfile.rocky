@@ -1,28 +1,26 @@
-FROM rockylinux:9@sha256:d7be1c094cc5845ee815d4632fe377514ee6ebcf8efaed6892889657e5ddaaa6 AS rocky
+FROM rockylinux/rockylinux:10@sha256:827d37bc128288ccf160ee318bb3cb92d591164cb217e92f8bc61e3982ae1834 AS rocky
 
 RUN set -eux; \
-    dnf -y update; \
-    dnf -y install dnf-plugins-core; \
-    dnf config-manager --set-enabled crb; \
-    dnf -y install epel-release; \
-    dnf -y install gcc-toolset-15-gcc; \
-    dnf -y install gcc-toolset-15-libubsan-devel; \
-    dnf -y install gcc-toolset-15-libasan-devel; \
-    dnf -y makecache; \
-    dnf -y install \
-    which \
-    gcc \
-    clang \
-    make \
-    llvm \
-    sqlite sqlite-devel \
-    glibc-devel \
-    llvm-devel \
-    pcre2 pcre2-devel \
-    upx zip; \
-    dnf -y --enablerepo=devel install pcre2-static glibc-static; \
-    dnf -y clean all; \
-    rm -rf /var/cache/dnf
+	dnf -y update; \
+	dnf -y install dnf-plugins-core; \
+	dnf config-manager --set-enabled crb; \
+	dnf -y install \
+		which \
+		gcc \
+		clang \
+		make \
+		llvm \
+		llvm-devel \
+		libasan libubsan \
+		sqlite sqlite-devel \
+		glibc-devel glibc-static \
+		pcre2 pcre2-devel pcre2-static \
+		zip; \
+	dnf -y clean all; \
+	rm -rf /var/cache/dnf
+
+# UPX is disabled because no package is available
+# TODO: Install UPX and enable compression when a working package is available
 
 WORKDIR /precizer
 
@@ -34,6 +32,6 @@ ARG BUILD=production
 ARG COMPILER=
 ENV COMPILER=${COMPILER}
 ENV TEST_TYPE=tests
-RUN if [ -n "$COMPILER" ]; then make -j ${BUILD}; else scl enable gcc-toolset-15 -- make -j ${BUILD}; fi
+RUN make -j ${BUILD} UPX=true
 
-CMD ["sh", "-c", "if [ -n \"$COMPILER\" ]; then make -j ${TEST_TYPE}; else scl enable gcc-toolset-15 -- make -j ${TEST_TYPE}; fi"]
+CMD ["sh", "-c", "make -j ${TEST_TYPE}"]

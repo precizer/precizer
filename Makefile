@@ -50,7 +50,7 @@
 
 BUILDDIR = .builds
 ZIP_DIR = $(BUILDDIR)/zip
-APP_VERSION := $(shell awk -F '"' '/^\#define APP_VERSION / {print $$2}' src/version.h)
+APP_VERSION := $(shell awk -F '"' '/^#define APP_VERSION / {print $$2}' src/version.h)
 # Returns a concise path for build messages.
 # Plain file names stay unchanged; nested paths keep only final-directory/file
 short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/,%,$(dir $(1))))/$(notdir $(1)))
@@ -858,9 +858,9 @@ endif
 
 # Extra arguments passed to the Dockerfile build-time make invocation
 # Per-OS and architecture overrides follow DOCKER_BUILD_MAKE_ARGS_<os>_<arch>
-# UPX=true disables UPX for platform combinations where compressed binaries
-# currently crash at runtime
-# TODO: Remove these workarounds after UPX-compressed binaries run reliably
+# UPX=true disables UPX for Alpine amd64 and Ubuntu arm64 because compressed
+# binaries currently core dump at runtime
+# TODO: Remove these overrides after UPX-compressed binaries run without core dumps on both targets
 DOCKER_BUILD_MAKE_ARGS_alpine_amd64 ?= UPX=true
 DOCKER_BUILD_MAKE_ARGS_ubuntu_arm64 ?= UPX=true
 DOCKER_BUILD_MAKE_ARGS ?= $(DOCKER_BUILD_MAKE_ARGS_$(DOCKER_OS)_$(DOCKER_PLATFORM_ARCH))
