@@ -583,8 +583,8 @@ prodfinal: $(PROD_EXE)
 	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
 	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
 	@rm -f "$(EXE).zip"
-	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
-	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
 	@echo "Created $(EXE).zip"
 
 prodlibs:
@@ -622,8 +622,8 @@ dynprodfinal: dynamic-production-build
 	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
 	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
 	@rm -f "$(EXE).zip"
-	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
-	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
 	@echo "Created $(EXE).zip"
 
 dynprodlibs:
@@ -665,8 +665,8 @@ macos-zip: $(DIST_EXE)
 	@cp "$(DIST_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
 	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
 	@rm -f "$(EXE).zip"
-	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
-	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
 
 #
 # Windows packages built from the MSYS payload
@@ -685,8 +685,8 @@ windows-zip: msys-build
 	@cp "$(DIST_EXE).exe" /usr/bin/msys-2.0.dll "$(ZIP_DIR)/v$(APP_VERSION)/"
 	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE).exe" --version
 	@rm -f $(EXE).zip
-	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE).exe" "v$(APP_VERSION)/msys-2.0.dll"
-	@zip -9 -j -MM $(EXE).zip COPYING CHANGELOG.md README.ru.md README.md
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE).exe" "v$(APP_VERSION)/msys-2.0.dll"
+	@zip -q -9 -j -MM $(EXE).zip COPYING CHANGELOG.md README.ru.md README.md
 
 # Build the native launcher with the payload taken directly from its build directory
 windows-exe: msys-build
@@ -710,8 +710,8 @@ portfinal: $(PRTB_EXE)
 	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
 	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
 	@rm -f "$(EXE).zip"
-	@cd "$(ZIP_DIR)" && zip -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
-	@zip -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
+	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
 	@echo "Created $(EXE).zip"
 
 portablelibs:
