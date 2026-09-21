@@ -37,7 +37,7 @@ jobs:
       - name: Render release notes
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: bash tools/scripts/render-release-notes.sh "$RELEASE_TAG" release-notes.md
+        run: bash .github/scripts/render-release-notes.sh "$RELEASE_TAG" release-notes.md
 
       - name: Create GitHub Release with gh CLI
         env:
