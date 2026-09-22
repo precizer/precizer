@@ -34,7 +34,7 @@ int exit_status(
 			return((int)COMPLETED);
 		} else {
 			slog(ERROR,"The %s process terminated unexpectedly due to an error\n",application_file_name);
-			slog(ERROR,"Exit status » %s\n",show_status(status));
+			slog(EVERY,"Exit status » %s\n",show_status(status));
 			return((int)status);
 		}
 	}

@@ -30,4 +30,4 @@ ERROR:Can't open database write_protected_directory/database1\.db .* unable to o
 TESTING:Database initialization process completed
 TESTING:Returned db_init:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\Z
+TESTING:Exit status » FAILURE\Z

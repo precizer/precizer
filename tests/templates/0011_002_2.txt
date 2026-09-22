@@ -41,4 +41,4 @@ TESTING:The database database1\.db was previously created and already contains d
 TESTING:Returned db_contains_data:\d+ status: WARNING
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING\Z
+TESTING:Exit status » WARNING\Z

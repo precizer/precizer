@@ -33,4 +33,4 @@ TESTING:Comparison of write_protected_database1\.db and database2\.db databases 
 TESTING:Returned db_compare:\d+ status: FAILURE
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\Z
+TESTING:Exit status » FAILURE\Z

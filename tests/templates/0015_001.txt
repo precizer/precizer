@@ -39,4 +39,4 @@ TESTING:Returned db_check_version:\d+ status: WARNING
 TESTING:Returned db_integrity_check:\d+ status: WARNING
 TESTING:Returned db_primary_file_test:\d+ status: WARNING
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING\Z
+TESTING:Exit status » WARNING\Z

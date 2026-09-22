@@ -19,4 +19,4 @@ File traversal complete
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 ERROR: The precizer process terminated unexpectedly due to an error
-ERROR: Exit status » WARNING\Z
+Exit status » WARNING\Z

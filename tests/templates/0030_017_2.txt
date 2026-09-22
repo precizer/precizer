@@ -65,4 +65,4 @@ TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, sy
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING\Z
+TESTING:Exit status » WARNING\Z
