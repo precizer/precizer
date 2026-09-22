@@ -8,6 +8,7 @@ MSYS_RUNTIME = $(PROJECT_DIR)/package/msys/msys-2.0.dll
 OUTPUT_EXE = $(PROJECT_DIR)/precizer_windows_x64_portable.exe
 CC = $(shell cygpath -am /ucrt64/bin/gcc.exe)
 WINDRES = $(shell cygpath -am /ucrt64/bin/windres.exe)
+UPX ?= /ucrt64/bin/upx --best --lzma -qqq
 PATH := /ucrt64/bin:$(PATH)
 PAYLOAD_HASH = $(shell sha256sum "$(PRECIZER_PAYLOAD)" "$(MSYS_RUNTIME)" | awk '{printf "%s", $$1}' | sha256sum | awk '{print $$1}')
 PAYLOAD_HASH_PATH = sha256-$(PAYLOAD_HASH)
@@ -21,7 +22,6 @@ $(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) $(PROJECT_DIR)/src/version.h 
 	@cp "$(PRECIZER_PAYLOAD)" "$(PAYLOAD_DIR)/precizer.exe"
 	@cp "$(MSYS_RUNTIME)" "$(PAYLOAD_DIR)/msys-2.0.dll"
 	@cp launcher.rc "$(BUILD_DIR)/launcher.rc"
-	@echo "Embedded payload hash path: $(PAYLOAD_HASH_PATH)"
 	@cd "$(BUILD_DIR)" && "$(WINDRES)" \
 		--preprocessor="$(CC)" \
 		--preprocessor-arg=-E \
@@ -47,7 +47,8 @@ $(OUTPUT_EXE): $(PRECIZER_PAYLOAD) $(MSYS_RUNTIME) $(PROJECT_DIR)/src/version.h 
 		"$(BUILD_DIR)/launcher.res" \
 		-o "$(OUTPUT_EXE)" \
 		-lshell32
-	@echo "Built $(OUTPUT_EXE)"
+	@$(UPX) "$(OUTPUT_EXE)"
+	@echo "Built $(notdir $(OUTPUT_EXE))"
 
 $(PAYLOAD_DIR):
 	@mkdir -p "$@"

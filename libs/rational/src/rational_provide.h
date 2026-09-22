@@ -42,7 +42,7 @@ bool rational_ask(
 			} \
 			/* Normalize, merge global context, and mark fresh yes/no answers as pending */ \
 			Return __returned_status = rational_normalize_return(__delivered_status); \
-			if(BOOLEAN & __returned_status) \
+			if(DECISION & __returned_status) \
 			{ \
 				__returned_status |= AWAITING; \
 			} \
@@ -74,7 +74,7 @@ bool rational_ask(
 			} \
 			/* Normalize, merge global context, and mark fresh yes/no answers as pending */ \
 			Return __returned_status = rational_normalize_return(__provided_status); \
-			if(BOOLEAN & __returned_status) \
+			if(DECISION & __returned_status) \
 			{ \
 				__returned_status |= AWAITING; \
 			} \

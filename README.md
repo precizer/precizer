@@ -12,7 +12,7 @@ A tiny, high-performance application for verifying file integrity
 
 - [Continuous integration and automation](#continuous-integration-and-automation)
 - [About the program](#about-the-program)
-- [Downloads](#downloadsскачивание)
+- [Downloads](#downloads)
 - [Changelog](#changelog)
 - [Technical details](#technical-details)
 - [Questions and bug reports](#questions--bug-reports)
@@ -122,7 +122,7 @@ abc/def/aaa.txt
 
 This ensures that even when files reside in different mount points or sources, they can still be compared accurately under the same relative paths and their respective checksums.
 
-## Downloads/Скачивание
+## Downloads
 
 The appropriate package is determined by the operating system and processor architecture
 
@@ -190,7 +190,7 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 
 * Windows x64 ZIP package: the program is built in the MSYS2 MSYS environment, with its main components linked statically. The archive contains `precizer.exe` and the `msys-2.0.dll` runtime library; both must remain in the same directory after extraction. MSYS2 does not need to be installed to run it
 
-* Standalone Windows x64 EXE: a self-extracting launcher embeds the same `precizer.exe` and `msys-2.0.dll`. At startup, it extracts them to a user cache and runs the program, reusing the cached files on subsequent runs. The launcher is built with MinGW-w64/UCRT. Release builds are additionally compressed with UPX. No MSYS2 installation or DLL files alongside the downloaded EXE are required
+* Standalone Windows x64 EXE: a self-extracting launcher embeds the same `precizer.exe` and `msys-2.0.dll`. At startup, it extracts them to a user cache and runs the program, reusing the cached files on subsequent runs. The launcher is built with MinGW-w64/UCRT. The executable is compressed with UPX to reduce its size. No MSYS2 installation or DLL files alongside the downloaded EXE are required
 
 * Static linking is not supported on macOS. System libraries required to run the application are listed under [“System libraries required at runtime”](#system-libraries-required-at-runtime)
 
@@ -567,7 +567,7 @@ The result is `precizer_windows_x64_portable.zip`. After extraction, `precizer.e
 The following commands install the additional tools, build the program, and create a self-extracting EXE with the program and DLL embedded. There is no need to run `make windows-zip` first:
 
 ```sh
-pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils
+pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-binutils mingw-w64-ucrt-x86_64-upx
 make windows-exe
 ```
 
@@ -579,11 +579,10 @@ After installing all the dependencies listed above, both packages can be built w
 make windows-zip windows-exe
 ```
 
-Compressing the EXE with UPX is optional and performed separately:
+The executable is automatically compressed with UPX. The following command disables compression:
 
 ```sh
-pacman -S --needed mingw-w64-ucrt-x86_64-upx
-/ucrt64/bin/upx --best --lzma ./precizer_windows_x64_portable.exe
+make windows-exe UPX=true
 ```
 
 ### Testing
@@ -1228,6 +1227,12 @@ NO_COLOR=1 precizer --compare first.db second.db
 ```
 
 ## TROUBLESHOOTING
+
+### Antivirus slows scanning on Windows
+
+Real-time antivirus protection can significantly slow file traversal and checksum calculation, in some cases by one or two orders of magnitude. This happens because the antivirus scans each file when it is accessed. To improve performance, adding the folders being scanned to real-time scanning exclusions is recommended
+
+`precizer` reads every byte of every file in the specified directory to calculate checksums, but does NOT launch the files or execute their contents. Antivirus protection is not required for checksum calculation itself
 
 ### Slow file walk, slow checksums, slow database writes ("everything is slow")
 

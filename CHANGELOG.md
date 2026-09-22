@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# Release 0.17.2 2026-09-21
+
+- Improved usability of the Windows version
+
 # Release 0.17.1 2026-09-20
 
 ## Added

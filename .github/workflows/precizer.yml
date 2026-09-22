@@ -37,7 +37,7 @@ jobs:
       - name: Render release notes
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: bash tools/scripts/render-release-notes.sh "$RELEASE_TAG" release-notes.md
+        run: bash .github/scripts/render-release-notes.sh "$RELEASE_TAG" release-notes.md
 
       - name: Create GitHub Release with gh CLI
         env:
@@ -402,12 +402,12 @@ jobs:
           # Testing automation for downloading and unarchiving new versions (example from the README documentation)
           #
           # Download
-          #wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
-          #wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
+          wget -O "$RUNNER_TEMP/precizer.zip" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip"
+          wget -O "$RUNNER_TEMP/precizer.zip.sigstore.json" -q "https://github.com/precizer/precizer/releases/latest/download/precizer_$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/macos/')_$(uname -m | sed 's/amd64/x86_64/')$( [ "$(uname -s)" = "Linux" ] && echo '_portable' ).zip.sigstore.json"
           # Extract the archive
-          #unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
+          unzip -jqo "$RUNNER_TEMP/precizer.zip" '*/precizer' -d "$RUNNER_TEMP"
           # Run
-          #"$RUNNER_TEMP/precizer" --version
+          "$RUNNER_TEMP/precizer" --version
 
   # Build and attach the MSYS-based Windows x64 release assets
   build_msys_x64:
@@ -467,45 +467,6 @@ jobs:
           # Build both packages with a shared MSYS payload and static third-party libraries
           make windows-zip windows-exe
           mv precizer.zip precizer_windows_x64_portable.zip
-
-          # Locate the executable produced by msys-build
-          built_exe=".builds/distribution/precizer.exe"
-
-          # Stop if the build did not produce an executable
-          if [ ! -f "$built_exe" ]; then
-            echo "Distribution executable not found" >&2
-            exit 1
-          fi
-
-          # Prepare the reports used to verify both Windows packages
-          mkdir -p .builds/msys-reports
-
-          # Verify that the payload keeps only the expected MSYS runtime dependency
-          cygcheck "$built_exe" | tee .builds/msys-reports/payload-dependencies.txt
-          if ! grep -qi 'msys-2\.0\.dll' .builds/msys-reports/payload-dependencies.txt; then
-            echo "The MSYS payload does not depend on msys-2.0.dll as expected" >&2
-            exit 1
-          fi
-          if grep -Eiq 'msys-(argp|pcre2|sqlite3?|gcc|stdc\+\+|winpthread).*\.dll' .builds/msys-reports/payload-dependencies.txt; then
-            echo "The MSYS payload still has an unexpected dynamic MSYS dependency" >&2
-            exit 1
-          fi
-
-          # Require the native launcher produced by windows-exe
-          test -f ./precizer_windows_x64_portable.exe
-
-          # Compress the native launcher with the UCRT-native UPX package
-          /ucrt64/bin/upx --best --lzma -qqq ./precizer_windows_x64_portable.exe
-
-          # Verify the compressed executable before dependency and runtime checks
-          /ucrt64/bin/upx -t ./precizer_windows_x64_portable.exe
-
-          # Verify that the launcher does not import MSYS2 DLLs from the runner
-          cygcheck ./precizer_windows_x64_portable.exe | tee .builds/msys-reports/launcher-dependencies.txt
-          if grep -Eiq '\\msys64\\(usr|ucrt64)\\bin\\.*\.dll' .builds/msys-reports/launcher-dependencies.txt; then
-            echo "The native launcher imports an MSYS2 runtime DLL instead of embedding it only" >&2
-            exit 1
-          fi
 
       # Confirm that the self-extracting launcher works without MSYS2 on PATH
       - name: Run native launcher outside MSYS

@@ -83,7 +83,7 @@ Return rational_normalize_return(Return status)
  * @brief Consume a yes/no Return answer and merge its technical status
  *
  * @details The returned status must contain a pending yes/no answer. The
- *          function reads YES or NO, removes AWAITING and BOOLEAN from the
+ *          function reads YES or NO, removes AWAITING and DECISION from the
  *          caller's local status, merges only the technical status bits, and
  *          returns a regular C bool for direct use in conditions
  *
@@ -113,15 +113,15 @@ bool rational_ask(
 	if((AWAITING & returned) == 0)
 	{
 		slog(ERROR,"%s:%d ask() expected a yes/no Return answer\n",func,line);
-		*status = rational_normalize_return((*status & ~(AWAITING | BOOLEAN)) | FAILURE);
+		*status = rational_normalize_return((*status & ~(AWAITING | DECISION)) | FAILURE);
 
 		return(false);
 	}
 
-	if((BOOLEAN & returned) == 0)
+	if((DECISION & returned) == 0)
 	{
 		slog(ERROR,"%s:%d ask() received a pending Return answer without YES or NO\n",func,line);
-		*status = rational_normalize_return((*status & ~(AWAITING | BOOLEAN)) | FAILURE);
+		*status = rational_normalize_return((*status & ~(AWAITING | DECISION)) | FAILURE);
 
 		return(false);
 	}
@@ -132,8 +132,8 @@ bool rational_ask(
 	}
 
 	*status = rational_normalize_return(
-		(*status & ~(AWAITING | BOOLEAN))
-		| (returned & ~(AWAITING | BOOLEAN)));
+		(*status & ~(AWAITING | DECISION))
+		| (returned & ~(AWAITING | DECISION)));
 
 	return(answer);
 }

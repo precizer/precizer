@@ -342,7 +342,7 @@ The binary layer is for yes/no answers without mixing them with technical succes
 |---|---|
 | `YES` | local answer from a check function: yes, the condition is true |
 | `NO` | local answer from a check function: no, the condition is false |
-| `BOOLEAN` | binary flag mask: `YES | NO` |
+| `DECISION` | binary flag mask: `YES | NO` |
 
 Important: `YES` and `NO` are not C `bool` values. They are bit flags inside `Return`. That means `NO` is not equal to `0`, and code like `if(path_is_readable(path))` is not the correct way to read the answer.
 
