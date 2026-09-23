@@ -15,7 +15,7 @@ Usage: precizer \[OPTION\.\.\.\] PATH
 [\s\S]*?  -X, --db-drop-inaccessible[^\n]*
 [\s\S]*? Locked Checksum Protection:
 [\s\S]*?  -C, --db-drop-ignored[^\n]*
-[\s\S]*?  -k, --lock-checksum=PCRE2_REGEXP[ \t]*
+[\s\S]*?  -k,[ \t]+--lock-checksum=PCRE2_REGEXP[ \t]*
 [\s\S]*?  -r, --rehash-locked[^\n]*
 [\s\S]*? Path Filtering and Ignore Policy:
 [\s\S]*?  -e, --ignore=PCRE2_REGEXP[^\n]*

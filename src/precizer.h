@@ -457,11 +457,8 @@ typedef struct {
 	/// Activated by: --dry-run=with-checksums
 	bool dry_run_with_checksums;
 
-	/// Consider file metadata changes (creation and modification timestamps)
-	/// in addition to file size when detecting changes. By default, only
-	/// file size changes trigger rescanning. When this option is enabled,
-	/// any changes to file timestamps or size will cause the file to be
-	/// rescanned and its checksum updated in the database.
+	/// Rehash regular files when ctime or allocated block count changes.
+	/// Size and mtime changes trigger rehashing by default
 	bool watch_timestamps;
 
 	/// This option prevents directory traversal from descending into

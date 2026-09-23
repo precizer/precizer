@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# Release 0.17.3 2026-10-01
+
+- Recalculates stored checksums for files when their size or modification time (`mtime`) changes. Changes to `ctime` alone still require `--watch-timestamps`
+
 # Release 0.17.2 2026-09-21
 
 - Improved usability of the Windows version

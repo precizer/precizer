@@ -475,21 +475,24 @@ Return file_list(TraversalSummary *summary)
 					// Derived flags to qualify the type of metadata change
 					bool size_changed = (file->db_record_vs_file_metadata_changes & SIZE_CHANGED) != 0;
 
+					bool modification_time_changed = (file->db_record_vs_file_metadata_changes & MODIFICATION_TIME_CHANGED) != 0;
+
 					bool timestamps_changed = (file->db_record_vs_file_metadata_changes & (STATUS_CHANGED_TIME | MODIFICATION_TIME_CHANGED)) != 0;
 
-					bool timestamps_only_changed = path_known == true
+					bool unwatched_metadata_only_changed = path_known == true
 					        && file_metadata_identical == false
 					        && config->watch_timestamps == false
 					        && size_changed == false
+					        && modification_time_changed == false
 					        && has_saved_offset == false;
 
 					// Decision whether to rehash the file contents using
 					// the SHA512 algorithm. Defaults to rehash.
 					file->rehash = true;
 
-					if(timestamps_only_changed == true)
+					if(unwatched_metadata_only_changed == true)
 					{
-						// ctime/mtime changed only: update DB without rehash
+						// Only ctime or allocated blocks changed: update DB without rehash
 						file->rehash = false;
 					}
 
