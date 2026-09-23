@@ -1,0 +1,17 @@
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: 0016_chmod\.db
+Starting database file 0016_chmod\.db integrity check…
+Database 0016_chmod\.db has been verified and is in good condition
+Update mode enabled for DB 0016_chmod\.db
+File traversal started for [^\r\n]+
+(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0016_chmod\.db:(?:\x1B\[[0-9;]*m)*
+update stat file\.txt
+File traversal complete
+Searching for files that no longer exist on the file system…
+Missing file search finished
+Total allocated size: [^,\r\n]+, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: 0B, hashing rate: n/a
+Start vacuuming the primary database…
+The primary database has been vacuumed
+(?:\x1B\[[0-9;]*m)*The database file 0016_chmod\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+Exit status » SUCCESS\Z

@@ -3,7 +3,7 @@
 /**
  * @brief Prints metadata details based on the specified flag.
  *
- * This function outputs metadata such as file size or timestamps (creation and modification times)
+ * This function outputs metadata such as file size or timestamps (status change and content modification times)
  * in a human-readable format. It is used to display changes between two sets of file metadata.
  *
  * @param level Logger level to use (e.g., ERROR for error paths, EVERY for regular output)

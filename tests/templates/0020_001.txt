@@ -23,4 +23,4 @@ TESTING:The path nonexistent_directory doesn't exist or it is not a directory
 ERROR:Unable to create database file. Directory nonexistent_directory not found
 TESTING:Returned db_primary_file_validate_existence:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\Z
+TESTING:Exit status » FAILURE\Z

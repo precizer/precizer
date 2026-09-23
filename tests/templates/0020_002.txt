@@ -28,4 +28,4 @@ TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Returned db_determine_mode:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » FAILURE\Z
+TESTING:Exit status » FAILURE\Z

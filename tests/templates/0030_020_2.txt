@@ -50,4 +50,4 @@ TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, access check failed(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING\Z
+TESTING:Exit status » WARNING\Z

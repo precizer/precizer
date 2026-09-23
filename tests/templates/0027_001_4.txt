@@ -8,7 +8,7 @@ Update mode enabled for DB lock1\.db
 File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock1\.db:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
-update stat diff2/2/AAA/BBB/CZC/a\.txt
+update & rehash diff2/2/AAA/BBB/CZC/a\.txt
 update & rehash diff2/3/AAA/BBB/CCC/a\.txt
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff2/path1/AAA/BCB/CCC/b\.txt
 File traversal complete
@@ -19,4 +19,4 @@ File traversal complete
 Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
 Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 ERROR: The precizer process terminated unexpectedly due to an error
-ERROR: Exit status » WARNING\Z
+Exit status » WARNING\Z

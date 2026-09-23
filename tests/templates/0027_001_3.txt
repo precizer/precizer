@@ -47,7 +47,7 @@ TESTING:Update mode enabled for DB lock\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock\.db:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
-update stat diff2/2/AAA/BBB/CZC/a\.txt
+update & rehash diff2/2/AAA/BBB/CZC/a\.txt
 update & rehash diff2/3/AAA/BBB/CCC/a\.txt
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff2/path1/AAA/BCB/CCC/b\.txt
 TESTING:File traversal complete
@@ -60,4 +60,4 @@ TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, sy
 TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
-ERROR:Exit status » WARNING\Z
+TESTING:Exit status » WARNING\Z

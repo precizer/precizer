@@ -207,10 +207,8 @@ void init_config(void)
 	// Pre-compiled PCRE2 patterns for --lock-checksum, populated by compile_patterns() only if --lock-checksum was specified
 	config->lock_checksum_pcre_compiled = NULL;
 
-	/// Track both file metadata (created/modified dates) and size changes
-	/// for change detection. Out of the box, only size changes trigger
-	/// a rescan. When enabled, any update to timestamps or file size
-	/// will force a rescan and update the checksum in the database.
+	/// Rehash regular files when ctime or allocated block count changes.
+	/// Size and mtime changes trigger rehashing by default
 	config->watch_timestamps = false;
 
 #if 0
