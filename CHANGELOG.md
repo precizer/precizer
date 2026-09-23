@@ -4,7 +4,7 @@ All notable changes will be documented in this file
 
 # Release 0.17.3 2026-10-01
 
-- Recalculates stored checksums for files when their size or modification time (`mtime`) changes. Changes to `ctime` alone still require `--watch-timestamps`
+- Changed the default behavior. Files are now considered modified when their modification time (`mtime`) changes, even if their size remains unchanged. This helps detect content changes that do not affect file size, since a change in `mtime` is a clear indication that a file has been modified
 
 # Release 0.17.2 2026-09-21
 
