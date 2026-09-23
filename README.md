@@ -232,11 +232,11 @@ The following scenario illustrates the issue:
 * In `--dry-run` and `--dry-run=with-checksums` modes, progress is not saved to the database because these modes must not modify the database.
 * For a regular file, the database may temporarily store state for resuming hashing instead of the complete SHA512. The same can happen for a file that already matches `--lock-checksum` but has not yet been read to the end: on the next run, precizer resumes from the saved point. After the file has been read successfully to the end, the temporary state is replaced with the complete SHA512. From that point on, the protected file is sealed: the complete SHA512 becomes the reference value, and temporary progress from later verification passes no longer overwrites that reference checksum.
 * Checksum calculations rely on the cryptographic SHA512 hash algorithm, which is reliable, fast, and provides very strong practical collision resistance. If two large files differ by even one byte, SHA512 will overwhelmingly likely produce different checksums; unlike CRC32 and the now-outdated SHA1, it is designed for robust data integrity verification
-* The algorithms in precizer are designed to make it easy to keep the database up to date without having to recalculate everything from scratch. Simply run the program with the `--update` parameter, and new files will be added to the database, while entries for deleted files will be removed. If a file has been modified and its size has changed, its SHA512 checksum will be recalculated and updated in the database.
+* precizer keeps the database of file paths and checksums up to date without recalculating every checksum. A run with `--update` adds new files and removes records for missing files. For files with a complete SHA512 already stored, the checksum is recalculated when the file size or modification time (`mtime`) changes, and the result is updated in the database
 * During `--update`, entries for missing files are removed, but records for inaccessible files (permission denied) are kept by default. This protection exists because permissions can temporarily change (ownership, ACLs, transient mount issues), and dropping records in that state would silently erase valid database history. Using `--db-drop-inaccessible` with `--update` is intended only when those database records must be dropped.
 * When `--progress` is enabled, warnings and errors collected during a session are printed in one block right before exit so important messages (for example, file access issues) are not lost in routine logs.
 * The `--quiet-ignored` option suppresses per-file log lines for paths filtered by `--ignore` and `--include`. This helps keep program logs free of extra messages once ignore regular expressions are tuned and stable in use; other warnings and errors remain visible.
-* There is an option to consider not only the file size when updating the database but also the file’s creation or modification timestamps. This means that any change in file metadata will trigger an SHA512 checksum recalculation and update in the database. For example, if a file’s ctime changes but its size remains the same, the checksum will NOT be recalculated if only the `--update` parameter is used. To force checksum recalculation for such files `--watch-timestamps` should be added. This option is disabled by default because ctime (like mtime) can change frequently due to commands like `chmod` or `chown`, even when the file’s content remains the same.
+* Database updates can take into account not only changes in file size but also file creation or modification times. Any change to file metadata then triggers a SHA512 checksum recalculation and an update of the file record in the database. For example, if a file’s ctime changes but its size stays the same, its checksum will NOT be recalculated when only `--update` is specified. Updating checksums for such files requires `--watch-timestamps`. This option is disabled by default because ctime can change frequently, for example, through `chmod` or `chown`, while the file contents remain unchanged
 * precizer can be used as a security monitoring tool, detecting unauthorized file modifications where contents might have changed while metadata remains untouched.
 * Security:
   * The program never modifies, deletes, moves, or copies any files or directories it processes.
@@ -739,7 +739,7 @@ Every time **precizer** runs, it traverses the file system and then checks wheth
 
 The directory traversal in **precizer** works similarly to `rsync` as it uses a similar algorithm.
 
-It's important to note that **precizer** will not recalculate SHA512 checksums for files that are already recorded in the database, as long as their metadata remains unchanged (such as size and last access time, **atime**). If the `--watch-timestamps` argument is specified, the program will also consider the creation time (**ctime**) and modification time (**mtime**) in addition to the file size.
+For regular files with a complete SHA512 in the database, **precizer** recalculates the checksum when the size or `mtime` changes. The `--watch-timestamps` option also considers any changes to file metadata except the last access time (`atime`)
 
 Any new, deleted, or modified files between application runs will be processed accordingly. All changes will be reflected in the database if the `--update` parameter is specified.
 
@@ -1163,11 +1163,11 @@ precizer --help
 
 - `--update`, `-u` — Allow a scan to update an existing database: add new files, update changed files, and remove records for files that are gone. Use the same starting directories as when the database was created
 
-- `--watch-timestamps`, `-T` — Consider changes to modification time `mtime` and metadata change time `ctime`, in addition to file size, when deciding whether to recalculate a checksum
+- `--watch-timestamps`, `-T` — Consider changes to the metadata change time `ctime`, in addition to file size, when deciding whether to recalculate a checksum
 
 - `--dry-run`, `-n` — Perform a trial traversal without writing to the database. The `--dry-run=with-checksums` variant also reads files and computes checksums. This option has no effect on `--compare`
 
-`--update` does not recalculate every checksum. For regular files already in the database, recalculation is triggered by a size change, or by a timestamp change when `--watch-timestamps` is enabled. Archive protection through `--lock-checksum` is described in [Example 9](#example-9), and forced verification of those files is covered in [Example 10](#example-10)
+`--update` does not recalculate every checksum. For regular files with a complete SHA512 already stored, recalculation is triggered by a change in size or `mtime`. With `--watch-timestamps`, changes to `ctime` and the allocated block count are also checked. Archive protection through `--lock-checksum` is described in [Example 9](#example-9), and forced verification of those files is covered in [Example 10](#example-10)
 
 ### Comparing databases
 
