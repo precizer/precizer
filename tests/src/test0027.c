@@ -28,7 +28,7 @@ static Return test0027_1(void)
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	arguments = "--update --database=lock.db --lock-checksum=\"^diff1/1/.*\" "
+	arguments = "--update --check-level=QUICK --database=lock.db --lock-checksum=\"^diff1/1/.*\" "
 	        "--lock-checksum=\"^diff2/path1/.*\" tests/fixtures/diffs";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -52,7 +52,7 @@ static Return test0027_1(void)
 	// Bump file mtime by a nanosecond delta without changing file content
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,"tests/fixtures/diffs/diff2/2/AAA/BBB/CZC/a.txt",999));
 
-	arguments = "--progress --update --database=lock.db "
+	arguments = "--progress --update --check-level=QUICK --database=lock.db "
 	        "--lock-checksum=\"^diff1/1/.*\" "
 	        "--lock-checksum=\"^diff2/path1/.*\" tests/fixtures/diffs";
 
@@ -62,7 +62,7 @@ static Return test0027_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	arguments = "--progress --update --database=lock1.db "
+	arguments = "--progress --update --check-level=QUICK --database=lock1.db "
 	        "--lock-checksum=\"^diff1/1/.*\" "
 	        "--lock-checksum=\"^diff2/path1/.*\" tests/fixtures/diffs";
 

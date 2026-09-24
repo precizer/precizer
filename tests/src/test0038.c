@@ -293,7 +293,7 @@ static Return test0038_4(void)
 	const char *db_filename = "0038_checkpoint_lock_checksum.db";
 	const char *create_arguments = "--database=0038_checkpoint_lock_checksum.db "
 	        "--lock-checksum=\"^hugetestfile$\" tests/fixtures/huge";
-	const char *update_arguments = "--update --rehash-locked --database=0038_checkpoint_lock_checksum.db "
+	const char *update_arguments = "--check-level=QUICK --update --rehash-locked --database=0038_checkpoint_lock_checksum.db "
 	        "--lock-checksum=\"^hugetestfile$\" tests/fixtures/huge";
 	m_create(char,huge_file_path,MEMORY_STRING);
 	struct stat huge_file_stat = {0};
@@ -354,7 +354,7 @@ static Return test0038_5(void)
 
 	const char *db_filename = "0038_checkpoint_dry_run.db";
 	const char *create_arguments = "--database=0038_checkpoint_dry_run.db tests/fixtures/huge";
-	const char *dry_run_arguments = "--dry-run=with-checksums --update --database=0038_checkpoint_dry_run.db tests/fixtures/huge";
+	const char *dry_run_arguments = "--check-level=QUICK --dry-run=with-checksums --update --database=0038_checkpoint_dry_run.db tests/fixtures/huge";
 	m_create(char,huge_file_path,MEMORY_STRING);
 	struct stat huge_file_stat = {0};
 	int row_count = 0;

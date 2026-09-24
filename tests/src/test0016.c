@@ -61,7 +61,7 @@ static Return test0016_1(void)
 	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
 	// Compare against the original DB: report the deleted file and the changed checksum
-	const char *compare_arguments = "--compare database1.db database2.db";
+	const char *compare_arguments = "--compare --check-level=QUICK database1.db database2.db";
 	ASSERT(SUCCESS == runit(compare_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
@@ -69,7 +69,7 @@ static Return test0016_1(void)
 	ASSERT(SUCCESS == copy_path("database2.db","database1.db"));
 
 	// Update with --watch-timestamps: rehash the file whose ctime changed as well
-	const char *watch_update_arguments = "--watch-timestamps --update --database=database1.db tests/fixtures/diffs/diff1";
+	const char *watch_update_arguments = "--watch-timestamps --update --check-level=QUICK --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(watch_update_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
@@ -91,7 +91,7 @@ static Return test0016_1(void)
 
 	ASSERT(SUCCESS == copy_path("database2.db","database1.db"));
 
-	ASSERT(SUCCESS == runit("--update --database=database1.db tests/fixtures/diffs/diff1",chunk,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--update --check-level=QUICK --database=database1.db tests/fixtures/diffs/diff1",chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_copy(result,chunk));
 
 	ASSERT(SUCCESS == runit(compare_arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
@@ -175,7 +175,7 @@ static Return test0016_2(void)
 		|| stat_before.st_mtim.tv_nsec != stat_after.st_mtim.tv_nsec);
 
 	// Update without --watch-timestamps to exercise default mtime detection
-	ASSERT(SUCCESS == runit("--update --database=0016_mtime.db 0016_mtime",result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--update --check-level=QUICK --database=0016_mtime.db 0016_mtime",result,NULL,COMPLETED,ALLOW_BOTH));
 
 	// Check the full output for a rehash of file.txt and exactly three hashed bytes
 	const char *filename = "templates/0016_002_1.txt";
@@ -249,7 +249,7 @@ static Return test0016_3(void)
 
 	// Update without --watch-timestamps and check the full output for
 	// a metadata-only update with zero bytes hashed by the application
-	ASSERT(SUCCESS == runit("--update --database=0016_chmod.db 0016_chmod",result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--update --check-level=QUICK --database=0016_chmod.db 0016_chmod",result,NULL,COMPLETED,ALLOW_BOTH));
 	const char *filename = "templates/0016_002_2.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
@@ -318,7 +318,7 @@ static Return test0016_4(void)
 	ASSERT(stat_before.st_size == stat_after.st_size);
 	ASSERT(stat_before.st_blocks == stat_after.st_blocks);
 
-	ASSERT(SUCCESS == runit("--update --watch-timestamps --database=0016_watch_chmod.db 0016_watch_chmod",result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--update --check-level=QUICK --watch-timestamps --database=0016_watch_chmod.db 0016_watch_chmod",result,NULL,COMPLETED,ALLOW_BOTH));
 	const char *filename = "templates/0016_002_3.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));

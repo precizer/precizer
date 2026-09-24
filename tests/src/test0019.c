@@ -14,7 +14,7 @@ Return test0019(void)
 {
 	INITTEST;
 
-	const char *update_arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
+	const char *update_arguments = "--update --check-level=QUICK --database=database1.db tests/fixtures/diffs/diff1";
 
 	m_create(char,pattern,MEMORY_STRING);
 

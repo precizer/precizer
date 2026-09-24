@@ -186,7 +186,7 @@ static Return test0009_4(void)
 
 	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log"));
 
-	const char *arguments_update = "--update --database=database0009_4.db "
+	const char *arguments_update = "--update --check-level=QUICK --database=database0009_4.db "
 		"--ignore=\"^(?:skip_|tmp_).+\" "
 		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
 		"tests/fixtures/ignore_include_cases/chaotic_filenames";
@@ -203,7 +203,7 @@ static Return test0009_4(void)
 	// Truncate a tracked non-included file to trigger the "update as empty" branch
 	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
 
-	const char *arguments_update_watch = "--watch-timestamps --update --database=database0009_4.db "
+	const char *arguments_update_watch = "--watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
 		"--ignore=\"^(?:skip_|tmp_).+\" "
 		"--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
 		"tests/fixtures/ignore_include_cases/chaotic_filenames";
@@ -266,7 +266,7 @@ static Return test0009_5(void)
 
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
 
-	arguments = "--update --ignore=\"^path2/AAA/ZAW/.*\" "
+	arguments = "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
 		"--database=database0009_5.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -312,7 +312,7 @@ static Return test0009_6(void)
 
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
 
-	arguments = "--update --ignore=\"^path2/AAA/ZAW/.*\" "
+	arguments = "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
 		"--include=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
 		"--database=database0009_6.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -358,7 +358,7 @@ static Return test0009_7(void)
 
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
 
-	arguments = "--update --db-drop-ignored "
+	arguments = "--update --check-level=QUICK --db-drop-ignored "
 		"--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
 		"--database=database0009_7.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -402,7 +402,7 @@ static Return test0009_8(void)
 	arguments = "--database=database0009_8.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--update --db-drop-ignored "
+	arguments = "--update --check-level=QUICK --db-drop-ignored "
 		"--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
 		"--database=database0009_8.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));

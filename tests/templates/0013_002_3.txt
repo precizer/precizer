@@ -5,6 +5,7 @@ TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:ignore=\^path2/AAA/ZAW/\.\*
+TESTING:argument:check-level=QUICK
 TESTING:argument:watch-timestamps=yes
 TESTING:argument:update=yes
 TESTING:argument:db-drop-ignored=yes
@@ -30,7 +31,7 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READONLY
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting database file database1\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database database1\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The database1\.db database file is version 4

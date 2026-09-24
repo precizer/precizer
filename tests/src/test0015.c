@@ -105,7 +105,7 @@ Return test0015_1(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v0.db","0015_database_v0.db"));
 
-	const char *arguments = "--database=./0015_database_v0.db tests/fixtures/diffs/diff1";
+	const char *arguments = "--check-level=QUICK --database=./0015_database_v0.db tests/fixtures/diffs/diff1";
 
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
@@ -141,7 +141,7 @@ Return test0015_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--update --database=0015_database_v0.db "
+	const char *arguments = "--check-level=QUICK --update --database=0015_database_v0.db "
 	        "tests/fixtures/diffs/diff1";
 
 	m_create(char,result,MEMORY_STRING);
@@ -178,7 +178,7 @@ Return test0015_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--watch-timestamps --update --database=0015_database_v0.db "
+	const char *arguments = "--check-level=QUICK --watch-timestamps --update --database=0015_database_v0.db "
 	        "tests/fixtures/diffs/diff1";
 
 	m_create(char,result,MEMORY_STRING);
@@ -203,7 +203,8 @@ Return test0015_3(void)
 /**
  * @brief Re-run upgrade for the already upgraded v0 DB
  *
- * Verify the database is treated as current and the run stays successful
+ * Verify the database passes the default full integrity check, is treated
+ * as current, and the run stays successful
  */
 Return test0015_4(void)
 {
@@ -275,7 +276,7 @@ Return test0015_6(void)
 
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v0.db","0015_database_v0.db"));
 
-	const char *arguments = "--compare $DBNAME 0015_database_v0.db";
+	const char *arguments = "--check-level=QUICK --compare $DBNAME 0015_database_v0.db";
 
 	const char *filename = "templates/0015_005.txt"; // File name
 	const char *template = "%DB_NAME%";
@@ -301,7 +302,7 @@ Return test0015_7(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	// Run the comparison and upgrade flow
-	const char *arguments = "--compare --update $DBNAME 0015_database_v0.db";
+	const char *arguments = "--check-level=QUICK --compare --update $DBNAME 0015_database_v0.db";
 
 	const char *filename = "templates/0015_006.txt"; // File name
 	const char *template = "%DB_NAME%";
@@ -330,7 +331,7 @@ Return test0015_8(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v1.db","0015_database_v1.db"));
 
-	const char *arguments = "--update --database=0015_database_v1.db "
+	const char *arguments = "--check-level=QUICK --update --database=0015_database_v1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	m_create(char,result,MEMORY_STRING);
@@ -355,7 +356,8 @@ Return test0015_8(void)
 /**
  * @brief Re-run upgrade for the already upgraded v1 DB
  *
- * Verify the database is treated as current and the run stays successful
+ * Verify the database passes the default full integrity check, is treated
+ * as current, and the run stays successful
  */
 Return test0015_9(void)
 {
@@ -402,7 +404,7 @@ Return test0015_10(void)
 	// Run the comparison and upgrade flow
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v1.db","0015_database_v1.db"));
 
-	const char *arguments = "--compare --update $DBNAME 0015_database_v1.db";
+	const char *arguments = "--check-level=QUICK --compare --update $DBNAME 0015_database_v1.db";
 
 	const char *filename = "templates/0015_009.txt"; // File name
 	const char *template = "%DB_NAME%";
@@ -431,7 +433,7 @@ Return test0015_11(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v2.db","0015_database_v2.db"));
 
-	const char *arguments = "--update --database=0015_database_v2.db --verbose "
+	const char *arguments = "--check-level=QUICK --update --database=0015_database_v2.db --verbose "
 	        "tests/fixtures/diffs/diff1";
 
 	m_create(char,result,MEMORY_STRING);
@@ -470,7 +472,7 @@ Return test0015_12(void)
 	// Run the comparison and upgrade flow
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v2.db","0015_database_v2.db"));
 
-	const char *arguments = "--compare --update $DBNAME 0015_database_v2.db";
+	const char *arguments = "--check-level=QUICK --compare --update $DBNAME 0015_database_v2.db";
 
 	const char *filename = "templates/0015_011.txt"; // File name
 	const char *template = "%DB_NAME%";
@@ -501,7 +503,7 @@ Return test0015_13(void)
 
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v3 это база данных с пробелами и символами UTF-8.db","0015_database_v3 это база данных с пробелами и символами UTF-8.db"));
 
-	const char *arguments = "--update --database=\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
+	const char *arguments = "--check-level=QUICK --update --database=\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
 	        "tests/fixtures/diffs/diff1";
 
 	m_create(char,result,MEMORY_STRING);
@@ -542,7 +544,7 @@ Return test0015_14(void)
 
 	ASSERT(SUCCESS == copy_path("tests/templates/0015_database_v4 это база данных с пробелами и символами UTF-8.db","0015_database_v4 это база данных с пробелами и символами UTF-8.db"));
 
-	const char *arguments = "--compare --update "
+	const char *arguments = "--check-level=QUICK --compare --update "
 	        "\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
 	        "\"0015_database_v4 это база данных с пробелами и символами UTF-8.db\"";
 
@@ -591,7 +593,7 @@ Return test0015_15(void)
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_copy(result,chunk));
 
-	arguments = "--compare \"Это новая база данных.db\" "
+	arguments = "--check-level=QUICK --compare \"Это новая база данных.db\" "
 	        "\"0015_database_v4 это база данных с пробелами и символами UTF-8.db\"";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
@@ -639,7 +641,7 @@ Return test0015_16(void)
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
-	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v0_corrupt.db";
+	const char *arguments = "--check-level=QUICK --compare --update 0015_database_v4_reference.db 0015_database_v0_corrupt.db";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 	const char *filename = "templates/0015_015.txt";
@@ -682,7 +684,7 @@ Return test0015_17(void)
 	sqlite3_int64 row_id = 0;
 	ASSERT(SUCCESS == db_corrupt_first_row_stat_blob(corrupted_db_filename,&row_id));
 
-	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v3_corrupt.db";
+	const char *arguments = "--check-level=QUICK --compare --update 0015_database_v4_reference.db 0015_database_v3_corrupt.db";
 
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
@@ -746,7 +748,7 @@ Return test0015_18(void)
 
 	ASSERT(SUCCESS == db_create_abort_on_second_stat_update_trigger(rollback_db_filename));
 
-	const char *arguments = "--compare --update 0015_database_v4_reference.db 0015_database_v3_rollback.db";
+	const char *arguments = "--check-level=QUICK --compare --update 0015_database_v4_reference.db 0015_database_v3_rollback.db";
 
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
@@ -814,6 +816,9 @@ Return test0015_19(void)
 	int db_version = 0;
 	ASSERT(SUCCESS == read_db_version_from_metadata(db_filename,&db_version));
 	ASSERT(db_version == CURRENT_DB_VERSION + 1);
+
+	arguments = "--check-level=QUICK --database=0015_database_future_version.db "
+	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 

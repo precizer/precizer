@@ -1,4 +1,5 @@
 \A-TESTING:argument:maxdepth=3
+\+TESTING:argument:check-level=QUICK
 \+TESTING:argument:update=yes
 -TESTING:The path database3\\.db doesn't exist or it is not a file
 -TESTING:The primary DB file not yet exists. Brand new database will be created
@@ -9,7 +10,7 @@
 \+TESTING:Final value for config->db_initialize_tables: false
 -TESTING:The primary database file was just created and doesn't require verification
 \+TESTING:Starting database file database3\\.db integrity check…
-\+TESTING:The database verification level has been set to FULL
+\+TESTING:The database verification level has been set to QUICK
 \+TESTING:Database database3\\.db has been verified and is in good condition
 \+TESTING:Version number 4 found in database
 \+TESTING:The database3\\.db database file is version 4

@@ -1,5 +1,5 @@
 \A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-roots=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1\.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=yes; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, one-file-system=no, check-level=FULL, rational_logger_mode=VERBOSE, color=always
+roots=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1\.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=yes; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, one-file-system=no, check-level=QUICK, rational_logger_mode=VERBOSE, color=always
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is finished
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Checking directory paths provided as arguments
@@ -21,7 +21,7 @@ roots=tests/fixtures/diffs/diff1; database=database1\.db; db_file_name=database1
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode\.c:\d+:db_determine_mode:Final value for config->db_initialize_tables: false
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_determine_mode\.c:\d+:db_determine_mode:DB mode determined
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Starting database file database1\.db integrity check…
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:The database verification level has been set to FULL
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:The database verification level has been set to QUICK
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_integrity_check\.c:\d+:db_integrity_check:Database database1\.db has been verified and is in good condition
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_retrieve_version\.c:\d+:db_retrieve_version:Version number \d+ found in database
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_check_version\.c:\d+:db_check_version:The database1\.db database file is version \d+
