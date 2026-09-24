@@ -31,7 +31,7 @@ static Return test0029_1(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
+	arguments = "--update --check-level=QUICK --database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -83,7 +83,7 @@ static Return test0029_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--update --db-drop-inaccessible --database=database2.db "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --database=database2.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -152,7 +152,7 @@ static Return test0029_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--update --database=database3.db tests/fixtures/diffs/diff1";
+	arguments = "--update --check-level=QUICK --database=database3.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -215,7 +215,7 @@ static Return test0029_4(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX","diff1"));
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
-	arguments = "--update --db-drop-inaccessible --database=database4.db "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --database=database4.db "
 	        "tests/fixtures/diffs/diff1";
 
 	for(size_t index = 0; index < root_access_status_count; index++)
@@ -320,7 +320,7 @@ static Return test0029_6(void)
 	ASSERT(SUCCESS == change_mode("tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt",0000));
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--update --db-drop-inaccessible "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible "
 		"--ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" "
 		"--database=database6.db tests/fixtures/diffs/diff1";
 

@@ -5,6 +5,7 @@ TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:argument:ignore=\^1/AAA/ZAW/\.\*
+TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
@@ -27,7 +28,7 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting database file database1\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database database1\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The database1\.db database file is version 4

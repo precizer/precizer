@@ -8,7 +8,7 @@
  * Stage 2. Adding:
  * precizer --progress --database=database2.db tests/fixtures/diffs/diff2
  * Final stage. Comparing:
- * precizer --compare database1.db database2.db
+ * precizer --compare --check-level=QUICK database1.db database2.db
  */
 static Return test0011_1(void)
 {
@@ -32,7 +32,7 @@ static Return test0011_1(void)
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
-	arguments = "--compare database1.db database2.db";
+	arguments = "--compare --check-level=QUICK database1.db database2.db";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_concat_strings(result,chunk));
@@ -63,9 +63,9 @@ static Return test0011_1(void)
  * Stage 1. Adding:
  * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 2. Reuse previous example once agan. The first try. The warning message.
- * precizer --progress --database=database1.db tests/fixtures/diffs/diff1
+ * precizer --progress --check-level=QUICK --database=database1.db tests/fixtures/diffs/diff1
  * Stage 3. Run of database update without making actual changes to disk:
- * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
+ * precizer --update --check-level=QUICK --progress --database=database1.db tests/fixtures/diffs/diff1
  * Stage 4. Now let's make some changes:
  * # Backup
  * prepare_mutable_fixture("tests/fixtures/diffs/diff1")
@@ -76,7 +76,7 @@ static Return test0011_1(void)
  * # Remove a file
  * delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt")
  * Stage 5. Run the precizer once again:
- * precizer --update --progress --database=database1.db tests/fixtures/diffs/diff1
+ * precizer --update --check-level=QUICK --progress --database=database1.db tests/fixtures/diffs/diff1
  * Final stage. Recover from backup:
  * restore_mutable_fixture("tests/fixtures/diffs/diff1")
  */
@@ -110,7 +110,7 @@ static Return test0011_2(void)
 	m_del(pattern);
 	m_del(result);
 
-	arguments = "--progress --database=database1.db "
+	arguments = "--progress --check-level=QUICK --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	filename = "templates/0011_002_2.txt";
@@ -127,7 +127,7 @@ static Return test0011_2(void)
 
 	m_create(char,chunk,MEMORY_STRING);
 
-	arguments = "--update --progress --database=database1.db "
+	arguments = "--update --check-level=QUICK --progress --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
@@ -140,7 +140,7 @@ static Return test0011_2(void)
 	// Create the file as empty without using shell touch
 	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/diffs/diff1/1/AAA/BCB/CCC/c.txt"));
 
-	arguments = "--watch-timestamps --update --progress "
+	arguments = "--watch-timestamps --update --check-level=QUICK --progress "
 	        "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
@@ -172,7 +172,7 @@ static Return test0011_2(void)
  * are kept only when more than one compare category is active
  * Let's add the --silent option to the previous example:
  *
- * precizer --silent --update --progress --database=database1.db tests/fixtures/diffs/diff1
+ * precizer --silent --update --check-level=QUICK --progress --database=database1.db tests/fixtures/diffs/diff1
  *
  *
  */
@@ -185,7 +185,7 @@ static Return test0011_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--silent --update --progress --database=database1.db "
+	const char *arguments = "--silent --update --check-level=QUICK --progress --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -240,7 +240,7 @@ static Return test0011_4(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--verbose --update --progress --database=database1.db "
+	const char *arguments = "--verbose --update --check-level=QUICK --progress --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -286,7 +286,7 @@ static Return test0011_5(void)
 	   Therefore, all files that were not previously included
 	   will be added to the database. */
 
-	arguments = "--update tests/fixtures/4";
+	arguments = "--update --check-level=QUICK tests/fixtures/4";
 
 	filename = "templates/0011_005_2.txt";
 
@@ -324,7 +324,7 @@ static Return test0011_6(void)
 
 	filename = "templates/0011_006_2.txt";
 
-	arguments = "--update tests/fixtures/diffs";
+	arguments = "--update --check-level=QUICK tests/fixtures/diffs";
 
 	ASSERT(SUCCESS == match_app_output(arguments,filename,template,replacement,COMPLETED));
 
@@ -344,7 +344,7 @@ static Return test0011_7(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--update --db-drop-ignored"
+	const char *arguments = "--update --check-level=QUICK --db-drop-ignored"
 	        " --ignore=\"^diff1/1/.*\""
 	        " --ignore=\"^diff2/1/.*\" tests/fixtures/diffs";
 
@@ -381,7 +381,7 @@ static Return test0011_8(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	arguments = "--update"
+	arguments = "--update --check-level=QUICK"
 	        " --progress"
 	        " --ignore=\"^.*/path2/.*\""
 	        " --ignore=\"^diff2/.*\""
@@ -414,7 +414,7 @@ static Return test0011_8(void)
 
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--compare"
+	arguments = "--compare --check-level=QUICK"
 	        " --ignore=\"^(?:2|3|4)/.*\""
 	        " --ignore=\"^path1/.*\""
 	        " --ignore=\"^path2/.*\""

@@ -79,7 +79,7 @@ Return test0018_2(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments = "--update --database=database3.db "
+	const char *arguments = "--update --check-level=QUICK --database=database3.db "
 	        "$TMPDIR/tests/fixtures/levels";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));

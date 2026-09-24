@@ -69,7 +69,7 @@ static Return test0039_2(void)
 		ALLOW_BOTH));
 
 	ASSERT(SUCCESS == assert_legacy_cli_argument(
-		"--dry-run --update --drop-inaccessible --database=0039_2.db tests/fixtures/diffs/diff1",
+		"--check-level=QUICK --dry-run --update --drop-inaccessible --database=0039_2.db tests/fixtures/diffs/diff1",
 		"TESTING:argument:db-drop-inaccessible=yes"));
 
 	ASSERT(SUCCESS == delete_path("0039_2.db"));

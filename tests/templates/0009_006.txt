@@ -6,6 +6,7 @@ TESTING:argument:database=database0009_6\.db
 TESTING:argument:db_file_name=database0009_6\.db
 TESTING:argument:ignore=\^path2/AAA/ZAW/\.\*
 TESTING:argument:include=\^path2/AAA/ZAW/D/e/f/b_file\\\.txt\$
+TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
@@ -28,7 +29,7 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting database file database0009_6\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database database0009_6\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The database0009_6\.db database file is version 4

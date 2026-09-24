@@ -35,7 +35,7 @@ static Return test0034_1(void)
 	// Second pass uses --verbose, third pass uses --watch-timestamps
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	ASSERT(SUCCESS == runit("--verbose --update --database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1",result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--check-level=QUICK --verbose --update --database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1",result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0034_001_1.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
@@ -50,7 +50,7 @@ static Return test0034_1(void)
 		sparse_file_size,
 		sparse_blocks));
 
-	ASSERT(SUCCESS == runit("--update --watch-timestamps --database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1",result,NULL,COMPLETED,ALLOW_BOTH));
+	ASSERT(SUCCESS == runit("--check-level=QUICK --update --watch-timestamps --database=0034_lsize_vs_asize_flags.db tests/fixtures/diffs/diff1",result,NULL,COMPLETED,ALLOW_BOTH));
 
 	filename = "templates/0034_001_2.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));

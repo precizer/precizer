@@ -212,7 +212,7 @@ Return test0020_6(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	arguments = "--update --database=database1.db tests/fixtures/diffs/diff2";
+	arguments = "--check-level=QUICK --update --database=database1.db tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
@@ -255,7 +255,7 @@ Return test0020_7(void)
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns("tests/fixtures/diffs/diff1/path1/AAA/ZAW/A/b/c/a_file.txt","tests/fixtures/diffs/diff2/path1/AAA/ZAW/A/b/c/a_file.txt",0));
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns("tests/fixtures/diffs/diff1/path2/AAA/ZAW/A/b/c/a_file.txt","tests/fixtures/diffs/diff2/path2/AAA/ZAW/A/b/c/a_file.txt",0));
 
-	const char *arguments = "--update --force --database=database1.db "
+	const char *arguments = "--check-level=QUICK --update --force --database=database1.db "
 	        "tests/fixtures/diffs/diff2";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));

@@ -155,7 +155,7 @@ static Return test0013_4(void)
 	ASSERT(SUCCESS == add_string_to("AFAKDSJ","tests/fixtures/diffs/diff1/1/AAA/ZAW/D/e/f/b_file.txt")); // Modify
 	ASSERT(SUCCESS == replase_to_string("WNEURHGO","tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/b.txt")); // New file
 
-	arguments = "--dry-run --update --database=database1.db"
+	arguments = "--check-level=QUICK --dry-run --update --database=database1.db"
 	        " tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
@@ -178,7 +178,7 @@ static Return test0013_4(void)
 	// removal of ignored files from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--dry-run --ignore=\"^1/AAA/ZAW/.*\" --update "
+	arguments = "--check-level=QUICK --dry-run --ignore=\"^1/AAA/ZAW/.*\" --update "
 	        "--database=database1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -204,7 +204,7 @@ static Return test0013_4(void)
 	// references from the database
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--dry-run --db-drop-ignored --update"
+	arguments = "--check-level=QUICK --dry-run --db-drop-ignored --update"
 	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
 	        " --database=database1.db tests/fixtures/diffs/diff1";
 
@@ -230,7 +230,7 @@ static Return test0013_4(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	arguments = "--dry-run --db-drop-ignored --update --watch-timestamps"
+	arguments = "--check-level=QUICK --dry-run --db-drop-ignored --update --watch-timestamps"
 	        " --ignore=\"^path2/AAA/ZAW/.*\""
 	        " --database=database1.db tests/fixtures/diffs/diff1";
 
@@ -308,7 +308,7 @@ static Return test0013_5(void)
 	// removal of ignored files from the database
 	ASSERT(SUCCESS == copy_path("database1.db","database1.db.backup"));
 
-	arguments = "--ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db "
+	arguments = "--check-level=QUICK --ignore=\"^1/AAA/ZAW/.*\" --update --database=database1.db "
 	        "tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -330,7 +330,7 @@ static Return test0013_5(void)
 	// references from the database
 	ASSERT(SUCCESS == copy_path("database1.db.backup","database1.db"));
 
-	arguments = "--db-drop-ignored --update"
+	arguments = "--check-level=QUICK --db-drop-ignored --update"
 	        " --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\..*\""
 	        " --database=database1.db tests/fixtures/diffs/diff1";
 
@@ -351,7 +351,7 @@ static Return test0013_5(void)
 
 	ASSERT(SUCCESS == move_path("database1.db.backup","database1.db"));
 
-	arguments = "--watch-timestamps --db-drop-ignored "
+	arguments = "--check-level=QUICK --watch-timestamps --db-drop-ignored "
 	        "--ignore=\"^path2/AAA/ZAW/.*\" --update "
 	        "--database=database1.db tests/fixtures/diffs/diff1";
 
@@ -486,7 +486,7 @@ static Return test0013_7(void)
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_DB_FILE_TIMESTAMPS_WILL_BUMPED","true"));
-	arguments = "--dry-run --update --database=database1.db tests/fixtures/diffs/diff1";
+	arguments = "--check-level=QUICK --dry-run --update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	const char *filename = "templates/0013_005.txt";
@@ -548,7 +548,7 @@ static Return test0013_8(void)
 
 	ASSERT(SUCCESS == copy_path("database1.db","database1.db.backup"));
 
-	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
+	arguments = "--check-level=QUICK --update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
 	const char *filename = "templates/0013_006_1.txt";
@@ -568,7 +568,7 @@ static Return test0013_8(void)
 	m_del(pattern);
 
 	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_DB_FILE_STAT_WILL_BE_RESYNCED","true"));
-	arguments = "--update --database=database1.db tests/fixtures/diffs/diff1";
+	arguments = "--check-level=QUICK --update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
 	filename = "templates/0013_006_2.txt";

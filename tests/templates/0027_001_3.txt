@@ -5,6 +5,7 @@ TESTING:argument:roots=tests/fixtures/diffs
 TESTING:argument:database=lock\.db
 TESTING:argument:db_file_name=lock\.db
 TESTING:argument:lock-checksum=\Q^diff1/1/.*, ^diff2/path1/.*\E
+TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Argument parsing is finished
@@ -28,7 +29,7 @@ TESTING:Final value for config->sqlite_open_flag: SQLITE_OPEN_READWRITE
 TESTING:Final value for config->db_initialize_tables: false
 TESTING:DB mode determined
 TESTING:Starting database file lock\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database lock\.db has been verified and is in good condition
 TESTING:Version number \d+ found in database
 TESTING:The lock\.db database file is version \d+

@@ -61,6 +61,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:db_file_paths=Это новая база данных\.db, 0015_database_v4 это база данных с пробелами и символами UTF-8\.db
 TESTING:argument:db_file_names=Это новая база данных\.db, 0015_database_v4 это база данных с пробелами и символами UTF-8\.db
+TESTING:argument:check-level=QUICK
 TESTING:argument:compare=yes
 TESTING:Argument parsing is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
@@ -85,7 +86,7 @@ TESTING:The comparison of Это новая база данных\.db and 0015_d
 TESTING:Verify that the path Это новая база данных\.db exists
 TESTING:The path Это новая база данных\.db is exists and it is a file
 TESTING:Starting database file Это новая база данных\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database Это новая база данных\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The Это новая база данных\.db database file is version 4
@@ -93,7 +94,7 @@ TESTING:The database Это новая база данных\.db is on version 4
 TESTING:Verify that the path 0015_database_v4 это база данных с пробелами и символами UTF-8\.db exists
 TESTING:The path 0015_database_v4 это база данных с пробелами и символами UTF-8\.db is exists and it is a file
 TESTING:Starting database file 0015_database_v4 это база данных с пробелами и символами UTF-8\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database 0015_database_v4 это база данных с пробелами и символами UTF-8\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The 0015_database_v4 это база данных с пробелами и символами UTF-8\.db database file is version 4

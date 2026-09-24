@@ -89,7 +89,7 @@ static Return test0030_1(void)
 	 * Run an update with deep locked-file verification enabled.
 	 * The size mismatch must be reported as a warning, not saved to the DB
 	 */
-	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s1.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -217,7 +217,7 @@ static Return test0030_2(void)
 	 * Run an update that treats timestamp drift as meaningful.
 	 * The drift must be reported as a warning, not saved to the DB
 	 */
-	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s2.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -359,7 +359,7 @@ static Return test0030_3(void)
 	 * Run an update without timestamp watching or deep locked-file rehashing.
 	 * The timestamp drift must be ignored and the run must finish successfully
 	 */
-	arguments = "--update --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s3.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -503,7 +503,7 @@ static Return test0030_4(void)
 	 * Run an update that watches timestamps and rehashes locked files.
 	 * The checksum match must make the timestamp-only drift safe to save
 	 */
-	arguments = "--update --watch-timestamps --rehash-locked "
+	arguments = "--update --check-level=QUICK --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
 	        "tests/fixtures/diffs/diff1";
 
@@ -658,7 +658,7 @@ static Return test0030_5(void)
 	 * Run an update that rehashes locked files without timestamp watching.
 	 * The checksum match must make the timestamp-only drift safe to save
 	 */
-	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s5.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -846,7 +846,7 @@ static Return test0030_6(void)
 	 * Run an update that watches timestamps and rehashes locked files.
 	 * The safe drift must be saved, while the checksum mismatch must warn
 	 */
-	arguments = "--update --watch-timestamps --rehash-locked "
+	arguments = "--update --check-level=QUICK --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s6.db "
 	        "tests/fixtures/diffs/diff1";
 
@@ -1013,7 +1013,7 @@ static Return test0030_7(void)
 	 * Run an update with deep locked-file verification enabled.
 	 * The content mismatch must be reported as a warning, not saved to the DB
 	 */
-	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s7.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -1158,7 +1158,7 @@ static Return test0030_8(void)
 	 * Run an update that watches timestamps and rehashes locked files.
 	 * The content mismatch must be reported as a warning, not saved to the DB
 	 */
-	arguments = "--update --watch-timestamps --rehash-locked "
+	arguments = "--update --check-level=QUICK --watch-timestamps --rehash-locked "
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s8.db "
 	        "tests/fixtures/diffs/diff1";
 
@@ -1302,7 +1302,7 @@ static Return test0030_9(void)
 	 * Run an update that watches timestamps but does not rehash locked files.
 	 * Because all protected metadata still matches, the run must be successful
 	 */
-	arguments = "--update --watch-timestamps --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s9.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
@@ -1444,7 +1444,7 @@ static Return test0030_10(void)
 	 * Run an update with the same lock pattern.
 	 * The missing locked file must be reported as a warning and kept in the DB
 	 */
-	arguments = "--update --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s10.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -1597,7 +1597,7 @@ static Return test0030_11(void)
 	 * Run an update that would normally drop inaccessible records.
 	 * The checksum lock must override that cleanup and turn the condition into a warning
 	 */
-	arguments = "--update --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s11.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -1756,7 +1756,7 @@ static Return test0030_12(void)
 	 * Run an update that would normally drop inaccessible records.
 	 * The checksum lock must override that cleanup and turn the condition into a warning
 	 */
-	arguments = "--update --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s12.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -1909,7 +1909,7 @@ static Return test0030_13(void)
 	 * Run an update that ignores the whole protected subtree and allows ignored DB cleanup.
 	 * The checksum lock must override --db-drop-ignored for the missing protected file
 	 */
-	arguments = "--update --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --db-drop-ignored "
 	        "--database=lock_s13.db tests/fixtures/diffs/diff1";
 
@@ -2063,7 +2063,7 @@ static Return test0030_14(void)
 	 * Run an update that ignores the protected subtree but rehashes locked files.
 	 * The ignored corrupted file must still be reported as a checksum violation
 	 */
-	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --database=lock_s14.db "
 	        "tests/fixtures/diffs/diff1";
 
@@ -2203,7 +2203,7 @@ static Return test0030_15(void)
 	 * The deleted locked row is outside the restored include subset, but the
 	 * checksum lock must still override --db-drop-ignored
 	 */
-	arguments = "--update --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
 	        "--db-drop-ignored --database=lock_s15.db tests/fixtures/diffs/diff1";
 
@@ -2365,7 +2365,7 @@ static Return test0030_16(void)
 	 * The corrupted locked row is outside the restored include subset, but
 	 * --rehash-locked must still check it and report a checksum violation
 	 */
-	arguments = "--update --rehash-locked --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
 	        "--database=lock_s16.db tests/fixtures/diffs/diff1";
 
@@ -2509,7 +2509,7 @@ static Return test0030_17(void)
 	 * Run an update that ignores the protected subtree and would normally drop
 	 * inaccessible records. The checksum lock must override both conditions
 	 */
-	arguments = "--update --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --database=lock_s17.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -2669,7 +2669,7 @@ static Return test0030_18(void)
 	 * Run an update that ignores the protected subtree and would normally drop
 	 * inaccessible records. The checksum lock must override both conditions
 	 */
-	arguments = "--update --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --database=lock_s18.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -2829,7 +2829,7 @@ static Return test0030_19(void)
 	 * Run an update that would normally drop inaccessible records.
 	 * The checksum lock must override that cleanup and turn the condition into a warning
 	 */
-	arguments = "--update --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s19.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -2990,7 +2990,7 @@ static Return test0030_20(void)
 	 * Run an update that would normally drop inaccessible records.
 	 * The checksum lock must override that cleanup and turn the condition into a warning
 	 */
-	arguments = "--update --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s20.db tests/fixtures/diffs/diff1";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
@@ -3152,7 +3152,7 @@ static Return test0030_21(void)
 	 * Run an update that would normally drop ignored records.
 	 * The checksum lock must override that cleanup and turn the condition into a warning
 	 */
-	arguments = "--update --lock-checksum=\"^path1/.*\" "
+	arguments = "--update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --db-drop-ignored "
 	        "--database=lock_s21.db tests/fixtures/diffs/diff1";
 

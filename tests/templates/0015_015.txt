@@ -3,6 +3,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:db_file_paths=0015_database_v4_reference\.db, 0015_database_v0_corrupt\.db
 TESTING:argument:db_file_names=0015_database_v4_reference\.db, 0015_database_v0_corrupt\.db
+TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:argument:compare=yes
 TESTING:Argument parsing is finished
@@ -28,7 +29,7 @@ TESTING:The comparison of 0015_database_v4_reference\.db and 0015_database_v0_co
 TESTING:Verify that the path 0015_database_v4_reference\.db exists
 TESTING:The path 0015_database_v4_reference\.db is exists and it is a file
 TESTING:Starting database file 0015_database_v4_reference\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database 0015_database_v4_reference\.db has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The 0015_database_v4_reference\.db database file is version 4
@@ -36,7 +37,7 @@ TESTING:The database 0015_database_v4_reference\.db is on version 4 and does not
 TESTING:Verify that the path 0015_database_v0_corrupt\.db exists
 TESTING:The path 0015_database_v0_corrupt\.db is exists and it is a file
 TESTING:Starting database file 0015_database_v0_corrupt\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database 0015_database_v0_corrupt\.db has been verified and is in good condition
 TESTING:Metadata table not found in database
 TESTING:The 0015_database_v0_corrupt\.db database file is version 0

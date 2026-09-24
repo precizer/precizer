@@ -3,6 +3,7 @@ TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:db_file_paths=%DB_NAME%, 0015_database_v1\.db
 TESTING:argument:db_file_names=%DB_NAME%, 0015_database_v1\.db
+TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:argument:compare=yes
 TESTING:Argument parsing is finished
@@ -28,7 +29,7 @@ TESTING:The comparison of %DB_NAME% and 0015_database_v1\.db databases is starti
 TESTING:Verify that the path %DB_NAME% exists
 TESTING:The path %DB_NAME% is exists and it is a file
 TESTING:Starting database file %DB_NAME% integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database %DB_NAME% has been verified and is in good condition
 TESTING:Version number 4 found in database
 TESTING:The %DB_NAME% database file is version 4
@@ -36,7 +37,7 @@ TESTING:The database %DB_NAME% is on version 4 and does not require any upgrades
 TESTING:Verify that the path 0015_database_v1\.db exists
 TESTING:The path 0015_database_v1\.db is exists and it is a file
 TESTING:Starting database file 0015_database_v1\.db integrity check…
-TESTING:The database verification level has been set to FULL
+TESTING:The database verification level has been set to QUICK
 TESTING:Database 0015_database_v1\.db has been verified and is in good condition
 TESTING:Version number 1 found in database
 TESTING:The 0015_database_v1\.db database file is version 1

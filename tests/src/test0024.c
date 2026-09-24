@@ -83,7 +83,7 @@ Return test0024_2(void)
  * Stage 2. Adding:
  * precizer --progress --database=database2.db tests/fixtures/apostrophe\'/\'apostrophe/apostrophe\'/
  * Final stage. Comparing:
- * precizer --compare database1.db database2.db
+ * precizer --compare --check-level=QUICK database1.db database2.db
  */
 static Return test0024_3(void)
 {
@@ -109,7 +109,7 @@ static Return test0024_3(void)
 
 	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
-	arguments = "--compare database1.db database2.db";
+	arguments = "--compare --check-level=QUICK database1.db database2.db";
 
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 
