@@ -97,7 +97,7 @@ jobs:
 
       - name: Generate attestation (Linux x86_64)
         id: attest_linux_x86_64
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: precizer_linux_x86_64_portable.zip
 
@@ -183,7 +183,7 @@ jobs:
 
       - name: Generate attestation (Linux arm64)
         id: attest_linux_arm64
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: precizer_linux_aarch64_portable.zip
 
@@ -278,7 +278,7 @@ jobs:
 
       - name: Generate attestation (macOS arm64)
         id: attest_macos_arm64
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: precizer_macos_arm64.zip
 
@@ -373,7 +373,7 @@ jobs:
 
       - name: Generate attestation (macOS x86_64)
         id: attest_macos_x86_64
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: precizer_macos_x86_64.zip
 
@@ -505,7 +505,7 @@ jobs:
       # Generate a Sigstore attestation for the self-extracting executable
       - name: Generate attestation (MSYS x64 self-extracting exe)
         id: attest_windows_x64_exe
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: precizer_windows_x64_portable.exe
 
@@ -521,7 +521,7 @@ jobs:
       # Generate a Sigstore attestation for the zip distribution
       - name: Generate attestation (MSYS x64 zip)
         id: attest_windows_x64_zip
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: precizer_windows_x64_portable.zip
 
