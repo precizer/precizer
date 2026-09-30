@@ -1,14 +1,6 @@
 # Roadmap
 
-* Вывод статистики в финале разделить на несколько строк. Добавить скорость выполнения с учётом задержек файловой системы мегабайт в секунду. Рассчёт должен вестись снаружи прхода по файлам.
-
-	* For preliminary scans with --progress and --update flags, implement database traversal to show
-	  immediate statistics on affected files:
-	  - Number of files to be deleted
-	  - Number of files to be added
-	  - Number of files to be modified
-	  - Ignored files
-	  - Not assessible files
+* Вывод статистики в финале разделить на несколько строк. Добавить скорость выполнения с учётом задержек файловой системы мегабайт в секунду. Рассчёт должен вестись снаружи прохода по файлам.
 
 * Написать на опеннет об обновлениях, в тот текст с предложениями модификаций.
 

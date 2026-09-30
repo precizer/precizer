@@ -24,7 +24,7 @@ static void test0041_capture_vacuum(void)
  * @param enclosing_elapsed_ns Duration of the complete captured call in nanoseconds
  * @return SUCCESS when both measurements agree with their independent bounds
  */
-static Return test0041_check_metrics(
+static Return check_metrics(
 	const memory        *output,
 	const off_t         before_size,
 	const off_t         after_size,
@@ -166,7 +166,7 @@ Return test0041(void)
 	ASSERT(after.st_size < before.st_size);
 	ASSERT(SUCCESS == get_file_content("templates/0041_001.txt",pattern));
 	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern,"templates/0041_001.txt"));
-	ASSERT(SUCCESS == test0041_check_metrics(captured_stdout,before.st_size,after.st_size,capture_elapsed_ns));
+	ASSERT(SUCCESS == check_metrics(captured_stdout,before.st_size,after.st_size,capture_elapsed_ns));
 	ASSERT(vacuum_config.db_primary_file_modified == true);
 	ASSERT(vacuum_config.db_file_stat.st_size == 137);
 
@@ -193,7 +193,7 @@ Return test0041(void)
 	ASSERT(after.st_size == before.st_size);
 	ASSERT(SUCCESS == get_file_content("templates/0041_002.txt",pattern));
 	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern,"templates/0041_002.txt"));
-	ASSERT(SUCCESS == test0041_check_metrics(captured_stdout,before.st_size,after.st_size,capture_elapsed_ns));
+	ASSERT(SUCCESS == check_metrics(captured_stdout,before.st_size,after.st_size,capture_elapsed_ns));
 	ASSERT(vacuum_config.db_primary_file_modified == false);
 	ASSERT(vacuum_config.db_file_stat.st_size == 137);
 

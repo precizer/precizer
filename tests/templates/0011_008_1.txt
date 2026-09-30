@@ -3,7 +3,11 @@ Primary database file name: %DB_NAME%
 Starting database file %DB_NAME% integrity check…
 Database %DB_NAME% has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
-Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+Total traversal size: \d+.*
+Total items: \d+
+Directories: \d+
+Files: \d+
+Symlinks: \d+
 Update mode enabled for DB %DB_NAME%
 File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
@@ -86,8 +90,15 @@ drop ignored diff2/path1/AAA/BCB/CCC/a\.txt
 drop ignored diff2/path1/AAA/BCB/CCC/b\.txt
 drop ignored diff2/path2/AAA/BCB/CCC/a\.txt
 drop ignored diff2/path2/AAA/ZAW/A/b/c/a_file\.txt
-Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+Total traversal size: \d+.*
+Total items: \d+
+Directories: \d+
+Files: \d+
+Symlinks: \d+$
+Total runtime: [^,\r\n]+
+Hashing time: [^,\r\n]+
+Hashed data: [^,\r\n]+
+Hashing rate: [^\r\n]+
 Start vacuuming the primary database…
 Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed: [^\r\n]+
 (?:\x1B\[[0-9;]*m)*The database file %DB_NAME% has been modified since the program was launched(?:\x1B\[[0-9;]*m)*

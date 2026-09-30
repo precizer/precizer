@@ -1,12 +1,12 @@
 #include "precizer.h"
 
 /**
- * @brief Print traversal elapsed time and effective hashing throughput.
+ * @brief Print runtime and hashing metrics on separate lines
  *
  * Uses total_hashing_elapsed_ns and total_hashed_bytes from
- * TraversalSummary.
+ * TraversalSummary to report hashing time, hashed data, and hashing rate
  *
- * @param summary Traversal timing and hashing counters from file_list().
+ * @param summary Traversal timing and hashing counters from file_list()
  */
 void show_elapsed(const TraversalSummary *summary)
 {
@@ -72,5 +72,8 @@ void show_elapsed(const TraversalSummary *summary)
 		}
 	}
 
-	slog(EVERY,"Total runtime: %s, elapsed time: %s, hashed: %s, hashing rate: %s%s\n",total_runtime_string,elapsed_string,hashed,rate,suffix);
+	slog(EVERY,"Total runtime: %s\n",total_runtime_string);
+	slog(EVERY,"Hashing time: %s\n",elapsed_string);
+	slog(EVERY,"Hashed data: %s\n",hashed);
+	slog(EVERY,"Hashing rate: %s%s\n",rate,suffix);
 }

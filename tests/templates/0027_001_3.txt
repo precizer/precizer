@@ -43,7 +43,11 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database lock\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:File system traversal initiated to calculate file count and storage usage
-TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+TESTING:Total traversal size: \d+.*
+TESTING:Total items: \d+
+TESTING:Directories: \d+
+TESTING:Files: \d+
+TESTING:Symlinks: \d+
 TESTING:Update mode enabled for DB lock\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock\.db:(?:\x1B\[[0-9;]*m)*
@@ -57,8 +61,15 @@ TESTING:Returned file_list:\d+ status: WARNING
 TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff2/path1/AAA/BCB/CCC/b\.txt
-TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+TESTING:Total traversal size: \d+.*
+TESTING:Total items: \d+
+TESTING:Directories: \d+
+TESTING:Files: \d+
+TESTING:Symlinks: \d+
+TESTING:Total runtime: [^,\r\n]+
+TESTING:Hashing time: [^,\r\n]+
+TESTING:Hashed data: [^,\r\n]+
+TESTING:Hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 TESTING:Exit status » WARNING\Z

@@ -54,8 +54,15 @@ TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked
 TESTING:Returned file_list:\d+ status: WARNING
 TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked & mismatch, data corrupted(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
-TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+TESTING:Total traversal size: \d+.*
+TESTING:Total items: \d+
+TESTING:Directories: \d+
+TESTING:Files: \d+
+TESTING:Symlinks: \d+
+TESTING:Total runtime: [^,\r\n]+
+TESTING:Hashing time: [^,\r\n]+
+TESTING:Hashed data: [^,\r\n]+
+TESTING:Hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 TESTING:Exit status » WARNING\Z
