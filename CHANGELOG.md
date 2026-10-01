@@ -4,15 +4,15 @@ All notable changes will be documented in this file
 
 # Release 0.17.4 2026-10-01
 
-- Significantly improved performance when adding or updating large numbers of small files by batching database writes into transactions
+Significantly improved performance when adding or updating large numbers of small files by batching database writes into transactions
 
 # Release 0.17.3 2026-09-23
 
-- Changed the default behavior. Files are now considered modified when their modification time (`mtime`) changes, even if their size remains unchanged. This helps detect content changes that do not affect file size, since a change in `mtime` is a clear indication that a file has been modified
+Changed the default behavior. Files are now considered modified when their modification time (`mtime`) changes, even if their size remains unchanged. This helps detect content changes that do not affect file size, since a change in `mtime` is a clear indication that a file has been modified
 
 # Release 0.17.2 2026-09-21
 
-- Improved usability of the Windows version
+Improved usability of the Windows version
 
 # Release 0.17.1 2026-09-20
 
