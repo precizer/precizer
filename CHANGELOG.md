@@ -2,7 +2,11 @@
 
 All notable changes will be documented in this file
 
-# Release 0.17.3 2026-10-01
+# Release 0.17.4 2026-10-01
+
+- Significantly improved performance when adding or updating large numbers of small files by batching database writes into transactions
+
+# Release 0.17.3 2026-09-23
 
 - Changed the default behavior. Files are now considered modified when their modification time (`mtime`) changes, even if their size remains unchanged. This helps detect content changes that do not affect file size, since a change in `mtime` is a clear indication that a file has been modified
 

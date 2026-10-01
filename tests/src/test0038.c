@@ -1,15 +1,15 @@
 #include "sute.h"
 
-static const char test0038_relative_path[] = "hugetestfile";
-static const char test0038_fixture_root[] = "tests/fixtures/huge";
-static const int test0038_checkpoint_exit_code = 77;
+static const char relative_path[] = "hugetestfile";
+static const char fixture_root[] = "tests/fixtures/huge";
+static const int checkpoint_exit_code = 77;
 
 /**
  * @brief Reset SHA512 checkpoint test hooks in the process environment
  *
  * @return Return status code
  */
-static Return test0038_reset_checkpoint_hooks(void)
+static Return reset_checkpoint_hooks(void)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -29,7 +29,7 @@ static Return test0038_reset_checkpoint_hooks(void)
  *
  * @return Return status code
  */
-static Return test0038_enable_checkpoint_hook(const bool exit_after_checkpoint)
+static Return enable_checkpoint_hook(const bool exit_after_checkpoint)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -56,15 +56,15 @@ static Return test0038_enable_checkpoint_hook(const bool exit_after_checkpoint)
  *
  * @return Return status code
  */
-static Return test0038_cleanup_case(const char *db_filename)
+static Return cleanup_case(const char *db_filename)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	call(test0038_reset_checkpoint_hooks());
+	call(reset_checkpoint_hooks());
 	call(delete_path_if_present(db_filename));
-	call(delete_path_if_present(test0038_fixture_root));
+	call(delete_path_if_present(fixture_root));
 
 	provide(status);
 }
@@ -92,10 +92,10 @@ static Return test0038_1(void)
 	sqlite3_int64 file_id = 0;
 
 	/* Prepare one isolated huge file and enable a checkpoint without process exit */
-	ASSERT(SUCCESS == test0038_reset_checkpoint_hooks());
+	ASSERT(SUCCESS == reset_checkpoint_hooks());
 	ASSERT(SUCCESS == prepare_huge_fixture(huge_file_path,&huge_file_stat));
 	ASSERT(huge_file_stat.st_size > 0);
-	ASSERT(SUCCESS == test0038_enable_checkpoint_hook(false));
+	ASSERT(SUCCESS == enable_checkpoint_hook(false));
 
 	/* Let the real application finish after writing the forced checkpoint */
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -103,13 +103,13 @@ static Return test0038_1(void)
 	/* Verify that the checkpoint was finalized into one clean DB row */
 	ASSERT(SUCCESS == db_read_files_count(db_filename,&row_count));
 	ASSERT(row_count == 1);
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&file_id));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&file_id));
 	ASSERT(file_id > 0);
-	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,test0038_relative_path,m_text(huge_file_path)));
-	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,test0038_relative_path));
+	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,relative_path,m_text(huge_file_path)));
+	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,relative_path));
 
 	/* Always clear hook state and remove per-case artifacts */
-	call(test0038_cleanup_case(db_filename));
+	call(cleanup_case(db_filename));
 
 	m_del(huge_file_path);
 
@@ -141,16 +141,16 @@ static Return test0038_2(void)
 	int checkpoint_md_context_bytes = 0;
 
 	/* Prepare the fixture and make the application exit after saving a checkpoint */
-	ASSERT(SUCCESS == test0038_reset_checkpoint_hooks());
+	ASSERT(SUCCESS == reset_checkpoint_hooks());
 	ASSERT(SUCCESS == prepare_huge_fixture(huge_file_path,&huge_file_stat));
-	ASSERT(SUCCESS == test0038_enable_checkpoint_hook(true));
+	ASSERT(SUCCESS == enable_checkpoint_hook(true));
 
 	/* The controlled exit code proves that the crash hook, not a test timeout, stopped the process */
 	ASSERT(SUCCESS == runit_background(
 		first_arguments,
 		NULL,
 		NULL,
-		test0038_checkpoint_exit_code,
+		checkpoint_exit_code,
 		ALLOW_BOTH | STDERR_ALLOW,
 		0U,
 		5000U,
@@ -160,21 +160,21 @@ static Return test0038_2(void)
 	/* Inspect the durable partial SHA512 state left by the interrupted run */
 	ASSERT(SUCCESS == db_read_files_count(db_filename,&row_count));
 	ASSERT(row_count == 1);
-	ASSERT(SUCCESS == read_resume_state_from_db(db_filename,test0038_relative_path,&checkpoint_offset,&checkpoint_md_context_bytes));
+	ASSERT(SUCCESS == read_resume_state_from_db(db_filename,relative_path,&checkpoint_offset,&checkpoint_md_context_bytes));
 	ASSERT(checkpoint_offset > 0);
 	ASSERT(checkpoint_offset < (sqlite3_int64)huge_file_stat.st_size);
 	ASSERT(checkpoint_md_context_bytes > 0);
 
 	/* Restart without crash hooks and finish from the saved checkpoint */
-	ASSERT(SUCCESS == test0038_reset_checkpoint_hooks());
+	ASSERT(SUCCESS == reset_checkpoint_hooks());
 	ASSERT(SUCCESS == runit(second_arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* Verify that resume ended in a clean final checksum state */
-	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,test0038_relative_path,m_text(huge_file_path)));
-	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,test0038_relative_path));
+	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,relative_path,m_text(huge_file_path)));
+	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,relative_path));
 
 	/* Always clear hook state and remove per-case artifacts */
-	call(test0038_cleanup_case(db_filename));
+	call(cleanup_case(db_filename));
 
 	m_del(huge_file_path);
 
@@ -211,14 +211,14 @@ static Return test0038_3(void)
 	int second_md_context_bytes = 0;
 
 	/* Create the first durable partial checkpoint in a fresh database row */
-	ASSERT(SUCCESS == test0038_reset_checkpoint_hooks());
+	ASSERT(SUCCESS == reset_checkpoint_hooks());
 	ASSERT(SUCCESS == prepare_huge_fixture(huge_file_path,&huge_file_stat));
-	ASSERT(SUCCESS == test0038_enable_checkpoint_hook(true));
+	ASSERT(SUCCESS == enable_checkpoint_hook(true));
 	ASSERT(SUCCESS == runit_background(
 		first_arguments,
 		NULL,
 		NULL,
-		test0038_checkpoint_exit_code,
+		checkpoint_exit_code,
 		ALLOW_BOTH | STDERR_ALLOW,
 		0U,
 		5000U,
@@ -228,8 +228,8 @@ static Return test0038_3(void)
 	/* Record the row identity and first saved offset after the first crash */
 	ASSERT(SUCCESS == db_read_files_count(db_filename,&row_count));
 	ASSERT(row_count == 1);
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&first_id));
-	ASSERT(SUCCESS == read_resume_state_from_db(db_filename,test0038_relative_path,&first_offset,&first_md_context_bytes));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&first_id));
+	ASSERT(SUCCESS == read_resume_state_from_db(db_filename,relative_path,&first_offset,&first_md_context_bytes));
 	ASSERT(first_id > 0);
 	ASSERT(first_offset > 0);
 	ASSERT(first_offset < (sqlite3_int64)huge_file_stat.st_size);
@@ -237,12 +237,12 @@ static Return test0038_3(void)
 	ASSERT(first_md_context_bytes > 0);
 
 	/* Resume once, checkpoint again, and crash after updating the same row */
-	ASSERT(SUCCESS == test0038_enable_checkpoint_hook(true));
+	ASSERT(SUCCESS == enable_checkpoint_hook(true));
 	ASSERT(SUCCESS == runit_background(
 		update_arguments,
 		NULL,
 		NULL,
-		test0038_checkpoint_exit_code,
+		checkpoint_exit_code,
 		ALLOW_BOTH | STDERR_ALLOW,
 		0U,
 		5000U,
@@ -252,23 +252,23 @@ static Return test0038_3(void)
 	/* The second checkpoint must keep row identity and advance the offset */
 	ASSERT(SUCCESS == db_read_files_count(db_filename,&row_count));
 	ASSERT(row_count == 1);
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&second_id));
-	ASSERT(SUCCESS == read_resume_state_from_db(db_filename,test0038_relative_path,&second_offset,&second_md_context_bytes));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&second_id));
+	ASSERT(SUCCESS == read_resume_state_from_db(db_filename,relative_path,&second_offset,&second_md_context_bytes));
 	ASSERT(second_id == first_id);
 	ASSERT(second_offset > first_offset);
 	ASSERT(second_offset < (sqlite3_int64)huge_file_stat.st_size);
 	ASSERT(second_md_context_bytes > 0);
 
 	/* Finish from the second checkpoint and verify that the same row becomes final */
-	ASSERT(SUCCESS == test0038_reset_checkpoint_hooks());
+	ASSERT(SUCCESS == reset_checkpoint_hooks());
 	ASSERT(SUCCESS == runit(update_arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&final_id));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&final_id));
 	ASSERT(final_id == first_id);
-	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,test0038_relative_path,m_text(huge_file_path)));
-	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,test0038_relative_path));
+	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,relative_path,m_text(huge_file_path)));
+	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,relative_path));
 
 	/* Always clear hook state and remove per-case artifacts */
-	call(test0038_cleanup_case(db_filename));
+	call(cleanup_case(db_filename));
 
 	m_del(huge_file_path);
 
@@ -305,32 +305,32 @@ static Return test0038_4(void)
 	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
 
 	/* Create the sealed checksum-locked baseline row */
-	ASSERT(SUCCESS == test0038_reset_checkpoint_hooks());
+	ASSERT(SUCCESS == reset_checkpoint_hooks());
 	ASSERT(SUCCESS == prepare_huge_fixture(huge_file_path,&huge_file_stat));
 	ASSERT(huge_file_stat.st_size > 0);
 	ASSERT(SUCCESS == runit(create_arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* Capture the trusted final state before the forced checkpoint hook runs */
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&id_before));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,test0038_relative_path,&offset_before,sha512_before));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&id_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,relative_path,&offset_before,sha512_before));
 	ASSERT(offset_before == 0);
-	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,test0038_relative_path));
-	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,test0038_relative_path,m_text(huge_file_path)));
+	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,relative_path));
+	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,relative_path,m_text(huge_file_path)));
 
 	/* Rehash the locked file while the checkpoint hook tries to save partial state */
-	ASSERT(SUCCESS == test0038_enable_checkpoint_hook(false));
+	ASSERT(SUCCESS == enable_checkpoint_hook(false));
 	ASSERT(SUCCESS == runit(update_arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* The locked row must remain final and byte-for-byte unchanged */
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&id_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,test0038_relative_path,&offset_after,sha512_after));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&id_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,relative_path,&offset_after,sha512_after));
 	ASSERT(id_after == id_before);
 	ASSERT(offset_after == 0);
 	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
-	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,test0038_relative_path));
+	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,relative_path));
 
 	/* Always clear hook state and remove per-case artifacts */
-	call(test0038_cleanup_case(db_filename));
+	call(cleanup_case(db_filename));
 
 	m_del(huge_file_path);
 
@@ -366,7 +366,7 @@ static Return test0038_5(void)
 	unsigned char sha512_after[SHA512_DIGEST_LENGTH] = {0};
 
 	/* Create a real final row that the later dry run must not change */
-	ASSERT(SUCCESS == test0038_reset_checkpoint_hooks());
+	ASSERT(SUCCESS == reset_checkpoint_hooks());
 	ASSERT(SUCCESS == prepare_huge_fixture(huge_file_path,&huge_file_stat));
 	ASSERT(huge_file_stat.st_size > 0);
 	ASSERT(SUCCESS == runit(create_arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
@@ -374,27 +374,27 @@ static Return test0038_5(void)
 	/* Save the baseline DB identity and final checksum state */
 	ASSERT(SUCCESS == db_read_files_count(db_filename,&row_count));
 	ASSERT(row_count == 1);
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&id_before));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,test0038_relative_path,&offset_before,sha512_before));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&id_before));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,relative_path,&offset_before,sha512_before));
 	ASSERT(offset_before == 0);
-	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,test0038_relative_path));
+	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,relative_path));
 
 	/* Force a checkpoint opportunity during checksum-enabled dry-run mode */
-	ASSERT(SUCCESS == test0038_enable_checkpoint_hook(false));
+	ASSERT(SUCCESS == enable_checkpoint_hook(false));
 	ASSERT(SUCCESS == runit(dry_run_arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	/* Dry-run must leave the previously saved final DB state untouched */
 	ASSERT(SUCCESS == db_read_files_count(db_filename,&row_count));
 	ASSERT(row_count == 1);
-	ASSERT(SUCCESS == db_read_file_id(db_filename,test0038_relative_path,&id_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,test0038_relative_path,&offset_after,sha512_after));
+	ASSERT(SUCCESS == db_read_file_id(db_filename,relative_path,&id_after));
+	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,relative_path,&offset_after,sha512_after));
 	ASSERT(id_after == id_before);
 	ASSERT(offset_after == 0);
 	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
-	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,test0038_relative_path));
+	ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,relative_path));
 
 	/* Always clear hook state and remove per-case artifacts */
-	call(test0038_cleanup_case(db_filename));
+	call(cleanup_case(db_filename));
 
 	m_del(huge_file_path);
 

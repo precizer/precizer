@@ -25,6 +25,8 @@ Return function_unit_testing(void)
 	SUTE(test0026,"file_check_access(): directory-relative access statuses");
 	TEST(test0036,"delete_path(): removes a regular file");
 	SUTE(test0037,"delete_path(): diagnostics test set");
+	TEST(test0041,"db_vacuum(): percentage saved and elapsed time");
+	SUTE(test0042,"Timed file transactions");
 
 	RETURN_STATUS;
 }

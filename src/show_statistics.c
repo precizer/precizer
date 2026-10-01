@@ -1,12 +1,12 @@
 #include "precizer.h"
 
 /**
- * @brief Print aggregated traversal totals from TraversalSummary.
+ * @brief Print traversal size and item counts on separate lines
  *
- * Emits a single totals line with allocated size and item counts
- * (directories, files, symlinks).
+ * Traversal size is the sum of allocated file storage collected during the
+ * pass. Item counts cover directories, regular files, and symbolic links
  *
- * @param summary Traversal counters produced by file_list().
+ * @param summary Traversal counters produced by file_list()
  */
 void show_statistics(const TraversalSummary *summary)
 {
@@ -25,10 +25,9 @@ void show_statistics(const TraversalSummary *summary)
 	        + summary->count_files
 	        + summary->count_symlnks;
 
-	slog(EVERY,"Total allocated size: %s, total items: %zu, dirs: %zu, files: %zu, symlnks: %zu\n",
-		bkbmbgbtbpbeb(summary->total_allocated_bytes,FULL_VIEW),
-		total_items,
-		summary->count_dirs,
-		summary->count_files,
-		summary->count_symlnks);
+	slog(EVERY,"Total traversal size: %s\n",bkbmbgbtbpbeb(summary->total_allocated_bytes,FULL_VIEW));
+	slog(EVERY,"Total items: %zu\n",total_items);
+	slog(EVERY,"Directories: %zu\n",summary->count_dirs);
+	slog(EVERY,"Files: %zu\n",summary->count_files);
+	slog(EVERY,"Symlinks: %zu\n",summary->count_symlnks);
 }

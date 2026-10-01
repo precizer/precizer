@@ -5,7 +5,7 @@
 /**
  * @brief Reset read-error mocks used by this test group
  */
-static void test0031_reset_read_mocks(void)
+static void reset_read_mocks(void)
 {
 	mocks_openat_reset();
 	mocks_fdopen_reset();
@@ -18,7 +18,7 @@ static void test0031_reset_read_mocks(void)
  *
  * @return Test status
  */
-static Return test0031_prepare_case(void)
+static Return prepare_case(void)
 {
 	/* The status that will be returned before exiting */
 	/* By default, assumes the function ran without errors */
@@ -39,7 +39,7 @@ static Return test0031_prepare_case(void)
  * @param[in] template_name Expected output template file
  * @return Test status
  */
-static Return test0031_check_case(
+static Return check_case(
 	memory     *result,
 	memory     *pattern,
 	memory     *error_buffer,
@@ -72,12 +72,12 @@ static Return test0031_1(void)
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,error_buffer,MEMORY_STRING);
 
-	ASSERT(SUCCESS == test0031_prepare_case());
+	ASSERT(SUCCESS == prepare_case());
 
 	const char *arguments = "--database=read_fail.db --progress"
 	        " tests/fixtures/diffs/diff1";
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 	mocks_openat_set_target_suffix(READ_FAIL_REL_PATH);
 	mocks_openat_set_errno(EIO);
 	mocks_openat_enable(true);
@@ -86,14 +86,14 @@ static Return test0031_1(void)
 
 	mocks_openat_enable(false);
 
-	ASSERT(SUCCESS == test0031_check_case(result,pattern,error_buffer,"templates/0031_001.txt"));
+	ASSERT(SUCCESS == check_case(result,pattern,error_buffer,"templates/0031_001.txt"));
 
 	ASSERT(mocks_openat_call_count() == 1);
 	ASSERT(mocks_fdopen_call_count() == 0);
 	ASSERT(mocks_fread_call_count() == 0);
 	ASSERT(mocks_ferror_call_count() == 0);
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 
 	m_del(pattern);
 	m_del(result);
@@ -115,12 +115,12 @@ static Return test0031_2(void)
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,error_buffer,MEMORY_STRING);
 
-	ASSERT(SUCCESS == test0031_prepare_case());
+	ASSERT(SUCCESS == prepare_case());
 
 	const char *arguments = "--database=read_fail.db --progress"
 	        " tests/fixtures/diffs/diff1";
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 	mocks_fdopen_set_target_suffix(READ_FAIL_REL_PATH);
 	mocks_fdopen_set_errno(EIO);
 	mocks_fdopen_enable(true);
@@ -129,14 +129,14 @@ static Return test0031_2(void)
 
 	mocks_fdopen_enable(false);
 
-	ASSERT(SUCCESS == test0031_check_case(result,pattern,error_buffer,"templates/0031_001.txt"));
+	ASSERT(SUCCESS == check_case(result,pattern,error_buffer,"templates/0031_001.txt"));
 
 	ASSERT(mocks_openat_call_count() == 0);
 	ASSERT(mocks_fdopen_call_count() == 1);
 	ASSERT(mocks_fread_call_count() == 0);
 	ASSERT(mocks_ferror_call_count() == 0);
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 
 	m_del(pattern);
 	m_del(result);
@@ -158,12 +158,12 @@ static Return test0031_3(void)
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,error_buffer,MEMORY_STRING);
 
-	ASSERT(SUCCESS == test0031_prepare_case());
+	ASSERT(SUCCESS == prepare_case());
 
 	const char *arguments = "--database=read_fail.db --progress"
 	        " tests/fixtures/diffs/diff1";
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 	mocks_fread_set_target_suffix(READ_FAIL_REL_PATH);
 	mocks_fread_set_errno(EIO);
 	mocks_fread_enable(true);
@@ -174,14 +174,14 @@ static Return test0031_3(void)
 	mocks_fread_enable(false);
 	mocks_ferror_enable(true);
 
-	ASSERT(SUCCESS == test0031_check_case(result,pattern,error_buffer,"templates/0031_002.txt"));
+	ASSERT(SUCCESS == check_case(result,pattern,error_buffer,"templates/0031_002.txt"));
 
 	ASSERT(mocks_openat_call_count() == 0);
 	ASSERT(mocks_fdopen_call_count() == 0);
 	ASSERT(mocks_fread_call_count() == 1);
 	ASSERT(mocks_ferror_call_count() == 1);
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 
 	m_del(pattern);
 	m_del(result);
@@ -203,12 +203,12 @@ static Return test0031_4(void)
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,error_buffer,MEMORY_STRING);
 
-	ASSERT(SUCCESS == test0031_prepare_case());
+	ASSERT(SUCCESS == prepare_case());
 
 	const char *arguments = "--database=read_fail.db --progress"
 	        " tests/fixtures/diffs/diff1";
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 	mocks_fread_set_target_suffix(READ_FAIL_REL_PATH);
 	mocks_fread_set_errno(EIO);
 	mocks_fread_enable(true);
@@ -220,14 +220,14 @@ static Return test0031_4(void)
 	mocks_fread_enable(false);
 	mocks_ferror_enable(true);
 
-	ASSERT(SUCCESS == test0031_check_case(result,pattern,error_buffer,"templates/0031_001.txt"));
+	ASSERT(SUCCESS == check_case(result,pattern,error_buffer,"templates/0031_001.txt"));
 
 	ASSERT(mocks_openat_call_count() == 0);
 	ASSERT(mocks_fdopen_call_count() == 0);
 	ASSERT(mocks_fread_call_count() == 1);
 	ASSERT(mocks_ferror_call_count() == 1);
 
-	test0031_reset_read_mocks();
+	reset_read_mocks();
 
 	m_del(pattern);
 	m_del(result);

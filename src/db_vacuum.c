@@ -1,10 +1,17 @@
 #include "precizer.h"
+#include <errno.h>
 
 /**
+ * @brief Rebuild a database and report the space saved and elapsed time
  *
- * The VACUUM command rebuilds the database file,
- * repacking it into a minimal amount of disk space.
+ * The VACUUM command rebuilds the database file, repacking it into a minimal
+ * amount of disk space. File sizes are measured immediately before and after
+ * the SQL maintenance sequence, including its optimization steps. The reported
+ * percentage is relative to the initial file size and is negative if the file
+ * grows. An initially empty file has no defined percentage, reported as n/a
  *
+ * @param[in] db_file_path Path to the database file to vacuum
+ * @return SUCCESS on completion or in dry-run mode, otherwise FAILURE
  */
 Return db_vacuum(const char *db_file_path)
 {
@@ -16,6 +23,8 @@ Return db_vacuum(const char *db_file_path)
 	char *err_msg = NULL;
 	bool db_is_primary = false;
 	bool db_file_modified = false;
+	struct stat db_stat_before = {0};
+	struct stat db_stat_after = {0};
 
 	/* Validate input parameters */
 	if(db_file_path == NULL)
@@ -46,6 +55,15 @@ Return db_vacuum(const char *db_file_path)
 
 	if(SUCCESS == status)
 	{
+		if(stat(db_file_path,&db_stat_before) != 0)
+		{
+			slog(ERROR,"Cannot stat database %s before vacuuming: %s\n",db_file_path,strerror(errno));
+			status = FAILURE;
+		}
+	}
+
+	if(SUCCESS == status)
+	{
 		/* Create SQL statement */
 		const char *sql =
 		        "PRAGMA analyze;"
@@ -62,25 +80,55 @@ Return db_vacuum(const char *db_file_path)
 		}
 
 		/* Execute SQL statement */
+		const long long int vacuum_start_ns = cur_time_monotonic_ns();
 		rc = sqlite3_exec(db,sql,NULL,NULL,&err_msg);
+		long long int vacuum_elapsed_ns = cur_time_monotonic_ns() - vacuum_start_ns;
 
 		if(SQLITE_OK != rc)
 		{
+
 			log_sqlite_error(db,rc,err_msg,"Can't execute vacuum");
 			status = FAILURE;
+
 		} else {
+
 			db_file_modified = true;
 
-			if(db_is_primary == true)
+			if(stat(db_file_path,&db_stat_after) != 0)
 			{
-				slog(EVERY,"The primary database has been vacuumed\n");
+				slog(ERROR,"Cannot stat database %s after vacuuming: %s\n",db_file_path,strerror(errno));
+				status = FAILURE;
 			} else {
-				slog(EVERY,"The database has been vacuumed\n");
+				if(vacuum_elapsed_ns < 0LL)
+				{
+					vacuum_elapsed_ns = 0LL;
+				}
+
+				char elapsed_string[50] = {0};
+				(void)form_date_r(vacuum_elapsed_ns,MAJOR_VIEW,elapsed_string,sizeof(elapsed_string));
+
+				const char *db_label = "DB";
+
+				if(db_is_primary == true)
+				{
+					db_label = "Primary DB";
+				}
+
+				if(db_stat_before.st_size > 0)
+				{
+					const long double saved_percent =
+					        ((long double)db_stat_before.st_size - (long double)db_stat_after.st_size)
+					        * 100.0L / (long double)db_stat_before.st_size;
+
+					slog(EVERY,"%s vacuumed: saved %.2Lf%%, elapsed %s\n",db_label,saved_percent,elapsed_string);
+				} else {
+					slog(EVERY,"%s vacuumed: saved n/a, elapsed %s\n",db_label,elapsed_string);
+				}
 			}
 		}
 	}
 
-	if(SUCCESS == status)
+	if(db_file_modified == true)
 	{
 		/**
 		 *

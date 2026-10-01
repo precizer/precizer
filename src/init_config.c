@@ -11,9 +11,9 @@
  * environment overrides before the shared `Config` object is cleared.
  * Command-line options can override these settings during argument parsing
  *
- * The function clears the shared `Config` object and then initializes every
- * field that needs a non-zero default. Path-like data owned by libmem is
- * prepared as string descriptors or descriptor arrays: `db_primary_file_path`,
+ * The function clears the shared `Config` object and then assigns explicit
+ * runtime defaults, including the file transaction state. Path-like data owned
+ * by libmem is prepared as string descriptors or descriptor arrays: `db_primary_file_path`,
  * `db_file_name`, `roots`, and `db_file_paths`
  *
  * Normal scan roots are collected later in `config->roots`, while `--compare`
@@ -159,6 +159,20 @@ void init_config(void)
 	// Flag that reflects the presence of any changes
 	// since the last research
 	config->db_primary_file_modified = false;
+
+	/* Track the file transaction owned by the main traversal.
+	   Starts false, is set after BEGIN IMMEDIATE succeeds, and is cleared after
+	   a successful COMMIT or completed rollback cleanup. SQLite can roll back
+	   automatically while this flag remains set, so transaction helpers also
+	   check SQLite's actual transaction state */
+	config->file_transaction_active = false;
+
+	/* Monotonic start time of the current file transaction, in nanoseconds.
+	   Starts at zero and is replaced with the current time after each successful
+	   BEGIN. Later saves in the same batch leave it unchanged, so the shared
+	   DB_CHECKPOINT_INTERVAL_NS applies to the whole batch. The value is used
+	   only while file_transaction_active is true */
+	config->file_transaction_started_ns = 0LL;
 
 	// Recursion depth limit. The depth of the traversal,
 	// numbered from 0 to N, where a file could be found.

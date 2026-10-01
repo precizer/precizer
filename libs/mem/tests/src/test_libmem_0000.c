@@ -10,7 +10,7 @@
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0000_01_body(void)
+static Return reject_string_copy_to_data(void)
 {
 	INITTEST;
 
@@ -38,7 +38,7 @@ static Return test_libmem_0000_01(void)
 	        "ERROR: src/mem_core_string\\.c:mem_core_string:\\d+ Memory management; Destination must be a string descriptor Errno: [^\\n]+ \\(errno: [0-9]+\\)\n"
 	        "\\Z";
 
-	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0000_01,test_libmem_0000_01_body));
+	ASSERT(SUCCESS == match_function_output(NULL,expected_stderr_pattern_libmem_0000_01,reject_string_copy_to_data));
 
 	RETURN_STATUS;
 }
@@ -477,7 +477,7 @@ static Return test_libmem_0000_13(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0000_14_body(void)
+static Return print_concatenated_strings(void)
 {
 	INITTEST;
 
@@ -544,7 +544,7 @@ static Return test_libmem_0000_14(void)
 	        "Hello world!\n"
 	        "\\Z";
 
-	ASSERT(SUCCESS == match_function_output(expected_stdout_pattern_libmem_0000_14,NULL,test_libmem_0000_14_body));
+	ASSERT(SUCCESS == match_function_output(expected_stdout_pattern_libmem_0000_14,NULL,print_concatenated_strings));
 
 	RETURN_STATUS;
 }
@@ -559,7 +559,7 @@ static Return test_libmem_0000_14(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0000_15_body(void)
+static Return print_string_views(void)
 {
 	INITTEST;
 
@@ -627,7 +627,7 @@ static Return test_libmem_0000_15(void)
 	        "scratch length: 0\n"
 	        "\\Z";
 
-	ASSERT(SUCCESS == match_function_output(expected_stdout_pattern_libmem_0000_15,NULL,test_libmem_0000_15_body));
+	ASSERT(SUCCESS == match_function_output(expected_stdout_pattern_libmem_0000_15,NULL,print_string_views));
 
 	RETURN_STATUS;
 }
@@ -801,7 +801,7 @@ static Return test_libmem_0000_19(void)
  *
  * @return Return describing success or failure
  */
-static Return test_libmem_0000_20_body(void)
+static Return print_string_array(void)
 {
 	INITTEST;
 
@@ -845,7 +845,7 @@ static Return test_libmem_0000_20(void)
 	        "gamma\n"
 	        "\\Z";
 
-	ASSERT(SUCCESS == match_function_output(expected_stdout_pattern_libmem_0000_20,NULL,test_libmem_0000_20_body));
+	ASSERT(SUCCESS == match_function_output(expected_stdout_pattern_libmem_0000_20,NULL,print_string_array));
 
 	RETURN_STATUS;
 }

@@ -3,7 +3,11 @@ Primary database file name: lock1\.db
 Starting database file lock1\.db integrity check…
 Database lock1\.db has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
-Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
+Total traversal size: \d+.*
+Total items: \d+
+Directories: \d+
+Files: \d+
+Symlinks: \d+
 Update mode enabled for DB lock1\.db
 File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock1\.db:(?:\x1B\[[0-9;]*m)*
@@ -16,7 +20,14 @@ File traversal complete
 (?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff2/path1/AAA/BCB/CCC/b\.txt
-Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+
-Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+Total traversal size: \d+.*
+Total items: \d+
+Directories: \d+
+Files: \d+
+Symlinks: \d+
+Total runtime: [^,\r\n]+
+Hashing time: [^,\r\n]+
+Hashed data: [^,\r\n]+
+Hashing rate: [^\r\n]+
 ERROR: The precizer process terminated unexpectedly due to an error
 Exit status » WARNING\Z

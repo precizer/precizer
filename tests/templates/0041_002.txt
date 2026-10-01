@@ -1,0 +1,3 @@
+\AStart vacuuming…
+DB vacuumed: saved 0\.00%, elapsed [0-9]+(?:ns|μs|ms|s|min|h|d|w|mon|y)
+\z

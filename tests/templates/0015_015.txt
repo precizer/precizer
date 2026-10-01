@@ -59,7 +59,7 @@ TESTING:The database connection has been closed
 TESTING:Migration from version 1 to version 4 completed
 TESTING:The database has been successfully upgraded
 TESTING:Start vacuuming…
-TESTING:The database has been vacuumed
+TESTING:DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*All files are identical against 0015_database_v4_reference\.db and 0015_database_v0_corrupt\.db(?:\x1B\[[0-9;]*m)*
 TESTING:(?:\x1B\[[0-9;]*m)*All SHA512 checksums of files are identical against 0015_database_v4_reference\.db and 0015_database_v0_corrupt\.db(?:\x1B\[[0-9;]*m)*

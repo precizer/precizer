@@ -23,7 +23,7 @@ static const char *const test0023_expected_paths[TEST0023_EXPECTED_PATH_COUNT] =
  * @return Integer less than, equal to, or greater than zero when the first
  *         name is sorted before, matches, or is sorted after the second name
  */
-static int test0023_compare_by_name(
+static int compare_by_name(
 #ifdef __MSYS__
 	const FTSENT * const *first,
 	const FTSENT * const *second)
@@ -48,7 +48,7 @@ static int test0023_compare_by_name(
  * @param[in] root_path_text Root path spelling passed to FTS
  * @return SUCCESS when all expected root-relative paths are produced
  */
-static Return test0023_expect_paths_for_root(const char *root_path_text)
+static Return expect_paths_for_root(const char *root_path_text)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -84,7 +84,7 @@ static Return test0023_expect_paths_for_root(const char *root_path_text)
 			fts_options |= FTS_NOCHDIR;
 #endif
 
-			file_systems = fts_open(root_argv,fts_options,test0023_compare_by_name);
+			file_systems = fts_open(root_argv,fts_options,compare_by_name);
 			ASSERT(file_systems != NULL);
 		}
 	}
@@ -281,7 +281,7 @@ Return test0023(void)
 
 		for(size_t i = 0; root_path_spellings[i] != NULL; i++)
 		{
-			run(test0023_expect_paths_for_root(root_path_spellings[i]));
+			run(expect_paths_for_root(root_path_spellings[i]));
 		}
 	}
 
@@ -306,7 +306,7 @@ Return test0023(void)
 	if(SUCCESS == status)
 	{
 		run(construct_path("tests/fixtures/4",absolute_root_path));
-		run(test0023_expect_paths_for_root(m_text(absolute_root_path)));
+		run(expect_paths_for_root(m_text(absolute_root_path)));
 	}
 
 	call(m_del(absolute_root_path));

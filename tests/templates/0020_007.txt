@@ -65,11 +65,18 @@ TESTING:Searching for files that no longer exist on the file system…
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1\.db:(?:\x1B\[[0-9;]*m)*
 no longer exists path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:Missing file search finished
-TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+TESTING:Total traversal size: \d+.*
+TESTING:Total items: \d+
+TESTING:Directories: \d+
+TESTING:Files: \d+
+TESTING:Symlinks: \d+$
+TESTING:Total runtime: [^,\r\n]+
+TESTING:Hashing time: [^,\r\n]+
+TESTING:Hashed data: [^,\r\n]+
+TESTING:Hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
-TESTING:The primary database has been vacuumed
+TESTING:Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database1\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:Exit status » SUCCESS\Z

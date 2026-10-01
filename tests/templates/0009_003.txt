@@ -18,9 +18,16 @@ ignore & do not add chaotic_filenames/tmp_z1-9vv\.bak
 add included chaotic_filenames/xqwe_90210\.md
 add included chaotic_filenames/zeta_z1-9vv\.dat
 File traversal complete
-Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+Total traversal size: \d+.*
+Total items: \d+
+Directories: \d+
+Files: \d+
+Symlinks: \d+$
+Total runtime: [^,\r\n]+
+Hashing time: [^,\r\n]+
+Hashed data: [^,\r\n]+
+Hashing rate: [^\r\n]+
 Start vacuuming the primary database…
-The primary database has been vacuumed
+Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
 (?:\x1B\[[0-9;]*m)*The brand-new primary database file database0009_3\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
 Exit status » SUCCESS\Z

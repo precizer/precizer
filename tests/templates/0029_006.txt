@@ -49,8 +49,15 @@ ignored \& do not update 1/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished
-TESTING:Total allocated size: \d+.*, total items: \d+, dirs: \d+, files: \d+, symlnks: \d+$
-TESTING:Total runtime: [^,\r\n]+, elapsed time: [^,\r\n]+, hashed: [^,\r\n]+, hashing rate: [^\r\n]+
+TESTING:Total traversal size: \d+.*
+TESTING:Total items: \d+
+TESTING:Directories: \d+
+TESTING:Files: \d+
+TESTING:Symlinks: \d+$
+TESTING:Total runtime: [^,\r\n]+
+TESTING:Hashing time: [^,\r\n]+
+TESTING:Hashed data: [^,\r\n]+
+TESTING:Hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database6\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*

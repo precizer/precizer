@@ -33,7 +33,9 @@ static int compare_by_name(
  * that pass is skipped unless progress output needs those counters. When it is
  * `false`, regular files can be hashed, compared with existing database rows,
  * inserted, updated, or reported according to ignore/include and checksum
- * locking settings
+ * locking settings. File writes are committed by the shared checkpoint interval
+ * and before this function returns. A graceful interruption commits pending
+ * work, while a technical failure rolls back only the current batch
  *
  * For example, after `precizer src tests`, `config->roots` contains two roots.
  * This function traverses `src` first, closes that FTS stream, then traverses
@@ -227,6 +229,20 @@ Return file_list(TraversalSummary *summary)
 			if(global_interrupt_flag == true)
 			{
 				break;
+			}
+
+			/*
+			 * Check the active batch before processing the next entry. Commit when
+			 * the shared checkpoint interval has elapsed and stop traversal on failure
+			 */
+			if(config->file_transaction_active == true)
+			{
+				call(db_file_transaction_check(cur_time_monotonic_ns()));
+
+				if(FAILURE & status)
+				{
+					break;
+				}
 			}
 
 	#if 0 // Disabled multi-root path index implementation
@@ -574,11 +590,17 @@ Return file_list(TraversalSummary *summary)
 									&path_known);
 							}
 
-							if(TRIUMPH & status)
+							if(SUCCESS & status)
 							{
 								/* If the sha512sum has been interrupted smoothly when Ctrl+C */
-								if(file->checksum_offset > 0 && global_interrupt_flag == true)
+								if(global_interrupt_flag == true)
 								{
+									/* Skip the file when interruption leaves no resumable hash state */
+									if(file->checksum_offset == 0)
+									{
+										break;
+									}
+
 									file->hash_interrupted = true;
 								}
 
@@ -663,11 +685,11 @@ Return file_list(TraversalSummary *summary)
 						if(should_update_db == true)
 						{
 							/* Save record in DB */
-							if(TRIUMPH & status)
+							if(SUCCESS & status)
 							{
 								status = db_save_file_record(relative_path,file,&path_known,true);
 
-								if((TRIUMPH & status) == 0)
+								if((SUCCESS & status) == 0)
 								{
 									continue_the_loop = false;
 									break;
@@ -678,11 +700,11 @@ Return file_list(TraversalSummary *summary)
 						show_log = true;
 
 						/* Save record in DB */
-						if(TRIUMPH & status)
+						if(SUCCESS & status)
 						{
 							status = db_save_file_record(relative_path,file,&path_known,true);
 
-							if((TRIUMPH & status) == 0)
+							if((SUCCESS & status) == 0)
 							{
 								continue_the_loop = false;
 								break;
@@ -758,7 +780,7 @@ Return file_list(TraversalSummary *summary)
 			}
 		}
 
-		if(global_interrupt_flag == true || (TRIUMPH & status) == 0)
+		if(global_interrupt_flag == true || (SUCCESS & status) == 0)
 		{
 			break;
 		}
@@ -770,6 +792,22 @@ Return file_list(TraversalSummary *summary)
 	// Clear the traversal root pointer before returning from this pass.
 	// The root descriptors belong to config->roots and must not be treated as active after the loop finishes
 	summary->root = NULL;
+
+	/*
+	 * Commit the pending batch when traversal ends without a technical failure,
+	 * including a graceful Ctrl+C interruption. call() ensures that HALTED does
+	 * not skip this final commit
+	 */
+	if((FAILURE & status) == 0)
+	{
+		call(db_file_transaction_commit());
+	}
+
+	/*
+	 * Roll back any batch left active after a traversal or commit failure.
+	 * This call does nothing when the transaction has already been committed
+	 */
+	call(db_file_transaction_rollback());
 
 	// Print completion banner only when traversal emitted visible path-level lines.
 	// Print preflight totals only for the stats-only pass from main().

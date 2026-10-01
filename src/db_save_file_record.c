@@ -15,6 +15,10 @@
  * update that row instead of inserting a duplicate. When @p path_known is already
  * true, the helper updates the existing row directly
  *
+ * Writes join the current main-traversal transaction. Periodic checkpoints and
+ * traversal completion commit the pending records, so a successful save alone
+ * does not mean the row has been committed
+ *
  * @p mark_visible_change controls user-facing reporting. Final saves pass true
  * so show_file() can say whether the file was inserted or updated. Silent
  * checkpoints pass false because they are only recovery points for interrupted
@@ -47,6 +51,18 @@ Return db_save_file_record(
 	}
 
 	/*
+	 * Use the active transaction or start one before saving this file.
+	 * Grouping file writes reduces commit overhead. call() allows the partial
+	 * SHA512 state to be saved even during graceful interruption
+	 */
+	call(db_file_transaction_begin());
+
+	if(FAILURE & status)
+	{
+		provide(status);
+	}
+
+	/*
 	 * Remember whether the row existed before this file started processing.
 	 * A silent checkpoint can insert a new row before the final save, but the
 	 * user-facing result should still say "inserted", not "updated"
@@ -66,7 +82,7 @@ Return db_save_file_record(
 	} else {
 		status = db_insert_the_record(relative_path,file);
 
-		if(TRIUMPH & status)
+		if(SUCCESS & status)
 		{
 			if(config->dry_run == false)
 			{
@@ -82,7 +98,7 @@ Return db_save_file_record(
 	 * the file look updated to the user. The original row state decides whether
 	 * the final visible result is an insertion or an update
 	 */
-	if((TRIUMPH & status) && mark_visible_change == true)
+	if((SUCCESS & status) && mark_visible_change == true)
 	{
 		if(row_existed_before_processing == true)
 		{
