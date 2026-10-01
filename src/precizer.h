@@ -59,6 +59,9 @@
 
 #define SQL_DRY_RUN_MODE ((int)-1)
 
+/* Shared interval for traversal commits and partial SHA512 checkpoints, in nanoseconds */
+#define DB_CHECKPOINT_INTERVAL_NS 14930016475LL
+
 /* Reusable heap buffer size in bytes for file reading. In x86_64 file-reading
    and SHA-512 benchmarks, 64 KiB was among the fastest tested sizes while
    keeping buffer memory use low. Performance may vary by workload and platform */
@@ -410,6 +413,13 @@ typedef struct {
 	/// True when the primary database changed during the current scan
 	bool db_primary_file_modified;
 
+	/// True while the main traversal has an active file transaction
+	/// File records in the batch are awaiting commit
+	bool file_transaction_active;
+
+	/// Monotonic time when the current batch began
+	long long int file_transaction_started_ns;
+
 	/// Recursion depth limit. The depth of the traversal,
 	/// numbered from 0 to N, where a file could be found.
 	/// Representing the maximum of the starting
@@ -758,6 +768,14 @@ Return db_save_file_record(
 	File *,
 	bool *,
 	const bool);
+
+Return db_file_transaction_begin(void);
+
+Return db_file_transaction_commit(void);
+
+Return db_file_transaction_check(const long long int);
+
+Return db_file_transaction_rollback(void);
 
 Return db_determine_name(void);
 

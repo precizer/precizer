@@ -113,7 +113,7 @@ Return db_init(void)
 			        "PRAGMA journal_mode=DELETE;"        // Use DELETE journal to avoid WAL artifacts
 			        "PRAGMA page_size=4096;"            // Set page size to 4KB (default, but explicit for clarity)
 			        "PRAGMA cache_size=-8192;"          // Use 8MB of memory for caching (negative value = KB)
-			        "PRAGMA synchronous=NORMAL;"        // Balance speed and safety (NORMAL = fsync only for checkpoints)
+			        "PRAGMA synchronous=EXTRA;"         // Sync the journal directory after journal deletion
 			        "PRAGMA strict = ON;"
 			        "BEGIN TRANSACTION;"
 			        "CREATE TABLE IF NOT EXISTS metadata (db_version INTEGER NOT NULL UNIQUE);"
@@ -166,10 +166,10 @@ Return db_init(void)
 			pragma_sql =
 			        "PRAGMA journal_mode=DELETE; "       // Use DELETE journal
 			        "PRAGMA cache_size=-8192; "          // Use 8MB of memory for caching (negative value = KB)
-			        "PRAGMA synchronous=NORMAL; "        // Balance speed and safety (NORMAL = fsync only for checkpoints)
+			        "PRAGMA synchronous=EXTRA; "         // Sync the journal directory after journal deletion
 			        "PRAGMA temp_store=MEMORY; "         // Store temporary tables in memory (not on disk)
 			        "PRAGMA strict=ON;"                  // Enforce STRICT table schema validation
-			        "PRAGMA locking_mode=EXCLUSIVE;";    // Hold exclusive locks for the session
+			        "PRAGMA locking_mode=NORMAL;";       // Release write locks after each transaction
 		}
 
 		// Set SQLite pragmas

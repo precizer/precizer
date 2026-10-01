@@ -3,10 +3,9 @@
 #include <fcntl.h>
 
 /*
- * Minimum elapsed monotonic time between periodic hash checkpoints.
- * The value is stored in nanoseconds; 15 seconds bounds worst-case lost hashing progress after an unexpected crash without writing to SQLite too often
+ * Periodic hash checkpoints use the shared DB_CHECKPOINT_INTERVAL_NS interval.
+ * Pending file batches can bring a checkpoint forward so earlier writes do not wait for another full interval
  */
-static const long long int sha512_checkpoint_interval_ns = 14930016475LL;
 
 /**
  * @brief Check whether periodic database checkpoints are safe for this hash pass
@@ -255,7 +254,7 @@ Return sha512sum(
 		 * Monotonic timestamp when the next periodic checkpoint should be considered.
 		 * It is advanced after each checkpoint window so the database is not updated on every read block
 		 */
-		long long int next_checkpoint_ns = hashing_start_ns + sha512_checkpoint_interval_ns;
+		long long int next_checkpoint_ns = hashing_start_ns + DB_CHECKPOINT_INTERVAL_NS;
 
 		unsigned char *file_buffer_data_rewritable = m_raw_data(file_buffer);
 
@@ -410,6 +409,8 @@ Return sha512sum(
 				 * when the normal time-based checkpoint interval has not elapsed
 				 */
 				if(checkpoint_now_ns >= next_checkpoint_ns
+				        || (config->file_transaction_active == true
+				        && checkpoint_now_ns - config->file_transaction_started_ns >= DB_CHECKPOINT_INTERVAL_NS)
 #ifdef TESTITALL_TEST_HOOKS
 				        || testitall_checkpoint_now == true
 #endif
@@ -424,24 +425,33 @@ Return sha512sum(
 					bool checkpoint_saved = false;
 #endif
 
-					if(periodic_hash_checkpoint_is_allowed(file) == true)
+					const bool checkpoint_allowed = periodic_hash_checkpoint_is_allowed(file);
+
+					if(checkpoint_allowed == true)
 					{
 						status = db_save_file_record(relative_path,file,path_known,false);
 
-						if((TRIUMPH & status) == 0)
+						if(FAILURE & status)
 						{
 							break;
 						}
-
-						/*
-						 * Set hook E only after db_save_file_record() succeeds.
-						 * This connects the real DB write above with the crash
-						 * simulation below
-						 */
-#ifdef TESTITALL_TEST_HOOKS
-						checkpoint_saved = true;
-#endif
 					}
+
+					call(db_file_transaction_commit());
+
+					if(FAILURE & status)
+					{
+						break;
+					}
+
+					/*
+					 * Set hook E only after the checkpoint save and COMMIT succeed.
+					 * This connects the durable DB write above with the crash
+					 * simulation below
+					 */
+#ifdef TESTITALL_TEST_HOOKS
+					checkpoint_saved = checkpoint_allowed;
+#endif
 
 					/*
 					 * Simulate a sudden process death only when hook D requested this
@@ -457,7 +467,7 @@ Return sha512sum(
 					}
 #endif
 
-					next_checkpoint_ns = checkpoint_now_ns + sha512_checkpoint_interval_ns;
+					next_checkpoint_ns = checkpoint_now_ns + DB_CHECKPOINT_INTERVAL_NS;
 				}
 			}
 		}
