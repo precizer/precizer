@@ -14,7 +14,7 @@
  * @return SUCCESS when the directory was created and both outputs are ready,
  *         otherwise FAILURE
  */
-static Return test0026_prepare_tmpdir(
+static Return prepare_tmpdir(
 	memory     *tmpdir,
 	const char **tmpdir_path_out)
 {
@@ -44,7 +44,7 @@ static Return test0026_1(void)
 	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
-	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == prepare_tmpdir(tmpdir,&tmpdir_path));
 	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_accessible.txt"));
 
 	char absolute_file_path[PATH_MAX] = "";
@@ -99,7 +99,7 @@ static Return test0026_2(void)
 	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
-	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == prepare_tmpdir(tmpdir,&tmpdir_path));
 	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_missing.txt"));
 
 	int directory_fd = -1;
@@ -136,7 +136,7 @@ static Return test0026_3(void)
 	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
-	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == prepare_tmpdir(tmpdir,&tmpdir_path));
 	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_locked_dir/file.txt"));
 
 	char locked_dir[PATH_MAX] = "";
@@ -206,7 +206,7 @@ static Return test0026_4(void)
 	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
-	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == prepare_tmpdir(tmpdir,&tmpdir_path));
 	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_error.txt"));
 
 	char error_path[PATH_MAX] = "";
@@ -268,7 +268,7 @@ static Return test0026_5(void)
 	m_create(char,relative_path,MEMORY_STRING);
 	const char *tmpdir_path = "";
 
-	ASSERT(SUCCESS == test0026_prepare_tmpdir(tmpdir,&tmpdir_path));
+	ASSERT(SUCCESS == prepare_tmpdir(tmpdir,&tmpdir_path));
 	ASSERT(SUCCESS == m_copy_literal(relative_path,"test0026_5_search_only.txt"));
 
 	char absolute_file_path[PATH_MAX] = "";
