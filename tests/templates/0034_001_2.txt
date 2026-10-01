@@ -19,6 +19,6 @@ Hashing time: [^,\r\n]+
 Hashed data: [^,\r\n]+
 Hashing rate: [^\r\n]+
 Start vacuuming the primary database…
-Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed: [^\r\n]+
+Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
 (?:\x1B\[[0-9;]*m)*The database file 0034_lsize_vs_asize_flags\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 Exit status » SUCCESS\Z

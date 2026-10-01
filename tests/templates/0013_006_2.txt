@@ -58,7 +58,7 @@ TESTING:Hashed data: [^,\r\n]+
 TESTING:Hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
-TESTING:Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed: [^\r\n]+
+TESTING:Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
 TESTING:The database connection has been closed
 TESTING:Test hook: baseline database stat was resynced to current metadata for database1\.db
 ERROR:Internal error\. The database file database1\.db has NOT changed, but according to the state of the global variable tracking modifications, it should have!

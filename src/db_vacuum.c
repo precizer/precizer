@@ -120,9 +120,9 @@ Return db_vacuum(const char *db_file_path)
 					        ((long double)db_stat_before.st_size - (long double)db_stat_after.st_size)
 					        * 100.0L / (long double)db_stat_before.st_size;
 
-					slog(EVERY,"%s vacuumed: saved %.2Lf%%, elapsed: %s\n",db_label,saved_percent,elapsed_string);
+					slog(EVERY,"%s vacuumed: saved %.2Lf%%, elapsed %s\n",db_label,saved_percent,elapsed_string);
 				} else {
-					slog(EVERY,"%s vacuumed: saved n/a, elapsed: %s\n",db_label,elapsed_string);
+					slog(EVERY,"%s vacuumed: saved n/a, elapsed %s\n",db_label,elapsed_string);
 				}
 			}
 		}
