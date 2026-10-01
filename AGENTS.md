@@ -4,7 +4,7 @@
 - Use US English for comments and documentation
 - Use an impersonal style in documentation. Avoid addressing the reader directly or using first-person pronouns
 - If a comment or documentation block contains multiple sentences, separate them with periods. However, do not place a trailing period at the end of the last sentence in a block, at the end of a single-line comment, or at the end of a single-line documentation entry
-- Preserve existing comments in their current locations. They may be updated for accuracy or clarity, but must never be removed
+- Preserve existing comments in their current locations. They may be updated for accuracy or clarity, but may be removed only when the code they describe is also deleted
 - Write function documentation in Doxygen style
 - Write function documentation in the `.c` file that contains the function body, not in the header file
 - Human-understandable documentation is mandatory for function documentation and for README documentation, including `README.md`, `README.ru.md`, and bundled-library READMEs under `libs/`
