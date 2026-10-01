@@ -39,7 +39,7 @@ TESTING:File traversal started for [^\r\n]+
 TESTING:Items reported during this traversal against the DB 0040\.db:
 new AAA/BBB/CZC/a\.txt
 TESTING:File traversal complete
-TESTING:Total traversal size: \d+.*
+TESTING:Total traversal size: \d+[^\r\n]*
 TESTING:Total items: \d+
 TESTING:Directories: \d+
 TESTING:Files: \d+
