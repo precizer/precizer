@@ -56,9 +56,11 @@ TESTING:Directories: \d+
 TESTING:Files: \d+
 TESTING:Symlinks: \d+$
 TESTING:Total runtime: [^,\r\n]+
-TESTING:Hashing time: [^,\r\n]+
-TESTING:Hashed data: n/a
+TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+TESTING:Scan rate: n/a
+TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 TESTING:Hashing rate: n/a
+TESTING:Hashed data: n/a
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)(?:\x1B\[[0-9;]*m)*

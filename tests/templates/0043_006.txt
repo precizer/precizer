@@ -1,0 +1,7 @@
+\ATotal runtime: [^\r\n]+
+Scan time: 1ns
+Scan rate: 15EiB/s
+Hashing time: 1ns
+Hashing rate: 15EiB/s
+Hashed data: 15EiB
+\z

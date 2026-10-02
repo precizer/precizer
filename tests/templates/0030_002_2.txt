@@ -57,9 +57,11 @@ TESTING:Directories: \d+
 TESTING:Files: \d+
 TESTING:Symlinks: \d+
 TESTING:Total runtime: [^,\r\n]+
-TESTING:Hashing time: [^,\r\n]+
+TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+TESTING:Scan rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
+TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+TESTING:Hashing rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
 TESTING:Hashed data: [^,\r\n]+
-TESTING:Hashing rate: [^\r\n]+
 TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 TESTING:Exit status » WARNING\Z
