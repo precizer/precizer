@@ -9,18 +9,18 @@ update stat file\.txt
 File traversal complete
 Searching for files that no longer exist on the file system…
 Missing file search finished
+Start vacuuming the primary database…
+Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
+(?:\x1B\[[0-9;]*m)*The database file 0016_chmod\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+Total runtime: [^,\r\n]+
 Total traversal size: [^,\r\n]+
 Total items: \d+
 Directories: \d+
 Files: \d+
 Symlinks: \d+
-Total runtime: [^,\r\n]+
 Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 Scan rate: n/a
 Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 Hashing rate: n/a
 Hashed data: 0B
-Start vacuuming the primary database…
-Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
-(?:\x1B\[[0-9;]*m)*The database file 0016_chmod\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 Exit status » SUCCESS\Z

@@ -1,29 +1,29 @@
 #include "sute.h"
 
-static const TraversalSummary *elapsed_summary = NULL;
+static const TraversalSummary *statistics_summary = NULL;
 
 /**
  * @brief Print the selected traversal summary through the output capture API
  */
-static void capture_elapsed(void)
+static void capture_statistics(void)
 {
-	show_elapsed(elapsed_summary);
+	show_statistics(statistics_summary);
 }
 
 /**
- * @brief Compare one timing report with its complete expected output
+ * @brief Compare one statistics report with its complete expected output
  *
  * The supplied configuration and counters are used only for this capture.
  * Shared configuration, logger mode, and callback state are restored before
  * returning, including when capture or comparison fails
  *
- * @param elapsed_config Per-case configuration with its runtime start set for capture
+ * @param statistics_config Per-case configuration with its runtime start set for capture
  * @param summary Fully initialized counters for the report
  * @param template_path File containing the expected complete output
  * @return SUCCESS when stdout matches the template and stderr is empty
  */
-static Return check_elapsed_output(
-	Config                 *elapsed_config,
+static Return check_statistics_output(
+	Config                 *statistics_config,
 	const TraversalSummary *summary,
 	const char             *template_path)
 {
@@ -34,19 +34,19 @@ static Return check_elapsed_output(
 	/* Save the shared configuration, logger mode, and capture callback state */
 	Config *initial_config = config;
 	const LOGMODES initial_logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
-	const TraversalSummary *initial_summary = elapsed_summary;
+	const TraversalSummary *initial_summary = statistics_summary;
 	m_create(char,captured_stdout,MEMORY_STRING);
 	m_create(char,captured_stderr,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
 	/* Enable the report without traversing or reading files */
-	elapsed_config->app_start_time_ns = cur_time_monotonic_ns();
-	config = elapsed_config;
+	statistics_config->app_start_time_ns = cur_time_monotonic_ns();
+	config = statistics_config;
 	rational_logger_mode = REGULAR;
-	elapsed_summary = summary;
+	statistics_summary = summary;
 
 	/* Capture one report and check both output streams */
-	ASSERT(SUCCESS == function_capture(capture_elapsed,captured_stdout,captured_stderr));
+	ASSERT(SUCCESS == function_capture(capture_statistics,captured_stdout,captured_stderr));
 	ASSERT(captured_stderr->length == 0U);
 	ASSERT(SUCCESS == get_file_content(template_path,pattern));
 	ASSERT(SUCCESS == match_pattern(captured_stdout,pattern,template_path));
@@ -54,7 +54,7 @@ static Return check_elapsed_output(
 	/* Restore shared state and release buffers even after an assertion fails */
 	config = initial_config;
 	rational_logger_mode = initial_logger_mode;
-	elapsed_summary = initial_summary;
+	statistics_summary = initial_summary;
 	call(m_del(pattern));
 	call(m_del(captured_stderr));
 	call(m_del(captured_stdout));
@@ -72,7 +72,7 @@ static Return test0043_1(void)
 
 	/* One MiB over two seconds gives 512 KiB/s; hashing over half a second
 	   gives 2 MiB/s, so the two rates must use their respective intervals */
-	Config elapsed_config = {0};
+	Config statistics_config = {0};
 	const TraversalSummary summary = {
 		.total_hashed_bytes = 1048576U,
 		.at_least_one_file_was_shown = true,
@@ -80,7 +80,7 @@ static Return test0043_1(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_001.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_001.txt"));
 
 	RETURN_STATUS;
 }
@@ -94,7 +94,7 @@ static Return test0043_2(void)
 	INITTEST;
 
 	/* No hashed bytes means both rates are unavailable despite positive times */
-	Config elapsed_config = {0};
+	Config statistics_config = {0};
 	const TraversalSummary summary = {
 		.total_hashed_bytes = 0U,
 		.at_least_one_file_was_shown = true,
@@ -102,7 +102,7 @@ static Return test0043_2(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_002.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_002.txt"));
 
 	RETURN_STATUS;
 }
@@ -116,7 +116,7 @@ static Return test0043_3(void)
 	INITTEST;
 
 	/* Positive bytes with zero intervals must not produce a division result */
-	Config elapsed_config = {0};
+	Config statistics_config = {0};
 	const TraversalSummary summary = {
 		.total_hashed_bytes = 1048576U,
 		.at_least_one_file_was_shown = true,
@@ -124,7 +124,7 @@ static Return test0043_3(void)
 		.scan_elapsed_ns = 0LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_003.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_003.txt"));
 
 	RETURN_STATUS;
 }
@@ -138,7 +138,7 @@ static Return test0043_4(void)
 	INITTEST;
 
 	/* Negative intervals produce unavailable rates and a zero time display */
-	Config elapsed_config = {0};
+	Config statistics_config = {0};
 	const TraversalSummary summary = {
 		.total_hashed_bytes = 1048576U,
 		.at_least_one_file_was_shown = true,
@@ -146,7 +146,7 @@ static Return test0043_4(void)
 		.scan_elapsed_ns = -1LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_003.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_003.txt"));
 
 	RETURN_STATUS;
 }
@@ -160,7 +160,7 @@ static Return test0043_5(void)
 	INITTEST;
 
 	/* A positive rate below one byte per second has its own explicit wording */
-	Config elapsed_config = {0};
+	Config statistics_config = {0};
 	const TraversalSummary summary = {
 		.total_hashed_bytes = 1U,
 		.at_least_one_file_was_shown = true,
@@ -168,7 +168,7 @@ static Return test0043_5(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_004.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_004.txt"));
 
 	RETURN_STATUS;
 }
@@ -182,7 +182,7 @@ static Return test0043_6(void)
 	INITTEST;
 
 	/* Fractional rates above one byte per second are truncated, not rounded */
-	Config elapsed_config = {0};
+	Config statistics_config = {0};
 	const TraversalSummary summary = {
 		.total_hashed_bytes = 3U,
 		.at_least_one_file_was_shown = true,
@@ -190,7 +190,7 @@ static Return test0043_6(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_005.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_005.txt"));
 
 	RETURN_STATUS;
 }
@@ -205,7 +205,7 @@ static Return test0043_7(void)
 
 	/* A one-nanosecond interval makes the rate exceed SIZE_MAX. Both rates
 	   must saturate at the largest representable byte count before conversion */
-	Config elapsed_config = {0};
+	Config statistics_config = {0};
 	const TraversalSummary summary = {
 		.total_hashed_bytes = SIZE_MAX,
 		.at_least_one_file_was_shown = true,
@@ -213,7 +213,7 @@ static Return test0043_7(void)
 		.scan_elapsed_ns = 1LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_006.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_006.txt"));
 
 	RETURN_STATUS;
 }
@@ -227,7 +227,7 @@ static Return test0043_8(void)
 	INITTEST;
 
 	/* Ordinary dry-run suppresses hashed data and rates even if counters exist */
-	Config elapsed_config = {
+	Config statistics_config = {
 		.dry_run = true,
 		.dry_run_with_checksums = false
 	};
@@ -238,7 +238,7 @@ static Return test0043_8(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_007.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_007.txt"));
 
 	RETURN_STATUS;
 }
@@ -252,7 +252,7 @@ static Return test0043_9(void)
 	INITTEST;
 
 	/* Dry-run with checksums reports the same measured rates as ordinary hashing */
-	Config elapsed_config = {
+	Config statistics_config = {
 		.dry_run = true,
 		.dry_run_with_checksums = true
 	};
@@ -263,13 +263,13 @@ static Return test0043_9(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_elapsed_output(&elapsed_config,&summary,"templates/0043_001.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_001.txt"));
 
 	RETURN_STATUS;
 }
 
 /**
- * @brief Verify complete timing reports and independently calculated rates
+ * @brief Verify complete statistics reports and independently calculated rates
  *
  * Fixed byte counts and intervals distinguish scan throughput from hashing
  * throughput. The cases also exercise unavailable measurements, fractional

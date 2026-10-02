@@ -654,8 +654,6 @@ Return file_list(TraversalSummary *);
 
 void show_statistics(const TraversalSummary *);
 
-void show_elapsed(const TraversalSummary *);
-
 Return sha512sum(
 	const int,
 	const memory *,

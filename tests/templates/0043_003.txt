@@ -1,4 +1,9 @@
 \ATotal runtime: [^\r\n]+
+Total traversal size: 0B
+Total items: 0
+Directories: 0
+Files: 0
+Symlinks: 0
 Scan time: 0ns
 Scan rate: n/a
 Hashing time: 0ns

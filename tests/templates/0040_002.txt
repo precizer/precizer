@@ -39,18 +39,18 @@ TESTING:File traversal started for [^\r\n]+
 TESTING:Items reported during this traversal against the DB 0040\.db:
 new AAA/BBB/CZC/a\.txt
 TESTING:File traversal complete
+TESTING:The database connection has been closed
+TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming
+TESTING:Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)
+TESTING:Total runtime: [^,\r\n]+
 TESTING:Total traversal size: \d+[^\r\n]*
 TESTING:Total items: \d+
 TESTING:Directories: \d+
 TESTING:Files: \d+
 TESTING:Symlinks: \d+$
-TESTING:Total runtime: [^,\r\n]+
 TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 TESTING:Scan rate: n/a
 TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 TESTING:Hashing rate: n/a
 TESTING:Hashed data: n/a
-TESTING:The database connection has been closed
-TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming
-TESTING:Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)
 TESTING:Exit status » SUCCESS\Z
