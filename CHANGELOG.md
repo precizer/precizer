@@ -2,6 +2,10 @@
 
 All notable changes will be documented in this file
 
+# Release 0.17.5 2026-10-02
+
+Speed up checks for deleted files by batching database deletions in a single transaction
+
 # Release 0.17.4 2026-10-01
 
 Significantly improved performance when adding or updating large numbers of small files by batching database writes into transactions

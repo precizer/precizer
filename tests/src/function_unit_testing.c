@@ -28,6 +28,7 @@ Return function_unit_testing(void)
 	TEST(test0041,"db_vacuum(): percentage saved and elapsed time");
 	SUTE(test0042,"Timed file transactions");
 	SUTE(test0043,"show_statistics(): scan and hashing rates");
+	SUTE(test0044,"Missing-file cleanup transactions");
 
 	RETURN_STATUS;
 }

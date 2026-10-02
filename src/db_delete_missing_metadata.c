@@ -165,7 +165,12 @@ static Return db_preserve_locked_ignored_record(
  * In `--compare` mode, or when `--update` is not active, the function exits
  * without performing cleanup
  * In `--dry-run` mode it evaluates the same cleanup decisions without deleting
- * rows from the database
+ * rows from the database or starting a write transaction
+ *
+ * Real deletions share one transaction for the entire cleanup, without timed
+ * commits. Normal completion and graceful interruption commit the deletions
+ * already performed. A technical error rolls back this cleanup transaction;
+ * previously committed traversal results remain intact
  *
  * @return Return status code:
  *         - SUCCESS: Cleanup completed without lock-checksum warnings
@@ -256,6 +261,19 @@ Return db_delete_missing_metadata(void)
 		call(m_del(root_path));
 
 		provide(status);
+	}
+
+	/* Keep all cleanup deletions in one transaction, separate from the main
+	   traversal. Dry-run only checks rows and must not start a write transaction */
+	if(SUCCESS == status && config->dry_run == false)
+	{
+		rc = sqlite3_exec(config->db,"BEGIN IMMEDIATE;",NULL,NULL,NULL);
+
+		if(SQLITE_OK != rc)
+		{
+			log_sqlite_error(config->db,rc,NULL,"Failed to begin missing file cleanup transaction");
+			status = FAILURE;
+		}
 	}
 
 	if(SUCCESS == status)
@@ -502,6 +520,15 @@ Return db_delete_missing_metadata(void)
 				}
 			}
 
+			/* Remembered messages also write through this connection. Detect an
+			   automatic rollback before another DELETE could commit on its own */
+			if(config->dry_run == false && sqlite3_get_autocommit(config->db) != 0)
+			{
+				slog(ERROR,"Missing file cleanup transaction ended before commit\n");
+				status = FAILURE;
+				break;
+			}
+
 			status = db_delete_the_record_by_id(&ID);
 
 			if(SUCCESS != status)
@@ -543,6 +570,35 @@ Return db_delete_missing_metadata(void)
 	{
 		slog(ERROR,"Failed to close root directory descriptor: %s\n",strerror(errno));
 		status = FAILURE;
+	}
+
+	if(config->dry_run == false)
+	{
+		/* Commit after the SELECT is finalized, including a graceful Ctrl+C.
+		   Warnings about protected paths do not invalidate other deletions */
+		if((FAILURE & status) == 0)
+		{
+			rc = sqlite3_exec(config->db,"COMMIT;",NULL,NULL,NULL);
+
+			if(SQLITE_OK != rc)
+			{
+				log_sqlite_error(config->db,rc,NULL,"Failed to commit missing file cleanup transaction");
+				status = FAILURE;
+			}
+		}
+
+		/* Roll back after a cleanup or commit failure. SQLite may already have
+		   ended the transaction automatically, in which case no rollback is needed */
+		if(sqlite3_get_autocommit(config->db) == 0)
+		{
+			rc = sqlite3_exec(config->db,"ROLLBACK;",NULL,NULL,NULL);
+
+			if(SQLITE_OK != rc)
+			{
+				log_sqlite_error(config->db,rc,NULL,"Failed to roll back missing file cleanup transaction");
+				status = FAILURE;
+			}
+		}
 	}
 
 	if(SUCCESS == status && global_interrupt_flag == false)
