@@ -51,15 +51,17 @@ TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked
 TESTING:Returned file_list:\d+ status: WARNING
 TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)*, changed: ctime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ \& mtime was:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+, now:(\d{4})-([0-1]\d)-([0-3]\d)\s([0-2]\d):([0-5]\d):([0-5]\d)\.\d+ path1/AAA/BCB/CCC/a\.txt
+TESTING:The database connection has been closed
+TESTING:Total runtime: [^,\r\n]+
 TESTING:Total traversal size: \d+.*
 TESTING:Total items: \d+
 TESTING:Directories: \d+
 TESTING:Files: \d+
 TESTING:Symlinks: \d+
-TESTING:Total runtime: [^,\r\n]+
-TESTING:Hashing time: [^,\r\n]+
+TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+TESTING:Scan rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
+TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+TESTING:Hashing rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
 TESTING:Hashed data: [^,\r\n]+
-TESTING:Hashing rate: [^\r\n]+
-TESTING:The database connection has been closed
 ERROR:The precizer process terminated unexpectedly due to an error
 TESTING:Exit status » WARNING\Z

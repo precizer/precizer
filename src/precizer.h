@@ -535,6 +535,11 @@ typedef struct {
 	/// Accumulated per-file in sha512sum() from read-loop start to finish.
 	long long int total_hashing_elapsed_ns;
 
+	/// Main-pass elapsed time in nanoseconds, including its final transaction cleanup.
+	/// Temporarily holds the monotonic start time until that cleanup finishes.
+	/// Excludes the preliminary count, missing-record deletion, and vacuum
+	long long int scan_elapsed_ns;
+
 } TraversalSummary;
 
 /**
@@ -648,8 +653,6 @@ void remove_trailing_dots(char *);
 Return file_list(TraversalSummary *);
 
 void show_statistics(const TraversalSummary *);
-
-void show_elapsed(const TraversalSummary *);
 
 Return sha512sum(
 	const int,

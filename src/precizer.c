@@ -130,14 +130,6 @@ int test_main(
 	// Print remembered warning and error lines when delayed output is enabled
 	call(show_remembered_messages());
 
-	// Print final totals and runtime metrics after delayed warnings/errors.
-	// This runs only for successful execution flow.
-	if((SUCCESS|WARNING) & status)
-	{
-		show_statistics(summary);
-		show_elapsed(summary);
-	}
-
 	// Disable journaling, flush the journal to the main database,
 	// clear the cache, and close the database
 	call(db_close(config->db,&config->db_primary_file_modified));
@@ -149,6 +141,13 @@ int test_main(
 	// the file system and accordingly against the database
 	// since the last research
 	run(status_of_changes());
+
+	// Print final totals and runtime metrics after database cleanup and change reporting.
+	// Successful and warning results can include a gracefully interrupted traversal
+	if((SUCCESS|WARNING) & status)
+	{
+		show_statistics(summary);
+	}
 
 	// Free allocated memory
 	// for arrays and variables

@@ -20,14 +20,16 @@ File traversal complete
 (?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
 (?:\x1B\[[0-9;]*m)*checksum locked, data corruption detected(?:\x1B\[[0-9;]*m)* diff2/path1/AAA/BCB/CCC/b\.txt
+Total runtime: [^,\r\n]+
 Total traversal size: \d+.*
 Total items: \d+
 Directories: \d+
 Files: \d+
 Symlinks: \d+
-Total runtime: [^,\r\n]+
-Hashing time: [^,\r\n]+
+Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+Scan rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
+Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+Hashing rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
 Hashed data: [^,\r\n]+
-Hashing rate: [^\r\n]+
 ERROR: The precizer process terminated unexpectedly due to an error
 Exit status » WARNING\Z

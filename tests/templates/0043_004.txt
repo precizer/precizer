@@ -1,0 +1,12 @@
+\ATotal runtime: [^\r\n]+
+Total traversal size: 0B
+Total items: 0
+Directories: 0
+Files: 0
+Symlinks: 0
+Scan time: 2s
+Scan rate: less than 1B/s
+Hashing time: 3s
+Hashing rate: less than 1B/s
+Hashed data: 1B
+\z

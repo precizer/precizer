@@ -56,16 +56,18 @@ TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in d
 drop ignored 1/AAA/ZAW/D/e/f/b_file\.txt
 no longer exists 2/AAA/BBB/CZC/a\.txt
 TESTING:Missing file search finished
+TESTING:The database connection has been closed
+TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
+TESTING:(?:\x1B\[[0-9;]*m)*The database file database1\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
+TESTING:Total runtime: [^,\r\n]+
 TESTING:Total traversal size: \d+.*
 TESTING:Total items: \d+
 TESTING:Directories: \d+
 TESTING:Files: \d+
 TESTING:Symlinks: \d+$
-TESTING:Total runtime: [^,\r\n]+
-TESTING:Hashing time: [^,\r\n]+
+TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+TESTING:Scan rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
+TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
+TESTING:Hashing rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
 TESTING:Hashed data: [^,\r\n]+
-TESTING:Hashing rate: [^\r\n]+
-TESTING:The database connection has been closed
-TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming
-TESTING:(?:\x1B\[[0-9;]*m)*The database file database1\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:Exit status » SUCCESS\Z

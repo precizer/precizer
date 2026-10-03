@@ -35,7 +35,9 @@ static int compare_by_name(
  * inserted, updated, or reported according to ignore/include and checksum
  * locking settings. File writes are committed by the shared checkpoint interval
  * and before this function returns. A graceful interruption commits pending
- * work, while a technical failure rolls back only the current batch
+ * work, while a technical failure rolls back only the current batch.
+ * Main-pass timing includes traversal setup, file processing, and the final
+ * commit or rollback, but excludes the preliminary counting pass
  *
  * For example, after `precizer src tests`, `config->roots` contains two roots.
  * This function traverses `src` first, closes that FTS stream, then traverses
@@ -74,6 +76,10 @@ Return file_list(TraversalSummary *summary)
 		// Don't do anything
 		provide(status);
 	}
+
+	// Measure the whole pass, including setup and final transaction cleanup.
+	// This field holds the start time until transaction cleanup finishes
+	summary->scan_elapsed_ns = cur_time_monotonic_ns();
 
 	// Per-pass state used to control visible output and checksum-lock warnings
 
@@ -808,6 +814,15 @@ Return file_list(TraversalSummary *summary)
 	 * This call does nothing when the transaction has already been committed
 	 */
 	call(db_file_transaction_rollback());
+
+	// Replace the start time with elapsed time after an interruption or normal completion
+	if(summary->stats_only_pass == false)
+	{
+		summary->scan_elapsed_ns = cur_time_monotonic_ns() - summary->scan_elapsed_ns;
+	} else {
+		// Exclude the preliminary counting pass from the reported scan time
+		summary->scan_elapsed_ns = 0LL;
+	}
 
 	// Print completion banner only when traversal emitted visible path-level lines.
 	// Print preflight totals only for the stats-only pass from main().

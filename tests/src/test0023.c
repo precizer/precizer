@@ -2,10 +2,10 @@
 
 enum
 {
-	TEST0023_EXPECTED_PATH_COUNT = 8
+	EXPECTED_PATH_COUNT = 8
 };
 
-static const char *const test0023_expected_paths[TEST0023_EXPECTED_PATH_COUNT] = {
+static const char *const expected_paths[EXPECTED_PATH_COUNT] = {
 	".",
 	"AAA",
 	"AAA/BBB",
@@ -54,7 +54,7 @@ static Return expect_paths_for_root(const char *root_path_text)
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
-	bool seen[TEST0023_EXPECTED_PATH_COUNT] = {false};
+	bool seen[EXPECTED_PATH_COUNT] = {false};
 	FTS *file_systems = NULL;
 
 	m_create(char,root_path,MEMORY_STRING);
@@ -114,9 +114,9 @@ static Return expect_paths_for_root(const char *root_path_text)
 			ASSERT(relative_path_text[0] != '\0');
 			ASSERT(relative_path_text[0] != '/');
 
-			for(size_t i = 0; i < TEST0023_EXPECTED_PATH_COUNT; i++)
+			for(size_t i = 0; i < EXPECTED_PATH_COUNT; i++)
 			{
-				if(strcmp(relative_path_text,test0023_expected_paths[i]) == COMPLETED)
+				if(strcmp(relative_path_text,expected_paths[i]) == COMPLETED)
 				{
 					seen[i] = true;
 					expected_path_seen = true;
@@ -139,7 +139,7 @@ static Return expect_paths_for_root(const char *root_path_text)
 
 	if(SUCCESS == status)
 	{
-		for(size_t i = 0; i < TEST0023_EXPECTED_PATH_COUNT; i++)
+		for(size_t i = 0; i < EXPECTED_PATH_COUNT; i++)
 		{
 			ASSERT(seen[i] == true);
 		}
