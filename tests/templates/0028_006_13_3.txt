@@ -1,0 +1,4 @@
+\ATESTING:Configuration initialization is finished
+deleted 2/AAA/BBB/CZC/a\.txt
+added 2/AAA/BBB/CZC/b\.txt
+\z
