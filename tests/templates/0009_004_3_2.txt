@@ -1,0 +1,8 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*updated(?:\x1B\[[0-9;]*m)* \[as empty\] alpha_m0n9k2_zz\.txt
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] tmp_77xy__aa\.bak
+(?:\x1B\[[0-9;]*m)*updated(?:\x1B\[[0-9;]*m)* \[as included\] tmp_qwe_90210\.log
+(?:\x1B\[[0-9;]*m)*updated(?:\x1B\[[0-9;]*m)* \[as included\] tmp_z1-9vv\.bak
+\z

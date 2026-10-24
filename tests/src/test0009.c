@@ -203,69 +203,31 @@ static Return test0009_3(void)
 }
 
 /**
- * @brief Validate update included branch in three passes
+ * @brief Verify included-file updates and truncation in every output format
+ *
+ * Creation and both updates are repeated through CLI and configuration with
+ * shared full templates, then through compact and machine CLI output.
+ * Updates also check verbose machine details. Each update restores its own
+ * database baseline while keeping the changed files and timestamps intact
+ *
+ * @return Return status for output parity and stored file state
  */
 static Return test0009_4(void)
 {
 	INITTEST;
 
 	const char *db_filename = "database0009_4.db";
+	const char *included_update_backup = "0009_4_before_included_update.db";
+	const char *empty_update_backup = "0009_4_before_empty_update.db";
+	m_create(char,target_path,MEMORY_STRING);
+	struct stat file_stat = {0};
+	CmpctStat saved_stat = {0};
 
+	/* Isolate the fixture mutations and keep identical diagnostics for all runs */
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/ignore_include_cases/chaotic_filenames"));
-
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	const char *arguments_create = "--database=database0009_4.db "
-	        "--ignore=\"^(?:skip_|tmp_).+\" "
-	        "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
-	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
-
-	/*
-	 * Create the baseline DB using the same ignore/include rules as the later update passes
-	 * We intentionally build the initial record set as "tracked-after-filters" and not as "all files in directory"
-	 * Update mode processes the current filtered set and does not retroactively delete rows that were inserted earlier
-	 * If this first pass omitted filters, all 12 paths would be stored and the update-included scenario would validate a different logic branch
-	 */
-	const struct argument_test_case create_cases[] = {
-		{arguments_create,COMPLETED,"templates/0009_004_1.txt",STDERR_MUST_BE_EMPTY},
-		{0}
-	};
-
-	ASSERT(SUCCESS == run_and_match_templates(create_cases,NULL,NULL));
-
-	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log"));
-
-	const char *arguments_update = "--update --check-level=QUICK --database=database0009_4.db "
-	        "--ignore=\"^(?:skip_|tmp_).+\" "
-	        "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
-	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
-
-	// Update mode pass where only one included file has changed
-	const struct argument_test_case update_cases[] = {
-		{arguments_update,COMPLETED,"templates/0009_004_2.txt",STDERR_MUST_BE_EMPTY},
-		{0}
-	};
-
-	ASSERT(SUCCESS == run_and_match_templates(update_cases,NULL,NULL));
-
-	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log"));
-	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak"));
-	// Truncate a tracked non-included file to trigger the "updated as empty" branch
-	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
-
-	const char *arguments_update_watch = "--watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
-	        "--ignore=\"^(?:skip_|tmp_).+\" "
-	        "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
-	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
-
-	// Update mode with watch-timestamps enabled where one non-included file becomes empty and two included files are updated
-	const struct argument_test_case watch_timestamps_cases[] = {
-		{arguments_update_watch,COMPLETED,"templates/0009_004_3.txt",STDERR_MUST_BE_EMPTY},
-		{0}
-	};
-
-	ASSERT(SUCCESS == run_and_match_templates(watch_timestamps_cases,NULL,NULL));
-
+	/* Require the same nine tracked paths after creation and both updates */
 	const char *expected_paths[] =
 	{
 		"alpha_m0n9k2_zz.txt",
@@ -279,10 +241,196 @@ static Return test0009_4(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
-	ASSERT(SUCCESS == delete_path(db_filename));
+	const char *arguments_create = "--database=database0009_4.db "
+	        "--ignore=\"^(?:skip_|tmp_).+\" "
+	        "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
 
-	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/ignore_include_cases/chaotic_filenames"));
+	/*
+	 * Create the baseline DB using the same ignore/include rules as the later update passes.
+	 * Only paths admitted by the filters belong in the initial record set.
+	 * Update mode processes the current filtered set and does not retroactively delete rows inserted earlier.
+	 * Omitting the filters here would store all 12 paths and exercise a different branch
+	 */
+	const struct argument_test_case create_cases[] = {
+		{arguments_create,COMPLETED,"templates/0009_004_1_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat full output with the same settings supplied by configuration */
+		{"--config=tests/templates/0009_004_1_1.conf",COMPLETED,"templates/0009_004_1_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the CLI operation with compact output */
+		{"--output=compact --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_1_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the CLI operation with machine output */
+		{"--output=machine --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	/* Start each creation without a DB and verify complete output and stored paths */
+	for(size_t i = 0; create_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == delete_path_if_present(db_filename));
+		const struct argument_test_case single_case[] = {
+			create_cases[i],
+			{0}
+		};
+
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	}
+
+	/* Save the filtered baseline before changing the first included file */
+	ASSERT(SUCCESS == copy_path(db_filename,included_update_backup));
+	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log"));
+	ASSERT(SUCCESS == construct_path("tests/fixtures/ignore_include_cases/chaotic_filenames/skip_4xv7__m2.log",target_path));
+
+	const char *arguments_update = "--update --check-level=QUICK --database=database0009_4.db "
+	        "--ignore=\"^(?:skip_|tmp_).+\" "
+	        "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
+
+	// Update mode pass where only one included file has changed
+	const struct argument_test_case update_cases[] = {
+		{arguments_update,COMPLETED,"templates/0009_004_2_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat full output with the same settings supplied by configuration */
+		{"--config=tests/templates/0009_004_2_1.conf",COMPLETED,"templates/0009_004_2_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the CLI operation with compact output */
+		{"--output=compact --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_2_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the CLI operation with machine output */
+		{"--output=machine --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_2_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Expose the changed metadata in machine output with verbose */
+		{"--output=machine --verbose --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_2_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	/* Restore only the DB so each format sees the same one-byte append */
+	for(size_t i = 0; update_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(included_update_backup,db_filename));
+		const struct argument_test_case single_case[] = {
+			update_cases[i],
+			{0}
+		};
+
+		/* Verify the full stream, empty stderr, and unchanged tracked path set */
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+
+		/* Require the included file's new checksum, size, and timestamps in the DB */
+		ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,"skip_4xv7__m2.log",m_text(target_path)));
+		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat));
+		ASSERT(file_stat.st_size == 13);
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,"skip_4xv7__m2.log",&saved_stat));
+		ASSERT(saved_stat.st_size == file_stat.st_size);
+		ASSERT(saved_stat.st_blocks == file_stat.st_blocks);
+		ASSERT(cmpctstat_matches_stat_timestamps(&saved_stat,&file_stat) == true);
+	}
+
+	/* Save the first update before changing the two remaining included files */
+	ASSERT(SUCCESS == copy_path(db_filename,empty_update_backup));
+	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_qwe_90210.log"));
+	ASSERT(SUCCESS == add_string_to(" ","tests/fixtures/ignore_include_cases/chaotic_filenames/tmp_z1-9vv.bak"));
+	// Truncate a tracked non-included file to trigger the "updated as empty" branch
+	ASSERT(SUCCESS == truncate_file_to_zero_size("tests/fixtures/ignore_include_cases/chaotic_filenames/alpha_m0n9k2_zz.txt"));
+
+	const char *arguments_update_watch = "--watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
+	        "--ignore=\"^(?:skip_|tmp_).+\" "
+	        "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
+
+	// Update mode with watch-timestamps enabled where one non-included file becomes empty and two included files are updated
+	const struct argument_test_case watch_timestamps_cases[] = {
+		{arguments_update_watch,COMPLETED,"templates/0009_004_3_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat full output with the same settings supplied by configuration */
+		{"--config=tests/templates/0009_004_3_1.conf",COMPLETED,"templates/0009_004_3_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the CLI operation with compact output */
+		{"--output=compact --watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_3_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the CLI operation with machine output */
+		{"--output=machine --watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_3_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Expose the changed metadata in machine output with verbose */
+		{"--output=machine --verbose --watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_3_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	/* Match the three changed rows against their final file sizes */
+	const char *updated_paths[] = {
+		"alpha_m0n9k2_zz.txt",
+		"tmp_qwe_90210.log",
+		"tmp_z1-9vv.bak"
+	};
+	const off_t updated_sizes[] = {0,2,10};
+
+	/* Restore the post-first-update DB while retaining all three changed files */
+	for(size_t i = 0; watch_timestamps_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(empty_update_backup,db_filename));
+		const struct argument_test_case single_case[] = {
+			watch_timestamps_cases[i],
+			{0}
+		};
+
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+
+		/* Require current metadata and completed hashes for the included files */
+		for(size_t j = 0; j < sizeof(updated_paths) / sizeof(updated_paths[0]) && SUCCESS == status; ++j)
+		{
+			ASSERT(SUCCESS == construct_path("tests/fixtures/ignore_include_cases/chaotic_filenames/",target_path));
+			ASSERT(SUCCESS == m_concat_string(target_path,updated_paths[j]));
+			ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat));
+			ASSERT(file_stat.st_size == updated_sizes[j]);
+			ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,updated_paths[j],&saved_stat));
+			ASSERT(saved_stat.st_size == file_stat.st_size);
+			ASSERT(saved_stat.st_blocks == file_stat.st_blocks);
+			ASSERT(cmpctstat_matches_stat_timestamps(&saved_stat,&file_stat) == true);
+			ASSERT(SUCCESS == db_resume_state_is_empty(db_filename,updated_paths[j]));
+
+			if(updated_sizes[j] > 0)
+			{
+				ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,updated_paths[j],m_text(target_path)));
+			}
+		}
+
+		/* Truncation must clear the old checksum instead of retaining the nonempty digest */
+		sqlite3 *db = NULL;
+		sqlite3_stmt *stmt = NULL;
+		ASSERT(SUCCESS == open_db_from_tmpdir(db_filename,SQLITE_OPEN_READONLY,&db));
+		ASSERT(SQLITE_OK == sqlite3_prepare_v2(db,
+			"SELECT sha512 FROM files WHERE relative_path = 'alpha_m0n9k2_zz.txt';",-1,&stmt,NULL));
+		ASSERT(SQLITE_ROW == sqlite3_step(stmt));
+		ASSERT(SQLITE_NULL == sqlite3_column_type(stmt,0));
+		ASSERT(SQLITE_DONE == sqlite3_step(stmt));
+		(void)sqlite3_finalize(stmt);
+		(void)sqlite3_close(db);
+	}
+
+	/* Remove both snapshots and the working DB, then restore the shared fixture */
+	call(delete_path_if_present(included_update_backup));
+	call(delete_path_if_present(empty_update_backup));
+	call(delete_path_if_present(db_filename));
+	call(restore_mutable_fixture("tests/fixtures/ignore_include_cases/chaotic_filenames"));
+	m_del(target_path);
 
 	RETURN_STATUS;
 }

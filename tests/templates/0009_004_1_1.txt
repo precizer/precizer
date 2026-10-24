@@ -1,7 +1,8 @@
 \ATESTING:Configuration initialization is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
-TESTING:argument:color=always
+(?:TESTING:argument:config=tests/templates/0009_004_1_1\.conf\n)?(?x)
+(?-x)TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/ignore_include_cases/chaotic_filenames
 TESTING:argument:database=database0009_4\.db
 TESTING:argument:db_file_name=database0009_4\.db
