@@ -587,6 +587,26 @@ static Return test0040_7(void)
 		"auto",
 		false));
 
+	/* Redirected compact output uses auto, while machine defaults to no color */
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=auto " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=never " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=always " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--color=always --output=compact " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always --output=compact " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=auto " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=never " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--color=always --output=machine " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always --output=machine " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+	ASSERT(SUCCESS == run_and_match_templates(output_cases,NULL,NULL));
+	call(set_environment_variable("TESTING","true"));
+
 	/* Restore shared test state even when an assertion failed */
 	testitall_runit_mode = initial_run_mode;
 

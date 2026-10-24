@@ -1,0 +1,2 @@
+\A(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] AAA/BBB/CZC/a\.txt
+\z

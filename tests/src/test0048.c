@@ -29,6 +29,18 @@ static Return test0048_1(void)
 		{"-Omachine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{"-Omachine --output=full " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
 		{"--output=full -Omachine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Compact uses the same priorities and event records */
+		{"--output=compact " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=COMPACT " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"-OCoMpAcT " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output CoMpAcT " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output compact " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --output=full " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=full --output=compact " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"-O compact " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"-Ocompact " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"-Ocompact --output=full " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=full -Ocompact " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -92,6 +104,29 @@ static Return test0048_3(void)
 		{"--silent --verbose --output=machine " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
 		{"--output=full -Omachine " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
 		{"-Omachine --dry-run=with-checksums --color=never --database=0048.db 0048_empty",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=full --silent --verbose " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=full --verbose --silent " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"-sv " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"-vs " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		/* Compact uses the same priorities and event records */
+		{"--output=compact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--progress --output=compact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=compact --progress --dry-run=with-checksums --color=never --database=0048.db 0048_empty",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"-sSNeVeR -oOCoMpAcT " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"-vOCoMpAcT --silent " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--verbose --output=CoMpAcT " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"-Ocompact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=compact --verbose " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--verbose --output=compact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"-vOcompact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=compact --silent " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--silent --output=compact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=compact --verbose --silent " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=compact --silent --verbose " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--verbose --silent --output=compact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--silent --verbose --output=compact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=full -Ocompact " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"-Ocompact --dry-run=with-checksums --color=never --database=0048.db 0048_empty",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
 		{"--output=full --silent --verbose " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
 		{"--output=full --verbose --silent " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
 		{"-sv " MACHINE_DRY_RUN_ARGUMENTS,COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
@@ -173,6 +208,18 @@ static Return test0048_5(void)
 		{"-sv --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
 		{"-vs --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
 		{"-Omachine --output=full --color=never --version",COMPLETED,"templates/0048_005_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Compact uses the same priorities and event records */
+		{"--output=compact --color=never --output=invalid-value",FAILURE,"templates/0048_005_1.txt","templates/0048_001.txt"},
+		{"--verbose -Ocompact --color=never --output=invalid-value",FAILURE,"templates/0048_005_1.txt","templates/0048_001.txt"},
+		{"-Ocompact --verbose --color=never --output=invalid-value",FAILURE,"templates/0048_005_1.txt","templates/0048_001.txt"},
+		{"-Ocompact --verbose --silent --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
+		{"-Ocompact --silent --verbose --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
+		{"--silent -Ocompact --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
+		{"--verbose -Ocompact --silent --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
+		{"--verbose --silent -Ocompact --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
+		{"--silent -Ocompact --verbose --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
+		{"--silent --verbose -Ocompact --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
+		{"-Ocompact --output=full --color=never --version",COMPLETED,"templates/0048_005_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -190,7 +237,7 @@ static Return test0048_5(void)
  *
  * @return SUCCESS when the requested progress pass performs no work
  */
-static Return check_machine_counting_pass(void)
+static Return check_compact_counting_pass(void)
 {
 	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
@@ -200,12 +247,18 @@ static Return check_machine_counting_pass(void)
 	Config machine_config = {.output = OUTPUT_MACHINE,.progress = true};
 	TraversalSummary summary = {.stats_only_pass = true,.count_files = 1U,.scan_elapsed_ns = 1LL};
 
-	config = &machine_config;
-	rational_logger_mode = REGULAR;
-	run(file_list(&summary));
-	ASSERT(summary.count_files == 1U);
-	ASSERT(summary.scan_elapsed_ns == 1LL);
-	ASSERT(machine_config.progress == true);
+	const OutputMode formats[] = {OUTPUT_COMPACT,OUTPUT_MACHINE};
+
+	for(size_t i = 0; i < sizeof(formats) / sizeof(formats[0]) && SUCCESS == status; ++i)
+	{
+		machine_config.output = formats[i];
+		config = &machine_config;
+		rational_logger_mode = REGULAR;
+		run(file_list(&summary));
+		ASSERT(summary.count_files == 1U);
+		ASSERT(summary.scan_elapsed_ns == 1LL);
+		ASSERT(machine_config.progress == true);
+	}
 
 	config = initial_config;
 	rational_logger_mode = initial_logger_mode;
@@ -219,7 +272,7 @@ static Return check_machine_counting_pass(void)
 static Return test0048_6(void)
 {
 	INITTEST;
-	ASSERT(SUCCESS == match_function_output(NULL,NULL,check_machine_counting_pass));
+	ASSERT(SUCCESS == match_function_output(NULL,NULL,check_compact_counting_pass));
 	RETURN_STATUS;
 }
 
@@ -243,6 +296,11 @@ static Return test0048_7(void)
 		{"--verbose --progress --output=machine --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
 		{"--config=precizer.conf",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
 		{"",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Compact uses the same priorities and event records */
+		{"--progress --output=compact --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --progress --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"-pOcompact --verbose --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--verbose --progress --output=compact --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -306,6 +364,12 @@ static Return test0048_8(void)
 		{"--verbose --progress --output=machine --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
 		{"--output=machine --quiet-ignored --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
 		{"--output=machine --silent --database=0048.db 0048_added",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		/* Compact uses the same priorities and event records */
+		{"--output=compact --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=always --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--verbose --progress --output=compact --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --quiet-ignored --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --silent --database=0048.db 0048_added",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -313,6 +377,9 @@ static Return test0048_8(void)
 	const struct argument_test_case dry_run_cases[] = {
 		{"--output=machine --dry-run --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
 		{"--output=machine --dry-run=with-checksums --progress --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Compact uses the same priorities and event records */
+		{"--output=compact --dry-run --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --dry-run=with-checksums --progress --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
