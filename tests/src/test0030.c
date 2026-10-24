@@ -137,7 +137,8 @@ static Return test0030_1(void)
  *
  * Creates a baseline database with the `path1/` subtree protected by `--lock-checksum`.
  * After one locked file gets a metadata-only timestamp change, the update run
- * with `--watch-timestamps` must warn and keep the original database row
+ * with `--watch-timestamps` must warn and keep the original database row.
+ * Compact and machine repeats check critical records and verbose timestamp details
  */
 static Return test0030_2(void)
 {
@@ -155,6 +156,7 @@ static Return test0030_2(void)
 	 * whose timestamps will be changed without touching file contents
 	 */
 	const char *db_filename = "lock_s2.db";
+	const char *db_backup_filename = "0030_002_2.db";
 	const char *locked_relative_path = "path1/AAA/BCB/CCC/a.txt";
 	const char *locked_file_path = "tests/fixtures/diffs/diff1/path1/AAA/BCB/CCC/a.txt";
 
@@ -213,6 +215,9 @@ static Return test0030_2(void)
 	 */
 	ASSERT(SUCCESS == touch_file_mtime_with_reference_delta_ns(NULL,locked_file_path,999));
 
+	/* Save the baseline so every output variant sees the same timestamp drift */
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+
 	/*
 	 * Run an update that treats timestamp drift as meaningful.
 	 * The drift must be reported as a warning, not saved to the DB
@@ -241,6 +246,44 @@ static Return test0030_2(void)
 	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
 	ASSERT(offset_before == offset_after);
 	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/* Check critical records with and without verbose timestamp details */
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	const struct argument_test_case output_cases[] = {
+		/* Compact output retains terminal styling */
+		{"--output=compact --update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s2.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_002_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Machine output contains no color sequences */
+		{"--output=machine --update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s2.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_002_4.txt",STDERR_MUST_BE_EMPTY},
+		/* Verbose compact output includes the old and new timestamps */
+		{"--output=compact --verbose --update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s2.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_002_5.txt",STDERR_MUST_BE_EMPTY},
+		/* Verbose machine output keeps those details inside the same record */
+		{"--output=machine --verbose --update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s2.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_002_6.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	/* Restore the database and check its protected row after each warning run */
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		const struct argument_test_case single_case[] = {
+			output_cases[i],
+			{0}
+		};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	}
+
+	/* Restore test diagnostics and release the saved database even after failure */
+	call(set_environment_variable("TESTING","true"));
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -945,7 +988,8 @@ static Return test0030_6(void)
  * After bytes inside one locked file change on disk, the update run with
  * `--rehash-locked` must detect the checksum mismatch, report corruption,
  * and keep the original database row untouched.
- * CLI and configuration runs use the same saved database and corrupted file
+ * CLI and configuration runs use the same saved database and corrupted file.
+ * Compact and machine repeats also check critical records and protected-row preservation
  */
 static Return test0030_7(void)
 {
@@ -1036,7 +1080,7 @@ static Return test0030_7(void)
 	ASSERT(0 != memcmp(file_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 	ASSERT(0 != memcmp(db_sha512_before,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
 
-	/* Preserve the database before either update checks the corrupted file */
+	/* Preserve the database before the updates check the corrupted file */
 	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
 
 	/*
@@ -1083,6 +1127,38 @@ static Return test0030_7(void)
 	ASSERT(offset_before == offset_after);
 	ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
 	ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+
+	/* Repeat the same corruption check in both compact output formats */
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	const struct argument_test_case output_cases[] = {
+		/* Compact output distinguishes corruption from ordinary file errors */
+		{"--output=compact --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s7.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_007_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Machine output reports the same critical record without color */
+		{"--output=machine --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s7.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_007_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	/* Restore the baseline before every repeat and verify that corruption is not saved */
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		const struct argument_test_case single_case[] = {
+			output_cases[i],
+			{0}
+		};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+	}
+
+	/* Restore test diagnostics before releasing the baseline database */
+	call(set_environment_variable("TESTING","true"));
 	call(delete_path_if_present(db_backup_filename));
 
 	/*

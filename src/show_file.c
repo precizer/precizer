@@ -338,7 +338,7 @@ void show_file(
 		{
 			if(config->output != OUTPUT_FULL)
 			{
-				slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{red}error@{reset} [locked checksum mismatch, data corrupted] %s\n",runtime_relative_path);
+				slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{red}critical@{reset} [locked checksum mismatch, data corrupted] %s\n",runtime_relative_path);
 			} else {
 				slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{red}checksum locked & mismatch, data corrupted@{reset} %s\n",runtime_relative_path);
 			}
@@ -347,7 +347,7 @@ void show_file(
 
 			if(config->output != OUTPUT_FULL)
 			{
-				slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{red}error@{reset} [locked checksum, data corruption detected");
+				slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{red}critical@{reset} [locked checksum, data corruption detected");
 				print_changes(MACHINE,file,true);
 				slog(MACHINE|UNDECOR,"]");
 
