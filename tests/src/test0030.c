@@ -20,6 +20,7 @@ static Return test0030_1(void)
 	 * the expected regular-expression template used by this test
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
 	/*
@@ -72,6 +73,25 @@ static Return test0030_1(void)
 
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
+	/* Recreate the initial lock set and compare every new-file record */
+	const struct argument_test_case creation_cases[] = {
+		{"--output=compact --database=lock_s1.db --progress "
+		 "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_001_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --database=lock_s1.db --progress "
+		 "--lock-checksum=\"^path1/.*\" tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_001_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; creation_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == delete_path(db_filename));
+		const struct argument_test_case single_case[] = {creation_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		int files_count = 0;
+		ASSERT(SUCCESS == db_read_files_count(db_filename,&files_count));
+		ASSERT(files_count == 12);
+	}
+
 	/*
 	 * Read the locked row before corrupting the on-disk file.
 	 * These values are expected to remain unchanged after the warning run
@@ -92,27 +112,49 @@ static Return test0030_1(void)
 	arguments = "--update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s1.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_001_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s1.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_001_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s1.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_001_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --verbose --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s1.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_001_2_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output.
-	 * The changed locked file must be reported as possible data corruption
-	 */
-	filename = "templates/0030_001_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Verify the warning output.
+		 * The changed locked file must be reported as possible data corruption
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Re-read the same protected row after the warning run.
-	 * The row must keep its original metadata, offset, and SHA512 checksum
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the same protected row after the warning run.
+		 * The row must keep its original metadata, offset, and SHA512 checksum
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -125,6 +167,7 @@ static Return test0030_1(void)
 	 * Release managed buffers allocated by this test before returning
 	 */
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -320,6 +363,7 @@ static Return test0030_3(void)
 	 * the expected regular-expression template, and the resolved fixture path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -405,27 +449,47 @@ static Return test0030_3(void)
 	arguments = "--update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s3.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_003_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,COMPLETED,"templates/0030_003_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s3.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0045_033.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s3.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0045_033.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the successful output.
-	 * It must report that no database changes were needed
-	 */
-	filename = "templates/0030_003_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Verify the successful output.
+		 * It must report that no database changes were needed
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Re-read the same protected row after the successful update run.
-	 * The row must keep its original metadata, offset, and SHA512 checksum
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the same protected row after the successful update run.
+		 * The row must keep its original metadata, offset, and SHA512 checksum
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -439,6 +503,7 @@ static Return test0030_3(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -463,6 +528,7 @@ static Return test0030_4(void)
 	 * the expected regular-expression template, and the resolved fixture path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -550,37 +616,62 @@ static Return test0030_4(void)
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
 	        "tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_004_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,COMPLETED,"templates/0030_004_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
+		 "tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_005_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
+		 "tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_005_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --verbose --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s4.db "
+		 "tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_005_2_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the successful update output.
-	 * The changed locked file must be reported as rehashed and synchronized
-	 */
-	filename = "templates/0030_004_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Verify the successful update output.
+		 * The changed locked file must be reported as rehashed and synchronized
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Re-read the protected row and current file state after the update.
-	 * The database timestamps must now match the file again
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
-	ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
 
-	/*
-	 * Verify that only metadata timestamps changed in the stored row.
-	 * Size, allocation, identity, SHA512 offset, and SHA512 digest must stay stable
-	 */
-	ASSERT(db_stat_before.st_size == db_stat_after.st_size);
-	ASSERT(db_stat_before.st_blocks == db_stat_after.st_blocks);
-	ASSERT(db_stat_before.st_dev == db_stat_after.st_dev);
-	ASSERT(db_stat_before.st_ino == db_stat_after.st_ino);
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the protected row and current file state after the update.
+		 * The database timestamps must now match the file again
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
+		ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
+
+		/*
+		 * Verify that only metadata timestamps changed in the stored row.
+		 * Size, allocation, identity, SHA512 offset, and SHA512 digest must stay stable
+		 */
+		ASSERT(db_stat_before.st_size == db_stat_after.st_size);
+		ASSERT(db_stat_before.st_blocks == db_stat_after.st_blocks);
+		ASSERT(db_stat_before.st_dev == db_stat_after.st_dev);
+		ASSERT(db_stat_before.st_ino == db_stat_after.st_ino);
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -594,6 +685,7 @@ static Return test0030_4(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -759,6 +851,34 @@ static Return test0030_5(void)
 	ASSERT(db_stat_before.st_ino == db_stat_after.st_ino);
 	ASSERT(offset_before == offset_after);
 	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+	/* Restore the same timestamp drift before each output-format check */
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s5.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_005_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s5.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_005_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --verbose --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s5.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0030_005_2_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		const struct argument_test_case single_case[] = {output_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after));
+		ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after,&file_stat_after));
+		ASSERT(db_stat_before.st_size == db_stat_after.st_size);
+		ASSERT(db_stat_before.st_blocks == db_stat_after.st_blocks);
+		ASSERT(db_stat_before.st_dev == db_stat_after.st_dev);
+		ASSERT(db_stat_before.st_ino == db_stat_after.st_ino);
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	}
 	call(delete_path_if_present(db_backup_filename));
 
 	/*
@@ -799,6 +919,7 @@ static Return test0030_6(void)
 	 * the expected regular-expression template, and resolved fixture paths
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,drift_target_path,MEMORY_STRING);
 	m_create(char,mismatch_target_path,MEMORY_STRING);
@@ -918,48 +1039,73 @@ static Return test0030_6(void)
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s6.db "
 	        "tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_006_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_006_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s6.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_008_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s6.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_008_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --verbose --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s6.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_006_2_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output against the real scenario.
-	 * It must show synchronized timestamp drift and a separate checksum mismatch
-	 */
-	filename = "templates/0030_006_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Verify the warning output against the real scenario.
+		 * It must show synchronized timestamp drift and a separate checksum mismatch
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Re-read the drift row and current file state after the warning run.
-	 * The database timestamps must now match the file again
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,drift_relative_path,&drift_db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,drift_relative_path,&drift_offset_after,drift_sha512_after));
-	ASSERT(SUCCESS == get_file_stat(m_text(drift_target_path),&drift_file_stat_after_update));
-	ASSERT(cmpctstat_matches_stat_timestamps(&drift_db_stat_after,&drift_file_stat_after_update));
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
 
-	/*
-	 * Verify that only metadata timestamps changed in the safely rehashed row.
-	 * Size, allocation, identity, SHA512 offset, and SHA512 digest must stay stable
-	 */
-	ASSERT(drift_db_stat_before.st_size == drift_db_stat_after.st_size);
-	ASSERT(drift_db_stat_before.st_blocks == drift_db_stat_after.st_blocks);
-	ASSERT(drift_db_stat_before.st_dev == drift_db_stat_after.st_dev);
-	ASSERT(drift_db_stat_before.st_ino == drift_db_stat_after.st_ino);
-	ASSERT(drift_offset_before == drift_offset_after);
-	ASSERT(0 == memcmp(drift_sha512_before,drift_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
-	/*
-	 * Re-read the mismatched row after the warning run.
-	 * The corrupted stored checksum must remain unchanged instead of being repaired
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,mismatch_relative_path,&mismatch_db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_after,mismatch_sha512_after));
-	ASSERT(0 == memcmp(&mismatch_db_stat_before,&mismatch_db_stat_after,sizeof(CmpctStat)));
-	ASSERT(mismatch_offset_tampered == mismatch_offset_after);
-	ASSERT(0 == memcmp(mismatch_sha512_tampered,mismatch_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
-	ASSERT(0 != memcmp(mismatch_file_sha512,mismatch_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Re-read the drift row and current file state after the warning run.
+		 * The database timestamps must now match the file again
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,drift_relative_path,&drift_db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,drift_relative_path,&drift_offset_after,drift_sha512_after));
+		ASSERT(SUCCESS == get_file_stat(m_text(drift_target_path),&drift_file_stat_after_update));
+		ASSERT(cmpctstat_matches_stat_timestamps(&drift_db_stat_after,&drift_file_stat_after_update));
+
+		/*
+		 * Verify that only metadata timestamps changed in the safely rehashed row.
+		 * Size, allocation, identity, SHA512 offset, and SHA512 digest must stay stable
+		 */
+		ASSERT(drift_db_stat_before.st_size == drift_db_stat_after.st_size);
+		ASSERT(drift_db_stat_before.st_blocks == drift_db_stat_after.st_blocks);
+		ASSERT(drift_db_stat_before.st_dev == drift_db_stat_after.st_dev);
+		ASSERT(drift_db_stat_before.st_ino == drift_db_stat_after.st_ino);
+		ASSERT(drift_offset_before == drift_offset_after);
+		ASSERT(0 == memcmp(drift_sha512_before,drift_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Re-read the mismatched row after the warning run.
+		 * The corrupted stored checksum must remain unchanged instead of being repaired
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,mismatch_relative_path,&mismatch_db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,mismatch_relative_path,&mismatch_offset_after,mismatch_sha512_after));
+		ASSERT(0 == memcmp(&mismatch_db_stat_before,&mismatch_db_stat_after,sizeof(CmpctStat)));
+		ASSERT(mismatch_offset_tampered == mismatch_offset_after);
+		ASSERT(0 == memcmp(mismatch_sha512_tampered,mismatch_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(0 != memcmp(mismatch_file_sha512,mismatch_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -974,6 +1120,7 @@ static Return test0030_6(void)
 	m_del(mismatch_target_path);
 	m_del(drift_target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -1137,6 +1284,9 @@ static Return test0030_7(void)
 		/* Machine output reports the same critical record without color */
 		{"--output=machine --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 		 "--database=lock_s7.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_007_4.txt",STDERR_MUST_BE_EMPTY},
+		/* Verbose output keeps corruption visible without inventing metadata changes */
+		{"--output=machine --verbose --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s7.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_007_4.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -1197,6 +1347,7 @@ static Return test0030_8(void)
 	 * the expected regular-expression template, and the resolved fixture path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -1284,28 +1435,53 @@ static Return test0030_8(void)
 	        "--lock-checksum=\"^path1/.*\" --database=lock_s8.db "
 	        "tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_008_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_008_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s8.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_008_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s8.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_008_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --verbose --update --check-level=QUICK --watch-timestamps --rehash-locked "
+		 "--lock-checksum=\"^path1/.*\" --database=lock_s8.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_008_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output against the real scenario.
-	 * The changed locked file must be reported as checksum corruption
-	 */
-	filename = "templates/0030_008_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Verify the warning output against the real scenario.
+		 * The changed locked file must be reported as checksum corruption
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Re-read the same protected row after the warning run.
-	 * The row must keep its original metadata, offset, and SHA512 checksum
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
-	ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the same protected row after the warning run.
+		 * The row must keep its original metadata, offset, and SHA512 checksum
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -1319,6 +1495,7 @@ static Return test0030_8(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -1343,6 +1520,7 @@ static Return test0030_9(void)
 	 * the expected regular-expression template, and reusable resolved paths
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -1427,33 +1605,53 @@ static Return test0030_9(void)
 	arguments = "--update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s9.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_009_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,COMPLETED,"templates/0030_009_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s9.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0045_033.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --watch-timestamps --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s9.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0045_033.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the successful output.
-	 * It must report no changes and no locked-file warnings
-	 */
-	filename = "templates/0030_009_2.txt";
-
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
-
-	/*
-	 * Re-read all protected rows after the successful watched update.
-	 * Metadata, SHA512 offsets, and SHA512 digests must remain unchanged
-	 */
-	for(size_t index = 0; index < locked_path_count; index++)
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == construct_path(locked_file_paths[index],target_path));
-		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_paths[index],&db_stat_after[index]));
-		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_paths[index],&offset_after[index],sha512_after[index]));
-		ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after[index]));
-		ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after[index],&file_stat_after[index]));
-		ASSERT(0 == memcmp(&db_stat_before[index],&db_stat_after[index],sizeof(CmpctStat)));
-		ASSERT(offset_before[index] == offset_after[index]);
-		ASSERT(0 == memcmp(sha512_before[index],sha512_after[index],(size_t)SHA512_DIGEST_LENGTH));
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
+
+		/*
+		 * Verify the successful output.
+		 * It must report no changes and no locked-file warnings
+		 */
+		filename = output_cases[i].stdout_template;
+
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read all protected rows after the successful watched update.
+		 * Metadata, SHA512 offsets, and SHA512 digests must remain unchanged
+		 */
+		for(size_t index = 0; index < locked_path_count; index++)
+		{
+			ASSERT(SUCCESS == construct_path(locked_file_paths[index],target_path));
+			ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_paths[index],&db_stat_after[index]));
+			ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_paths[index],&offset_after[index],sha512_after[index]));
+			ASSERT(SUCCESS == get_file_stat(m_text(target_path),&file_stat_after[index]));
+			ASSERT(cmpctstat_matches_stat_timestamps(&db_stat_after[index],&file_stat_after[index]));
+			ASSERT(0 == memcmp(&db_stat_before[index],&db_stat_after[index],sizeof(CmpctStat)));
+			ASSERT(offset_before[index] == offset_after[index]);
+			ASSERT(0 == memcmp(sha512_before[index],sha512_after[index],(size_t)SHA512_DIGEST_LENGTH));
+		}
 	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -1467,6 +1665,7 @@ static Return test0030_9(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -1490,6 +1689,7 @@ static Return test0030_10(void)
 	 * the expected regular-expression template, and the resolved deleted path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -1569,38 +1769,58 @@ static Return test0030_10(void)
 	arguments = "--update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s10.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_010_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_010_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s10.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_010_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s10.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_010_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output against the real scenario.
-	 * The deleted locked file must be reported as disappeared from disk
-	 */
-	filename = "templates/0030_010_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Verify the warning output against the real scenario.
+		 * The deleted locked file must be reported as disappeared from disk
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Re-read the deleted file row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * A missing locked file must not cause any protected row to be dropped
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,deleted_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the deleted file row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * A missing locked file must not cause any protected row to be dropped
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,deleted_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -1614,6 +1834,7 @@ static Return test0030_10(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -1638,6 +1859,7 @@ static Return test0030_11(void)
 	 * regular-expression template, and the resolved locked file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -1722,44 +1944,66 @@ static Return test0030_11(void)
 	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s11.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_011_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_011_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s11.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_019_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s11.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_019_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Disable the access-check hook before inspecting output and database state.
-	 * Later assertions should observe the real filesystem again
-	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_DENIED"));
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * The run must report checksum-locked access denial and return WARNING
-	 */
-	filename = "templates/0030_011_2.txt";
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Disable the access-check hook before inspecting output and database state.
+		 * Later assertions should observe the real filesystem again
+		 */
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
 
-	/*
-	 * Re-read the access-denied locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * The run must report checksum-locked access denial and return WARNING
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --db-drop-inaccessible must not drop any checksum-locked row
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the access-denied locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --db-drop-inaccessible must not drop any checksum-locked row
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -1773,6 +2017,7 @@ static Return test0030_11(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -1797,6 +2042,7 @@ static Return test0030_12(void)
 	 * regular-expression template, and the resolved locked file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -1881,44 +2127,66 @@ static Return test0030_12(void)
 	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s12.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_012_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_012_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s12.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_021_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s12.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_021_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Disable the access-check hook before inspecting output and database state.
-	 * Later assertions should observe the real filesystem again
-	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * The run must report checksum-locked access-check failure and return WARNING
-	 */
-	filename = "templates/0030_012_2.txt";
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Disable the access-check hook before inspecting output and database state.
+		 * Later assertions should observe the real filesystem again
+		 */
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
 
-	/*
-	 * Re-read the access-check-failed locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * The run must report checksum-locked access-check failure and return WARNING
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --db-drop-inaccessible must not drop any checksum-locked row
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the access-check-failed locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --db-drop-inaccessible must not drop any checksum-locked row
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -1932,6 +2200,7 @@ static Return test0030_12(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -1956,6 +2225,7 @@ static Return test0030_13(void)
 	 * regular-expression template, and the resolved deleted file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -2035,37 +2305,59 @@ static Return test0030_13(void)
 	        "--ignore=\"^path1/.*\" --db-drop-ignored "
 	        "--database=lock_s13.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_013_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_013_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --db-drop-ignored "
+		 "--database=lock_s13.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_015_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --db-drop-ignored "
+		 "--database=lock_s13.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_015_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * The deleted locked file must be reported as disappeared and kept in the DB
-	 */
-	filename = "templates/0030_013_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	/*
-	 * Re-read the deleted locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * The deleted locked file must be reported as disappeared and kept in the DB
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --db-drop-ignored must not drop any checksum-locked row
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,deleted_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the deleted locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --db-drop-ignored must not drop any checksum-locked row
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,deleted_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -2079,6 +2371,7 @@ static Return test0030_13(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -2103,6 +2396,7 @@ static Return test0030_14(void)
 	 * regular-expression template, and the resolved corrupted file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -2189,27 +2483,52 @@ static Return test0030_14(void)
 	        "--ignore=\"^path1/.*\" --database=lock_s14.db "
 	        "tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_014_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_014_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --database=lock_s14.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_016_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --database=lock_s14.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_016_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --verbose --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --database=lock_s14.db "
+		 "tests/fixtures/diffs/diff1",WARNING,"templates/0030_016_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * Ignored directories are reported, but locked files are still rehashed
-	 */
-	filename = "templates/0030_014_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	/*
-	 * Re-read the same protected row after the warning run.
-	 * The row must keep its original metadata, offset, and SHA512 checksum
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
-	ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * Ignored directories are reported, but locked files are still rehashed
+		 */
+		filename = output_cases[i].stdout_template;
+
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the same protected row after the warning run.
+		 * The row must keep its original metadata, offset, and SHA512 checksum
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -2223,6 +2542,7 @@ static Return test0030_14(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -2248,6 +2568,7 @@ static Return test0030_15(void)
 	 * regular-expression template, and the resolved deleted file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -2329,37 +2650,59 @@ static Return test0030_15(void)
 	        "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
 	        "--db-drop-ignored --database=lock_s15.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_015_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_015_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
+		 "--db-drop-ignored --database=lock_s15.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_015_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
+		 "--db-drop-ignored --database=lock_s15.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_015_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * The deleted locked file must be reported as disappeared and kept in the DB
-	 */
-	filename = "templates/0030_015_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	/*
-	 * Re-read the deleted locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * The deleted locked file must be reported as disappeared and kept in the DB
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the deleted locked row, another ignored locked row, and the
-	 * included locked row all remain in the database
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,deleted_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,included_locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the deleted locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,deleted_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,deleted_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the deleted locked row, another ignored locked row, and the
+		 * included locked row all remain in the database
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,deleted_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,included_locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -2373,6 +2716,7 @@ static Return test0030_15(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -2398,6 +2742,7 @@ static Return test0030_16(void)
 	 * regular-expression template, and the resolved corrupted file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -2491,27 +2836,52 @@ static Return test0030_16(void)
 	        "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
 	        "--database=lock_s16.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_016_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_016_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
+		 "--database=lock_s16.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_016_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
+		 "--database=lock_s16.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_016_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --verbose --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --include=\"^path1/AAA/BCB/CCC/a\\.txt$\" "
+		 "--database=lock_s16.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_016_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * Ignored directories are reported, but locked files are still rehashed
-	 */
-	filename = "templates/0030_016_2.txt";
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	/*
-	 * Re-read the same protected row after the warning run.
-	 * The row must keep its original metadata, offset, and SHA512 checksum
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
-	ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * Ignored directories are reported, but locked files are still rehashed
+		 */
+		filename = output_cases[i].stdout_template;
+
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the same protected row after the warning run.
+		 * The row must keep its original metadata, offset, and SHA512 checksum
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,db_sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(db_sha512_before,db_sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		ASSERT(0 != memcmp(db_sha512_after,file_sha512_after_tamper,(size_t)SHA512_DIGEST_LENGTH));
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -2525,6 +2895,7 @@ static Return test0030_16(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -2550,6 +2921,7 @@ static Return test0030_17(void)
 	 * regular-expression template, and the resolved locked file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -2634,44 +3006,66 @@ static Return test0030_17(void)
 	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --database=lock_s17.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_017_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_017_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --database=lock_s17.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_017_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --database=lock_s17.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_017_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Disable the access-check hook before inspecting output and database state.
-	 * Later assertions should observe the real filesystem again
-	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_DENIED"));
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * The ignored locked file must still report checksum-locked access denial
-	 */
-	filename = "templates/0030_017_2.txt";
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Disable the access-check hook before inspecting output and database state.
+		 * Later assertions should observe the real filesystem again
+		 */
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
 
-	/*
-	 * Re-read the access-denied locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * The ignored locked file must still report checksum-locked access denial
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --ignore and --db-drop-inaccessible must not drop any checksum-locked row
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the access-denied locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --ignore and --db-drop-inaccessible must not drop any checksum-locked row
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -2685,6 +3079,7 @@ static Return test0030_17(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -2710,6 +3105,7 @@ static Return test0030_18(void)
 	 * regular-expression template, and the resolved locked file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -2794,44 +3190,66 @@ static Return test0030_18(void)
 	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --database=lock_s18.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_018_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_018_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --database=lock_s18.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_018_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --database=lock_s18.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_018_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Disable the access-check hook before inspecting output and database state.
-	 * Later assertions should observe the real filesystem again
-	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * The ignored locked file must still report checksum-locked access-check failure
-	 */
-	filename = "templates/0030_018_2.txt";
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Disable the access-check hook before inspecting output and database state.
+		 * Later assertions should observe the real filesystem again
+		 */
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
 
-	/*
-	 * Re-read the access-check-failed locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * The ignored locked file must still report checksum-locked access-check failure
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --ignore and --db-drop-inaccessible must not drop any checksum-locked row
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the access-check-failed locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --ignore and --db-drop-inaccessible must not drop any checksum-locked row
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -2845,6 +3263,7 @@ static Return test0030_18(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -2870,6 +3289,7 @@ static Return test0030_19(void)
 	 * regular-expression template, and the resolved access-denied file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -2954,44 +3374,66 @@ static Return test0030_19(void)
 	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s19.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_019_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_019_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s19.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_019_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s19.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_019_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Re-enable file_list and restore file permissions before inspecting state.
-	 * The captured output still reflects the access-denied cleanup run above
-	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST",""));
-	ASSERT(SUCCESS == change_mode(locked_file_path,0644));
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		ASSERT(SUCCESS == change_mode(locked_file_path,0000));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST","1"));
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * With file_list bypassed, db_delete_missing_metadata must report access denied
-	 */
-	filename = "templates/0030_019_2.txt";
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Re-enable file_list and restore file permissions before inspecting state.
+		 * The captured output still reflects the access-denied cleanup run above
+		 */
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST",""));
+		ASSERT(SUCCESS == change_mode(locked_file_path,0644));
 
-	/*
-	 * Re-read the access-denied locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * With file_list bypassed, db_delete_missing_metadata must report access denied
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --db-drop-inaccessible must not drop any checksum-locked row during cleanup
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the access-denied locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --db-drop-inaccessible must not drop any checksum-locked row during cleanup
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -3005,6 +3447,7 @@ static Return test0030_19(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -3030,6 +3473,7 @@ static Return test0030_20(void)
 	 * regular-expression template, and the resolved access-failed file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -3115,45 +3559,68 @@ static Return test0030_20(void)
 	arguments = "--update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
 	        "--database=lock_s20.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_020_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_020_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s20.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_021_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --db-drop-inaccessible --lock-checksum=\"^path1/.*\" "
+		 "--database=lock_s20.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_021_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Disable test hooks before inspecting output and database state.
-	 * Later assertions should observe the real filesystem again
-	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST","1"));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * With file_list bypassed, db_delete_missing_metadata must report access-check failure
-	 */
-	filename = "templates/0030_020_2.txt";
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Disable test hooks before inspecting output and database state.
+		 * Later assertions should observe the real filesystem again
+		 */
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
 
-	/*
-	 * Re-read the access-check-failed locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * With file_list bypassed, db_delete_missing_metadata must report access-check failure
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --db-drop-inaccessible must not drop any checksum-locked row during cleanup
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the access-check-failed locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --db-drop-inaccessible must not drop any checksum-locked row during cleanup
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -3167,6 +3634,7 @@ static Return test0030_20(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;
@@ -3192,6 +3660,7 @@ static Return test0030_21(void)
 	 * regular-expression template, and the resolved access-failed file path
 	 */
 	m_create(char,result,MEMORY_STRING);
+	m_create(char,error_buffer,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 	m_create(char,target_path,MEMORY_STRING);
 
@@ -3278,45 +3747,70 @@ static Return test0030_21(void)
 	        "--ignore=\"^path1/.*\" --db-drop-ignored "
 	        "--database=lock_s21.db tests/fixtures/diffs/diff1";
 
-	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
+	/* Keep every format on the same protected database state */
+	const char *db_backup_filename = "0030_021_2.db";
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
+	const struct argument_test_case output_cases[] = {
+		{arguments,WARNING,"templates/0030_021_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --db-drop-ignored "
+		 "--database=lock_s21.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_021_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --lock-checksum=\"^path1/.*\" "
+		 "--ignore=\"^path1/.*\" --db-drop-ignored "
+		 "--database=lock_s21.db tests/fixtures/diffs/diff1",WARNING,"templates/0030_021_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	/*
-	 * Disable test hooks before inspecting output and database state.
-	 * Later assertions should observe the real filesystem again
-	 */
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
-	ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Restore the baseline and reapply any access failure before the next run */
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST","1"));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",locked_relative_path));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS","FILE_ACCESS_ERROR"));
 
-	/*
-	 * Verify the warning output against the real command-line scenario.
-	 * With file_list bypassed, ignored cleanup must report access-check failure
-	 */
-	filename = "templates/0030_021_2.txt";
+		ASSERT(SUCCESS == runit(output_cases[i].arguments,result,error_buffer,output_cases[i].expected_return_code,ALLOW_BOTH));
+		ASSERT(error_buffer->length == 0);
 
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+		/*
+		 * Disable test hooks before inspecting output and database state.
+		 * Later assertions should observe the real filesystem again
+		 */
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_SKIP_FILE_LIST",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_SUFFIX",""));
+		ASSERT(SUCCESS == set_environment_variable("TESTITALL_TEST_ENV_FILE_ACCESS_STATUS",""));
 
-	/*
-	 * Re-read the ignored access-check-failed locked row after the warning run.
-	 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
-	 */
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
-	ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
-	ASSERT(offset_before == offset_after);
-	ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+		/*
+		 * Verify the warning output against the real command-line scenario.
+		 * With file_list bypassed, ignored cleanup must report access-check failure
+		 */
+		filename = output_cases[i].stdout_template;
 
-	/*
-	 * Confirm that the full locked path set remains in the database.
-	 * --db-drop-ignored must not drop any checksum-locked row during cleanup
-	 */
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
-	ASSERT(row_exists == true);
-	ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
-	ASSERT(row_exists == true);
+		ASSERT(SUCCESS == get_file_content(filename,pattern));
+		ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+
+		/*
+		 * Re-read the ignored access-check-failed locked row after the warning run.
+		 * Its metadata, SHA512 offset, and SHA512 digest must stay unchanged
+		 */
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,locked_relative_path,&db_stat_after));
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,locked_relative_path,&offset_after,sha512_after));
+		ASSERT(0 == memcmp(&db_stat_before,&db_stat_after,sizeof(CmpctStat)));
+		ASSERT(offset_before == offset_after);
+		ASSERT(0 == memcmp(sha512_before,sha512_after,(size_t)SHA512_DIGEST_LENGTH));
+
+		/*
+		 * Confirm that the full locked path set remains in the database.
+		 * --db-drop-ignored must not drop any checksum-locked row during cleanup
+		 */
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,locked_relative_path,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_1,&row_exists));
+		ASSERT(row_exists == true);
+		ASSERT(SUCCESS == db_relative_path_exists(db_filename,other_locked_relative_path_2,&row_exists));
+		ASSERT(row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_filename));
 
 	/*
 	 * Remove the test database and restore the mutable fixture.
@@ -3330,6 +3824,7 @@ static Return test0030_21(void)
 	 */
 	m_del(target_path);
 	m_del(pattern);
+	m_del(error_buffer);
 	m_del(result);
 
 	RETURN_STATUS;

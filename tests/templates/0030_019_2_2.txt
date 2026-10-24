@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*error(?:\x1B\[[0-9;]*m)* \[locked checksum, access denied\] path1/AAA/ZAW/A/b/c/a_file\.txt
+\z

@@ -1,0 +1,13 @@
+\ATESTING:Configuration initialization is finished
+ignored \[directory\] path1/AAA
+ignored \[directory\] path1/AAA/BCB
+ignored \[directory\] path1/AAA/BCB/CCC
+ignored \[directory\] path1/AAA/ZAW
+ignored \[directory\] path1/AAA/ZAW/A
+ignored \[directory\] path1/AAA/ZAW/A/b
+ignored \[directory\] path1/AAA/ZAW/A/b/c
+ignored \[directory\] path1/AAA/ZAW/D
+ignored \[directory\] path1/AAA/ZAW/D/e
+ignored \[directory\] path1/AAA/ZAW/D/e/f
+error \[locked checksum, file disappeared\] path1/AAA/ZAW/A/b/c/a_file\.txt
+\z

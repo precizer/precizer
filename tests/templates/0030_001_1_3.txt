@@ -1,0 +1,14 @@
+\ATESTING:Configuration initialization is finished
+added \[as new\] 1/AAA/BCB/CCC/a\.txt
+added \[as new\] 1/AAA/ZAW/A/b/c/a_file\.txt
+added \[as new\] 1/AAA/ZAW/D/e/f/b_file\.txt
+added \[as new\] 2/AAA/BBB/CZC/a\.txt
+added \[as new\] 3/AAA/BBB/CCC/a\.txt
+added \[as new\] 4/AAA/BBB/CCC/a\.txt
+locked \[checksum\] path1/AAA/BCB/CCC/a\.txt
+locked \[checksum\] path1/AAA/ZAW/A/b/c/a_file\.txt
+locked \[checksum\] path1/AAA/ZAW/D/e/f/b_file\.txt
+added \[as new\] path2/AAA/BCB/CCC/a\.txt
+added \[as new\] path2/AAA/ZAW/A/b/c/a_file\.txt
+added \[as new\] path2/AAA/ZAW/D/e/f/b_file\.txt
+\z
