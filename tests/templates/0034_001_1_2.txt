@@ -1,0 +1,2 @@
+\A(?:\x1B\[[0-9;]*m)*rehashed(?:\x1B\[[0-9;]*m)* \[changed: lsize was:2B, now:128KiB 2B & ctime was:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}\] path1/AAA/BCB/CCC/a\.txt
+\z
