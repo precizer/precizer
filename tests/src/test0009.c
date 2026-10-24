@@ -719,6 +719,13 @@ static Return test0009_7(void)
 		{"--output=machine " "--update --check-level=QUICK --db-drop-ignored "
 		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
 		 "--database=database0009_7.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_007_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Quiet filtering must keep explicit database-removal records visible */
+		{"--output=compact --quiet-ignored " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_7.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_7.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_007_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -784,6 +791,13 @@ static Return test0009_8(void)
 		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
 		 "--database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_2.txt",STDERR_MUST_BE_EMPTY},
 		{"--output=machine " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Quiet filtering must keep explicit database-removal records visible */
+		{"--output=compact --quiet-ignored " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored " "--update --check-level=QUICK --db-drop-ignored "
 		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
 		 "--database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
