@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Config key 'help' is only available in CLI\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Config key 'help' is only available in CLI
+\z

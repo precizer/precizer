@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Wrong --maxdepth \(-m\) value\. Should be an integer from 0 to 32767\. See --help for more information\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Wrong --maxdepth \(-m\) value\. Should be an integer from 0 to 32767\. See --help for more information
+\z

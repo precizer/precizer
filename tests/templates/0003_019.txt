@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?(?:precizer|testitall): ERROR: Cannot open config file '0003_absent\.conf': No such file or directory\n\z
+\A(?:[^:\n]*/)?(?:precizer|testitall): ERROR: Cannot open config file '0003_absent\.conf': No such file or directory
+\z

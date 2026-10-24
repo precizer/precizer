@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?(?:precizer|testitall): ERROR: Line 1 in config file: Unsupported --dry-run mode 'bad-mode'\. Supported mode: with-checksums\. See --help for more information\n\z
+\A(?:[^:\n]*/)?(?:precizer|testitall): ERROR: Line 1 in config file: Unsupported --dry-run mode 'bad-mode'\. Supported mode: with-checksums\. See --help for more information
+\z

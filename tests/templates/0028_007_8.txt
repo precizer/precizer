@@ -1,1 +1,2 @@
-\A(?:precizer|testitall): ERROR: Line 1 in config file: Unsupported --compare-filter value ''\. Supported values: checksum-mismatch, first-source, second-source\. See --help for more information\n\z
+\A(?:precizer|testitall): ERROR: Line 1 in config file: Unsupported --compare-filter value ''\. Supported values: checksum-mismatch, first-source, second-source\. See --help for more information
+\z

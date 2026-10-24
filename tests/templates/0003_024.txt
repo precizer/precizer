@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?precizer: ERROR: Unsupported use of --\n\z
+\A(?:[^:\n]*/)?precizer: ERROR: Unsupported use of --
+\z

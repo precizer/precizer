@@ -3,4 +3,5 @@ TESTING:Returned read_config_file:[0-9]+ status: FAILURE
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Returned parse_arguments:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
-TESTING:Exit status » FAILURE\n\z
+TESTING:Exit status » FAILURE
+\z

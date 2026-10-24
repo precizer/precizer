@@ -9,4 +9,5 @@ config=tests/templates/0003_014\.conf; roots=0003_missing_root; verbose=yes; max
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Path detection is finished
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Returned paths_detect:\d+ status: FAILURE
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:ERROR:The precizer process terminated unexpectedly due to an error
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » FAILURE\n\z
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » FAILURE
+\z

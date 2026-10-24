@@ -33,4 +33,5 @@ Usage: precizer \[OPTION\.\.\.\] \[PATH\.\.\.\]
 (?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -v, --verbose[^\n]*
 (?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -V, --version[^\n]*
 (?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -z, --usage[^\n]*
-(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?TESTING:Exit status » SUCCESS\|HALTED\|INFO\n\z
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?TESTING:Exit status » SUCCESS\|HALTED\|INFO
+\z

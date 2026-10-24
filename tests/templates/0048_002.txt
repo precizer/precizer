@@ -1,1 +1,2 @@
-\Aprecizer: ERROR: Unsupported --output value ''\. Supported values: full, compact, or machine\n\z
+\Aprecizer: ERROR: Unsupported --output value ''\. Supported values: full, compact, or machine
+\z

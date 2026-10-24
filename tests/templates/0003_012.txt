@@ -11,4 +11,5 @@ TESTING:The path 0003_missing_root doesn't exist or it is not a directory
 TESTING:Path detection is finished
 TESTING:Returned paths_detect:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
-TESTING:Exit status » FAILURE\n\z
+TESTING:Exit status » FAILURE
+\z

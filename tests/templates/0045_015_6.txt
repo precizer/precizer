@@ -1,1 +1,2 @@
-\A(?:[^:\r\n]*/)?testitall: ERROR: Line 1 in config file: Unsupported --output value 'invalid-value'\. Supported values: full, compact, or machine\n\z
+\A(?:[^:\r\n]*/)?testitall: ERROR: Line 1 in config file: Unsupported --output value 'invalid-value'\. Supported values: full, compact, or machine
+\z

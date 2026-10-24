@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Database path for 'compare' must not be empty\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Database path for 'compare' must not be empty
+\z

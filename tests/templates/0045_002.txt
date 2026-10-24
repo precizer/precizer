@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 4 in config file: Unknown config key 'pat'\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Line 4 in config file: Unknown config key 'pat'
+\z

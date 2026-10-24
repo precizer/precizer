@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Unsupported --check-level value 'invalid-value'\. Supported values: FULL or QUICK\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Unsupported --check-level value 'invalid-value'\. Supported values: FULL or QUICK
+\z

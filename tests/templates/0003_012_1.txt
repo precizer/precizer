@@ -36,4 +36,5 @@ Usage: precizer \[OPTION\.\.\.\] \[PATH\.\.\.\]
 (?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?ERROR:Argument parsing failed with code 22 \(Invalid argument\)
 TESTING:Returned parse_arguments:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
-TESTING:Exit status » FAILURE\n\z
+TESTING:Exit status » FAILURE
+\z
