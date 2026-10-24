@@ -2,6 +2,7 @@
 #include <errno.h>
 #ifndef EVIL_EMPIRE_OS
 #include <fcntl.h>
+#include <fts.h>
 #include <stdarg.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -44,6 +45,46 @@ static bool mock_access_enabled = false;
 static size_t mock_access_calls = 0;
 static const char *mock_access_target_suffix = NULL;
 static int mock_access_errno = EIO;
+
+static const char *mock_fts_read_target_suffix = NULL;
+static unsigned short mock_fts_read_info = 0;
+static int mock_fts_read_errno = EIO;
+static size_t mock_fts_read_calls = 0;
+
+/**
+ * @brief Configure a traversal-entry failure for one path suffix
+ * @param[in] suffix Path suffix matched against real traversal entries
+ * @param[in] info FTS_NS for a stat failure or FTS_ERR for a traversal failure
+ * @param[in] error_number Errno reported with the failed entry
+ */
+void mocks_fts_read_set_failure(
+	const char     *suffix,
+	unsigned short info,
+	int            error_number)
+{
+	mock_fts_read_target_suffix = suffix;
+	mock_fts_read_info = info;
+	mock_fts_read_errno = error_number;
+	mock_fts_read_calls = 0;
+}
+
+/**
+ * @brief Disable traversal-entry failure injection and clear its counter
+ */
+void mocks_fts_read_reset(void)
+{
+	mock_fts_read_target_suffix = NULL;
+	mock_fts_read_calls = 0;
+}
+
+/**
+ * @brief Return the number of traversal entries replaced by the configured failure
+ * @return Count of injected entries since the last setup or reset
+ */
+size_t mocks_fts_read_call_count(void)
+{
+	return mock_fts_read_calls;
+}
 
 #ifndef EVIL_EMPIRE_OS
 /**
@@ -689,6 +730,28 @@ void mocks_access_set_errno(int err)
 }
 
 #ifndef EVIL_EMPIRE_OS
+FTSENT *__real_fts_read(FTS *tree);
+
+/**
+ * @brief Replace a selected regular-file entry with a deterministic traversal error
+ * @param[in] tree Active filesystem traversal
+ * @return Real traversal entry with the configured error applied, or NULL at end
+ */
+FTSENT *__wrap_fts_read(FTS *tree)
+{
+	FTSENT *entry = __real_fts_read(tree);
+
+	if(entry != NULL
+	        && entry->fts_info == FTS_F
+	        && mock_path_matches_suffix(entry->fts_path,mock_fts_read_target_suffix) == true)
+	{
+		entry->fts_info = mock_fts_read_info;
+		entry->fts_errno = mock_fts_read_errno;
+		mock_fts_read_calls++;
+	}
+	return entry;
+}
+
 FILE *__real_fopen(
 	const char *path,
 	const char *mode);

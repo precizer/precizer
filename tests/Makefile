@@ -100,7 +100,7 @@ WFLAGS += -Wmissing-format-attribute
 endif
 
 # Link-time wrappers for mock-based tests (add more functions as needed).
-WRAPFUNCS = fopen openat __openat_2 fdopen fread ferror remove access malloc realloc snprintf vsnprintf write gettimeofday localtime_r
+WRAPFUNCS = fts_read fopen openat __openat_2 fdopen fread ferror remove access malloc realloc snprintf vsnprintf write gettimeofday localtime_r
 ifeq ($(UNAME_S),Darwin)
 # macOS with  lld supports -wrap
 WRAPFLAGS =
