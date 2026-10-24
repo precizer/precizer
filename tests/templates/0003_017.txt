@@ -1,1 +1,3 @@
-\A(?:[^:\n]*/)?precizer: unrecognized option (?:'|`)--unknown'\nTry `precizer --help' or `precizer --usage' for more information\.\n\z
+\A(?:[^:\n]*/)?precizer: unrecognized option (?:'|`)--unknown'
+Try `precizer --help' or `precizer --usage' for more information\.
+\z

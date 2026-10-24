@@ -1,1 +1,3 @@
-\A(?:[^:\n]*/)?precizer: option requires an argument -- (?:(?:'|`)g'|g)\nTry `precizer --help' or `precizer --usage' for more information\.\n\z
+\A(?:[^:\n]*/)?precizer: option requires an argument -- (?:(?:'|`)g'|g)
+Try `precizer --help' or `precizer --usage' for more information\.
+\z
