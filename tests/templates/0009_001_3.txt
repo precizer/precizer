@@ -1,0 +1,13 @@
+\Aadded \[as new\] alpha_m0n9k2_zz\.txt
+added \[as new\] hold_a1r9v-0pq\.bak
+added \[as new\] keep_4xv7__m2\.log
+added \[as new\] omega_77xy__aa\.bin
+ignored \[not added\] skip_4xv7__m2\.log
+ignored \[not added\] skip_a1r9v-0pq\.bak
+ignored \[not added\] skip_m0n9k2_zz\.log
+ignored \[not added\] tmp_77xy__aa\.bak
+ignored \[not added\] tmp_qwe_90210\.log
+ignored \[not added\] tmp_z1-9vv\.bak
+added \[as new\] xqwe_90210\.md
+added \[as new\] zeta_z1-9vv\.dat
+\z

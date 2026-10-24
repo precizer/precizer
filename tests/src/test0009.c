@@ -3,8 +3,11 @@
 /**
  * @brief Validate file-level ignore filtering through CLI and configuration
  *
- * Both scans start without a database and check the same full output and exact
- * stored paths. A separate CLI run also checks the TESTING diagnostics
+ * Every scan starts without a database and checks complete output and exact
+ * stored paths. CLI and configuration share a full template, followed by
+ * compact and machine CLI runs. A second CLI/configuration pair checks the
+ * TESTING diagnostics against one full template with the configuration path
+ * allowed only at its expected position
  *
  * @return Return status for equivalent filtering and diagnostic output
  */
@@ -19,13 +22,7 @@ Return test0009_1(void)
 	        "--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
 	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
 
-	const struct argument_test_case non_testing_cases[] = {
-		{arguments,COMPLETED,"templates/0009_001_1.txt",STDERR_MUST_BE_EMPTY},
-		{0}
-	};
-
-	ASSERT(SUCCESS == run_and_match_templates(non_testing_cases,NULL,NULL));
-
+	/* Require exactly the six paths that do not match the ignore expression */
 	const char *expected_paths[] =
 	{
 		"alpha_m0n9k2_zz.txt",
@@ -36,29 +33,59 @@ Return test0009_1(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
-
-	ASSERT(SUCCESS == delete_path(db_filename));
-
-	/* Repeat the initial scan from an empty database with the same ignore rule */
-	const struct argument_test_case file_cases[] = {
+	/* Compare equivalent full scans, then repeat the CLI operation in each compact format */
+	const struct argument_test_case non_testing_cases[] = {
+		{arguments,COMPLETED,"templates/0009_001_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the initial scan from an empty database with the same ignore rule */
 		{"--config=tests/templates/0009_001_1.conf",COMPLETED,"templates/0009_001_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Compact output retains terminal styling for added and ignored records */
+		{"--output=compact --database=database0009.db "
+		 "--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_001_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Machine output contains the same records without styling or service messages */
+		{"--output=machine --database=database0009.db "
+		 "--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
-	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
-	ASSERT(SUCCESS == delete_path(db_filename));
 
+	/* Remove the preceding database so every format performs an initial scan */
+	for(size_t i = 0; non_testing_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == delete_path_if_present(db_filename));
+		const struct argument_test_case single_case[] = {
+			non_testing_cases[i],
+			{0}
+		};
+
+		/* Check the complete output, empty stderr, and exact stored paths */
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	}
+
+	/* Repeat the CLI/configuration pair with the same TESTING diagnostics enabled */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-
 	const struct argument_test_case testing_cases[] = {
-		{arguments,COMPLETED,"templates/0009_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{arguments,COMPLETED,"templates/0009_001_1_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0009_001_1.conf",COMPLETED,"templates/0009_001_1_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
-	ASSERT(SUCCESS == run_and_match_templates(testing_cases,NULL,NULL));
+	/* Restore the absent-database state and repeat all output and path checks */
+	for(size_t i = 0; testing_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == delete_path_if_present(db_filename));
+		const struct argument_test_case single_case[] = {
+			testing_cases[i],
+			{0}
+		};
 
-	ASSERT(SUCCESS == delete_path(db_filename));
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	}
+
+	/* Clean up the final database even if an earlier check failed */
+	call(delete_path_if_present(db_filename));
 
 	RETURN_STATUS;
 }
@@ -66,8 +93,9 @@ Return test0009_1(void)
 /**
  * @brief Validate include exceptions to ignore rules through CLI and configuration
  *
- * Both scans start without a database and check the same full output and exact
- * stored paths, including the files restored by include
+ * CLI and configuration share a full template, followed by compact and machine
+ * CLI runs. Every scan starts without a database and checks complete output
+ * and exact stored paths, including the files restored by include
  *
  * @return Return status for equivalent include filtering
  */
@@ -83,13 +111,7 @@ static Return test0009_2(void)
 	        "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|zeta_z1-9vv\\.dat)$\" "
 	        "tests/fixtures/ignore_include_cases/chaotic_filenames";
 
-	const struct argument_test_case cases[] = {
-		{arguments,COMPLETED,"templates/0009_002.txt",STDERR_MUST_BE_EMPTY},
-		{0}
-	};
-
-	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
-
+	/* Require the ordinary tracked files and all three explicit include exceptions */
 	const char *expected_paths[] =
 	{
 		"alpha_m0n9k2_zz.txt",
@@ -101,18 +123,40 @@ static Return test0009_2(void)
 		"zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
-
-	ASSERT(SUCCESS == delete_path(db_filename));
-
-	/* Repeat the scan with the same ignore and include rules from configuration */
-	const struct argument_test_case file_cases[] = {
-		{"--config=tests/templates/0009_002.conf",COMPLETED,"templates/0009_002.txt",STDERR_MUST_BE_EMPTY},
+	/* Compare equivalent full scans, then repeat the CLI operation in each compact format */
+	const struct argument_test_case cases[] = {
+		{arguments,COMPLETED,"templates/0009_002_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the scan with the same ignore and include rules from configuration */
+		{"--config=tests/templates/0009_002_1.conf",COMPLETED,"templates/0009_002_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Compact output distinguishes include exceptions from ordinary additions */
+		{"--output=compact --database=database0009_2.db "
+		 "--ignore=\"^(?:skip_|tmp_|zeta_|omega_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_002_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Machine output preserves the same classifications without terminal styling */
+		{"--output=machine --database=database0009_2.db "
+		 "--ignore=\"^(?:skip_|tmp_|zeta_|omega_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_002_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
-	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
-	ASSERT(SUCCESS == delete_path(db_filename));
+
+	/* Remove the preceding database so every run exercises the same initial filtering */
+	for(size_t i = 0; cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == delete_path_if_present(db_filename));
+		const struct argument_test_case single_case[] = {
+			cases[i],
+			{0}
+		};
+
+		/* Check the complete output, empty stderr, and exact stored paths */
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	}
+
+	/* Clean up the final database even if an earlier check failed */
+	call(delete_path_if_present(db_filename));
 
 	RETURN_STATUS;
 }
