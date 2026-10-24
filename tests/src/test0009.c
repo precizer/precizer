@@ -318,6 +318,15 @@ static Return test0009_4(void)
 		 "--ignore=\"^(?:skip_|tmp_).+\" "
 		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
 		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_1_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Quiet mode suppresses ignored and included records, including verbose details */
+		{"--output=compact --quiet-ignored --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_1_2_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_1_3_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -364,6 +373,19 @@ static Return test0009_4(void)
 		 "--ignore=\"^(?:skip_|tmp_).+\" "
 		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
 		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_2_4.txt",STDERR_MUST_BE_EMPTY},
+		/* Quiet mode suppresses ignored and included records, including verbose details */
+		{"--output=compact --quiet-ignored --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_2_2_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_2_3_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored --verbose --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_2_4_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -422,6 +444,19 @@ static Return test0009_4(void)
 		 "--ignore=\"^(?:skip_|tmp_).+\" "
 		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
 		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_3_4.txt",STDERR_MUST_BE_EMPTY},
+		/* Quiet mode suppresses ignored and included records, including verbose details */
+		{"--output=compact --quiet-ignored --watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_3_2_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored --watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_3_3_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored --verbose --watch-timestamps --update --check-level=QUICK --database=database0009_4.db "
+		 "--ignore=\"^(?:skip_|tmp_).+\" "
+		 "--include=\"^(?:skip_4xv7__m2\\.log|tmp_qwe_90210\\.log|tmp_z1-9vv\\.bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_004_3_4_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -723,6 +758,26 @@ static Return test0009_9(void)
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
 	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
 	ASSERT(SUCCESS == delete_path(db_filename));
+
+	/* Quiet output must hide ignored files without hiding ordinary additions */
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact " "--database=database0009_9.db --quiet-ignored "
+		 "--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_009_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--database=database0009_9.db --quiet-ignored "
+		 "--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_009_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == delete_path_if_present(db_filename));
+		const struct argument_test_case single_case[] = {output_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	}
+	call(delete_path_if_present(db_filename));
 
 	RETURN_STATUS;
 }

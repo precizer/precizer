@@ -1,0 +1,7 @@
+\A(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] alpha_m0n9k2_zz\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] hold_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] keep_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] omega_77xy__aa\.bin
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] xqwe_90210\.md
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] zeta_z1-9vv\.dat
+\z
