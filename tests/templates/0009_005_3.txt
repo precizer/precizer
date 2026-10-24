@@ -1,0 +1,4 @@
+\ATESTING:Configuration initialization is finished
+ignored \[directory\] path2/AAA/ZAW/A
+ignored \[directory\] path2/AAA/ZAW/D
+\z

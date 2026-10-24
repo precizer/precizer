@@ -1,0 +1,9 @@
+\ATESTING:Configuration initialization is finished
+ignored \[directory\] path2/AAA/ZAW/A
+ignored \[directory\] path2/AAA/ZAW/A/b
+ignored \[directory\] path2/AAA/ZAW/A/b/c
+ignored \[directory\] path2/AAA/ZAW/D
+ignored \[directory\] path2/AAA/ZAW/D/e
+ignored \[directory\] path2/AAA/ZAW/D/e/f
+dropped \[as missing\] path2/AAA/ZAW/D/e/f/b_file\.txt
+\z

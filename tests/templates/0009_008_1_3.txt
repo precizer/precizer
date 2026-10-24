@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+ignored \[not updated\] path2/AAA/ZAW/D/e/f/b_file\.txt
+\z

@@ -1,0 +1,9 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/A
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/A/b
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/A/b/c
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/D
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/D/e
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/D/e/f
+(?:\x1B\[[0-9;]*m)*dropped(?:\x1B\[[0-9;]*m)* \[as missing\] path2/AAA/ZAW/D/e/f/b_file\.txt
+\z

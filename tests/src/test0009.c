@@ -537,6 +537,7 @@ static Return test0009_5(void)
 	const char *db_file_name = "database0009_5.db";
 	const char *ignored_relative_path = "path2/AAA/ZAW/D/e/f/b_file.txt";
 	const char *arguments = NULL;
+	const char *db_backup_file_name = "0009_5_before_output.db";
 	bool ignored_row_exists = false;
 
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -546,6 +547,9 @@ static Return test0009_5(void)
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
+
+	/* Restore this baseline before each output format changes the database */
+	ASSERT(SUCCESS == copy_path(db_file_name,db_backup_file_name));
 
 	arguments = "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
 	        "--database=database0009_5.db tests/fixtures/diffs/diff1";
@@ -559,6 +563,25 @@ static Return test0009_5(void)
 
 	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
 	ASSERT(ignored_row_exists == true);
+
+	/* Repeat cleanup with the same missing or ignored path in both compact formats */
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact " "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
+		 "--database=database0009_5.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
+		 "--database=database0009_5.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_005_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_file_name,db_file_name));
+		const struct argument_test_case single_case[] = {output_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
+		ASSERT(ignored_row_exists == true);
+	}
+	call(delete_path_if_present(db_backup_file_name));
 
 	ASSERT(SUCCESS == delete_path(db_file_name));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -580,6 +603,7 @@ static Return test0009_6(void)
 	const char *db_file_name = "database0009_6.db";
 	const char *included_relative_path = "path2/AAA/ZAW/D/e/f/b_file.txt";
 	const char *arguments = NULL;
+	const char *db_backup_file_name = "0009_6_before_output.db";
 	bool included_row_exists = true;
 
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -589,6 +613,9 @@ static Return test0009_6(void)
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
 
 	ASSERT(SUCCESS == delete_path("tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
+
+	/* Restore this baseline before each output format changes the database */
+	ASSERT(SUCCESS == copy_path(db_file_name,db_backup_file_name));
 
 	arguments = "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
 	        "--include=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
@@ -603,6 +630,27 @@ static Return test0009_6(void)
 
 	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,included_relative_path,&included_row_exists));
 	ASSERT(included_row_exists == false);
+
+	/* Repeat cleanup with the same missing or ignored path in both compact formats */
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact " "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
+		 "--include=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_6.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_006_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
+		 "--include=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_6.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_006_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_file_name,db_file_name));
+		const struct argument_test_case single_case[] = {output_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_relative_path_exists(db_file_name,included_relative_path,&included_row_exists));
+		ASSERT(included_row_exists == false);
+	}
+	call(delete_path_if_present(db_backup_file_name));
 
 	ASSERT(SUCCESS == delete_path(db_file_name));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -662,6 +710,26 @@ static Return test0009_7(void)
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
 	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
 	ASSERT(ignored_row_exists == false);
+
+	/* Repeat cleanup with the same missing or ignored path in both compact formats */
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_7.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_7.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_file_name,db_file_name));
+		const struct argument_test_case single_case[] = {output_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
+		ASSERT(ignored_row_exists == false);
+	}
 	call(delete_path_if_present(db_backup_file_name));
 
 	ASSERT(SUCCESS == delete_path(db_file_name));
@@ -683,6 +751,7 @@ static Return test0009_8(void)
 	const char *db_file_name = "database0009_8.db";
 	const char *ignored_relative_path = "path2/AAA/ZAW/D/e/f/b_file.txt";
 	const char *arguments = NULL;
+	const char *db_backup_file_name = "0009_8_before_output.db";
 	bool ignored_row_exists = true;
 
 	ASSERT(SUCCESS == prepare_mutable_fixture("tests/fixtures/diffs/diff1"));
@@ -690,6 +759,10 @@ static Return test0009_8(void)
 
 	arguments = "--database=database0009_8.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,NULL,NULL,COMPLETED,ALLOW_BOTH));
+
+	/* Restore this baseline before each output format changes the database */
+	ASSERT(SUCCESS == copy_path(db_file_name,db_backup_file_name));
+
 
 	arguments = "--update --check-level=QUICK --db-drop-ignored "
 	        "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
@@ -704,6 +777,47 @@ static Return test0009_8(void)
 
 	ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
 	ASSERT(ignored_row_exists == false);
+
+	/* Repeat cleanup with the same missing or ignored path in both compact formats */
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--update --check-level=QUICK --db-drop-ignored "
+		 "--ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" "
+		 "--database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; output_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_file_name,db_file_name));
+		const struct argument_test_case single_case[] = {output_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
+		ASSERT(ignored_row_exists == false);
+	}
+	/* A changed ignored file reaches reporting while retaining its saved record */
+	ASSERT(SUCCESS == add_string_to("ignored change","tests/fixtures/diffs/diff1/path2/AAA/ZAW/D/e/f/b_file.txt"));
+	/* Ignoring an existing row must retain it, with optional quiet reporting */
+	const struct argument_test_case retained_cases[] = {
+		{"--output=compact --update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" --database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --quiet-ignored --update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" --database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_004_2_3_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" --database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_008_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored --update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/D/e/f/b_file\\.txt$\" --database=database0009_8.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0009_004_2_3_1.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+
+	for(size_t i = 0; retained_cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_file_name,db_file_name));
+		const struct argument_test_case single_case[] = {retained_cases[i],{0}};
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_relative_path_exists(db_file_name,ignored_relative_path,&ignored_row_exists));
+		ASSERT(ignored_row_exists == true);
+	}
+
+	call(delete_path_if_present(db_backup_file_name));
 
 	ASSERT(SUCCESS == delete_path(db_file_name));
 	ASSERT(SUCCESS == restore_mutable_fixture("tests/fixtures/diffs/diff1"));
