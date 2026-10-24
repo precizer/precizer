@@ -162,9 +162,13 @@ static Return test0009_2(void)
 }
 
 /**
+ * @brief Verify directory ignore and selective file inclusion in all output formats
  *
- * Validate whole-directory ignore with selective include
+ * Full, compact, and machine scans start without a database and use the same
+ * filters. Each run checks complete output, empty stderr, and the six included
+ * file paths stored below the ignored directory
  *
+ * @return Return status for equivalent filtering and output
  */
 static Return test0009_3(void)
 {
@@ -178,13 +182,7 @@ static Return test0009_3(void)
 	        "--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
 	        "tests/fixtures/ignore_include_cases";
 
-	const struct argument_test_case cases[] = {
-		{arguments,COMPLETED,"templates/0009_003.txt",STDERR_MUST_BE_EMPTY},
-		{0}
-	};
-
-	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
-
+	/* Only the six explicit file exceptions may be stored below the ignored directory */
 	const char *expected_paths[] =
 	{
 		"chaotic_filenames/alpha_m0n9k2_zz.txt",
@@ -195,9 +193,63 @@ static Return test0009_3(void)
 		"chaotic_filenames/zeta_z1-9vv.dat"
 	};
 
-	ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	/* Repeat the same CLI scan with only the output format changed */
+	const struct argument_test_case cases[] = {
+		{arguments,COMPLETED,"templates/0009_003_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Compact output reports the directory and every included or ignored file */
+		{"--output=compact --database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,"templates/0009_003_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Machine output contains the same records without ANSI or service messages */
+		{"--output=machine --database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,"templates/0009_003_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Including the directory does not include unmatched children */
+		{"--output=compact " "--database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames$|^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,"templates/0009_003_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames$|^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,"templates/0009_003_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --quiet-ignored " "--database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=compact --quiet-ignored " "--database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames$|^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored " "--database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored " "--database=database0009_3.db "
+		 "--ignore=\"^chaotic_filenames(?:/|$)\" "
+		 "--include=\"^chaotic_filenames$|^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
+		 "tests/fixtures/ignore_include_cases",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	ASSERT(SUCCESS == delete_path(db_filename));
+	/* Start without a DB so each format exercises the initial filtering */
+	for(size_t i = 0; cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == delete_path_if_present(db_filename));
+		const struct argument_test_case single_case[] = {
+			cases[i],
+			{0}
+		};
+
+		/* Check both output streams and the exact file set after every scan */
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
+		ASSERT(SUCCESS == db_paths_match(db_filename,expected_paths,(int)(sizeof(expected_paths) / sizeof(expected_paths[0]))));
+	}
+
+	/* Remove the final database even if a preceding comparison failed */
+	call(delete_path_if_present(db_filename));
 
 	RETURN_STATUS;
 }
