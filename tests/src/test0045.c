@@ -180,16 +180,16 @@ static Return test0045_2(void)
 		const char *error_template;
 	} cases[] = {
 		{"tests/templates/0045_002_1.conf","templates/0045_002.txt"},
-		{"tests/templates/0045_002_2.conf","templates/0045_003.txt"},
-		{"tests/templates/0045_002_3.conf","templates/0045_003.txt"},
-		{"tests/templates/0045_002_4.conf","templates/0045_003.txt"},
-		{"tests/templates/0045_002_5.conf","templates/0045_004.txt"},
-		{"tests/templates/0045_002_6.conf","templates/0045_024.txt"},
-		{"tests/templates/0045_002_7.conf","templates/0045_025.txt"},
-		{"tests/templates/0045_002_8.conf","templates/0045_005.txt"},
-		{"tests/templates/0045_002_9.conf","templates/0045_026.txt"},
-		{"tests/templates/0045_002_10.conf","templates/0045_027.txt"},
-		{"tests/templates/0045_002_11.conf","templates/0045_028.txt"}
+		{"tests/templates/0045_002_2.conf","templates/0045_002_2.txt"},
+		{"tests/templates/0045_002_3.conf","templates/0045_002_2.txt"},
+		{"tests/templates/0045_002_4.conf","templates/0045_002_2.txt"},
+		{"tests/templates/0045_002_5.conf","templates/0045_002_5.txt"},
+		{"tests/templates/0045_002_6.conf","templates/0045_002_6.txt"},
+		{"tests/templates/0045_002_7.conf","templates/0045_002_7.txt"},
+		{"tests/templates/0045_002_8.conf","templates/0045_002_8.txt"},
+		{"tests/templates/0045_002_9.conf","templates/0045_002_9.txt"},
+		{"tests/templates/0045_002_10.conf","templates/0045_002_10.txt"},
+		{"tests/templates/0045_002_11.conf","templates/0045_002_11.txt"}
 	};
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
@@ -201,7 +201,7 @@ static Return test0045_2(void)
 
 	/* A first-line failure must prevent the later valid key from setting the flag */
 	ASSERT(SUCCESS == check_reader("tests/templates/0045_002_12.conf",true,FAILURE,false,
-		"templates/0045_006.txt"));
+		"templates/0045_002_12.txt"));
 	ASSERT(config->roots.length == 0U);
 
 	RETURN_STATUS;
@@ -216,7 +216,7 @@ static Return test0045_3(void)
 	INITTEST;
 	/* inih reports the error after recognizing the key from the buffered prefix */
 	ASSERT(SUCCESS == check_reader("tests/templates/0045_003.conf",true,FAILURE,true,
-		"templates/0045_007.txt"));
+		"templates/0045_003.txt"));
 	/* The valid path after the oversized line must not be applied */
 	ASSERT(config->roots.length == 0U);
 
@@ -234,20 +234,20 @@ static Return test0045_4(void)
 	ASSERT(SUCCESS == delete_path_if_present("0045_reader.conf"));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf",false,SUCCESS,false,NULL));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,false,
-		"templates/0045_008.txt"));
+		"templates/0045_004_1.txt"));
 
 	/* A regular file used as a parent produces ENOTDIR even with elevated privileges */
 	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_001_2.conf",
 		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf/child",false,FAILURE,false,
-		"templates/0045_009.txt"));
+		"templates/0045_004_2.txt"));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf/child",true,FAILURE,false,
-		"templates/0045_009.txt"));
+		"templates/0045_004_2.txt"));
 
 	/* A directory opens successfully but causes a read error on the first read */
 	ASSERT(SUCCESS == create_directory("0045_config_directory"));
 	ASSERT(SUCCESS == check_reader("0045_config_directory",true,FAILURE,false,
-		"templates/0045_010.txt"));
+		"templates/0045_004_3.txt"));
 	call(delete_path_if_present("0045_config_directory"));
 
 	call(delete_path_if_present("0045_reader.conf"));
@@ -351,24 +351,24 @@ static Return test0045_6(void)
 		const char *config_template;
 		const char *error_template;
 	} cases[] = {
-		{"tests/templates/0045_006_1.conf","templates/0045_011.txt"},
-		{"tests/templates/0045_006_2.conf","templates/0045_020.txt"},
-		{"tests/templates/0045_006_3.conf","templates/0045_029.txt"},
-		{"tests/templates/0045_006_4.conf","templates/0045_030.txt"},
-		{"tests/templates/0045_006_5.conf","templates/0045_031.txt"},
-		{"tests/templates/0045_006_6.conf","templates/0045_012.txt"},
-		{"tests/templates/0045_006_7.conf","templates/0045_013.txt"},
-		{"tests/templates/0045_006_8.conf","templates/0045_014.txt"},
+		{"tests/templates/0045_006_1.conf","templates/0045_006_1.txt"},
+		{"tests/templates/0045_006_2.conf","templates/0045_006_2.txt"},
+		{"tests/templates/0045_006_3.conf","templates/0045_006_3.txt"},
+		{"tests/templates/0045_006_4.conf","templates/0045_006_4.txt"},
+		{"tests/templates/0045_006_5.conf","templates/0045_006_5.txt"},
+		{"tests/templates/0045_006_6.conf","templates/0045_006_6.txt"},
+		{"tests/templates/0045_006_7.conf","templates/0045_006_7.txt"},
+		{"tests/templates/0045_006_8.conf","templates/0045_006_8.txt"},
 		{"tests/templates/0045_006_9.conf","templates/0045_015.txt"},
-		{"tests/templates/0045_006_10.conf","templates/0045_016.txt"},
-		{"tests/templates/0045_006_11.conf","templates/0045_017.txt"},
-		{"tests/templates/0045_006_12.conf","templates/0045_018.txt"},
-		{"tests/templates/0045_006_13.conf","templates/0045_019.txt"},
-		{"tests/templates/0045_006_14.conf","templates/0045_032.txt"},
+		{"tests/templates/0045_006_10.conf","templates/0045_006_10.txt"},
+		{"tests/templates/0045_006_11.conf","templates/0045_006_11.txt"},
+		{"tests/templates/0045_006_12.conf","templates/0045_006_12.txt"},
+		{"tests/templates/0045_006_13.conf","templates/0045_006_13.txt"},
+		{"tests/templates/0045_006_14.conf","templates/0045_006_14.txt"},
 		{"tests/templates/0045_006_15.conf","templates/0045_015.txt"},
 		{"tests/templates/0045_006_16.conf","templates/0045_015.txt"},
-		{"tests/templates/0045_006_17.conf","templates/0045_018.txt"},
-		{"tests/templates/0045_006_18.conf","templates/0045_018.txt"}
+		{"tests/templates/0045_006_17.conf","templates/0045_006_12.txt"},
+		{"tests/templates/0045_006_18.conf","templates/0045_006_12.txt"}
 	};
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
@@ -441,7 +441,7 @@ static Return test0045_8(void)
 {
 	INITTEST;
 	m_create(char,pattern,MEMORY_STRING);
-	ASSERT(SUCCESS == get_file_content("templates/0045_021.txt",pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0045_008_1.txt",pattern));
 	const struct {
 		const char *config_template;
 		/* Address of the Config list populated after check_reader() resets defaults */
@@ -603,7 +603,7 @@ static Return test0045_10(void)
 {
 	INITTEST;
 	m_create(char,pattern,MEMORY_STRING);
-	ASSERT(SUCCESS == get_file_content("templates/0045_022.txt",pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0045_010_1.txt",pattern));
 	ASSERT(SUCCESS == match_function_output(NULL,m_text(pattern),check_settings_source_conflict));
 	call(m_del(pattern));
 	RETURN_STATUS;

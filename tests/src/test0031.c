@@ -174,7 +174,7 @@ static Return test0031_3(void)
 	mocks_fread_enable(false);
 	mocks_ferror_enable(true);
 
-	ASSERT(SUCCESS == check_case(result,pattern,error_buffer,"templates/0031_002.txt"));
+	ASSERT(SUCCESS == check_case(result,pattern,error_buffer,"templates/0031_003_1.txt"));
 
 	ASSERT(mocks_openat_call_count() == 0);
 	ASSERT(mocks_fdopen_call_count() == 0);

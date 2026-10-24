@@ -16,19 +16,19 @@ static Return test0048_1(void)
 		{"-OFULL " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
 		{"--output FuLl " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
 		{"--output full " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=MACHINE " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
-		{"-OMaChInE " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
-		{"--output MaChInE " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
-		{"--output machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=MACHINE " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"-OMaChInE " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output MaChInE " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{"--output=machine --output=full " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=full --output=machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=full --output=machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{"-O full " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
 		{"-Ofull " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
-		{"-O machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
-		{"-Omachine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
+		{"-O machine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"-Omachine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{"-Omachine --output=full " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0040_002.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=full -Omachine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_015.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=full -Omachine " OUTPUT_DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -49,11 +49,11 @@ static Return test0048_2(void)
 		{"--output invalid-value",FAILURE,"templates/0040_003.txt","templates/0048_001.txt"},
 		{"--output=",FAILURE,"templates/0040_003.txt","templates/0048_002.txt"},
 		{"--output ''",FAILURE,"templates/0040_003.txt","templates/0048_002.txt"},
-		{"--output",FAILURE,"templates/0040_003.txt","templates/0048_004.txt"},
+		{"--output",FAILURE,"templates/0040_003.txt","templates/0048_002_1.txt"},
 		{"-O invalid-value",FAILURE,"templates/0040_003.txt","templates/0048_001.txt"},
 		{"-Oinvalid-value",FAILURE,"templates/0040_003.txt","templates/0048_001.txt"},
 		{"-O ''",FAILURE,"templates/0040_003.txt","templates/0048_002.txt"},
-		{"-O",FAILURE,"templates/0040_003.txt","templates/0048_005.txt"},
+		{"-O",FAILURE,"templates/0040_003.txt","templates/0048_002_2.txt"},
 		{0}
 	};
 
@@ -116,14 +116,14 @@ static Return test0048_4(void)
 {
 	INITTEST;
 	const char *config_templates[] = {
-		"tests/templates/0048_006.conf",
-		"tests/templates/0048_007.conf",
-		"tests/templates/0048_008.conf",
-		"tests/templates/0048_009.conf",
-		"tests/templates/0048_010.conf",
-		"tests/templates/0048_011.conf",
-		"tests/templates/0048_012.conf",
-		"tests/templates/0048_013.conf"
+		"tests/templates/0048_004_1.conf",
+		"tests/templates/0048_004_2.conf",
+		"tests/templates/0048_004_3.conf",
+		"tests/templates/0048_004_4.conf",
+		"tests/templates/0048_004_5.conf",
+		"tests/templates/0048_004_6.conf",
+		"tests/templates/0048_004_7.conf",
+		"tests/templates/0048_004_8.conf"
 	};
 	const struct argument_test_case cases[] = {
 		{"--config=precizer.conf",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
@@ -158,9 +158,9 @@ static Return test0048_5(void)
 {
 	INITTEST;
 	const struct argument_test_case cases[] = {
-		{"--output=machine --color=never --output=invalid-value",FAILURE,"templates/0048_006.txt","templates/0048_001.txt"},
-		{"--verbose -Omachine --color=never --output=invalid-value",FAILURE,"templates/0048_006.txt","templates/0048_001.txt"},
-		{"-Omachine --verbose --color=never --output=invalid-value",FAILURE,"templates/0048_006.txt","templates/0048_001.txt"},
+		{"--output=machine --color=never --output=invalid-value",FAILURE,"templates/0048_005_1.txt","templates/0048_001.txt"},
+		{"--verbose -Omachine --color=never --output=invalid-value",FAILURE,"templates/0048_005_1.txt","templates/0048_001.txt"},
+		{"-Omachine --verbose --color=never --output=invalid-value",FAILURE,"templates/0048_005_1.txt","templates/0048_001.txt"},
 		{"-Omachine --verbose --silent --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
 		{"-Omachine --silent --verbose --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
 		{"--silent -Omachine --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
@@ -172,7 +172,7 @@ static Return test0048_5(void)
 		{"--output=full --verbose --silent --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
 		{"-sv --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
 		{"-vs --color=never --output=invalid-value",FAILURE,STDOUT_MUST_BE_EMPTY,"templates/0048_001.txt"},
-		{"-Omachine --output=full --color=never --version",COMPLETED,"templates/0048_007.txt",STDERR_MUST_BE_EMPTY},
+		{"-Omachine --output=full --color=never --version",COMPLETED,"templates/0048_005_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -237,12 +237,12 @@ static Return test0048_7(void)
 
 	/* Cover CLI option order, short options, and explicit and default configuration */
 	const struct argument_test_case cases[] = {
-		{"--progress --output=machine --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_016.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=machine --progress --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_016.txt",STDERR_MUST_BE_EMPTY},
-		{"-pOmachine --verbose --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_016.txt",STDERR_MUST_BE_EMPTY},
-		{"--verbose --progress --output=machine --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_016.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=precizer.conf",COMPLETED,"templates/0048_016.txt",STDERR_MUST_BE_EMPTY},
-		{"",COMPLETED,"templates/0048_016.txt",STDERR_MUST_BE_EMPTY},
+		{"--progress --output=machine --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --progress --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"-pOmachine --verbose --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--verbose --progress --output=machine --database=0048.db tests/fixtures/diffs/diff1/2",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=precizer.conf",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"",COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -252,7 +252,7 @@ static Return test0048_7(void)
 	ASSERT(SUCCESS == construct_path("tests/fixtures/diffs/diff1/2/AAA/BBB/CZC/a.txt",file_path));
 
 	/* Prepare the configuration used by both file-based scenarios */
-	ASSERT(SUCCESS == copy_path("tests/templates/0048_014.conf","precizer.conf"));
+	ASSERT(SUCCESS == copy_path("tests/templates/0048_007_3.conf","precizer.conf"));
 
 	/* Disable test diagnostics so only machine file events remain visible */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
@@ -301,18 +301,18 @@ static Return test0048_8(void)
 
 	/* Cover plain and colored records, retained verbose settings, and suppression */
 	const struct argument_test_case cases[] = {
-		{"--output=machine --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_017.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=machine --color=always --database=0048.db 0048_added",COMPLETED,"templates/0048_018.txt",STDERR_MUST_BE_EMPTY},
-		{"--verbose --progress --output=machine --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_017.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=machine --quiet-ignored --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_017.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--verbose --progress --output=machine --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --quiet-ignored --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
 		{"--output=machine --silent --database=0048.db 0048_added",COMPLETED,STDOUT_MUST_BE_EMPTY,STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
 	/* Both dry-run variants must retain the same machine event format */
 	const struct argument_test_case dry_run_cases[] = {
-		{"--output=machine --dry-run --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_017.txt",STDERR_MUST_BE_EMPTY},
-		{"--output=machine --dry-run=with-checksums --progress --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_017.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --dry-run --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --dry-run=with-checksums --progress --color=never --database=0048.db 0048_added",COMPLETED,"templates/0048_008_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 

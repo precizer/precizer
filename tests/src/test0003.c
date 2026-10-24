@@ -227,12 +227,12 @@ static Return test0003_6(void)
 	const struct argument_test_case cases[] = {
 		{"--dry-run --database=0003_paths.db "
 		 "--path=tests/fixtures/diffs/diff1/1/ --path=tests/fixtures/diffs/diff1/4 "
-		 "--path=tests/fixtures/diffs/diff1/1",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		 "--path=tests/fixtures/diffs/diff1/1",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{"--dry-run --database=0003_paths.db "
 		 "--path=tests/fixtures/diffs/diff1/1/ --path tests/fixtures/diffs/diff1/4/ "
-		 "tests/fixtures/diffs/diff1/1/",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		 "tests/fixtures/diffs/diff1/1/",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{"--dry-run --database=0003_paths.db tests/fixtures/diffs/diff1/1/ "
-		 "--path=tests/fixtures/diffs/diff1/1 --path=tests/fixtures/diffs/diff1/4",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		 "--path=tests/fixtures/diffs/diff1/1 --path=tests/fixtures/diffs/diff1/4",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -242,10 +242,10 @@ static Return test0003_6(void)
 
 	/* Reuse the dry-run state and full output for the same roots from a file */
 	const struct argument_test_case file_cases[] = {
-		{"--config=tests/templates/0003_006.conf",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0003_006.conf",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
 		/* Both selectors must read the same file through its absolute path */
-		{"--config=\"${TMPDIR}/tests/templates/0003_006.conf\"",COMPLETED,"templates/0003_025.txt",STDERR_MUST_BE_EMPTY},
-		{"-g \"${TMPDIR}/tests/templates/0003_006.conf\"",COMPLETED,"templates/0003_025.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=\"${TMPDIR}/tests/templates/0003_006.conf\"",COMPLETED,"templates/0003_006_2.txt",STDERR_MUST_BE_EMPTY},
+		{"-g \"${TMPDIR}/tests/templates/0003_006.conf\"",COMPLETED,"templates/0003_006_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
@@ -273,9 +273,9 @@ static Return test0003_7(void)
 		{"--compare --",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"--version --",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"--path",FAILURE,"templates/0040_003.txt","templates/0003_008.txt"},
-		{"--path=",FAILURE,"templates/0040_003.txt","templates/0003_010.txt"},
-		{"--dry-run ''",FAILURE,"templates/0040_003.txt","templates/0003_010.txt"},
-		{"--compare --path='' first.db second.db",FAILURE,"templates/0040_003.txt","templates/0003_010.txt"},
+		{"--path=",FAILURE,"templates/0040_003.txt","templates/0003_007_2.txt"},
+		{"--dry-run ''",FAILURE,"templates/0040_003.txt","templates/0003_007_2.txt"},
+		{"--compare --path='' first.db second.db",FAILURE,"templates/0040_003.txt","templates/0003_007_2.txt"},
 		{"--compare --path=first.db --path=second.db",FAILURE,"templates/0028_006_14.txt","templates/0003_002.txt"},
 		{"--compare --path=second.db first.db",FAILURE,"templates/0028_006_14.txt","templates/0003_011.txt"},
 		{0}
@@ -425,25 +425,25 @@ static Return test0003_11(void)
 {
 	INITTEST;
 	const struct argument_test_case cases[] = {
-		{"--config=0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--config=0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--config 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--config 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-vg0003_011.conf",FAILURE,"templates/0003_011_1.txt","templates/0003_014.txt"},
-		{"--config=0003_absent.conf --path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root -g0003_absent.conf --config=0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
+		{"--config=0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--config=0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--config 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--config 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-vg0003_011.conf",FAILURE,"templates/0003_011_1.txt","templates/0003_011_3.txt"},
+		{"--config=0003_absent.conf --path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root -g0003_absent.conf --config=0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
 		{0}
 	};
 
@@ -473,17 +473,17 @@ static Return test0003_12(void)
 {
 	INITTEST;
 	const struct argument_test_case cases[] = {
-		{"--config",FAILURE,"templates/0040_003.txt","templates/0003_015.txt"},
-		{"-g",FAILURE,"templates/0040_003.txt","templates/0003_016.txt"},
+		{"--config",FAILURE,"templates/0040_003.txt","templates/0003_012_2.txt"},
+		{"-g",FAILURE,"templates/0040_003.txt","templates/0003_012_3.txt"},
 		{"--config=0003_absent.conf --path",FAILURE,"templates/0040_003.txt","templates/0003_008.txt"},
-		{"--config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_017.txt"},
-		{"--unknown --config=0003_absent.conf",FAILURE,"templates/0040_003.txt","templates/0003_017.txt"},
+		{"--config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_012_4.txt"},
+		{"--unknown --config=0003_absent.conf",FAILURE,"templates/0040_003.txt","templates/0003_012_4.txt"},
 		{"--maxdepth=bad --unknown",FAILURE,"templates/0040_003.txt","templates/0018_005_2.txt"},
-		{"--help --unknown",FAILURE,"templates/0003_012_1.txt","templates/0003_017.txt"},
-		{"--silent --unknown",FAILURE,"templates/0045_033.txt","templates/0003_017.txt"},
-		{"--version --config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_017.txt"},
+		{"--help --unknown",FAILURE,"templates/0003_012_1.txt","templates/0003_012_4.txt"},
+		{"--silent --unknown",FAILURE,"templates/0045_033.txt","templates/0003_012_4.txt"},
+		{"--version --config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_012_4.txt"},
 		{"--config=0003_absent.conf --version --color=invalid-value",FAILURE,"templates/0040_003.txt","templates/0040_004.txt"},
-		{"--config=0003_absent.conf --progress=no",FAILURE,"templates/0040_003.txt","templates/0003_018.txt"},
+		{"--config=0003_absent.conf --progress=no",FAILURE,"templates/0040_003.txt","templates/0003_012_5.txt"},
 		{"--",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"-- tests/fixtures/diffs/diff1",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"--path=tests/fixtures/diffs/diff1 --",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
@@ -519,13 +519,13 @@ static Return test0003_13(void)
 {
 	INITTEST;
 	const struct argument_test_case missing_file[] = {
-		{"--config=0003_absent.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_019.txt"},
-		{"--config=",FAILURE,"templates/0003_013_2.txt","templates/0003_020.txt"},
+		{"--config=0003_absent.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_013_3.txt"},
+		{"--config=",FAILURE,"templates/0003_013_2.txt","templates/0003_013_4.txt"},
 		{0}
 	};
 	const struct argument_test_case invalid_file[] = {
-		{"",FAILURE,"templates/0003_013_2.txt","templates/0003_021.txt"},
-		{"--config=precizer.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_021.txt"},
+		{"",FAILURE,"templates/0003_013_2.txt","templates/0003_013_5.txt"},
+		{"--config=precizer.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_013_5.txt"},
 		{0}
 	};
 
@@ -539,8 +539,8 @@ static Return test0003_13(void)
 
 	/* A directory opens successfully but causes a read error when inih reads it */
 	const struct argument_test_case unreadable_file[] = {
-		{"",FAILURE,"templates/0003_013_2.txt","templates/0003_022.txt"},
-		{"--config=precizer.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_022.txt"},
+		{"",FAILURE,"templates/0003_013_2.txt","templates/0003_013_6.txt"},
+		{"--config=precizer.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_013_6.txt"},
 		{"--version",COMPLETED,"templates/0003_006.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
@@ -573,7 +573,7 @@ static Return test0003_14(void)
 {
 	INITTEST;
 	const struct argument_test_case cases[] = {
-		{"--config=tests/templates/0003_014.conf",FAILURE,"templates/0003_023.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0003_014.conf",FAILURE,"templates/0003_014_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 

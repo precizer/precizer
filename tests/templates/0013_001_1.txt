@@ -1,7 +1,7 @@
 \ATESTING:Configuration initialization is finished
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
-(?:TESTING:argument:config=tests/templates/0013_001_1\.conf\n)?(?x)
+(?:TESTING:argument:config=tests/templates/0013_002_1\.conf\n)?(?x)
 (?-x)TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=dry_run_regular\.db

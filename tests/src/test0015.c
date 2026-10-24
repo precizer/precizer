@@ -184,7 +184,7 @@ Return test0015_3(void)
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
-	const char *filename = "templates/0015_002_2.txt";
+	const char *filename = "templates/0015_003_1.txt";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -213,7 +213,7 @@ Return test0015_4(void)
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
-	const char *filename = "templates/0015_003.txt";
+	const char *filename = "templates/0015_004_1.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -253,7 +253,7 @@ Return test0015_5(void)
 	// Run the application without an explicit DB name
 	const char *arguments = "tests/fixtures/diffs/diff1";
 
-	const char *filename = "templates/0015_004.txt"; // File name
+	const char *filename = "templates/0015_005_1.txt"; // File name
 	const char *template = "%DB_NAME%";
 
 	const char *replacement = getenv("DBNAME"); // Database name
@@ -271,7 +271,7 @@ Return test0015_5(void)
 	   database remains available to the following comparison tests */
 	ASSERT(SUCCESS == delete_path(replacement));
 	const struct argument_test_case file_cases[] = {
-		{"--config=tests/templates/0015_004.conf",COMPLETED,filename,STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0015_005_1.conf",COMPLETED,filename,STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,template,replacement));
@@ -294,7 +294,7 @@ Return test0015_6(void)
 
 	const char *arguments = "--check-level=QUICK --compare $DBNAME 0015_database_v0.db";
 
-	const char *filename = "templates/0015_005.txt"; // File name
+	const char *filename = "templates/0015_006_1.txt"; // File name
 	const char *template = "%DB_NAME%";
 
 	const char *replacement = getenv("DBNAME"); // Database name
@@ -326,7 +326,7 @@ Return test0015_7(void)
 	// Run the comparison and upgrade flow
 	const char *arguments = "--check-level=QUICK --compare --update $DBNAME 0015_database_v0.db";
 
-	const char *filename = "templates/0015_006.txt"; // File name
+	const char *filename = "templates/0015_007_1.txt"; // File name
 	const char *template = "%DB_NAME%";
 
 	const char *replacement = getenv("DBNAME"); // Database name
@@ -342,14 +342,14 @@ Return test0015_7(void)
 
 	/* Restore the legacy database so the file run performs the same upgrade */
 	ASSERT(SUCCESS == copy_path("0015_006.db","0015_database_v0.db"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0015_006.conf","0015_006.conf"));
-	ASSERT(SUCCESS == replace_placeholder_in_file("$TMPDIR/0015_006.conf","%DB_NAME%","$DBNAME"));
+	ASSERT(SUCCESS == copy_path("tests/templates/0015_007_1.conf","0015_007_1.conf"));
+	ASSERT(SUCCESS == replace_placeholder_in_file("$TMPDIR/0015_007_1.conf","%DB_NAME%","$DBNAME"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0015_006.conf",COMPLETED,filename,STDERR_MUST_BE_EMPTY},
+		{"--config=0015_007_1.conf",COMPLETED,filename,STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,template,replacement));
-	call(delete_path_if_present("0015_006.conf"));
+	call(delete_path_if_present("0015_007_1.conf"));
 	call(delete_path_if_present("0015_006.db"));
 
 	// Clean up test results
@@ -376,7 +376,7 @@ Return test0015_8(void)
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
-	const char *filename = "templates/0015_007.txt";
+	const char *filename = "templates/0015_008_1.txt";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
@@ -405,7 +405,7 @@ Return test0015_9(void)
 	m_create(char,result,MEMORY_STRING);
 	m_create(char,pattern,MEMORY_STRING);
 
-	const char *filename = "templates/0015_008.txt";
+	const char *filename = "templates/0015_009_1.txt";
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
@@ -445,7 +445,7 @@ Return test0015_10(void)
 
 	const char *arguments = "--check-level=QUICK --compare --update $DBNAME 0015_database_v1.db";
 
-	const char *filename = "templates/0015_009.txt"; // File name
+	const char *filename = "templates/0015_010_1.txt"; // File name
 	const char *template = "%DB_NAME%";
 
 	const char *replacement = getenv("DBNAME"); // Database name
@@ -485,7 +485,7 @@ Return test0015_11(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *filename = "templates/0015_010.txt";
+	const char *filename = "templates/0015_011_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -518,7 +518,7 @@ Return test0015_12(void)
 
 	const char *arguments = "--check-level=QUICK --compare --update $DBNAME 0015_database_v2.db";
 
-	const char *filename = "templates/0015_011.txt"; // File name
+	const char *filename = "templates/0015_012_1.txt"; // File name
 	const char *template = "%DB_NAME%";
 
 	const char *replacement = getenv("DBNAME"); // Database name
@@ -558,7 +558,7 @@ Return test0015_13(void)
 
 	const char *arguments = "--check-level=QUICK --update --database=\"0015_database_v3 это база данных с пробелами и символами UTF-8.db\" "
 	        "tests/fixtures/diffs/diff1";
-	const char *filename = "templates/0015_012.txt";
+	const char *filename = "templates/0015_013_1.txt";
 	const struct argument_test_case cases[] = {
 		{arguments,COMPLETED,filename,STDERR_MUST_BE_EMPTY},
 		{0}
@@ -605,7 +605,7 @@ Return test0015_14(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *filename = "templates/0015_013.txt";
+	const char *filename = "templates/0015_014_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -649,7 +649,7 @@ Return test0015_15(void)
 	ASSERT(SUCCESS == runit(arguments,chunk,NULL,COMPLETED,ALLOW_BOTH));
 	ASSERT(SUCCESS == m_concat_strings(result,chunk));
 
-	const char *filename = "templates/0015_014.txt";
+	const char *filename = "templates/0015_015_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 
@@ -695,7 +695,7 @@ Return test0015_16(void)
 	const char *arguments = "--check-level=QUICK --compare --update 0015_database_v4_reference.db 0015_database_v0_corrupt.db";
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
-	const char *filename = "templates/0015_015.txt";
+	const char *filename = "templates/0015_016_1.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -743,7 +743,7 @@ Return test0015_17(void)
 	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
-	const char *filename = "templates/0015_016.txt";
+	const char *filename = "templates/0015_017_1.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -809,7 +809,7 @@ Return test0015_18(void)
 	m_create(char,pattern,MEMORY_STRING);
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,FAILURE,ALLOW_BOTH));
-	const char *filename = "templates/0015_017.txt";
+	const char *filename = "templates/0015_018_1.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -877,7 +877,7 @@ Return test0015_19(void)
 
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
-	const char *filename = "templates/0015_018_1.txt";
+	const char *filename = "templates/0015_019_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
@@ -888,7 +888,7 @@ Return test0015_19(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
-	filename = "templates/0015_018_2.txt";
+	filename = "templates/0015_019_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));

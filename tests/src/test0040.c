@@ -231,7 +231,7 @@ static Return test0040_2(void)
 		true));
 
 	ASSERT(SUCCESS == assert_output(
-		"--config=tests/templates/0040_001.conf",
+		"--config=tests/templates/0040_002_2.conf",
 		"templates/0040_001.txt",
 		"always",
 		true));
@@ -269,7 +269,7 @@ static Return test0040_2(void)
 		false));
 
 	ASSERT(SUCCESS == assert_output(
-		"--config=tests/templates/0040_010.conf",
+		"--config=tests/templates/0040_002_3.conf",
 		"templates/0040_002.txt",
 		"auto",
 		false));
@@ -445,7 +445,7 @@ static Return test0040_6(void)
 	m_create(char,captured_stdout,MEMORY_STRING);
 	m_create(char,captured_stderr,MEMORY_STRING);
 	m_create(char,repeat_pattern,MEMORY_STRING);
-	ASSERT(SUCCESS == get_file_content("templates/0040_011.txt",repeat_pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0040_006_1.txt",repeat_pattern));
 
 	/* Give the real REMEMBER callback an isolated in-memory SQLite table */
 	ASSERT(SQLITE_OK == sqlite3_open(":memory:",&remember_config.db));
@@ -608,16 +608,16 @@ static Return test0040_8(void)
 		{"-S invalid-value",FAILURE,"templates/0040_003.txt","templates/0040_004.txt"},
 
 		/* An explicitly empty value must also be rejected by both spellings */
-		{"--color=",FAILURE,"templates/0040_003.txt","templates/0040_005.txt"},
-		{"-S ''",FAILURE,"templates/0040_003.txt","templates/0040_005.txt"},
+		{"--color=",FAILURE,"templates/0040_003.txt","templates/0040_008_1.txt"},
+		{"-S ''",FAILURE,"templates/0040_003.txt","templates/0040_008_1.txt"},
 		{0}
 	};
 
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
 	const struct argument_test_case file_cases[] = {
-		{"--config=tests/templates/0040_004.conf",FAILURE,"templates/0003_013_2.txt","templates/0040_004_1.txt"},
-		{"--config=tests/templates/0040_005.conf",FAILURE,"templates/0003_013_2.txt","templates/0040_005_1.txt"},
+		{"--config=tests/templates/0040_008_2.conf",FAILURE,"templates/0003_013_2.txt","templates/0040_008_2.txt"},
+		{"--config=tests/templates/0040_008_3.conf",FAILURE,"templates/0003_013_2.txt","templates/0040_008_3.txt"},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
@@ -638,9 +638,9 @@ static Return test0040_9(void)
 
 	const struct argument_test_case cases[] = {
 		/* Check the parser diagnostic for a long option with no following value */
-		{"--color",FAILURE,"templates/0040_003.txt","templates/0040_006.txt"},
+		{"--color",FAILURE,"templates/0040_003.txt","templates/0040_009_1.txt"},
 		/* Check the corresponding diagnostic for the short option */
-		{"-S",FAILURE,"templates/0040_003.txt","templates/0040_007.txt"},
+		{"-S",FAILURE,"templates/0040_003.txt","templates/0040_009_2.txt"},
 		{0}
 	};
 
@@ -661,21 +661,21 @@ static Return test0040_10(void)
 	/* Verbose diagnostics must name always and retain styled messages */
 	ASSERT(SUCCESS == assert_output(
 		"--verbose --color=always " DRY_RUN_ARGUMENTS,
-		"templates/0040_008.txt",
+		"templates/0040_010_1.txt",
 		"always",
 		true));
 
 	/* Verbose diagnostics must name never and contain no terminal styling */
 	ASSERT(SUCCESS == assert_output(
 		"--verbose --color=never " DRY_RUN_ARGUMENTS,
-		"templates/0040_009.txt",
+		"templates/0040_010_2.txt",
 		"never",
 		false));
 
 	/* Auto must be reported distinctly while redirected output stays plain */
 	ASSERT(SUCCESS == assert_output(
 		"--verbose --color=auto " DRY_RUN_ARGUMENTS,
-		"templates/0040_009.txt",
+		"templates/0040_010_2.txt",
 		"auto",
 		false));
 
