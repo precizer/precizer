@@ -496,13 +496,28 @@ static Return test0040_6(void)
 	remember_config.show_remembered_messages_at_exit = true;
 	ASSERT(SUCCESS == match_function_output(m_text(repeat_pattern),NULL,show_remembered_messages));
 
-	/* Keep REGULAR to verify the format guard independently of logger filtering */
-	remember_config.output = OUTPUT_MACHINE;
-	ASSERT(SUCCESS == match_function_output(NULL,NULL,show_remembered_messages));
+	/* Both concise formats suppress replay and leave the existing history untouched */
+	const OutputMode formats[] = {OUTPUT_COMPACT,OUTPUT_MACHINE};
 
-	/* The selected machine logger mode must also leave both streams empty */
-	rational_logger_mode = MACHINE;
-	ASSERT(SUCCESS == match_function_output(NULL,NULL,show_remembered_messages));
+	for(size_t i = 0; i < sizeof(formats) / sizeof(formats[0]) && SUCCESS == status; ++i)
+	{
+		remember_config.output = formats[i];
+		rational_logger_mode = REGULAR;
+		ASSERT(SUCCESS == match_function_output(NULL,NULL,show_remembered_messages));
+
+		/* A visible MACHINE message must not append a remembered row */
+		rational_logger_mode = MACHINE;
+		remembered_log_level = MACHINE | UNDECOR | REMEMBER;
+		remembered_value = "concise";
+		ASSERT(SUCCESS == function_capture(capture_remembered_message,captured_stdout,captured_stderr));
+		ASSERT(SUCCESS == get_file_content("templates/0040_006_2.txt",repeat_pattern));
+		ASSERT(SUCCESS == match_pattern(captured_stdout,repeat_pattern,"templates/0040_006_2.txt"));
+		ASSERT(captured_stderr->length == 0U);
+		ASSERT(SUCCESS == check_last_remembered_message(remember_config.db,
+			expected_plain_output,sizeof(expected_plain_output) - 1U));
+		ASSERT(SUCCESS == match_function_output(NULL,NULL,show_remembered_messages));
+	}
+	ASSERT(SUCCESS == get_file_content("templates/0040_006_1.txt",repeat_pattern));
 
 	/* Returning to full output retains the complete remembered history */
 	rational_logger_mode = REGULAR;
