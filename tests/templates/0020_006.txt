@@ -46,5 +46,5 @@ tests/fixtures/diffs/diff1
 TESTING:Use the (?:\x1B\[[0-9;]*m)*--force(?:\x1B\[[0-9;]*m)* option only when the PATHS stored in the database need to be updated. Warning: If this option is used incorrectly, file and checksum information in the database may be lost or completely replaced with different values.
 TESTING:Returned db_validate_paths:\d+ status: WARNING
 TESTING:The database connection has been closed
-ERROR:The precizer process terminated unexpectedly due to an error
+TESTING:The precizer completed with warnings
 TESTING:Exit status » WARNING\Z

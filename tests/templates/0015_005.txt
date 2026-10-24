@@ -51,5 +51,5 @@ TESTING:Returned db_integrity_check:\d+ status: WARNING
 TESTING:Comparison of %DB_NAME% and 0015_database_v0\.db databases is complete
 TESTING:Returned db_compare:\d+ status: WARNING
 TESTING:The database connection has been closed
-ERROR:The precizer process terminated unexpectedly due to an error
+TESTING:The precizer completed with warnings
 TESTING:Exit status » WARNING\Z
