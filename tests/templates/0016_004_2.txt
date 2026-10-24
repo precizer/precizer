@@ -1,0 +1,2 @@
+\A(?:\x1B\[[0-9;]*m)*rehashed(?:\x1B\[[0-9;]*m)* \[file\] file\.txt
+\z
