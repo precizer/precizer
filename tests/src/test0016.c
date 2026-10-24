@@ -127,9 +127,10 @@ static Return test0016_1(void)
  * @brief Rehash same-size content changes when mtime changes without --watch-timestamps
  *
  * CLI and configuration runs first check full output against the same template.
- * CLI runs then select compact and machine output with separate
- * templates. Only the database is restored before each run; the changed file,
- * checksum checks, and timestamp checks remain the same
+ * CLI runs then check compact, machine, and verbose machine output against
+ * separate templates, including ctime and mtime change details. Only the
+ * database is restored before each run; the changed file, checksum checks,
+ * and timestamp checks remain the same
  *
  * @return Return status code
  */
@@ -172,9 +173,12 @@ static Return test0016_2(void)
 	ASSERT(SUCCESS == replase_to_string("bbb",file_path));
 	ASSERT(utimensat(0,m_text(target_path),file_times,0) == 0);
 
-	// Confirm that the file is still three bytes long and its mtime has changed
+	// Confirm that only ctime and mtime changed while both sizes stayed the same
 	ASSERT(SUCCESS == get_file_stat(m_text(target_path),&stat_after));
 	ASSERT(stat_before.st_size == 3 && stat_after.st_size == 3);
+	ASSERT(stat_before.st_blocks == stat_after.st_blocks);
+	ASSERT(stat_before.st_ctim.tv_sec != stat_after.st_ctim.tv_sec
+		|| stat_before.st_ctim.tv_nsec != stat_after.st_ctim.tv_nsec);
 	ASSERT(stat_before.st_mtim.tv_sec != stat_after.st_mtim.tv_sec
 		|| stat_before.st_mtim.tv_nsec != stat_after.st_mtim.tv_nsec);
 
@@ -190,6 +194,8 @@ static Return test0016_2(void)
 		{"--output=compact --update --check-level=QUICK --database=0016_mtime.db 0016_mtime",COMPLETED,"templates/0016_002_2.txt",STDERR_MUST_BE_EMPTY},
 		/* Repeat through CLI with machine output */
 		{"--output=machine --update --check-level=QUICK --database=0016_mtime.db 0016_mtime",COMPLETED,"templates/0016_002_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat machine output with verbose ctime and mtime details */
+		{"--output=machine --verbose --update --check-level=QUICK --database=0016_mtime.db 0016_mtime",COMPLETED,"templates/0016_002_4.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -231,6 +237,11 @@ static Return test0016_2(void)
 /**
  * @brief Update metadata without reading file content after a permission change without --watch-timestamps
  *
+ * CLI and configuration updates check full output against the same template,
+ * including zero hashed bytes. CLI runs then check compact, machine, and
+ * verbose machine output against separate templates. Each run restores the
+ * same database and verifies the unchanged checksum and updated ctime
+ *
  * @return Return status code
  */
 static Return test0016_3(void)
@@ -240,9 +251,8 @@ static Return test0016_3(void)
 	const char *fixture_path = "0016_chmod";
 	const char *file_path = "0016_chmod/file.txt";
 	const char *db_filename = "0016_chmod.db";
+	const char *db_backup_filename = "0016_chmod_before_update.db";
 	m_create(char,target_path,MEMORY_STRING);
-	m_create(char,result,MEMORY_STRING);
-	m_create(char,pattern,MEMORY_STRING);
 	struct stat stat_before = {0};
 	struct stat stat_after = {0};
 	CmpctStat saved_stat = {0};
@@ -250,6 +260,7 @@ static Return test0016_3(void)
 	unsigned char checksum_before[SHA512_DIGEST_LENGTH] = {0};
 	unsigned char checksum_after[SHA512_DIGEST_LENGTH] = {0};
 
+	/* Create a readable three-byte file and store its initial checksum */
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 	ASSERT(SUCCESS == create_directory(fixture_path));
 	ASSERT(SUCCESS == replase_to_string("aaa",file_path));
@@ -271,29 +282,54 @@ static Return test0016_3(void)
 	ASSERT(stat_before.st_size == stat_after.st_size);
 	ASSERT(stat_before.st_blocks == stat_after.st_blocks);
 
-	// Update without --watch-timestamps and check the full output for
-	// a metadata-only update with zero bytes hashed by the application
-	ASSERT(SUCCESS == runit("--update --check-level=QUICK --database=0016_chmod.db 0016_chmod",result,NULL,COMPLETED,ALLOW_BOTH));
-	const char *filename = "templates/0016_003_1.txt";
-	ASSERT(SUCCESS == get_file_content(filename,pattern));
-	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
+	/* Preserve the database before any update records the changed ctime */
+	ASSERT(SUCCESS == copy_path(db_filename,db_backup_filename));
 
-	// A zero offset denotes a completed checksum, which must retain its original value
-	ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,"file.txt",&offset,checksum_after));
-	ASSERT(offset == 0);
-	ASSERT(memcmp(checksum_before,checksum_after,sizeof(checksum_before)) == 0);
+	/* Check equivalent inputs and all output variants without --watch-timestamps */
+	const struct argument_test_case cases[] = {
+		/* Default full output through CLI and configuration */
+		{"--update --check-level=QUICK --database=0016_chmod.db 0016_chmod",COMPLETED,"templates/0016_003_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0016_003_1.conf",COMPLETED,"templates/0016_003_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat through CLI with compact output */
+		{"--output=compact --update --check-level=QUICK --database=0016_chmod.db 0016_chmod",COMPLETED,"templates/0016_003_2.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat through CLI with machine output */
+		{"--output=machine --update --check-level=QUICK --database=0016_chmod.db 0016_chmod",COMPLETED,"templates/0016_003_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat machine output with verbose ctime details */
+		{"--output=machine --verbose --update --check-level=QUICK --database=0016_chmod.db 0016_chmod",COMPLETED,"templates/0016_003_4.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
 
-	// Independently hash the file in the test to verify the checksum stored in the DB
-	ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,"file.txt",m_text(target_path)));
+	/* Restore only the database so every run sees the same permission change */
+	for(size_t i = 0; cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == copy_path(db_backup_filename,db_filename));
+		const struct argument_test_case single_case[] = {
+			cases[i],
+			{0}
+		};
 
-	// Confirm that the DB saved the changed ctime and preserved the file's mtime
-	ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,"file.txt",&saved_stat));
-	ASSERT(cmpctstat_matches_stat_timestamps(&saved_stat,&stat_after));
+		// Update without --watch-timestamps and check the full output for
+		// a metadata-only update with zero bytes hashed by the application.
+		// Compact and machine show the same update without statistics; stderr must be empty
+		ASSERT(SUCCESS == run_and_match_templates(single_case,NULL,NULL));
 
+		// A zero offset denotes a completed checksum, which must retain its original value
+		ASSERT(SUCCESS == read_final_sha512_from_db(db_filename,"file.txt",&offset,checksum_after));
+		ASSERT(offset == 0);
+		ASSERT(memcmp(checksum_before,checksum_after,sizeof(checksum_before)) == 0);
+
+		// Independently hash the file in the test to verify the checksum stored in the DB
+		ASSERT(SUCCESS == db_final_sha512_matches_file(db_filename,"file.txt",m_text(target_path)));
+
+		// Confirm that the DB saved the changed ctime and preserved the file's mtime
+		ASSERT(SUCCESS == db_read_cmpctstat_by_relative_path(db_filename,"file.txt",&saved_stat));
+		ASSERT(cmpctstat_matches_stat_timestamps(&saved_stat,&stat_after));
+	}
+
+	/* Remove the working database, saved baseline, and fixture after all runs */
+	call(delete_path_if_present(db_backup_filename));
 	call(delete_path_if_present(db_filename));
 	call(delete_path_if_present(fixture_path));
-	m_del(pattern);
-	m_del(result);
 	m_del(target_path);
 
 	RETURN_STATUS;

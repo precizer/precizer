@@ -1,0 +1,2 @@
+\A(?:\x1B\[[0-9;]*m)*updated(?:\x1B\[[0-9;]*m)* \[metadata\] file\.txt
+\z
