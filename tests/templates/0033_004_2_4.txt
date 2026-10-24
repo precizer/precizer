@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+rehashed \[from the beginning, changed: lsize was:(?:0B|[1-9][0-9]*(?:EiB|PiB|TiB|GiB|MiB|KiB|B)(?: [1-9][0-9]*(?:PiB|TiB|GiB|MiB|KiB|B))*), now:(?:0B|[1-9][0-9]*(?:EiB|PiB|TiB|GiB|MiB|KiB|B)(?: [1-9][0-9]*(?:PiB|TiB|GiB|MiB|KiB|B))*)(?: & asize was:(?:0B|[1-9][0-9]*(?:EiB|PiB|TiB|GiB|MiB|KiB|B)(?: [1-9][0-9]*(?:PiB|TiB|GiB|MiB|KiB|B))*), now:(?:0B|[1-9][0-9]*(?:EiB|PiB|TiB|GiB|MiB|KiB|B)(?: [1-9][0-9]*(?:PiB|TiB|GiB|MiB|KiB|B))*))? & ctime was:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9} & mtime was:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}\] hugetestfile
+\z

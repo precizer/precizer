@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+rehashed \[from the beginning\] hugetestfile
+\z
