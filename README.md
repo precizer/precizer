@@ -1322,7 +1322,19 @@ Example scan output lines in `compact` and `machine`:
 <span class="output-ignored">ignored</span> [not added] cache/session.tmp
 </pre>
 
-The first word identifies the event, and the path follows the square brackets. The text in square brackets provides secondary details and is deliberately enclosed in brackets so it can be easily filtered out using regular expressions
+In `machine` mode, output has the form `action [details] path`. A single space follows the action word and the closing square bracket. The entire remainder of the line is the file path, including any spaces, brackets, and other characters it contains. The text in square brackets provides secondary details and is deliberately enclosed in brackets so it can be easily filtered out using regular expressions
+
+Example parsing with `awk`: `$1` is the action, `$2` is the explanation without brackets, and `$3` is the entire path
+
+```sh
+precizer --output=machine /data |
+	awk -F ' \\[|\\] ' '
+		/^[^ ]+ \[[^]]*\] / {
+			$3 = substr($0, length($1) + length($2) + 5)
+			print $1, $2, $3
+		}
+	'
+```
 
 In these formats, `--verbose` adds details about metadata changes:
 
