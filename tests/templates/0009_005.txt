@@ -44,8 +44,8 @@ TESTING:The database database0009_5\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
 TESTING:File system traversal initiated to calculate file count and storage usage
 TESTING:Total traversal size: [^\r\n]+
-TESTING:Total items: 51
-TESTING:Directories: 40
+TESTING:Total items: 53
+TESTING:Directories: 42
 TESTING:Files: 10
 TESTING:Symlinks: 1
 TESTING:Update mode enabled for DB database0009_5\.db
@@ -61,8 +61,8 @@ TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database0009_5\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:Total runtime: [^,\r\n]+
 TESTING:Total traversal size: \d+[^\r\n]*
-TESTING:Total items: 51
-TESTING:Directories: 40
+TESTING:Total items: 53
+TESTING:Directories: 42
 TESTING:Files: 10
 TESTING:Symlinks: 1
 TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
