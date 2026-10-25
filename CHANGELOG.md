@@ -2,9 +2,9 @@
 
 All notable changes will be documented in this file
 
-# Release 0.19.0 2026-11-11
+# Release 0.19.0 2026-10-26
 
-Added `--output=machine`, a simplified output mode designed specifically for automated parsing of everything the program outputs while running. 
+- Added `--output=full|compact|machine`. `full` remains the default; `compact` provides concise file messages, and `machine` provides output for parsing by scripts with color disabled by default
 
 # Release 0.18.0 2026-10-17
 
