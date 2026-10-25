@@ -2,13 +2,17 @@
 
 All notable changes will be documented in this file
 
+# Release 0.19.0 2026-10-25
+
+- Added `--output=full|compact|machine`. `full` remains the default; `compact` provides concise file messages, and `machine` provides output for parsing by scripts with color disabled by default
+
 # Release 0.18.0 2026-10-17
 
 * The application now supports configuration files using `key = value` syntax. All CLI option names can be used as keys. Configuration files are an optional addition, not a replacement for the CLI. All CLI commands work exactly as before and will continue to do so. The application remains 100% backward compatible, so existing scripts won't break.
 * The application is significantly faster due to a combination of factors, primarily optimizations to database access
 * Embeded SQLite upgraded to the mainstream version
 * Improved file status output
-* [argp-standalone](https://github.com/tom42/argp-standalone) is finally part of the codebase. Updates from its author and maintainer, [Thomas Mathys](https://github.com/tom42), will be incorporated as they become available.  
+* [argp-standalone](https://github.com/tom42/argp-standalone) is finally part of the codebase. Updates from its maintainer, [Thomas Mathys](https://github.com/tom42), will be incorporated as they become available.  
 This change was long overdue. Different systems use a wide range of incompatible argp versions, and supporting them all while working around unresolved bugs on each system turned out to be a real challenge.  
 argp has once again proved its worth. It now works alongside inih, a configuration file parser, so the program supports configuration files as well as CLI arguments.
 

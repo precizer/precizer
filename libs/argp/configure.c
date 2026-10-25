@@ -545,7 +545,7 @@ int main(
 
 	if(status == EXIT_SUCCESS)
 	{
-		printf("%s generated with target compiler probes\n",argv[2]);
+		puts("config.h generated with target compiler probes");
 	}
 	remove(source_path);
 	remove(binary_path);

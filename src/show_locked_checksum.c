@@ -35,13 +35,13 @@ Return show_locked_checksum_unavailable_violation(
 
 	if(access_status == FILE_NOT_FOUND)
 	{
-		message = "checksum locked, file disappeared";
+		message = "file disappeared";
 
 	} else if(access_status == FILE_ACCESS_DENIED){
-		message = "checksum locked, access denied";
+		message = "access denied";
 
 	} else if(access_status == FILE_ACCESS_ERROR){
-		message = "checksum locked, access check failed";
+		message = "access check failed";
 
 	} else {
 		status = FAILURE;
@@ -51,13 +51,23 @@ Return show_locked_checksum_unavailable_violation(
 	{
 		const char *runtime_relative_path = m_text(relative_path);
 
-		if(first_iteration != NULL)
+		if(config->output != OUTPUT_FULL)
 		{
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,
-				"@{red}%s@{reset} %s\n",message,runtime_relative_path);
+			if(first_iteration != NULL)
+			{
+				slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{red}error@{reset} [locked checksum, %s] %s\n",message,runtime_relative_path);
 
+			} else {
+				slog(MACHINE|UNDECOR,"@{red}error@{reset} [locked checksum, %s] %s\n",message,runtime_relative_path);
+			}
 		} else {
-			slog(EVERY|UNDECOR|REMEMBER,"@{red}%s@{reset} %s\n",message,runtime_relative_path);
+			if(first_iteration != NULL)
+			{
+				slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{red}checksum locked, %s@{reset} %s\n",message,runtime_relative_path);
+
+			} else {
+				slog(EVERY|UNDECOR|REMEMBER,"@{red}checksum locked, %s@{reset} %s\n",message,runtime_relative_path);
+			}
 		}
 
 		/*

@@ -1,6 +1,6 @@
 #include "sute.h"
 
-Return long_relative_path_test(void)
+Return test0014_1(void)
 {
 	INITTEST;
 
@@ -169,7 +169,7 @@ Return long_relative_path_test(void)
 	RETURN_STATUS;
 }
 
-Return long_absolute_path_test(void)
+Return test0014_2(void)
 {
 	INITTEST;
 
@@ -342,7 +342,7 @@ Return long_absolute_path_test(void)
 	RETURN_STATUS;
 }
 
-Return reset_relative_path_test(void)
+Return test0014_3(void)
 {
 	INITTEST;
 
@@ -514,7 +514,7 @@ Return reset_relative_path_test(void)
 	RETURN_STATUS;
 }
 
-Return reset_absolute_path_test(void)
+Return test0014_4(void)
 {
 	INITTEST;
 
@@ -696,10 +696,10 @@ Return test0014(void)
 {
 	INITTEST;
 
-	TEST(long_relative_path_test,"Very long relative path");
-	TEST(long_absolute_path_test,"Long absolute path");
-	TEST(reset_relative_path_test,"Reset PATH and relative path");
-	TEST(reset_absolute_path_test,"Reset PATH and absolute path");
+	TEST(test0014_1,"Very long relative path");
+	TEST(test0014_2,"Long absolute path");
+	TEST(test0014_3,"Reset PATH and relative path");
+	TEST(test0014_4,"Reset PATH and absolute path");
 
 	RETURN_STATUS;
 }

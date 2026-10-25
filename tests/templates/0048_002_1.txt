@@ -1,0 +1,3 @@
+\A(?:[^:\r\n]*/)?precizer: option (?:'|`)--output' requires an argument
+Try `precizer --help' or `precizer --usage' for more information\.
+\z

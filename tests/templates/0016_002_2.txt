@@ -1,26 +1,2 @@
-\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
-Primary database file name: 0016_chmod\.db
-Starting database file 0016_chmod\.db integrity check…
-Database 0016_chmod\.db has been verified and is in good condition
-Update mode enabled for DB 0016_chmod\.db
-File traversal started for [^\r\n]+
-(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0016_chmod\.db:(?:\x1B\[[0-9;]*m)*
-updated metadata file\.txt
-File traversal complete
-Searching for files that no longer exist on the file system…
-Missing file search finished
-Start vacuuming the primary database…
-Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+
-(?:\x1B\[[0-9;]*m)*The database file 0016_chmod\.db has been modified since the program was launched(?:\x1B\[[0-9;]*m)*
-Total runtime: [^,\r\n]+
-Total traversal size: [^,\r\n]+
-Total items: \d+
-Directories: \d+
-Files: \d+
-Symlinks: \d+
-Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
-Scan rate: n/a
-Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
-Hashing rate: n/a
-Hashed data: 0B
-Exit status » SUCCESS\Z
+\A(?:\x1B\[[0-9;]*m)*rehashed(?:\x1B\[[0-9;]*m)* \[file\] file\.txt
+\z

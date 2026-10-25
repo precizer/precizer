@@ -46,6 +46,9 @@ static Return check_reader(
 	free_config();
 	ASSERT(config->config_file_error_line == -1);
 	ASSERT(SUCCESS == init_config_and_check_output());
+	ASSERT(config->silent == false);
+	ASSERT(config->verbose == false);
+	ASSERT(config->output == OUTPUT_FULL);
 	ASSERT(config->config_file_error_line == -1);
 	m_create(char,path,MEMORY_STRING);
 	m_create(char,captured_stdout,MEMORY_STRING);
@@ -68,7 +71,13 @@ static Return check_reader(
 	ASSERT(capture.result == expected_result);
 	ASSERT(capture.has_entries == expected_entries);
 	ASSERT(config->config_file_error_line == -1);
-	ASSERT(captured_stdout->length == 0U);
+	if(expected_result & FAILURE)
+	{
+		ASSERT(SUCCESS == get_file_content("templates/0045_034.txt",pattern));
+		ASSERT(SUCCESS == match_pattern(captured_stdout,pattern,"templates/0045_034.txt"));
+	} else {
+		ASSERT(captured_stdout->length == 0U);
+	}
 
 	if(error_template != NULL)
 	{
@@ -92,10 +101,7 @@ static Return check_reader(
 static Return test0045_1(void)
 {
 	INITTEST;
-	const LOGMODES default_logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_001.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_001.conf",true,SUCCESS,true,NULL));
 	ASSERT(config->roots.length == 4U);
 	memory *roots = m_data(memory,conf(roots));
 	ASSERT(strcmp(m_text(&roots[0]),"/data/first") == 0);
@@ -107,6 +113,7 @@ static Return test0045_1(void)
 		"^cache/","^tmp/","^something_eles/","^other/","^things/","^before#after"
 	};
 	ASSERT(config->ignore != NULL);
+
 	for(size_t i = 0; i < sizeof(expected_ignore) / sizeof(expected_ignore[0]) && SUCCESS == status; ++i)
 	{
 		ASSERT(config->ignore[i] != NULL);
@@ -129,45 +136,35 @@ static Return test0045_1(void)
 	ASSERT(config->compare_filter == (CF_CHECKSUM_MISMATCH | CF_FIRST_SOURCE));
 	ASSERT(config->dry_run == true && config->dry_run_with_checksums == true);
 	ASSERT(config->verbose == false);
-	ASSERT(rational_logger_mode == default_logger_mode);
+	ASSERT(config->silent == true);
+	ASSERT(rational_logger_mode == SILENT);
 	ASSERT(rational_color_mode == COLOR_MODE_NEVER);
 
 	/* Mixed-case FULL replaces QUICK instead of retaining the earlier value */
-	ASSERT(SUCCESS == copy_path("tests/templates/0045_001_5.conf","0045_reader.conf"));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_001_5.conf",true,SUCCESS,true,NULL));
 	ASSERT(config->db_check_level == FULL);
 
 	/* The largest supported traversal depth is accepted without truncation */
-	ASSERT(SUCCESS == copy_path("tests/templates/0045_001_6.conf","0045_reader.conf"));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_001_6.conf",true,SUCCESS,true,NULL));
 	ASSERT(config->maxdepth == 32767);
 
 	/* BOM, CRLF, initial indentation, and an unterminated continuation */
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_001_1.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_001_1.conf",true,SUCCESS,true,NULL));
 	ASSERT(config->roots.length == 2U);
 	roots = m_data(memory,conf(roots));
 	ASSERT(strcmp(m_text(&roots[0]),"first") == 0);
 	ASSERT(strcmp(m_text(&roots[1]),"second") == 0);
 
 	/* A selected file can contain no records at all */
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_001_2.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,false,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_001_2.conf",true,SUCCESS,false,NULL));
 	ASSERT(config->roots.length == 0U);
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_001_3.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,false,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_001_3.conf",true,SUCCESS,false,NULL));
 	ASSERT(config->roots.length == 0U);
 
 	/* Section headers alone do not count as settings */
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_001_4.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,false,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_001_4.conf",true,SUCCESS,false,NULL));
 	ASSERT(config->roots.length == 0U);
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -183,35 +180,30 @@ static Return test0045_2(void)
 		const char *error_template;
 	} cases[] = {
 		{"tests/templates/0045_002_1.conf","templates/0045_002.txt"},
-		{"tests/templates/0045_002_2.conf","templates/0045_003.txt"},
-		{"tests/templates/0045_002_3.conf","templates/0045_003.txt"},
-		{"tests/templates/0045_002_4.conf","templates/0045_003.txt"},
-		{"tests/templates/0045_002_5.conf","templates/0045_004.txt"},
-		{"tests/templates/0045_002_6.conf","templates/0045_024.txt"},
-		{"tests/templates/0045_002_7.conf","templates/0045_025.txt"},
-		{"tests/templates/0045_002_8.conf","templates/0045_005.txt"},
-		{"tests/templates/0045_002_9.conf","templates/0045_026.txt"},
-		{"tests/templates/0045_002_10.conf","templates/0045_027.txt"},
-		{"tests/templates/0045_002_11.conf","templates/0045_028.txt"}
+		{"tests/templates/0045_002_2.conf","templates/0045_002_2.txt"},
+		{"tests/templates/0045_002_3.conf","templates/0045_002_2.txt"},
+		{"tests/templates/0045_002_4.conf","templates/0045_002_2.txt"},
+		{"tests/templates/0045_002_5.conf","templates/0045_002_5.txt"},
+		{"tests/templates/0045_002_6.conf","templates/0045_002_6.txt"},
+		{"tests/templates/0045_002_7.conf","templates/0045_002_7.txt"},
+		{"tests/templates/0045_002_8.conf","templates/0045_002_8.txt"},
+		{"tests/templates/0045_002_9.conf","templates/0045_002_9.txt"},
+		{"tests/templates/0045_002_10.conf","templates/0045_002_10.txt"},
+		{"tests/templates/0045_002_11.conf","templates/0045_002_11.txt"}
 	};
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_from_origin(cases[i].config_template,
-			"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,true,
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,FAILURE,true,
 			cases[i].error_template));
 		ASSERT(config->roots.length == 1U);
 	}
 
 	/* A first-line failure must prevent the later valid key from setting the flag */
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_002_12.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,false,
-		"templates/0045_006.txt"));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_002_12.conf",true,FAILURE,false,
+		"templates/0045_002_12.txt"));
 	ASSERT(config->roots.length == 0U);
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -222,15 +214,12 @@ static Return test0045_2(void)
 static Return test0045_3(void)
 {
 	INITTEST;
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_003.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
 	/* inih reports the error after recognizing the key from the buffered prefix */
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,true,
-		"templates/0045_007.txt"));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_003.conf",true,FAILURE,true,
+		"templates/0045_003.txt"));
 	/* The valid path after the oversized line must not be applied */
 	ASSERT(config->roots.length == 0U);
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -245,20 +234,20 @@ static Return test0045_4(void)
 	ASSERT(SUCCESS == delete_path_if_present("0045_reader.conf"));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf",false,SUCCESS,false,NULL));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,false,
-		"templates/0045_008.txt"));
+		"templates/0045_004_1.txt"));
 
 	/* A regular file used as a parent produces ENOTDIR even with elevated privileges */
 	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_001_2.conf",
 		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf/child",false,FAILURE,false,
-		"templates/0045_009.txt"));
+		"templates/0045_004_2.txt"));
 	ASSERT(SUCCESS == check_reader("0045_reader.conf/child",true,FAILURE,false,
-		"templates/0045_009.txt"));
+		"templates/0045_004_2.txt"));
 
 	/* A directory opens successfully but causes a read error on the first read */
 	ASSERT(SUCCESS == create_directory("0045_config_directory"));
 	ASSERT(SUCCESS == check_reader("0045_config_directory",true,FAILURE,false,
-		"templates/0045_010.txt"));
+		"templates/0045_004_3.txt"));
 	call(delete_path_if_present("0045_config_directory"));
 
 	call(delete_path_if_present("0045_reader.conf"));
@@ -299,9 +288,7 @@ static Return test0045_5(void)
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_from_origin(cases[i].config_template,
-			"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,SUCCESS,true,NULL));
 		ASSERT(config->progress == cases[i].enabled);
 		ASSERT(config->update == cases[i].enabled);
 		ASSERT(config->dry_run == cases[i].enabled);
@@ -312,26 +299,23 @@ static Return test0045_5(void)
 		ASSERT(config->watch_timestamps == cases[i].enabled);
 		ASSERT(config->force == cases[i].enabled);
 		ASSERT(config->quiet_ignored == cases[i].enabled);
+		ASSERT(config->silent == cases[i].enabled);
 		ASSERT(config->verbose == cases[i].enabled);
 		ASSERT(config->show_remembered_messages_at_exit == cases[i].enabled);
 		ASSERT(config->dry_run_with_checksums == false);
 
 		if(cases[i].enabled == true)
 		{
-			ASSERT(rational_logger_mode == VERBOSE);
+			ASSERT(rational_logger_mode == SILENT);
 		} else {
 			ASSERT(rational_logger_mode == default_logger_mode);
 		}
 	}
 
 	/* A plain true value replaces the checksum mode; a later named mode enables it */
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_005_17.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_005_17.conf",true,SUCCESS,true,NULL));
 	ASSERT(config->dry_run == true && config->dry_run_with_checksums == false);
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_005_18.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_005_18.conf",true,SUCCESS,true,NULL));
 	ASSERT(config->dry_run == true && config->dry_run_with_checksums == true);
 
 	/* Disabling an output mode preserves a different active mode */
@@ -348,14 +332,11 @@ static Return test0045_5(void)
 
 	for(size_t i = 0; i < sizeof(output_cases) / sizeof(output_cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_from_origin(output_cases[i].config_template,
-			"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+		ASSERT(SUCCESS == check_reader(output_cases[i].config_template,true,SUCCESS,true,NULL));
 		ASSERT(rational_logger_mode == output_cases[i].logger_mode);
 		ASSERT(config->verbose == output_cases[i].verbose);
 	}
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -370,37 +351,34 @@ static Return test0045_6(void)
 		const char *config_template;
 		const char *error_template;
 	} cases[] = {
-		{"tests/templates/0045_006_1.conf","templates/0045_011.txt"},
-		{"tests/templates/0045_006_2.conf","templates/0045_020.txt"},
-		{"tests/templates/0045_006_3.conf","templates/0045_029.txt"},
-		{"tests/templates/0045_006_4.conf","templates/0045_030.txt"},
-		{"tests/templates/0045_006_5.conf","templates/0045_031.txt"},
-		{"tests/templates/0045_006_6.conf","templates/0045_012.txt"},
-		{"tests/templates/0045_006_7.conf","templates/0045_013.txt"},
-		{"tests/templates/0045_006_8.conf","templates/0045_014.txt"},
+		{"tests/templates/0045_006_1.conf","templates/0045_006_1.txt"},
+		{"tests/templates/0045_006_2.conf","templates/0045_006_2.txt"},
+		{"tests/templates/0045_006_3.conf","templates/0045_006_3.txt"},
+		{"tests/templates/0045_006_4.conf","templates/0045_006_4.txt"},
+		{"tests/templates/0045_006_5.conf","templates/0045_006_5.txt"},
+		{"tests/templates/0045_006_6.conf","templates/0045_006_6.txt"},
+		{"tests/templates/0045_006_7.conf","templates/0045_006_7.txt"},
+		{"tests/templates/0045_006_8.conf","templates/0045_006_8.txt"},
 		{"tests/templates/0045_006_9.conf","templates/0045_015.txt"},
-		{"tests/templates/0045_006_10.conf","templates/0045_016.txt"},
-		{"tests/templates/0045_006_11.conf","templates/0045_017.txt"},
-		{"tests/templates/0045_006_12.conf","templates/0045_018.txt"},
-		{"tests/templates/0045_006_13.conf","templates/0045_019.txt"},
-		{"tests/templates/0045_006_14.conf","templates/0045_032.txt"},
+		{"tests/templates/0045_006_10.conf","templates/0045_006_10.txt"},
+		{"tests/templates/0045_006_11.conf","templates/0045_006_11.txt"},
+		{"tests/templates/0045_006_12.conf","templates/0045_006_12.txt"},
+		{"tests/templates/0045_006_13.conf","templates/0045_006_13.txt"},
+		{"tests/templates/0045_006_14.conf","templates/0045_006_14.txt"},
 		{"tests/templates/0045_006_15.conf","templates/0045_015.txt"},
 		{"tests/templates/0045_006_16.conf","templates/0045_015.txt"},
-		{"tests/templates/0045_006_17.conf","templates/0045_018.txt"},
-		{"tests/templates/0045_006_18.conf","templates/0045_018.txt"}
+		{"tests/templates/0045_006_17.conf","templates/0045_006_12.txt"},
+		{"tests/templates/0045_006_18.conf","templates/0045_006_12.txt"}
 	};
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_from_origin(cases[i].config_template,
-			"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,true,cases[i].error_template));
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,FAILURE,true,cases[i].error_template));
 		ASSERT(config->roots.length == 1U);
 		memory *roots = m_data(memory,conf(roots));
 		ASSERT(strcmp(m_text(&roots[0]),"first") == 0);
 	}
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -411,9 +389,7 @@ static Return test0045_6(void)
 static Return test0045_7(void)
 {
 	INITTEST;
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_007.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_007.conf",true,SUCCESS,true,NULL));
 
 	char **patterns[] = {config->ignore,config->include,config->lock_checksum};
 
@@ -443,7 +419,6 @@ static Return test0045_7(void)
 		ASSERT(compiled[i][3] == NULL);
 	}
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -466,7 +441,7 @@ static Return test0045_8(void)
 {
 	INITTEST;
 	m_create(char,pattern,MEMORY_STRING);
-	ASSERT(SUCCESS == get_file_content("templates/0045_021.txt",pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0045_008_1.txt",pattern));
 	const struct {
 		const char *config_template;
 		/* Address of the Config list populated after check_reader() resets defaults */
@@ -486,9 +461,7 @@ static Return test0045_8(void)
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_from_origin(cases[i].config_template,
-			"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,SUCCESS,true,NULL));
 		ASSERT(config->roots.length == 1U);
 		memory *roots = m_data(memory,conf(roots));
 		ASSERT(strcmp(m_text(&roots[0]),"after-pattern") == 0);
@@ -516,14 +489,11 @@ static Return test0045_8(void)
 	}
 
 	/* A later option error is reported before regex compilation can start */
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0045_008_10.conf",
-		"0045_reader.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,true,"templates/0045_015.txt"));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_008_10.conf",true,FAILURE,true,"templates/0045_015.txt"));
 	ASSERT(config->ignore != NULL && config->ignore[0] != NULL);
 	ASSERT(strcmp(config->ignore[0],"(") == 0);
 	ASSERT(config->roots.length == 0U);
 
-	call(delete_path_if_present("0045_reader.conf"));
 	call(m_del(pattern));
 	RETURN_STATUS;
 }
@@ -633,7 +603,7 @@ static Return test0045_10(void)
 {
 	INITTEST;
 	m_create(char,pattern,MEMORY_STRING);
-	ASSERT(SUCCESS == get_file_content("templates/0045_022.txt",pattern));
+	ASSERT(SUCCESS == get_file_content("templates/0045_010_1.txt",pattern));
 	ASSERT(SUCCESS == match_function_output(NULL,m_text(pattern),check_settings_source_conflict));
 	call(m_del(pattern));
 	RETURN_STATUS;
@@ -646,8 +616,7 @@ static Return test0045_10(void)
 static Return test0045_11(void)
 {
 	INITTEST;
-	ASSERT(SUCCESS == copy_path("tests/templates/0045_011.conf","0045_reader.conf"));
-	ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_011.conf",true,SUCCESS,true,NULL));
 	ASSERT(config->roots.length == 3U);
 	memory *roots = m_data(memory,conf(roots));
 	ASSERT(strcmp(m_text(&roots[0]),"/mnt/my files") == 0);
@@ -658,6 +627,7 @@ static Return test0045_11(void)
 		"^proc/.*","^sys/.*","\\.log$","^\\w+\\s+\\d+$","\"literal quotes\"","^before#after","^literal\"$"
 	};
 	ASSERT(config->ignore != NULL);
+
 	for(size_t i = 0; i < sizeof(expected_ignore) / sizeof(expected_ignore[0]) && SUCCESS == status; ++i)
 	{
 		ASSERT(config->ignore[i] != NULL);
@@ -676,7 +646,6 @@ static Return test0045_11(void)
 	ASSERT(config->progress == false);
 	ASSERT(config->dry_run == true && config->dry_run_with_checksums == true);
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -696,15 +665,13 @@ static Return test0045_12(void)
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_path(cases[i],"0045_reader.conf"));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,true,"templates/0045_012_1.txt"));
+		ASSERT(SUCCESS == check_reader(cases[i],true,FAILURE,true,"templates/0045_012_1.txt"));
 		ASSERT(config->roots.length == 1U);
 		memory *roots = m_data(memory,conf(roots));
 		ASSERT(strcmp(m_text(&roots[0]),"first") == 0);
 		ASSERT(config->ignore == NULL);
 	}
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -729,8 +696,7 @@ static Return test0045_13(void)
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_path(cases[i].config_template,"0045_reader.conf"));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,SUCCESS,true,NULL));
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,SUCCESS,true,NULL));
 		ASSERT(config->compare == true);
 		ASSERT(config->roots.length == 0U);
 		ASSERT(config->db_file_paths.length == 2U);
@@ -746,7 +712,6 @@ static Return test0045_13(void)
 	ASSERT(config->compare == false);
 	ASSERT(config->db_file_paths.length == 0U);
 
-	call(delete_path_if_present("0045_reader.conf"));
 	RETURN_STATUS;
 }
 
@@ -770,11 +735,11 @@ static Return test0045_14(void)
 
 	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
 	{
-		ASSERT(SUCCESS == copy_path(cases[i].config_template,"0045_reader.conf"));
-		ASSERT(SUCCESS == check_reader("0045_reader.conf",true,FAILURE,true,"templates/0045_014_1.txt"));
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,FAILURE,true,"templates/0045_014_1.txt"));
 		ASSERT(config->compare == cases[i].compare);
 		ASSERT(config->db_file_paths.length == cases[i].path_count);
 		ASSERT(config->update == false);
+
 		if(cases[i].path_count != 0U && SUCCESS == status)
 		{
 			memory *paths = m_data(memory,conf(db_file_paths));
@@ -782,7 +747,201 @@ static Return test0045_14(void)
 		}
 	}
 
-	call(delete_path_if_present("0045_reader.conf"));
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Parse output format values and retain the last valid selection
+ * @return Return status for supported, repeated, empty, and unknown output values
+ */
+static Return test0045_15(void)
+{
+	INITTEST;
+	const struct {
+		const char *config_template;
+		OutputMode output;
+		Return result;
+		const char *error_template;
+	} cases[] = {
+		{"tests/templates/0045_015_1.conf",OUTPUT_FULL,SUCCESS,NULL},
+		{"tests/templates/0045_015_2.conf",OUTPUT_MACHINE,SUCCESS,NULL},
+		{"tests/templates/0045_015_3.conf",OUTPUT_FULL,SUCCESS,NULL},
+		{"tests/templates/0045_015_4.conf",OUTPUT_MACHINE,SUCCESS,NULL},
+		{"tests/templates/0045_015_5.conf",OUTPUT_FULL,FAILURE,"templates/0045_015_5.txt"},
+		{"tests/templates/0045_015_6.conf",OUTPUT_FULL,FAILURE,"templates/0045_015_6.txt"},
+		{"tests/templates/0045_015_7.conf",OUTPUT_FULL,SUCCESS,NULL},
+		{"tests/templates/0045_015_8.conf",OUTPUT_FULL,FAILURE,"templates/0045_015_5.txt"}
+	};
+
+	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,cases[i].result,true,cases[i].error_template));
+		ASSERT(config->output == cases[i].output);
+	}
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Select logger modes by priority while retaining requested configuration settings
+ * @return Return status for logger selection, verbose details, and returning to full output
+ */
+static Return test0045_16(void)
+{
+	INITTEST;
+	const LOGMODES initial_logger_mode = atomic_load_explicit(&rational_logger_mode,memory_order_relaxed);
+	const struct {
+		const char *config_template;
+		OutputMode output;
+		LOGMODES logger_mode;
+		bool verbose;
+		bool silent;
+	} cases[] = {
+		{"tests/templates/0045_016_1.conf",OUTPUT_MACHINE,MACHINE,true,false},
+		{"tests/templates/0045_016_2.conf",OUTPUT_MACHINE,MACHINE,true,false},
+		{"tests/templates/0045_016_3.conf",OUTPUT_MACHINE,SILENT,false,true},
+		{"tests/templates/0045_016_4.conf",OUTPUT_MACHINE,SILENT,false,true},
+		{"tests/templates/0045_016_5.conf",OUTPUT_MACHINE,SILENT,true,true},
+		{"tests/templates/0045_016_6.conf",OUTPUT_MACHINE,SILENT,true,true},
+		{"tests/templates/0045_016_7.conf",OUTPUT_MACHINE,MACHINE,false,false},
+		{"tests/templates/0045_016_8.conf",OUTPUT_MACHINE,MACHINE,false,false},
+		{"tests/templates/0045_016_9.conf",OUTPUT_FULL,VERBOSE,true,false},
+		{"tests/templates/0045_016_10.conf",OUTPUT_FULL,initial_logger_mode,false,false},
+		{"tests/templates/0045_016_11.conf",OUTPUT_FULL,SILENT,false,true},
+		{"tests/templates/0045_016_12.conf",OUTPUT_MACHINE,SILENT,false,true},
+		{"tests/templates/0045_016_13.conf",OUTPUT_MACHINE,MACHINE,true,false},
+		{"tests/templates/0045_016_14.conf",OUTPUT_MACHINE,SILENT,true,true},
+		{"tests/templates/0045_016_15.conf",OUTPUT_MACHINE,SILENT,true,true},
+		{"tests/templates/0045_016_16.conf",OUTPUT_FULL,SILENT,true,true},
+		{"tests/templates/0045_016_17.conf",OUTPUT_FULL,SILENT,true,true},
+		{"tests/templates/0045_016_18.conf",OUTPUT_FULL,VERBOSE,true,false},
+		{"tests/templates/0045_016_19.conf",OUTPUT_FULL,initial_logger_mode,false,false},
+		{"tests/templates/0045_016_20.conf",OUTPUT_MACHINE,SILENT,true,true},
+		{"tests/templates/0045_016_21.conf",OUTPUT_MACHINE,SILENT,true,true}
+	};
+
+	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
+	{
+		ASSERT(SUCCESS == check_reader(cases[i].config_template,true,SUCCESS,true,NULL));
+		ASSERT(config->output == cases[i].output);
+		ASSERT(rational_logger_mode == cases[i].logger_mode);
+		ASSERT(config->verbose == cases[i].verbose);
+		ASSERT(config->silent == cases[i].silent);
+	}
+
+	rational_logger_mode = initial_logger_mode;
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Accept mixed-case named values while retaining literal data
+ * @return Return status for named values, paths, and regular expressions
+ */
+static Return test0045_17(void)
+{
+	INITTEST;
+	ASSERT(SUCCESS == check_reader("tests/templates/0045_017.conf",true,SUCCESS,true,NULL));
+	ASSERT(config->output == OUTPUT_MACHINE);
+	ASSERT(rational_logger_mode == MACHINE);
+	ASSERT(rational_color_mode == COLOR_MODE_NEVER);
+	ASSERT(config->db_check_level == QUICK);
+	ASSERT(config->dry_run == true && config->dry_run_with_checksums == true);
+	ASSERT(config->progress == false && config->quiet_ignored == true);
+	ASSERT(config->db_drop_ignored == true && config->db_drop_inaccessible == true);
+	ASSERT(config->one_file_system == true);
+	ASSERT(config->compare_filter == (CF_CHECKSUM_MISMATCH | CF_FIRST_SOURCE | CF_SECOND_SOURCE));
+	ASSERT(strcmp(confstr(db_primary_file_path),"CaSe.DB") == 0);
+	ASSERT(config->roots.length == 1U);
+	memory *roots = m_data(memory,conf(roots));
+	ASSERT(strcmp(m_text(&roots[0]),"MiXeD/Path") == 0);
+	ASSERT(config->ignore != NULL && config->ignore[0] != NULL);
+	ASSERT(strcmp(config->ignore[0],"^CaSe/Path$") == 0);
+	ASSERT(config->include != NULL && config->include[0] != NULL);
+	ASSERT(strcmp(config->include[0],"^CaSe/Include$") == 0);
+	ASSERT(config->lock_checksum != NULL && config->lock_checksum[0] != NULL);
+	ASSERT(strcmp(config->lock_checksum[0],"^CaSe/Locked$") == 0);
+
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Reset requested output settings and select the startup mode from TESTING
+ * @return Return status for repeated initialization and complete startup diagnostics
+ */
+static Return test0045_18(void)
+{
+	INITTEST;
+	m_create(char,captured_stdout,MEMORY_STRING);
+	m_create(char,captured_stderr,MEMORY_STRING);
+	m_create(char,pattern,MEMORY_STRING);
+	ASSERT(SUCCESS == get_file_content("templates/0045_033.txt",pattern));
+	const struct {
+		const char *testing;
+		LOGMODES logger_mode;
+	} cases[] = {
+		{"true",TESTING},
+		{"TrUe",TESTING},
+		{"false",REGULAR},
+		{"",REGULAR},
+		{NULL,REGULAR}
+	};
+
+	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]) && SUCCESS == status; ++i)
+	{
+		if(cases[i].testing != NULL)
+		{
+			ASSERT(SUCCESS == set_environment_variable("TESTING",cases[i].testing));
+		} else {
+			ASSERT(unsetenv("TESTING") == 0);
+		}
+
+		/* Initialization must discard all output settings from a previous run */
+		free_config();
+		config->silent = true;
+		config->verbose = true;
+		config->output = OUTPUT_MACHINE;
+		rational_logger_mode = SILENT;
+		ASSERT(SUCCESS == function_capture(init_config,captured_stdout,captured_stderr));
+		ASSERT(config->silent == false);
+		ASSERT(config->verbose == false);
+		ASSERT(config->output == OUTPUT_FULL);
+		ASSERT(rational_logger_mode == cases[i].logger_mode);
+		ASSERT(captured_stderr->length == 0U);
+
+		if(cases[i].logger_mode == TESTING)
+		{
+			ASSERT(SUCCESS == match_pattern(captured_stdout,pattern,"templates/0045_033.txt"));
+		} else {
+			ASSERT(captured_stdout->length == 0U);
+		}
+
+		/* Removing higher-priority settings restores the environment's default */
+		config->verbose = true;
+		ASSERT(SUCCESS == update_logger_mode());
+		ASSERT(rational_logger_mode == VERBOSE);
+		config->output = OUTPUT_MACHINE;
+		ASSERT(SUCCESS == update_logger_mode());
+		ASSERT(rational_logger_mode == MACHINE);
+		ASSERT(config->verbose == true);
+		config->silent = true;
+		ASSERT(SUCCESS == update_logger_mode());
+		ASSERT(rational_logger_mode == SILENT);
+		config->silent = false;
+		ASSERT(SUCCESS == update_logger_mode());
+		ASSERT(rational_logger_mode == MACHINE);
+		config->output = OUTPUT_FULL;
+		ASSERT(SUCCESS == update_logger_mode());
+		ASSERT(rational_logger_mode == VERBOSE);
+		config->verbose = false;
+		ASSERT(SUCCESS == update_logger_mode());
+		ASSERT(rational_logger_mode == cases[i].logger_mode);
+	}
+
+	call(set_environment_variable("TESTING","true"));
+	call(update_logger_mode());
+	call(m_del(pattern));
+	call(m_del(captured_stderr));
+	call(m_del(captured_stdout));
 	RETURN_STATUS;
 }
 
@@ -814,6 +973,10 @@ Return test0045(void)
 	TEST(test0045_12,"Unclosed configuration quotes report their line and stop reading");
 	TEST(test0045_13,"Comparison paths retain their order and literal contents until configuration cleanup");
 	TEST(test0045_14,"Empty comparison paths report their line and stop configuration reading");
+	TEST(test0045_15,"Output format values are validated and the last selection wins");
+	TEST(test0045_16,"Output settings retain their values and select logger modes by priority");
+	TEST(test0045_17,"Configuration ignores named value case while preserving literal data");
+	TEST(test0045_18,"Logger priorities restore startup defaults and initialization clears prior settings");
 
 	/* Restore the runner's configuration and output policy after any test result */
 	free_config();

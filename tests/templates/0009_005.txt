@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
@@ -8,7 +9,6 @@ TESTING:argument:ignore=\^path2/AAA/ZAW/\.\*
 TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -44,8 +44,8 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB database0009_5\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database0009_5\.db:(?:\x1B\[[0-9;]*m)*
-ignored directory path2/AAA/ZAW/A
-ignored directory path2/AAA/ZAW/D
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/A
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/D
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished

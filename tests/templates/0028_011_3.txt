@@ -1,1 +1,1 @@
-\A1/AAA/ZAW/D/e/f/b_file\.txt\Z
+\A(?:\x1B\[[0-9;]*m)*mismatch(?:\x1B\[[0-9;]*m)* 1/AAA/ZAW/D/e/f/b_file\.txt\Z

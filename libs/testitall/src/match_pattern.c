@@ -185,5 +185,5 @@ Return match_pattern(
 	free(diff);
 #endif
 
-	deliver(status);
+	provide(status);
 }

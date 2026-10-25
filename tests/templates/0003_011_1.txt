@@ -1,0 +1,6 @@
+\ATESTING:Configuration initialization is finished
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Returned parse_arguments:\d+ status: FAILURE
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:ERROR:The precizer process terminated unexpectedly due to an error
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » FAILURE
+\z

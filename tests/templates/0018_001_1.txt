@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 (?:TESTING:argument:config=[^\r\n]+\n)?(?x)
 (?-x)TESTING:argument:color=always
@@ -7,7 +8,6 @@ TESTING:argument:database=database3\.db
 TESTING:argument:db_file_name=database3\.db
 TESTING:argument:maxdepth=3
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path /[^\r\n]+/tests/fixtures/levels exists
 TESTING:The path /[^\r\n]+/tests/fixtures/levels is exists and it is a directory
@@ -38,21 +38,21 @@ TESTING:The brand new database has just been created. No need to verify the path
 TESTING:Recursion depth limited to: 3
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database3\.db:(?:\x1B\[[0-9;]*m)*
-added 1/1/2/bbb\.txt
-added 1/1/aaa\.txt
-added 1/2/3/ccc\.txt
-added 1/2/bbb\.txt
-added 1/aaa\.txt
-added 2/1/2/bbb\.txt
-added 2/1/aaa\.txt
-added 2/2/3/ccc\.txt
-added 2/2/bbb\.txt
-added 2/aaa\.txt
-added 3/1/2/bbb\.txt
-added 3/1/aaa\.txt
-added 3/2/3/ccc\.txt
-added 3/2/bbb\.txt
-added 3/aaa\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/1/2/bbb\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/1/aaa\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/2/3/ccc\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/2/bbb\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/aaa\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/1/2/bbb\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/1/aaa\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/2/3/ccc\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/2/bbb\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/aaa\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/1/2/bbb\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/1/aaa\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/2/3/ccc\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/2/bbb\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/aaa\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

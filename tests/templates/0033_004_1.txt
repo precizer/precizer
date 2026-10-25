@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/huge
@@ -6,7 +7,6 @@ TESTING:argument:database=0033_interrupt_rehash\.db
 TESTING:argument:db_file_name=0033_interrupt_rehash\.db
 TESTING:argument:progress=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/huge exists
 TESTING:The path tests/fixtures/huge is exists and it is a directory
@@ -45,8 +45,8 @@ TESTING:The global return status and exit flag has been set to HALTED
 TESTING:Interrupting the application\. Please wait while the database will be closed smoothly…
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB 0033_interrupt_rehash\.db:(?:\x1B\[[0-9;]*m)*
-added hugetestfile
-TESTING:hashing gracefully interrupted at [^\r\n]+ hugetestfile
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* hugetestfile
+TESTING:(?:\x1B\[[0-9;]*m)*hashing gracefully interrupted at [^\r\n]+(?:\x1B\[[0-9;]*m)* hugetestfile
 TESTING:The database connection has been closed
 TESTING:Total runtime: [^,\r\n]+
 TESTING:Total traversal size: \d+[^\r\n]*

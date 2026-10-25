@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 (?:TESTING:argument:config=[^\r\n]+\n)?(?x)
 (?-x)TESTING:argument:color=always
@@ -8,7 +9,6 @@ TESTING:argument:db_file_name=database1\.db
 TESTING:argument:check-level=QUICK
 TESTING:argument:progress=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -42,5 +42,5 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database1\.db was previously created and already contains data with files and their checksums. Use the (?:\x1B\[[0-9;]*m)*--update(?:\x1B\[[0-9;]*m)* option only when you are certain that the database needs to be updated and when file information \(including changes, deletions, and additions\) should be synchronized with the database.
 TESTING:Returned db_contains_data:\d+ status: WARNING
 TESTING:The database connection has been closed
-ERROR:The precizer process terminated unexpectedly due to an error
+TESTING:The precizer completed with warnings
 TESTING:Exit status » WARNING\Z

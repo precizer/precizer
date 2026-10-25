@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/huge
@@ -7,7 +8,6 @@ TESTING:argument:db_file_name=0033_interrupt_rehash\.db
 TESTING:argument:update=yes
 TESTING:argument:progress=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/huge exists
 TESTING:The path tests/fixtures/huge is exists and it is a directory
@@ -49,7 +49,7 @@ TESTING:Symlinks: \d+
 TESTING:Update mode enabled for DB 0033_interrupt_rehash\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0033_interrupt_rehash\.db:(?:\x1B\[[0-9;]*m)*
-rehashed from the beginning hugetestfile
+(?:\x1B\[[0-9;]*m)*rehashed from the beginning(?:\x1B\[[0-9;]*m)* hugetestfile
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished

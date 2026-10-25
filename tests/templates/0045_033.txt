@@ -1,1 +1,2 @@
-\ATESTING:Configuration initialization is finished\n\z
+\ATESTING:Configuration initialization is finished
+\z

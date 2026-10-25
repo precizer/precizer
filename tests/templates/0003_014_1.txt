@@ -1,0 +1,13 @@
+\ATESTING:Configuration initialization is finished
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_parse_diagnostics\.c:\d+:show_verbose_diagnostics:Configuration: rational_logger_mode=VERBOSE
+config=tests/templates/0003_014\.conf; roots=0003_missing_root; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=no; watch-timestamps=no; rehash-locked=no; progress=no; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, one-file-system=no, check-level=FULL, rational_logger_mode=VERBOSE, color=always
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is finished
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Checking directory paths provided as arguments
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability\.c:\d+:file_availability:Verify that the path 0003_missing_root exists
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability\.c:\d+:file_availability:The path 0003_missing_root doesn't exist or it is not a directory
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Path detection is finished
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Returned paths_detect:\d+ status: FAILURE
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:ERROR:The precizer process terminated unexpectedly due to an error
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/exit_status\.c:\d+:exit_status:Exit status » FAILURE
+\z

@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Invalid config syntax\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Line 1 in config file: Invalid config syntax
+\z

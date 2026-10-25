@@ -12,4 +12,6 @@
 #include <stdatomic.h>
 #include "test_librational_all.h"
 
+Return prepare(memory *temporary_directory);
+Return clean(memory *temporary_directory);
 Return finish(void);

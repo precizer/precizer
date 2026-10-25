@@ -1,0 +1,2 @@
+\Acritical \[locked checksum, data corruption detected\] path1/AAA/BCB/CCC/a\.txt
+\z

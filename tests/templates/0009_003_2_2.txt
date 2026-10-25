@@ -1,0 +1,14 @@
+\A(?:\x1B\[[0-9;]*m)*included(?:\x1B\[[0-9;]*m)* \[directory\] chaotic_filenames
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] chaotic_filenames/alpha_m0n9k2_zz\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] chaotic_filenames/hold_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] chaotic_filenames/keep_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] chaotic_filenames/omega_77xy__aa\.bin
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] chaotic_filenames/skip_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] chaotic_filenames/skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] chaotic_filenames/skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] chaotic_filenames/tmp_77xy__aa\.bak
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] chaotic_filenames/tmp_qwe_90210\.log
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] chaotic_filenames/tmp_z1-9vv\.bak
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] chaotic_filenames/xqwe_90210\.md
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] chaotic_filenames/zeta_z1-9vv\.dat
+\z

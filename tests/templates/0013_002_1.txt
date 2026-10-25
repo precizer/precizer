@@ -1,6 +1,7 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
-(?:TESTING:argument:config=0013_002_1\.conf\n)?(?x)
+(?:TESTING:argument:config=tests/templates/0013_004_1\.conf\n)?(?x)
 (?-x)TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
@@ -10,7 +11,6 @@ TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:argument:dry-run=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -46,15 +46,15 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB database1\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
-ignored directory 1/AAA/ZAW/A
-ignored directory 1/AAA/ZAW/D
-added 2/AAA/BBB/CZC/b\.txt
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* 1/AAA/ZAW/A
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* 1/AAA/ZAW/D
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/b\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Dry-run mode is enabled. The primary database will remain unchanged
 TESTING:If the information about ignored files should be removed from the database the (?:\x1B\[[0-9;]*m)*--db-drop-ignored(?:\x1B\[[0-9;]*m)* option must be specified. This is special protection against accidental deletion of information from the database
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1\.db:(?:\x1B\[[0-9;]*m)*
-dropped as missing 2/AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/a\.txt
 TESTING:Missing file search finished
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled. The primary database doesn't require vacuuming

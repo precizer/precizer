@@ -1,0 +1,8 @@
+\ATESTING:Configuration initialization is finished
+updated \[as empty\] alpha_m0n9k2_zz\.txt
+ignored \[not added\] skip_a1r9v-0pq\.bak
+ignored \[not added\] skip_m0n9k2_zz\.log
+ignored \[not added\] tmp_77xy__aa\.bak
+updated \[as included\] tmp_qwe_90210\.log
+updated \[as included\] tmp_z1-9vv\.bak
+\z

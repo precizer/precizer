@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Cannot read config file '[^'\n]*/0046_002\.conf': (?:Input/output error|I/O error)\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Cannot read config file '[^'\n]*/0046_002\.conf': (?:Input/output error|I/O error)
+\z

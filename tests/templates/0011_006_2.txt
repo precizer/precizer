@@ -5,9 +5,9 @@ Database %DB_NAME% has been verified and is in good condition
 Update mode enabled for DB %DB_NAME%
 File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-added diff1/1/AAA/BCB/CCC/a\.txt
-added diff1/1/AAA/ZAW/A/b/c/a_file\.txt
-added diff1/1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* diff1/1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* diff1/1/AAA/ZAW/D/e/f/b_file\.txt
 File traversal complete
 Searching for files that no longer exist on the file system…
 Missing file search finished

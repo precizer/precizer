@@ -1,0 +1,2 @@
+\A(?:\x1B\[[0-9;]*m)*critical(?:\x1B\[[0-9;]*m)* \[locked checksum, data corruption detected\] path1/AAA/BCB/CCC/a\.txt
+\z

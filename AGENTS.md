@@ -34,9 +34,9 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - This exception does not apply to `README.md` or `README.ru.md`
 - Perform file renames and deletions using git commands only (`git mv` and `git rm`)
 - If a build or test fails after a change, stop making further changes immediately, explain the cause, and propose possible solutions. Do not modify code or tests merely to work around the failure without explicit user approval. After a successful implementation, carefully review the changes and repeat the verification-and-correction cycle until the result is reliable and maintainable
-- If a function body contains a `/* ... */` comment stating that the function was reviewed line by line by a human and requires separate explicit approval for changes, treat that statement as a mandatory repository rule
-- Any modification of such a function requires separate explicit human approval before the change is made
-- When an AI is asked to modify such a function, it must explicitly remind the human that the changed function must be reviewed again line by line by a human before it is considered trusted
+- Functions marked as reviewed line by line by a human may be modified within the authorized task without separate permission. This rule supersedes requirements for separate approval in function comments
+- Any modification invalidates the function's previous human review. Do not claim that the modified function is reviewed or trusted until that review is confirmed
+- After modifying any such function, the final response must explicitly notify the developer, list each affected function with its file location, summarize what changed, and state that a new line-by-line human review is required before the function is considered trusted. This notification is mandatory even for minor changes and must not be replaced by a generic change summary or an earlier progress update
 
 ## Project Structure & Module Organization
 - `src/`: main application source (`precizer.c`, argument parsing, DB/checksum logic)
@@ -48,7 +48,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - `.builds/`: generated build/test artifacts (do not commit)
 
 ## Build, Test, and Development Commands
-- For Codex verification after changes, run `make tests-debug`. It uses debug flags and runs the complete test suite, including slow scenarios
+- For Codex verification after changes, run `make tests-debug`. It uses debug flags and runs the complete test suite
 - Do not run multiple test variants sequentially by default. Use `make tests` only when sanitizer verification is specifically requested or justified by the change
 - The main application Makefile and internal library Makefiles usually collect source files with `$(wildcard src/*.c)`, so newly added `.c` files are picked up automatically after creation or `git mv`
 - `make` or `make production`: default optimized build; creates a ZIP package in the project root
@@ -58,7 +58,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - `make macos-zip`: build and package the macOS release using the distribution build rules
 - `make debug`: build the application with debug flags.
 - `make sanitize`: build the application with ASan/UBSan.
-- `make tests-debug`: build and run the complete debug test suite, including slow scenarios
+- `make tests-debug`: build and run the complete debug test suite
 - `make tests`: build and run the sanitizer-backed test suite via `tests/Makefile`; use it only when sanitizer verification is specifically needed.
 - `make coverage`: builds and runs the coverage-instrumented test suite, then generates the coverage report.
 - `make clean`: remove build outputs, ZIP packages, attestation bundles, and package staging directories
@@ -74,11 +74,12 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 
 ## Testing Guidelines
 - When an AI agent needs the application binary without running the test suite, prefer `make debug`, which produces `.builds/debug/precizer` with debug symbols
-- Test command for agent changes and before opening a pull request: `make tests-debug`. Run the complete suite, including slow scenarios
+- Test command for agent changes and before opening a pull request: `make tests-debug`. Run the complete suite
 - Add/adjust tests in `tests/src/` (pattern: `testXXXX.c`).
 - When creating new tests, look first for suitable shared helpers in `tests/src/helpers_db_utils.c` and `tests/src/helpers_file_utils.c`. Add local `static` helpers only when the shared helpers do not already provide the needed behavior
 - Update expected outputs in `tests/templates/` when behavior changes.
 - Output-oriented tests must use complete golden templates in `tests/templates/` for each checked nonempty stream. Matching selected lines or fragments is insufficient. Comparisons must cover the stream from beginning to end, including its expected line endings, and reject unexpected leading, trailing, or intermediate output
+- Each distinct expected output must have a self-contained golden template. Do not assemble golden templates from other templates or output fragments at runtime. Cases with identical expected output may share one complete template
 - Golden regular expressions may accommodate variable values such as timestamps, paths, and sizes, but must preserve the expected output structure. Use whole-stream boundaries such as `\A` and `\z`, or `\Z` with explicit handling of the final newline. Line anchors `^` and `$` alone are insufficient. Do not use unrestricted wildcards to skip output: `match_pattern()` enables `PCRE2_DOTALL`, so `.*` can hide extra lines. Constrain variable fields to their intended content, using expressions such as `[^\r\n]+` for single-line values
 - Required empty stdout and stderr must be checked explicitly, using `STDOUT_MUST_BE_EMPTY` and `STDERR_MUST_BE_EMPTY` with `run_and_match_templates()`. A NULL template skips that stream and must not be treated as an empty-output check or complete output coverage
 - Do not remove output merely to make it match a golden template. An explicitly agreed source-specific difference, such as the configuration-path diagnostic, may be checked separately before comparing the remaining output against a shared full template; every excluded line must have its complete expected content and occurrence count verified

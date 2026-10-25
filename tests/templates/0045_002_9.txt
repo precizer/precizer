@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Config key 'usage' is only available in CLI
+\z

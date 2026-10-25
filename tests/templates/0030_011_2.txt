@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
@@ -9,7 +10,6 @@ TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:argument:db-drop-inaccessible=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -63,5 +63,5 @@ TESTING:Scan rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB
 TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 TESTING:Hashing rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
 TESTING:Hashed data: [^,\r\n]+
-ERROR:The precizer process terminated unexpectedly due to an error
+TESTING:The precizer completed with warnings
 TESTING:Exit status » WARNING\Z

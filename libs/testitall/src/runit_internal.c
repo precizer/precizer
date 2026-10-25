@@ -74,7 +74,7 @@ Return runit_validate_runtime_mode(enum run_mode mode)
 		status = FAILURE;
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**

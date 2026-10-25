@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+added \[as new\] AAA/BBB/CZC/a\.txt
+\z

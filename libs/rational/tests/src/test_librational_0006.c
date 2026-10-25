@@ -54,9 +54,7 @@ static void capture_markup_edge_cases(void)
 	slog(REGULAR|UNDECOR,"@{red}trailing\n@{reset}");
 	slog(REGULAR|UNDECOR,"%2$s@{red}%1$s@{reset}\n","first","second");
 	slog(REGULAR|UNDECOR,"@{bold}%s","dynamic\n");
-	slog(REGULAR|UNDECOR,
-		"@{bold}%s@{reset}\n",
-		BOLD "allowed" RESET "\033[2Jblocked");
+	slog(REGULAR|UNDECOR,"@{bold}%s@{reset}\n",BOLD "allowed" RESET "\033[2Jblocked");
 	slog(REGULAR|UNDECOR,"@{red}@{red}repeated@{reset}@{reset}\n");
 	slog(REGULAR|UNDECOR,"@{unknown:@{red}}nested@{reset}\n");
 	slog(REGULAR|UNDECOR,"@{RED}case sensitive; @{red\n");

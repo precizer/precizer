@@ -1,1 +1,0 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Unsupported --check-level value ''\. Supported values: FULL or QUICK\n\z

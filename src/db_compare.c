@@ -156,25 +156,26 @@ static Return db_detach(const char *db_alias)
  * decision before reporting each row, and reports only visible relative paths.
  * Only visible paths contribute to category state, so compare summaries and
  * equality messages are evaluated against the filtered scope. The category
- * heading is emitted only before the first visible path and stays visible in
- * `--silent` only when `show_headings_in_silent` enables it
+ * heading is emitted before the first visible path in full output without
+ * `--silent`. Every output format reports an action and path. The logger hides
+ * headings in compact, machine, and silent modes
  *
  * @param[in] compare_sql SQL query that returns relative paths for one compare category
  * @param[out] differences_found Set to `true` after the first visible path is printed
  *             so hidden rows stay outside the reported comparison scope
- * @param[in] show_headings_in_silent True to keep the category heading visible in `--silent`
  * @param[in] heading_format Heading format string with two `%s` database-name slots
  * @param[in] db_A_name First database name for the heading
  * @param[in] db_B_name Second database name for the heading
+ * @param[in] action Styled action word for each path in every output format
  * @return Return structure indicating the operation status
  */
 static Return db_report_category(
 	const char *compare_sql,
 	bool       *differences_found,
-	const bool show_headings_in_silent,
 	const char *heading_format,
 	const char *db_A_name,
-	const char *db_B_name)
+	const char *db_B_name,
+	const char *action)
 {
 	/* This function was reviewed line by line by a human and is not AI-generated
 	   Any change to this function requires separate explicit approval */
@@ -246,16 +247,12 @@ static Return db_report_category(
 			{
 				first_visible_path = false;
 
-				// Outside --silent the heading is always shown
-				// In --silent it stays only when multiple compare categories can mix together in one output
-				if((rational_logger_mode & SILENT) == 0 || show_headings_in_silent == true)
-				{
-					slog(EVERY|VISIBLE_IN_SILENT,heading_format,db_A_name,db_B_name);
-				}
+				// The logger shows headings only in full output without --silent
+				slog(EVERY,heading_format,db_A_name,db_B_name);
 			}
 
 			*differences_found = true;
-			slog(EVERY|UNDECOR|VISIBLE_IN_SILENT,"%s\n",m_text(relative_path));
+			slog(EVERY|MACHINE|UNDECOR|VISIBLE_IN_SILENT,"%s %s\n",action,m_text(relative_path));
 		}
 
 		m_del(relative_path);
@@ -329,8 +326,7 @@ Return db_compare(void)
 
 		if(NOT_FOUND == file_availability(db_file_path_text,NULL,SHOULD_BE_A_FILE))
 		{
-			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",
-				db_file_path_text);
+			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",db_file_path_text);
 			status = FAILURE;
 			break;
 		}
@@ -406,33 +402,6 @@ Return db_compare(void)
 	const bool verify_checksum_consistency = (config->compare_filter & CF_CHECKSUM_MISMATCH)
 	        || filter_specified == false;
 
-	/*
-	 * Count the enabled comparison categories before producing output.
-	 * In silent mode, a heading is unnecessary when only one category can
-	 * produce paths because every printed path belongs to that category.
-	 * When several categories are enabled, keep headings visible so paths from
-	 * different categories remain distinguishable
-	 */
-	unsigned int active_compare_categories = 0u;
-
-	if(check_first_source == true)
-	{
-		active_compare_categories++;
-	}
-
-	if(check_second_source == true)
-	{
-		active_compare_categories++;
-	}
-
-	if(verify_checksum_consistency == true)
-	{
-		active_compare_categories++;
-	}
-
-	// Keeps category headings visible only when silent output can mix multiple categories
-	const bool show_headings_in_silent = active_compare_categories > 1u;
-
 	// Comparison result flags grouped in one place for summary evaluation
 	bool first_source_differences_found = false;
 	bool second_source_differences_found = false;
@@ -443,20 +412,20 @@ Return db_compare(void)
 	{
 		run(db_report_category(compare_B_sql,
 			&first_source_differences_found,
-			show_headings_in_silent,
-			"@{bold}These files are no longer in the %s but still exist in the %s@{reset}\n",
+			"@{bold}These files are no longer in %s but are still present in %s@{reset}\n",
 			config->db_file_names[1],
-			config->db_file_names[0]));
+			config->db_file_names[0],
+			"@{blue}deleted@{reset}"));
 	}
 
 	if(check_second_source == true)
 	{
 		run(db_report_category(compare_A_sql,
 			&second_source_differences_found,
-			show_headings_in_silent,
-			"@{bold}These files are no longer in the %s but still exist in the %s@{reset}\n",
+			"@{bold}These files are present in %s but absent from %s@{reset}\n",
+			config->db_file_names[1],
 			config->db_file_names[0],
-			config->db_file_names[1]));
+			"@{green}added@{reset}"));
 	}
 
 #if 0
@@ -486,10 +455,10 @@ Return db_compare(void)
 	{
 		run(db_report_category(compare_checksums_sql,
 			&checksum_mismatches_found,
-			show_headings_in_silent,
 			"@{bold}The SHA512 checksums of these files do not match between %s and %s@{reset}\n",
 			config->db_file_names[0],
-			config->db_file_names[1]));
+			config->db_file_names[1],
+			"@{orange}mismatch@{reset}"));
 	}
 
 	/* Cleanup */
@@ -515,34 +484,26 @@ Return db_compare(void)
 		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
-			slog(EVERY,"@{bold}All files are identical against %s and %s@{reset}\n",
-				config->db_file_names[0],
-				config->db_file_names[1]);
+			slog(EVERY,"@{bold}All files are identical against %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 
 		} else if(full_compare_scope == false){
 
 			if(check_first_source == true
 			        && first_source_differences_found == false)
 			{
-				slog(EVERY,"@{bold}No first-source differences found between %s and %s@{reset}\n",
-					config->db_file_names[0],
-					config->db_file_names[1]);
+				slog(EVERY,"@{bold}No first-source differences found between %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 			}
 
 			if(check_second_source == true
 			        && second_source_differences_found == false)
 			{
-				slog(EVERY,"@{bold}No second-source differences found between %s and %s@{reset}\n",
-					config->db_file_names[0],
-					config->db_file_names[1]);
+				slog(EVERY,"@{bold}No second-source differences found between %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 			}
 		}
 
 		if(verify_checksum_consistency == true && checksum_mismatches_found == false)
 		{
-			slog(EVERY,"@{bold}All SHA512 checksums of files are identical against %s and %s@{reset}\n",
-				config->db_file_names[0],
-				config->db_file_names[1]);
+			slog(EVERY,"@{bold}All SHA512 checksums of files are identical against %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 		if(full_compare_scope == true
@@ -550,15 +511,11 @@ Return db_compare(void)
 		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
-			slog(EVERY,"@{bold}The databases %s and %s are absolutely equal@{reset}\n",
-				config->db_file_names[0],
-				config->db_file_names[1]);
+			slog(EVERY,"@{bold}The databases %s and %s are absolutely equal@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 		}
 	}
 
-	slog(EVERY,"Comparison of %s and %s databases is complete\n",
-		config->db_file_names[0],
-		config->db_file_names[1]);
+	slog(EVERY,"Comparison of %s and %s databases is complete\n",config->db_file_names[0],config->db_file_names[1]);
 
 	provide(status);
 }

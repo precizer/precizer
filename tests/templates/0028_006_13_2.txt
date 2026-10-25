@@ -1,0 +1,4 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*deleted(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/b\.txt
+\z

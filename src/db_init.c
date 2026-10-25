@@ -39,11 +39,7 @@ Return db_init(void)
 	{
 		slog(TRACE,"Successfully opened database %s\n",confstr(db_file_name));
 	} else if(config->compare != true){
-		log_sqlite_error(config->db,
-			rc,
-			NULL,
-			"Can't open database %s",
-			confstr(db_primary_file_path));
+		log_sqlite_error(config->db,rc,NULL,"Can't open database %s",confstr(db_primary_file_path));
 		sqlite3_close(config->db);
 		config->db = NULL;
 		status = FAILURE;

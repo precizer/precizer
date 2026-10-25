@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*updated(?:\x1B\[[0-9;]*m)* \[as empty\] alpha_m0n9k2_zz\.txt
+\z

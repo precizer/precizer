@@ -211,6 +211,10 @@ Return get_file_content(
 	const char *,
 	memory *);
 
+Return read_file_content(
+	const char *,
+	memory *);
+
 Return compare_memory_strings(
 	memory *,
 	const memory *,
@@ -271,6 +275,22 @@ Return replace_placeholder_in_file(
 	const char *replacement);
 
 Return write_to_temp_file(const char *);
+
+#define REQUIRE_SOURCE_EXISTS ((unsigned int)0U)
+#define ALLOW_MISSING_SOURCE  ((unsigned int)1U)
+
+Return create_directory(const char *relative_path_to_tmpdir);
+
+Return delete_path(const char *relative_path_to_tmpdir);
+
+Return copy_path(
+	const char *relative_source_path,
+	const char *relative_destination_path);
+
+Return copy_from_origin(
+	const char   *relative_source_path_to_origin_dir,
+	const char   *relative_destination_path_to_tmpdir,
+	unsigned int flags);
 
 Return check_file_exists(
 	bool *,

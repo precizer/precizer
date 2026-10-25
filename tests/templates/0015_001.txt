@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 (?:TESTING:argument:config=[^\r\n]+\n)?(?x)
 (?-x)TESTING:argument:color=always
@@ -7,7 +8,6 @@ TESTING:argument:database=./0015_database_v0\.db
 TESTING:argument:db_file_name=0015_database_v0\.db
 TESTING:argument:check-level=QUICK
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -40,5 +40,5 @@ ERROR:Database 0015_database_v0\.db upgrade failed
 TESTING:Returned db_check_version:\d+ status: WARNING
 TESTING:Returned db_integrity_check:\d+ status: WARNING
 TESTING:Returned db_primary_file_test:\d+ status: WARNING
-ERROR:The precizer process terminated unexpectedly due to an error
+TESTING:The precizer completed with warnings
 TESTING:Exit status » WARNING\Z

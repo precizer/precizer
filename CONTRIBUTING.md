@@ -80,7 +80,7 @@ sudo apt -y install gcc make libpcre2-dev llvm libubsan1 zip unzip
 #### Alpine Linux
 
 ```sh
-sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone zip unzip
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev zip unzip
 ```
 
 Sanitizer mode is not supported on Alpine Linux. Tests run with `make tests-debug`.
@@ -116,7 +116,7 @@ The `zip` archiver and `unzip` extraction tool are included with macOS. For the 
 
 ```sh
 xcode-select --install
-brew install llvm pcre2 argp-standalone
+brew install llvm pcre2
 ```
 
 macOS uses the dynamic sanitizer-enabled build:

@@ -21,4 +21,5 @@ Return test_libtestitall_0007(void);
 Return test_libtestitall_0008(void);
 Return test_libtestitall_0009(void);
 Return test_libtestitall_0010(void);
+Return test_libtestitall_0011(void);
 #endif

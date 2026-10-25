@@ -1,1 +1,1 @@
-\A2/AAA/BBB/CZC/b\.txt\Z
+\A(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/b\.txt\Z

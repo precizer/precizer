@@ -1,9 +1,9 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:roots=--config, -g
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path --config exists
 TESTING:The path --config doesn't exist or it is not a directory

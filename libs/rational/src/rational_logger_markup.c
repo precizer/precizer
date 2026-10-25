@@ -189,6 +189,7 @@ bool rational_logger_markup_replace(
 		{"@{gray}",GRAY},
 		{"@{red}",RED},
 		{"@{green}",GREEN},
+		{"@{orange}",ORANGE},
 		{"@{yellow}",YELLOW},
 		{"@{blue}",BLUE},
 		{"@{magenta}",MAGENTA},

@@ -1,10 +1,10 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 (?:TESTING:argument:config=[^\r\n]+\n)?(?x)
 (?-x)TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/4
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/4 exists
 TESTING:The path tests/fixtures/4 is exists and it is a directory
@@ -35,7 +35,7 @@ TESTING:The brand new database has just been created. No need to verify the path
 TESTING:Recursion depth limited to: \d+$
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-added sss\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* sss\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

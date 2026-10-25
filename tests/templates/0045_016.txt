@@ -1,1 +1,0 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Unsupported --dry-run mode 'bad-mode'\. Supported mode: with-checksums\. See --help for more information\n\z

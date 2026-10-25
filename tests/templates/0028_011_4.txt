@@ -1,4 +1,2 @@
-\A(?:\x1B\[[0-9;]*m)*These files are no longer in the database2\.db but still exist in the database1\.db(?:\x1B\[[0-9;]*m)*
-2/AAA/BBB/CZC/a\.txt
-(?:\x1B\[[0-9;]*m)*These files are no longer in the database1\.db but still exist in the database2\.db(?:\x1B\[[0-9;]*m)*
-2/AAA/BBB/CZC/b\.txt\Z
+\A(?:\x1B\[[0-9;]*m)*deleted(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/b\.txt\Z

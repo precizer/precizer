@@ -1,0 +1,14 @@
+\Aignored \[directory\] chaotic_filenames
+added \[as included\] chaotic_filenames/alpha_m0n9k2_zz\.txt
+added \[as included\] chaotic_filenames/hold_a1r9v-0pq\.bak
+added \[as included\] chaotic_filenames/keep_4xv7__m2\.log
+added \[as included\] chaotic_filenames/omega_77xy__aa\.bin
+ignored \[not added\] chaotic_filenames/skip_4xv7__m2\.log
+ignored \[not added\] chaotic_filenames/skip_a1r9v-0pq\.bak
+ignored \[not added\] chaotic_filenames/skip_m0n9k2_zz\.log
+ignored \[not added\] chaotic_filenames/tmp_77xy__aa\.bak
+ignored \[not added\] chaotic_filenames/tmp_qwe_90210\.log
+ignored \[not added\] chaotic_filenames/tmp_z1-9vv\.bak
+added \[as included\] chaotic_filenames/xqwe_90210\.md
+added \[as included\] chaotic_filenames/zeta_z1-9vv\.dat
+\z

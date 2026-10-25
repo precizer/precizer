@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?(?:precizer|testitall): ERROR: Line 1 in config file: Unsupported --color value 'invalid-value'\. Supported values: auto, always, or never
+\z

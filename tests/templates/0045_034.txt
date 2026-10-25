@@ -1,0 +1,2 @@
+\ATESTING:Returned read_config_file:[0-9]+ status: FAILURE
+\z

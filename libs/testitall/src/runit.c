@@ -338,5 +338,5 @@ Return runit(
 
 	run(m_del(STDERR));
 
-	deliver(status);
+	provide(status);
 }

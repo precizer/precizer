@@ -32,6 +32,7 @@ short_path = $(if $(filter ./,$(dir $(1))),$(notdir $(1)),$(notdir $(patsubst %/
 TEST_BUILDDIR = $(BUILDDIR)/$(EXE)
 COMPILE_COMMANDS = $(BUILDDIR)/compile_commands.json
 LIBS = testitall testmocking mem sha512 rational sqlite3 xdiff monocypher inih argp
+STATLIBS = $(filter-out sqlite3 argp,$(LIBS))
 
 TESTED_APP_NAME := $(shell awk '$$2 == "APP_NAME" && $$3 ~ /^"/ { gsub(/"/,"",$$3); print $$3; exit }' $(APP_SRC_DIR)/version.h)
 ifeq ($(TESTED_APP_NAME),)
@@ -39,7 +40,7 @@ $(error Failed to extract APP_NAME from $(APP_SRC_DIR)/version.h)
 endif
 
 # Extra libs for linking
-LDLIBS += $(foreach d,$(LIBS),-l$d)
+LDLIBS += $(foreach d,$(filter-out argp,$(LIBS)),-l$d)
 ifeq ($(UNAME_S),Darwin)
 LDLIBS += $(shell pkg-config --libs libpcre2-8)
 else
@@ -51,9 +52,11 @@ EXT_LDLIBS = $(filter-out $(addprefix -l,$(LIBS)),$(LDLIBS))
 IS_MSYS := $(shell $(CC) $(CPPFLAGS) $(CFLAGS) -dM -E -x c /dev/null 2>/dev/null | awk '$$2 == "__MSYS__" { print 1; exit }')
 
 SYS := $(shell $(CC) -dumpmachine 2>/dev/null)
-ifneq (, $(findstring alpine, $(SYS)))
-# Alpine Linux uses external libraries
+ifneq (, $(findstring musl, $(SYS)))
+# musl-based Linux systems use external FTS
 LDLIBS += -lfts
+# musl-based Linux systems always use bundled argp, including dynamic tests
+STATLIBS += argp
 endif
 
 # Additional include paths for external libraries
@@ -63,6 +66,11 @@ INCPATH += -I$(APP_SRC_DIR)
 
 ifeq ($(UNAME_S),Darwin)
 INCPATH += $(shell pkg-config --cflags libpcre2-8)
+# macOS always uses bundled argp, including dynamic tests
+STATLIBS += argp
+else ifneq ($(IS_MSYS),)
+# The MSYS runtime needs a separate argp library
+LDLIBS += -largp
 endif
 
 # Detect GCC from its version output, including cc and cross-compiler names
@@ -92,7 +100,7 @@ WFLAGS += -Wmissing-format-attribute
 endif
 
 # Link-time wrappers for mock-based tests (add more functions as needed).
-WRAPFUNCS = fopen openat __openat_2 fdopen fread ferror remove access malloc realloc snprintf vsnprintf write gettimeofday localtime_r
+WRAPFUNCS = fts_read fopen openat __openat_2 fdopen fread ferror remove access malloc realloc snprintf vsnprintf write gettimeofday localtime_r
 ifeq ($(UNAME_S),Darwin)
 # macOS with  lld supports -wrap
 WRAPFLAGS =
@@ -227,13 +235,14 @@ DBG_DYN_OBJDIR = $(DBG_DYN_DIR)/obj
 DBG_DYN_OBJS = $(addprefix $(DBG_DYN_OBJDIR)/, $(notdir $(OBJS)))
 DBG_DYN_APP_OBJS = $(addprefix $(DBG_DYN_OBJDIR)/, $(notdir $(APP_OBJS)))
 LIB_TESTS_DBG_DYN_OBJS = $(patsubst ../%.c,$(DBG_DYN_OBJDIR)/%.o,$(LIB_TESTS_SRCS))
-DBG_DYN_LIBS = $(filter-out sqlite3,$(LIBS))
+DBG_DYN_LIBS = $(STATLIBS)
 DBG_DYN_LIB_OBJDIR = $(DBG_LIB_OBJDIR)
 DBG_DYN_LIBDIR = $(DBG_LIBDIR)
 DBG_DYN_LIB_OBJS = $(foreach lib,$(DBG_DYN_LIBS),$(DBG_DYN_LIB_OBJDIR)/$(lib)/*.o)
 DBG_DYN_LDPATH = $(LDPATH)
 DBG_DYN_EXT_LDLIBS = $(filter-out $(addprefix -l,$(DBG_DYN_LIBS)),$(LDLIBS))
-DBG_DYN_INCPATH = $(filter-out -I../libs/sqlite3/src/,$(INCPATH))
+# Remove bundled header paths for libraries supplied by the system
+DBG_DYN_INCPATH = $(filter-out $(foreach d,$(filter-out $(STATLIBS),$(LIBS)),-I../libs/$d/src/),$(INCPATH))
 DBG_DYN_HDRS = $(wildcard $(SRC)/*.h) $(foreach d,$(DBG_DYN_LIBS),$(wildcard ../libs/$d/src/*.h))
 DBG_DYN_ALLHDRS = $(DBG_DYN_HDRS) $(APP_HDRS) $(LIB_TESTS_HDRS)
 # Callers may replace these defaults through DBG_DYN_OPT_CFLAGS and

@@ -199,13 +199,11 @@ static Return test0018_5(void)
 
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0018_005.conf","0018_005.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0018_005.conf",FAILURE,"templates/0018_005_3.txt","templates/0018_005_4.txt"},
+		{"--config=tests/templates/0018_005.conf",FAILURE,"templates/0018_005_3.txt","templates/0018_005_4.txt"},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0018_005.conf"));
 
 	RETURN_STATUS;
 }

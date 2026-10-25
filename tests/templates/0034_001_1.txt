@@ -1,7 +1,7 @@
-\A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_parse_diagnostics\.c:\d+:show_verbose_diagnostics:Configuration: rational_logger_mode=VERBOSE
+\A\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
+\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_parse_diagnostics\.c:\d+:show_verbose_diagnostics:Configuration: rational_logger_mode=VERBOSE
 roots=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_file_name=0034_lsize_vs_asize_flags\.db; verbose=yes; [^\n]*update=yes; [^\n]*rational_logger_mode=VERBOSE, color=always
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/parse_arguments\.c:\d+:parse_arguments:Argument parsing is finished
-\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/about\.c:\d+:about:precizer [0-9]+\.[0-9]+\.[0-9]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/paths_detect\.c:\d+:paths_detect:Checking directory paths provided as arguments
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability\.c:\d+:file_availability:Verify that the path tests/fixtures/diffs/diff1 exists
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_availability\.c:\d+:file_availability:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -37,7 +37,7 @@ roots=tests/fixtures/diffs/diff1; database=0034_lsize_vs_asize_flags\.db; db_fil
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:Update mode enabled for DB 0034_lsize_vs_asize_flags\.db
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:File traversal started for [^\r\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0034_lsize_vs_asize_flags\.db:(?:\x1B\[[0-9;]*m)*
-rehashed, changed: lsize was:[^\n]*, now:[^\n]* path1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*rehashed, changed: lsize was:[^\n]*, now:[^\n]*(?:\x1B\[[0-9;]*m)* path1/AAA/BCB/CCC/a\.txt
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_list\.c:\d+:file_list:File traversal complete
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_delete_missing_metadata\.c:\d+:db_delete_missing_metadata:Missing file search finished

@@ -33,7 +33,14 @@ int exit_status(
 			slog(VERBOSE,"Enjoy your life!\n");
 			return((int)COMPLETED);
 		} else {
-			slog(ERROR,"The %s process terminated unexpectedly due to an error\n",application_file_name);
+			/* WARNING alone can report data corruption without an application failure.
+			   Keep the error diagnostic when FAILURE is also present */
+			if((WARNING & status) != 0 && (FAILURE & status) == 0)
+			{
+				slog(EVERY,"The %s completed with warnings\n",application_file_name);
+			} else {
+				slog(ERROR,"The %s process terminated unexpectedly due to an error\n",application_file_name);
+			}
 			slog(EVERY,"Exit status » %s\n",show_status(status));
 			return((int)status);
 		}

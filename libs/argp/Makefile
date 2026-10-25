@@ -237,13 +237,10 @@ update:
 # Keep feature detection separate for each build mode and rerun it when flags change
 CONFIG_DIRS = $(DBG_OBJDIR) $(COV_OBJDIR) $(SNTZ_OBJDIR) $(PROD_OBJDIR) $(DIST_OBJDIR) $(PRTB_OBJDIR)
 CONFIG_HEADERS = $(addsuffix /config.h,$(CONFIG_DIRS))
-CONFIG_GENERATORS = $(addsuffix /configure.exe,$(CONFIG_DIRS))
+CONFIG_GENERATORS = $(addsuffix /configure,$(CONFIG_DIRS))
 # Probe executables must reject unresolved symbols; shared-library linker flags
 # such as macOS dynamic_lookup would incorrectly report missing functions as available
 export CC CPPFLAGS LDFLAGS USE_LLD C_STANDARD MACOSX_DEPLOYMENT_TARGET
-
-.PHONY: check-config
-check-config:
 
 $(CONFIG_GENERATORS): configure.c Makefile
 	@mkdir -p "$(@D)"
@@ -251,8 +248,11 @@ $(CONFIG_GENERATORS): configure.c Makefile
 
 # The generator checks settings on every invocation. Changed prerequisites
 # force fresh probes, including an explicit rebuild requested with make -B
-$(CONFIG_HEADERS): %/config.h: config.h.in %/configure.exe Makefile check-config
-	@"$(@D)/configure.exe" "$<" "$@" $(if $(filter-out check-config,$?),--force)
+$(CONFIG_HEADERS): %/config.h: config.h.in %/configure check-config
+	@"$(@D)/configure" "$<" "$@" $(if $(filter-out check-config,$?),--force)
+
+.PHONY: check-config
+check-config:
 
 #
 # Debug rules

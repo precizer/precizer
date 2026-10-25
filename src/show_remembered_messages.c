@@ -4,15 +4,15 @@
  * @brief Print delayed warning and error messages saved during the run
  *
  * Prints rows from the temporary `remember_history` table only when final
- * remembered output is enabled. If the database is not open or no remembered
- * messages exist, the function returns without output
+ * remembered output is enabled and the output format is full. If the database
+ * is not open or no remembered messages exist, the function returns without output
  *
  * @return SUCCESS when delayed reporting is complete, otherwise FAILURE
  */
 Return show_remembered_messages(void)
 {
-	// Show only when the final remembered output is enabled
-	if(config->show_remembered_messages_at_exit == false)
+	// Show only when the final remembered output is enabled in full format
+	if(config->output != OUTPUT_FULL || config->show_remembered_messages_at_exit == false)
 	{
 		// Do nothing
 		provide(SUCCESS);
@@ -32,8 +32,7 @@ Return show_remembered_messages(void)
 
 	if(rc != SQLITE_OK)
 	{
-		log_sqlite_error(config->db,rc,NULL,
-			"Failed to prepare remember_history query");
+		log_sqlite_error(config->db,rc,NULL,"Failed to prepare remember_history query");
 		provide(FAILURE);
 	}
 
@@ -66,8 +65,7 @@ Return show_remembered_messages(void)
 
 	if(rc != SQLITE_DONE)
 	{
-		log_sqlite_error(config->db,rc,NULL,
-			"Failed to read remember_history");
+		log_sqlite_error(config->db,rc,NULL,"Failed to read remember_history");
 		sqlite3_finalize(stmt);
 		provide(FAILURE);
 	}

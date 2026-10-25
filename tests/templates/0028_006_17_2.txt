@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*deleted(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/only_db2\.txt
+\z

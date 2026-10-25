@@ -24,7 +24,7 @@ Return replace_placeholder_in_file(
 	const char *placeholder,
 	const char *replacement)
 {
-	/* Status returned by this function through deliver()
+	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 	FILE *file = NULL;
@@ -115,5 +115,5 @@ Return replace_placeholder_in_file(
 			wordfree(&expanded[i]);
 		}
 	}
-	deliver(status);
+	provide(status);
 }

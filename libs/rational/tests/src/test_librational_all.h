@@ -19,4 +19,5 @@ Return test_librational_0003(void);
 Return test_librational_0004(void);
 Return test_librational_0005(void);
 Return test_librational_0006(void);
+Return test_librational_0007(void);
 #endif

@@ -1,0 +1,2 @@
+\AERROR: PCRE2 failed to compile pattern "\(" at offset 1: missing closing parenthesis
+\z

@@ -1,1 +1,0 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Cannot read config file '[^'\n]*/0045_config_directory': Is a directory\n\z

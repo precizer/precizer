@@ -5,7 +5,7 @@
  *
  * Checks @p relative_path from the already opened traversal root. If the
  * directory is unavailable, the same relative path is shown to the user and
- * remembered for the final warning summary
+ * remembered for the final warning summary in full output
  *
  * @param[in] file_systems FTS traversal handle
  * @param[in] entry Current FTS directory entry
@@ -38,7 +38,7 @@ Return directory_access_verify(
 	FileAccessStatus access_status = file_check_access(root_directory_fd,relative_path,R_OK | X_OK);
 
 	/* When a directory cannot be read or has disappeared during traversal, show
-	   the user its relative path and remember the warning for the final summary.
+	   the user its relative path and remember the warning in full output.
 	   If no --include rules were supplied, the whole subtree can be skipped
 	   because there is no later include pattern that could make a child visible */
 	if(access_status == FILE_ACCESS_DENIED
@@ -47,7 +47,12 @@ Return directory_access_verify(
 	{
 		const char *runtime_relative_path = m_text(relative_path);
 
-		slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible directory %s\n",runtime_relative_path);
+		if(config->output != OUTPUT_FULL)
+		{
+			slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{orange}inaccessible@{reset} [directory] %s\n",runtime_relative_path);
+		} else {
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{orange}inaccessible directory@{reset} %s\n",runtime_relative_path);
+		}
 
 		if(config->include_specified == false)
 		{

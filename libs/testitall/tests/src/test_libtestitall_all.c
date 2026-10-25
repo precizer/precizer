@@ -25,6 +25,7 @@ Return test_libtestitall_all(void)
 	HEADER("Temporary Directories");
 	TEST(test_libtestitall_0005,"Temporary directory roots and names are selected correctly");
 	TEST(test_libtestitall_0006,"Path construction reports invalid input diagnostics");
+	TEST(test_libtestitall_0011,"Test files are read from TMPDIR independently of the working directory");
 
 	HEADER("String Helpers");
 	TEST(test_libtestitall_0007,"Trailing EOL removal preserves libmem string invariants");

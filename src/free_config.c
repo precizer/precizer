@@ -66,4 +66,7 @@ void free_config(void)
 
 	// Pre-compiled PCRE2 patterns for --lock-checksum
 	free_compiled_array(&config->lock_checksum_pcre_compiled);
+
+	// Clear the requested silent setting
+	config->silent = false;
 }

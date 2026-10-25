@@ -469,7 +469,13 @@ Return db_delete_missing_metadata(void)
 					should_delete = true;
 
 				} else {
-					slog(EVERY|UNDECOR,"kept inaccessible %s\n",runtime_relative_path);
+
+					if(config->output != OUTPUT_FULL)
+					{
+						slog(MACHINE|UNDECOR,"@{orange}kept@{reset} [inaccessible] %s\n",runtime_relative_path);
+					} else {
+						slog(EVERY|UNDECOR,"@{orange}kept inaccessible@{reset} %s\n",runtime_relative_path);
+					}
 					continue;
 				}
 
@@ -538,13 +544,30 @@ Return db_delete_missing_metadata(void)
 
 			if(drop_ignored == true)
 			{
-				slog(EVERY|UNDECOR|REMEMBER,"dropped as ignored %s\n",runtime_relative_path);
+				if(config->output != OUTPUT_FULL)
+				{
+					slog(MACHINE|UNDECOR,"@{blue}dropped@{reset} [as ignored] %s\n",runtime_relative_path);
+				} else {
+					slog(EVERY|UNDECOR|REMEMBER,"@{blue}dropped as ignored@{reset} %s\n",runtime_relative_path);
+				}
 
 			} else if(inaccessible == true){
-				slog(EVERY|UNDECOR|REMEMBER,"dropped as inaccessible %s\n",runtime_relative_path);
+
+				if(config->output != OUTPUT_FULL)
+				{
+					slog(MACHINE|UNDECOR,"@{blue}dropped@{reset} [as inaccessible] %s\n",runtime_relative_path);
+				} else {
+					slog(EVERY|UNDECOR|REMEMBER,"@{blue}dropped as inaccessible@{reset} %s\n",runtime_relative_path);
+				}
 
 			} else if(file_not_found == true){
-				slog(EVERY|UNDECOR,"dropped as missing %s\n",runtime_relative_path);
+
+				if(config->output != OUTPUT_FULL)
+				{
+					slog(MACHINE|UNDECOR,"@{blue}dropped@{reset} [as missing] %s\n",runtime_relative_path);
+				} else {
+					slog(EVERY|UNDECOR,"@{blue}dropped as missing@{reset} %s\n",runtime_relative_path);
+				}
 			}
 		}
 	}

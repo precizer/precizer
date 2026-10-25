@@ -1,0 +1,3 @@
+\ATESTING:Configuration initialization is finished
+added 2/AAA/BBB/CZC/only_db2\.txt
+\z

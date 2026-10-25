@@ -20,6 +20,7 @@ Return test_librational_all(void)
 
 	HEADER("Report and Logger");
 	SUTE(test_librational_0004,"librational report(), serp() and slog() helpers");
+	SUTE(test_librational_0007,"Machine logger visibility");
 
 	HEADER("Return Handling");
 	SUTE(test_librational_0005,"librational Return flow, normalization and status text");

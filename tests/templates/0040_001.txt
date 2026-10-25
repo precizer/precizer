@@ -1,13 +1,13 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
-(?:TESTING:argument:config=0040_001\.conf\n)?(?x)
+(?:TESTING:argument:config=tests/templates/0040_002_2\.conf\n)?(?x)
 (?-x)TESTING:argument:color=%COLOR_MODE%
 TESTING:argument:roots=tests/fixtures/diffs/diff1/2
 TESTING:argument:database=0040\.db
 TESTING:argument:db_file_name=0040\.db
 TESTING:argument:dry-run=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1/2 exists
 TESTING:The path tests/fixtures/diffs/diff1/2 is exists and it is a directory
@@ -38,7 +38,7 @@ TESTING:Database comparison mode is not enabled\. Skipping comparison
 TESTING:The brand new database has just been created\. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started for [^\r\n]+
 TESTING:\x1B\[1mItems reported during this traversal against the DB 0040\.db:\x1B\[0m
-added AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BBB/CZC/a\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming

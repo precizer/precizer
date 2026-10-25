@@ -239,6 +239,9 @@ static Return test0028_1(void)
 
 	const struct argument_test_case cases[] = {
 		{arguments,COMPLETED,"templates/0028_001.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -254,15 +257,16 @@ static Return test0028_1(void)
 	call(delete_path_if_present("precizer.conf"));
 
 	/* Comparison reads saved checksums even when dry-run requests file hashing */
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_001_1.conf","0028_001_1.conf"));
 	const struct argument_test_case dry_run_cases[] = {
 		{"--check-level=QUICK --dry-run=with-checksums --compare database1.db database2.db",
 		 COMPLETED,"templates/0028_001_1.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_001_1.conf",COMPLETED,"templates/0028_001_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_001_1.conf",COMPLETED,"templates/0028_001_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --dry-run=with-checksums --compare database1.db database2.db",COMPLETED,"templates/0028_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --dry-run=with-checksums --compare database1.db database2.db",COMPLETED,"templates/0028_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(dry_run_cases,NULL,NULL));
-	call(delete_path_if_present("0028_001_1.conf"));
 
 	m_del(result);
 
@@ -309,6 +313,9 @@ static Return test0028_2(void)
 
 	const struct argument_test_case cases[] = {
 		{arguments,COMPLETED,"templates/0028_002_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_002_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_002_1_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -358,6 +365,9 @@ static Return test0028_3(void)
 
 	const struct argument_test_case cases[] = {
 		{arguments,COMPLETED,"templates/0028_003_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_003_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_003_1_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -407,6 +417,9 @@ static Return test0028_4(void)
 
 	const struct argument_test_case cases[] = {
 		{arguments,COMPLETED,"templates/0028_004.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_004_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_004_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -442,6 +455,9 @@ static Return test0028_5(void)
 
 	const struct argument_test_case cases[] = {
 		{arguments,COMPLETED,"templates/0028_005.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -463,24 +479,45 @@ static Return test0028_6(void)
 
 	SLOWTEST;
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_006_21.conf","0028_006_21.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_006_9.conf","0028_006_9.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_006_10.conf","0028_006_10.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_006_20.conf","0028_006_20.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_006_22.conf","0028_006_22.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_006_14.conf","0028_006_14.conf"));
-
 	const struct argument_test_case equal_cases[] = {
 		// Valid combinations with --compare for equal databases
 		{"--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_005.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_006_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--check-level=qUiCk --compare --compare-filter=CHECKSUM-MISMATCH database1.db database2.db",COMPLETED,"templates/0028_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare database1.db database2.db --compare-filter=checksum-mismatch",COMPLETED,"templates/0028_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--check-level=qUiCk --compare --compare-filter=FIRST-SOURCE database1.db database2.db",COMPLETED,"templates/0028_006_2.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--check-level=qUiCk --compare --compare-filter=SECOND-SOURCE database1.db database2.db",COMPLETED,"templates/0028_006_3.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_4.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_5.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_6.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_19.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=qUiCk --compare --compare-filter=CHECKSUM-MISMATCH database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=qUiCk --compare --compare-filter=CHECKSUM-MISMATCH database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db --compare-filter=checksum-mismatch",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db --compare-filter=checksum-mismatch",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=qUiCk --compare --compare-filter=FIRST-SOURCE database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=qUiCk --compare --compare-filter=FIRST-SOURCE database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=qUiCk --compare --compare-filter=SECOND-SOURCE database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=qUiCk --compare --compare-filter=SECOND-SOURCE database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -490,6 +527,15 @@ static Return test0028_6(void)
 		{"--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_8.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare database2.db database1.db --compare-filter=first-source",COMPLETED,"templates/0028_006_17.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare database2.db database1.db --compare-filter=second-source",COMPLETED,"templates/0028_006_18.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_8_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_8_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare database2.db database1.db --compare-filter=first-source",COMPLETED,"templates/0028_006_17_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database2.db database1.db --compare-filter=first-source",COMPLETED,"templates/0028_006_17_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare database2.db database1.db --compare-filter=second-source",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database2.db database1.db --compare-filter=second-source",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -497,27 +543,57 @@ static Return test0028_6(void)
 		// Valid combinations with --compare for databases with all difference categories
 		{"--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_001.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_006_21.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_006_21.conf",COMPLETED,"templates/0028_006_21.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_006_21.conf",COMPLETED,"templates/0028_006_21.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_9.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_006_9.conf",COMPLETED,"templates/0028_006_9.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_006_9.conf",COMPLETED,"templates/0028_006_9.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_10.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_006_10.conf",COMPLETED,"templates/0028_006_10.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_006_10.conf",COMPLETED,"templates/0028_006_10.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_11.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_12.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_13.txt",STDERR_MUST_BE_EMPTY},
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_20.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_006_20.conf",COMPLETED,"templates/0028_006_20.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_006_20.conf",COMPLETED,"templates/0028_006_20.txt",STDERR_MUST_BE_EMPTY},
 
 		// Repeating a category must not duplicate its report or enable other categories
 		{"--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_006_21.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_006_22.conf",COMPLETED,"templates/0028_006_21.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_006_22.conf",COMPLETED,"templates/0028_006_21.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_002_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_002_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_003_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_003_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_11_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_006_11_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_12_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_12_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_13_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_006_13_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=first-source --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --compare-filter=checksum-mismatch --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004_3.txt",STDERR_MUST_BE_EMPTY},
+		/* Reversing operands reverses the added and deleted records */
+		{"--output=compact --check-level=QUICK --compare database2.db database1.db",COMPLETED,"templates/0028_006_23_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --silent --check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --silent --check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_002_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --silent --check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_003_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --silent --check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --check-level=QUICK --compare database2.db database1.db",COMPLETED,"templates/0028_006_23_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --silent --check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_001_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --silent --check-level=QUICK --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_002_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --silent --check-level=QUICK --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_003_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --silent --check-level=QUICK --compare --compare-filter=checksum-mismatch database1.db database2.db",COMPLETED,"templates/0028_004_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
 	const struct argument_test_case invalid_cases[] = {
 		// Invalid combinations: --compare-filter=value without --compare
 		{"--compare-filter=checksum-mismatch database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
-		{"--config=0028_006_14.conf",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
+		{"--config=tests/templates/0028_006_14.conf",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
 		{"--compare-filter=first-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
 		{"--compare-filter=second-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
 		{"--compare-filter=checksum-mismatch --compare-filter=first-source database1.db database2.db",FAILURE,"templates/0028_006_14.txt","templates/0028_006_15.txt"},
@@ -556,13 +632,6 @@ static Return test0028_6(void)
 
 	ASSERT(SUCCESS == run_and_match_templates(invalid_cases,NULL,NULL));
 
-	call(delete_path_if_present("0028_006_21.conf"));
-	call(delete_path_if_present("0028_006_9.conf"));
-	call(delete_path_if_present("0028_006_10.conf"));
-	call(delete_path_if_present("0028_006_20.conf"));
-	call(delete_path_if_present("0028_006_22.conf"));
-	call(delete_path_if_present("0028_006_14.conf"));
-
 	RETURN_STATUS;
 }
 
@@ -578,37 +647,25 @@ static Return test0028_7(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_007_1.conf","0028_007_1.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_007_2.conf","0028_007_2.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_007_3.conf","0028_007_3.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_007_4.conf","0028_007_4.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_007_5.conf","0028_007_5.conf"));
-
 	const struct argument_test_case cases[] = {
 		{"--compare --compare-filter=invalid-value database1.db database2.db",FAILURE,"templates/0028_007_3.txt","templates/0028_007_1.txt"},
-		{"--config=0028_007_1.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_2.txt"},
+		{"--config=tests/templates/0028_007_1.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_2.txt"},
 		{"--compare --compare-filter= database1.db database2.db",FAILURE,"templates/0028_007_3.txt","templates/0028_007_5.txt"},
-		{"--config=0028_007_2.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_6.txt"},
+		{"--config=tests/templates/0028_007_2.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_6.txt"},
 
 		// Value errors precede the check requiring comparison mode
 		{"--compare-filter=invalid-value database1.db database2.db",FAILURE,"templates/0028_007_3.txt","templates/0028_007_1.txt"},
-		{"--config=0028_007_3.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_7.txt"},
+		{"--config=tests/templates/0028_007_3.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_7.txt"},
 		{"--compare-filter= database1.db database2.db",FAILURE,"templates/0028_007_3.txt","templates/0028_007_5.txt"},
-		{"--config=0028_007_4.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_8.txt"},
+		{"--config=tests/templates/0028_007_4.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_8.txt"},
 
 		// Only the first invalid value is reported, regardless of subsequent entries
 		{"--compare --compare-filter=invalid-value --compare-filter=first-source --compare-filter=later-invalid-value database1.db database2.db",FAILURE,"templates/0028_007_3.txt","templates/0028_007_1.txt"},
-		{"--config=0028_007_5.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_2.txt"},
+		{"--config=tests/templates/0028_007_5.conf",FAILURE,"templates/0028_007_4.txt","templates/0028_007_2.txt"},
 		{0}
 	};
 
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
-
-	call(delete_path_if_present("0028_007_1.conf"));
-	call(delete_path_if_present("0028_007_2.conf"));
-	call(delete_path_if_present("0028_007_3.conf"));
-	call(delete_path_if_present("0028_007_4.conf"));
-	call(delete_path_if_present("0028_007_5.conf"));
 
 	RETURN_STATUS;
 }
@@ -626,6 +683,9 @@ static Return test0028_8(void)
 
 	const struct argument_test_case cases[] = {
 		{"--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_000.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_004_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_004_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -664,6 +724,9 @@ static Return test0028_9(void)
 
 	const struct argument_test_case cases[] = {
 		{"--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_000.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_004_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database1.db database2.db",COMPLETED,"templates/0028_004_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -691,19 +754,38 @@ static Return test0028_10(void)
 
 	const struct argument_test_case cases[] = {
 		{"--check-level=QUICK --compare database\\'1.db database2.db",COMPLETED,"templates/0028_010_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare database\\'1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare database\\'1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
 	/* The apostrophe is literal in the configuration value */
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_010_1.conf","0028_010_1.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0028_010_1.conf",COMPLETED,"templates/0028_010_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_010_1.conf",COMPLETED,"templates/0028_010_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0028_010_1.conf"));
+
+	/* Give one stored path punctuation that must remain literal in compare records */
+	sqlite3 *db = NULL;
+	sqlite3_stmt *stmt = NULL;
+	ASSERT(SUCCESS == open_db_from_tmpdir("database'1.db",SQLITE_OPEN_READWRITE,&db));
+	ASSERT(SQLITE_OK == sqlite3_prepare_v2(db,
+		"UPDATE files SET relative_path = ?1 WHERE relative_path = '1/AAA/ZAW/D/e/f/b_file.txt';",-1,&stmt,NULL));
+	ASSERT(SQLITE_OK == sqlite3_bind_text(stmt,1,"odd [name] 'quote' \\ path.txt",-1,SQLITE_STATIC));
+	ASSERT(SQLITE_DONE == sqlite3_step(stmt));
+	ASSERT(sqlite3_changes(db) == 1);
+	(void)sqlite3_finalize(stmt);
+	(void)sqlite3_close(db);
+	const struct argument_test_case path_cases[] = {
+		{"--output=compact --check-level=QUICK --compare database\\'1.db database2.db",COMPLETED,"templates/0028_010_2_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --check-level=QUICK --compare database\\'1.db database2.db",COMPLETED,"templates/0028_010_2_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+	ASSERT(SUCCESS == run_and_match_templates(path_cases,NULL,NULL));
 
 	ASSERT(SUCCESS == delete_path("database'1.db"));
 	ASSERT(SUCCESS == delete_path("database2.db"));
@@ -729,13 +811,11 @@ static Return test0028_11(void)
 	ASSERT(SUCCESS & assert_compare_output("--check-level=QUICK --silent --compare database1.db database2.db",COMPLETED,"templates/0028_011_1.txt",NULL));
 
 	/* Repeat the silent comparison without rebuilding either database */
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_011_1.conf","0028_011_1.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0028_011_1.conf",COMPLETED,"templates/0028_011_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_011_1.conf",COMPLETED,"templates/0028_011_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0028_011_1.conf"));
 
 	ASSERT(SUCCESS & assert_compare_output("--check-level=QUICK --silent --compare --compare-filter=first-source database1.db database2.db",COMPLETED,"templates/0028_011_2.txt",NULL));
 	ASSERT(SUCCESS & assert_compare_output("--check-level=QUICK --silent --compare --compare-filter=second-source database1.db database2.db",COMPLETED,"templates/0028_011_5.txt",NULL));
@@ -771,13 +851,10 @@ static Return test0028_12(void)
 	ASSERT(SUCCESS & prepare_compare_filter_differences_fixture());
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_012_1.conf","0028_012_1.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_012_6.conf","0028_012_6.conf"));
-
 	const struct argument_test_case cases[] = {
 		// All three raw differences are filtered out, so the filtered compare scope is fully identical
 		{"--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" database1.db database2.db",COMPLETED,"templates/0028_012_1.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_012_1.conf",COMPLETED,"templates/0028_012_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_012_1.conf",COMPLETED,"templates/0028_012_1.txt",STDERR_MUST_BE_EMPTY},
 
 		// Restore only the first-source path a.txt; the hidden checksum mismatch stays outside the reported scope
 		{"--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_012_2.txt",STDERR_MUST_BE_EMPTY},
@@ -793,14 +870,25 @@ static Return test0028_12(void)
 
 		// Ignore the whole 2/ subtree, then restore both existence-side differences while the 1/ checksum mismatch remains visible
 		{"--check-level=QUICK --compare --ignore=\"^2/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" --include=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_012_6.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0028_012_6.conf",COMPLETED,"templates/0028_012_6.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0028_012_6.conf",COMPLETED,"templates/0028_012_6.txt",STDERR_MUST_BE_EMPTY},
+		/* Repeat the same comparison without headings or summary diagnostics */
+		{"--output=compact " "--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" database1.db database2.db",COMPLETED,"templates/0028_005_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_002_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_002_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_002_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --ignore=\"^1/AAA/ZAW/D/e/f/b_file\\.txt$\" --ignore=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_002_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --ignore=\"^2/AAA/BBB/CZC/a\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_006_12_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --ignore=\"^2/AAA/BBB/CZC/a\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_006_12_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --ignore=\"^.*$\" --include=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_003_1_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --ignore=\"^.*$\" --include=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_003_1_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact " "--check-level=QUICK --compare --ignore=\"^2/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" --include=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " "--check-level=QUICK --compare --ignore=\"^2/.*$\" --include=\"^2/AAA/BBB/CZC/a\\.txt$\" --include=\"^2/AAA/BBB/CZC/b\\.txt$\" database1.db database2.db",COMPLETED,"templates/0028_001_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
-	call(delete_path_if_present("0028_012_1.conf"));
-	call(delete_path_if_present("0028_012_6.conf"));
 	ASSERT(SUCCESS & cleanup_compare_filter_differences_fixture());
 
 	RETURN_STATUS;
@@ -815,20 +903,15 @@ static Return test0028_13(void)
 	INITTEST;
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_013_1.conf","0028_013_1.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0028_013_2.conf","0028_013_2.conf"));
 
 	const struct argument_test_case cases[] = {
 		{"--compare first.db",FAILURE,"templates/0028_006_14.txt","templates/0003_011.txt"},
-		{"--config=0028_013_1.conf",FAILURE,"templates/0028_006_14.txt","templates/0003_011.txt"},
+		{"--config=tests/templates/0028_013_1.conf",FAILURE,"templates/0028_006_14.txt","templates/0003_011.txt"},
 		{"--compare first.db second.db third.db",FAILURE,"templates/0028_006_14.txt","templates/0028_013_1.txt"},
-		{"--config=0028_013_2.conf",FAILURE,"templates/0028_006_14.txt","templates/0028_013_1.txt"},
+		{"--config=tests/templates/0028_013_2.conf",FAILURE,"templates/0028_006_14.txt","templates/0028_013_1.txt"},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
-
-	call(delete_path_if_present("0028_013_1.conf"));
-	call(delete_path_if_present("0028_013_2.conf"));
 
 	RETURN_STATUS;
 }

@@ -177,6 +177,17 @@ typedef enum DB_CHECK_LEVEL : unsigned int
 } DB_CHECK_LEVEL;
 
 /**
+ * @brief Available output formats for application messages
+ */
+typedef enum OutputMode : unsigned int
+{
+	OUTPUT_FULL = 0u,
+	OUTPUT_MACHINE = 1u,
+	OUTPUT_COMPACT = 2u
+
+} OutputMode;
+
+/**
  * @brief Bitmask that controls which result categories are shown by `--compare`
  *
  * Stores the output categories selected through `--compare-filter`
@@ -309,6 +320,17 @@ typedef struct {
 	/// Used for reporting total process runtime.
 	long long int app_start_time_ns;
 
+	/// Output format, initialized to OUTPUT_FULL
+	OutputMode output;
+
+	/// Color policy requested through CLI or configuration; defaults to AUTO or the test override.
+	/// Retained separately from the effective rational_color_mode when the output format changes
+	RATIONAL_COLOR_MODE color_mode;
+
+	/// True when a color option was explicitly supplied through CLI or configuration.
+	/// When true, color_mode applies in every format; otherwise machine uses NEVER
+	bool color_specified;
+
 	/// Show progress bar
 	bool progress;
 
@@ -320,6 +342,9 @@ typedef struct {
 
 	/// Force update of the database
 	bool force;
+
+	/// Suppress output according to the logger's silent-mode rules
+	bool silent;
 
 	/// Additional output for debugging
 	bool verbose;
@@ -733,6 +758,8 @@ Return show_locked_checksum_unavailable_violation(
 void signal_notify_quit_handler(int);
 
 void init_config(void);
+
+Return update_logger_mode(void);
 
 Return init_signals(void);
 

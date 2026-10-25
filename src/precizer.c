@@ -72,9 +72,6 @@ int test_main(
 	// parsing command line arguments
 	run(parse_arguments(argc,argv));
 
-	// Print program identity before starting the main workflow
-	about();
-
 	// Compile PCRE2 patterns from --ignore, --include, --lock-checksum once
 	// so that file traversal reuses compiled objects instead of recompiling per file
 	run(compile_patterns());

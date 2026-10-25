@@ -1,255 +1,40 @@
 \ATESTING:Configuration initialization is finished
-Usage: precizer \[OPTION\.\.\.\] \[PATH\.\.\.\]
-
-\x1B\[1mprecizer\x1B\[0m: data integrity verification for file systems of any scale
-
-\x1B\[1mprecizer\x1B\[0m is a lightweight, high-performance CLI tool written in pure C\.
-It’s designed for file integrity verification and comparison, making it
-especially useful for validating synchronization results\. The program traverses
-directory trees and builds a database of files and their checksums for fast,
-repeatable comparisons\.
-
-Built for embedded systems and large-scale clustered environments,
-\x1B\[1mprecizer\x1B\[0m detects synchronization drift by comparing files and checksums
-across sources\. It can also analyze historical changes by comparing databases
-captured from the same source at different points in time\.
-
-With love for Ukraine
-
- Compare databases options:
-  -c, --compare              Compare two databases from different sources\.
-                             Requires two additional arguments specifying paths
-                             to database files, e\.g\.:
-                             \x1B\[1mprecizer --compare database1\.db
-                             database2\.db\x1B\[0m
-                             When combined with \x1B\[1m--ignore/--include\x1B\[0m, the
-                             reported differences and equality summaries are
-                             limited to the filtered relative-path scope\.
-  -F, --compare-filter=checksum-mismatch\|first-source\|second-source
-                             Filter output categories for \x1B\[1m--compare\x1B\[0m\.
-                             Supported values: \x1B\[1mchecksum-mismatch\x1B\[0m,
-                             \x1B\[1mfirst-source\x1B\[0m, \x1B\[1msecond-source\x1B\[0m\. The
-                             option can be specified multiple times in any
-                             combination\.
-
- Build database options:
-  -d, --database=FILE        Database filename\. Defaults to \$\{HOST\}\.db, where
-                             HOST is the local hostname\.
-  -f, --force                Use this option only in case when the PATHs that
-                             were written into the database as a result of the
-                             last scanning really need to be renewed\. Warning!
-                             If this option will be used in incorrect way,
-                             information about files and their checksums
-                             against the database would be lost\.
-  -l, --check-level=FULL\|QUICK   Select database validation level: 'quick' for
-                             basic structure check, 'full' \(default\) for
-                             comprehensive integrity verification\.
-  -m, --maxdepth=NUMBER      Recursion depth limit\. The depth of the traversal,
-                             numbered from 0 to N, where a file could be found\.
-                             Representing the maximum of the starting point
-                             \(from root\) of the traversal\. The root itself is
-                             numbered 0\. \x1B\[1m--maxdepth=0\x1B\[0m completely
-                             disable recursion\.
-  -n, --dry-run\[=MODE\]       Perform a trial run with no changes made\. The
-                             option will not affect \x1B\[1m--compare\x1B\[0m\.
-                             Supported mode: \x1B\[1m--dry-run=with-checksums\x1B\[0m
-                             \(read files and calculate checksums during dry
-                             run\)\.
-  -P, --path=PATH            Filesystem root to scan\. May be repeated and
-                             combined with positional PATH arguments\.
-  -T, --watch-timestamps     Also recalculate checksums when metadata change
-                             time \(ctime\) or allocated block count changes\. By
-                             default, regular files are rehashed when their
-                             size or content modification time \(mtime\)
-                             changes\.
-  -u, --update               Updates the database to reflect file system
-                             changes \(new, modified and deleted files\)\. Must be
-                             used with the same initial PATH that was used when
-                             creating the database, as existing records will be
-                             replaced with data from the specified location\.
-                             This option modifies database consistency\. Use
-                             with caution, especially in automated scripts, as
-                             incorrect usage may lead to loss of file checksums
-                             and metadata\.
-  -x, --one-file-system      This option prevents directory traversal from
-                             descending into directories that have a different
-                             device number than the file from which the descent
-                             began\.
-  -X, --db-drop-inaccessible Allow dropping database records for files that are
-                             inaccessible due to permission errors\. By default,
-                             such paths are reported as "inaccessible" and
-                             their DB records are kept to avoid accidental loss
-                             when permissions change\. This option is effective
-                             only with \x1B\[1m--update\x1B\[0m\.
-                             Example:
-                             \x1B\[1mprecizer --update --db-drop-inaccessible
-                             /mnt/storage\x1B\[0m
-
- Locked Checksum Protection:
-  -C, --db-drop-ignored      The database is protected from accidental changes
-                             by default\. The option \x1B\[1m--db-drop-ignored\x1B\[0m
-                             must be specified additionally in order to remove
-                             from the database mention of files that matches
-                             the regular expression passed through the
-                             \x1B\[1m--ignore=PCRE2_REGEXP\x1B\[0m option\(s\)\.
-  -k, --lock-checksum=PCRE2_REGEXP
-                             Relative path to be treated as immutable archival
-                             data\. PCRE2 regular expressions can be used to
-                             select files or directories whose checksums are
-                             written once to the database and never updated
-                             again\. If no matching files exist in the database
-                             yet, their entries and checksums will still be
-                             created normally when they are scanned for the
-                             first time\. All paths for the regular expression
-                             must be specified as relative, the same way as for
-                             the \x1B\[1m--ignore\x1B\[0m option\. For these entries,
-                             the \x1B\[1m--update\x1B\[0m option will not recalculate
-                             checksums; any difference in file size,
-                             timestamps, or content will always be reported as
-                             data corruption, and no replacement checksum will
-                             be generated\. Multiple regular expressions can be
-                             specified using multiple \x1B\[1m--lock-checksum\x1B\[0m
-                             options\.
-                             Example:
-                             \x1B\[1mprecizer --update
-                             --lock-checksum="\^archive/2077/\.\*"
-                             /mnt/storage\x1B\[0m
-  -r, --rehash-locked        Force a full SHA512 rehash for every file that is
-                             already stored in the database and protected by
-                             any \x1B\[1m--lock-checksum\x1B\[0m pattern\. This option
-                             must always be used together with
-                             \x1B\[1m--lock-checksum\x1B\[0m; it has no effect
-                             otherwise\. During an update pass, every locked
-                             entry found on disk is read again, its checksum is
-                             recomputed, and the result is compared with the
-                             value stored in the database\. This provides an
-                             extra validation layer for immutable archives at
-                             the cost of additional I/O and CPU time, ensuring
-                             that frozen records are validated even when file
-                             size or timestamps alone are not sufficient
-                             indicators\. The option purposefully ignores
-                             \x1B\[1m--watch-timestamps\x1B\[0m — timestamp tracking
-                             can be on or off, the rehash will still take
-                             place\. If the recomputed checksum and file size
-                             match the database entry, the record stays
-                             consistent but differing ctime/mtime values in the
-                             database are synchronized with the on-disk
-                             timestamps\. If the checksum differs, the file is
-                             reported as corrupted just like any other locked
-                             entry\.
-                             Example:
-                             \x1B\[1mprecizer --update
-                             --lock-checksum="\^archive/2024/\.\*" --rehash-locked
-                             /mnt/storage\x1B\[0m
-
- Path Filtering and Ignore Policy:
-  -e, --ignore=PCRE2_REGEXP  Relative path to ignore\. PCRE2 regular expressions
-                             could be used to specify a pattern to ignore files
-                             or directories\. Attention! All paths for the
-                             regular expression must be specified as relative\.
-                             To understand what a relative path looks like,
-                             just run traverses without the \x1B\[1m--ignore\x1B\[0m
-                             option and look how the terminal will display
-                             relative paths that are written to the database\.
-                             Example:
-                             \x1B\[1mprecizer --ignore="\^diff2/1/\.\*"
-                             tests/fixtures/diffs\x1B\[0m
-                             In this example, the starting path for the
-                             traversing is \./tests/fixtures/diffs and the
-                             relative path to ignore will be
-                             \./tests/fixtures/diffs/diff2/1/ and all
-                             subdirectories \(/\.\*\)\.
-                             Multiple regular expressions for ignore could be
-                             specified using many \x1B\[1m--ignore\x1B\[0m options at
-                             once\.
-                             Example:
-                             \x1B\[1mprecizer --ignore="diff2/1/\.\*"
-                             --ignore="diff2/2/\.\*" tests/fixtures/diffs\x1B\[0m
-                             With \x1B\[1m--compare\x1B\[0m, ignored paths are treated
-                             as out of scope for reported differences and
-                             equality summaries\.
-  -i, --include=PCRE2_REGEXP Relative path to be included\. PCRE2 regular
-                             expressions\. Include these relative paths even if
-                             they were excluded via the \x1B\[1m--ignore\x1B\[0m
-                             option\. Multiple regular expressions could be
-                             specified\. With \x1B\[1m--compare\x1B\[0m, included paths
-                             are restored back into the reported comparison
-                             scope\.
-
- Visualizations options:
-  -g, --config=FILE          Read settings from FILE\. Help, usage, and version
-                             requests ignore FILE\. Otherwise, cannot be
-                             combined with other CLI arguments\. With no CLI
-                             arguments, read precizer\.conf in the current
-                             directory if present
-  -h, -\?, --help             Give this help list
-  -p, --progress             Enabling this option displays progress information
-                             but requires an initial count of files and the
-                             space they occupy to estimate execution time\. The
-                             program first traverses all specified directories,
-                             counting files, folders, and symlinks before
-                             proceeding with file analysis\. This initial
-                             traversal may take a significant amount of time\.
-                             It is strongly recommended not to use this option
-                             when calling the program from a script\.
-  -q, --quiet-ignored        Suppress per-file log lines for paths filtered by
-                             \x1B\[1m--ignore/--include\x1B\[0m\. This helps keep
-                             program logs free of extra messages once ignore
-                             regular expressions are tuned and stable in use\.
-                             Other warnings and errors remain visible\.
-  -s, --silent               Don't produce any output\. With \x1B\[1m--compare\x1B\[0m,
-                             only paths with differences are shown, and
-                             category headings remain visible when multiple
-                             compare categories are active\.
-  -S, --color=auto\|always\|never   Choose when to apply color and text styling
-                             \(-S means style\)\. Use auto for terminal output,
-                             always to preserve styling in files and pipes, or
-                             never to disable it\. The default is auto
-  -v, --verbose              Produce verbose output\.
-  -V, --version              Print program version
-  -z, --usage                Give a short usage message
-
-Mandatory or optional arguments to long options are also mandatory or optional
-for any corresponding short options\.
-
-SIMPLE EXAMPLE
-
-Use this workflow to verify that two mounted directory trees are equivalent\.
-
-Assume the source trees are mounted at \x1B\[33m/mnt1\x1B\[0m and \x1B\[33m/mnt2\x1B\[0m\.
-
-1\. On machine \x1B\[33m'host1'\x1B\[0m, run:
-
-   \x1B\[1m\x1B\[32m\$ precizer --progress /mnt1\x1B\[0m
-
-This traversal scans \x1B\[33m/mnt1\x1B\[0m recursively and creates \x1B\[33mhost1\.db\x1B\[0m
-in the current directory\.
-The \x1B\[1m--progress\x1B\[0m option reports processed data volume and file count\.
-
-2\. On machine \x1B\[33m'host2'\x1B\[0m, run:
-
-   \x1B\[1m\x1B\[32m\$ precizer --progress /mnt2\x1B\[0m
-
-This creates \x1B\[33mhost2\.db\x1B\[0m in the current directory\.
-
-3\. Copy \x1B\[33mhost1\.db\x1B\[0m and \x1B\[33mhost2\.db\x1B\[0m to one machine, then run:
-
-   \x1B\[1m\x1B\[32m\$ precizer --compare host1\.db host2\.db\x1B\[0m
-
-Output reports:
-
-\* Files present on \x1B\[33m'host1'\x1B\[0m but missing on \x1B\[33m'host2'\x1B\[0m, and vice
-versa\.
-\* Files present on both hosts whose SHA512 checksums do not match\.
-
-Database paths are stored as relative paths only\.
-For example, \x1B\[33m/mnt1/abc/def/aaa\.txt\x1B\[0m is stored as
-\x1B\[33mabc/def/aaa\.txt\x1B\[0m\. The same relative-path rule applies to
-\x1B\[33m/mnt2/abc/def/aaa\.txt\x1B\[0m, enabling direct cross-source comparison\.
-
-See the project README for additional technical details\.
-ERROR:Argument parsing failed with code 22 \(Invalid argument\)
-TESTING:Returned parse_arguments:\d+ status: FAILURE
 TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
+Usage: precizer \[OPTION\.\.\.\] \[PATH\.\.\.\]
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*? Compare databases options:
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -c, --compare[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -F, --compare-filter=checksum-mismatch\|first-source\|second-source[ \t]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*? Build database options:
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -d, --database=FILE[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -f, --force[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -l, --check-level=full\|quick[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -m, --maxdepth=NUMBER[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -n, --dry-run\[=MODE\][^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -P, --path=PATH[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -T, --watch-timestamps[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -u, --update[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -x, --one-file-system[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -X, --db-drop-inaccessible[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*? Locked Checksum Protection:
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -C, --db-drop-ignored[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -k,[ \t]+--lock-checksum=PCRE2_REGEXP[ \t]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -r, --rehash-locked[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*? Path Filtering and Ignore Policy:
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -e, --ignore=PCRE2_REGEXP[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -i, --include=PCRE2_REGEXP[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*? Visualizations options:
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -g, --config=FILE[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -h, -\?, --help[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -O, --output=full\|compact\|machine[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -p, --progress[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -q, --quiet-ignored[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -s, --silent[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -S, --color=auto\|always\|never[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -v, --verbose[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -V, --version[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?  -z, --usage[^\n]*
+(?:(?!(?:ERROR|TESTING):)[^\r\n]*\n)*?ERROR:Argument parsing failed with code 22 \(Invalid argument\)
+TESTING:Returned parse_arguments:\d+ status: FAILURE
 ERROR:The precizer process terminated unexpectedly due to an error
-TESTING:Exit status » FAILURE\Z
+TESTING:Exit status » FAILURE
+\z

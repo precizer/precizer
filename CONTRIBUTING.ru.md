@@ -80,7 +80,7 @@ sudo apt -y install gcc make libpcre2-dev llvm libubsan1 zip unzip
 #### Alpine Linux
 
 ```sh
-sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev argp-standalone zip unzip
+sudo apk add --no-cache build-base pcre2-dev pcre2-static fts-dev zip unzip
 ```
 
 На Alpine Linux санитайзерный режим не поддерживается. Тесты запускаются командой `make tests-debug`.
@@ -116,7 +116,7 @@ sudo emerge llvm-core/clang dev-libs/libpcre2 app-arch/zip app-arch/unzip
 
 ```sh
 xcode-select --install
-brew install llvm pcre2 argp-standalone
+brew install llvm pcre2
 ```
 
 На macOS используется динамическая сборка с санитайзерами:

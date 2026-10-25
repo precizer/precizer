@@ -350,9 +350,7 @@ Return db_validate_paths(void)
 					/* Without --force the safe choice is to stop with a warning.
 					   This gives the user a chance to confirm the path replacement
 					   instead of losing metadata by accident */
-					slog(EVERY,"Use the @{bold}--force@{reset} option only when the PATHS stored in the database need"
-						" to be updated. Warning: If this option is used incorrectly, file and checksum information"
-						" in the database may be lost or completely replaced with different values.\n");
+					slog(EVERY,"Use the @{bold}--force@{reset} option only when the PATHS stored in the database need to be updated. Warning: If this option is used incorrectly, file and checksum information in the database may be lost or completely replaced with different values.\n");
 					status = WARNING;
 				}
 			}

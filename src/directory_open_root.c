@@ -8,7 +8,8 @@
  * Opens a root directory that will be used as the base for traversal-relative
  * access checks. When the root cannot be opened, the function prints one
  * plain warning immediately and saves the same warning for the final
- * "Warnings and errors encountered" summary
+ * "Warnings and errors encountered" summary in full output. Machine output
+ * suppresses this warning through the logger
  *
  * @param[in] root_path Descriptor containing the traversal root path
  * @param[out] root_directory_fd_out Receives the opened descriptor
@@ -24,10 +25,7 @@ FileAccessStatus directory_open_root(
 	{
 		const int root_open_errno = errno;
 
-		slog(EVERY|UNDECOR|REMEMBER,
-			"Unable to open traversal root %s: %s\n",
-			m_text(root_path),
-			strerror(root_open_errno));
+		slog(EVERY|UNDECOR|REMEMBER,"Unable to open traversal root %s: %s\n",m_text(root_path),strerror(root_open_errno));
 
 		/*
 		 * The caller may skip this root immediately, before later traversal

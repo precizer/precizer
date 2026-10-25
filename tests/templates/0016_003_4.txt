@@ -1,0 +1,2 @@
+\Aupdated \[metadata, changed: ctime was:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}, now:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{1,9}\] file\.txt
+\z

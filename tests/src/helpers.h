@@ -11,8 +11,6 @@
 #include "precizer.h"
 #include <stdio.h>
 
-#define REQUIRE_SOURCE_EXISTS ((unsigned int)0U)
-#define ALLOW_MISSING_SOURCE  ((unsigned int)1U)
 #define FILE_WRITE_APPEND  ((unsigned int)1U)
 #define FILE_WRITE_REPLACE ((unsigned int)2U)
 
@@ -235,68 +233,11 @@ Return change_mode(
 	const char   *relative_path_to_tmpdir,
 	unsigned int new_mode);
 
-/**
- * @brief Create directory tree relative to TMPDIR using native filesystem calls
- *
- * Existing directories are accepted when every path component resolves to a
- * directory, including symlinks to directories
- *
- * @param[in] relative_path_to_tmpdir Directory path relative to TMPDIR
- *
- * @return Return status code
- */
-Return create_directory(const char *relative_path_to_tmpdir);
-
-/**
- * @brief Remove file or directory tree by path relative to TMPDIR
- *
- * When relative_path_to_tmpdir is an empty string, the function targets TMPDIR itself
- * Missing paths are treated as a hard failure to keep test cleanup strict and deterministic
- *
- * @param[in] relative_path_to_tmpdir File or directory path relative to TMPDIR
- *
- * @return Return status code
- */
-Return delete_path(const char *relative_path_to_tmpdir);
-
 Return delete_path_if_present(const char *relative_path_to_tmpdir);
 
 Return prepare_huge_fixture(
 	memory      *huge_file_path,
 	struct stat *huge_file_stat_out);
-
-/**
- * @brief Copy file or directory tree by path relative to TMPDIR
- *
- * Empty source or destination path resolves to TMPDIR root
- * The destination path is treated as exact target path and must not be an existing directory
- *
- * @param[in] relative_source_path Source file or directory path relative to TMPDIR
- * @param[in] relative_destination_path Destination file or directory path relative to TMPDIR
- *
- * @return Return status code
- */
-Return copy_path(
-	const char *relative_source_path,
-	const char *relative_destination_path);
-
-/**
- * @brief Copy file or directory tree from ORIGIN_DIR into TMPDIR
- *
- * Empty source or destination path resolves to the corresponding environment root
- * Missing sources fail by default with @ref REQUIRE_SOURCE_EXISTS
- * Optional missing sources can be ignored with @ref ALLOW_MISSING_SOURCE
- *
- * @param[in] relative_source_path_to_origin_dir Source path relative to ORIGIN_DIR
- * @param[in] relative_destination_path_to_tmpdir Destination path relative to TMPDIR
- * @param[in] flags Behavior flags such as @ref REQUIRE_SOURCE_EXISTS or @ref ALLOW_MISSING_SOURCE
- *
- * @return Return status code
- */
-Return copy_from_origin(
-	const char   *relative_source_path_to_origin_dir,
-	const char   *relative_destination_path_to_tmpdir,
-	unsigned int flags);
 
 /**
  * @brief Move file or directory by path relative to TMPDIR using native rename
@@ -484,5 +425,4 @@ Return touch_file_mtime_with_reference_delta_ns(
  * @return Return status code
  */
 Return tamper_locked_file_bytes(const char *relative_path);
-
 #endif

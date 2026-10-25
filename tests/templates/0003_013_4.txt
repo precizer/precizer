@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?(?:precizer|testitall): ERROR: Cannot open config file '': No such file or directory
+\z

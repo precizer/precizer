@@ -1,0 +1,4 @@
+\ATESTING:Configuration initialization is finished
+resumed \[hashing from (?:0B|[1-9][0-9]*(?:EiB|PiB|TiB|GiB|MiB|KiB|B)(?: [1-9][0-9]*(?:PiB|TiB|GiB|MiB|KiB|B))*)\] hugetestfile
+interrupted \[hashing at (?:0B|[1-9][0-9]*(?:EiB|PiB|TiB|GiB|MiB|KiB|B)(?: [1-9][0-9]*(?:PiB|TiB|GiB|MiB|KiB|B))*)\] hugetestfile
+\z

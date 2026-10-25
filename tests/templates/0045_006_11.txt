@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Unsupported --compare-filter value ''\. Supported values: checksum-mismatch, first-source, second-source\. See --help for more information
+\z

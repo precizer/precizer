@@ -19,8 +19,7 @@ Return prepare(void)
 	struct utsname utsname = {0};
 
 	m_create(char,path,MEMORY_STRING);
-	m_create(char,environment_build_path,MEMORY_STRING);
-	m_create(char,environment_precizer_path,MEMORY_STRING);
+	m_create(char,environment_binary_path,MEMORY_STRING);
 
 	ASSERT(SUCCESS == determine_origin_dir(path));
 	ASSERT(SUCCESS == set_environment_variable("ORIGIN_DIR",m_text(path)));
@@ -47,7 +46,6 @@ Return prepare(void)
 	call(m_del(path));
 
 	ASSERT(SUCCESS == create_directory("tests/fixtures/diffs"));
-	ASSERT(SUCCESS == create_directory(".builds"));
 	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/diffs/diff1","tests/fixtures/diffs/diff1",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/diffs/diff2","tests/fixtures/diffs/diff2",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/'apostrophe","tests/fixtures/'apostrophe",REQUIRE_SOURCE_EXISTS));
@@ -56,16 +54,19 @@ Return prepare(void)
 	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/4","tests/fixtures/4",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/ignore_include_cases","tests/fixtures/ignore_include_cases",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == copy_from_origin("tests/templates","tests/templates",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/long","tests/fixtures/long",ALLOW_MISSING_SOURCE));
-	ASSERT(SUCCESS == m_copy_literal(environment_build_path,".builds/"));
-	ASSERT(SUCCESS == m_concat_string(environment_build_path,environment_name));
-	ASSERT(SUCCESS == copy_from_origin(m_text(environment_build_path),m_text(environment_build_path),ALLOW_MISSING_SOURCE));
-	ASSERT(SUCCESS == m_copy(environment_precizer_path,environment_build_path));
-	ASSERT(SUCCESS == m_concat_literal(environment_precizer_path,"/precizer"));
-	ASSERT(SUCCESS == copy_from_origin(m_text(environment_precizer_path),"precizer",ALLOW_MISSING_SOURCE));
+	ASSERT(SUCCESS == copy_from_origin("libs/rational/tests/templates","tests/templates/librational",REQUIRE_SOURCE_EXISTS));
 
-	call(m_del(environment_precizer_path));
-	call(m_del(environment_build_path));
+#if 0
+	/* Fixture used only by the disabled test0014 suite */
+	ASSERT(SUCCESS == copy_from_origin("tests/fixtures/long","tests/fixtures/long",ALLOW_MISSING_SOURCE));
+#endif
+
+	ASSERT(SUCCESS == m_copy_literal(environment_binary_path,".builds/"));
+	ASSERT(SUCCESS == m_concat_string(environment_binary_path,environment_name));
+	ASSERT(SUCCESS == m_concat_literal(environment_binary_path,"/precizer"));
+	ASSERT(SUCCESS == copy_from_origin(m_text(environment_binary_path),"precizer",ALLOW_MISSING_SOURCE));
+
+	call(m_del(environment_binary_path));
 
 	bool file_exists = false;
 

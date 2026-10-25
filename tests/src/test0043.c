@@ -168,7 +168,7 @@ static Return test0043_5(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_004.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_005_1.txt"));
 
 	RETURN_STATUS;
 }
@@ -190,7 +190,7 @@ static Return test0043_6(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_005.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_006_1.txt"));
 
 	RETURN_STATUS;
 }
@@ -213,7 +213,7 @@ static Return test0043_7(void)
 		.scan_elapsed_ns = 1LL
 	};
 
-	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_006.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_007_1.txt"));
 
 	RETURN_STATUS;
 }
@@ -238,7 +238,7 @@ static Return test0043_8(void)
 		.scan_elapsed_ns = 2000000000LL
 	};
 
-	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_007.txt"));
+	ASSERT(SUCCESS == check_statistics_output(&statistics_config,&summary,"templates/0043_008_1.txt"));
 
 	RETURN_STATUS;
 }

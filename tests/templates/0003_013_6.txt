@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?(?:precizer|testitall): ERROR: Cannot read config file 'precizer\.conf': Is a directory
+\z

@@ -11,7 +11,7 @@ static Return assert_legacy_cli_argument(
 	const char *arguments,
 	const char *canonical_diagnostic)
 {
-	/* Status returned by this function through deliver()
+	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
@@ -32,7 +32,7 @@ static Return assert_legacy_cli_argument(
 
 	call(m_del(result));
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -192,13 +192,11 @@ static Return test0039_6(void)
 	};
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0039_006.conf","0039_006.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0039_006.conf",COMPLETED,"templates/0039_006.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0039_006.conf",COMPLETED,"templates/0039_006.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0039_006.conf"));
 
 	RETURN_STATUS;
 }

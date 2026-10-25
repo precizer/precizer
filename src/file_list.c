@@ -30,8 +30,8 @@ static int compare_by_name(
  *
  * `summary->stats_only_pass` controls how much work is done. When it is `true`,
  * traversal only counts directories, files, symlinks, and allocated size, and
- * that pass is skipped unless progress output needs those counters. When it is
- * `false`, regular files can be hashed, compared with existing database rows,
+ * that pass is skipped when progress is disabled or compact output is selected.
+ * When it is `false`, regular files can be hashed, compared with existing database rows,
  * inserted, updated, or reported according to ignore/include and checksum
  * locking settings. File writes are committed by the shared checkpoint interval
  * and before this function returns. A graceful interruption commits pending
@@ -71,9 +71,11 @@ Return file_list(TraversalSummary *summary)
 	}
 #endif
 
-	if(config->progress == false && summary->stats_only_pass == true)
+	/* Skip preliminary counting when progress is disabled or compact output
+	   makes it unnecessary. The main file-processing pass is unaffected */
+	if(summary->stats_only_pass == true
+	        && (config->progress == false || config->output != OUTPUT_FULL))
 	{
-		// Don't do anything
 		provide(status);
 	}
 
@@ -207,8 +209,8 @@ Return file_list(TraversalSummary *summary)
 		 * so it can traverse the root path directly through FTS. The content pass
 		 * needs a stable root descriptor because file and directory access checks
 		 * are made with paths relative to this root. If the root cannot be
-		 * opened, directory_open_root() reports and remembers the
-		 * warning, and this loop skips only the unavailable root before
+		 * opened, directory_open_root() reports the failure and remembers it in
+		 * full output. This loop skips only the unavailable root before
 		 * continuing with the next configured traversal root
 		 */
 		if(summary->stats_only_pass == false)
@@ -753,15 +755,30 @@ Return file_list(TraversalSummary *summary)
 
 					if(p->fts_info == FTS_DNR)
 					{
-						slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"inaccessible directory %s\n",runtime_relative_path);
+						if(config->output != OUTPUT_FULL)
+						{
+							slog_show(MACHINE|UNDECOR,false,&first_iteration,summary,"@{orange}inaccessible@{reset} [directory] %s\n",runtime_relative_path);
+						} else {
+							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"@{orange}inaccessible directory@{reset} %s\n",runtime_relative_path);
+						}
 
 					} else if(p->fts_info == FTS_NS){
 
-						slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"cannot stat \"%s\" when reading %s\n",strerror(p->fts_errno),runtime_relative_path);
+						if(config->output != OUTPUT_FULL)
+						{
+							slog_show(MACHINE|UNDECOR,false,&first_iteration,summary,"@{red}error@{reset} [stat error: %s] %s\n",strerror(p->fts_errno),runtime_relative_path);
+						} else {
+							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"@{red}cannot stat \"%s\" when reading@{reset} %s\n",strerror(p->fts_errno),runtime_relative_path);
+						}
 
 					} else {
 
-						slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"fts error \"%s\" when reading %s\n",strerror(p->fts_errno),runtime_relative_path);
+						if(config->output != OUTPUT_FULL)
+						{
+							slog_show(MACHINE|UNDECOR,false,&first_iteration,summary,"@{red}error@{reset} [fts error: %s] %s\n",strerror(p->fts_errno),runtime_relative_path);
+						} else {
+							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"@{red}fts error \"%s\" when reading@{reset} %s\n",strerror(p->fts_errno),runtime_relative_path);
+						}
 					}
 
 					break;

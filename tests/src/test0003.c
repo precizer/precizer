@@ -70,7 +70,9 @@ Return test0003_2(void)
  *
  * Run each command first without a default configuration file, then with an
  * invalid default file. Both runs must produce the same output and status.
- * Explicit file selections are also ignored for missing and malformed files
+ * Explicit file selections are also ignored for missing and malformed files.
+ * Help uses a complete structural golden template that checks options and the
+ * final status while allowing descriptions to change
  *
  * @return Return status for help, usage, and version output
  */
@@ -147,9 +149,9 @@ Return test0003_4(void)
 		{"--path=/definitely/nonexistent/path --help",COMPLETED,"templates/0003_004.txt",STDERR_MUST_BE_EMPTY},
 		{"--path=/definitely/nonexistent/path --usage",COMPLETED,"templates/0003_005.txt",STDERR_MUST_BE_EMPTY},
 		{"--path=/definitely/nonexistent/path --version",COMPLETED,"templates/0003_006.txt",STDERR_MUST_BE_EMPTY},
-		{"--help --ignore='('",COMPLETED,"templates/0003_004_1.txt",STDERR_MUST_BE_EMPTY},
-		{"--help --include='('",COMPLETED,"templates/0003_004_1.txt",STDERR_MUST_BE_EMPTY},
-		{"--help --lock-checksum='('",COMPLETED,"templates/0003_004_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--help --ignore='('",COMPLETED,"templates/0003_004.txt",STDERR_MUST_BE_EMPTY},
+		{"--help --include='('",COMPLETED,"templates/0003_004.txt",STDERR_MUST_BE_EMPTY},
+		{"--help --lock-checksum='('",COMPLETED,"templates/0003_004.txt",STDERR_MUST_BE_EMPTY},
 		{"--usage --ignore='('",COMPLETED,"templates/0003_005.txt",STDERR_MUST_BE_EMPTY},
 		{"--usage --include='('",COMPLETED,"templates/0003_005.txt",STDERR_MUST_BE_EMPTY},
 		{"--usage --lock-checksum='('",COMPLETED,"templates/0003_005.txt",STDERR_MUST_BE_EMPTY},
@@ -214,7 +216,8 @@ static Return test0003_5(void)
  *
  * Named options are processed before positional arguments by argp. The full
  * output must match the equivalent positional root array, including duplicates.
- * A file repeat must normalize trailing slashes without removing repeated roots
+ * Relative and absolute configuration paths must load the same roots,
+ * with trailing slashes normalized and duplicates preserved
  *
  * @return Return status for repeated, mixed, and normalized root spellings
  */
@@ -224,12 +227,12 @@ static Return test0003_6(void)
 	const struct argument_test_case cases[] = {
 		{"--dry-run --database=0003_paths.db "
 		 "--path=tests/fixtures/diffs/diff1/1/ --path=tests/fixtures/diffs/diff1/4 "
-		 "--path=tests/fixtures/diffs/diff1/1",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		 "--path=tests/fixtures/diffs/diff1/1",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{"--dry-run --database=0003_paths.db "
 		 "--path=tests/fixtures/diffs/diff1/1/ --path tests/fixtures/diffs/diff1/4/ "
-		 "tests/fixtures/diffs/diff1/1/",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		 "tests/fixtures/diffs/diff1/1/",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{"--dry-run --database=0003_paths.db tests/fixtures/diffs/diff1/1/ "
-		 "--path=tests/fixtures/diffs/diff1/1 --path=tests/fixtures/diffs/diff1/4",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		 "--path=tests/fixtures/diffs/diff1/1 --path=tests/fixtures/diffs/diff1/4",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -238,13 +241,14 @@ static Return test0003_6(void)
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
 	/* Reuse the dry-run state and full output for the same roots from a file */
-	ASSERT(SUCCESS == copy_path("tests/templates/0003_006.conf","0003_006.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0003_006.conf",COMPLETED,"templates/0003_007.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0003_006.conf",COMPLETED,"templates/0003_006_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Both selectors must read the same file through its absolute path */
+		{"--config=\"${TMPDIR}/tests/templates/0003_006.conf\"",COMPLETED,"templates/0003_006_2.txt",STDERR_MUST_BE_EMPTY},
+		{"-g \"${TMPDIR}/tests/templates/0003_006.conf\"",COMPLETED,"templates/0003_006_2.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0003_006.conf"));
 
 	RETURN_STATUS;
 }
@@ -269,9 +273,9 @@ static Return test0003_7(void)
 		{"--compare --",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"--version --",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"--path",FAILURE,"templates/0040_003.txt","templates/0003_008.txt"},
-		{"--path=",FAILURE,"templates/0040_003.txt","templates/0003_010.txt"},
-		{"--dry-run ''",FAILURE,"templates/0040_003.txt","templates/0003_010.txt"},
-		{"--compare --path='' first.db second.db",FAILURE,"templates/0040_003.txt","templates/0003_010.txt"},
+		{"--path=",FAILURE,"templates/0040_003.txt","templates/0003_007_2.txt"},
+		{"--dry-run ''",FAILURE,"templates/0040_003.txt","templates/0003_007_2.txt"},
+		{"--compare --path='' first.db second.db",FAILURE,"templates/0040_003.txt","templates/0003_007_2.txt"},
 		{"--compare --path=first.db --path=second.db",FAILURE,"templates/0028_006_14.txt","templates/0003_002.txt"},
 		{"--compare --path=second.db first.db",FAILURE,"templates/0028_006_14.txt","templates/0003_011.txt"},
 		{0}
@@ -349,13 +353,11 @@ static Return test0003_9(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 	ASSERT(SUCCESS == copy_from_origin("tests/templates/0003_003.conf",
 		"precizer.conf",REQUIRE_SOURCE_EXISTS));
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0003_012.conf","tests/templates/0003_012.conf",REQUIRE_SOURCE_EXISTS));
 	/* A root relative to the config directory would incorrectly find this directory */
 	ASSERT(SUCCESS == create_directory("tests/templates/0003_missing_root"));
 	ASSERT(SUCCESS == run_and_match_templates(cases,"%CONFIG_PATH%","tests/templates/0003_012[.]conf"));
 
 	call(delete_path_if_present("tests/templates/0003_missing_root"));
-	call(delete_path_if_present("tests/templates/0003_012.conf"));
 	call(delete_path_if_present("precizer.conf"));
 	RETURN_STATUS;
 }
@@ -423,25 +425,25 @@ static Return test0003_11(void)
 {
 	INITTEST;
 	const struct argument_test_case cases[] = {
-		{"--config=0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--config=0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--config 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--config 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-g0003_011.conf 0003_missing_root",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"-vg0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"--config=0003_absent.conf --path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
-		{"0003_missing_root -g0003_absent.conf --config=0003_011.conf",FAILURE,"templates/0003_013.txt","templates/0003_014.txt"},
+		{"--config=0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--config=0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root --config=0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--config 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--config 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root --config 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g 0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g 0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root -g 0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g0003_011.conf --path=0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"--path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-g0003_011.conf 0003_missing_root",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"-vg0003_011.conf",FAILURE,"templates/0003_011_1.txt","templates/0003_011_3.txt"},
+		{"--config=0003_absent.conf --path=0003_missing_root -g0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
+		{"0003_missing_root -g0003_absent.conf --config=0003_011.conf",FAILURE,"templates/0003_011_2.txt","templates/0003_011_3.txt"},
 		{0}
 	};
 
@@ -471,17 +473,17 @@ static Return test0003_12(void)
 {
 	INITTEST;
 	const struct argument_test_case cases[] = {
-		{"--config",FAILURE,"templates/0040_003.txt","templates/0003_015.txt"},
-		{"-g",FAILURE,"templates/0040_003.txt","templates/0003_016.txt"},
+		{"--config",FAILURE,"templates/0040_003.txt","templates/0003_012_2.txt"},
+		{"-g",FAILURE,"templates/0040_003.txt","templates/0003_012_3.txt"},
 		{"--config=0003_absent.conf --path",FAILURE,"templates/0040_003.txt","templates/0003_008.txt"},
-		{"--config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_017.txt"},
-		{"--unknown --config=0003_absent.conf",FAILURE,"templates/0040_003.txt","templates/0003_017.txt"},
+		{"--config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_012_4.txt"},
+		{"--unknown --config=0003_absent.conf",FAILURE,"templates/0040_003.txt","templates/0003_012_4.txt"},
 		{"--maxdepth=bad --unknown",FAILURE,"templates/0040_003.txt","templates/0018_005_2.txt"},
-		{"--help --unknown",FAILURE,"templates/0003_012_1.txt","templates/0003_017.txt"},
-		{"--silent --unknown",FAILURE,"templates/0045_033.txt","templates/0003_017.txt"},
-		{"--version --config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_017.txt"},
+		{"--help --unknown",FAILURE,"templates/0003_012_1.txt","templates/0003_012_4.txt"},
+		{"--silent --unknown",FAILURE,"templates/0045_033.txt","templates/0003_012_4.txt"},
+		{"--version --config=0003_absent.conf --unknown",FAILURE,"templates/0040_003.txt","templates/0003_012_4.txt"},
 		{"--config=0003_absent.conf --version --color=invalid-value",FAILURE,"templates/0040_003.txt","templates/0040_004.txt"},
-		{"--config=0003_absent.conf --progress=no",FAILURE,"templates/0040_003.txt","templates/0003_018.txt"},
+		{"--config=0003_absent.conf --progress=no",FAILURE,"templates/0040_003.txt","templates/0003_012_5.txt"},
 		{"--",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"-- tests/fixtures/diffs/diff1",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
 		{"--path=tests/fixtures/diffs/diff1 --",FAILURE,"templates/0028_006_14.txt","templates/0003_024.txt"},
@@ -517,13 +519,13 @@ static Return test0003_13(void)
 {
 	INITTEST;
 	const struct argument_test_case missing_file[] = {
-		{"--config=0003_absent.conf",FAILURE,"templates/0003_013.txt","templates/0003_019.txt"},
-		{"--config=",FAILURE,"templates/0003_013.txt","templates/0003_020.txt"},
+		{"--config=0003_absent.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_013_3.txt"},
+		{"--config=",FAILURE,"templates/0003_013_2.txt","templates/0003_013_4.txt"},
 		{0}
 	};
 	const struct argument_test_case invalid_file[] = {
-		{"",FAILURE,"templates/0003_013.txt","templates/0003_021.txt"},
-		{"--config=precizer.conf",FAILURE,"templates/0003_013.txt","templates/0003_021.txt"},
+		{"",FAILURE,"templates/0003_013_2.txt","templates/0003_013_5.txt"},
+		{"--config=precizer.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_013_5.txt"},
 		{0}
 	};
 
@@ -537,8 +539,8 @@ static Return test0003_13(void)
 
 	/* A directory opens successfully but causes a read error when inih reads it */
 	const struct argument_test_case unreadable_file[] = {
-		{"",FAILURE,"templates/0003_013.txt","templates/0003_022.txt"},
-		{"--config=precizer.conf",FAILURE,"templates/0003_013.txt","templates/0003_022.txt"},
+		{"",FAILURE,"templates/0003_013_2.txt","templates/0003_013_6.txt"},
+		{"--config=precizer.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_013_6.txt"},
 		{"--version",COMPLETED,"templates/0003_006.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
@@ -548,8 +550,8 @@ static Return test0003_13(void)
 
 	/* Permission denial is an open error, unlike a directory's read error */
 	const struct argument_test_case denied_file[] = {
-		{"",FAILURE,"templates/0003_013.txt","templates/0003_013_1.txt"},
-		{"--config=precizer.conf",FAILURE,"templates/0003_013.txt","templates/0003_013_1.txt"},
+		{"",FAILURE,"templates/0003_013_2.txt","templates/0003_013_1.txt"},
+		{"--config=precizer.conf",FAILURE,"templates/0003_013_2.txt","templates/0003_013_1.txt"},
 		{"--version",COMPLETED,"templates/0003_006.txt",STDERR_MUST_BE_EMPTY},
 		{"--config=precizer.conf --version",COMPLETED,"templates/0003_006.txt",STDERR_MUST_BE_EMPTY},
 		{0}
@@ -571,14 +573,12 @@ static Return test0003_14(void)
 {
 	INITTEST;
 	const struct argument_test_case cases[] = {
-		{"--config=tests/templates/0003_014.conf",FAILURE,"templates/0003_023.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0003_014.conf",FAILURE,"templates/0003_014_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0003_014.conf","tests/templates/0003_014.conf",REQUIRE_SOURCE_EXISTS));
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
-	call(delete_path_if_present("tests/templates/0003_014.conf"));
 	RETURN_STATUS;
 }
 
@@ -595,22 +595,16 @@ static Return test0003_15(void)
 	INITTEST;
 	const struct argument_test_case cases[] = {
 		{"--ignore='(' tests/fixtures/diffs/diff1",FAILURE,"templates/0003_015_1.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0003_015_1.conf",FAILURE,"templates/0003_015_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0003_015_1.conf",FAILURE,"templates/0003_015_1.txt",STDERR_MUST_BE_EMPTY},
 		{"--include='(' tests/fixtures/diffs/diff1",FAILURE,"templates/0003_015_2.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0003_015_2.conf",FAILURE,"templates/0003_015_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0003_015_2.conf",FAILURE,"templates/0003_015_2.txt",STDERR_MUST_BE_EMPTY},
 		{"--lock-checksum='(' tests/fixtures/diffs/diff1",FAILURE,"templates/0003_015_3.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0003_015_3.conf",FAILURE,"templates/0003_015_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0003_015_3.conf",FAILURE,"templates/0003_015_3.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0003_015_1.conf","0003_015_1.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0003_015_2.conf","0003_015_2.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0003_015_3.conf","0003_015_3.conf"));
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
-	call(delete_path_if_present("0003_015_1.conf"));
-	call(delete_path_if_present("0003_015_2.conf"));
-	call(delete_path_if_present("0003_015_3.conf"));
 
 	RETURN_STATUS;
 }

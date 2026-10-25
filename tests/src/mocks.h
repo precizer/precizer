@@ -64,4 +64,13 @@ void mocks_access_reset(void);
 
 size_t mocks_access_call_count(void) __attribute__ ((pure));
 
+void mocks_fts_read_set_failure(
+	const char *,
+	unsigned short,
+	int);
+
+void mocks_fts_read_reset(void);
+
+size_t mocks_fts_read_call_count(void) __attribute__ ((pure));
+
 #endif /* _TEST_MOCKS_H */

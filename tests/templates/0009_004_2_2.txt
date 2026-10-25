@@ -1,0 +1,6 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*updated(?:\x1B\[[0-9;]*m)* \[as included\] skip_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] tmp_77xy__aa\.bak
+\z

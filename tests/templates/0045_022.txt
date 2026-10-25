@@ -1,1 +1,0 @@
-\A(?:[^:\n]*/)?testitall: ERROR: --config cannot be combined with other arguments\. Use either a config file or CLI arguments\n\z

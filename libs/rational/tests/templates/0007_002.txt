@@ -1,0 +1,6 @@
+\Aregular
+[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3} logger_matrix\.c:042:emit_ordinary_mode_messages:verbose
+TESTING:testing
+every undecorated
+ERROR: ordinary error
+\z

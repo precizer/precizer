@@ -3,8 +3,9 @@
 /**
  * @brief Store a formatted log line in the TEMP remember_history table
  *
- * @details The table is created in db_init(). Empty messages are ignored. When
- * the previous remembered row does not end with a newline, the new message is
+ * @details The table is created in db_init(). Empty messages and messages in
+ * compact or machine output mode are ignored. Existing history is preserved.
+ * When the previous remembered row does not end with a newline, the new message is
  * appended to that row so multi-part log output remains one remembered message
  *
  * @param[in] message Message bytes to remember
@@ -27,6 +28,11 @@ void rational_remember(
 		return;
 	}
 
+	if(config->output != OUTPUT_FULL)
+	{
+		return;
+	}
+
 	sqlite3_stmt *lookup_stmt = NULL;
 	sqlite3_stmt *write_stmt = NULL;
 	sqlite3_int64 last_id = 0;
@@ -40,8 +46,7 @@ void rational_remember(
 
 	if(rc != SQLITE_OK)
 	{
-		log_sqlite_error(config->db,rc,NULL,
-			"Failed to prepare remember_history lookup");
+		log_sqlite_error(config->db,rc,NULL,"Failed to prepare remember_history lookup");
 	} else {
 		rc = sqlite3_step(lookup_stmt);
 
@@ -70,8 +75,7 @@ void rational_remember(
 
 		if(rc != SQLITE_OK)
 		{
-			log_sqlite_error(config->db,rc,NULL,
-				"Failed to prepare remember_history update");
+			log_sqlite_error(config->db,rc,NULL,"Failed to prepare remember_history update");
 			sqlite3_finalize(write_stmt);
 			return;
 		}
@@ -80,8 +84,7 @@ void rational_remember(
 
 		if(rc != SQLITE_OK)
 		{
-			log_sqlite_error(config->db,rc,NULL,
-				"Failed to bind remember_history update");
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind remember_history update");
 			sqlite3_finalize(write_stmt);
 			return;
 		}
@@ -90,8 +93,7 @@ void rational_remember(
 
 		if(rc != SQLITE_OK)
 		{
-			log_sqlite_error(config->db,rc,NULL,
-				"Failed to bind remember_history id");
+			log_sqlite_error(config->db,rc,NULL,"Failed to bind remember_history id");
 			sqlite3_finalize(write_stmt);
 			return;
 		}
@@ -103,8 +105,7 @@ void rational_remember(
 
 		if(rc != SQLITE_OK)
 		{
-			log_sqlite_error(config->db,rc,NULL,
-				"Failed to prepare remember_history insert");
+			log_sqlite_error(config->db,rc,NULL,"Failed to prepare remember_history insert");
 			sqlite3_finalize(write_stmt);
 			return;
 		}
@@ -114,8 +115,7 @@ void rational_remember(
 
 	if(rc != SQLITE_OK)
 	{
-		log_sqlite_error(config->db,rc,NULL,
-			"Failed to bind remember_history message");
+		log_sqlite_error(config->db,rc,NULL,"Failed to bind remember_history message");
 		sqlite3_finalize(write_stmt);
 		return;
 	}
@@ -126,11 +126,9 @@ void rational_remember(
 	{
 		if(append_to_last)
 		{
-			log_sqlite_error(config->db,rc,NULL,
-				"Failed to update remember_history record");
+			log_sqlite_error(config->db,rc,NULL,"Failed to update remember_history record");
 		} else {
-			log_sqlite_error(config->db,rc,NULL,
-				"Failed to insert remember_history record");
+			log_sqlite_error(config->db,rc,NULL,"Failed to insert remember_history record");
 		}
 	}
 

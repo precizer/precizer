@@ -2,7 +2,9 @@
 
 Bundled [argp-standalone](https://github.com/tom42/argp-standalone) command-line parser, distributed under the [LGPL-2.1-or-later license](LICENSES/LGPL-2.1-or-later.txt)
 
-The same bundled parser is used on Linux, macOS, and Windows/MSYS2. A system argp package and CMake are not required
+macOS and musl-based Linux systems always use this bundled parser. On other supported systems, `production`, `portable`, `debug`, `sanitize`, and `coverage` builds use bundled argp, while `dynamic-production`, `distribution`, and `debug-dynamic` use the system implementation. The test suite follows the same choice: `tests-debug` and sanitizer tests use bundled argp; `tests-dynamic` uses system argp except on macOS and musl-based Linux systems
+
+On Linux with glibc, system argp is included in libc. On MSYS2, `msys-build`, `windows-zip`, and `windows-exe` include bundled argp in the executable. The `libargp-devel` package is required only for MSYS2 builds using `dynamic-production`, `distribution`, `debug-dynamic`, or `tests-dynamic`. CMake is not required to build bundled argp
 
 Commands run from `libs/argp`
 

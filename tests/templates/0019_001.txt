@@ -1,11 +1,11 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
 TESTING:argument:database=database1\.db
 TESTING:argument:db_file_name=database1\.db
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -35,18 +35,18 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
-added 1/AAA/BCB/CCC/a\.txt
-added 1/AAA/ZAW/A/b/c/a_file\.txt
-added 1/AAA/ZAW/D/e/f/b_file\.txt
-added 2/AAA/BBB/CZC/a\.txt
-added 3/AAA/BBB/CCC/a\.txt
-added 4/AAA/BBB/CCC/a\.txt
-added path1/AAA/BCB/CCC/a\.txt
-added path1/AAA/ZAW/A/b/c/a_file\.txt
-added path1/AAA/ZAW/D/e/f/b_file\.txt
-added path2/AAA/BCB/CCC/a\.txt
-added path2/AAA/ZAW/A/b/c/a_file\.txt
-added path2/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 4/AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* path1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* path2/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

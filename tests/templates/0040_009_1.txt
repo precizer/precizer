@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?precizer: option (?:'|`)--color' requires an argument
+Try `precizer --help' or `precizer --usage' for more information\.\Z

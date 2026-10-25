@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Filesystem root path must not be empty\. See --help for more information
+\z

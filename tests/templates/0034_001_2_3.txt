@@ -1,0 +1,2 @@
+\Arehashed \[file\] path1/AAA/BCB/CCC/a\.txt
+\z

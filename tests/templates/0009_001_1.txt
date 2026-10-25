@@ -4,18 +4,18 @@ The path database0009\.db doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
 File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009\.db:(?:\x1B\[[0-9;]*m)*
-added alpha_m0n9k2_zz\.txt
-added hold_a1r9v-0pq\.bak
-added keep_4xv7__m2\.log
-added omega_77xy__aa\.bin
-ignored & not added skip_4xv7__m2\.log
-ignored & not added skip_a1r9v-0pq\.bak
-ignored & not added skip_m0n9k2_zz\.log
-ignored & not added tmp_77xy__aa\.bak
-ignored & not added tmp_qwe_90210\.log
-ignored & not added tmp_z1-9vv\.bak
-added xqwe_90210\.md
-added zeta_z1-9vv\.dat
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* alpha_m0n9k2_zz\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* hold_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* keep_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* omega_77xy__aa\.bin
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* tmp_77xy__aa\.bak
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* tmp_qwe_90210\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* tmp_z1-9vv\.bak
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* xqwe_90210\.md
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* zeta_z1-9vv\.dat
 File traversal complete
 Start vacuuming the primary database…
 Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+

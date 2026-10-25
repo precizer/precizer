@@ -227,7 +227,7 @@ static Return runit_wait_env_unset_one(const char *name)
 		status = FAILURE;
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -309,7 +309,7 @@ static Return runit_wait_env_set(
 		}
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -342,7 +342,7 @@ static Return runit_wait_env_clear(struct runit_wait_env *state)
 		run(runit_wait_env_unset_one(runit_wait_env_names[i]));
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -424,7 +424,7 @@ static Return runit_signal_sync_prepare(
 
 	if(enabled == false)
 	{
-		deliver(status);
+		provide(status);
 	}
 
 	int pipe_fds[2] = {
@@ -443,7 +443,7 @@ static Return runit_signal_sync_prepare(
 		signal_sync->enabled = true;
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -483,7 +483,7 @@ static Return runit_poll_background_process_before_signal(
 		status = FAILURE;
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -556,7 +556,7 @@ static Return runit_wait_for_signal_ready(
 
 				if(bytes_read == (ssize_t)sizeof(notification))
 				{
-					deliver(status);
+					provide(status);
 				}
 
 				if(bytes_read == 0)
@@ -584,7 +584,7 @@ static Return runit_wait_for_signal_ready(
 		status = FAILURE;
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -614,7 +614,7 @@ static Return runit_send_background_signal(
 		status = FAILURE;
 	}
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -867,5 +867,5 @@ Return runit_background(
 
 	run(m_del(STDERR));
 
-	deliver(status);
+	provide(status);
 }

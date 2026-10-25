@@ -1,18 +1,18 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 Usage: precizer \[-cfTuxXCrh\?pqsvVz\]
 \s+\[-F checksum-mismatch\|first-source\|second-source\] \[-d FILE\]
-\s+\[-l FULL\|QUICK\] \[-m NUMBER\] \[-n\[MODE\]\] \[-P PATH\] \[-k PCRE2_REGEXP\]
+\s+\[-l full\|quick\] \[-m NUMBER\] \[-n\[MODE\]\] \[-P PATH\] \[-k PCRE2_REGEXP\]
 \s+\[-e PCRE2_REGEXP\] \[-i PCRE2_REGEXP\] \[-g FILE\]
-\s+\[-S auto\|always\|never\] \[--compare\]
+\s+\[-O full\|compact\|machine\] \[-S auto\|always\|never\] \[--compare\]
 \s+\[--compare-filter=checksum-mismatch\|first-source\|second-source\]
-\s+\[--database=FILE\] \[--force\] \[--check-level=FULL\|QUICK\]
+\s+\[--database=FILE\] \[--force\] \[--check-level=full\|quick\]
 \s+\[--maxdepth=NUMBER\] \[--dry-run\[=MODE\]\] \[--path=PATH\]
 \s+\[--watch-timestamps\] \[--update\] \[--one-file-system\]
 \s+\[--db-drop-inaccessible\] \[--db-drop-ignored\]
 \s+\[--lock-checksum=PCRE2_REGEXP\] \[--rehash-locked\]
 \s+\[--ignore=PCRE2_REGEXP\] \[--include=PCRE2_REGEXP\] \[--config=FILE\]
-\s+\[--help\] \[--progress\] \[--quiet-ignored\] \[--silent\]
-\s+\[--color=auto\|always\|never\] \[--verbose\] \[--version\] \[--usage\]
-\s+\[PATH\.\.\.\]
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
+[ \t]+\[--help\] \[--output=full\|compact\|machine\] \[--progress\]
+[ \t]+\[--quiet-ignored\] \[--silent\] \[--color=auto\|always\|never\]
+[ \t]+\[--verbose\] \[--version\] \[--usage\] \[PATH\.\.\.\]
 TESTING:Exit status » SUCCESS\|HALTED\|INFO\Z

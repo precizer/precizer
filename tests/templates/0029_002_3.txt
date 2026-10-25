@@ -1,0 +1,6 @@
+\ATESTING:Configuration initialization is finished
+inaccessible \[file\] 1/AAA/ZAW/D/e/f/b_file\.txt
+inaccessible \[directory\] 2/AAA/BBB/CZC
+dropped \[as inaccessible\] 1/AAA/ZAW/D/e/f/b_file\.txt
+dropped \[as inaccessible\] 2/AAA/BBB/CZC/a\.txt
+\z

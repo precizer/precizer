@@ -54,7 +54,7 @@ static int read_config_entry(
 	   without leading dashes; short forms such as h, V, and -h are rejected
 	   as unknown keys */
 	if(strcmp(name,"help") == 0 || strcmp(name,"usage") == 0 ||
-	   strcmp(name,"version") == 0 || strcmp(name,"config") == 0)
+	        strcmp(name,"version") == 0 || strcmp(name,"config") == 0)
 	{
 		argp_failure(context->state,0,0,"ERROR: Line %d in config file: Config key '%s' is only available in CLI",line,name);
 		context->status = FAILURE;
@@ -75,7 +75,7 @@ static int read_config_entry(
 	   On a match, convert flag values and apply the setting, then return.
 	   Reaching the end without a match produces the unknown-key error below */
 	for(size_t i = 0; options[i].name != NULL || options[i].key != 0 ||
-	    options[i].doc != NULL || options[i].group != 0; i++)
+	        options[i].doc != NULL || options[i].group != 0; i++)
 	{
 		/* Aliases inherit the argument requirements of their primary option.
 		   Match the alias's own name below while retaining the primary entry */
@@ -149,13 +149,13 @@ static int read_config_entry(
 				/* Normalize false spellings for the shared option handler */
 				if(strcasecmp(value,"false") == 0 || strcasecmp(value,"no") == 0 ||
 				        strcasecmp(value,"off") == 0 || strcasecmp(value,"n") == 0 ||
-				        strcmp(value,"0") == 0)
+				        strcasecmp(value,"0") == 0)
 				{
 					strcpy(value_buffer,"false");
 
 				} else if(strcasecmp(value,"true") == 0 || strcasecmp(value,"yes") == 0 ||
 				        strcasecmp(value,"on") == 0 || strcasecmp(value,"y") == 0 ||
-				        strcmp(value,"1") == 0){
+				        strcasecmp(value,"1") == 0){
 					/* A true flag reaches parse_opt() without a value, as in CLI */
 					takes_value = false;
 
@@ -235,7 +235,7 @@ Return read_config_file(
 	bool              *has_entries,
 	struct argp_state *state)
 {
-	/* Status returned by this function through deliver()
+	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
@@ -294,5 +294,5 @@ Return read_config_file(
 		}
 	}
 
-	deliver(status);
+	provide(status);
 }

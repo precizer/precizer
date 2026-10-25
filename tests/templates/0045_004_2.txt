@@ -1,0 +1,2 @@
+\A(?:[^:\n]*/)?testitall: ERROR: Cannot open config file '[^'\n]*/0045_reader\.conf/child': Not a directory
+\z

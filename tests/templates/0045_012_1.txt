@@ -1,1 +1,2 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 3 in config file: Unclosed quoted value for 'ignore'\n\z
+\A(?:[^:\n]*/)?testitall: ERROR: Line 3 in config file: Unclosed quoted value for 'ignore'
+\z

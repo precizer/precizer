@@ -99,14 +99,16 @@ CFLAGS ?= -finline-functions
 LDFLAGS ?=
 
 LIBS = sha512 mem rational sqlite3 inih argp
-STATLIBS = sha512 mem rational inih argp
-LDLIBS = $(foreach d,$(LIBS),-l$d)
+STATLIBS = sha512 mem rational inih
+LDLIBS = $(foreach d,$(filter-out argp,$(LIBS)),-l$d)
 
 UNAME_S := $(shell uname -s)
 
 # macOS-specific code
 ifeq ($(UNAME_S),Darwin)
 CFLAGS += -DEVIL_EMPIRE_OS
+# macOS always uses bundled argp, including dynamic builds
+STATLIBS += argp
 endif
 
 # Detect GCC from its version output, including cc and cross-compiler names
@@ -177,6 +179,9 @@ INCPATH += $(shell pkg-config --cflags libpcre2-8)
 LDLIBS += $(shell pkg-config --libs libpcre2-8)
 else
 LDLIBS += -lpcre2-8
+# The MSYS runtime needs a separate argp library
+# Resolve IS_MSYS when LDLIBS is expanded
+LDLIBS += $(if $(IS_MSYS),-largp)
 endif
 
 # Default build
@@ -186,9 +191,11 @@ all: production
 IS_MSYS := $(shell $(CC) $(CPPFLAGS) $(CFLAGS) -dM -E -x c /dev/null 2>/dev/null | awk '$$2 == "__MSYS__" { print 1; exit }')
 
 SYS := $(shell $(CC) -dumpmachine 2>/dev/null)
-ifneq (, $(findstring alpine, $(SYS)))
-# Alpine Linux uses external libraries
+ifneq (, $(findstring musl, $(SYS)))
+# musl-based Linux systems use external FTS
 LDLIBS += -lfts
+# musl-based Linux systems always use bundled argp, including dynamic builds
+STATLIBS += argp
 endif
 
 #
@@ -673,6 +680,7 @@ macos-zip: $(DIST_EXE)
 msys-build: CC = /usr/bin/gcc
 msys-build: WFLAGS =
 msys-build: LDFLAGS = -s
+msys-build: STATLIBS += argp
 msys-build: DIST_SHARED_LIBS = -l:libsqlite3.a -l:libpcre2-8.a
 msys-build: DIST_LIBRARY_MAKE_ARGS = CC="$(CC)" WFLAGS="$(WFLAGS)" LDFLAGS="$(LDFLAGS)"
 msys-build: $(DIST_EXE)

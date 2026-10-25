@@ -1,4 +1,5 @@
 \ATESTING:Configuration initialization is finished
+TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:rational_logger_mode=TESTING
 TESTING:argument:color=always
 TESTING:argument:roots=tests/fixtures/diffs/diff1
@@ -9,7 +10,6 @@ TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
 TESTING:argument:db-drop-inaccessible=yes
 TESTING:Argument parsing is finished
-TESTING:precizer [0-9]+\.[0-9]+\.[0-9]+
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
 TESTING:The path tests/fixtures/diffs/diff1 is exists and it is a directory
@@ -50,5 +50,5 @@ TESTING:Returned db_delete_missing_metadata:\d+ status: WARNING
 TESTING:(?:\x1B\[[0-9;]*m)*Warnings and errors encountered:(?:\x1B\[[0-9;]*m)*
 (?:\x1B\[[0-9;]*m)*checksum locked, access check failed(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:The database connection has been closed
-ERROR:The precizer process terminated unexpectedly due to an error
+TESTING:The precizer completed with warnings
 TESTING:Exit status » WARNING\Z

@@ -11,7 +11,7 @@
  */
 Return init_config_and_check_output(void)
 {
-	/* Status returned by this function through deliver()
+	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
@@ -28,7 +28,7 @@ Return init_config_and_check_output(void)
 	call(m_del(captured_stderr));
 	call(m_del(captured_stdout));
 
-	deliver(status);
+	provide(status);
 }
 
 /**
@@ -56,7 +56,7 @@ Return run_and_match_templates(
 	const char                      *template,
 	const char                      *replacement)
 {
-	/* Status returned by this function through deliver()
+	/* Status returned by this function through provide()
 	   Default value assumes successful completion */
 	Return status = SUCCESS;
 
@@ -112,5 +112,5 @@ Return run_and_match_templates(
 		call(m_del(stdout_result));
 	}
 
-	deliver(status);
+	provide(status);
 }

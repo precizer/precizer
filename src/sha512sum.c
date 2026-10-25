@@ -176,12 +176,10 @@ Return sha512sum(
 	 */
 #ifdef TESTITALL_TEST_HOOKS
 	/*
-	 * Activate random interruption for a fresh pass of hugetestfile.
-	 * Byte-checkpoint tests may also select a stop point after resume, so
-	 * checkpoint-update paths can be exercised without a signal
+	 * Select a stop point for fresh and resumed passes of hugetestfile.
+	 * Signal and byte-checkpoint tests can both stop a resumed pass before EOF
 	 */
-	if((file->checksum_offset == 0 || testitall_checkpoint_at_random_byte == true)
-	        && testitall_is_huge_interruption_target(runtime_relative_path) == true
+	if(testitall_is_huge_interruption_target(runtime_relative_path) == true
 	        && file->stat.st_size > 0)
 	{
 		const uint64_t file_size = (uint64_t)file->stat.st_size;
@@ -196,7 +194,7 @@ Return sha512sum(
 		{
 			const uint64_t remaining_file_size = file_size - current_offset;
 
-			if(testitall_checkpoint_at_random_byte == true && remaining_file_size <= 1U)
+			if(remaining_file_size <= 1U)
 			{
 				random_stop_limit = 0U;
 
@@ -217,12 +215,10 @@ Return sha512sum(
 				}
 
 				/*
-				 * Keep the first byte-checkpoint stop at least two bytes before EOF.
-				 * This leaves room for the resume pass to write another checkpoint
-				 * before the final hash state is reached
+				 * Keep the first stop at least two bytes before EOF.
+				 * This leaves room for another interruption or checkpoint after resume
 				 */
-				if(testitall_checkpoint_at_random_byte == true
-				        && current_offset == 0U
+				if(current_offset == 0U
 				        && random_stop_limit > 2U
 				        && random_stop_byte_value >= random_stop_limit - 1U)
 				{

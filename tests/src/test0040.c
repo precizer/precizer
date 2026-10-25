@@ -16,10 +16,7 @@ static LOGMODES remembered_log_level = REGULAR | UNDECOR | REMEMBER;
  */
 static void capture_remembered_message(void)
 {
-	slog(remembered_log_level,
-		"@{bold}@{red}%s %zu@{reset}\n",
-		remembered_value,
-		(size_t)7U);
+	slog(remembered_log_level,"@{bold}@{red}%s %zu@{reset}\n",remembered_value,(size_t)7U);
 }
 
 /**
@@ -171,6 +168,7 @@ static Return assert_output(
 	ASSERT(SUCCESS == replace_placeholder(stdout_pattern,"%COLOR_MODE%",expected_color_mode));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
 	ASSERT((strchr(m_text(stdout_result),'\033') != NULL) == colors_expected);
+	ASSERT((strstr(m_text(stdout_result),GREEN "added" RESET " AAA/BBB/CZC/a.txt\n") != NULL) == colors_expected);
 	ASSERT(stderr_result->length == 0U);
 
 	/* Release capture buffers and the template after any assertion result */
@@ -224,13 +222,17 @@ static Return test0040_2(void)
 		"always",
 		true));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0040_001.conf","0040_001.conf"));
 	ASSERT(SUCCESS == assert_output(
-		"--config=0040_001.conf",
+		"--color=ALWAYS " DRY_RUN_ARGUMENTS,
 		"templates/0040_001.txt",
 		"always",
 		true));
-	call(delete_path_if_present("0040_001.conf"));
+
+	ASSERT(SUCCESS == assert_output(
+		"--config=tests/templates/0040_002_2.conf",
+		"templates/0040_001.txt",
+		"always",
+		true));
 
 	/* Explicitly disabling styling must produce plain text */
 	ASSERT(SUCCESS == assert_output(
@@ -239,13 +241,17 @@ static Return test0040_2(void)
 		"never",
 		false));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0040_002.conf","0040_002.conf"));
 	ASSERT(SUCCESS == assert_output(
-		"--config=0040_002.conf",
+		"--color=NEVER " DRY_RUN_ARGUMENTS,
 		"templates/0040_002.txt",
 		"never",
 		false));
-	call(delete_path_if_present("0040_002.conf"));
+
+	ASSERT(SUCCESS == assert_output(
+		"--config=tests/templates/0040_002.conf",
+		"templates/0040_002.txt",
+		"never",
+		false));
 
 	/* Auto must select its own mode while keeping redirected output plain */
 	ASSERT(SUCCESS == assert_output(
@@ -254,13 +260,17 @@ static Return test0040_2(void)
 		"auto",
 		false));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0040_010.conf","0040_010.conf"));
 	ASSERT(SUCCESS == assert_output(
-		"--config=0040_010.conf",
+		"--color=AUTO " DRY_RUN_ARGUMENTS,
 		"templates/0040_002.txt",
 		"auto",
 		false));
-	call(delete_path_if_present("0040_010.conf"));
+
+	ASSERT(SUCCESS == assert_output(
+		"--config=tests/templates/0040_002_3.conf",
+		"templates/0040_002.txt",
+		"auto",
+		false));
 
 	/* The last value replaces the earlier choice in either source */
 	ASSERT(SUCCESS == assert_output(
@@ -268,13 +278,11 @@ static Return test0040_2(void)
 		"templates/0040_002.txt",
 		"never",
 		false));
-	ASSERT(SUCCESS == copy_path("tests/templates/0040_002_1.conf","0040_002_1.conf"));
 	ASSERT(SUCCESS == assert_output(
-		"--config=0040_002_1.conf",
+		"--config=tests/templates/0040_002_1.conf",
 		"templates/0040_002.txt",
 		"never",
 		false));
-	call(delete_path_if_present("0040_002_1.conf"));
 
 	RETURN_STATUS;
 }
@@ -400,7 +408,9 @@ static Return test0040_5(void)
  * copy; the stored row contains plain text. Markup supplied through a formatted
  * argument is also expanded, while raw terminal control bytes become visible
  * hexadecimal escapes. In never mode, the displayed message and stored row
- * must both contain the same plain text
+ * must both contain the same plain text. Final reporting repeats the stored
+ * messages only in full output with remembered reporting enabled. Switching
+ * to machine output suppresses the repeat without discarding stored messages
  *
  * @return Return describing success or failure
  */
@@ -432,6 +442,8 @@ static Return test0040_6(void)
 
 	m_create(char,captured_stdout,MEMORY_STRING);
 	m_create(char,captured_stderr,MEMORY_STRING);
+	m_create(char,repeat_pattern,MEMORY_STRING);
+	ASSERT(SUCCESS == get_file_content("templates/0040_006_1.txt",repeat_pattern));
 
 	/* Give the real REMEMBER callback an isolated in-memory SQLite table */
 	ASSERT(SQLITE_OK == sqlite3_open(":memory:",&remember_config.db));
@@ -477,6 +489,43 @@ static Return test0040_6(void)
 		expected_plain_output,
 		sizeof(expected_plain_output) - 1U));
 
+	/* Full output repeats the saved messages in their original order */
+	remember_config.output = OUTPUT_FULL;
+	remember_config.show_remembered_messages_at_exit = true;
+	ASSERT(SUCCESS == match_function_output(m_text(repeat_pattern),NULL,show_remembered_messages));
+
+	/* Both concise formats suppress replay and leave the existing history untouched */
+	const OutputMode formats[] = {OUTPUT_COMPACT,OUTPUT_MACHINE};
+
+	for(size_t i = 0; i < sizeof(formats) / sizeof(formats[0]) && SUCCESS == status; ++i)
+	{
+		remember_config.output = formats[i];
+		rational_logger_mode = REGULAR;
+		ASSERT(SUCCESS == match_function_output(NULL,NULL,show_remembered_messages));
+
+		/* A visible MACHINE message must not append a remembered row */
+		rational_logger_mode = MACHINE;
+		remembered_log_level = MACHINE | UNDECOR | REMEMBER;
+		remembered_value = "concise";
+		ASSERT(SUCCESS == function_capture(capture_remembered_message,captured_stdout,captured_stderr));
+		ASSERT(SUCCESS == get_file_content("templates/0040_006_2.txt",repeat_pattern));
+		ASSERT(SUCCESS == match_pattern(captured_stdout,repeat_pattern,"templates/0040_006_2.txt"));
+		ASSERT(captured_stderr->length == 0U);
+		ASSERT(SUCCESS == check_last_remembered_message(remember_config.db,
+			expected_plain_output,sizeof(expected_plain_output) - 1U));
+		ASSERT(SUCCESS == match_function_output(NULL,NULL,show_remembered_messages));
+	}
+	ASSERT(SUCCESS == get_file_content("templates/0040_006_1.txt",repeat_pattern));
+
+	/* Returning to full output retains the complete remembered history */
+	rational_logger_mode = REGULAR;
+	remember_config.output = OUTPUT_FULL;
+	ASSERT(SUCCESS == match_function_output(m_text(repeat_pattern),NULL,show_remembered_messages));
+
+	/* The existing reporting switch still suppresses the full-output repeat */
+	remember_config.show_remembered_messages_at_exit = false;
+	ASSERT(SUCCESS == match_function_output(NULL,NULL,show_remembered_messages));
+
 	/* Restore shared state and close the isolated database after any result */
 	rational_logger_mode = initial_logger_mode;
 	rational_color_mode = initial_color_mode;
@@ -487,7 +536,8 @@ static Return test0040_6(void)
 	const int close_result = sqlite3_close(remember_config.db);
 	ASSERT(close_result == SQLITE_OK);
 
-	/* Release both captured output streams */
+	/* Release the complete repeat template and both captured output streams */
+	call(m_del(repeat_pattern));
 	call(m_del(captured_stdout));
 	call(m_del(captured_stderr));
 
@@ -535,6 +585,26 @@ static Return test0040_7(void)
 		"auto",
 		false));
 
+	/* Redirected compact output uses auto, while machine defaults to no color */
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	const struct argument_test_case output_cases[] = {
+		{"--output=compact " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=auto " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=never " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=always " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--color=always --output=compact " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always --output=compact " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=auto " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=never " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--color=always --output=machine " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always --output=machine " DRY_RUN_ARGUMENTS,COMPLETED,"templates/0048_007_2.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+	ASSERT(SUCCESS == run_and_match_templates(output_cases,NULL,NULL));
+	call(set_environment_variable("TESTING","true"));
+
 	/* Restore shared test state even when an assertion failed */
 	testitall_runit_mode = initial_run_mode;
 
@@ -571,23 +641,19 @@ static Return test0040_8(void)
 		{"-S invalid-value",FAILURE,"templates/0040_003.txt","templates/0040_004.txt"},
 
 		/* An explicitly empty value must also be rejected by both spellings */
-		{"--color=",FAILURE,"templates/0040_003.txt","templates/0040_005.txt"},
-		{"-S ''",FAILURE,"templates/0040_003.txt","templates/0040_005.txt"},
+		{"--color=",FAILURE,"templates/0040_003.txt","templates/0040_008_1.txt"},
+		{"-S ''",FAILURE,"templates/0040_003.txt","templates/0040_008_1.txt"},
 		{0}
 	};
 
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0040_004.conf","0040_004.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0040_005.conf","0040_005.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0040_004.conf",FAILURE,"templates/0003_013.txt","templates/0040_004_1.txt"},
-		{"--config=0040_005.conf",FAILURE,"templates/0003_013.txt","templates/0040_005_1.txt"},
+		{"--config=tests/templates/0040_008_2.conf",FAILURE,"templates/0003_013_2.txt","templates/0040_008_2.txt"},
+		{"--config=tests/templates/0040_008_3.conf",FAILURE,"templates/0003_013_2.txt","templates/0040_008_3.txt"},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0040_004.conf"));
-	call(delete_path_if_present("0040_005.conf"));
 
 	RETURN_STATUS;
 }
@@ -605,9 +671,9 @@ static Return test0040_9(void)
 
 	const struct argument_test_case cases[] = {
 		/* Check the parser diagnostic for a long option with no following value */
-		{"--color",FAILURE,"templates/0040_003.txt","templates/0040_006.txt"},
+		{"--color",FAILURE,"templates/0040_003.txt","templates/0040_009_1.txt"},
 		/* Check the corresponding diagnostic for the short option */
-		{"-S",FAILURE,"templates/0040_003.txt","templates/0040_007.txt"},
+		{"-S",FAILURE,"templates/0040_003.txt","templates/0040_009_2.txt"},
 		{0}
 	};
 
@@ -628,24 +694,89 @@ static Return test0040_10(void)
 	/* Verbose diagnostics must name always and retain styled messages */
 	ASSERT(SUCCESS == assert_output(
 		"--verbose --color=always " DRY_RUN_ARGUMENTS,
-		"templates/0040_008.txt",
+		"templates/0040_010_1.txt",
 		"always",
 		true));
 
 	/* Verbose diagnostics must name never and contain no terminal styling */
 	ASSERT(SUCCESS == assert_output(
 		"--verbose --color=never " DRY_RUN_ARGUMENTS,
-		"templates/0040_009.txt",
+		"templates/0040_010_2.txt",
 		"never",
 		false));
 
 	/* Auto must be reported distinctly while redirected output stays plain */
 	ASSERT(SUCCESS == assert_output(
 		"--verbose --color=auto " DRY_RUN_ARGUMENTS,
-		"templates/0040_009.txt",
+		"templates/0040_010_2.txt",
 		"auto",
 		false));
 
+	RETURN_STATUS;
+}
+
+/**
+ * @brief Check matching event colors in full and compact output
+ *
+ * The same dry run includes one subtree and ignores its siblings. Complete
+ * templates require plain paths. Full output colors complete descriptions, while
+ * compact output colors only event labels. Explicit checks require bold green
+ * include-related messages and gray ignored messages. Machine output remains
+ * plain by default and honors an explicit color option
+ *
+ * @return Return describing success or failure
+ */
+static Return test0040_11(void)
+{
+	INITTEST;
+
+	/* Reuse one fixture without modifying files or creating a persistent database */
+#define FILTER_ARGUMENTS " --dry-run --database=0040.db --ignore='^AAA' --include='^AAA/BBB' tests/fixtures/4"
+	const struct argument_test_case cases[] = {
+		{"--output=full --color=always" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=full --color=never" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=always" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=never" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_4.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_4.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+#undef FILTER_ARGUMENTS
+
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+
+	/* Disable test diagnostics so each format is checked as ordinary user output */
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	for(size_t i = 0; cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Match both complete streams before checking the exact event colors */
+		ASSERT(SUCCESS == runit(cases[i].arguments,stdout_result,stderr_result,COMPLETED,STDERR_ALLOW));
+		ASSERT(SUCCESS == get_file_content(cases[i].stdout_template,stdout_pattern));
+		ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,cases[i].stdout_template));
+		ASSERT(stderr_result->length == 0U);
+
+		/* Check full descriptions or compact labels, with the reset before the plain path or details */
+		const bool colors_expected = strstr(cases[i].arguments,"--color=always") != NULL;
+		ASSERT((strchr(m_text(stdout_result),'\033') != NULL) == colors_expected);
+		if(strstr(cases[i].arguments,"--output=full") != NULL)
+		{
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "added as included" RESET " AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "included directory" RESET " AAA/BBB\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),GRAY "ignored & not added" RESET " AAA/tttt.txt\n") != NULL) == colors_expected);
+		} else {
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "added" RESET " [as included] AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "included" RESET " [directory] AAA/BBB\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),GRAY "ignored" RESET " [not added] AAA/tttt.txt\n") != NULL) == colors_expected);
+		}
+	}
+
+	/* Restore diagnostics and release all buffers after any assertion result */
+	call(set_environment_variable("TESTING","true"));
+	call(m_del(stdout_pattern));
+	call(m_del(stderr_result));
+	call(m_del(stdout_result));
 	RETURN_STATUS;
 }
 
@@ -662,7 +793,8 @@ static Return test0040_10(void)
  *
  * A separate logger case stores messages in a real temporary SQLite table.
  * Displayed messages may contain styling, while stored messages must remain
- * plain text with raw terminal control bytes escaped
+ * plain text with raw terminal control bytes escaped. Final reporting repeats
+ * stored messages in full output and remains silent in machine output
  *
  * @return SUCCESS when all color output and message-storage scenarios pass
  */
@@ -678,7 +810,7 @@ Return test0040(void)
 	TEST(test0040_5,"Forced color output is preserved with TERM=dumb");
 
 	/* Compare immediate message formatting with the bytes stored in SQLite */
-	TEST(test0040_6,"REMEMBER stores plain text while immediate output uses color markup");
+	TEST(test0040_6,"REMEMBER stores plain text and repeats messages only in full output");
 
 	/* Check the application default without the runner override */
 	TEST(test0040_7,"Default auto mode omits color from captured output without the test override");
@@ -687,6 +819,9 @@ Return test0040(void)
 	TEST(test0040_8,"Color options reject unsupported and empty values");
 	TEST(test0040_9,"Color options reject missing values");
 	TEST(test0040_10,"Verbose diagnostics report the selected color mode");
+
+	/* Check event labels, including included directories, across output formats */
+	TEST(test0040_11,"Full and compact share keyword colors while machine remains plain by default");
 
 	RETURN_STATUS;
 }

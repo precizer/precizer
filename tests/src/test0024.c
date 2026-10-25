@@ -34,13 +34,11 @@ Return test0024_1(void)
 	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	/* Repeat the scan through configuration with the literal apostrophe in the path */
-	ASSERT(SUCCESS == copy_path("tests/templates/0024_001.conf","0024_001.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0024_001.conf",COMPLETED,filename,STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0024_001.conf",COMPLETED,filename,STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0024_001.conf"));
 	ASSERT(SUCCESS == delete_path("database1.db"));
 
 	RETURN_STATUS;

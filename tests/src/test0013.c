@@ -57,7 +57,8 @@ static Return test0013_2(void)
 
 	const struct argument_test_case cases[] = {
 		{"--dry-run --database=dry_run_regular.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0013_001_1.txt",STDERR_MUST_BE_EMPTY},
-		{"--dry-run=with-checksums --database=dry_run_with_checksums.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0013_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--dry-run=with-checksums --database=dry_run_with_checksums.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0013_002_4.txt",STDERR_MUST_BE_EMPTY},
+		{"--dry-run=WiTh-ChEcKsUmS --database=dry_run_with_checksums.db tests/fixtures/diffs/diff1",COMPLETED,"templates/0013_002_4.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 
@@ -76,11 +77,9 @@ static Return test0013_2(void)
 	m_del(path);
 
 	/* Repeat both modes without creating databases or changing the fixtures */
-	ASSERT(SUCCESS == copy_path("tests/templates/0013_001_1.conf","0013_001_1.conf"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0013_001_2.conf","0013_001_2.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0013_001_1.conf",COMPLETED,"templates/0013_001_1.txt",STDERR_MUST_BE_EMPTY},
-		{"--config=0013_001_2.conf",COMPLETED,"templates/0013_001_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0013_002_1.conf",COMPLETED,"templates/0013_001_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0013_002_4.conf",COMPLETED,"templates/0013_002_4.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
@@ -95,8 +94,6 @@ static Return test0013_2(void)
 	ASSERT(file_exists == false);
 
 	m_del(path);
-	call(delete_path_if_present("0013_001_1.conf"));
-	call(delete_path_if_present("0013_001_2.conf"));
 
 	RETURN_STATUS;
 }
@@ -115,19 +112,17 @@ static Return test0013_3(void)
 	ASSERT(SUCCESS == set_environment_variable("TESTING","true"));
 
 	const struct argument_test_case cases[] = {
-		{"--dry-run=bad-mode --database=dry_run_invalid.db tests/fixtures/diffs/diff1",FAILURE,"templates/0018_005_1.txt","templates/0013_001_3.txt"},
+		{"--dry-run=bad-mode --database=dry_run_invalid.db tests/fixtures/diffs/diff1",FAILURE,"templates/0018_005_1.txt","templates/0013_003_4.txt"},
 		{0}
 	};
 
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
-	ASSERT(SUCCESS == copy_path("tests/templates/0013_001_3.conf","0013_001_3.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0013_001_3.conf",FAILURE,"templates/0003_013.txt","templates/0013_001_3_1.txt"},
+		{"--config=tests/templates/0013_003_5.conf",FAILURE,"templates/0003_013_2.txt","templates/0013_003_5.txt"},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0013_001_3.conf"));
 
 	RETURN_STATUS;
 }
@@ -213,15 +208,13 @@ static Return test0013_4(void)
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
 
 	/* Dry-run preserves the database, so the same state is ready for the file run */
-	ASSERT(SUCCESS == copy_path("tests/templates/0013_002_1.conf","0013_002_1.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0013_002_1.conf",COMPLETED,"templates/0013_002_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0013_004_1.conf",COMPLETED,"templates/0013_002_1.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
 	ASSERT(SUCCESS == get_file_stat(m_text(path),&stat2));
 	ASSERT(SUCCESS == check_file_identity(&stat1,&stat2));
-	call(delete_path_if_present("0013_002_1.conf"));
 
 	// Dry Run mode permanent deletion of all ignored file
 	// references from the database
@@ -433,7 +426,7 @@ Return test0013_6(void)
 
 	ASSERT(SUCCESS == compare_memory_strings(diff_buffer,text1,text2));
 
-	filename = "templates/0013_004_1.txt";
+	filename = "templates/0013_006_1.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(diff_buffer,pattern,filename));
@@ -450,7 +443,7 @@ Return test0013_6(void)
 	m_del(diff_buffer);
 	ASSERT(SUCCESS == compare_memory_strings(diff_buffer,text1,text2));
 
-	filename = "templates/0013_004_2.txt";
+	filename = "templates/0013_006_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(diff_buffer,pattern,filename));
@@ -468,7 +461,7 @@ Return test0013_6(void)
 	ASSERT(SUCCESS == compare_memory_strings(diff_buffer,text1,text2));
 
 	// _2 is not a mistake. 2 and 3 are equals
-	filename = "templates/0013_004_2.txt";
+	filename = "templates/0013_006_2.txt";
 
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(diff_buffer,pattern,filename));
@@ -512,7 +505,7 @@ static Return test0013_7(void)
 	arguments = "--check-level=QUICK --dry-run --update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
-	const char *filename = "templates/0013_005.txt";
+	const char *filename = "templates/0013_007_1.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -574,7 +567,7 @@ static Return test0013_8(void)
 	arguments = "--check-level=QUICK --update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,COMPLETED,ALLOW_BOTH));
 
-	const char *filename = "templates/0013_006_1.txt";
+	const char *filename = "templates/0013_008_1.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 
@@ -594,7 +587,7 @@ static Return test0013_8(void)
 	arguments = "--check-level=QUICK --update --database=database1.db tests/fixtures/diffs/diff1";
 	ASSERT(SUCCESS == runit(arguments,result,NULL,WARNING,ALLOW_BOTH));
 
-	filename = "templates/0013_006_2.txt";
+	filename = "templates/0013_008_2.txt";
 	ASSERT(SUCCESS == get_file_content(filename,pattern));
 	ASSERT(SUCCESS == match_pattern(result,pattern,filename));
 

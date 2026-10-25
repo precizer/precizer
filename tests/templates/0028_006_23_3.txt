@@ -1,0 +1,5 @@
+\ATESTING:Configuration initialization is finished
+deleted 2/AAA/BBB/CZC/b\.txt
+added 2/AAA/BBB/CZC/a\.txt
+mismatch 1/AAA/ZAW/D/e/f/b_file\.txt
+\z

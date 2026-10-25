@@ -1,0 +1,2 @@
+\A(?:[^:\r\n]*/)?testitall: ERROR: Line 1 in config file: Unsupported --output value ''\. Supported values: full, compact, or machine
+\z

@@ -1,0 +1,4 @@
+\ATESTING:Configuration initialization is finished
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/A
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] path2/AAA/ZAW/D
+\z

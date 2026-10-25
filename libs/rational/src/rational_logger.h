@@ -20,16 +20,17 @@
 // in an application
 typedef enum LOGMODES : unsigned int
 {
-	REGULAR = 0x01u,           // 0000001
-	VERBOSE = 0x02u,           // 0000010
-	TESTING = 0x04u,           // 0000100
-	TRACE = VERBOSE | TESTING, // Hex: 0x06. Dec: 6. Bin: 0000110
-	EVERY = REGULAR | VERBOSE | TESTING,   // Hex: 0x07. Dec: 7. Bin: 0000111
-	ERROR = 0x08u,             // 0001000
-	SILENT = 0x10u,            // 0010000
-	UNDECOR = 0x20u,           // 0100000
-	REMEMBER = 0x40u,          // 1000000
-	VISIBLE_IN_SILENT = 0x80u  // 10000000
+	REGULAR = 0x01u,           //   0000001
+	VERBOSE = 0x02u,           //   0000010
+	TESTING = 0x04u,           //   0000100
+	TRACE = VERBOSE | TESTING,           // Hex: 0x06. Dec: 6. Bin: 0000110
+	EVERY = REGULAR | VERBOSE | TESTING, // Hex: 0x07. Dec: 7. Bin: 0000111
+	ERROR = 0x08u,             //   0001000
+	SILENT = 0x10u,            //   0010000
+	UNDECOR = 0x20u,           //   0100000
+	REMEMBER = 0x40u,          //   1000000
+	VISIBLE_IN_SILENT = 0x80u, //  10000000
+	MACHINE = 0x100u           // 100000000
 } LOGMODES;
 
 extern _Atomic LOGMODES rational_logger_mode;
@@ -41,6 +42,8 @@ extern _Atomic LOGMODES rational_logger_mode;
  * VERBOSE — printf() only when verbose mode has been determined.
  * TESTING — for testing purposes
  * ERROR   — error message only. Will be shown when any of the above modes are engaged
+ * MACHINE — accept only MACHINE or ERROR messages, unless SILENT is active.
+ *           This independent mode is not included in EVERY
  * UNDECOR — suppress logging prefixes (time/file/line/func and mode labels) for this call
  *           (abbreviation of "UNDECORATED")
  * REMEMBER — pass the formatted log line to optional rational_remember() callback

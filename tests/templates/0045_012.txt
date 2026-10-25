@@ -1,1 +1,0 @@
-\A(?:[^:\n]*/)?testitall: ERROR: Line 2 in config file: Unsupported --progress value ''\. Supported values: true/yes/on/y/1 or false/no/off/n/0\n\z

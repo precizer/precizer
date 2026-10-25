@@ -1,1 +1,0 @@
-\A(?:[^:\n]*/)?precizer: option (?:'|`)--progress' doesn't allow an argument\nTry `precizer --help' or `precizer --usage' for more information\.\n\z

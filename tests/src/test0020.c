@@ -51,13 +51,11 @@ Return test0020_2(void)
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
 	/* Repeat the failure through configuration while the database is still absent */
-	ASSERT(SUCCESS == copy_path("tests/templates/0020_002.conf","0020_002.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0020_002.conf",FAILURE,"templates/0020_002.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0020_002.conf",FAILURE,"templates/0020_002.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0020_002.conf"));
 
 	RETURN_STATUS;
 }
@@ -90,14 +88,11 @@ Return test0020_3(void)
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
 	/* Repeat the failure before restoring permissions on the database directory */
-	ASSERT(SUCCESS == copy_from_origin("tests/templates/0020_003.conf","0020_003.conf",REQUIRE_SOURCE_EXISTS));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0020_003.conf",FAILURE,"templates/0020_003.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0020_003.conf",FAILURE,"templates/0020_003.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-
-	call(delete_path_if_present("0020_003.conf"));
 
 	ASSERT(SUCCESS == change_mode("write_protected_directory",0777));
 	ASSERT(SUCCESS == delete_path("write_protected_directory"));
@@ -199,13 +194,11 @@ Return test0020_6(void)
 	ASSERT(SUCCESS == run_and_match_templates(cases,NULL,NULL));
 
 	/* Repeat the warning with force disabled in the configuration file */
-	ASSERT(SUCCESS == copy_path("tests/templates/0020_006.conf","0020_006.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0020_006.conf",WARNING,"templates/0020_006.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0020_006.conf",WARNING,"templates/0020_006.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0020_006.conf"));
 
 	RETURN_STATUS;
 }
@@ -250,13 +243,11 @@ Return test0020_7(void)
 
 	/* Restore only the database so configuration processes the same prepared files */
 	ASSERT(SUCCESS == copy_path("0020_007.db","database1.db"));
-	ASSERT(SUCCESS == copy_path("tests/templates/0020_007.conf","0020_007.conf"));
 	const struct argument_test_case file_cases[] = {
-		{"--config=0020_007.conf",COMPLETED,"templates/0020_007.txt",STDERR_MUST_BE_EMPTY},
+		{"--config=tests/templates/0020_007.conf",COMPLETED,"templates/0020_007.txt",STDERR_MUST_BE_EMPTY},
 		{0}
 	};
 	ASSERT(SUCCESS == run_and_match_templates(file_cases,NULL,NULL));
-	call(delete_path_if_present("0020_007.conf"));
 	call(delete_path_if_present("0020_007.db"));
 
 	ASSERT(SUCCESS == delete_path("database1.db"));

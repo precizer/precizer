@@ -1,0 +1,13 @@
+\Amachine plain
+machine undecorated
+machine mixed flags
+ERROR: technical error
+technical error undecorated
+ERROR: mixed error flags
+machine plain
+machine undecorated
+machine mixed flags
+ERROR: technical error
+technical error undecorated
+ERROR: mixed error flags
+\z
