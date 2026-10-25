@@ -247,7 +247,7 @@ The following scenario illustrates the issue:
 * precizer can be used as a security monitoring tool, detecting unauthorized file modifications where contents might have changed while metadata remains untouched.
 * Security:
   * The program never modifies, deletes, moves, or copies any files or directories it processes.
-	* The program does not open sockets, make network requests or contact external internet addresses, or transmit data anywhere. It operates entirely locally
+  * The program does not open sockets, make network requests or contact external internet addresses, or transmit data anywhere. It operates entirely locally
   * The program enumerates files, computes SHA512 checksums, and updates a local database; all changes are strictly confined to the database.
   * The database does not store file contents. It stores relative paths, checksums, and metadata such as size and timestamps (ctime/mtime).
   * The program does not require privileged execution and does not use the SUID bit or other unsafe permission bits.
@@ -735,7 +735,6 @@ Primary database file name: database1.db
 Starting database file database1.db integrity check…
 Database database1.db has been verified and is in good condition
 The database database1.db was previously created and already contains data with files and their checksums. Use the <strong>--update</strong> option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.
-The precizer completed with warnings
 Exit status » WARNING
 </pre>
 
@@ -1039,8 +1038,8 @@ Primary DB vacuumed: saved -11.11%, elapsed 1ms
 <strong>The brand-new primary database file myhost.db was created and modified since the program started (files were added, removed, or updated)</strong>
 Total runtime: 4ms 444μs 867ns
 Total traversal size: 84KiB
-Total items: 102
-Directories: 80
+Total items: 103
+Directories: 81
 Files: 21
 Symlinks: 1
 Scan time: 1ms
@@ -1134,8 +1133,8 @@ Primary DB vacuumed: saved 16.67%, elapsed 671μs
 <strong>The database file myhost.db has been modified since the program was launched</strong>
 Total runtime: 2ms 713μs 359ns
 Total traversal size: 72KiB
-Total items: 89
-Directories: 70
+Total items: 91
+Directories: 72
 Files: 18
 Symlinks: 1
 Scan time: 660μs
@@ -1190,8 +1189,8 @@ Starting database file myhost.db integrity check…
 Database myhost.db has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
 Total traversal size: 96KiB
-Total items: 69
-Directories: 44
+Total items: 115
+Directories: 90
 Files: 24
 Symlinks: 1
 Update mode enabled for DB myhost.db
@@ -1281,8 +1280,8 @@ Primary DB vacuumed: saved 16.67%, elapsed 658μs
 <strong>The database file myhost.db has been modified since the program was launched</strong>
 Total runtime: 3ms 656μs 611ns
 Total traversal size: 96KiB
-Total items: 69
-Directories: 44
+Total items: 115
+Directories: 90
 Files: 24
 Symlinks: 1
 Scan time: 1ms

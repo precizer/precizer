@@ -15,8 +15,8 @@ File traversal complete
 (?:\x1B\[[0-9;]*m)*Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)(?:\x1B\[[0-9;]*m)*
 Total runtime: [^\r\n]+
 Total traversal size: [^\r\n]+
-Total items: 7
-Directories: 3
+Total items: 8
+Directories: 4
 Files: 4
 Symlinks: 0
 Scan time: [^\r\n]+

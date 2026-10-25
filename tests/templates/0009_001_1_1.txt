@@ -57,10 +57,10 @@ TESTING:The database connection has been closed
 TESTING:(?:\x1B\[[0-9;]*m)*The brand-new primary database file database0009\.db was created and modified since the program started \(files were added, removed, or updated\)(?:\x1B\[[0-9;]*m)*
 TESTING:Total runtime: [^,\r\n]+
 TESTING:Total traversal size: \d+[^\r\n]*
-TESTING:Total items: \d+
-TESTING:Directories: \d+
-TESTING:Files: \d+
-TESTING:Symlinks: \d+$
+TESTING:Total items: 13
+TESTING:Directories: 1
+TESTING:Files: 12
+TESTING:Symlinks: 0
 TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 TESTING:Scan rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
 TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))

@@ -245,7 +245,7 @@ unzip -jqo precizer.zip '*/precizer' -d ./
 * precizer может служить инструментом контроля безопасности, определяя последствия вторжения за счёт выявления несанкционированно изменённых файлов, у которых могло быть модифицировано содержимое, но метаданные могли остаться прежними.
 * Безопасность:
   * Программа никогда не меняет, не удаляет, не перемещает и не копирует ни файлы, ни исследуемые директории.
-	* Программа не открывает сокеты, не делает запросов в сеть или на внешние адреса в интернете, не передаёт данные куда-либо и работает исключительно локально.
+  * Программа не открывает сокеты, не делает запросов в сеть или на внешние адреса в интернете, не передаёт данные куда-либо и работает исключительно локально.
   * Программа составляет списки файлов, контрольные суммы содержимого этих файлов и сохраняет их в локальной базе данных. Все изменения происходят исключительно в границах базы данных.
   * База данных не хранит содержимое файлов, только их относительные пути, контрольные суммы и такие метаданные, как размер и даты ctime и mtime.
   * Не требует привилегированных прав для исполнения и не использует SUID-бит или какие-либо другие небезопасные биты.
@@ -733,7 +733,6 @@ Primary database file name: database1.db
 Starting database file database1.db integrity check…
 Database database1.db has been verified and is in good condition
 The database database1.db was previously created and already contains data with files and their checksums. Use the <strong>--update</strong> option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.
-The precizer completed with warnings
 Exit status » WARNING
 </pre>
 
@@ -1037,8 +1036,8 @@ Primary DB vacuumed: saved -11.11%, elapsed 1ms
 <strong>The brand-new primary database file myhost.db was created and modified since the program started (files were added, removed, or updated)</strong>
 Total runtime: 4ms 444μs 867ns
 Total traversal size: 84KiB
-Total items: 102
-Directories: 80
+Total items: 103
+Directories: 81
 Files: 21
 Symlinks: 1
 Scan time: 1ms
@@ -1132,8 +1131,8 @@ Primary DB vacuumed: saved 16.67%, elapsed 671μs
 <strong>The database file myhost.db has been modified since the program was launched</strong>
 Total runtime: 2ms 713μs 359ns
 Total traversal size: 72KiB
-Total items: 89
-Directories: 70
+Total items: 91
+Directories: 72
 Files: 18
 Symlinks: 1
 Scan time: 660μs
@@ -1188,8 +1187,8 @@ Starting database file myhost.db integrity check…
 Database myhost.db has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
 Total traversal size: 96KiB
-Total items: 69
-Directories: 44
+Total items: 115
+Directories: 90
 Files: 24
 Symlinks: 1
 Update mode enabled for DB myhost.db
@@ -1279,8 +1278,8 @@ Primary DB vacuumed: saved 16.67%, elapsed 658μs
 <strong>The database file myhost.db has been modified since the program was launched</strong>
 Total runtime: 3ms 656μs 611ns
 Total traversal size: 96KiB
-Total items: 69
-Directories: 44
+Total items: 115
+Directories: 90
 Files: 24
 Symlinks: 1
 Scan time: 1ms

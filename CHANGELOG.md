@@ -2,7 +2,11 @@
 
 All notable changes will be documented in this file
 
-# Release 0.19.0 2026-10-25
+# Release 0.20.0 2026-10-25
+
+Minor changes to the documentation and directory-counting algorithm for `--progress`.
+
+# Release 0.19.0 2026-10-24
 
 - Added `--output=full|compact|machine`. `full` remains the default; `compact` provides concise file messages, and `machine` provides output for parsing by scripts with color disabled by default
 
