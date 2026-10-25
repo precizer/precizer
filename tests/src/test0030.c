@@ -2477,9 +2477,10 @@ static Return test0030_14(void)
 
 	/*
 	 * Run an update that ignores the protected subtree but rehashes locked files.
-	 * The ignored corrupted file must still be reported as a checksum violation
+	 * The ignored corrupted file must still be reported as a checksum violation.
+	 * Both progress passes must count ignored directories traversed for locked files
 	 */
-	arguments = "--update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
+	arguments = "--progress --update --check-level=QUICK --rehash-locked --lock-checksum=\"^path1/.*\" "
 	        "--ignore=\"^path1/.*\" --database=lock_s14.db "
 	        "tests/fixtures/diffs/diff1";
 

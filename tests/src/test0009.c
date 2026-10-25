@@ -5,7 +5,8 @@
  *
  * Every scan starts without a database and checks complete output and exact
  * stored paths. CLI and configuration share a full template, followed by
- * compact and machine CLI runs. A second CLI/configuration pair checks the
+ * a progress run with exact traversal counts, and compact and machine CLI runs.
+ * A second CLI/configuration pair checks the
  * TESTING diagnostics against one full template with the configuration path
  * allowed only at its expected position
  *
@@ -38,6 +39,10 @@ Return test0009_1(void)
 		{arguments,COMPLETED,"templates/0009_001_1.txt",STDERR_MUST_BE_EMPTY},
 		/* Repeat the initial scan from an empty database with the same ignore rule */
 		{"--config=tests/templates/0009_001_1.conf",COMPLETED,"templates/0009_001_1.txt",STDERR_MUST_BE_EMPTY},
+		/* Both progress passes count ignored files as encountered objects */
+		{"--progress --database=database0009.db "
+		 "--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
+		 "tests/fixtures/ignore_include_cases/chaotic_filenames",COMPLETED,"templates/0009_001_1_2.txt",STDERR_MUST_BE_EMPTY},
 		/* Compact output retains terminal styling for added and ignored records */
 		{"--output=compact --database=database0009.db "
 		 "--ignore=\"^(?:skip_|tmp_).*\\.(?:log|bak)$\" "
@@ -166,7 +171,8 @@ static Return test0009_2(void)
  *
  * Full, compact, and machine scans start without a database and use the same
  * filters. Each run checks complete output, empty stderr, and the six included
- * file paths stored below the ignored directory
+ * file paths stored below the ignored directory. The full run also verifies
+ * exact counts in the preliminary and main traversal passes
  *
  * @return Return status for equivalent filtering and output
  */
@@ -177,7 +183,8 @@ static Return test0009_3(void)
 
 	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
 
-	const char *arguments = "--database=database0009_3.db "
+	/* Count the ignored parent and all encountered children in both progress passes */
+	const char *arguments = "--progress --database=database0009_3.db "
 	        "--ignore=\"^chaotic_filenames(?:/|$)\" "
 	        "--include=\"^chaotic_filenames/(?:alpha_m0n9k2_zz\\.txt|hold_a1r9v-0pq\\.bak|keep_4xv7__m2\\.log|omega_77xy__aa\\.bin|xqwe_90210\\.md|zeta_z1-9vv\\.dat)$\" "
 	        "tests/fixtures/ignore_include_cases";
@@ -193,7 +200,7 @@ static Return test0009_3(void)
 		"chaotic_filenames/zeta_z1-9vv.dat"
 	};
 
-	/* Repeat the same CLI scan with only the output format changed */
+	/* Check full traversal totals, then compare filtered records in compact formats */
 	const struct argument_test_case cases[] = {
 		{arguments,COMPLETED,"templates/0009_003_1.txt",STDERR_MUST_BE_EMPTY},
 		/* Compact output reports the directory and every included or ignored file */
@@ -551,7 +558,8 @@ static Return test0009_5(void)
 	/* Restore this baseline before each output format changes the database */
 	ASSERT(SUCCESS == copy_path(db_file_name,db_backup_file_name));
 
-	arguments = "--update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
+	/* Count skipped directories themselves, but not their unvisited descendants */
+	arguments = "--progress --update --check-level=QUICK --ignore=\"^path2/AAA/ZAW/.*\" "
 	        "--database=database0009_5.db tests/fixtures/diffs/diff1";
 
 	const struct argument_test_case cases[] = {

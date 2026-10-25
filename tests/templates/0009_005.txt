@@ -8,6 +8,7 @@ TESTING:argument:db_file_name=database0009_5\.db
 TESTING:argument:ignore=\^path2/AAA/ZAW/\.\*
 TESTING:argument:check-level=QUICK
 TESTING:argument:update=yes
+TESTING:argument:progress=yes
 TESTING:Argument parsing is finished
 TESTING:Checking directory paths provided as arguments
 TESTING:Verify that the path tests/fixtures/diffs/diff1 exists
@@ -41,6 +42,12 @@ TESTING:Database initialization process completed
 TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The database database0009_5\.db has already been created previously
 TESTING:The paths written against the database and the paths passed as arguments are completely identical
+TESTING:File system traversal initiated to calculate file count and storage usage
+TESTING:Total traversal size: [^\r\n]+
+TESTING:Total items: 51
+TESTING:Directories: 40
+TESTING:Files: 10
+TESTING:Symlinks: 1
 TESTING:Update mode enabled for DB database0009_5\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database0009_5\.db:(?:\x1B\[[0-9;]*m)*
@@ -54,10 +61,10 @@ TESTING:No changes were made. The primary database doesn't require vacuuming
 TESTING:(?:\x1B\[[0-9;]*m)*The database file database0009_5\.db has NOT been modified since the program was launched(?:\x1B\[[0-9;]*m)*
 TESTING:Total runtime: [^,\r\n]+
 TESTING:Total traversal size: \d+[^\r\n]*
-TESTING:Total items: \d+
-TESTING:Directories: \d+
-TESTING:Files: \d+
-TESTING:Symlinks: \d+$
+TESTING:Total items: 51
+TESTING:Directories: 40
+TESTING:Files: 10
+TESTING:Symlinks: 1
 TESTING:Scan time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))
 TESTING:Scan rate: (?:n/a|less than 1B/s|[1-9][0-9]*(?:B|KiB|MiB|GiB|TiB|PiB|EiB)/s)
 TESTING:Hashing time: (?:0ns|[1-9][0-9]*(?:y|mon|w|d|h|min|s|ms|μs|ns))

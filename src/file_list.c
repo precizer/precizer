@@ -31,6 +31,8 @@ static int compare_by_name(
  * `summary->stats_only_pass` controls how much work is done. When it is `true`,
  * traversal only counts directories, files, symlinks, and allocated size, and
  * that pass is skipped when progress is disabled or compact output is selected.
+ * Counts include the root and encountered entries skipped by filters, but
+ * exclude descendants of subtrees that were not visited.
  * When it is `false`, regular files can be hashed, compared with existing database rows,
  * inserted, updated, or reported according to ignore/include and checksum
  * locking settings. File writes are committed by the shared checkpoint interval
@@ -283,6 +285,9 @@ Return file_list(TraversalSummary *summary)
 			{
 				case FTS_D:
 				{
+					/* Count the encountered directory even when its subtree is skipped */
+					summary->count_dirs++;
+
 					run(path_build_relative(relative_path,p));
 
 					if((TRIUMPH & status) == 0)
@@ -349,7 +354,6 @@ Return file_list(TraversalSummary *summary)
 						break;
 					}
 
-					summary->count_dirs++;
 					break;
 				}
 				case FTS_F:
