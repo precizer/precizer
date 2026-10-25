@@ -48,7 +48,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - `.builds/`: generated build/test artifacts (do not commit)
 
 ## Build, Test, and Development Commands
-- For Codex verification after changes, run `make tests-debug`. It uses debug flags and runs the complete test suite, including slow scenarios
+- For Codex verification after changes, run `make tests-debug`. It uses debug flags and runs the complete test suite
 - Do not run multiple test variants sequentially by default. Use `make tests` only when sanitizer verification is specifically requested or justified by the change
 - The main application Makefile and internal library Makefiles usually collect source files with `$(wildcard src/*.c)`, so newly added `.c` files are picked up automatically after creation or `git mv`
 - `make` or `make production`: default optimized build; creates a ZIP package in the project root
@@ -58,7 +58,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 - `make macos-zip`: build and package the macOS release using the distribution build rules
 - `make debug`: build the application with debug flags.
 - `make sanitize`: build the application with ASan/UBSan.
-- `make tests-debug`: build and run the complete debug test suite, including slow scenarios
+- `make tests-debug`: build and run the complete debug test suite
 - `make tests`: build and run the sanitizer-backed test suite via `tests/Makefile`; use it only when sanitizer verification is specifically needed.
 - `make coverage`: builds and runs the coverage-instrumented test suite, then generates the coverage report.
 - `make clean`: remove build outputs, ZIP packages, attestation bundles, and package staging directories
@@ -74,7 +74,7 @@ Use tabs for indentation. Spaces may be used for alignment when needed, for exam
 
 ## Testing Guidelines
 - When an AI agent needs the application binary without running the test suite, prefer `make debug`, which produces `.builds/debug/precizer` with debug symbols
-- Test command for agent changes and before opening a pull request: `make tests-debug`. Run the complete suite, including slow scenarios
+- Test command for agent changes and before opening a pull request: `make tests-debug`. Run the complete suite
 - Add/adjust tests in `tests/src/` (pattern: `testXXXX.c`).
 - When creating new tests, look first for suitable shared helpers in `tests/src/helpers_db_utils.c` and `tests/src/helpers_file_utils.c`. Add local `static` helpers only when the shared helpers do not already provide the needed behavior
 - Update expected outputs in `tests/templates/` when behavior changes.
