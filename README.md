@@ -254,7 +254,7 @@ The following scenario illustrates the issue:
   * No functionality is provided for privilege escalation or other security violations.
 * Performance is primarily limited by disk subsystem speed. Each file is read byte by byte, and its SHA512 checksum is computed.
 * The program runs very fast thanks to SQLite and FTS libraries ([man 3 fts](https://man7.org/linux/man-pages/man3/fts.3.html)).
-* Command-line argument parsing is handled via the ARGP library.
+* Command-line arguments are parsed with ARGP, and configuration files are parsed with inih
 * Regular expression support is provided by PCRE2.
 * The program is safe to use with an enormous number of files, directories, and deeply nested subdirectories. Thanks to the FTS library, recursion is avoided, preventing stack overflows even with extreme levels of nesting.
 * Due to its compact and portable codebase, the program can be used even on specialized devices like NAS systems, embedded platforms, or IoT devices.
