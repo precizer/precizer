@@ -33,7 +33,7 @@ roots=tests/fixtures/diffs/diff1/2; database=0040\.db; db_file_name=0040\.db; ve
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_validate_paths\.c:\d+:db_validate_paths:The brand new database has just been created\. No need to verify the paths stored in the database against those passed as command-line arguments
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:File traversal started for [^\r\n]+
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/show_file\.c:\d+:show_banners:\x1B\[1mItems reported during this traversal against the DB 0040\.db:\x1B\[0m
-added AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BBB/CZC/a\.txt
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/file_list\.c:\d+:file_list:File traversal complete
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_close\.c:\d+:db_close:The database connection has been closed
 \d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}:\d{3} (?:\.\./)?src/db_primary_consider_vacuum\.c:\d+:db_primary_consider_vacuum:Dry Run mode is enabled\. The primary database doesn't require vacuuming

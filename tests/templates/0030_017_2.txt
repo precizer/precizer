@@ -46,17 +46,17 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB lock_s17\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB lock_s17\.db:(?:\x1B\[[0-9;]*m)*
-ignored directory path1/AAA
-ignored directory path1/AAA/BCB
-ignored directory path1/AAA/BCB/CCC
-ignored directory path1/AAA/ZAW
-ignored directory path1/AAA/ZAW/A
-ignored directory path1/AAA/ZAW/A/b
-ignored directory path1/AAA/ZAW/A/b/c
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/BCB
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/BCB/CCC
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c
 (?:\x1B\[[0-9;]*m)*checksum locked, access denied(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/A/b/c/a_file\.txt
-ignored directory path1/AAA/ZAW/D
-ignored directory path1/AAA/ZAW/D/e
-ignored directory path1/AAA/ZAW/D/e/f
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/D
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/D/e
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path1/AAA/ZAW/D/e/f
 TESTING:File traversal complete
 TESTING:(?:\x1B\[[0-9;]*m)*Warning! Data corruption detected for checksum-locked file!(?:\x1B\[[0-9;]*m)*
 TESTING:Returned file_list:\d+ status: WARNING

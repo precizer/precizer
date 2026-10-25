@@ -43,7 +43,7 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB database1\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
-rehashed 1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*rehashed(?:\x1B\[[0-9;]*m)* 1/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished

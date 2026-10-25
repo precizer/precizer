@@ -5,7 +5,7 @@ Database 0016_mtime\.db has been verified and is in good condition
 Update mode enabled for DB 0016_mtime\.db
 File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB 0016_mtime\.db:(?:\x1B\[[0-9;]*m)*
-rehashed file\.txt
+(?:\x1B\[[0-9;]*m)*rehashed(?:\x1B\[[0-9;]*m)* file\.txt
 File traversal complete
 Searching for files that no longer exist on the file system…
 Missing file search finished

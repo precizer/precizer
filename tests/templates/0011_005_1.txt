@@ -35,7 +35,7 @@ TESTING:The brand new database has just been created. No need to verify the path
 TESTING:Recursion depth limited to: \d+$
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-added sss\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* sss\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

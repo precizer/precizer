@@ -43,18 +43,18 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB database3\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database3\.db:(?:\x1B\[[0-9;]*m)*
-added 1/1/2/3/4/ddd\.txt
-added 1/1/2/3/ccc\.txt
-added 1/2/3/4/5/eee\.txt
-added 1/2/3/4/ddd\.txt
-added 2/1/2/3/4/ddd\.txt
-added 2/1/2/3/ccc\.txt
-added 2/2/3/4/5/eee\.txt
-added 2/2/3/4/ddd\.txt
-added 3/1/2/3/4/ddd\.txt
-added 3/1/2/3/ccc\.txt
-added 3/2/3/4/5/eee\.txt
-added 3/2/3/4/ddd\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/1/2/3/4/ddd\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/1/2/3/ccc\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/2/3/4/5/eee\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 1/2/3/4/ddd\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/1/2/3/4/ddd\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/1/2/3/ccc\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/2/3/4/5/eee\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 2/2/3/4/ddd\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/1/2/3/4/ddd\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/1/2/3/ccc\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/2/3/4/5/eee\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* 3/2/3/4/ddd\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished

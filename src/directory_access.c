@@ -51,7 +51,7 @@ Return directory_access_verify(
 		{
 			slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{orange}inaccessible@{reset} [directory] %s\n",runtime_relative_path);
 		} else {
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible directory %s\n",runtime_relative_path);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{orange}inaccessible directory@{reset} %s\n",runtime_relative_path);
 		}
 
 		if(config->include_specified == false)

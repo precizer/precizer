@@ -1,0 +1,8 @@
+\A(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[directory\] AAA
+(?:\x1B\[[0-9;]*m)*included(?:\x1B\[[0-9;]*m)* \[directory\] AAA/BBB
+(?:\x1B\[[0-9;]*m)*included(?:\x1B\[[0-9;]*m)* \[directory\] AAA/BBB/CCC
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as included\] AAA/BBB/uuu\.txt
+(?:\x1B\[[0-9;]*m)*ignored(?:\x1B\[[0-9;]*m)* \[not added\] AAA/tttt\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* \[as new\] sss\.txt
+\z

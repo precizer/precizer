@@ -39,7 +39,7 @@ TESTING:Database comparison mode is not enabled\. Skipping comparison
 TESTING:The brand new database has just been created\. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started for [^\r\n]+
 TESTING:\x1B\[1mItems reported during this traversal against the DB 0039_6\.db:\x1B\[0m
-added AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BBB/CZC/a\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming

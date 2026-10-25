@@ -47,12 +47,12 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB database0009_4\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database0009_4\.db:(?:\x1B\[[0-9;]*m)*
-updated as empty, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:[^\r\n]* alpha_m0n9k2_zz\.txt
-ignored & not added skip_a1r9v-0pq\.bak
-ignored & not added skip_m0n9k2_zz\.log
-ignored & not added tmp_77xy__aa\.bak
-updated as included, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:[^\r\n]* tmp_qwe_90210\.log
-updated as included, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:[^\r\n]* tmp_z1-9vv\.bak
+(?:\x1B\[[0-9;]*m)*updated as empty, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:[^\r\n]*(?:\x1B\[[0-9;]*m)* alpha_m0n9k2_zz\.txt
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* tmp_77xy__aa\.bak
+(?:\x1B\[[0-9;]*m)*updated as included, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:[^\r\n]*(?:\x1B\[[0-9;]*m)* tmp_qwe_90210\.log
+(?:\x1B\[[0-9;]*m)*updated as included, changed: [^\r\n]*lsize was:[^\r\n]*ctime was:[^\r\n]*mtime was:[^\r\n]*(?:\x1B\[[0-9;]*m)* tmp_z1-9vv\.bak
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished

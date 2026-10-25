@@ -26,34 +26,34 @@
 \+TESTING:The paths written against the database and the paths passed as arguments are completely identical
 \+TESTING:Update mode enabled for DB database3\\.db
 -TESTING:\Q(?:\x1B\[[0-9;]*m)*\EItems reported during this traversal against the DB database3\\.db:\Q(?:\x1B\[[0-9;]*m)*\E
--added 1/1/2/bbb\\.txt
--added 1/1/aaa\\.txt
--added 1/2/3/ccc\\.txt
--added 1/2/bbb\\.txt
--added 1/aaa\\.txt
--added 2/1/2/bbb\\.txt
--added 2/1/aaa\\.txt
--added 2/2/3/ccc\\.txt
--added 2/2/bbb\\.txt
--added 2/aaa\\.txt
--added 3/1/2/bbb\\.txt
--added 3/1/aaa\\.txt
--added 3/2/3/ccc\\.txt
--added 3/2/bbb\\.txt
--added 3/aaa\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/1/2/bbb\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/1/aaa\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/2/3/ccc\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/2/bbb\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/aaa\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/1/2/bbb\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/1/aaa\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/2/3/ccc\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/2/bbb\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/aaa\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/1/2/bbb\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/1/aaa\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/2/3/ccc\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/2/bbb\\.txt
+-\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/aaa\\.txt
 \+TESTING:\Q(?:\x1B\[[0-9;]*m)*\EChanges reported during this scan against the DB database3\\.db:\Q(?:\x1B\[[0-9;]*m)*\E
-\+added 1/1/2/3/4/ddd\\.txt
-\+added 1/1/2/3/ccc\\.txt
-\+added 1/2/3/4/5/eee\\.txt
-\+added 1/2/3/4/ddd\\.txt
-\+added 2/1/2/3/4/ddd\\.txt
-\+added 2/1/2/3/ccc\\.txt
-\+added 2/2/3/4/5/eee\\.txt
-\+added 2/2/3/4/ddd\\.txt
-\+added 3/1/2/3/4/ddd\\.txt
-\+added 3/1/2/3/ccc\\.txt
-\+added 3/2/3/4/5/eee\\.txt
-\+added 3/2/3/4/ddd\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/1/2/3/4/ddd\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/1/2/3/ccc\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/2/3/4/5/eee\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 1/2/3/4/ddd\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/1/2/3/4/ddd\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/1/2/3/ccc\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/2/3/4/5/eee\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 2/2/3/4/ddd\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/1/2/3/4/ddd\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/1/2/3/ccc\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/2/3/4/5/eee\\.txt
+\+\Q(?:\x1B\[[0-9;]*m)*\Eadded\Q(?:\x1B\[[0-9;]*m)*\E 3/2/3/4/ddd\\.txt
 \+TESTING:Searching for files that no longer exist on the file system…
 \+TESTING:Missing file search finished
 -TESTING:\Q(?:\x1B\[[0-9;]*m)*\EThe brand-new primary database file database3\\.db was created and modified since the program started \\\(files were added, removed, or updated\\\)\Q(?:\x1B\[[0-9;]*m)*\E

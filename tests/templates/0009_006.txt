@@ -45,17 +45,17 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB database0009_6\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database0009_6\.db:(?:\x1B\[[0-9;]*m)*
-ignored directory path2/AAA/ZAW/A
-ignored directory path2/AAA/ZAW/A/b
-ignored directory path2/AAA/ZAW/A/b/c
-ignored directory path2/AAA/ZAW/D
-ignored directory path2/AAA/ZAW/D/e
-ignored directory path2/AAA/ZAW/D/e/f
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/A
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/A/b
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/A/b/c
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/D
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/D/e
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/D/e/f
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:If the information about ignored files should be removed from the database the (?:\x1B\[[0-9;]*m)*--db-drop-ignored(?:\x1B\[[0-9;]*m)* option must be specified. This is special protection against accidental deletion of information from the database
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database0009_6\.db:(?:\x1B\[[0-9;]*m)*
-dropped as missing path2/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:Missing file search finished
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

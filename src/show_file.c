@@ -232,7 +232,9 @@ void slog_show_impl(
  * @brief Show the visible status line for one file path
  *
  * Prints the relative path together with the action or warning that applies to the file.
- * Also triggers the shared traversal banner before the first visible file or directory line
+ * Full output colors the complete description, including metadata changes, and resets
+ * the color before the path. Also triggers the shared traversal banner before the first
+ * visible file or directory line
  *
  * @param[in] relative_path Relative path descriptor being reported
  * @param[in,out] first_iteration Banner sentinel for the first visible output line
@@ -255,7 +257,7 @@ void show_file(
 			{
 				slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{gray}ignored@{reset} [not added] %s\n",runtime_relative_path);
 			} else {
-				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignored & not added %s\n",runtime_relative_path);
+				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{gray}ignored & not added@{reset} %s\n",runtime_relative_path);
 			}
 
 		} else {
@@ -264,7 +266,7 @@ void show_file(
 			{
 				slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{gray}ignored@{reset} [not updated] %s\n",runtime_relative_path);
 			} else {
-				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignored & not updated %s\n",runtime_relative_path);
+				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{gray}ignored & not updated@{reset} %s\n",runtime_relative_path);
 			}
 		}
 
@@ -274,7 +276,7 @@ void show_file(
 		{
 			slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{red}error@{reset} [read error: %s] %s\n",strerror(file->read_errno),runtime_relative_path);
 		} else {
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"error \"%s\" when reading %s\n",strerror(file->read_errno),runtime_relative_path);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{red}error \"%s\" when reading@{reset} %s\n",strerror(file->read_errno),runtime_relative_path);
 		}
 
 	} else if(file->is_readable == false){
@@ -283,7 +285,7 @@ void show_file(
 		{
 			slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{orange}inaccessible@{reset} [file] %s\n",runtime_relative_path);
 		} else {
-			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"inaccessible file %s\n",runtime_relative_path);
+			slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{orange}inaccessible file@{reset} %s\n",runtime_relative_path);
 		}
 
 	} else if(file->db->relative_path_was_in_db_before_processing == false){
@@ -298,7 +300,7 @@ void show_file(
 				{
 					slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{green}added@{reset} [as included] %s\n",runtime_relative_path);
 				} else {
-					slog_show(EVERY|UNDECOR,true,first_iteration,summary,"added as included %s\n",runtime_relative_path);
+					slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{green}added as included@{reset} %s\n",runtime_relative_path);
 				}
 
 			} else if(file->locked_checksum_file == true){
@@ -307,7 +309,7 @@ void show_file(
 				{
 					slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{green}locked@{reset} [checksum] %s\n",runtime_relative_path);
 				} else {
-					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"locked checksum %s\n",runtime_relative_path);
+					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{green}locked checksum@{reset} %s\n",runtime_relative_path);
 				}
 
 			} else if(file->zero_size_file == true){
@@ -316,7 +318,7 @@ void show_file(
 				{
 					slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{green}added@{reset} [as empty] %s\n",runtime_relative_path);
 				} else {
-					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"added as empty %s\n",runtime_relative_path);
+					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{green}added as empty@{reset} %s\n",runtime_relative_path);
 				}
 
 			} else {
@@ -325,7 +327,7 @@ void show_file(
 				{
 					slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{green}added@{reset} [as new] %s\n",runtime_relative_path);
 				} else {
-					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"added %s\n",runtime_relative_path);
+					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{green}added@{reset} %s\n",runtime_relative_path);
 				}
 			}
 		}
@@ -352,8 +354,9 @@ void show_file(
 				slog(MACHINE|UNDECOR,"]");
 
 			} else {
-				slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{red}checksum locked, data corruption detected@{reset}");
+				slog_show(EVERY|UNDECOR|REMEMBER,false,first_iteration,summary,"@{red}checksum locked, data corruption detected");
 				print_changes(EVERY|REMEMBER,file,true);
+				slog(EVERY|UNDECOR|REMEMBER,"@{reset}");
 			}
 			slog_show(EVERY|MACHINE|UNDECOR|REMEMBER,false,first_iteration,summary," %s\n",runtime_relative_path);
 
@@ -369,8 +372,9 @@ void show_file(
 					slog_show(MACHINE|UNDECOR,true,first_iteration,summary," %s\n",runtime_relative_path);
 				}
 			} else {
-				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"updated as included");
+				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{blue}updated as included");
 				print_changes(EVERY,file,true);
+				slog(EVERY|UNDECOR,"@{reset}");
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 			}
 
@@ -382,8 +386,9 @@ void show_file(
 				print_changes(MACHINE,file,true);
 				slog(MACHINE|UNDECOR,"]");
 			} else {
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"updated as empty");
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{blue}updated as empty");
 				print_changes(EVERY,file,true);
+				slog(EVERY|UNDECOR,"@{reset}");
 			}
 			slog_show(EVERY|MACHINE|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 
@@ -399,8 +404,9 @@ void show_file(
 						print_changes(MACHINE,file,true);
 						slog(MACHINE|UNDECOR,"]");
 					} else {
-						slog_show(EVERY|UNDECOR,false,first_iteration,summary,"rehashed from the beginning");
+						slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{yellow}rehashed from the beginning");
 						print_changes(EVERY,file,true);
+						slog(EVERY|UNDECOR,"@{reset}");
 					}
 					slog_show(EVERY|MACHINE|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 				}
@@ -411,7 +417,7 @@ void show_file(
 				{
 					slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{yellow}resumed@{reset} [hashing from %s] %s\n",bkbmbgbtbpbeb((const size_t)file->db->saved_offset,FULL_VIEW),runtime_relative_path);
 				} else {
-					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"rehash resumed from %s %s\n",bkbmbgbtbpbeb((const size_t)file->db->saved_offset,FULL_VIEW),runtime_relative_path);
+					slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{yellow}rehash resumed from %s@{reset} %s\n",bkbmbgbtbpbeb((const size_t)file->db->saved_offset,FULL_VIEW),runtime_relative_path);
 				}
 
 			} else if(file->locked_checksum_file == true){
@@ -424,8 +430,9 @@ void show_file(
 						print_changes(MACHINE,file,true);
 						slog(MACHINE|UNDECOR,"]");
 					} else {
-						slog_show(EVERY|UNDECOR,false,first_iteration,summary,"rehashed & locked checksum matched");
+						slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{yellow}rehashed & locked checksum matched");
 						print_changes(EVERY,file,true);
+						slog(EVERY|UNDECOR,"@{reset}");
 					}
 					slog_show(EVERY|MACHINE|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 				}
@@ -452,8 +459,9 @@ void show_file(
 						slog(MACHINE|UNDECOR,"]");
 
 					} else {
-						slog_show(EVERY|UNDECOR,false,first_iteration,summary,"rehashed");
+						slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{yellow}rehashed");
 						print_changes(EVERY,file,true);
+						slog(EVERY|UNDECOR,"@{reset}");
 					}
 					slog_show(EVERY|MACHINE|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 				}
@@ -467,8 +475,9 @@ void show_file(
 				print_changes(MACHINE,file,true);
 				slog(MACHINE|UNDECOR,"]");
 			} else {
-				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"updated metadata");
+				slog_show(EVERY|UNDECOR,false,first_iteration,summary,"@{blue}updated metadata");
 				print_changes(EVERY,file,true);
+				slog(EVERY|UNDECOR,"@{reset}");
 			}
 			slog_show(EVERY|MACHINE|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
 		}
@@ -480,7 +489,7 @@ void show_file(
 		{
 			slog_show(MACHINE|UNDECOR,false,first_iteration,summary,"@{orange}interrupted@{reset} [hashing at %s] %s\n",bkbmbgbtbpbeb((size_t)file->checksum_offset,FULL_VIEW),runtime_relative_path);
 		} else {
-			slog_show(EVERY,false,first_iteration,summary,"hashing gracefully interrupted at %s %s\n",bkbmbgbtbpbeb((size_t)file->checksum_offset,FULL_VIEW),runtime_relative_path);
+			slog_show(EVERY,false,first_iteration,summary,"@{orange}hashing gracefully interrupted at %s@{reset} %s\n",bkbmbgbtbpbeb((size_t)file->checksum_offset,FULL_VIEW),runtime_relative_path);
 		}
 	}
 }

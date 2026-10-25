@@ -759,7 +759,7 @@ Return file_list(TraversalSummary *summary)
 						{
 							slog_show(MACHINE|UNDECOR,false,&first_iteration,summary,"@{orange}inaccessible@{reset} [directory] %s\n",runtime_relative_path);
 						} else {
-							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"inaccessible directory %s\n",runtime_relative_path);
+							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"@{orange}inaccessible directory@{reset} %s\n",runtime_relative_path);
 						}
 
 					} else if(p->fts_info == FTS_NS){
@@ -768,7 +768,7 @@ Return file_list(TraversalSummary *summary)
 						{
 							slog_show(MACHINE|UNDECOR,false,&first_iteration,summary,"@{red}error@{reset} [stat error: %s] %s\n",strerror(p->fts_errno),runtime_relative_path);
 						} else {
-							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"cannot stat \"%s\" when reading %s\n",strerror(p->fts_errno),runtime_relative_path);
+							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"@{red}cannot stat \"%s\" when reading@{reset} %s\n",strerror(p->fts_errno),runtime_relative_path);
 						}
 
 					} else {
@@ -777,7 +777,7 @@ Return file_list(TraversalSummary *summary)
 						{
 							slog_show(MACHINE|UNDECOR,false,&first_iteration,summary,"@{red}error@{reset} [fts error: %s] %s\n",strerror(p->fts_errno),runtime_relative_path);
 						} else {
-							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"fts error \"%s\" when reading %s\n",strerror(p->fts_errno),runtime_relative_path);
+							slog_show(EVERY|UNDECOR|REMEMBER,false,&first_iteration,summary,"@{red}fts error \"%s\" when reading@{reset} %s\n",strerror(p->fts_errno),runtime_relative_path);
 						}
 					}
 

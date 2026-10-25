@@ -140,30 +140,30 @@ path2/AAA/ZAW/A/b/c/a_file\.txt add
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database1\.db:(?:\x1B\[[0-9;]*m)*
-dropped as missing длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путьпуть/path1/AAA/BCB/CCC/a\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/a_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/D/e/f/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/a\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/b\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/A/b/c/a_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/D/e/f/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file\.txt
-dropped as missing длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путьпуть/path1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/A/b/c/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путь/path1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путьпуть/path2/AAA/BCB/CCC/b\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…путь/path2/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…ddкрайний/path1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/A/b/c/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…ddкрайний/path2/AAA/BCB/CCC/b\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as missing(?:\x1B\[[0-9;]*m)* длинныйпутьвЮТФ8/аа…йний/path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:Missing file search finished
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

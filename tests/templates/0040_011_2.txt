@@ -1,0 +1,28 @@
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: 0040\.db
+The path 0040\.db doesn't exist or it is not a file
+The primary DB file not yet exists\. Brand new database will be created
+File traversal started for [^\r\n]+
+Items reported during this traversal against the DB 0040\.db:
+ignored directory AAA
+included directory AAA/BBB
+included directory AAA/BBB/CCC
+added as included AAA/BBB/CCC/a\.txt
+added as included AAA/BBB/uuu\.txt
+ignored & not added AAA/tttt\.txt
+added sss\.txt
+File traversal complete
+Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)
+Total runtime: [^\r\n]+
+Total traversal size: [^\r\n]+
+Total items: 7
+Directories: 3
+Files: 4
+Symlinks: 0
+Scan time: [^\r\n]+
+Scan rate: n/a
+Hashing time: 0ns
+Hashing rate: n/a
+Hashed data: n/a
+Exit status » SUCCESS
+\z

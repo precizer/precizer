@@ -171,6 +171,7 @@ static Return assert_output(
 	ASSERT(SUCCESS == replace_placeholder(stdout_pattern,"%COLOR_MODE%",expected_color_mode));
 	ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,stdout_pattern_file));
 	ASSERT((strchr(m_text(stdout_result),'\033') != NULL) == colors_expected);
+	ASSERT((strstr(m_text(stdout_result),GREEN "added" RESET " AAA/BBB/CZC/a.txt\n") != NULL) == colors_expected);
 	ASSERT(stderr_result->length == 0U);
 
 	/* Release capture buffers and the template after any assertion result */
@@ -717,6 +718,71 @@ static Return test0040_10(void)
 	RETURN_STATUS;
 }
 
+/**
+ * @brief Check matching event colors in full and compact output
+ *
+ * The same dry run includes one subtree and ignores its siblings. Complete
+ * templates require plain paths. Full output colors complete descriptions, while
+ * compact output colors only event labels. Explicit checks require green
+ * added/included messages and gray ignored messages. Machine output remains
+ * plain by default and honors an explicit color option
+ *
+ * @return Return describing success or failure
+ */
+static Return test0040_11(void)
+{
+	INITTEST;
+
+	/* Reuse one fixture without modifying files or creating a persistent database */
+#define FILTER_ARGUMENTS " --dry-run --database=0040.db --ignore='^AAA' --include='^AAA/BBB' tests/fixtures/4"
+	const struct argument_test_case cases[] = {
+		{"--output=full --color=always" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_1.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=full --color=never" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_2.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=always" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_3.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=compact --color=never" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_4.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_4.txt",STDERR_MUST_BE_EMPTY},
+		{"--output=machine --color=always" FILTER_ARGUMENTS,COMPLETED,"templates/0040_011_3.txt",STDERR_MUST_BE_EMPTY},
+		{0}
+	};
+#undef FILTER_ARGUMENTS
+
+	m_create(char,stdout_result,MEMORY_STRING);
+	m_create(char,stderr_result,MEMORY_STRING);
+	m_create(char,stdout_pattern,MEMORY_STRING);
+
+	/* Disable test diagnostics so each format is checked as ordinary user output */
+	ASSERT(SUCCESS == set_environment_variable("TESTING","false"));
+	for(size_t i = 0; cases[i].arguments != NULL && SUCCESS == status; ++i)
+	{
+		/* Match both complete streams before checking the exact event colors */
+		ASSERT(SUCCESS == runit(cases[i].arguments,stdout_result,stderr_result,COMPLETED,STDERR_ALLOW));
+		ASSERT(SUCCESS == get_file_content(cases[i].stdout_template,stdout_pattern));
+		ASSERT(SUCCESS == match_pattern(stdout_result,stdout_pattern,cases[i].stdout_template));
+		ASSERT(stderr_result->length == 0U);
+
+		/* Check full descriptions or compact labels, with the reset before the plain path or details */
+		const bool colors_expected = strstr(cases[i].arguments,"--color=always") != NULL;
+		ASSERT((strchr(m_text(stdout_result),'\033') != NULL) == colors_expected);
+		if(strstr(cases[i].arguments,"--output=full") != NULL)
+		{
+			ASSERT((strstr(m_text(stdout_result),GREEN "added as included" RESET " AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),GREEN "included directory" RESET " AAA/BBB\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),GRAY "ignored & not added" RESET " AAA/tttt.txt\n") != NULL) == colors_expected);
+		} else {
+			ASSERT((strstr(m_text(stdout_result),GREEN "added" RESET " [as included] AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),GREEN "included" RESET " [directory] AAA/BBB\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),GRAY "ignored" RESET " [not added] AAA/tttt.txt\n") != NULL) == colors_expected);
+		}
+	}
+
+	/* Restore diagnostics and release all buffers after any assertion result */
+	call(set_environment_variable("TESTING","true"));
+	call(m_del(stdout_pattern));
+	call(m_del(stderr_result));
+	call(m_del(stdout_result));
+	RETURN_STATUS;
+}
+
 #undef DRY_RUN_ARGUMENTS
 
 /**
@@ -756,6 +822,9 @@ Return test0040(void)
 	TEST(test0040_8,"Color options reject unsupported and empty values");
 	TEST(test0040_9,"Color options reject missing values");
 	TEST(test0040_10,"Verbose diagnostics report the selected color mode");
+
+	/* Check event labels, including included directories, across output formats */
+	TEST(test0040_11,"Full and compact share keyword colors while machine remains plain by default");
 
 	RETURN_STATUS;
 }

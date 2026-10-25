@@ -46,10 +46,10 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB database0009_4\.db
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB database0009_4\.db:(?:\x1B\[[0-9;]*m)*
-updated as included skip_4xv7__m2\.log
-ignored & not added skip_a1r9v-0pq\.bak
-ignored & not added skip_m0n9k2_zz\.log
-ignored & not added tmp_77xy__aa\.bak
+(?:\x1B\[[0-9;]*m)*updated as included(?:\x1B\[[0-9;]*m)* skip_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* tmp_77xy__aa\.bak
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished

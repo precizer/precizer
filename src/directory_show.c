@@ -27,7 +27,7 @@ void directory_show(
 		{
 			slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{gray}ignored@{reset} [directory] %s\n",runtime_relative_path);
 		} else {
-			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"ignored directory %s\n",runtime_relative_path);
+			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{gray}ignored directory@{reset} %s\n",runtime_relative_path);
 		}
 
 	} else if(include == true){
@@ -36,7 +36,7 @@ void directory_show(
 		{
 			slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{green}included@{reset} [directory] %s\n",runtime_relative_path);
 		} else {
-			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"included directory %s\n",runtime_relative_path);
+			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{green}included directory@{reset} %s\n",runtime_relative_path);
 		}
 	}
 }

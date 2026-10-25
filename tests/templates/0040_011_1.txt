@@ -1,0 +1,28 @@
+\Aprecizer [0-9]+\.[0-9]+\.[0-9]+
+Primary database file name: 0040\.db
+The path 0040\.db doesn't exist or it is not a file
+The primary DB file not yet exists\. Brand new database will be created
+File traversal started for [^\r\n]+
+(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB 0040\.db:(?:\x1B\[[0-9;]*m)*
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* AAA
+(?:\x1B\[[0-9;]*m)*included directory(?:\x1B\[[0-9;]*m)* AAA/BBB
+(?:\x1B\[[0-9;]*m)*included directory(?:\x1B\[[0-9;]*m)* AAA/BBB/CCC
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* AAA/BBB/uuu\.txt
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* AAA/tttt\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* sss\.txt
+File traversal complete
+(?:\x1B\[[0-9;]*m)*Nothing has changed in the primary database since the program was launched \(no files were added, updated, or deleted\)(?:\x1B\[[0-9;]*m)*
+Total runtime: [^\r\n]+
+Total traversal size: [^\r\n]+
+Total items: 7
+Directories: 3
+Files: 4
+Symlinks: 0
+Scan time: [^\r\n]+
+Scan rate: n/a
+Hashing time: 0ns
+Hashing rate: n/a
+Hashed data: n/a
+Exit status » SUCCESS
+\z

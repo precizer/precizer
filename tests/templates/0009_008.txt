@@ -45,7 +45,7 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:The (?:\x1B\[[0-9;]*m)*--db-drop-ignored(?:\x1B\[[0-9;]*m)* option has been used, so the information about ignored files will be removed against the database database0009_8\.db
 TESTING:(?:\x1B\[[0-9;]*m)*Dropping DB records for missing or ignored paths in database0009_8\.db:(?:\x1B\[[0-9;]*m)*
-dropped as ignored path2/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*dropped as ignored(?:\x1B\[[0-9;]*m)* path2/AAA/ZAW/D/e/f/b_file\.txt
 TESTING:Missing file search finished
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

@@ -42,19 +42,19 @@ TESTING:Files: \d+
 TESTING:Symlinks: \d+
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database1\.db:(?:\x1B\[[0-9;]*m)*
-added apostrophe'/path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
-added apostrophe'/path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
-added apostrophe'/path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
-added apostrophe'/path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
-added apostrophe'/path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
-added apostrophe'/path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
-added apostrophe'/path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
-added apostrophe'/path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
-added apostrophe'/path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
-added apostrophe'/path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
-added apostrophe'/path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
-added apostrophe'/path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
-added apostrophe'/path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/2/AAA/BBB/CZC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/3/AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/4/AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/path1/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/path1/AAA/BCB/CCC/b\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/path1/AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/path1/AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/path2/AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/path2/AAA/BCB/CCC/a_file_with_apo'strophe\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* apostrophe'/path_with_apo'strophe/path2/AAA/ZAW/A/b/c/a_file\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…

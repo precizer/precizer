@@ -4,19 +4,19 @@ The path database0009_3\.db doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
 File traversal started for [^\r\n]+
 (?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009_3\.db:(?:\x1B\[[0-9;]*m)*
-ignored directory chaotic_filenames
-added as included chaotic_filenames/alpha_m0n9k2_zz\.txt
-added as included chaotic_filenames/hold_a1r9v-0pq\.bak
-added as included chaotic_filenames/keep_4xv7__m2\.log
-added as included chaotic_filenames/omega_77xy__aa\.bin
-ignored & not added chaotic_filenames/skip_4xv7__m2\.log
-ignored & not added chaotic_filenames/skip_a1r9v-0pq\.bak
-ignored & not added chaotic_filenames/skip_m0n9k2_zz\.log
-ignored & not added chaotic_filenames/tmp_77xy__aa\.bak
-ignored & not added chaotic_filenames/tmp_qwe_90210\.log
-ignored & not added chaotic_filenames/tmp_z1-9vv\.bak
-added as included chaotic_filenames/xqwe_90210\.md
-added as included chaotic_filenames/zeta_z1-9vv\.dat
+(?:\x1B\[[0-9;]*m)*ignored directory(?:\x1B\[[0-9;]*m)* chaotic_filenames
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* chaotic_filenames/alpha_m0n9k2_zz\.txt
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* chaotic_filenames/hold_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* chaotic_filenames/keep_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* chaotic_filenames/omega_77xy__aa\.bin
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* chaotic_filenames/skip_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* chaotic_filenames/skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* chaotic_filenames/skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* chaotic_filenames/tmp_77xy__aa\.bak
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* chaotic_filenames/tmp_qwe_90210\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* chaotic_filenames/tmp_z1-9vv\.bak
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* chaotic_filenames/xqwe_90210\.md
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* chaotic_filenames/zeta_z1-9vv\.dat
 File traversal complete
 Start vacuuming the primary database…
 Primary DB vacuumed: saved -?[0-9]+\.[0-9]{2}%, elapsed [^\r\n]+

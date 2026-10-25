@@ -41,9 +41,9 @@ TESTING:The paths written against the database and the paths passed as arguments
 TESTING:Update mode enabled for DB %DB_NAME%
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Changes reported during this scan against the DB %DB_NAME%:(?:\x1B\[[0-9;]*m)*
-added AAA/BBB/CCC/a\.txt
-added AAA/BBB/uuu\.txt
-added AAA/tttt\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BBB/uuu\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/tttt\.txt
 TESTING:File traversal complete
 TESTING:Searching for files that no longer exist on the file system…
 TESTING:Missing file search finished

@@ -1,0 +1,8 @@
+\Aignored \[directory\] AAA
+included \[directory\] AAA/BBB
+included \[directory\] AAA/BBB/CCC
+added \[as included\] AAA/BBB/CCC/a\.txt
+added \[as included\] AAA/BBB/uuu\.txt
+ignored \[not added\] AAA/tttt\.txt
+added \[as new\] sss\.txt
+\z

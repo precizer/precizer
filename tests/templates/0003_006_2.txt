@@ -42,13 +42,13 @@ TESTING:Database comparison mode is not enabled\. Skipping comparison
 TESTING:The brand new database has just been created\. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started for tests/fixtures/diffs/diff1/1
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB 0003_paths\.db:(?:\x1B\[[0-9;]*m)*
-added AAA/BCB/CCC/a\.txt
-added AAA/ZAW/A/b/c/a_file\.txt
-added AAA/ZAW/D/e/f/b_file\.txt
-added AAA/BBB/CCC/a\.txt
-added AAA/BCB/CCC/a\.txt
-added AAA/ZAW/A/b/c/a_file\.txt
-added AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/ZAW/D/e/f/b_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BBB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/BCB/CCC/a\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/ZAW/A/b/c/a_file\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* AAA/ZAW/D/e/f/b_file\.txt
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Dry Run mode is enabled\. The primary database doesn't require vacuuming

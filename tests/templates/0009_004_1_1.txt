@@ -38,18 +38,18 @@ TESTING:Database comparison mode is not enabled. Skipping comparison
 TESTING:The brand new database has just been created. No need to verify the paths stored in the database against those passed as command-line arguments
 TESTING:File traversal started for [^\r\n]+
 TESTING:(?:\x1B\[[0-9;]*m)*Items reported during this traversal against the DB database0009_4\.db:(?:\x1B\[[0-9;]*m)*
-added alpha_m0n9k2_zz\.txt
-added hold_a1r9v-0pq\.bak
-added keep_4xv7__m2\.log
-added omega_77xy__aa\.bin
-added as included skip_4xv7__m2\.log
-ignored & not added skip_a1r9v-0pq\.bak
-ignored & not added skip_m0n9k2_zz\.log
-ignored & not added tmp_77xy__aa\.bak
-added as included tmp_qwe_90210\.log
-added as included tmp_z1-9vv\.bak
-added xqwe_90210\.md
-added zeta_z1-9vv\.dat
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* alpha_m0n9k2_zz\.txt
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* hold_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* keep_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* omega_77xy__aa\.bin
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* skip_4xv7__m2\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_a1r9v-0pq\.bak
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* skip_m0n9k2_zz\.log
+(?:\x1B\[[0-9;]*m)*ignored & not added(?:\x1B\[[0-9;]*m)* tmp_77xy__aa\.bak
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* tmp_qwe_90210\.log
+(?:\x1B\[[0-9;]*m)*added as included(?:\x1B\[[0-9;]*m)* tmp_z1-9vv\.bak
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* xqwe_90210\.md
+(?:\x1B\[[0-9;]*m)*added(?:\x1B\[[0-9;]*m)* zeta_z1-9vv\.dat
 TESTING:File traversal complete
 TESTING:The database connection has been closed
 TESTING:Start vacuuming the primary database…
