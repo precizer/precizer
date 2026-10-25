@@ -34,9 +34,9 @@ void directory_show(
 
 		if(config->output != OUTPUT_FULL)
 		{
-			slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{green}included@{reset} [directory] %s\n",runtime_relative_path);
+			slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{boldgreen}included@{reset} [directory] %s\n",runtime_relative_path);
 		} else {
-			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{green}included directory@{reset} %s\n",runtime_relative_path);
+			slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{boldgreen}included directory@{reset} %s\n",runtime_relative_path);
 		}
 	}
 }

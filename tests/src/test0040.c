@@ -723,8 +723,8 @@ static Return test0040_10(void)
  *
  * The same dry run includes one subtree and ignores its siblings. Complete
  * templates require plain paths. Full output colors complete descriptions, while
- * compact output colors only event labels. Explicit checks require green
- * added/included messages and gray ignored messages. Machine output remains
+ * compact output colors only event labels. Explicit checks require bold green
+ * include-related messages and gray ignored messages. Machine output remains
  * plain by default and honors an explicit color option
  *
  * @return Return describing success or failure
@@ -765,12 +765,12 @@ static Return test0040_11(void)
 		ASSERT((strchr(m_text(stdout_result),'\033') != NULL) == colors_expected);
 		if(strstr(cases[i].arguments,"--output=full") != NULL)
 		{
-			ASSERT((strstr(m_text(stdout_result),GREEN "added as included" RESET " AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
-			ASSERT((strstr(m_text(stdout_result),GREEN "included directory" RESET " AAA/BBB\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "added as included" RESET " AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "included directory" RESET " AAA/BBB\n") != NULL) == colors_expected);
 			ASSERT((strstr(m_text(stdout_result),GRAY "ignored & not added" RESET " AAA/tttt.txt\n") != NULL) == colors_expected);
 		} else {
-			ASSERT((strstr(m_text(stdout_result),GREEN "added" RESET " [as included] AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
-			ASSERT((strstr(m_text(stdout_result),GREEN "included" RESET " [directory] AAA/BBB\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "added" RESET " [as included] AAA/BBB/CCC/a.txt\n") != NULL) == colors_expected);
+			ASSERT((strstr(m_text(stdout_result),BOLDGREEN "included" RESET " [directory] AAA/BBB\n") != NULL) == colors_expected);
 			ASSERT((strstr(m_text(stdout_result),GRAY "ignored" RESET " [not added] AAA/tttt.txt\n") != NULL) == colors_expected);
 		}
 	}

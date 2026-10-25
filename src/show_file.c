@@ -298,9 +298,9 @@ void show_file(
 			{
 				if(config->output != OUTPUT_FULL)
 				{
-					slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{green}added@{reset} [as included] %s\n",runtime_relative_path);
+					slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{boldgreen}added@{reset} [as included] %s\n",runtime_relative_path);
 				} else {
-					slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{green}added as included@{reset} %s\n",runtime_relative_path);
+					slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{boldgreen}added as included@{reset} %s\n",runtime_relative_path);
 				}
 
 			} else if(file->locked_checksum_file == true){
@@ -366,13 +366,13 @@ void show_file(
 			{
 				if(config->quiet_ignored == false)
 				{
-					slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{blue}updated@{reset} [as included");
+					slog_show(MACHINE|UNDECOR,true,first_iteration,summary,"@{boldgreen}updated@{reset} [as included");
 					print_changes(MACHINE,file,true);
 					slog(MACHINE|UNDECOR,"]");
 					slog_show(MACHINE|UNDECOR,true,first_iteration,summary," %s\n",runtime_relative_path);
 				}
 			} else {
-				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{blue}updated as included");
+				slog_show(EVERY|UNDECOR,true,first_iteration,summary,"@{boldgreen}updated as included");
 				print_changes(EVERY,file,true);
 				slog(EVERY|UNDECOR,"@{reset}");
 				slog_show(EVERY|UNDECOR,false,first_iteration,summary," %s\n",runtime_relative_path);
