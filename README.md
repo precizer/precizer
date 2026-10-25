@@ -247,7 +247,7 @@ The following scenario illustrates the issue:
 * precizer can be used as a security monitoring tool, detecting unauthorized file modifications where contents might have changed while metadata remains untouched.
 * Security:
   * The program never modifies, deletes, moves, or copies any files or directories it processes.
-	* The program does not open sockets, make network requests or contact external internet addresses, or transmit data anywhere. It operates entirely locally
+  * The program does not open sockets, make network requests or contact external internet addresses, or transmit data anywhere. It operates entirely locally
   * The program enumerates files, computes SHA512 checksums, and updates a local database; all changes are strictly confined to the database.
   * The database does not store file contents. It stores relative paths, checksums, and metadata such as size and timestamps (ctime/mtime).
   * The program does not require privileged execution and does not use the SUID bit or other unsafe permission bits.
