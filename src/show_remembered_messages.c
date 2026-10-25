@@ -32,8 +32,7 @@ Return show_remembered_messages(void)
 
 	if(rc != SQLITE_OK)
 	{
-		log_sqlite_error(config->db,rc,NULL,
-			"Failed to prepare remember_history query");
+		log_sqlite_error(config->db,rc,NULL,"Failed to prepare remember_history query");
 		provide(FAILURE);
 	}
 
@@ -66,8 +65,7 @@ Return show_remembered_messages(void)
 
 	if(rc != SQLITE_DONE)
 	{
-		log_sqlite_error(config->db,rc,NULL,
-			"Failed to read remember_history");
+		log_sqlite_error(config->db,rc,NULL,"Failed to read remember_history");
 		sqlite3_finalize(stmt);
 		provide(FAILURE);
 	}

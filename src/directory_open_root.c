@@ -25,10 +25,7 @@ FileAccessStatus directory_open_root(
 	{
 		const int root_open_errno = errno;
 
-		slog(EVERY|UNDECOR|REMEMBER,
-			"Unable to open traversal root %s: %s\n",
-			m_text(root_path),
-			strerror(root_open_errno));
+		slog(EVERY|UNDECOR|REMEMBER,"Unable to open traversal root %s: %s\n",m_text(root_path),strerror(root_open_errno));
 
 		/*
 		 * The caller may skip this root immediately, before later traversal

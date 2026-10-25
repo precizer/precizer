@@ -30,8 +30,7 @@ void disable_console_quick_edit(void)
 			{
 				quick_edit_console = console;
 			} else {
-				slog(ERROR,"Could not disable console QuickEdit mode (Windows error %lu)\n",
-					(unsigned long)GetLastError());
+				slog(ERROR,"Could not disable console QuickEdit mode (Windows error %lu)\n",(unsigned long)GetLastError());
 			}
 		}
 	}

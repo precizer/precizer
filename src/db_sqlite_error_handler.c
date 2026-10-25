@@ -36,17 +36,10 @@ void log_sqlite_error(
 
 	if(err_msg != NULL && err_msg[0] != '\0')
 	{
-		slog(ERROR,"%s (%d): %s; detail: %s\n",
-			context,
-			rc,
-			sqlite_msg ? sqlite_msg : "unknown",
-			err_msg);
+		slog(ERROR,"%s (%d): %s; detail: %s\n",context,rc,sqlite_msg ? sqlite_msg : "unknown",err_msg);
 		sqlite3_free(err_msg);
 
 	} else {
-		slog(ERROR,"%s (%d): %s\n",
-			context,
-			rc,
-			sqlite_msg ? sqlite_msg : "unknown");
+		slog(ERROR,"%s (%d): %s\n",context,rc,sqlite_msg ? sqlite_msg : "unknown");
 	}
 }

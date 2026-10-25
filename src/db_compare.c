@@ -326,8 +326,7 @@ Return db_compare(void)
 
 		if(NOT_FOUND == file_availability(db_file_path_text,NULL,SHOULD_BE_A_FILE))
 		{
-			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",
-				db_file_path_text);
+			slog(ERROR,"The database file %s is either inaccessible or not a valid file\n",db_file_path_text);
 			status = FAILURE;
 			break;
 		}
@@ -485,34 +484,26 @@ Return db_compare(void)
 		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
-			slog(EVERY,"@{bold}All files are identical against %s and %s@{reset}\n",
-				config->db_file_names[0],
-				config->db_file_names[1]);
+			slog(EVERY,"@{bold}All files are identical against %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 
 		} else if(full_compare_scope == false){
 
 			if(check_first_source == true
 			        && first_source_differences_found == false)
 			{
-				slog(EVERY,"@{bold}No first-source differences found between %s and %s@{reset}\n",
-					config->db_file_names[0],
-					config->db_file_names[1]);
+				slog(EVERY,"@{bold}No first-source differences found between %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 			}
 
 			if(check_second_source == true
 			        && second_source_differences_found == false)
 			{
-				slog(EVERY,"@{bold}No second-source differences found between %s and %s@{reset}\n",
-					config->db_file_names[0],
-					config->db_file_names[1]);
+				slog(EVERY,"@{bold}No second-source differences found between %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 			}
 		}
 
 		if(verify_checksum_consistency == true && checksum_mismatches_found == false)
 		{
-			slog(EVERY,"@{bold}All SHA512 checksums of files are identical against %s and %s@{reset}\n",
-				config->db_file_names[0],
-				config->db_file_names[1]);
+			slog(EVERY,"@{bold}All SHA512 checksums of files are identical against %s and %s@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 		}
 
 		if(full_compare_scope == true
@@ -520,15 +511,11 @@ Return db_compare(void)
 		        && second_source_differences_found == false
 		        && checksum_mismatches_found == false)
 		{
-			slog(EVERY,"@{bold}The databases %s and %s are absolutely equal@{reset}\n",
-				config->db_file_names[0],
-				config->db_file_names[1]);
+			slog(EVERY,"@{bold}The databases %s and %s are absolutely equal@{reset}\n",config->db_file_names[0],config->db_file_names[1]);
 		}
 	}
 
-	slog(EVERY,"Comparison of %s and %s databases is complete\n",
-		config->db_file_names[0],
-		config->db_file_names[1]);
+	slog(EVERY,"Comparison of %s and %s databases is complete\n",config->db_file_names[0],config->db_file_names[1]);
 
 	provide(status);
 }

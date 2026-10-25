@@ -1026,31 +1026,22 @@ int main(void)
 	   Each styled fragment supplies its own explicit reset marker */
 	rational_color_mode = COLOR_MODE_ALWAYS;
 	printf("\nColors and text styles (always)\n");
-	slog(REGULAR|UNDECOR,"47. Colors: "
-		"@{black}black@{reset} @{gray}gray@{reset} @{red}red@{reset} "
-		"@{green}green@{reset} @{yellow}yellow@{reset} @{blue}blue@{reset} "
-		"@{magenta}magenta@{reset} @{cyan}cyan@{reset} @{white}white@{reset}\n");
+	slog(REGULAR|UNDECOR,"47. Colors: @{black}black@{reset} @{gray}gray@{reset} @{red}red@{reset} @{green}green@{reset} @{yellow}yellow@{reset} @{blue}blue@{reset} @{magenta}magenta@{reset} @{cyan}cyan@{reset} @{white}white@{reset}\n");
 	slog(REGULAR|UNDECOR,"48. Weight: @{bold}bold@{reset}, normal after reset\n");
-	slog(REGULAR|UNDECOR,"49. Bold colors: "
-		"@{boldblack}black@{reset} @{boldred}red@{reset} "
-		"@{boldgreen}green@{reset} @{boldyellow}yellow@{reset} "
-		"@{boldblue}blue@{reset} @{boldmagenta}magenta@{reset} "
-		"@{boldcyan}cyan@{reset} @{boldwhite}white@{reset}\n");
+	slog(REGULAR|UNDECOR,"49. Bold colors: @{boldblack}black@{reset} @{boldred}red@{reset} @{boldgreen}green@{reset} @{boldyellow}yellow@{reset} @{boldblue}blue@{reset} @{boldmagenta}magenta@{reset} @{boldcyan}cyan@{reset} @{boldwhite}white@{reset}\n");
 	slog(REGULAR|UNDECOR,"50. Combined markers: @{bold}@{red}bold red@{reset}, plain text\n");
 
 	/* Markers are interpreted after printf arguments have been formatted.
 	   Unknown markers are ordinary text and remain visible */
 	printf("\nFormatted arguments and unknown markers (always)\n");
-	slog(REGULAR|UNDECOR,"51. Markup inside %%s: %s; number: %d\n",
-		"@{green}green argument@{reset}",7);
+	slog(REGULAR|UNDECOR,"51. Markup inside %%s: %s; number: %d\n","@{green}green argument@{reset}",7);
 	slog(REGULAR|UNDECOR,"52. Unknown marker stays visible: @{unknown}\n");
 
 	/* Sanitization preserves ordinary UTF-8 and makes raw ESC bytes visible.
 	   Raw terminal sequences from arguments are not trusted styling markers */
 	printf("\nTerminal-safe text (always)\n");
 	slog(REGULAR|UNDECOR,"53. UTF-8 stays readable: Привет 日本語 😀\n");
-	slog(REGULAR|UNDECOR,"54. Raw ESC stays visible: %s\n",
-		"\033[31mnot colored\033[0m");
+	slog(REGULAR|UNDECOR,"54. Raw ESC stays visible: %s\n","\033[31mnot colored\033[0m");
 
 	/* The demonstration callback prints the plain message before the logger
 	   writes its styled version, making both forms visible one after the other */

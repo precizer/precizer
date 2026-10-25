@@ -28,8 +28,7 @@ Return db_upgrade(
 
 	slog(EVERY,"The database %s file has an outdated version %d and requires updating to the version %d\n",db_file_name,*db_version,CURRENT_DB_VERSION);
 	slog(EVERY,"Warning! The update will be performed in transaction mode for database safety\n");
-	slog(EVERY,"Caution! After the update, the database file will not work correctly with old versions of %s. "
-		"Please update all copies of the application that will use the new database version!\n",APP_NAME);
+	slog(EVERY,"Caution! After the update, the database file will not work correctly with old versions of %s. Please update all copies of the application that will use the new database version!\n",APP_NAME);
 
 	if(config->update == false)
 	{

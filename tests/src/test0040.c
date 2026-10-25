@@ -16,10 +16,7 @@ static LOGMODES remembered_log_level = REGULAR | UNDECOR | REMEMBER;
  */
 static void capture_remembered_message(void)
 {
-	slog(remembered_log_level,
-		"@{bold}@{red}%s %zu@{reset}\n",
-		remembered_value,
-		(size_t)7U);
+	slog(remembered_log_level,"@{bold}@{red}%s %zu@{reset}\n",remembered_value,(size_t)7U);
 }
 
 /**
