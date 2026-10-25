@@ -671,7 +671,7 @@ precizer -g /path/to/task.conf
 ```ini
 ignore = "^cache/"
 ignore = "^tmp/"
-    "^build/"
+         "^build/"
 ```
 
 Здесь заданы три правила исключения. Непустая строка с отступом, кроме комментария, добавляет ещё одно значение к предыдущему ключу. Новые ключи записываются без отступа
@@ -729,8 +729,12 @@ precizer --progress --database=database1.db tests/fixtures/diffs/diff1
 ```
 
 <pre class="terminal-output">
-The database database1.db was previously created and already contains data with files and their checksums. Use the --update option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.
-ERROR: The precizer process terminated unexpectedly due to an error
+Primary database file name: database1.db
+Starting database file database1.db integrity check…
+Database database1.db has been verified and is in good condition
+The database database1.db was previously created and already contains data with files and their checksums. Use the <strong>--update</strong> option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.
+The precizer completed with warnings
+Exit status » WARNING
 </pre>
 
 Должен быть добавлен параметр **--update**. Этот параметр необходим для защиты базы данных от потери информации из-за случайного запуска.
@@ -744,9 +748,15 @@ Primary database file name: database1.db
 Starting database file database1.db integrity check…
 Database database1.db has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
-Total size: 45B, total items: 58, dirs: 46, files: 12, symlnks: 0
+Total traversal size: 48KiB
+Total items: 59
+Directories: 46
+Files: 12
+Symlinks: 1
+Searching for files that no longer exist on the file system…
+Missing file search finished
 <strong>The database file database1.db has NOT been modified since the program was launched</strong>
-The precizer completed its execution without any issues
+Exit status » SUCCESS
 </pre>
 
 Внесём некоторые изменения:
@@ -774,20 +784,36 @@ Primary database file name: database1.db
 Starting database file database1.db integrity check…
 Database database1.db has been verified and is in good condition
 File system traversal initiated to calculate file count and storage usage
-Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
-The <strong>--update</strong> option has been used, so the information about files will be updated against the database database1.db
-File traversal started
-<strong>These files have been added or changed and those changes will be reflected against the DB database1.db:</strong>
-1/AAA/BCB/CCC/a.txt changed lsize &amp; ctime &amp; mtime rehashed
-1/AAA/BCB/CCC/c.txt added
+Total traversal size: 44KiB
+Total items: 59
+Directories: 46
+Files: 12
+Symlinks: 1
+Update mode enabled for DB database1.db
+File traversal started for tests/fixtures/diffs/diff1
+<strong>Changes reported during this scan against the DB database1.db:</strong>
+<span class="output-rehashed">rehashed</span> 1/AAA/BCB/CCC/a.txt
+<span class="output-added">added as empty</span> 1/AAA/BCB/CCC/c.txt
 File traversal complete
-Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
-<strong>These files are no longer exist or ignored and will be deleted against the DB database1.db:</strong>
-path2/AAA/ZAW/D/e/f/b_file.txt
+Searching for files that no longer exist on the file system…
+<strong>Dropping DB records for missing or ignored paths in database1.db:</strong>
+<span class="output-deleted">dropped as missing</span> path2/AAA/ZAW/D/e/f/b_file.txt
+Missing file search finished
 Start vacuuming the primary database…
-The primary database has been vacuumed
+Primary DB vacuumed: saved 0.00%, elapsed 1ms
 <strong>The database file database1.db has been modified since the program was launched</strong>
-The precizer completed its execution without any issues
+Total runtime: 3ms 782μs 866ns
+Total traversal size: 44KiB
+Total items: 59
+Directories: 46
+Files: 12
+Symlinks: 1
+Scan time: 759μs
+Scan rate: 10KiB/s
+Hashing time: 2μs
+Hashing rate: 2MiB/s
+Hashed data: 8B
+Exit status » SUCCESS
 </pre>
 
 Метки изменений в выводе означают:
@@ -828,47 +854,55 @@ precizer --verbose --update --progress --database=database1.db tests/fixtures/di
 ```
 
 <pre class="terminal-output">
-2025-01-25 09:55:59:820 src/parse_arguments.c:442:parse_arguments:Configuration: rational_logger_mode=VERBOSE
-paths=tests/fixtures/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; force=no; update=yes; watch-timestamps=no; progress=yes; compare=no, db-drop-ignored=no, dry-run=no, check-level=FULL, rational_logger_mode=VERBOSE
-2025-01-25 09:55:59:820 src/parse_arguments.c:558:parse_arguments:Arguments parsed
-2025-01-25 09:55:59:820 src/detect_paths.c:025:detect_paths:Checking directory paths provided as arguments
-2025-01-25 09:55:59:820 src/file_availability.c:034:file_availability:Verify that the path tests/fixtures/diffs/diff1 exists
-2025-01-25 09:55:59:820 src/file_availability.c:053:file_availability:The path tests/fixtures/diffs/diff1 is exists and it is a directory
-2025-01-25 09:55:59:821 src/detect_paths.c:036:detect_paths:Paths detected
-2025-01-25 09:55:59:821 src/init_signals.c:034:init_signals:Set signal SIGUSR2 OK:pid:604770
-2025-01-25 09:55:59:821 src/init_signals.c:043:init_signals:Set signal SIGINT OK:pid:604770
-2025-01-25 09:55:59:821 src/init_signals.c:052:init_signals:Set signal SIGTERM OK:pid:604770
-2025-01-25 09:55:59:821 src/init_signals.c:055:init_signals:Signals initialized
-2025-01-25 09:55:59:821 src/db_determine_name.c:099:db_determine_name:Primary database file name: database1.db
-2025-01-25 09:55:59:821 src/db_determine_name.c:105:db_determine_name:Primary database file path: database1.db
-2025-01-25 09:55:59:821 src/db_determine_name.c:109:db_determine_name:DB name determined
-2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path . exists
-2025-01-25 09:55:59:821 src/file_availability.c:053:file_availability:The path . is exists and it is a directory
-2025-01-25 09:55:59:821 src/file_availability.c:034:file_availability:Verify that the path database1.db exists
-2025-01-25 09:55:59:821 src/file_availability.c:044:file_availability:The path database1.db is exists and it is a file
-2025-01-25 09:55:59:821 src/db_determine_mode.c:128:db_determine_mode:Final value for config-&gt;sqlite_open_flag: SQLITE_OPEN_READWRITE
-2025-01-25 09:55:59:821 src/db_determine_mode.c:129:db_determine_mode:Final value for config-&gt;db_initialize_tables: false
-2025-01-25 09:55:59:821 src/db_determine_mode.c:131:db_determine_mode:DB mode determined
-2025-01-25 09:55:59:821 src/db_test.c:061:db_test:Starting database file database1.db integrity check…
-2025-01-25 09:55:59:821 src/db_test.c:082:db_test:The database verification level has been set to FULL
-2025-01-25 09:55:59:821 src/db_test.c:126:db_test:Database database1.db has been verified and is in good condition
-2025-01-25 09:55:59:822 src/db_get_version.c:087:db_get_version:Version number 1 found in database
-2025-01-25 09:55:59:822 src/db_check_version.c:032:db_check_version:The database1.db database file is version 1
-2025-01-25 09:55:59:822 src/db_check_version.c:061:db_check_version:The database database1.db is on version 1 and does not require any upgrades
-2025-01-25 09:55:59:822 src/db_init.c:030:db_init:Successfully opened database database1.db
-2025-01-25 09:55:59:822 src/db_init.c:118:db_init:The primary database and tables have NOT been initialized
-2025-01-25 09:55:59:822 src/db_init.c:150:db_init:The primary database named database1.db is ready for operations
-2025-01-25 09:55:59:822 src/db_init.c:167:db_init:The in-memory runtime_paths_id database successfully attached to the primary database database1.db
-2025-01-25 09:55:59:822 src/db_init.c:174:db_init:Database initialization process completed
-2025-01-25 09:55:59:822 src/db_compare.c:136:db_compare:Database comparison mode is not enabled. Skipping comparison
-2025-01-25 09:55:59:822 src/db_contains_data.c:086:db_contains_data:The database database1.db has already been created previously
-2025-01-25 09:55:59:822 src/db_validate_paths.c:192:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
-2025-01-25 09:55:59:822 src/file_list.c:143:file_list:File system traversal initiated to calculate file count and storage usage
-2025-01-25 09:55:59:823 src/file_list.c:038:show_status:Total size: 43B, total items: 58, dirs: 46, files: 12, symlnks: 0
-2025-01-25 09:55:59:825 src/db_get_version.c:087:db_get_version:Version number 1 found in database
-2025-01-25 09:55:59:825 src/db_consider_vacuum_primary.c:025:db_consider_vacuum_primary:No changes were made. The primary database doesn't require vacuuming
-2025-01-25 09:55:59:825 src/status_of_changes.c:049:status_of_changes:<strong>The database file database1.db has NOT been modified since the program was launched</strong>
-2025-01-25 09:55:59:825 src/exit_status.c:027:exit_status:The precizer completed its execution without any issues
+2026-10-25 12:05:32:835 src/show_parse_diagnostics.c:241:show_verbose_diagnostics:Configuration: rational_logger_mode=VERBOSE
+roots=tests/fixtures/diffs/diff1; database=database1.db; db_file_name=database1.db; verbose=yes; maxdepth=-1; silent=no; quiet-ignored=no; force=no; update=yes; watch-timestamps=no; rehash-locked=no; progress=yes; compare=no, db-drop-ignored=no, db-drop-inaccessible=no, dry-run=no, one-file-system=no, check-level=FULL, rational_logger_mode=VERBOSE, color=auto
+2026-10-25 12:05:32:835 src/parse_arguments.c:837:parse_arguments:Argument parsing is finished
+2026-10-25 12:05:32:835 src/paths_detect.c:036:paths_detect:Checking directory paths provided as arguments
+2026-10-25 12:05:32:835 src/file_availability.c:029:file_availability:Verify that the path tests/fixtures/diffs/diff1 exists
+2026-10-25 12:05:32:835 src/file_availability.c:048:file_availability:The path tests/fixtures/diffs/diff1 is exists and it is a directory
+2026-10-25 12:05:32:835 src/paths_detect.c:060:paths_detect:Path detection is finished
+2026-10-25 12:05:32:835 src/init_signals.c:033:init_signals:Set signal SIGUSR2 OK:pid:664206
+2026-10-25 12:05:32:835 src/init_signals.c:042:init_signals:Set signal SIGINT OK:pid:664206
+2026-10-25 12:05:32:835 src/init_signals.c:051:init_signals:Set signal SIGTERM OK:pid:664206
+2026-10-25 12:05:32:835 src/init_signals.c:062:init_signals:Signals initialized
+2026-10-25 12:05:32:835 src/db_determine_name.c:084:db_determine_name:Primary database file name: database1.db
+2026-10-25 12:05:32:835 src/db_determine_name.c:087:db_determine_name:Primary database file path: database1.db
+2026-10-25 12:05:32:835 src/db_determine_name.c:090:db_determine_name:Finished determining database name
+2026-10-25 12:05:32:835 src/file_availability.c:029:file_availability:Verify that the path . exists
+2026-10-25 12:05:32:835 src/file_availability.c:048:file_availability:The path . is exists and it is a directory
+2026-10-25 12:05:32:835 src/file_availability.c:029:file_availability:Verify that the path database1.db exists
+2026-10-25 12:05:32:836 src/file_availability.c:040:file_availability:The path database1.db is exists and it is a file
+2026-10-25 12:05:32:836 src/db_determine_mode.c:146:db_determine_mode:Final value for config-&gt;sqlite_open_flag: SQLITE_OPEN_READWRITE
+2026-10-25 12:05:32:836 src/db_determine_mode.c:147:db_determine_mode:Final value for config-&gt;db_initialize_tables: false
+2026-10-25 12:05:32:836 src/db_determine_mode.c:149:db_determine_mode:DB mode determined
+2026-10-25 12:05:32:836 src/db_integrity_check.c:055:db_integrity_check:Starting database file database1.db integrity check…
+2026-10-25 12:05:32:836 src/db_integrity_check.c:077:db_integrity_check:The database verification level has been set to FULL
+2026-10-25 12:05:32:836 src/db_integrity_check.c:116:db_integrity_check:Database database1.db has been verified and is in good condition
+2026-10-25 12:05:32:837 src/db_retrieve_version.c:093:db_retrieve_version:Version number 4 found in database
+2026-10-25 12:05:32:837 src/db_check_version.c:052:db_check_version:The database1.db database file is version 4
+2026-10-25 12:05:32:837 src/db_check_version.c:075:db_check_version:The database database1.db is on version 4 and does not require any upgrades
+2026-10-25 12:05:32:837 src/db_init.c:040:db_init:Successfully opened database database1.db
+2026-10-25 12:05:32:837 src/db_init.c:142:db_init:The primary database and tables do not require initialization
+2026-10-25 12:05:32:837 src/db_init.c:176:db_init:The primary database named database1.db is ready for operations
+2026-10-25 12:05:32:837 src/db_init.c:208:db_init:The TEMP table the_path_id_does_not_exists is ready for runtime checks
+2026-10-25 12:05:32:837 src/db_init.c:216:db_init:Database initialization process completed
+2026-10-25 12:05:32:837 src/db_compare.c:316:db_compare:Database comparison mode is not enabled. Skipping comparison
+2026-10-25 12:05:32:837 src/db_contains_data.c:092:db_contains_data:The database database1.db has already been created previously
+2026-10-25 12:05:32:837 src/db_validate_paths.c:278:db_validate_paths:The paths written against the database and the paths passed as arguments are completely identical
+2026-10-25 12:05:32:837 src/file_list.c:154:file_list:File system traversal initiated to calculate file count and storage usage
+2026-10-25 12:05:32:838 src/show_statistics.c:093:show_statistics:Total traversal size: 44KiB
+2026-10-25 12:05:32:838 src/show_statistics.c:094:show_statistics:Total items: 59
+2026-10-25 12:05:32:838 src/show_statistics.c:095:show_statistics:Directories: 46
+2026-10-25 12:05:32:838 src/show_statistics.c:096:show_statistics:Files: 12
+2026-10-25 12:05:32:838 src/show_statistics.c:097:show_statistics:Symlinks: 1
+2026-10-25 12:05:32:839 src/db_delete_missing_metadata.c:203:db_delete_missing_metadata:Searching for files that no longer exist on the file system…
+2026-10-25 12:05:32:839 src/db_delete_missing_metadata.c:629:db_delete_missing_metadata:Missing file search finished
+2026-10-25 12:05:32:839 src/db_close.c:077:db_close:The database connection has been closed
+2026-10-25 12:05:32:839 src/db_primary_consider_vacuum.c:033:db_primary_consider_vacuum:No changes were made. The primary database doesn't require vacuuming
+2026-10-25 12:05:32:839 src/db_check_changes.c:073:db_check_changes:<strong>The database file database1.db has NOT been modified since the program was launched</strong>
+2026-10-25 12:05:32:839 src/exit_status.c:030:exit_status:The precizer completed as expected
+2026-10-25 12:05:32:839 src/exit_status.c:032:exit_status:Exit status » SUCCESS
+2026-10-25 12:05:32:839 src/exit_status.c:033:exit_status:Enjoy your life!
 </pre>
 
 ### Пример 5
@@ -886,7 +920,7 @@ tests/fixtures/4
 │   └── tttt.txt
 └── sss.txt
 
-3 directories, 4 files
+4 directories, 4 files
 ```
 
 Параметр `--maxdepth` со значением `=0` полностью отключает рекурсию.
@@ -900,15 +934,25 @@ Primary database file name: myhost.db
 The path myhost.db doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
 Recursion depth limited to: 0
-File traversal started
-<strong>These files will be added against the myhost.db database:</strong>
-sss.txt
+File traversal started for tests/fixtures/4
+<strong>Items reported during this traversal against the DB myhost.db:</strong>
+<span class="output-added">added</span> sss.txt
 File traversal complete
-Total size: 2B, total items: 5, dirs: 4, files: 1, symlnks: 0
 Start vacuuming the primary database…
-The primary database has been vacuumed
-<strong>The database myhost.db has been modified since the last check (files were added, removed, or updated)</strong>
-The precizer completed its execution without any issues
+Primary DB vacuumed: saved -11.11%, elapsed 895μs
+<strong>The brand-new primary database file myhost.db was created and modified since the program started (files were added, removed, or updated)</strong>
+Total runtime: 2ms 288μs 525ns
+Total traversal size: 4KiB
+Total items: 3
+Directories: 2
+Files: 1
+Symlinks: 0
+Scan time: 248μs
+Scan rate: 7KiB/s
+Hashing time: 1μs
+Hashing rate: 1MiB/s
+Hashed data: 2B
+Exit status » SUCCESS
 </pre>
 
 ### Пример 6
@@ -950,7 +994,7 @@ tests/fixtures/diffs
     └── path2
         └── AAA
 
-26 directories, 0 files
+27 directories, 0 files
 ```
 
 ```sh
@@ -963,39 +1007,46 @@ precizer --ignore="^diff1/1/.*" tests/fixtures/diffs
 Primary database file name: myhost.db
 The path myhost.db doesn't exist or it is not a file
 The primary DB file not yet exists. Brand new database will be created
-File traversal started
-<strong>These files will be added against the myhost.db database:</strong>
-diff1/1/AAA/BCB/CCC/a.txt <strong>ignored &amp; not added</strong>
-diff1/1/AAA/ZAW/A/b/c/a_file.txt <strong>ignored &amp; not added</strong>
-diff1/1/AAA/ZAW/D/e/f/b_file.txt <strong>ignored &amp; not added</strong>
-diff1/2/AAA/BBB/CZC/a.txt
-diff1/3/AAA/BBB/CCC/a.txt
-diff1/4/AAA/BBB/CCC/a.txt
-diff1/path1/AAA/BCB/CCC/a.txt
-diff1/path1/AAA/ZAW/A/b/c/a_file.txt
-diff1/path1/AAA/ZAW/D/e/f/b_file.txt
-diff1/path2/AAA/BCB/CCC/a.txt
-diff1/path2/AAA/ZAW/A/b/c/a_file.txt
-diff1/path2/AAA/ZAW/D/e/f/b_file.txt
-diff2/1/AAA/BCB/CCC/a.txt
-diff2/1/AAA/ZAW/A/b/c/a_file.txt
-diff2/1/AAA/ZAW/D/e/f/b_file.txt
-diff2/2/AAA/BBB/CZC/a.txt
-diff2/3/AAA/BBB/CCC/a.txt
-diff2/4/AAA/BBB/CCC/a.txt
-diff2/path1/AAA/BCB/CCC/a.txt
-diff2/path1/AAA/BCB/CCC/b.txt
-diff2/path1/AAA/ZAW/A/b/c/a_file.txt
-diff2/path1/AAA/ZAW/D/e/f/b_file.txt
-diff2/path2/AAA/BCB/CCC/a.txt
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt
+File traversal started for tests/fixtures/diffs
+<strong>Items reported during this traversal against the DB myhost.db:</strong>
+<span class="output-ignored">ignored directory</span> diff1/1/AAA
+<span class="output-added">added</span> diff1/2/AAA/BBB/CZC/a.txt
+<span class="output-added">added</span> diff1/3/AAA/BBB/CCC/a.txt
+<span class="output-added">added</span> diff1/4/AAA/BBB/CCC/a.txt
+<span class="output-added">added</span> diff1/path1/AAA/BCB/CCC/a.txt
+<span class="output-added">added</span> diff1/path1/AAA/ZAW/A/b/c/a_file.txt
+<span class="output-added">added</span> diff1/path1/AAA/ZAW/D/e/f/b_file.txt
+<span class="output-added">added</span> diff1/path2/AAA/BCB/CCC/a.txt
+<span class="output-added">added</span> diff1/path2/AAA/ZAW/A/b/c/a_file.txt
+<span class="output-added">added</span> diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+<span class="output-added">added</span> diff2/1/AAA/BCB/CCC/a.txt
+<span class="output-added">added</span> diff2/1/AAA/ZAW/A/b/c/a_file.txt
+<span class="output-added">added</span> diff2/1/AAA/ZAW/D/e/f/b_file.txt
+<span class="output-added">added</span> diff2/2/AAA/BBB/CZC/a.txt
+<span class="output-added">added</span> diff2/3/AAA/BBB/CCC/a.txt
+<span class="output-added">added</span> diff2/4/AAA/BBB/CCC/a.txt
+<span class="output-added">added</span> diff2/path1/AAA/BCB/CCC/a.txt
+<span class="output-added">added</span> diff2/path1/AAA/BCB/CCC/b.txt
+<span class="output-added">added</span> diff2/path1/AAA/ZAW/A/b/c/a_file.txt
+<span class="output-added">added</span> diff2/path1/AAA/ZAW/D/e/f/b_file.txt
+<span class="output-added">added</span> diff2/path2/AAA/BCB/CCC/a.txt
+<span class="output-added">added</span> diff2/path2/AAA/ZAW/A/b/c/a_file.txt
 File traversal complete
-Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0
 Start vacuuming the primary database…
-The primary database has been vacuumed
-<strong>The database myhost.db has been modified since the last check (files were added, removed, or updated)</strong>
-The precizer completed its execution without any issues
-Enjoy your life!
+Primary DB vacuumed: saved -11.11%, elapsed 1ms
+<strong>The brand-new primary database file myhost.db was created and modified since the program started (files were added, removed, or updated)</strong>
+Total runtime: 4ms 444μs 867ns
+Total traversal size: 84KiB
+Total items: 102
+Directories: 80
+Files: 21
+Symlinks: 1
+Scan time: 1ms
+Scan rate: 48KiB/s
+Hashing time: 28μs
+Hashing rate: 2MiB/s
+Hashed data: 86B
+Exit status » SUCCESS
 </pre>
 
 Повторим тот же пример, но без опции `--ignore`, чтобы добавить три ранее проигнорированных файла:
@@ -1008,18 +1059,30 @@ precizer --update tests/fixtures/diffs
 Primary database file name: myhost.db
 Starting database file myhost.db integrity check…
 Database myhost.db has been verified and is in good condition
-The <strong>--update</strong> option has been used, so the information about files will be updated against the database myhost.db
-File traversal started
-<strong>These files have been added or changed and those changes will be reflected against the DB myhost.db:</strong>
-diff1/1/AAA/BCB/CCC/a.txt add
-diff1/1/AAA/ZAW/A/b/c/a_file.txt add
-diff1/1/AAA/ZAW/D/e/f/b_file.txt add
+Update mode enabled for DB myhost.db
+File traversal started for tests/fixtures/diffs
+<strong>Changes reported during this scan against the DB myhost.db:</strong>
+<span class="output-added">added</span> diff1/1/AAA/BCB/CCC/a.txt
+<span class="output-added">added</span> diff1/1/AAA/ZAW/A/b/c/a_file.txt
+<span class="output-added">added</span> diff1/1/AAA/ZAW/D/e/f/b_file.txt
 File traversal complete
-Total size: 97B, total items: 114, dirs: 90, files: 24, symlnks: 0
+Searching for files that no longer exist on the file system…
+Missing file search finished
 Start vacuuming the primary database…
-The primary database has been vacuumed
+Primary DB vacuumed: saved 0.00%, elapsed 729μs
 <strong>The database file myhost.db has been modified since the program was launched</strong>
-The precizer completed its execution without any issues
+Total runtime: 2ms 756μs 88ns
+Total traversal size: 96KiB
+Total items: 115
+Directories: 90
+Files: 24
+Symlinks: 1
+Scan time: 912μs
+Scan rate: 11KiB/s
+Hashing time: 4μs
+Hashing rate: 2MiB/s
+Hashed data: 11B
+Exit status » SUCCESS
 </pre>
 
 ### Пример 7
@@ -1049,18 +1112,36 @@ precizer \
 Primary database file name: myhost.db
 Starting database file myhost.db integrity check…
 Database myhost.db has been verified and is in good condition
-The <strong>--update</strong> option has been used, so the information about files will be deleted against the database myhost.db
-<strong>These files are no longer exist or ignored and will be deleted against the DB myhost.db:</strong>
-diff1/1/AAA/BCB/CCC/a.txt <strong>clean ignored</strong>
-diff1/1/AAA/ZAW/A/b/c/a_file.txt <strong>clean ignored</strong>
-diff1/1/AAA/ZAW/D/e/f/b_file.txt <strong>clean ignored</strong>
-diff2/1/AAA/BCB/CCC/a.txt <strong>clean ignored</strong>
-diff2/1/AAA/ZAW/A/b/c/a_file.txt <strong>clean ignored</strong>
-diff2/1/AAA/ZAW/D/e/f/b_file.txt <strong>clean ignored</strong>
+Update mode enabled for DB myhost.db
+File traversal started for tests/fixtures/diffs
+<strong>Changes reported during this scan against the DB myhost.db:</strong>
+<span class="output-ignored">ignored directory</span> diff1/1/AAA
+<span class="output-ignored">ignored directory</span> diff2/1/AAA
+File traversal complete
+Searching for files that no longer exist on the file system…
+<strong>Dropping DB records for missing or ignored paths in myhost.db:</strong>
+<span class="output-deleted">dropped as ignored</span> diff1/1/AAA/BCB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff1/1/AAA/ZAW/A/b/c/a_file.txt
+<span class="output-deleted">dropped as ignored</span> diff1/1/AAA/ZAW/D/e/f/b_file.txt
+<span class="output-deleted">dropped as ignored</span> diff2/1/AAA/BCB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff2/1/AAA/ZAW/A/b/c/a_file.txt
+<span class="output-deleted">dropped as ignored</span> diff2/1/AAA/ZAW/D/e/f/b_file.txt
+Missing file search finished
 Start vacuuming the primary database…
-The primary database has been vacuumed
+Primary DB vacuumed: saved 16.67%, elapsed 671μs
 <strong>The database file myhost.db has been modified since the program was launched</strong>
-The precizer completed its execution without any issues
+Total runtime: 2ms 713μs 359ns
+Total traversal size: 72KiB
+Total items: 89
+Directories: 70
+Files: 18
+Symlinks: 1
+Scan time: 660μs
+Scan rate: n/a
+Hashing time: 0ns
+Hashing rate: n/a
+Hashed data: 0B
+Exit status » SUCCESS
 </pre>
 
 ### Пример 8
@@ -1105,24 +1186,109 @@ precizer --update \
 Primary database file name: myhost.db
 Starting database file myhost.db integrity check…
 Database myhost.db has been verified and is in good condition
-The <strong>--update</strong> option has been used, so the information about files will be deleted against the database myhost.db
-<strong>These files are no longer exist or ignored and will be deleted against the DB myhost.db:</strong>
-diff1/path2/AAA/BCB/CCC/a.txt clean ignored
-diff1/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored
-diff1/path2/AAA/ZAW/D/e/f/b_file.txt clean ignored
-diff2/1/AAA/BCB/CCC/a.txt clean ignored
-diff2/1/AAA/ZAW/D/e/f/b_file.txt clean ignored
-diff2/2/AAA/BBB/CZC/a.txt clean ignored
-diff2/3/AAA/BBB/CCC/a.txt clean ignored
-diff2/4/AAA/BBB/CCC/a.txt clean ignored
-diff2/path1/AAA/BCB/CCC/a.txt clean ignored
-diff2/path1/AAA/BCB/CCC/b.txt clean ignored
-diff2/path2/AAA/BCB/CCC/a.txt clean ignored
-diff2/path2/AAA/ZAW/A/b/c/a_file.txt clean ignored
+File system traversal initiated to calculate file count and storage usage
+Total traversal size: 96KiB
+Total items: 69
+Directories: 44
+Files: 24
+Symlinks: 1
+Update mode enabled for DB myhost.db
+File traversal started for tests/fixtures/diffs
+<strong>Changes reported during this scan against the DB myhost.db:</strong>
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/BCB
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/BCB/CCC
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/ZAW
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/ZAW/A
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/ZAW/A/b
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/ZAW/A/b/c
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/ZAW/D
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/ZAW/D/e
+<span class="output-ignored">ignored directory</span> diff1/path2/AAA/ZAW/D/e/f
+<span class="output-ignored">ignored directory</span> diff2/1
+<span class="output-ignored">ignored directory</span> diff2/1/AAA
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/BCB
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/BCB/CCC
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/ZAW
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/ZAW/A
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/ZAW/A/b
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/ZAW/A/b/c
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/ZAW/D
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/ZAW/D/e
+<span class="output-ignored">ignored directory</span> diff2/1/AAA/ZAW/D/e/f
+<span class="output-ignored">ignored directory</span> diff2/2
+<span class="output-ignored">ignored directory</span> diff2/2/AAA
+<span class="output-ignored">ignored directory</span> diff2/2/AAA/BBB
+<span class="output-ignored">ignored directory</span> diff2/2/AAA/BBB/CZC
+<span class="output-ignored">ignored directory</span> diff2/3
+<span class="output-ignored">ignored directory</span> diff2/3/AAA
+<span class="output-ignored">ignored directory</span> diff2/3/AAA/BBB
+<span class="output-ignored">ignored directory</span> diff2/3/AAA/BBB/CCC
+<span class="output-ignored">ignored directory</span> diff2/4
+<span class="output-ignored">ignored directory</span> diff2/4/AAA
+<span class="output-ignored">ignored directory</span> diff2/4/AAA/BBB
+<span class="output-ignored">ignored directory</span> diff2/4/AAA/BBB/CCC
+<span class="output-ignored">ignored directory</span> diff2/path1
+<span class="output-ignored">ignored directory</span> diff2/path1/AAA
+<span class="output-ignored">ignored directory</span> diff2/path1/AAA/BCB
+<span class="output-ignored">ignored directory</span> diff2/path1/AAA/BCB/CCC
+<span class="output-ignored">ignored directory</span> diff2/path1/AAA/ZAW
+<strong><span class="output-added">included directory</span></strong> diff2/path1/AAA/ZAW/A
+<strong><span class="output-added">included directory</span></strong> diff2/path1/AAA/ZAW/A/b
+<strong><span class="output-added">included directory</span></strong> diff2/path1/AAA/ZAW/A/b/c
+<strong><span class="output-added">included directory</span></strong> diff2/path1/AAA/ZAW/D
+<strong><span class="output-added">included directory</span></strong> diff2/path1/AAA/ZAW/D/e
+<strong><span class="output-added">included directory</span></strong> diff2/path1/AAA/ZAW/D/e/f
+<span class="output-ignored">ignored directory</span> diff2/path2
+<span class="output-ignored">ignored directory</span> diff2/path2/AAA
+<span class="output-ignored">ignored directory</span> diff2/path2/AAA/BCB
+<span class="output-ignored">ignored directory</span> diff2/path2/AAA/BCB/CCC
+<span class="output-ignored">ignored directory</span> diff2/path2/AAA/ZAW
+<span class="output-ignored">ignored directory</span> diff2/path2/AAA/ZAW/A
+<span class="output-ignored">ignored directory</span> diff2/path2/AAA/ZAW/A/b
+<span class="output-ignored">ignored directory</span> diff2/path2/AAA/ZAW/A/b/c
+File traversal complete
+Searching for files that no longer exist on the file system…
+<strong>Dropping DB records for missing or ignored paths in myhost.db:</strong>
+<span class="output-deleted">dropped as ignored</span> diff1/path2/AAA/BCB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+<span class="output-deleted">dropped as ignored</span> diff2/1/AAA/BCB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff2/1/AAA/ZAW/D/e/f/b_file.txt
+<span class="output-deleted">dropped as ignored</span> diff2/2/AAA/BBB/CZC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff2/3/AAA/BBB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff2/4/AAA/BBB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff2/path1/AAA/BCB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff2/path1/AAA/BCB/CCC/b.txt
+<span class="output-deleted">dropped as ignored</span> diff2/path2/AAA/BCB/CCC/a.txt
+<span class="output-deleted">dropped as ignored</span> diff2/path2/AAA/ZAW/A/b/c/a_file.txt
+Missing file search finished
+<strong>Warnings and errors encountered:</strong>
+dropped as ignored diff1/path2/AAA/BCB/CCC/a.txt
+dropped as ignored diff1/path2/AAA/ZAW/D/e/f/b_file.txt
+dropped as ignored diff2/1/AAA/BCB/CCC/a.txt
+dropped as ignored diff2/1/AAA/ZAW/D/e/f/b_file.txt
+dropped as ignored diff2/2/AAA/BBB/CZC/a.txt
+dropped as ignored diff2/3/AAA/BBB/CCC/a.txt
+dropped as ignored diff2/4/AAA/BBB/CCC/a.txt
+dropped as ignored diff2/path1/AAA/BCB/CCC/a.txt
+dropped as ignored diff2/path1/AAA/BCB/CCC/b.txt
+dropped as ignored diff2/path2/AAA/BCB/CCC/a.txt
+dropped as ignored diff2/path2/AAA/ZAW/A/b/c/a_file.txt
 Start vacuuming the primary database…
-The primary database has been vacuumed
+Primary DB vacuumed: saved 16.67%, elapsed 658μs
 <strong>The database file myhost.db has been modified since the program was launched</strong>
-The precizer completed its execution without any issues
+Total runtime: 3ms 656μs 611ns
+Total traversal size: 96KiB
+Total items: 69
+Directories: 44
+Files: 24
+Symlinks: 1
+Scan time: 1ms
+Scan rate: n/a
+Hashing time: 0ns
+Hashing rate: n/a
+Hashed data: 0B
+Exit status » SUCCESS
 </pre>
 
 #### Те же фильтры в режиме `--compare`
@@ -1212,7 +1378,7 @@ precizer --update --db-drop-inaccessible /mnt/storage
 ```
 
 <pre class="terminal-output">
-drop due to inaccessible archive/secret.bin
+<span class="output-deleted">dropped as inaccessible</span> archive/secret.bin
 </pre>
 
 Важно: `--db-drop-inaccessible` относится не к удалённым файлам, а к файлам, которые сейчас нельзя прочитать или для которых не удалось надёжно проверить доступ. Например, могли измениться права, владелец, ACL, или файловая система временно вернула ошибку доступа. По умолчанию такие записи остаются в БД, чтобы временная проблема с доступом не стёрла полезную историю. Если вы уверены, что такие записи больше не нужны, добавьте `--db-drop-inaccessible`.
@@ -1437,91 +1603,72 @@ NO_COLOR=1 precizer --compare first.db second.db
 
 ## АЛЬТЕРНАТИВЫ
 
-Альтернативы программе **precizer** с открытыми архитектурами и кодом. Больше альтернатив (актуально): [alternativeto.net](https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/)
+Инструменты с открытым исходным кодом для проверки целостности, сравнения файлов и резервного копирования. Другие программы: [alternativeto.net](https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/)
 
 * **AIDE** — [aide.github.io](https://aide.github.io/)
-  * Платформы/архитектуры: Linux/*BSD/macOS (x86_64, arm64 и др.)
-  * Написана на: C, поддерживается
-    * Можно выбирать/комбинировать разные хэш-алгоритмы и контролировать больше «не-хэш» атрибутов (ACL/xattr/SELinux и т.п.) на уровне правил.
-    * База/снимок — текстовый формат (опционально gzip), а не SQLite: хуже подходит для сложных выборок/аналитики по данным БД.
-    * Нет «докачки» прерванного хэширования внутри огромного файла: обычно перескан начинается заново.
+  * Назначение: контроль целостности файлов и каталогов для выявления изменений относительно эталонного состояния. Проверяет контрольные суммы, права, владельцев, размеры и временные метки. Поддержка ACL, расширенных атрибутов и SELinux зависит от сборки
+  * Платформы: Linux и другие Unix-подобные системы. Язык: C
+  * Правила включения и исключения задаются регулярными выражениями. База хранится в текстовом формате, доступно сжатие gzip
 
-* **Samhain** — [www.la-samhna.de/samhain](https://www.la-samhna.de/samhain/)
-  * Платформы/архитектуры: Linux/Unix/POSIX, Windows (x86_64, arm64 и др.)
-  * Написана на: C, поддерживается
-    * Встроенная модель «агент + центральный сервер» (централизованный сбор/контроль), что выходит за рамки «одна локальная БД».
-    * Упор на tamper-resistance (подписи/криптозащита части артефактов).
-    * Сильно более сложное развёртывание/сопровождение (агенты/сервер/ключи), если нужна просто быстрая сверка двух деревьев через SQLite.
+* **Samhain** — [la-samhna.de/samhain](https://www.la-samhna.de/samhain/)
+  * Назначение: обнаружение признаков вторжения на компьютерах и серверах. Проверяет целостность файлов, анализирует журналы и ищет признаки руткитов
+  * Платформы: Linux и другие POSIX-системы; Windows через Cygwin. Язык: C
+  * Работает как отдельно на одном компьютере, так и с центральным сервером. Поддерживает PGP-подписи баз и конфигурации
 
-* **OSSEC** — [www.ossec.net](https://www.ossec.net/)
-  * Платформы/архитектуры: Linux, Windows, macOS, *BSD (x86_64, arm64 и др.)
-  * Написана на: C, поддерживается
-    * Событийная/агентская HIDS-платформа: реально-временные алерты, правила, корреляция, реакция — это другой класс задач, чем «снимок+сверка».
-    * Централизованная архитектура из коробки.
-    * Не заточен под хранение «снимка файлов» именно в SQLite и под возобновление прерванного вычисления хэша внутри большого файла.
+* **OSSEC** — [ossec.net](https://www.ossec.net/)
+  * Назначение: обнаружение вторжений и реагирование на события безопасности компьютеров и серверов. Объединяет анализ журналов, проверку целостности файлов и централизованный сбор событий от агентов
+  * Платформы агентов: Linux, Windows, macOS, *BSD и другие Unix-системы. Основной язык: C
+  * Модуль [Syscheck](https://www.ossec.net/docs/docs/manual/syscheck/index.html) проверяет содержимое и атрибуты файлов. В Linux и Windows доступно отслеживание изменений содержимого в реальном времени; другие проверки выполняются при сканировании
 
 * **Open Source Tripwire** — [github.com/Tripwire/tripwire-open-source](https://github.com/Tripwire/tripwire-open-source)
-  * Платформы/архитектуры: POSIX-подобные ОС (Linux/macOS/*BSD/Solaris и т.п.), Windows через Cygwin (x86_64, arm64 и др.)
-  * Написана на: C++, последние изменения 8 лет назад
-    * Развитый policy-язык и практика подписания policy/конфигов/базы (цепочка доверия вокруг baseline).
-    * Нет SQLite-БД как «первичного формата данных» и нет возобновления прерванного хэширования внутри большого файла.
+  * Назначение: выявление изменений файлов и каталогов и уведомление об отличиях от эталонной базы. Политика задаёт пути и проверяемые свойства, включая контрольные суммы, права и владельцев
+  * Платформы: Linux, macOS, *BSD и другие POSIX-подобные системы; Windows через Cygwin. Язык: C++
+  * Конфигурация, политика и база подписываются ключами; отчёты также могут быть подписаны. Подтверждённые изменения можно выборочно внести в эталонную базу
 
 * **integrit** — [github.com/integrit/integrit](https://github.com/integrit/integrit)
-  * Платформы/архитектуры: Linux/*BSD (x86_64, arm64 и др.)
-  * Написана на: C, последние изменения 2 года назад
-    * Минимализм и малая зависимость от внешних библиотек (если вам важнее «маленькая утилита», чем SQL-модель данных).
-    * Не использует SQLite и, как следствие, хуже подходит для «жирных» выборок/сравнений/аналитики по снимкам.
+  * Назначение: проверка целостности файлов путём сравнения текущего состояния с эталонной базой. За тот же проход может создать новую базу состояния
+  * Платформы: Unix-подобные системы. Язык: C
+  * Использует формат cdb и контрольные суммы RIPEMD-160. Поддерживает правила для путей и вывод отчёта в XML
 
 * **mtree (NetBSD mtree)** — [man.netbsd.org/mtree.8](https://man.netbsd.org/mtree.8)
-  * Платформы/архитектуры: *BSD, Linux (x86_64, arm64 и др.)
-  * Написана на: C, последние изменения 18 лет назад
-    * Спецификация дерева (spec) — удобна в сценариях «эталонная раскладка/права/владельцы», где нужен именно декларативный формат.
-    * Очень старые изменения (практически «заморожено»).
-    * Формат/workflow «spec-файл», а не SQLite-снимок + быстрые SQL-сверки; нет возобновления прерванного хэширования внутри большого файла.
+  * Назначение: описание состава и свойств дерева каталогов и проверка файловой системы на соответствие этому описанию. Текстовая спецификация может содержать типы объектов, права, владельцев, размеры, временные метки и контрольные суммы, включая SHA-256 и SHA-512
+  * Вариант утилиты из NetBSD. Язык: C
+  * Может сравнивать две спецификации. По отдельным параметрам также исправляет права и владельцев или создаёт недостающие каталоги
 
 * **hashdeep (md5deep/sha*deep)** — [github.com/jessek/hashdeep](https://github.com/jessek/hashdeep)
-  * Платформы/архитектуры: Linux, Windows, macOS (x86_64, arm64 и др.)
-  * Написана на: C++/C, последние изменения 9 лет назад
-    * Выбор семейства хэшей/форматов вывода. Удобно, когда нужно соответствовать внешним требованиям/стандартам.
-    * Нет SQLite-снимка «как продукта»: результаты — это в основном файлы отчётов/листинги, а не БД для быстрых сравнений.
+  * Назначение: массовое вычисление контрольных сумм файлов и аудит наборов файлов по ранее сохранённым спискам хешей. Поддерживает рекурсивный обход каталогов
+  * Платформы: Windows и POSIX-системы, включая Linux и macOS. Языки: C++ и C
+  * Режим аудита сравнивает файлы с сохранённым списком и сообщает о несовпадениях, новых и отсутствующих файлах
 
 * **hashit** — [github.com/boyter/hashit](https://github.com/boyter/hashit)
-  * Платформы/архитектуры: Linux, Windows, macOS (x86_64, arm64 и др.)
-  * Написана на: Go, поддерживается
-    * Умеет считать несколько разных хэшей для одного файла за один проход.
-    * Нет SQLite-снимка и механизмов «обновления базы».
+  * Назначение: вычисление нескольких хешей файлов из командной строки. Поддерживает разные алгоритмы и параллельную обработку файлов
+  * Платформы: Linux, Windows, macOS. Язык: Go
+  * Поддерживает текстовый вывод, JSON, форматы sum и hashdeep, а также SQLite. Режим `--audit` проверяет файлы по списку в формате hashdeep
 
 * **RHash** — [github.com/rhash/RHash](https://github.com/rhash/RHash)
-  * Платформы/архитектуры: Linux, Windows, macOS, *BSD (x86_64, arm64 и др.)
-  * Написана на: C, поддерживается
-    * Очень широкий набор алгоритмов/выходных форматов (включая магнет-ссылки и т.п.), если требуется совместимость с внешними экосистемами.
-    * Не делает SQLite-снимок дерева как первичную сущность (скорее «посчитал/проверил хэши», чем «веду БД снимков»).
+  * Назначение: вычисление и проверка контрольных сумм для контроля целостности данных при хранении и передаче. Поддерживает рекурсивный обход и несколько алгоритмов за один проход
+  * Платформы: Linux, Windows, macOS и другие Unix-системы. Язык: C
+  * Работает со списками контрольных сумм в разных форматах, включая SFV и BSD, создаёт magnet-ссылки и дополняет списки сумм записями о новых файлах
 
 * **rsync** — [rsync.samba.org](https://rsync.samba.org/)
-  * Платформы/архитектуры: Linux, *BSD, macOS (x86_64, arm64 и др.), Windows через Cygwin/MSYS2
-  * Написана на: C, поддерживается
-    * Это одновременно и перенос/синхронизация, и проверка: можно сразу «исправлять расхождения», а не только выявлять их.
-    * Контрольные суммы не сохраняются между запусками: при обрывах/повторных проверках пересчёт начинается заново
+  * Назначение: копирование и синхронизация файлов локально или между компьютерами с сокращением объёма передачи за счёт передачи различий. По умолчанию необходимость передачи определяется по размеру и времени изменения; `--checksum` включает сравнение содержимого по контрольным суммам
+  * Платформы: Unix-подобные системы; Windows через Cygwin. Основной язык: C
+  * `--dry-run` показывает предполагаемые изменения без копирования. Параметры [`--partial` и `--partial-dir`](https://download.samba.org/pub/rsync/rsync.1#opt--partial) сохраняют частично переданные файлы для повторного использования при следующем запуске
 
 * **rclone** — [rclone.org](https://rclone.org/)
-  * Платформы/архитектуры: Linux, Windows, macOS, *BSD (amd64/arm/arm64 и др.)
-  * Написана на: Go, поддерживается
-    * Ориентирован на удалённые/облачные хранилища: S3/Drive/etc.
-    * Не делает локальный SQLite-снимок дерева для быстрых офлайн-сверок A↔B.
-    * Проверка целостности часто зависит от возможностей конкретного backend’а (какие хэши/метаданные он вообще отдаёт).
+  * Назначение: управление файлами в облачных и других удалённых хранилищах, а также обмен данными между ними и локальными каталогами. Поддерживает копирование, синхронизацию и проверку файлов
+  * Платформы: Linux, Windows, macOS, FreeBSD и другие системы. Язык: Go
+  * [`rclone check`](https://rclone.org/commands/rclone_check/) сравнивает размеры и доступные хеши без изменения файлов. С `--download` читает и сравнивает содержимое, в том числе когда хранилище не предоставляет хеши
 
-* **QuickHash GUI** — [www.quickhash-gui.org](https://www.quickhash-gui.org/)
-  * Платформы/архитектуры: Linux, Windows, macOS (x86_64; macOS arm64)
-  * Написана на: FreePascal (Lazarus), последние изменения 2 года назад
-    * GUI-only ориентированный инструмент и «комбайн» под разные носители/артефакты (например, сценарии форензики), где CLI-снапшоты не всегда удобны.
-    * Не использует SQLite-снимок дерева как ядро workflow.
+* **QuickHash GUI** — [github.com/tedsmith/quickhash](https://github.com/tedsmith/quickhash)
+  * Назначение: вычисление хешей и сравнение данных через графический интерфейс. Работает с файлами, каталогами, дисками и образами E01, сравнивает два файла или два каталога и копирует файлы с вычислением хешей
+  * Платформы: Linux, Windows, macOS. Язык: Free Pascal, среда разработки Lazarus
+  * Использует SQLite для рабочих таблиц результатов. Поддерживает экспорт результатов в CSV и HTML, описанный в [журнале изменений](https://github.com/tedsmith/quickhash/blob/master/CHANGELOG.md)
 
 * **restic** — [restic.net](https://restic.net/)
-  * Платформы/архитектуры: Linux, Windows, macOS, *BSD (x86_64, arm64 и др.)
-  * Написана на: Go, поддерживается
-    * Репозиторий бэкапов со снапшотами, дедупликацией и шифрованием — если цель «хранить историю и переносить её», это сильнее, чем просто сравнить два дерева.
-    * Другой подход: chunk/dedup-модель вместо «SQLite-снимок дерева + сверка»; для задачи чистой сверки A↔B может быть избыточен.
-    * Не дает «прямой» модели сравнения двух локальных деревьев через одну SQL-БД
+  * Назначение: резервное копирование и восстановление файлов с хранением истории снимков. Использует шифрование и дедупликацию; в репозитории сохраняются содержимое файлов и метаданные
+  * Платформы: Linux, Windows, macOS, *BSD. Язык: Go
+  * [`restic diff`](https://restic.readthedocs.io/en/stable/040_backup.html#comparing-snapshots) сравнивает два сохранённых снимка, показывая добавленные, удалённые и изменённые файлы. Параметр `--metadata` также включает сравнение метаданных
 
 ## АВТОР
 Автор приложения [Денис Владимирович Разумовский](https://github.com/dennisrazumovsky)
