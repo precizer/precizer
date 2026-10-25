@@ -37,7 +37,7 @@ int exit_status(
 			   Keep the error diagnostic when FAILURE is also present */
 			if((WARNING & status) != 0 && (FAILURE & status) == 0)
 			{
-				slog(EVERY,"The %s completed with warnings\n",application_file_name);
+				slog(TRACE,"The %s completed with warnings\n",application_file_name);
 			} else {
 				slog(ERROR,"The %s process terminated unexpectedly due to an error\n",application_file_name);
 			}

@@ -735,7 +735,6 @@ Primary database file name: database1.db
 Starting database file database1.db integrity check…
 Database database1.db has been verified and is in good condition
 The database database1.db was previously created and already contains data with files and their checksums. Use the <strong>--update</strong> option only when you are certain that the database needs to be updated and when file information (including changes, deletions, and additions) should be synchronized with the database.
-The precizer completed with warnings
 Exit status » WARNING
 </pre>
 
