@@ -75,7 +75,7 @@ static int read_config_entry(
 	   On a match, convert flag values and apply the setting, then return.
 	   Reaching the end without a match produces the unknown-key error below */
 	for(size_t i = 0; options[i].name != NULL || options[i].key != 0 ||
-	    options[i].doc != NULL || options[i].group != 0; i++)
+	        options[i].doc != NULL || options[i].group != 0; i++)
 	{
 		/* Aliases inherit the argument requirements of their primary option.
 		   Match the alias's own name below while retaining the primary entry */

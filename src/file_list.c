@@ -74,7 +74,7 @@ Return file_list(TraversalSummary *summary)
 	/* Skip preliminary counting when progress is disabled or compact output
 	   makes it unnecessary. The main file-processing pass is unaffected */
 	if(summary->stats_only_pass == true
-	   && (config->progress == false || config->output != OUTPUT_FULL))
+	        && (config->progress == false || config->output != OUTPUT_FULL))
 	{
 		provide(status);
 	}
