@@ -34,7 +34,7 @@ A tiny, high-performance application for verifying file integrity
 		- [Filtering comparison report categories](#filtering-comparison-report-categories)
 	- [Selecting files and traversal depth](#selecting-files-and-traversal-depth)
 	- [Output formats](#output-formats)
-	- [Output detail](#output-detail)
+	- [Output types](#output-types)
 	- [Color and text styling](#color-and-text-styling)
 - [Troubleshooting](#troubleshooting)
 - [Alternatives](#alternatives)
@@ -1523,7 +1523,7 @@ Database comparisons produce lines such as:
 <span class="output-mismatch">mismatch</span> notes/report.txt
 </pre>
 
-### Output detail
+### Output types
 
 - `--progress`, `-p` — Show processing progress and data volume. To estimate progress, the program first performs an additional traversal and counts files
 
