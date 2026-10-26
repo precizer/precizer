@@ -66,7 +66,7 @@ A tiny, high-performance application for verifying file integrity
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/precizer/precizer/badge)](https://scorecard.dev/viewer/?uri=github.com/precizer/precizer)
 
 ### Bages
-<a href='https://www.saashub.com/precizer?utm_source=badge&utm_campaign=badge&utm_content=precizer&badge_variant=neutral&badge_kind=approved' target='_blank'><img src="https://cdn-b.saashub.com/img/badges/approved-neutral.png?v=1" alt="precizer badge" style="max-width: 50px;"/></a>
+<a href='https://www.saashub.com/precizer?utm_source=badge&utm_campaign=badge&utm_content=precizer&badge_variant=neutral&badge_kind=approved' target='_blank'><img src="https://cdn-b.saashub.com/img/badges/approved-neutral.png?v=1" alt="precizer badge"  width="50" height="16" style="width: 50px; height: 16px;" /></a>
 <a href="https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/about/?utm_source=badge&utm_medium=referral" target="_blank"><img src="https://alternativeto.net/static/badges/badge-compact-light.svg" alt="precizer | AlternativeTo" width="50" height="16" style="width: 50px; height: 16px;" /></a>
 
 ## ABOUT THE PROGRAM
