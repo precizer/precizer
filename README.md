@@ -66,7 +66,7 @@ A tiny, high-performance application for verifying file integrity
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/precizer/precizer/badge)](https://scorecard.dev/viewer/?uri=github.com/precizer/precizer)
 
 ### Bages
-<a href='https://www.saashub.com/precizer?utm_source=badge&utm_campaign=badge&utm_content=precizer&badge_variant=neutral&badge_kind=approved' target='_blank'><img src="https://cdn-b.saashub.com/img/badges/approved-neutral.png?v=1" alt="precizer badge" style="max-width: 50px;"/></a>
+<a href='https://www.saashub.com/precizer?utm_source=badge&utm_campaign=badge&utm_content=precizer&badge_variant=neutral&badge_kind=approved' target='_blank'><img src="https://cdn-b.saashub.com/img/badges/approved-neutral.png?v=1" alt="precizer badge"  width="50" height="16" style="width: 50px; height: 16px;" /></a>
 <a href="https://alternativeto.net/software/precizer-verify-file-checksums-at-scale/about/?utm_source=badge&utm_medium=referral" target="_blank"><img src="https://alternativeto.net/static/badges/badge-compact-light.svg" alt="precizer | AlternativeTo" width="50" height="16" style="width: 50px; height: 16px;" /></a>
 
 ## ABOUT THE PROGRAM
@@ -1476,12 +1476,12 @@ In `--compare` mode, `--ignore` and `--include` limit the relative-path scope us
 The `--output` (`-O`) option selects the output format:
 
 - `full` — detailed output with headings, explanations, and summaries. This is the default
-- `compact` — concise file messages without headings, progress, or summary statistics
+- `compact` — concise output suited to generating automated reports: file messages without headings, progress, or summary statistics
 - `machine` — the same concise output for parsing by scripts, with color disabled by default
 
 In `full` and `compact` modes, terminal output uses color to improve readability. The `machine` mode is intended for parsing by scripts, which does not require highlighting, so it outputs plain text without color by default
 
-Example command:
+Example of generating a compact report:
 
 ```sh
 precizer --output=compact --database=files.db /data
