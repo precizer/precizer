@@ -1476,12 +1476,12 @@ In `--compare` mode, `--ignore` and `--include` limit the relative-path scope us
 The `--output` (`-O`) option selects the output format:
 
 - `full` — detailed output with headings, explanations, and summaries. This is the default
-- `compact` — concise file messages without headings, progress, or summary statistics
+- `compact` — concise output suited to generating automated reports: file messages without headings, progress, or summary statistics
 - `machine` — the same concise output for parsing by scripts, with color disabled by default
 
 In `full` and `compact` modes, terminal output uses color to improve readability. The `machine` mode is intended for parsing by scripts, which does not require highlighting, so it outputs plain text without color by default
 
-Example command:
+Example of generating a compact report:
 
 ```sh
 precizer --output=compact --database=files.db /data
