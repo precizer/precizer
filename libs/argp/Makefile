@@ -52,12 +52,16 @@ WFLAGS += -Wswitch-default -Wtrigraphs
 WFLAGS += -Wfloat-equal
 #WFLAGS += -Wundef
 # Upstream sources intentionally cast away const qualifiers
-WFLAGS += -Wbad-function-cast -Wcast-align
+WFLAGS += -Wbad-function-cast
+#WFLAGS += -Wcast-align
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
 # Extra warnings enabled only for GCC
 ifneq ($(GCC),)
 WFLAGS += -Wlogical-op
+endif
+ifeq ($(COMPILER),clang)
+WFLAGS += -Wno-incompatible-pointer-types-discards-qualifiers
 endif
 
 #
