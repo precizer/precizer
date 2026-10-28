@@ -50,6 +50,14 @@
 
 BUILDDIR = .builds
 ZIP_DIR = $(BUILDDIR)/zip
+ZIP_STAGE_DIRS = $(ZIP_DIR) $(PROD_ZIP_DIR) $(DYN_PROD_ZIP_DIR)
+ZIP_VERSION_DIRS = $(addsuffix /v$(APP_VERSION),$(ZIP_STAGE_DIRS))
+ZIP_STAGE_FILES = $(addsuffix /$(EXE),$(ZIP_VERSION_DIRS)) \
+	$(ZIP_DIR)/v$(APP_VERSION)/$(EXE).exe \
+	$(ZIP_DIR)/v$(APP_VERSION)/msys-2.0.dll
+CACHEGRIND_OUTPUT = $(BUILDDIR)/cachegrind.out
+CALLGRIND_OUTPUT = $(BUILDDIR)/callgrind.out
+MASSIF_OUTPUT = $(BUILDDIR)/massif.out
 APP_VERSION := $(shell awk -F '"' '/define APP_VERSION / {print $$2}' src/version.h)
 # Returns a concise path for build messages.
 # Plain file names stay unchanged; nested paths keep only final-directory/file
@@ -335,6 +343,7 @@ endif
 PROD_DIR = $(BUILDDIR)/production
 PROD_LIBDIR = $(PROD_DIR)/libs
 PROD_OBJDIR = $(PROD_DIR)/obj
+PROD_ZIP_DIR = $(PROD_DIR)/zip
 PROD_LDPATH = -L$(PROD_LIBDIR) $(LDPATH)
 PROD_EXE = $(PROD_DIR)/$(EXE)
 PROD_OBJS = $(addprefix $(PROD_OBJDIR)/, $(notdir $(OBJS)))
@@ -369,12 +378,14 @@ endif
 # Dynamic production build settings
 #
 DYN_PROD_DIR = $(BUILDDIR)/dynamic-production
+DYN_PROD_LIBDIR = $(DYN_PROD_DIR)/libs
 DYN_PROD_OBJDIR = $(DYN_PROD_DIR)/obj
+DYN_PROD_ZIP_DIR = $(DYN_PROD_DIR)/zip
 DYN_PROD_LDPATH = $(LDPATH)
 DYN_PROD_EXE = $(DYN_PROD_DIR)/$(EXE)
 DYN_PROD_OBJS = $(addprefix $(DYN_PROD_OBJDIR)/, $(notdir $(OBJS)))
 DYN_PROD_LIB_SRCS = $(foreach lib,$(STATLIBS),$(wildcard libs/$(lib)/src/*.c))
-DYN_PROD_LIB_OBJS = $(foreach lib,$(STATLIBS),$(PROD_LIBDIR)/obj/$(lib)/*.o)
+DYN_PROD_LIB_OBJS = $(foreach lib,$(STATLIBS),$(DYN_PROD_LIBDIR)/obj/$(lib)/*.o)
 # Callers may replace these defaults through DYN_PROD_OPT_CFLAGS and
 # DYN_PROD_OPT_LDFLAGS. Dynamic production optimization flags follow CFLAGS
 # and LDFLAGS and win conflicts
@@ -583,12 +594,12 @@ banner-production: production-done
 	@$(BUILD_USAGE_BANNER)
 
 prodfinal: $(PROD_EXE)
-	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
-	@cp "$(PROD_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
-	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
-	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@mkdir -p "$(PROD_ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(PROD_EXE)" "$(PROD_ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(PROD_ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(PROD_ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
 	@rm -f "$(EXE).zip"
-	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@cd "$(PROD_ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
 	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
 	@echo "Created $(EXE).zip"
 
@@ -622,17 +633,18 @@ banner-dynamic-production: dynprodfinal
 	@$(BUILD_USAGE_BANNER)
 
 dynprodfinal: dynamic-production-build
-	@mkdir -p "$(ZIP_DIR)/v$(APP_VERSION)"
-	@cp "$(DYN_PROD_EXE)" "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
-	@$(UPX) "$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
-	@"$(ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
+	@mkdir -p "$(DYN_PROD_ZIP_DIR)/v$(APP_VERSION)"
+	@cp "$(DYN_PROD_EXE)" "$(DYN_PROD_ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@$(UPX) "$(DYN_PROD_ZIP_DIR)/v$(APP_VERSION)/$(EXE)"
+	@"$(DYN_PROD_ZIP_DIR)/v$(APP_VERSION)/$(EXE)" --version
 	@rm -f "$(EXE).zip"
-	@cd "$(ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
+	@cd "$(DYN_PROD_ZIP_DIR)" && zip -q -9 -MM "$(abspath $(EXE).zip)" "v$(APP_VERSION)/$(EXE)"
 	@zip -q -9 -j -MM "$(EXE).zip" COPYING CHANGELOG.md README.ru.md README.md
 	@echo "Created $(EXE).zip"
 
+# Reuse production compilation settings with a separate library output directory
 dynprodlibs:
-	@$(MAKE) -s -C libs production SUBDIRS="$(STATLIBS)" BUILDDIR=../../$(BUILDDIR)
+	@$(MAKE) -s -C libs production SUBDIRS="$(STATLIBS)" BUILDDIR=../../$(BUILDDIR) PROD=dynamic-production
 
 $(DYN_PROD_EXE): $(DYN_PROD_OBJS) dynprodlibs
 	@$(CC) $(LDFLAGS) $(STRIP) $(DYN_PROD_LDPATH) $(DYN_PROD_LDFLAGS) -o $@ $(DYN_PROD_OBJS) $(DYN_PROD_LIB_OBJS) $(DYN_PROD_SHARED_LIBS)
@@ -741,14 +753,14 @@ $(PRTB_OBJDIR):
 clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 
-clean: | clean-preproc clean-asm clean-tests clean-compile-commands
+clean: | clean-preproc clean-asm clean-tests clean-libs clean-msys clean-compile-commands
 	@rm -f $(EXE).zip
 	@rm -f $(EXE)_windows_x64_portable.exe
-	@rm -f "$(ZIP_DIR)"/v*/*
-	@rm -f *.out.* doc
-	@rm -f $(DBG_EXE) $(DBG_DYN_EXE) $(COV_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYN_PROD_EXE) $(DIST_EXE)
-	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(DBG_DYN_OBJS) $(COV_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYN_PROD_OBJS) $(DIST_OBJS)
-	@rm -rf $(DIST_DIR)
+	@rm -f $(ZIP_STAGE_FILES)
+	@rm -d $(ZIP_VERSION_DIRS) $(ZIP_STAGE_DIRS) 2>/dev/null || true
+	@rm -f $(CACHEGRIND_OUTPUT) $(CALLGRIND_OUTPUT) $(MASSIF_OUTPUT)
+	@rm -f $(DBG_EXE) $(DBG_DYN_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYN_PROD_EXE) $(DIST_EXE) $(addsuffix .exe,$(DBG_EXE) $(DBG_DYN_EXE) $(SNTZ_EXE) $(PRTB_EXE) $(PROD_EXE) $(DYN_PROD_EXE) $(DIST_EXE))
+	@rm -f $(SNTZ_OBJS) $(DBG_OBJS) $(DBG_DYN_OBJS) $(PRTB_OBJS) $(PROD_OBJS) $(DYN_PROD_OBJS) $(DIST_OBJS)
 
 	@test -d $(DBG_LIBDIR)/obj && rm -d $(DBG_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
@@ -758,10 +770,7 @@ clean: | clean-preproc clean-asm clean-tests clean-compile-commands
 	@test -d $(DBG_DYN_OBJDIR) && rm -d $(DBG_DYN_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DYN_DIR) && rm -d $(DBG_DYN_DIR) 2>/dev/null || true
 
-	@test -d $(COV_LIBDIR)/obj && rm -d $(COV_LIBDIR)/obj 2>/dev/null || true
-	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
-	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
-	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
+	@rm -rf $(COV_DIR)
 
 	@test -d $(SNTZ_LIBDIR)/obj && rm -d $(SNTZ_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(SNTZ_LIBDIR) && rm -d $(SNTZ_LIBDIR) 2>/dev/null || true
@@ -774,6 +783,7 @@ clean: | clean-preproc clean-asm clean-tests clean-compile-commands
 	@test -d $(PROD_DIR) && rm -d $(PROD_DIR) 2>/dev/null || true
 
 	@test -d $(DYN_PROD_OBJDIR) && rm -d $(DYN_PROD_OBJDIR) 2>/dev/null || true
+	@rm -d "$(DYN_PROD_LIBDIR)/obj" "$(DYN_PROD_LIBDIR)" 2>/dev/null || true
 	@test -d $(DYN_PROD_DIR) && rm -d $(DYN_PROD_DIR) 2>/dev/null || true
 
 	@test -d $(PRTB_LIBDIR)/obj && rm -d $(PRTB_LIBDIR)/obj 2>/dev/null || true
@@ -781,8 +791,7 @@ clean: | clean-preproc clean-asm clean-tests clean-compile-commands
 	@test -d $(PRTB_OBJDIR) && rm -d $(PRTB_OBJDIR) 2>/dev/null || true
 	@test -d $(PRTB_DIR) && rm -d $(PRTB_DIR) 2>/dev/null || true
 
-	@rm -df "$(ZIP_DIR)"/*
-	@test -d "$(ZIP_DIR)" && rm -d "$(ZIP_DIR)" 2>/dev/null || true
+	@rm -d "$(DIST_LIBDIR)/obj" "$(DIST_LIBDIR)" "$(DIST_OBJDIR)" "$(DIST_DIR)" 2>/dev/null || true
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 
 	@test -f $(EXE) && rm $(EXE) || true
@@ -802,14 +811,23 @@ clean-all: clean-tests clean clean-tools clean-docker
 clean-tools:
 	@$(MAKE) -C $(TOOLS_DIR) clean
 
+# Library Makefiles enumerate their artifacts in both production directories
+.PHONY: clean-libs clean-msys
+clean-libs:
+	@$(MAKE) -s -C libs clean BUILDDIR="$(abspath $(BUILDDIR))"
+	@$(MAKE) -s -C libs clean BUILDDIR="$(abspath $(BUILDDIR))" PROD=dynamic-production
+
+clean-msys:
+	@$(MAKE) -s -C .packaging/msys clean BUILD_DIR="$(abspath $(BUILDDIR))/msys-launcher" OUTPUT_EXE="$(abspath $(EXE)_windows_x64_portable.exe)"
+
 clean-tests:
-	@$(MAKE) -C $(TEST_DIR) clean
+	@$(MAKE) -C $(TEST_DIR) clean BUILDDIR="$(abspath $(BUILDDIR))"
 
 clean-preproc:
-	@rm -rf $(PREPROC)
+	@rm -f $(PREPROC)
 
 clean-asm:
-	@rm -rf $(ASM)
+	@rm -f $(ASM)
 
 test: tests
 tests: tests-sanitize
@@ -1291,17 +1309,17 @@ memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=no --show-reachable=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 
 cachegrind: debug
-	valgrind --tool=cachegrind --branch-sim=yes $(DBG_DIR)/$(EXE) $(ARGS)
+	valgrind --tool=cachegrind --cachegrind-out-file="$(CACHEGRIND_OUTPUT)" --branch-sim=yes $(DBG_DIR)/$(EXE) $(ARGS)
 
 callgrind: debug
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes $(DBG_DIR)/$(EXE) $(ARGS)
+	valgrind --tool=callgrind --callgrind-out-file="$(CALLGRIND_OUTPUT)" --dump-instr=yes --collect-jumps=yes $(DBG_DIR)/$(EXE) $(ARGS)
 
 helgrind: debug
 	valgrind --tool=helgrind --read-var-info=yes --track-origins=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
 
 massif: debug
-	valgrind --tool=massif --stacks=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
-	ms_print ./massif.out.*
+	valgrind --tool=massif --massif-out-file="$(MASSIF_OUTPUT)" --stacks=yes --num-callers=20 $(DBG_DIR)/$(EXE) $(ARGS)
+	ms_print "$(MASSIF_OUTPUT)"
 
 # Run the Clang static analyzer and open its results in a web browser
 clang-analyzer: CC = $(CLANG)

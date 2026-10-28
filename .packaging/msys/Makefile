@@ -5,6 +5,8 @@ BUILD_DIR = $(PROJECT_DIR)/.builds/msys-launcher
 PAYLOAD_DIR = $(BUILD_DIR)/payload
 PRECIZER_PAYLOAD = $(PROJECT_DIR)/package/msys/precizer.exe
 MSYS_RUNTIME = $(PROJECT_DIR)/package/msys/msys-2.0.dll
+LAUNCHER_FILES = $(BUILD_DIR)/launcher.rc $(BUILD_DIR)/launcher.res
+PAYLOAD_FILES = $(PAYLOAD_DIR)/precizer.exe $(PAYLOAD_DIR)/msys-2.0.dll
 OUTPUT_EXE = $(PROJECT_DIR)/precizer_windows_x64_portable.exe
 CC = $(shell cygpath -am /ucrt64/bin/gcc.exe)
 WINDRES = $(shell cygpath -am /ucrt64/bin/windres.exe)
@@ -54,4 +56,5 @@ $(PAYLOAD_DIR):
 	@mkdir -p "$@"
 
 clean:
-	@rm -rf "$(BUILD_DIR)" "$(OUTPUT_EXE)"
+	@rm -f $(LAUNCHER_FILES) $(PAYLOAD_FILES) "$(OUTPUT_EXE)"
+	@rm -d "$(PAYLOAD_DIR)" "$(BUILD_DIR)" 2>/dev/null || true

@@ -13,7 +13,7 @@ PURGE_SUBDIRS = $(SUBDIRS) testmocking
 
 TOPTARGETS := all clean debug prod production distribution portable sanitize test tests-debug tests-sanitize tests-coverage gcc-analyzer format coverage compile-commands purge
 
-.PHONY: $(TOPTARGETS) $(SUBDIRS)
+.PHONY: $(TOPTARGETS) $(PURGE_SUBDIRS)
 
 # Dependencies between libraries
 mem: rational
@@ -23,7 +23,8 @@ testitall: mem xdiff rational monocypher
 # Each child library Makefile defaults to its own local .builds directory.
 # Callers that need a shared artifact tree pass BUILDDIR explicitly
 $(TOPTARGETS): $(SUBDIRS)
-$(SUBDIRS):
+clean purge: $(filter-out $(SUBDIRS),$(PURGE_SUBDIRS))
+$(PURGE_SUBDIRS):
 	@$(MAKE) -s -C $@ $(MAKECMDGOALS)
 
 gcc-analyzer:

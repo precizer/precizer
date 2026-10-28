@@ -126,6 +126,10 @@ LIB_TESTS_SRCS = $(wildcard ../libs/*/tests/src/test_*.c) \
                  $(wildcard ../libs/*/tests/src/mocks_*.c)
 LIB_TESTS_TMPLTS = $(wildcard ../libs/*/tests/src/*.tpl)
 LIB_TESTS_HDRS = $(wildcard ../libs/*/tests/src/*.h)
+LIB_TESTS_OBJ_SUBDIRS = $(patsubst ../%,%,$(LIB_TESTS_SRC_DIRS)) \
+	$(patsubst ../%/src,%,$(LIB_TESTS_SRC_DIRS)) \
+	$(patsubst ../%/tests/src,%,$(LIB_TESTS_SRC_DIRS)) libs
+LIB_TESTS_OBJDIRS = $(foreach objdir,$(DBG_OBJDIR) $(DBG_DYN_OBJDIR) $(SNTZ_OBJDIR),$(addprefix $(objdir)/,$(LIB_TESTS_OBJ_SUBDIRS)))
 INCPATH += $(addprefix -I,$(LIB_TESTS_SRC_DIRS))
 
 #
@@ -135,7 +139,7 @@ COV = coverage
 COV_DIR = $(TEST_BUILDDIR)/$(COV)
 COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJDIR = $(COV_DIR)/obj
-COV_REPORTDIR = $(COV_OBJDIR)/../report/
+COV_REPORTDIR = $(COV_DIR)/report
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
 COV_LIBDIR = $(BUILDDIR)/$(COV)/libs
 COV_APP_OBJDIR = $(BUILDDIR)/$(COV)/obj
@@ -429,15 +433,11 @@ clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 
 clean: clean-hugetestfile clean-compile-commands
-	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(DBG_DYN_EXE) $(COV_EXE)
+	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(DBG_DYN_EXE) $(addsuffix .exe,$(SNTZ_EXE) $(DBG_EXE) $(DBG_DYN_EXE))
 	@rm -f $(DBG_OBJS) $(DBG_APP_OBJS) $(LIB_TESTS_DBG_OBJS)
 	@rm -f $(DBG_DYN_OBJS) $(DBG_DYN_APP_OBJS) $(LIB_TESTS_DBG_DYN_OBJS)
 	@rm -f $(SNTZ_OBJS) $(SNTZ_APP_OBJS) $(LIB_TESTS_SNTZ_OBJS)
-	@rm -f $(COV_OBJS) $(COV_APP_OBJS) $(LIB_TESTS_COV_OBJS)
-	@rm -rf $(DBG_OBJDIR)/libs
-	@rm -rf $(DBG_DYN_OBJDIR)/libs
-	@rm -rf $(SNTZ_OBJDIR)/libs
-	@rm -rf $(COV_OBJDIR)/libs
+	@rm -d $(LIB_TESTS_OBJDIRS) 2>/dev/null || true
 
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
@@ -449,10 +449,7 @@ clean: clean-hugetestfile clean-compile-commands
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
 
-	@rm -f $(COV_OBJDIR)/*.gcno $(COV_OBJDIR)/*.gcda $(COV_OBJDIR)/*.gcov $(COV_OBJDIR)/coverage.info
-	@rm -rf $(COV_REPORTDIR)
-	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
-	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
+	@rm -rf $(COV_DIR)
 
 	@test -d $(TEST_BUILDDIR) && rm -d $(TEST_BUILDDIR) 2>/dev/null || true
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true

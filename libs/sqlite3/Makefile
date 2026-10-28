@@ -410,19 +410,19 @@ purge:
 	@echo $(LIBNAME) artifacts cleared
 
 clean:
-	@rm -rf $(PROD_SO) $(PROD_STAT) $(PROD_OBJS)
-	@rm -rf $(DIST_SO) $(DIST_STAT) $(DIST_OBJS)
-	@rm -rf $(PRTB_SO) $(PRTB_STAT) $(PRTB_OBJS)
-	@rm -rf $(DBG_SO) $(DBG_STAT) $(DBG_OBJS)
-	@rm -rf $(COV_SO) $(COV_STAT) $(COV_OBJS)
-	@rm -rf $(SNTZ_SO) $(SNTZ_STAT) $(SNTZ_OBJS)
+	@rm -f $(PROD_SO) $(PROD_STAT) $(PROD_OBJS)
+	@rm -f $(DIST_SO) $(DIST_STAT) $(DIST_OBJS)
+	@rm -f $(PRTB_SO) $(PRTB_STAT) $(PRTB_OBJS)
+	@rm -f $(DBG_SO) $(DBG_STAT) $(DBG_OBJS)
+	@rm -f $(COV_SO) $(COV_STAT)
+	@rm -rf $(COV_OBJDIR)
+	@rm -f $(SNTZ_SO) $(SNTZ_STAT) $(SNTZ_OBJS)
 
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_LIBDIR)/obj && rm -d $(DBG_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 
-	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
 	@test -d $(COV_LIBDIR)/obj && rm -d $(COV_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true

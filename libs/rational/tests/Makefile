@@ -119,7 +119,7 @@ COV = coverage
 COV_DIR = $(TEST_BUILDDIR)/$(COV)
 COV_EXE = $(COV_DIR)/$(EXE)
 COV_OBJDIR = $(COV_DIR)/obj
-COV_REPORTDIR = $(COV_OBJDIR)/../report/
+COV_REPORTDIR = $(COV_DIR)/report
 COV_OBJS = $(addprefix $(COV_OBJDIR)/, $(notdir $(OBJS)))
 COV_LIBDIR = $(BUILDDIR)/$(COV)/libs
 COV_LIB_OBJDIR = $(COV_LIBDIR)/obj
@@ -316,10 +316,9 @@ clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 
 clean: clean-compile-commands
-	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(COV_EXE)
+	@rm -f $(SNTZ_EXE) $(DBG_EXE) $(addsuffix .exe,$(SNTZ_EXE) $(DBG_EXE))
 	@rm -f $(DBG_OBJS)
 	@rm -f $(SNTZ_OBJS)
-	@rm -f $(COV_OBJS)
 
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
@@ -327,12 +326,10 @@ clean: clean-compile-commands
 	@test -d $(SNTZ_OBJDIR) && rm -d $(SNTZ_OBJDIR) 2>/dev/null || true
 	@test -d $(SNTZ_DIR) && rm -d $(SNTZ_DIR) 2>/dev/null || true
 
-	@rm -f $(COV_OBJDIR)/*.gcno $(COV_OBJDIR)/*.gcda $(COV_OBJDIR)/*.gcov $(COV_OBJDIR)/coverage.info
-	@rm -rf $(COV_REPORTDIR)
-	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
-	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
+	@rm -rf $(COV_DIR)
 
 	@test -d $(TEST_BUILDDIR) && rm -d $(TEST_BUILDDIR) 2>/dev/null || true
+	@test -d $(BUILDDIR)/$(LIBDIR) && rm -d $(BUILDDIR)/$(LIBDIR) 2>/dev/null || true
 	@test -d $(BUILDDIR) && rm -d $(BUILDDIR) 2>/dev/null || true
 	@echo $(EXE) cleared
 

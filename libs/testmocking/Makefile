@@ -316,19 +316,19 @@ clean-compile-commands:
 	@rm -f $(COMPILE_COMMANDS)
 
 clean: clean-compile-commands
-	@rm -rf $(PROD_STAT) $(PROD_OBJS)
-	@rm -rf $(DIST_STAT) $(DIST_OBJS)
-	@rm -rf $(PRTB_STAT) $(PRTB_OBJS)
-	@rm -rf $(DBG_STAT) $(DBG_OBJS)
-	@rm -rf $(COV_STAT) $(COV_OBJS)
-	@rm -rf $(SNTZ_STAT) $(SNTZ_OBJS)
+	@rm -f $(PROD_STAT) $(PROD_OBJS)
+	@rm -f $(DIST_STAT) $(DIST_OBJS)
+	@rm -f $(PRTB_STAT) $(PRTB_OBJS)
+	@rm -f $(DBG_STAT) $(DBG_OBJS)
+	@rm -f $(COV_STAT)
+	@rm -rf $(COV_OBJDIR)
+	@rm -f $(SNTZ_STAT) $(SNTZ_OBJS)
 
 	@test -d $(DBG_OBJDIR) && rm -d $(DBG_OBJDIR) 2>/dev/null || true
 	@test -d $(DBG_LIBDIR)/obj && rm -d $(DBG_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(DBG_LIBDIR) && rm -d $(DBG_LIBDIR) 2>/dev/null || true
 	@test -d $(DBG_DIR) && rm -d $(DBG_DIR) 2>/dev/null || true
 
-	@test -d $(COV_OBJDIR) && rm -d $(COV_OBJDIR) 2>/dev/null || true
 	@test -d $(COV_LIBDIR)/obj && rm -d $(COV_LIBDIR)/obj 2>/dev/null || true
 	@test -d $(COV_LIBDIR) && rm -d $(COV_LIBDIR) 2>/dev/null || true
 	@test -d $(COV_DIR) && rm -d $(COV_DIR) 2>/dev/null || true
